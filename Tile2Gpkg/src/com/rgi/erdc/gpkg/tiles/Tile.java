@@ -25,7 +25,7 @@ package com.rgi.erdc.gpkg.tiles;
 public class Tile
 {
     /**
-     * A object representation of an entry in a tile pyramid user data table
+     * An object representation of an entry in a tile pyramid user data table
      *
      * @param identifier
      * @param zoomLevel

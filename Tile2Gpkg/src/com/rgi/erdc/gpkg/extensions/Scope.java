@@ -16,35 +16,34 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.erdc.tile;
+package com.rgi.erdc.gpkg.extensions;
 
-/**
- * @author Luke Lambert
- *
- */
-public enum TileOrigin
+public enum Scope
 {
-    UpperLeft(1, 1),
-    LowerLeft(1, -1),
-    UpperRight(-1, 1),
-    LowerRight(-1, -1);
+    ReadWrite("read-write"),
+    WriteOnly("write-only");
 
-    TileOrigin(final int horizontal, final int vertical)
+    Scope(final String text)
     {
-        this.horizontal = horizontal;
-        this.vertical   = vertical;
+        this.text = text;
     }
 
-    private final int horizontal;
-    private final int vertical;
-
-    public int getDeltaX()
+    @Override
+    public String toString()
     {
-        return this.horizontal;
+        return this.text;
     }
 
-    public int getDeltaY()
+    public static Scope fromText(final String text)
     {
-        return this.vertical;
+        switch(text)
+        {
+            case "read-write": return ReadWrite;
+            case "write-only": return WriteOnly;
+
+            default: throw new IllegalArgumentException("Text must either be \"read-write\" or \"write-only\".");
+        }
     }
+
+    private final String text;
 }
