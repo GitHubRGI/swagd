@@ -73,7 +73,7 @@ public class TileJob implements Runnable {
   private String fileName = null;
   private Settings settings = null;
   private Profile profileSetting = null;
-  private TileProfile profile = null;
+  private TileProfile tileProfile = null;
   private SpatialReference inputSRS = null;
   private Dataset inputDS = null;
   private String inputWKT = null;
@@ -122,10 +122,10 @@ public class TileJob implements Runnable {
   }
 
   private void tile(File inputFile) throws TilingException {
-    Profile profile = Settings.Profile.valueOf(settings.get(Setting.TileProfile));
-    TileProfile tileProfile = TileProfileFactory.create(profile.getAuthority(), profile.getID());
+    profileSetting = Settings.Profile.valueOf(settings.get(Setting.TileProfile));
+    tileProfile = TileProfileFactory.create(profileSetting.getAuthority(), profileSetting.getID());
 
-    Dataset inputDS = null;
+    inputDS = null;
     try {
       inputDS = gdal.Open(inputFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
       if (inputDS == null) {
@@ -142,11 +142,11 @@ public class TileJob implements Runnable {
     }
 
     // try to determine input SRS
-    String inputWKT = inputDS.GetProjection();
+    inputWKT = inputDS.GetProjection();
     if (inputWKT == null && inputDS.GetGCPCount() != 0) {
       inputWKT = inputDS.GetGCPProjection();
     }
-    SpatialReference inputSRS = null;
+    inputSRS = null;
     if (inputWKT != null) {
       inputSRS = new SpatialReference();
       inputSRS.ImportFromWkt(inputWKT);
@@ -159,15 +159,15 @@ public class TileJob implements Runnable {
 
     noDataColor = settings.getColor(Setting.NoDataColor);
 
-    SpatialReference outputSRS = null;
+    outputSRS = null;
     if (Arrays.equals(inputGT, new double[] { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 }) && inputDS.GetGCPCount() == 0) {
       throw new IllegalArgumentException("Unable to generate non-raster tiles from non-georeferenced input");
     }
 
     outputSRS = new SpatialReference();
-    outputSRS.ImportFromEPSG(profile.getID());
+    outputSRS.ImportFromEPSG(profileSetting.getID());
 
-    Dataset outputDS = null;
+    outputDS = null;
 
     // confirm reprojection is needed:
     // no input projection? nothing to reproject!
@@ -198,7 +198,7 @@ public class TileJob implements Runnable {
     // TODO: get bounds for user's preferred output coordinate system
 
     double log = Math.log(2);
-    BoundingBox<Double> worldBounds = tileProfile.getBounds();
+    BoundingBox worldBounds = tileProfile.getBounds();
     double totalWorld = worldBounds.getWidth();
     double fractionalZoom = Math.log(worldBounds.getWidth() / (outputGT[1] * TILESIZE)) / log; // fractional native zoom level for X
     // if all resolutions are identical, default to zooming larger
@@ -243,7 +243,7 @@ public class TileJob implements Runnable {
     Coordinate<Integer> minZoomLowerRightTileCoordinate = null;
     do {
       //      TileMatrix minMatrix = new TileMatrix(profile, minZoom, origin);
-      BoundingBox<Integer> matrixBounds = getTileMatrixBounds(minZoom, origin);
+      TileSet matrixBounds = new TileSet(minZoom, origin);
       int zoomLevelSize = (int)Math.pow(2, minZoom);
       minZoomUpperLeftTileCoordinate = transform(worldBounds, imageUpperLeft, matrixBounds);
       minZoomLowerRightTileCoordinate = transform(worldBounds, imageLowerRight, matrixBounds);
@@ -262,7 +262,7 @@ public class TileJob implements Runnable {
 
     // generate base tile set
     //    TileMatrix maxMatrix = new TileMatrix(profile, maxZoom, Origin.BottomLeft);
-    BoundingBox<Integer> matrixBounds = getTileMatrixBounds(maxZoom, origin);
+    TileSet matrixBounds = new TileSet(maxZoom, origin);
     Coordinate<Integer> upperLeftTileCoordinate = transform(worldBounds, imageUpperLeft, matrixBounds);
     Coordinate<Integer> lowerRightTileCoordinate = transform(worldBounds, imageLowerRight, matrixBounds);
     numTilesWidth = Math.abs(lowerRightTileCoordinate.getX() - upperLeftTileCoordinate.getX()) + 1;
@@ -310,7 +310,7 @@ public class TileJob implements Runnable {
 
     for (int z = maxZoom-1; z >= minZoom; --z) {
       //      TileMatrix matrix = new TileMatrix(profile, z, origin);
-      matrixBounds = getTileMatrixBounds(z, origin);
+      matrixBounds = new TileSet(z, origin);
       upperLeftTileCoordinate = transform(worldBounds, imageUpperLeft, matrixBounds);
       lowerRightTileCoordinate = transform(worldBounds, imageLowerRight, matrixBounds);
       numTilesWidth = Math.abs(lowerRightTileCoordinate.getX() - upperLeftTileCoordinate.getX()) + 1;
@@ -396,29 +396,15 @@ public class TileJob implements Runnable {
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Number, V extends Number> Coordinate<V> transform(BoundingBox<T> inputBounds, Coordinate<T> input, BoundingBox<V> outputBounds) {
-    double inDX = inputBounds.getWidth();
-    double inDY = inputBounds.getHeight();
-    double outDX = outputBounds.getWidth();
-    double outDY = outputBounds.getHeight();
-    double outputX = (((input.getX().doubleValue() - inputBounds.getMinX().doubleValue()) / inDX) * outDX) + outputBounds.getMinX().doubleValue();
-    double outputY = (((input.getY().doubleValue() - inputBounds.getMinY().doubleValue()) / inDY) * outDY) + outputBounds.getMinY().doubleValue();
+  public <T extends Number, V extends Number> Coordinate<V> transform(BoundingBox worldBounds, Coordinate<T> input, TileSet tileSet) {
+    double inDX = worldBounds.getWidth();
+    double inDY = worldBounds.getHeight();
+    double outDX = tileSet.getWidth();
+    double outDY = tileSet.getHeight();
+    int outputX = (int)(((input.getX().doubleValue() - worldBounds.getMinX().doubleValue()) / inDX) * outDX) + tileSet.getWest();
+    int outputY = (int)(((input.getY().doubleValue() - worldBounds.getMinY().doubleValue()) / inDY) * outDY) + tileSet.getSouth();
 
-    if (outputBounds.getMinX() instanceof Double) {
-      return (Coordinate<V>) new Coordinate<Double>(outputX, outputY);
-    } else if (outputBounds.getMinX() instanceof Float) {
-      return (Coordinate<V>) new Coordinate<Float>((float)outputX, (float)outputY);
-    } else if (outputBounds.getMinX() instanceof Long) {
-      return (Coordinate<V>) new Coordinate<Long>((long)outputX, (long)outputY);
-    } else if (outputBounds.getMinX() instanceof Integer) {
-      return (Coordinate<V>) new Coordinate<Integer>((int)outputX, (int)outputY);
-    } else if (outputBounds.getMinX() instanceof Short) {
-      return (Coordinate<V>) new Coordinate<Short>((short)outputX, (short)outputY);
-    } else if (outputBounds.getMinX() instanceof Byte) {
-      return (Coordinate<V>) new Coordinate<Byte>((byte)outputX, (byte)outputY);
-    } else {
-      throw new IllegalArgumentException("Can't instantiate coordinate with unknown subclass of Number");
-    }
+    return (Coordinate<V>) new Coordinate<Integer>(outputX, outputY);
   }
 
   private Tile createCompliant(int z, Coordinate<Integer> position, TileOrigin origin, int maxZoom) throws TilingException {
@@ -557,31 +543,5 @@ public class TileJob implements Runnable {
       }
     }
     return img;
-  }
-
-  /**
-   * @return the bounds of the tile matrix in tile indices
-   */
-  public BoundingBox<Integer> getTileMatrixBounds(int z, TileOrigin origin) {
-    int size = (int)Math.pow(2, z);
-    // start with Top Left origin
-    int left = 0;
-    int right = size;
-    int bottom = size;
-    int top = 0;
-
-    switch (origin) {
-    case LowerLeft:
-    case LowerRight:
-      bottom = 0;
-      top = size;
-      break;
-    case UpperLeft:
-    case UpperRight:
-      left = size;
-      right = 0;
-      break;
-    }
-    return new BoundingBox<Integer>(top, left, bottom, right);
   }
 }
