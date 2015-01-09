@@ -316,7 +316,7 @@ public class TilesVerifier extends Verifier
                  severity = Severity.Warning)
     public void Requirement36()
     {
-        // This requirement is tested through Requirement 35 test in ExtensionsVerifier.
+        // This requirement is tested through Requirement 35 test in TilesVerifier.
     }
 
     /**
@@ -1132,6 +1132,7 @@ public class TilesVerifier extends Verifier
             try(Statement  stmt             = this.getSqliteConnection().createStatement();
                 ResultSet  pyramidTableName = stmt.executeQuery(query))
             {
+            	//TODO: Check if pyramid table exists prior to SQL being executed
                 while(pyramidTableName.next())
                 {
                     final String pyramidName = pyramidTableName.getString("table_name");
