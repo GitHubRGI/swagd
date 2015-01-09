@@ -270,7 +270,7 @@ public class GeoPackage implements AutoCloseable
      *
      * @return the GeoPackage requirements this GeoPackage fails to conform to
      */
-    public Collection<FailedRequirement> getFailedRequirements()
+    public Collection<FailedRequirement> getFailedRequirements() throws SQLException
     {
         final List<FailedRequirement> failedRequirements = new ArrayList<>();
         failedRequirements.addAll(this.core    .getFailedRequirements(this.file));
@@ -284,7 +284,7 @@ public class GeoPackage implements AutoCloseable
      *
      * @throws ConformanceException
      */
-    public void verify() throws ConformanceException
+    public void verify() throws ConformanceException, SQLException
     {
         //final long startTime = System.nanoTime();
 

@@ -3559,16 +3559,6 @@ public class GeoPackageAPITest
         }
     }
 
-    @Test
-    public void testing() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
-    {
-        try(GeoPackage gpkg = new GeoPackage(new File("jenTest.gpkg"), OpenMode.Open))
-        {
-            gpkg.verify();
-        }
-
-    }
-
     private static byte[] createImageBytes() throws IOException
     {
         final BufferedImage img = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);

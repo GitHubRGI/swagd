@@ -59,7 +59,7 @@ public class GeoPackageTiles
      *
      * @return The tile GeoPackage requirements this GeoPackage fails to conform to
      */
-    public Collection<FailedRequirement> getFailedRequirements()
+    public Collection<FailedRequirement> getFailedRequirements() throws SQLException
     {
         return new TilesVerifier(this.databaseConnection).getFailedRequirements();
     }
