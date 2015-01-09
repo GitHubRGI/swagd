@@ -554,10 +554,10 @@ public class GeoPackageTiles
             {
                 return new TileMatrixSet(result.getString(1),                                   // table name
                                          this.core.getSpatialReferenceSystem(result.getInt(2)), // srs id
-                                         new BoundingBox(result.getDouble(4),                 // min y
-                                                         result.getDouble(3),                 // min x
-                                                         result.getDouble(6),                 // max y
-                                                         result.getDouble(5)));               // max x
+                                         new BoundingBox(result.getDouble(4),                   // min y
+                                                         result.getDouble(3),                   // min x
+                                                         result.getDouble(6),                   // max y
+                                                         result.getDouble(5)));                 // max x
             }
         }
     }
@@ -881,11 +881,11 @@ public class GeoPackageTiles
         // http://www.geopackage.org/spec/#tiles_user_tables
         // http://www.geopackage.org/spec/#_sample_tile_pyramid_informative
         return "CREATE TABLE " + tileTableName + "\n" +
-               "(id          INTEGER PRIMARY KEY AUTOINCREMENT, \n" +
-               " zoom_level  INTEGER NOT NULL, \n"                  +
-               " tile_column INTEGER NOT NULL, \n"                  +
-               " tile_row    INTEGER NOT NULL, \n"                  +
-               " tile_data   BLOB    NOT NULL, \n"                  +
+               "(id          INTEGER PRIMARY KEY AUTOINCREMENT, -- Autoincrement primary key\n"                                                                            +
+               " zoom_level  INTEGER NOT NULL,                  -- min(zoom_level) <= zoom_level <= max(zoom_level) for t_table_name\n"                                    +
+               " tile_column INTEGER NOT NULL,                  -- 0 to tile_matrix matrix_width - 1\n"                                                                    +
+               " tile_row    INTEGER NOT NULL,                  -- 0 to tile_matrix matrix_height - 1\n"                                                                   +
+               " tile_data   BLOB    NOT NULL,                  -- Of an image MIME type specified in clauses Tile Encoding PNG, Tile Encoding JPEG, Tile Encoding WEBP\n" +
                " UNIQUE (zoom_level, tile_column, tile_row));";
     }
 

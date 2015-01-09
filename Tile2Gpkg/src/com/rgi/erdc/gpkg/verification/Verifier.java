@@ -18,8 +18,6 @@
 
 package com.rgi.erdc.gpkg.verification;
 
-import static com.rgi.erdc.gpkg.verification.Assert.assertTrue;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -94,15 +92,14 @@ public class Verifier
                                                 	   ex.printStackTrace();
                                                        return null;
                                                    }
-
-                                                    })
+                                                 })
                    .filter(requirement -> requirement != null)
                    .collect(Collectors.toCollection(ArrayList::new));
     }
 
     protected static boolean checkDataType(final String dataType)
     {
-        return AllowedSqlTypes.contains(dataType)   ||
+        return Verifier.AllowedSqlTypes.contains(dataType)   ||
                dataType.matches("TEXT\\([0-9]+\\)") ||
                dataType.matches("BLOB\\([0-9]+\\)");
     }
@@ -113,7 +110,9 @@ public class Verifier
     protected Stream<Method> getRequirements()
     {
         return Stream.of(this.getClass().getDeclaredMethods())
-                     .filter(method -> method.isAnnotationPresent(Requirement.class));
+                     .filter(method -> method.isAnnotationPresent(Requirement.class))
+                     .sorted((method1, method2) -> Integer.compare(method1.getAnnotation(Requirement.class).number(),
+                                                                   method2.getAnnotation(Requirement.class).number()));
     }
 
     protected void verifyTable(final TableDefinition table) throws AssertionError, SQLException
@@ -146,7 +145,7 @@ public class Verifier
             try(ResultSet gpkgContents = statement.executeQuery())
             {
                 final String sql = gpkgContents.getString("sql");
-                assertTrue(String.format("The sql field must include the %s Table SQL Definition.",
+                Assert.assertTrue(String.format("The sql field must include the %s Table SQL Definition.",
                                          tableName),
                            sql != null);
             }
@@ -187,12 +186,12 @@ public class Verifier
             for(final Entry<String, ColumnDefinition> column : requiredColumns.entrySet())
             {
                 final ColumnDefinition columnDefinition = columns.get(column.getKey());
-                assertTrue(String.format("Required column: %s.%s is missing", tableName, column.getKey()),
+                Assert.assertTrue(String.format("Required column: %s.%s is missing", tableName, column.getKey()),
                            columnDefinition != null);
 
                 if(columnDefinition != null)
                 {
-                    assertTrue(String.format("Required column %s is defined as:\n%s\nbut should be:\n%s",
+                    Assert.assertTrue(String.format("Required column %s is defined as:\n%s\nbut should be:\n%s",
                                              column.getKey(),
                                              columnDefinition.toString(),
                                              column.getValue().toString()),
@@ -227,7 +226,7 @@ public class Verifier
                 // check to see if the correct foreign key constraints are placed
                 for(final ForeignKeyDefinition foreignKey : requiredForeignKeys)
                 {
-                    assertTrue(String.format("The table %s is missing the foreign key constraint: %1$s.%s => %s.%s",
+                    Assert.assertTrue(String.format("The table %s is missing the foreign key constraint: %1$s.%s => %s.%s",
                                              tableName,
                                              foreignKey.getFromColumnName(),
                                              foreignKey.getReferenceTableName(),
@@ -254,7 +253,7 @@ public class Verifier
     {
         for(final UniqueDefinition groupUnique : requiredGroupUniques)
         {
-            assertTrue(String.format("The table %s is missing the column group unique constraint: (%s)",
+            Assert.assertTrue(String.format("The table %s is missing the column group unique constraint: (%s)",
                                      tableName,
                                      String.join(", ", groupUnique.getColumnNames())),
                        uniques.contains(groupUnique));
@@ -300,34 +299,6 @@ public class Verifier
         }
     }
 
-//    protected Set<UniqueDefinition> getGroupUniques(final String tableName) throws SQLException
-//    {
-//        try(final Statement statement = this.sqliteConnection.createStatement();
-//            final ResultSet indices   = statement.executeQuery(String.format("PRAGMA index_list(%s);", tableName)))
-//        {
-//            return ResultSetStream.getStream(indices)
-//                                  .map(resultSet -> { try
-//                                                      {
-//                                                          final String indexName = resultSet.getString("name");
-//                                                          try(Statement nameStatement = this.sqliteConnection.createStatement();
-//                                                              ResultSet names          = nameStatement.executeQuery(String.format("PRAGMA index_info(%s);", indexName));)
-//                                                          {
-//                                                              ResultSetStream.getStream(names)
-//                                                                             .map(name.getString("name");
-//                                                          }
-//                                                      }
-//                                                      catch(final Exception ex)
-//                                                      {
-//                                                          ex.printStackTrace();
-//                                                          return null;
-//                                                      }
-//                                                     })
-//                                  .filter(group -> group != null)
-//                                  .collect(Collectors.toSet());
-//
-//        }
-//    }
-
     /**
      * @return the sqliteConnection
      */
@@ -341,7 +312,7 @@ public class Verifier
      */
     protected static List<String> getAllowedSqlTypes()
     {
-        return AllowedSqlTypes;
+        return Verifier.AllowedSqlTypes;
     }
 
     private final Connection sqliteConnection;

@@ -317,7 +317,7 @@ public class TilesVerifier extends Verifier
                  severity = Severity.Warning)
     public void Requirement36()
     {
-        // This requirement is tested through Requirement 35 test in TilesVerifier.
+        // This requirement is tested through Requirement 35 test in ExtensionsVerifier.
     }
 
     /**
