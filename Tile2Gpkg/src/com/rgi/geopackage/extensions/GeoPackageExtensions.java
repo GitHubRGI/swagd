@@ -22,8 +22,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
+import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.DatabaseUtility;
 import com.rgi.geopackage.verification.FailedRequirement;
 
@@ -98,25 +101,113 @@ public class GeoPackageExtensions
         return null;
     }
 
-//    public Collection<Extension> getExtensions() throws SQLException
-//    {
-//        final String extensionQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s",
-//                                                       "table_name",
-//                                                       "column_name",
-//                                                       "extension_name",
-//                                                       "definition",
-//                                                       "scope",
-//                                                       GeoPackageExtensions.ExtensionsTableName);
-//
-//        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(extensionQuerySql))
-//        {
-//            try(ResultSet results = preparedStatement.executeQuery())
-//            {
-//                ResultSetStream.getStream(results)
-//                               .map(resultSet -> )
-//            }
-//        }
-//    }
+    public Collection<Extension> getExtensions() throws SQLException
+    {
+        final String extensionQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s",
+                                                       "table_name",
+                                                       "column_name",
+                                                       "extension_name",
+                                                       "definition",
+                                                       "scope",
+                                                       GeoPackageExtensions.ExtensionsTableName);
+
+        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(extensionQuerySql))
+        {
+            try(ResultSet results = preparedStatement.executeQuery())
+            {
+                return ResultSetStream.getStream(results)
+                                      .map(result -> { try
+                                                       {
+                                                           return new Extension(result.getString(1),
+                                                                                result.getString(2),
+                                                                                result.getString(3),
+                                                                                result.getString(4),
+                                                                                result.getString(5));
+                                                       }
+                                                       catch(final SQLException ex)
+                                                       {
+                                                           return null;
+                                                       }
+                                                     })
+                                      .filter(extension -> extension != null)
+                                      .collect(Collectors.toCollection(ArrayList<Extension>::new));
+
+            }
+        }
+    }
+
+    public Extension addExtension(final String tableName,
+                                  final String columnName,
+                                  final String extensionName,
+                                  final String definition,
+                                  final Scope  scope) throws SQLException
+    {
+        if(columnName != null && tableName == null)
+        {
+            throw new IllegalArgumentException("Table name may not be null if column name is not null"); // Requirement 80
+        }
+
+        if(tableName != null && tableName.isEmpty())
+        {
+            throw new IllegalArgumentException("If table name is not null, it may not be empty");
+        }
+
+        if(columnName != null && columnName.isEmpty())
+        {
+            throw new IllegalArgumentException("If column name is not null, it may not be empty");
+        }
+
+        if(extensionName == null || !extensionName.isEmpty())
+        {
+            throw new IllegalArgumentException("Extension name may not be null or empty");
+        }
+
+        if(!extensionName.matches(Extension.ExtensionNameRegularExpression))
+        {
+            throw new IllegalArgumentException("Extension name must be a value of the form <author>_<extension_name> where <author> indicates the person or organization that developed and maintains the extension. The valid character set for <author> SHALL be [a-zA-Z0-9]. The valid character set for <extension_name> SHALL be [a-zA-Z0-9_]");   // Requirement 82
+        }
+
+        final Extension existingExtension = this.getExtension(tableName, columnName, extensionName);
+
+        if(existingExtension != null)
+        {
+            if(existingExtension.equals(tableName,
+                                        columnName,
+                                        extensionName,
+                                        definition,
+                                        scope))
+            {
+                return existingExtension;
+            }
+
+            throw new IllegalArgumentException("An extension already exists with this combination of table, column and extension name, but has different values for its other fields");
+        }
+
+        final String insertExtension = String.format("INSERT INTO %s (%s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?)",
+                                                     GeoPackageExtensions.ExtensionsTableName,
+                                                     "table_name",
+                                                     "column_name",
+                                                     "extension_name",
+                                                     "definition",
+                                                     "scope");
+
+        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertExtension))
+        {
+            preparedStatement.setString(1, tableName);
+            preparedStatement.setString(2, columnName);
+            preparedStatement.setString(3, extensionName);
+            preparedStatement.setString(4, definition);
+            preparedStatement.setString(5, scope.toString());
+
+            preparedStatement.executeUpdate();
+
+            return new Extension(tableName,
+                                 columnName,
+                                 extensionName,
+                                 definition,
+                                 scope.toString());
+        }
+    }
 
     @SuppressWarnings("static-method")
     protected String getExtensionsTableCreationSql()

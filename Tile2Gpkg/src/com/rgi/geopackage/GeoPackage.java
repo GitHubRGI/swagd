@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.rgi.geopackage.core.GeoPackageCore;
+import com.rgi.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.geopackage.features.GeoPackageFeatures;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
 import com.rgi.geopackage.verification.ConformanceException;
@@ -176,9 +177,10 @@ public class GeoPackage implements AutoCloseable
 
             DatabaseUtility.setPragmaForeignKeys(this.databaseConnection, true);
 
-            this.core     = new GeoPackageCore    (this.databaseConnection);
-            this.tiles    = new GeoPackageTiles   (this.databaseConnection, this.core);
-            this.features = new GeoPackageFeatures(this.databaseConnection, this.core);
+            this.core       = new GeoPackageCore      (this.databaseConnection);
+            this.extensions = new GeoPackageExtensions(this.databaseConnection);
+            this.tiles      = new GeoPackageTiles     (this.databaseConnection, this.core);
+            this.features   = new GeoPackageFeatures  (this.databaseConnection, this.core);
 
             if(isNewFile)
             {
@@ -273,9 +275,12 @@ public class GeoPackage implements AutoCloseable
     public Collection<FailedRequirement> getFailedRequirements() throws SQLException
     {
         final List<FailedRequirement> failedRequirements = new ArrayList<>();
-        failedRequirements.addAll(this.core    .getFailedRequirements(this.file));
-        failedRequirements.addAll(this.tiles   .getFailedRequirements());
-        failedRequirements.addAll(this.features.getFailedRequirements());
+
+        failedRequirements.addAll(this.core      .getFailedRequirements(this.file));
+        failedRequirements.addAll(this.extensions.getFailedRequirements());
+        failedRequirements.addAll(this.tiles     .getFailedRequirements());
+        failedRequirements.addAll(this.features  .getFailedRequirements());
+
         return failedRequirements;
     }
 
@@ -322,6 +327,16 @@ public class GeoPackage implements AutoCloseable
     }
 
     /**
+     * Access to GeoPackage's "extensions" functionality
+     *
+     * @return returns a handle to a GeoPackageExetensions object
+     */
+    public GeoPackageExtensions extensions()
+    {
+        return this.extensions;
+    }
+
+    /**
      * Access to GeoPackage's "tiles" functionality
      *
      * @return returns a handle to a GeoPackageTiles object
@@ -348,11 +363,12 @@ public class GeoPackage implements AutoCloseable
         Create
     }
 
-    private final File               file;
-    private final Connection         databaseConnection;
-    private final GeoPackageCore     core;
-    private final GeoPackageTiles    tiles;
-    private final GeoPackageFeatures features;
+    private final File                 file;
+    private final Connection           databaseConnection;
+    private final GeoPackageCore       core;
+    private final GeoPackageExtensions extensions;
+    private final GeoPackageTiles      tiles;
+    private final GeoPackageFeatures   features;
 
     private String sqliteVersion;
 

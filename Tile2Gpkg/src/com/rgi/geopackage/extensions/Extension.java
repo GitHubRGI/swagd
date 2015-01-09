@@ -71,6 +71,19 @@ public class Extension
         this.scope         = Scope.fromText(scope);
     }
 
+    public boolean equals(final String inTableName,
+                          final String inColumnName,
+                          final String inExtensionName,
+                          final String inDefinition,
+                          final Scope  inScope)
+    {
+        return Extension.equals(this.tableName,     inTableName)     &&
+               Extension.equals(this.columnName,    inColumnName)    &&
+               Extension.equals(this.extensionName, inExtensionName) &&
+               Extension.equals(this.definition,    inDefinition)    &&
+               Extension.equals(this.scope,         inScope);
+    }
+
     /**
      * @return the tableName
      */
@@ -109,6 +122,12 @@ public class Extension
     public Scope getScope()
     {
         return this.scope;
+    }
+
+    private static <T> boolean equals(final T lhs, final T rhs)
+    {
+        return lhs == null ? rhs == null
+                           : lhs.equals(rhs);
     }
 
     private final String tableName;
