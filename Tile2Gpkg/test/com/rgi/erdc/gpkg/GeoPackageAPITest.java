@@ -3558,6 +3558,15 @@ public class GeoPackageAPITest
             }
         }
     }
+    
+    @Test
+    public void testing() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	try(GeoPackage gpkg = new GeoPackage(new File("emptyGPKG.gpkg"), OpenMode.Open))
+    	{
+    		//
+    	}
+    }
 
     private static byte[] createImageBytes() throws IOException
     {
