@@ -28,7 +28,7 @@
           <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
-          <groupId>com.rgi</groupId>
+          <groupId>com.rgi.common.common</groupId>
           <artifactId>erdc.t2g</artifactId>
           <version>0.0.1-SNAPSHOT</version>
       </dependency>
@@ -94,7 +94,7 @@
               <shadedClassifierName>shaded</shadedClassifierName>
               <transformers>
                   <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                      <mainClass>com.rgi.erdc.GeoSuite</mainClass>
+                      <mainClass>com.rgi.common.common.GeoSuite</mainClass>
                   </transformer>
               </transformers>
           </configuration>
@@ -116,7 +116,7 @@
                       <outfile>${project.build.directory}/ERDC-GRL-Tiler.exe</outfile>
                       <downloadUrl>http://java.com/download</downloadUrl>
                       <classPath>
-                          <mainClass>com.rgi.erdc.GeoSuite</mainClass>
+                          <mainClass>com.rgi.common.common.GeoSuite</mainClass>
                           <preCp>anything</preCp>
                       </classPath>
                       <!--icon>/res/res/icons/corps.png</icon-->

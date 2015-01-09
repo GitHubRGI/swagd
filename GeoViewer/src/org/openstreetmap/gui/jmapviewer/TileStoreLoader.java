@@ -26,9 +26,9 @@ import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoaderListener;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileSource;
 
-import com.rgi.erdc.coordinates.AbsoluteTileCoordinate;
-import com.rgi.erdc.tile.TileOrigin;
-import com.rgi.erdc.tile.store.TileStore;
+import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.store.TileStore;
 
 /**
  * Class responsible for loading TMS tiles to a JMapViewer.
@@ -64,7 +64,7 @@ public class TileStoreLoader implements TileLoader {
 				try {
 					AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(tile.getYtile(), tile.getXtile(), tile.getZoom(),
 							TileOrigin.LowerLeft);
-					com.rgi.erdc.tile.Tile commonTile = TileStoreLoader.this.tileStore.getTile(tileCoord);
+					com.rgi.common.tile.Tile commonTile = TileStoreLoader.this.tileStore.getTile(tileCoord);
 					if (commonTile != null) {
 						tile.setImage(commonTile.getImageContents());
 					} else {

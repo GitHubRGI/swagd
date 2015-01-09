@@ -26,8 +26,8 @@ import java.util.Set;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileSource;
 
-import com.rgi.erdc.tile.store.TileStore;
-import com.rgi.erdc.tile.store.TileStoreException;
+import com.rgi.common.tile.store.TileStore;
+import com.rgi.common.tile.store.TileStoreException;
 
 public class TileSourceShell implements TileSource {
 	
