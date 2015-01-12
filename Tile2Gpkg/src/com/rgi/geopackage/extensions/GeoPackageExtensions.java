@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
@@ -98,6 +99,11 @@ public class GeoPackageExtensions
      */
     public Extension getExtension(final String tableName, final String columnName, final String extensionName) throws SQLException
     {
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageExtensions.ExtensionsTableName))
+        {
+            return null;
+        }
+
         final String extensionQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s WHERE table_name = ? AND column_name = ? AND extension_name = ?;",
                                                        "table_name",
                                                        "column_name",
@@ -131,11 +137,16 @@ public class GeoPackageExtensions
     /**
      * Gets the entries of the GeoPackage extension table as a collection of extension objects
      *
-     * @return
+     * @return Returns all of the entries in the GeoPackage extensions
      * @throws SQLException
      */
     public Collection<Extension> getExtensions() throws SQLException
     {
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageExtensions.ExtensionsTableName))
+        {
+            return Collections.emptyList();
+        }
+
         final String extensionQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s",
                                                        "table_name",
                                                        "column_name",
@@ -292,7 +303,7 @@ public class GeoPackageExtensions
     protected void createExtensionTableNoCommit() throws SQLException
     {
         // Create the tile matrix set table or view
-        if(DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageExtensions.ExtensionsTableName) == false)
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageExtensions.ExtensionsTableName))
         {
             try(Statement statement = this.databaseConnection.createStatement())
             {
