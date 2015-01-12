@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -36,13 +37,19 @@ import com.rgi.geopackage.verification.FailedRequirement;
  */
 public class GeoPackageExtensions
 {
+    /**
+     * Constructor
+     *
+     * @param databaseConnection
+     *             The open connection to the database that contains a GeoPackage
+     */
     public GeoPackageExtensions(final Connection databaseConnection)
     {
         this.databaseConnection = databaseConnection;
     }
 
     /**
-     * Requirements this GeoPackage failed to meet
+     * Extension requirements this GeoPackage failed to meet
      *
      * @return The extension GeoPackage requirements this GeoPackage fails to conform to
      */
@@ -51,6 +58,14 @@ public class GeoPackageExtensions
         return new ExtensionsVerifier(this.databaseConnection).getFailedRequirements();
     }
 
+    /**
+     * Queries the GeoPackage for an specific named extension with the format <author>_<extension_name>
+     *
+     * @param name
+     *             Name of the extension in the form <author>_<extension_name>
+     * @return Returns true if the GeoPackage contains the named extension
+     * @throws SQLException
+     */
     public boolean hasExtension(final String name) throws SQLException
     {
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageExtensions.ExtensionsTableName))
@@ -69,6 +84,18 @@ public class GeoPackageExtensions
         }
     }
 
+    /**
+     * Gets an extension represented by a specific table, column, and extension name
+     *
+     * @param tableName
+     *             Name of the table that requires the extension. When NULL, the extension is required for the entire GeoPackage. SHALL NOT be NULL when the column_name is not NULL
+     * @param columnName
+     *             Name of the column that requires the extension. When NULL, the extension is required for the entire table
+     * @param extensionName
+     *             The case sensitive name of the extension that is required, in the form <author>_<extension_name> where <author> indicates the person or organization that developed and maintains the extension. The valid character set for <author> is [a-zA-Z0-9]. The valid character set for <extension_name> is [a-zA-Z0-9_]
+     * @return Returns an object that represents an entry in the GeoPackage extensions table
+     * @throws SQLException
+     */
     public Extension getExtension(final String tableName, final String columnName, final String extensionName) throws SQLException
     {
         final String extensionQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s WHERE table_name = ? AND column_name = ? AND extension_name = ?;",
@@ -101,6 +128,12 @@ public class GeoPackageExtensions
         return null;
     }
 
+    /**
+     * Gets the entries of the GeoPackage extension table as a collection of extension objects
+     *
+     * @return
+     * @throws SQLException
+     */
     public Collection<Extension> getExtensions() throws SQLException
     {
         final String extensionQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s",
@@ -136,6 +169,20 @@ public class GeoPackageExtensions
         }
     }
 
+    /**
+     * Adds an extension to the GeoPackage extensions table
+     *
+     * @param tableName
+     *             Name of the table that requires the extension. When NULL, the extension is required for the entire GeoPackage. SHALL NOT be NULL when the column_name is not NULL
+     * @param columnName
+     *             Name of the column that requires the extension. When NULL, the extension is required for the entire table
+     * @param extensionName
+     *             The case sensitive name of the extension that is required, in the form <author>_<extension_name> where <author> indicates the person or organization that developed and maintains the extension. The valid character set for <author> is [a-zA-Z0-9]. The valid character set for <extension_name> is [a-zA-Z0-9_]
+     * @param definition
+     * @param scope
+     * @return Returns the added extension
+     * @throws SQLException
+     */
     public Extension addExtension(final String tableName,
                                   final String columnName,
                                   final String extensionName,
@@ -193,6 +240,8 @@ public class GeoPackageExtensions
 
         try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertExtension))
         {
+            this.createExtensionTableNoCommit();    // Create the extension table
+
             preparedStatement.setString(1, tableName);
             preparedStatement.setString(2, columnName);
             preparedStatement.setString(3, extensionName);
@@ -201,12 +250,19 @@ public class GeoPackageExtensions
 
             preparedStatement.executeUpdate();
 
-            return new Extension(tableName,
-                                 columnName,
-                                 extensionName,
-                                 definition,
-                                 scope.toString());
+            this.databaseConnection.commit();
         }
+        catch(final Exception ex)
+        {
+            this.databaseConnection.rollback();
+            throw ex;
+        }
+
+        return new Extension(tableName,
+                             columnName,
+                             extensionName,
+                             definition,
+                             scope.toString());
     }
 
     @SuppressWarnings("static-method")
@@ -221,6 +277,28 @@ public class GeoPackageExtensions
                 " definition     TEXT NOT NULL, -- Definition of the extension in the form specfied by the template in GeoPackage Extension Template (Normative) or reference thereto.\n"                                +
                 " scope          TEXT NOT NULL, -- Indicates scope of extension effects on readers / writers: read-write or write-only in lowercase.\n"                                                                  +
                 " CONSTRAINT ge_tce UNIQUE (table_name, column_name, extension_name))";
+    }
+
+    /**
+     * Creates the tables required for storing extensions
+     *
+     * <b>**WARNING**</b> this does not do a database commit. It is expected
+     * that an the creation of tile tables will always come with other
+     * database inserts that may  all need to be committed or rollback as a
+     * single transaction.
+     *
+     * @throws SQLException
+     */
+    protected void createExtensionTableNoCommit() throws SQLException
+    {
+        // Create the tile matrix set table or view
+        if(DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageExtensions.ExtensionsTableName) == false)
+        {
+            try(Statement statement = this.databaseConnection.createStatement())
+            {
+                statement.executeUpdate(this.getExtensionsTableCreationSql());
+            }
+        }
     }
 
     private final Connection databaseConnection;
