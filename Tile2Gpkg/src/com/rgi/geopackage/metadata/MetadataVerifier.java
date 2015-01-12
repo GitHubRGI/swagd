@@ -16,15 +16,15 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.geopackage.extensions;
+package com.rgi.geopackage.metadata;
 
 import java.sql.Connection;
 
 import com.rgi.geopackage.verification.Verifier;
 
-public class ExtensionsVerifier extends Verifier
+public class MetadataVerifier extends Verifier
 {
-    public ExtensionsVerifier(final Connection sqliteConnection)
+    public MetadataVerifier(final Connection sqliteConnection)
     {
         super(sqliteConnection);
     }
