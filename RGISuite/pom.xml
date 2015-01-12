@@ -28,8 +28,8 @@
           <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
-          <groupId>com.rgi.common.common</groupId>
-          <artifactId>erdc.t2g</artifactId>
+          <groupId>Common</groupId>
+          <artifactId>Common</artifactId>
           <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
