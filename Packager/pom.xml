@@ -3,6 +3,7 @@
   <groupId>Packager</groupId>
   <artifactId>Packager</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <name>Packager Workflow Project</name>
 
     <parent>
         <groupId>com.rgi.TilingApp</groupId>
