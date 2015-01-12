@@ -21,7 +21,6 @@ package com.rgi.geopackage.metadata;
 import java.sql.Connection;
 import java.util.Collection;
 
-import com.rgi.geopackage.extensions.ExtensionsVerifier;
 import com.rgi.geopackage.verification.FailedRequirement;
 
 public class GeoPackageMetadata
@@ -44,7 +43,7 @@ public class GeoPackageMetadata
      */
     public Collection<FailedRequirement> getFailedRequirements()
     {
-        return new ExtensionsVerifier(this.databaseConnection).getFailedRequirements();
+        return new MetadataVerifier(this.databaseConnection).getFailedRequirements();
     }
 
     @SuppressWarnings("static-method")

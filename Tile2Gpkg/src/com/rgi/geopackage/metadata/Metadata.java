@@ -7,11 +7,18 @@ import javax.activation.MimeType;
 public class Metadata
 {
     /**
+     * Constructor
+     *
      * @param identifier
+     *             Metadata primary key
      * @param scope
+     *             Metadata scope
      * @param standardUri
+     *             URI reference to the metadata structure definition authority
      * @param mimeType
+     *             MIME encoding of metadata
      * @param metadata
+     *             Metadata text
      */
     protected Metadata(final int      identifier,
                        final Scope    scope,
