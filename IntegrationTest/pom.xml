@@ -6,8 +6,8 @@
   <name>Integration Test Suite</name>
 
   <parent>
-      <groupId>com.erdc.grl.TilingApp</groupId>
-      <artifactId>TilingApp</artifactId>
+      <groupId>com.rgi.TilingApp</groupId>
+      <artifactId>SWAGD</artifactId>
       <version>0.0.1-SNAPSHOT</version>
   </parent>
 
