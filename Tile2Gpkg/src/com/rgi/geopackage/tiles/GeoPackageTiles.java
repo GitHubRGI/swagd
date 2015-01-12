@@ -107,7 +107,7 @@ public class GeoPackageTiles
 
         try
         {
-            this.createTilesTables(); // Create the tile metadata tables
+            this.createTilesTablesNoCommit(); // Create the tile metadata tables
 
             // Create the tile set table
             try(Statement statement = this.databaseConnection.createStatement())
@@ -820,10 +820,10 @@ public class GeoPackageTiles
      *
      * @throws SQLException
      */
-    protected void createTilesTables() throws SQLException
+    protected void createTilesTablesNoCommit() throws SQLException
     {
         // Create the tile matrix set table or view
-        if(DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixSetTableName) == false)
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixSetTableName))
         {
             try(Statement statement = this.databaseConnection.createStatement())
             {
@@ -832,7 +832,7 @@ public class GeoPackageTiles
         }
 
         // Create the tile matrix table or view
-        if(DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixTableName) == false)
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixTableName))
         {
             try(Statement statement = this.databaseConnection.createStatement())
             {
