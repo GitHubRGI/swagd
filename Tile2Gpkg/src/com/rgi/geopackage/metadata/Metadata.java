@@ -47,6 +47,46 @@ public class Metadata
     }
 
 
+    /**
+     * @return the identifier
+     */
+    public int getIdentifier()
+    {
+        return this.identifier;
+    }
+
+    /**
+     * @return the scope
+     */
+    public Scope getScope()
+    {
+        return this.scope;
+    }
+
+    /**
+     * @return the standardUri
+     */
+    public URI getStandardUri()
+    {
+        return this.standardUri;
+    }
+
+    /**
+     * @return the mimeType
+     */
+    public MimeType getMimeType()
+    {
+        return this.mimeType;
+    }
+
+    /**
+     * @return the metadata
+     */
+    public String getMetadata()
+    {
+        return this.metadata;
+    }
+
     private final int      identifier;
     private final Scope    scope;
     private final URI      standardUri;
