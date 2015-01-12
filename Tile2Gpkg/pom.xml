@@ -2,8 +2,8 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 >
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.rgi.common.common</groupId>
-    <artifactId>erdc.t2g</artifactId>
+    <groupId>Geopackage</groupId>
+    <artifactId>Geopackage</artifactId>
     <name>Geopackage Library</name>
     <description>A tool for tiling source geospatial imagery and producing a derivative geopackage.</description>
 
