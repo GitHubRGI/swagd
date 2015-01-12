@@ -2523,7 +2523,8 @@ public class GeoPackageAPITest
 
            final ArrayList<Integer> expectedZooms = new ArrayList<>();
 
-           expectedZooms.add(new Integer(12), new Integer(0));
+           expectedZooms.add(new Integer(12));
+           expectedZooms.add(new Integer(0));
 
            for(final Integer zoom : zooms)
            {
@@ -3560,15 +3561,6 @@ public class GeoPackageAPITest
         }
     }
     
-    @Test
-    public void testing() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
-    {
-    	try(GeoPackage gpkg = new GeoPackage(new File("emptyGPKG.gpkg"), OpenMode.Open))
-    	{
-    		//
-    	}
-    }
-
     private static byte[] createImageBytes() throws IOException
     {
         final BufferedImage img = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
