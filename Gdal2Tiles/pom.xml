@@ -17,11 +17,13 @@
           <artifactId>Common</artifactId>
           <version>0.0.1-SNAPSHOT</version>
       </dependency>
-<!--      <dependency>
-          <groupId>gdal</groupId>
+      <dependency>
+          <groupId>com.osgeo</groupId>
           <artifactId>gdal</artifactId>
           <version>1.11.0</version>
-      </dependency>-->
+          <scope>system</scope>
+          <systemPath>${basedir}/lib/gdal.jar</systemPath>
+      </dependency>
       <dependency>
           <groupId>junit</groupId>
           <artifactId>junit</artifactId>
