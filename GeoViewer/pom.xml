@@ -18,6 +18,11 @@
           <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
+          <groupId>Geopackage</groupId>
+          <artifactId>Geopackage</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
           <groupId>junit</groupId>
           <artifactId>junit</artifactId>
           <version>4.11</version>
@@ -26,7 +31,9 @@
       <dependency>
           <groupId>org.openstreetmap</groupId>
           <artifactId>JMapViewer</artifactId>
-          <systemPath>${basedir}/lib/JMapViewer.jar</systemPath>
+          <version>1.05</version>
+          <scope>system</scope>
+          <systemPath>${basedir}/lib/JMapViewer-1.05.jar</systemPath>
       </dependency>
   </dependencies>
 

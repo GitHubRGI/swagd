@@ -29,7 +29,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/GeoViewer/lib/JMapViewer.jar" sourcepath="/GeoViewer/lib/JMapViewer_src.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Packager"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
