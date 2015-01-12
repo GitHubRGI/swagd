@@ -272,7 +272,7 @@ public class CoreVerifier extends Verifier
             ResultSet foreignCheck = stmt.executeQuery(query);)
         {
             final boolean badfk = foreignCheck.next();
-            assertTrue("PRAGMA foreign_check failed.", badfk != true);
+            assertTrue("PRAGMA foreign_key_check failed.", badfk != true);
         }
     }
 
@@ -431,7 +431,7 @@ public class CoreVerifier extends Verifier
                 final String srsGC  = srsdefined.getString("gc_srid");
                 final String srsSRS = srsdefined.getString("srs_id");
 
-                assertTrue("Not all srs_id's being used in a GeoPackage are defined.\n gpkg_contents srs_id: %s gpkg_spatial_ref_sys srs_id: %s", srsGC != null && srsSRS !=null);
+                assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined.\n gpkg_contents srs_id: %s gpkg_spatial_ref_sys srs_id: %s", srsGC, srsSRS), srsGC != null && srsSRS !=null);
             }
 
         }
