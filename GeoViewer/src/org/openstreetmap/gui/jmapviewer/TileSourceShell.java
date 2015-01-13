@@ -167,4 +167,10 @@ public class TileSourceShell implements TileSource {
 		return 0;
 	}
 
+	@Override
+	public String getId() {
+		// TODO Auto-generated method stub
+		return this.tileStore.toString();
+	}
+
 }
