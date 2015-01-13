@@ -105,25 +105,25 @@ public class GeoPackageCore
             // Add the default entries to the spatial ref system table
             // See: http://www.geopackage.org/spec/#spatial_ref_sys -> 1.1.2.1.2. Table Data Values, Requirement 11
             this.addSpatialReferenceSystemNoCommit("World Geodetic System (WGS) 1984",
-                                                      4326,
-                                                      "EPSG",
-                                                      4326,
-                                                      "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]", // http://spatialreference.org/ref/epsg/wgs-84/ogcwkt/
-                                                      "World Geodetic System 1984");
+                                                   4326,
+                                                   "EPSG",
+                                                   4326,
+                                                   "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]", // http://spatialreference.org/ref/epsg/wgs-84/ogcwkt/
+                                                   "World Geodetic System 1984");
 
             this.addSpatialReferenceSystemNoCommit("Undefined Cartesian Coordinate Reference System",
-                                                      -1,
-                                                      "NONE",
-                                                      -1,
-                                                      "undefined",
-                                                      "undefined Cartesian coordinate reference system");
+                                                   -1,
+                                                   "NONE",
+                                                   -1,
+                                                   "undefined",
+                                                   "undefined Cartesian coordinate reference system");
 
             this.addSpatialReferenceSystemNoCommit("Undefined Geographic Coordinate Reference System",
-                                                      0,
-                                                      "NONE",
-                                                      0,
-                                                      "undefined",
-                                                      "undefined Geographic coordinate reference system");
+                                                   0,
+                                                   "NONE",
+                                                   0,
+                                                   "undefined",
+                                                   "undefined Geographic coordinate reference system");
 
             // Create the package contents table or view
             try(Statement statement = this.databaseConnection.createStatement())
