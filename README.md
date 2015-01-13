@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/GitHubRGI/swagd.png?label=ready&title=Ready)](https://waffle.io/GitHubRGI/swagd)
 SWAGD : Software to Aggregate Geospatial Data
 ===============
 
