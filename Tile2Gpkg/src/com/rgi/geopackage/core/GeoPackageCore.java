@@ -104,21 +104,21 @@ public class GeoPackageCore
 
             // Add the default entries to the spatial ref system table
             // See: http://www.geopackage.org/spec/#spatial_ref_sys -> 1.1.2.1.2. Table Data Values, Requirement 11
-            this.createSpatialReferenceSystemNoCommit("World Geodetic System (WGS) 1984",
+            this.addSpatialReferenceSystemNoCommit("World Geodetic System (WGS) 1984",
                                                       4326,
                                                       "EPSG",
                                                       4326,
                                                       "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]", // http://spatialreference.org/ref/epsg/wgs-84/ogcwkt/
                                                       "World Geodetic System 1984");
 
-            this.createSpatialReferenceSystemNoCommit("Undefined Cartesian Coordinate Reference System",
+            this.addSpatialReferenceSystemNoCommit("Undefined Cartesian Coordinate Reference System",
                                                       -1,
                                                       "NONE",
                                                       -1,
                                                       "undefined",
                                                       "undefined Cartesian coordinate reference system");
 
-            this.createSpatialReferenceSystemNoCommit("Undefined Geographic Coordinate Reference System",
+            this.addSpatialReferenceSystemNoCommit("Undefined Geographic Coordinate Reference System",
                                                       0,
                                                       "NONE",
                                                       0,
@@ -168,12 +168,12 @@ public class GeoPackageCore
     {
         try
         {
-            final SpatialReferenceSystem spatialReferenceSystem = this.createSpatialReferenceSystemNoCommit(name,
-                                                                                                            identifier,
-                                                                                                            organization,
-                                                                                                            organizationSrsId,
-                                                                                                            definition,
-                                                                                                            description);
+            final SpatialReferenceSystem spatialReferenceSystem = this.addSpatialReferenceSystemNoCommit(name,
+                                                                                                         identifier,
+                                                                                                         organization,
+                                                                                                         organizationSrsId,
+                                                                                                         definition,
+                                                                                                         description);
 
             this.databaseConnection.commit();
 
@@ -199,7 +199,7 @@ public class GeoPackageCore
      */
     public SpatialReferenceSystem getSpatialReferenceSystem(final String organization, final int organizationSrsId) throws SQLException
     {
-        final String srsQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s WHERE organization = ? AND organization_coordsys_id = ?;",
+        final String srsQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s WHERE organization = ? COLLATE NOCASE AND organization_coordsys_id = ?;",
                                                  "srs_name",
                                                  "srs_id",
                                                  "organization",
@@ -562,12 +562,12 @@ public class GeoPackageCore
      *             Human readable description of this spatial reference system
      * @throws SQLException
      */
-    private SpatialReferenceSystem createSpatialReferenceSystemNoCommit(final String name,
-                                                                        final int    identifier,
-                                                                        final String organization,
-                                                                        final int    organizationSrsId,
-                                                                        final String definition,
-                                                                        final String description) throws SQLException
+    private SpatialReferenceSystem addSpatialReferenceSystemNoCommit(final String name,
+                                                                     final int    identifier,
+                                                                     final String organization,
+                                                                     final int    organizationSrsId,
+                                                                     final String definition,
+                                                                     final String description) throws SQLException
     {
         if(name == null || name.isEmpty())
         {

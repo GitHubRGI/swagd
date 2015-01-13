@@ -79,7 +79,7 @@ public class GeoPackageTiles
      *             Bounding box for all content in tableName
      * @param spatialReferenceSystem
      *             Spatial Reference System (SRS)
-     * @return Returns a handle to a newly created user defined tiles table
+     * @return Returns a newly created user defined tiles table
      * @throws SQLException
      */
     public TileSet addTileSet(final String                 tableName,

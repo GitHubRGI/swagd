@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -93,7 +94,7 @@ public class Verifier
                                                        return null;
                                                    }
                                                  })
-                   .filter(requirement -> requirement != null)
+                   .filter(Objects::nonNull)
                    .collect(Collectors.toCollection(ArrayList::new));
     }
 
@@ -179,7 +180,7 @@ public class Verifier
                                                                                                  return null;
                                                                                              }
                                                                                            })
-                                                                         .filter(entry -> entry != null)
+                                                                         .filter(Objects::nonNull)
                                                                          .collect(Collectors.toMap(entry -> entry.getKey(),
                                                                                                    entry -> entry.getValue()));
             // Make sure the required fields exist in the table
@@ -220,7 +221,7 @@ public class Verifier
                                                                                                      return null;
                                                                                                  }
                                                                                                })
-                                                                             .filter(fkDefinition -> fkDefinition != null)
+                                                                             .filter(Objects::nonNull)
                                                                              .collect(Collectors.toSet());
 
                 // check to see if the correct foreign key constraints are placed
@@ -283,7 +284,7 @@ public class Verifier
                                                                                                                              return null;
                                                                                                                          }
                                                                                                                         })
-                                                                                                         .filter(name -> name != null)
+                                                                                                         .filter(Objects::nonNull)
                                                                                                          .collect(Collectors.toList()));
                                                           }
                                                       }
@@ -293,7 +294,7 @@ public class Verifier
                                                           return null;
                                                       }
                                                      })
-                                  .filter(name -> name != null)
+                                  .filter(Objects::nonNull)
                                   .collect(Collectors.toSet());
 
         }

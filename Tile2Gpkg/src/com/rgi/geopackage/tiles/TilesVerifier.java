@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -88,7 +89,7 @@ public class TilesVerifier extends Verifier
                                                                return null;
                                                            }
                                                        })
-                                                       .filter(entry -> entry != null)
+                                                       .filter(Objects::nonNull)
                                                        .collect(Collectors.toSet());
         }
         catch(SQLException ex)
@@ -110,7 +111,7 @@ public class TilesVerifier extends Verifier
 	    											  						   return null;
 	    											  					   }
         											  					})
-        											  .filter(name -> name != null)
+        											  .filter(Objects::nonNull)
         											  .collect(Collectors.toSet());
         }
         catch(SQLException ex)
@@ -261,19 +262,18 @@ public class TilesVerifier extends Verifier
             {
 
                 final Map<Integer, byte[]> allTileData =  ResultSetStream.getStream(tileDataResultSet)
-                                                                         .map(resultSet ->
-                                                                                          {try
-                                                                                              {
-                                                                                                  int    tileId   = resultSet.getInt("id");
-                                                                                                  byte[] tileData = resultSet.getBytes("tile_data");
-                                                                                                  return new AbstractMap.SimpleImmutableEntry<>(tileId, tileData);
-                                                                                              }
-                                                                                              catch (final Exception ex1)
-                                                                                              {
-                                                                                                  return null;
-                                                                                              }
+                                                                         .map(resultSet -> { try
+                                                                                             {
+                                                                                                 int    tileId   = resultSet.getInt("id");
+                                                                                                 byte[] tileData = resultSet.getBytes("tile_data");
+                                                                                                 return new AbstractMap.SimpleImmutableEntry<>(tileId, tileData);
+                                                                                             }
+                                                                                             catch (final Exception ex1)
+                                                                                             {
+                                                                                                 return null;
+                                                                                             }
                                                                                            })
-                                                                         .filter(entry -> entry != null)
+                                                                         .filter(Objects::nonNull)
                                                                          .collect(Collectors.toMap(entry -> entry.getKey(),
                                                                                                    entry -> entry.getValue()));
 
@@ -376,8 +376,7 @@ public class TilesVerifier extends Verifier
                  ResultSet tileTablesInTileMatrixSet = stmt.executeQuery(queryMatrixSetPyramid))
             {
                final Set<String> tileMatrixSetTables = ResultSetStream.getStream(tileTablesInTileMatrixSet)
-                                                                      .map(resultSet ->
-                                                                                      {   try
+                                                                      .map(resultSet -> { try
                                                                                           {
                                                                                               return resultSet.getString("table_name");
                                                                                           }
@@ -386,7 +385,7 @@ public class TilesVerifier extends Verifier
                                                                                               return null;
                                                                                           }
                                                                                        })
-                                                                       .filter(entry -> entry != null)
+                                                                       .filter(Objects::nonNull)
                                                                        .collect(Collectors.toSet());
 
               for(String table: this.pyramidTablesInContents)
@@ -430,17 +429,16 @@ public class TilesVerifier extends Verifier
                  ResultSet tileTablesInTileMatrixSet   = stmt.executeQuery(queryMatrixSet))
             {
                 final Set<String> tileMatrixSetTables = ResultSetStream.getStream(tileTablesInTileMatrixSet)
-                                                                       .map(resultSet ->
-                                                                                        {   try
-                                                                                            {
-                                                                                                return resultSet.getString("table_name");
-                                                                                            }
-                                                                                            catch (final SQLException ex1)
-                                                                                            {
-                                                                                                return null;
-                                                                                            }
+                                                                       .map(resultSet -> { try
+                                                                                           {
+                                                                                               return resultSet.getString("table_name");
+                                                                                           }
+                                                                                           catch (final SQLException ex1)
+                                                                                           {
+                                                                                               return null;
+                                                                                           }
                                                                                          })
-	                                                                   .filter(entry -> entry != null)
+	                                                                   .filter(Objects::nonNull)
 	                                                                   .collect(Collectors.toSet());
                 for(String table: this.allPyramidUserDataTables)
                 {
@@ -602,31 +600,29 @@ public class TilesVerifier extends Verifier
                      ResultSet py_zoomLevels             = stmt2.executeQuery(query2))
                 {
                     Set<Integer> tileMatrixZooms = ResultSetStream.getStream(gm_zoomLevels)
-                                                                  .map(resultSet ->
-                                                                  {   try
-                                                                      {
-                                                                          return resultSet.getInt("zoom_level");
-                                                                      }
-                                                                      catch(final SQLException ex)
-                                                                      {
-                                                                          return null;
-                                                                      }
-                                                                  })
-                                                                  .filter(entry -> entry != null)
+                                                                  .map(resultSet -> { try
+                                                                                      {
+                                                                                          return resultSet.getInt("zoom_level");
+                                                                                      }
+                                                                                      catch(final SQLException ex)
+                                                                                      {
+                                                                                          return null;
+                                                                                      }
+                                                                                    })
+                                                                  .filter(Objects::nonNull)
                                                                   .collect(Collectors.toSet());
 
                     Set<Integer> tilePyramidZooms = ResultSetStream.getStream(py_zoomLevels)
-                                                                    .map(resultSet ->
-                                                                    {   try
-                                                                        {
-                                                                            return resultSet.getInt("zoom_level");
-                                                                        }
-                                                                        catch(final SQLException ex)
-                                                                        {
-                                                                            return null;
-                                                                        }
-                                                                    })
-                                                                    .filter(entry -> entry != null)
+                                                                    .map(resultSet -> { try
+                                                                                        {
+                                                                                            return resultSet.getInt("zoom_level");
+                                                                                        }
+                                                                                        catch(final SQLException ex)
+                                                                                        {
+                                                                                            return null;
+                                                                                        }
+                                                                                      })
+                                                                    .filter(Objects::nonNull)
                                                                     .collect(Collectors.toSet());
                     for(Integer zoom: tilePyramidZooms)
                     {
@@ -1114,7 +1110,7 @@ public class TilesVerifier extends Verifier
      * <blockquote>
 	 * For each distinct <code>table_name</code> from the <code>gpkg_tile_matrix</code> 
 	 * (tm) table, the tile pyramid (tp) user data table <code>tile_column</code> column 
-	 * value in a GeoPackage SHALL be in the range 0 <= tp.tile_column <= tm.matrix_width – 1 
+	 * value in a GeoPackage SHALL be in the range 0 <= tp.tile_column <= tm.matrix_width ï¿½ 1 
 	 * where the tm and tp <code>zoom_level</code> column values are equal.
 	 * </blockquote>
 	 * </div>
@@ -1192,7 +1188,7 @@ public class TilesVerifier extends Verifier
 	 * <blockquote>
 	 * For each distinct <code>table_name</code> from the <code>gpkg_tile_matrix</code> 
 	 * (tm) table, the tile pyramid (tp) user data table <code>tile_row</code> column 
-	 * value in a GeoPackage SHALL be in the range 0 <= tp.tile_row <= tm.matrix_height – 1 
+	 * value in a GeoPackage SHALL be in the range 0 <= tp.tile_row <= tm.matrix_height ï¿½ 1 
 	 * where the tm and tp <code>zoom_level</code> column values are equal.
 	 * </blockquote>
 	 * </div>
@@ -1200,7 +1196,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (number   = 55,
     		      text     = "For each distinct table_name from the gpkg_tile_matrix (tm) table, the tile pyramid (tp) "
-    		      			  + "user data table tile_row column value in a GeoPackage SHALL be in the range 0 <= tp.tile_row <= tm.matrix_height – 1 "
+    		      			  + "user data table tile_row column value in a GeoPackage SHALL be in the range 0 <= tp.tile_row <= tm.matrix_height ï¿½ 1 "
     		      			  + "where the tm and tp zoom_level column values are equal. ",
     		      severity = Severity.Error)
 	public void Requirement55() throws AssertionError 

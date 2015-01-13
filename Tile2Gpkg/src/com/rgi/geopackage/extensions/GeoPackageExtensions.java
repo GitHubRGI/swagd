@@ -26,6 +26,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
@@ -173,7 +174,7 @@ public class GeoPackageExtensions
                                                            return null;
                                                        }
                                                      })
-                                      .filter(extension -> extension != null)
+                                      .filter(Objects::nonNull)
                                       .collect(Collectors.toCollection(ArrayList<Extension>::new));
 
             }

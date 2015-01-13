@@ -18,11 +18,20 @@
 
 package com.rgi.geopackage.metadata;
 
+import java.net.URI;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+import javax.activation.MimeType;
+
+import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.DatabaseUtility;
 import com.rgi.geopackage.verification.FailedRequirement;
 
@@ -42,44 +51,141 @@ public class GeoPackageMetadata
     /**
      * Metadata requirements this GeoPackage failed to meet
      *
-     * @return The extension GeoPackage requirements this GeoPackage fails to conform to
+     * @return The metadata GeoPackage requirements this GeoPackage fails to conform to
      */
     public Collection<FailedRequirement> getFailedRequirements()
     {
         return new MetadataVerifier(this.databaseConnection).getFailedRequirements();
     }
 
-//    public Metadata addMetadata(final Scope    scope,
-//                                final URI      standardUri,
-//                                final MimeType mimeType,
-//                                final String   metadata)
-//    {
-//        final Metadata existingMetadata = this.getMetadata(scope, standardUri, mimeType, metadata);
-//
-//        if(existingMetadata != null)
-//        {
-//            return existingMetadata;
-//        }
-//        else
-//        {
-//            try
-//            {
-//                this.createMetadataTableNoCommit();  // Create the metadata table if it doesn't exist
-//
-//                // TODO do insert
-//
-//
-//                this.databaseConnection.commit();
-//
-//                return this.getMetadata(scope, standardUri, mimeType, metadata);
-//            }
-//            catch(final Exception ex)
-//            {
-//                this.databaseConnection.rollback();
-//                throw ex;
-//            }
-//        }
-//    }
+    /**
+     * Creates an entry in the GeoPackage metadata table
+     *
+     * @param scope
+     *             Metadata scope
+     * @param standardUri
+     *             URI reference to the metadata structure definition authority
+     * @param mimeType
+     *             MIME encoding of metadata
+     * @param metadata
+     *             Metadata text
+     * @return Returns the newly added Metadata object
+     * @throws SQLException
+     */
+    public Metadata addMetadata(final Scope    scope,
+                                final URI      standardUri,
+                                final MimeType mimeType,
+                                final String   metadata) throws SQLException
+    {
+        if(scope == null)
+        {
+            throw new IllegalArgumentException("Scope may not be null");
+        }
+
+        if(standardUri == null)
+        {
+            throw new IllegalArgumentException("Standard URI may not be null");
+        }
+
+        if(mimeType == null)
+        {
+            throw new IllegalArgumentException("Mime type may not be null");
+        }
+
+        if(metadata == null)
+        {
+            throw new IllegalArgumentException("Metadata may not be null");
+        }
+
+        final Metadata existingMetadata = this.getMetadata(scope,
+                                                           standardUri,
+                                                           mimeType,
+                                                           metadata);
+
+        if(existingMetadata != null)
+        {
+            return existingMetadata;
+        }
+
+        try
+        {
+            this.createMetadataTableNoCommit();  // Create the metadata table if it doesn't exist
+
+            final String insertMetadataSql = String.format("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
+                                                           GeoPackageMetadata.MetadataTableName,
+                                                           "md_scope",
+                                                           "md_standard_uri",
+                                                           "mime_type",
+                                                           "metadata");
+
+            try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertMetadataSql))
+            {
+                preparedStatement.setString(1, scope.getName());
+                preparedStatement.setString(2, standardUri.toString());
+                preparedStatement.setString(3, mimeType.toString());
+                preparedStatement.setString(4, metadata);
+
+                preparedStatement.executeUpdate();
+            }
+
+            this.databaseConnection.commit();
+
+            return this.getMetadata(scope,
+                                    standardUri,
+                                    mimeType,
+                                    metadata);
+        }
+        catch(final Exception ex)
+        {
+            this.databaseConnection.rollback();
+            throw ex;
+        }
+    }
+
+    /**
+     * Gets all entries in the GeoPackage metadata table
+     *
+     * @return Returns a collection of Metadata objects
+     * @throws SQLException
+     */
+    public Collection<Metadata> getMetadata() throws SQLException
+    {
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageMetadata.MetadataTableName))
+        {
+            return Collections.emptyList();
+        }
+
+        final String metadataQuerySql = String.format("SELECT %s, %s, %s, %s, %s FROM %s;",
+                                                      "id",
+                                                      "md_scope",
+                                                      "md_standard_uri",
+                                                      "mime_type",
+                                                      "metadata",
+                                                      GeoPackageMetadata.MetadataTableName);
+
+
+        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(metadataQuerySql))
+        {
+            return ResultSetStream.getStream(preparedStatement.executeQuery())
+                                  .map(resultSet -> { try
+                                                      {
+                                                          return new Metadata(                 resultSet.getInt(1),
+                                                                              Scope.fromString(resultSet.getString(2)),
+                                                                                       new URI(resultSet.getString(3)),
+                                                                                  new MimeType(resultSet.getString(4)),
+                                                                                               resultSet.getString(5));
+                                                      }
+                                                      catch(final Exception ex)
+                                                      {
+                                                          ex.printStackTrace();
+                                                          return null;
+                                                      }
+                                                    })
+                                  .filter(Objects::nonNull)
+                                  .collect(Collectors.toList());
+
+        }
+    }
 
     /**
      * Creates the GeoPackage metadata table
@@ -154,6 +260,60 @@ public class GeoPackageMetadata
                 " md_parent_id    INTEGER,                                                          -- gpkg_metadata table id column value for the hierarchical parent gpkg_metadata for the gpkg_metadata to which this gpkg_metadata_reference applies, or NULL if md_file_id forms the root of a metadata hierarchy\n" +
                 " CONSTRAINT crmr_mfi_fk FOREIGN KEY (md_file_id) REFERENCES gpkg_metadata(id),\n" +
                 " CONSTRAINT crmr_mpi_fk FOREIGN KEY (md_parent_id) REFERENCES gpkg_metadata(id));";
+    }
+
+    /**
+     * @param scope
+     *             Metadata scope
+     * @param standardUri
+     *             URI reference to the metadata structure definition authority
+     * @param mimeType
+     *             MIME encoding of metadata
+     * @param metadata
+     *             Metadata text
+     * @return Returns an object representing an entry in the GeoPackage metadata table, or null if no entry matches the supplied criteria
+     * @throws SQLException
+     */
+    private Metadata getMetadata(final Scope    scope,
+                                 final URI      standardUri,
+                                 final MimeType mimeType,
+                                 final String   metadata) throws SQLException
+    {
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageMetadata.MetadataTableName))
+        {
+            return null;
+        }
+
+        final String metadataQuerySql = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ? AND %s = ? AND %s = ? LIMIT 1;",
+                                                      "id",
+                                                      GeoPackageMetadata.MetadataTableName,
+                                                      "md_scope",
+                                                      "md_standard_uri",
+                                                      "mime_type",
+                                                      "metadata");
+
+
+        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(metadataQuerySql))
+        {
+            preparedStatement.setString(1, scope.getName());
+            preparedStatement.setString(2, standardUri.toString());
+            preparedStatement.setString(3, mimeType.toString());
+            preparedStatement.setString(4, metadata);
+
+            try(ResultSet result = preparedStatement.executeQuery())
+            {
+                if(result.isBeforeFirst())
+                {
+                    return new Metadata(result.getInt(1), // identifier
+                                        scope,
+                                        standardUri,
+                                        mimeType,
+                                        metadata);
+                }
+
+                return null;
+            }
+        }
     }
 
     private final Connection databaseConnection;
