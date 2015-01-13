@@ -47,6 +47,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.CoordinateReferenceSystem;
+import com.rgi.common.coordinates.CrsTileCoordinate;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
@@ -356,224 +358,6 @@ public class GeoPackageAPITest
     }
 
    
-   
-//    /**
-//     * Gives the GeoPackage a file containing the following tables: gpkg_spatial_ref_sys, gpkg_contents, gpkg_tile_matrix.  Then asks to
-//     * add tiles, and this verifies the GeoPackage API adds the fourth necessary table when creating a table with tiles, gpkg_tile_matrix_set.
-//     *
-//     * @throws SQLException
-//     * @throws Exception
-//     */
-//    @Test
-//    public void addTilesToGpkgWithGpkgTMtableInside() throws SQLException, Exception
-//    {
-//        final File testFile = this.getRandomFile(5);
-//        testFile.createNewFile();
-//
-//        //add the tables to file
-//        this.addTileMatrix(testFile.getAbsolutePath(), "tiles", new ArrayList<TileMatrix>());
-//        this.addGeoPackageContentsTable(testFile.getAbsolutePath());
-//        this.addSpatialReferenceSystemTable(testFile.getAbsolutePath());
-//         //open file with GPKG
-//        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Open))
-//        {
-//            final TileSet tileSet = gpkg.tiles()
-//                                        .addTileSet("diff_tile_set",
-//                                                    "tile",
-//                                                    "desc",
-//                                                    new BoundingBox(1.0, 1.0, 1.0, 1.0),
-//                                                    gpkg.core().getSpatialReferenceSystem(4326));
-//
-//            final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 0, 10, 10, 1, 1, 1, 1);
-//            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 0, 0), new byte[] {1, 2, 3, 4});
-//
-//        }
-//
-//        //query if the information is correctly added by the gpkg
-//        final String query = "SELECT table_name FROM gpkg_tile_matrix_set WHERE table_name = 'diff_tile_set';";
-//
-//        try(Connection con           = this.getConnection(testFile.getAbsolutePath());
-//            Statement  stmt          = con.createStatement();
-//            ResultSet  tileTableName = stmt.executeQuery(query);)
-//        {
-//            assertTrue("The GeoPackage did not add the tile table name to the gpkg_tile_matrix_set when given a GeoPackage with a gpkg_tile_matrix table and did not have a gpkg_tile_matrix_set table.",
-//                       tileTableName.getString("table_name").equals("diff_tile_set"));
-//        }
-//        finally
-//        {
-//            if(testFile.exists())
-//            {
-//                if(!testFile.delete())
-//                {
-//                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-//                }
-//            }
-//        }
-//    }
-
-//    /**
-//     * This tests if the GeoPackage can successfully add a tile set to a GeoPackage that has a gpkg_tile_matrix table already created.
-//     *
-//     * @throws SQLException
-//     * @throws Exception
-//     */
-//    @Test
-//    public void addTilesToGpkgWithGpkgTMStableInside() throws SQLException, Exception
-//    {
-//        final File testFile = this.getRandomFile(10);
-//        testFile.createNewFile();
-//
-//        //add the tables
-//        this.addTileMatrixSetTable         (testFile.getAbsolutePath());
-//        this.addGeoPackageContentsTable    (testFile.getAbsolutePath());
-//        this.addSpatialReferenceSystemTable(testFile.getAbsolutePath());
-//
-//        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Open))
-//        {
-//           //add tiles to gpkg
-//            final TileSet tileSet = gpkg.tiles()
-//                                        .addTileSet("diff_tile_set",
-//                                                    "tile",
-//                                                    "desc",
-//                                                    new BoundingBox(1.0, 1.0, 1.0, 1.0),
-//                                                    gpkg.core().getSpatialReferenceSystem(4326));
-//
-//           gpkg.tiles().addTileMatrix(tileSet, 0, 1, 1, 1, 1, 1, 1);
-//
-//           final String query = "SELECT table_name FROM gpkg_tile_matrix WHERE table_name = 'diff_tile_set';";
-//
-//           try(Connection con          = this.getConnection(testFile.getAbsolutePath());
-//               Statement stmt          = con.createStatement();
-//               ResultSet tileTableName = stmt.executeQuery(query);)
-//           {
-//               assertTrue("The GeoPackage did not add the tile table name to the gpkg_tile_matrix table when given "
-//                        + "a GeoPackage with a gpkg_tile_matrix_set table and did not have a gpkg_tile_matrix table.",
-//                          tileTableName.getString("table_name").equals("diff_tile_set"));
-//           }
-//        }
-//        finally
-//        {
-//            if(testFile.exists())
-//            {
-//                if(!testFile.delete())
-//                {
-//                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-//                }
-//            }
-//        }
-//    }
-
-//    /**
-//     * Geopackage has an incorrect gpkg_tile_matrix table and this should throw an SQLException and also not commit any changes.
-//     *
-//     * @throws SQLException
-//     * @throws Exception
-//     */
-//    @Test(expected = SQLException.class)
-//    public void addTilesToGpkgWithBadTMTableInside() throws SQLException, Exception
-//    {
-//        final File testFile = this.getRandomFile(37);
-//        testFile.createNewFile();
-//
-//        // add the tables
-//        this.addBadTileMatrix(testFile.getAbsolutePath(), "tiles");
-//        this.addGeoPackageContentsTable(testFile.getAbsolutePath());
-//        this.addSpatialReferenceSystemTable(testFile.getAbsolutePath());
-//
-//        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Open))
-//        {
-//            // add tiles to gpkg
-//            final TileSet tileSet = gpkg.tiles()
-//                                        .addTileSet("diff_tile_set",
-//                                                    "tile",
-//                                                    "desc",
-//                                                    new BoundingBox(1.0, 1.0, 1.0, 1.0),
-//                                                    gpkg.core().getSpatialReferenceSystem(4326));
-//
-//
-//            gpkg.tiles().addTileMatrix(tileSet, 2, 2, 2, 2, 2, 2, 2);
-//
-//            fail("The GeoPackage was expected to throw an SQLException due to the bad tile_matrix_table inside the file.");
-//        }
-//        catch(final SQLException ex)
-//        {
-//            final String query = "SELECT table_name FROM gpkg_tile_matrix WHERE table_name = 'diff_tile_set';";
-//
-//            try(Connection con          = this.getConnection(testFile.getAbsolutePath());
-//                Statement stmt          = con.createStatement();
-//                ResultSet tileTableName = stmt.executeQuery(query);)
-//            {
-//                assertTrue("The data should not be in the contents table since it throws an SQLException", tileTableName.getString("table_name") == null);
-//            }
-//        }
-//        finally
-//        {
-//            if(testFile.exists())
-//            {
-//                if(!testFile.delete())
-//                {
-//                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-//                }
-//            }
-//        }
-//    }
-
-//    /**
-//     * Geopackage has an incorrect gpkg_tile_matrix table and this should throw an SQLException and also not commit any changes.
-//     *
-//     * @throws SQLException
-//     * @throws Exception
-//     */
-//    @Test(expected = SQLException.class)
-//    public void addTilesToGpkgWithBadTMSTableInside() throws SQLException, Exception
-//    {
-//        final File testFile = this.getRandomFile(77);
-//        testFile.createNewFile();
-//
-//        // add the tables
-//        this.addBadTileMatrixSet           (testFile.getAbsolutePath(), "tiles");
-//        this.addGeoPackageContentsTable    (testFile.getAbsolutePath());
-//        this.addSpatialReferenceSystemTable(testFile.getAbsolutePath());
-//
-//        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Open))
-//        {
-//            // add tiles to gpkg
-//            final TileSet tileSet = gpkg.tiles()
-//                                        .addTileSet("diff_tile_set",
-//                                                    "tile",
-//                                                    "desc",
-//                                                    new BoundingBox(1.0, 1.0, 1.0, 1.0),
-//                                                    gpkg.core().getSpatialReferenceSystem(4326));
-//
-//            final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 2, 2, 2, 2, 2);
-//            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 0, 0), createImageBytes());
-//
-//            fail("The GeoPackage was expected to throw an SQLException due to the bad gpkg_tile_matrix_set inside the file.");
-//
-//        }
-//        catch(final SQLException ex)
-//        {
-//            final String query = "SELECT table_name FROM gpkg_contents WHERE table_name = 'diff_tile_set';";
-//
-//            try(Connection con          = this.getConnection(testFile.getAbsolutePath());
-//                Statement stmt          = con.createStatement();
-//                ResultSet tileTableName = stmt.executeQuery(query);)
-//            {
-//                assertTrue("The tile data should not be in the contents table since it throws an SQLException",
-//                            tileTableName.getString("table_name") == null);
-//            }
-//        }
-//        finally
-//        {
-//            if(testFile.exists())
-//            {
-//                if(!testFile.delete())
-//                {
-//                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-//                }
-//            }
-//        }
-//    }
 
     /**
      * Tests if a GeoPackage will throw an error when adding a tileset with the same name as another tileset in the GeoPackage.
@@ -1279,10 +1063,6 @@ public class GeoPackageAPITest
             }
         }
     }
-
-
-    
-
     
     /**
      * Test if the GeoPackage can successfully add non empty tiles to a GeoPackage  without throwing an error.
@@ -1375,7 +1155,6 @@ public class GeoPackageAPITest
             }
         }
     }
-
 
     /**
      * Tests if the GeoPackage throws an IllegalArgumentException
@@ -1505,6 +1284,7 @@ public class GeoPackageAPITest
             }
         }
     }
+    
     /**
      * Tests if the GeoPackage throws an IllegalArgumentException
      * when trying to add a tile with a parameter that is null (tileMatrix)
@@ -1689,15 +1469,6 @@ public class GeoPackageAPITest
             }
         }
     }
-
-   
-    
-    
-
-  
-
-   
-
 
     /**
      * Tests if a GeoPackage will return null when the tile being searched for does not exist.
@@ -1912,50 +1683,6 @@ public class GeoPackageAPITest
         }
     }
 
-//    /**
-//     * Tests if the GeoPackage returns the expected failed requirements from the getFailedRequirements method.
-//     * @throws SQLException
-//     * @throws Exception
-//     */
-//    @Test
-//    public void getFailedRequirements() throws SQLException, Exception
-//    {
-//        final File testFile = this.getRandomFile(4);
-//        testFile.createNewFile();
-//
-//        this.addGeoPackageContentsTable(testFile.getAbsolutePath());
-//        //add spatial reference system table without default values
-//        try(Connection con      = this.getConnection(testFile.getAbsolutePath());
-//            Statement statement = con.createStatement())
-//        {
-//            statement.executeUpdate(new DirectTableDataModel().getSpatialReferenceSystemCreationSql());
-//        }
-//
-//        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Open))
-//        {
-//            final Collection<Requirement> expectedFailedRequirements = Arrays.asList(CoreVerifier.class.getMethod("Requirement11").getAnnotation(Requirement.class),
-//                                                                                     CoreVerifier.class.getMethod("Requirement2" ).getAnnotation(Requirement.class));
-//
-//            for(final FailedRequirement failedRequirement : gpkg.getFailedRequirements())
-//            {
-//               assertTrue(expectedFailedRequirements.stream()
-//                                                    .anyMatch(requirement -> failedRequirement.getRequirement().number() == requirement.number()));
-//            }
-//        }
-//        finally
-//        {
-//            if(testFile.exists())
-//            {
-//                if(!testFile.delete())
-//                {
-//                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-//                }
-//            }
-//        }
-//    }
-
-    
-
      /**
       * Tests if GeoPackage will throw an IllegalArgumentException
       * when giving a null parameter to getRowCount
@@ -1983,6 +1710,7 @@ public class GeoPackageAPITest
             }
         }
     }
+    
     /**
      * Verifies that the GeoPackage counts the correct number of rows
      * with the method getRowCount
@@ -2024,12 +1752,6 @@ public class GeoPackageAPITest
         }
     }
 
-
-
-   
-
-   
-
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException
      * when giving a null parameter to the method
@@ -2063,10 +1785,6 @@ public class GeoPackageAPITest
             }
         }
     }
-
-    
-    
-
 
     /**
      * Tests if GeoPackage returns the expected tileMatrices using the getTIleMatrices(TileSet tileSet) method
@@ -2539,7 +2257,6 @@ public class GeoPackageAPITest
         }
      }
 
-
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException
      * when giving a null parameter to getTileMatrices
@@ -2757,35 +2474,179 @@ public class GeoPackageAPITest
             }
         }
     }
+    
+    /**
+     * Tests if the GeoPackage can convert an
+     * crsCoordinate to a relative tile coordinate
+     * 
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void crsToRelativeTileCoordinateUpperRight() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(32.423521, -45.234567, 1, geodeticRefSys);//upper right tile
+    	
+    	File testFile = this.getRandomFile(8);
+    	
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0), gpkg.core().getSpatialReferenceSystem(4326));
+    		
+    		gpkg.tiles().addTileMatrix(tileSet, 1, 2, 2, 256, 256, tileSet.getBoundingBox().getWidth()/256, tileSet.getBoundingBox().getHeight()/256);
+    		
+    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsCoord);
+    		
+    		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
+    								   + "\nExpected Row: 0, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
+                       relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 1);
+    		
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Tests if the GeoPackage can convert an
+     * crsCoordinate to a relative tile coordinate
+     * 
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void crsToRelativeTileCoordinateUpperLeft() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(0, -180, 1, geodeticRefSys);//upper left tile
+    	
+    	File testFile = this.getRandomFile(8);
+    	
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0), gpkg.core().getSpatialReferenceSystem(4326));
+    		
+    		gpkg.tiles().addTileMatrix(tileSet, 1, 2, 2, 256, 256, tileSet.getBoundingBox().getWidth()/256, tileSet.getBoundingBox().getHeight()/256);
+    		
+    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsCoord);
+    		
+    		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
+    								   + "\nExpected Row: 0, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
+                       relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 0);
+    		
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Tests if the GeoPackage can convert an
+     * crsCoordinate to a relative tile coordinate
+     * 
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void crsToRelativeTileCoordinateLowerLeft() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(49, -80, 1, geodeticRefSys);//lower left tile
+    	
+    	File testFile = this.getRandomFile(8);
+    	
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0), gpkg.core().getSpatialReferenceSystem(4326));
+    		
+    		gpkg.tiles().addTileMatrix(tileSet, 1, 2, 2, 256, 256, tileSet.getBoundingBox().getWidth()/256, tileSet.getBoundingBox().getHeight()/256);
+    		
+    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsCoord);
+    		
+    		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
+    								   + "\nExpected Row: 1, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
+                       relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 0);
+    		
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Tests if the GeoPackage can convert an
+     * crsCoordinate to a relative tile coordinate
+     * 
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void crsToRelativeTileCoordinateLowerRight() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(80, 0, 1, geodeticRefSys);//lower right tile
+    	
+    	File testFile = this.getRandomFile(8);
+    	
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0), gpkg.core().getSpatialReferenceSystem(4326));
+    		
+    		gpkg.tiles().addTileMatrix(tileSet, 1, 2, 2, 256, 256, tileSet.getBoundingBox().getWidth()/256, tileSet.getBoundingBox().getHeight()/256);
+    		
+    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsCoord);
+    		
+    		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
+    								   + "\nExpected Row: 1, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
+                       relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 1);
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
 
-    
-    
-    
-//    @Test
-//    public void getTileMatrixSetWithANonTilesGeoPackage() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
-//    {
-//    	final File testFile = this.getRandomFile(15);
-//    	try(GeoPackage gpkg = new GeoPackage(testFile))
-//    	{
-//    		//TODO: how to create a tileSet without having the tables gpkg_tile_matrix and gpkg_tile_matrix_set created...to test the exception thrown
-//    		//when trying to get a tile matrix set from the database
-//    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(4326));
-//    		gpkg.tiles().getTileMatrixSet(tileSet);
-//    		
-//    	}
-//    	finally
-//        {
-//            if(testFile.exists())
-//            {
-//                if(!testFile.delete())
-//                {
-//                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-//                }
-//            }
-//        }
-//    	
-//    }
-    
+
     private static byte[] createImageBytes() throws IOException
     {
         final BufferedImage img = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
@@ -2797,8 +2658,6 @@ public class GeoPackageAPITest
             return outputStream.toByteArray();
         }
     }
-
-
 
     private String getRanString(final int length)
     {
@@ -2823,7 +2682,6 @@ public class GeoPackageAPITest
 
         return testFile;
     }
-
    
     private Connection getConnection(final String filePath) throws Exception
     {
