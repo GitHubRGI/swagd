@@ -75,11 +75,11 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        try(PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) AS count FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?"))
+        try(PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;"))
         {
             preparedStatement.setString(1, name);
 
-            return preparedStatement.executeQuery().getInt("count") != 0;
+            return preparedStatement.executeQuery().getInt(1) > 0;
         }
     }
 
@@ -89,7 +89,7 @@ public class DatabaseUtility
 
         final Set<String> uniqueNames = new HashSet<>(Arrays.asList(names));
 
-        try(PreparedStatement preparedStatement = connection.prepareStatement(String.format("SELECT COUNT(*) AS count FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name IN (%s)",
+        try(PreparedStatement preparedStatement = connection.prepareStatement(String.format("SELECT COUNT(*) AS count FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name IN (%s);",
                                                                                             String.join(", ", Collections.nCopies(uniqueNames.size(), "?")))))
         {
             int index = 1;

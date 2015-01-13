@@ -24,6 +24,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -134,6 +136,144 @@ public class GeoPackageMetadata
                                     standardUri,
                                     mimeType,
                                     metadata);
+        }
+        catch(final Exception ex)
+        {
+            this.databaseConnection.rollback();
+            throw ex;
+        }
+    }
+
+    /**
+     * Creates an entry in the GeoPackage metadata reference table
+     *
+     * @param referenceScope
+     *             Reference scope
+     * @param tableName
+     *             Name of the table to which this metadata reference applies, or NULL for referenceScope of 'geopackage'
+     * @param columnName
+     *             Name of the column to which this metadata reference applies; NULL for referenceScope of 'geopackage','table' or 'row', or the name of a column in the tableName table for referenceScope of 'column' or 'row/col'
+     * @param rowIdentifier
+     *             NULL for referenceScope of 'geopackage', 'table' or 'column', or the rowed of a row record in the table_name table for referenceScope of 'row' or 'row/col'
+     * @param fileIdentifier
+     *             gpkg_metadata table identifier column value for the metadata to which this gpkg_metadata_reference applies
+     * @param parentIdentifier
+     *             gpkg_metadata table identifier column value for the hierarchical parent gpkg_metadata for the gpkg_metadata to which this gpkg_metadata_reference applies, or NULL if file identifier forms the root of a metadata hierarchy
+     * @return Returns the newly added MetadataReference object
+     * @throws SQLException
+     */
+    public MetadataReference addMetadataReference(final ReferenceScope referenceScope,
+                                                  final String         tableName,
+                                                  final String         columnName,
+                                                  final Integer        rowIdentifier,
+                                                  final Metadata       fileIdentifier,
+                                                  final Metadata       parentIdentifier) throws SQLException
+    {
+        if(referenceScope == null)
+        {
+           throw new IllegalArgumentException("Reference scope may not be null");
+        }
+
+        if(referenceScope == ReferenceScope.GeoPackage && tableName != null)
+        {
+            throw new IllegalArgumentException("Reference scopes of 'geopackage' must have null for the associated table name, and other reference scope values must have non-null table names");    // Requirement 72
+        }
+
+        if(!ReferenceScope.isColumnScope(referenceScope) && columnName != null)
+        {
+            throw new IllegalArgumentException("Reference scopes 'geopackage', 'table' or 'row' must have a null column name. Reference scope values of 'column' or 'row/col' must have a non-null column name"); // Requirement 73
+        }
+
+        if(ReferenceScope.isRowScope(referenceScope) && rowIdentifier == null)
+        {
+            throw new IllegalArgumentException(String.format("Reference scopes of 'geopackage', 'table' or 'column' must have a null row identifier.  Reference scopes of 'row' or 'row/col', must contain a reference to a row record in the '%s' table",
+                                                             tableName)); // Requirement 74
+        }
+
+        if(tableName != null && tableName.isEmpty())
+        {
+            throw new IllegalArgumentException("If table name is non-null, it may not be empty");
+        }
+
+        if(columnName != null && columnName.isEmpty())
+        {
+            throw new IllegalArgumentException("If column name is non-null, it may not be empty");
+        }
+
+        if(fileIdentifier == null)
+        {
+            throw new IllegalArgumentException("File identifier may not be null");
+        }
+
+        // TODO test referential integrity for table, column and row parameters
+
+        try
+        {
+            final MetadataReference existingMetadataReference = this.getMetadataReference(referenceScope,
+                                                                                          tableName,
+                                                                                          columnName,
+                                                                                          rowIdentifier,
+                                                                                          fileIdentifier,
+                                                                                          parentIdentifier);
+
+            if(existingMetadataReference != null)
+            {
+                return existingMetadataReference;
+            }
+        }
+        catch(final ParseException ex)
+        {
+            System.err.println("The database contains a metadata reference entry which matches the what's attempting to be added, but contains a timestamp in an invalid format");
+            ex.printStackTrace();
+        }
+
+        try
+        {
+            this.createMetadataReferenceTableNoCommit();  // Create the metadata reference table if it doesn't exist
+
+            final String insertMetadataSql = String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?)",
+                                                           GeoPackageMetadata.MetadataReferenceTableName,
+                                                           "reference_scope",
+                                                           "table_name",
+                                                           "column_name",
+                                                           "row_id_value",
+                                                           "md_file_id",
+                                                           "md_parent_id");
+
+            try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertMetadataSql))
+            {
+                preparedStatement.setString(1, referenceScope.getText());
+                preparedStatement.setString(2, tableName);
+                preparedStatement.setString(3, columnName);
+                preparedStatement.setObject(4, rowIdentifier);
+                preparedStatement.setInt   (5, fileIdentifier.getIdentifier());
+                preparedStatement.setObject(6, parentIdentifier == null ? null
+                                                                        : parentIdentifier.getIdentifier());
+
+                preparedStatement.executeUpdate();
+            }
+
+            try
+            {
+                final MetadataReference metadataReference = this.getMetadataReference(referenceScope,
+                                                                                      tableName,
+                                                                                      columnName,
+                                                                                      rowIdentifier,
+                                                                                      fileIdentifier,
+                                                                                      parentIdentifier);
+
+                this.databaseConnection.commit();
+
+                return metadataReference;
+            }
+            catch(final ParseException ex)
+            {
+                // The only way a parse exception could be caught at this point
+                // is if the SQLite driver's execution of
+                // strftime('%Y-%m-%dT%H:%M:%fZ', now) somehow produces a value
+                // that isn't parsable by GeoPackageMetadata.DateFormat
+                return null;
+            }
         }
         catch(final Exception ex)
         {
@@ -263,6 +403,8 @@ public class GeoPackageMetadata
     }
 
     /**
+     * Gets an entry in the reference table that matches the supplied criteria
+     *
      * @param scope
      *             Metadata scope
      * @param standardUri
@@ -316,7 +458,81 @@ public class GeoPackageMetadata
         }
     }
 
+    /**
+     * Gets an entry in the metadata reference table that matches the supplied criteria
+     *
+     * @param referenceScope
+     *             Reference scope
+     * @param tableName
+     *             Name of the table to which this metadata reference applies, or NULL for referenceScope of 'geopackage'
+     * @param columnName
+     *             Name of the column to which this metadata reference applies; NULL for referenceScope of 'geopackage','table' or 'row', or the name of a column in the tableName table for referenceScope of 'column' or 'row/col'
+     * @param rowIdentifier
+     *             NULL for referenceScope of 'geopackage', 'table' or 'column', or the rowed of a row record in the table_name table for referenceScope of 'row' or 'row/col'
+     * @param fileIdentifier
+     *             gpkg_metadata table identifier column value for the metadata to which this gpkg_metadata_reference applies
+     * @param parentIdentifier
+     *             gpkg_metadata table identifier column value for the hierarchical parent gpkg_metadata for the gpkg_metadata to which this gpkg_metadata_reference applies, or NULL if file identifier forms the root of a metadata hierarchy
+     * @return Returns an object representing an entry in the GeoPackage metadata reference table, or null if no entry matches the supplied criteria
+     * @throws SQLException
+     * @throws ParseException
+     * @throws ParseException Thrown when the database has stored a timestamp in a format other than ISO 8601 (e.g. <tt>strftime('%Y-%m-%dT%H:%M:%fZ')</tt>)
+     */
+    public MetadataReference getMetadataReference(final ReferenceScope referenceScope,
+                                                  final String         tableName,
+                                                  final String         columnName,
+                                                  final Integer        rowIdentifier,
+                                                  final Metadata       fileIdentifier,
+                                                  final Metadata       parentIdentifier) throws SQLException, ParseException
+    {
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageMetadata.MetadataTableName))
+        {
+            return null;
+        }
+
+        final String metadataReferenceQuerySql = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ? AND %s = ? AND %s = ? AND %s = ? AND %s = ? LIMIT 1;",
+                                                               "timestamp",
+                                                               GeoPackageMetadata.MetadataReferenceTableName,
+                                                               "reference_scope",
+                                                               "table_name",
+                                                               "column_name",
+                                                               "row_id_value",
+                                                               "md_file_id",
+                                                               "md_parent_id");
+
+        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(metadataReferenceQuerySql))
+        {
+            preparedStatement.setString(1, referenceScope.getText());
+            preparedStatement.setString(2, tableName);
+            preparedStatement.setString(3, columnName);
+            preparedStatement.setObject(4, rowIdentifier);
+            preparedStatement.setInt   (5, fileIdentifier.getIdentifier());
+            preparedStatement.setObject(6, parentIdentifier == null ? null
+                                                                    : parentIdentifier.getIdentifier());
+
+            try(ResultSet result = preparedStatement.executeQuery())
+            {
+                if(result.isBeforeFirst())
+                {
+                    final String timestampString = result.getString(1);
+
+                    return new MetadataReference(referenceScope,
+                                                 tableName,
+                                                 columnName,
+                                                 rowIdentifier,
+                                                 GeoPackageMetadata.DateFormat.parse(timestampString),
+                                                 fileIdentifier,
+                                                 parentIdentifier);
+                }
+
+                return null;
+            }
+        }
+    }
+
     private final Connection databaseConnection;
+
+    public final static SimpleDateFormat DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     public final static String MetadataTableName          = "gpkg_metadata";
     public final static String MetadataReferenceTableName = "gpkg_metadata_reference";
