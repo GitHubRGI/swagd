@@ -253,7 +253,7 @@ public class GeoPackageAPITest
     {
         final File testFile = this.getRandomFile(12);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try(GeoPackage gpkg = new GeoPackage(testFile, true))
         {
             // get the first number in the sqlite version and make sure it is a
             // version 3
@@ -2274,6 +2274,58 @@ public class GeoPackageAPITest
     				   	+ "using the method getSpatialReferenceSystem(String, int) when searching for a spatial "
     				   	+ "reference system that did not exist in the GeoPackage.",
     				   gpkgSrs == null);
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * This tests if the GeoPackage can return a spatial 
+     * reference system object that is not null and verify
+     * it is the expected values when using the method
+     * getSpatialReferenceSystem(String, int) also ensures
+     * that the search for the srs is case insensitive
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void getSpatialReferenceSystem4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	final File testFile = this.getRandomFile(9);
+    	
+    	try(GeoPackage gpkg = new GeoPackage(testFile))
+    	{
+    		String name              = "name";
+    		int    identifier        = 222;
+    		String organization      = "organization";
+    		int    organizationSrsId = 333;
+    		String definition        = "definition";
+    		String description       = "description";
+    		
+    		SpatialReferenceSystem srsAdded = gpkg.core().addSpatialReferenceSystem(name, 
+    																				identifier, 
+    																				organization,
+    																				organizationSrsId, 
+    																				definition, 
+    																				description);
+    		
+    		SpatialReferenceSystem srsFound = gpkg.core().getSpatialReferenceSystem("NaMe", 
+    																				organizationSrsId);
+    		
+    		assertTrue("The GeoPackage did not return the expected values for the Spatial Reference System Object when "
+    					+ "asking to retrieve the SRS object through the getSpatialReferenceSystem(String, int) method.",
+    				   srsFound.equals(srsAdded));
     	}
     	finally
         {
