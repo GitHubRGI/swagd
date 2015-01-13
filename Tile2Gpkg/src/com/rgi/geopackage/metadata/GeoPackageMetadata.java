@@ -304,9 +304,10 @@ public class GeoPackageMetadata
                                                       GeoPackageMetadata.MetadataTableName);
 
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(metadataQuerySql))
+        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(metadataQuerySql);
+            ResultSet         resultSets       = preparedStatement.executeQuery())
         {
-            return ResultSetStream.getStream(preparedStatement.executeQuery())
+            return ResultSetStream.getStream(resultSets)
                                   .map(resultSet -> { try
                                                       {
                                                           return new Metadata(                 resultSet.getInt(1),
@@ -326,6 +327,47 @@ public class GeoPackageMetadata
 
         }
     }
+
+//    public Collection<MetadataReference> getMetadataReferences() throws SQLException
+//    {
+//        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageMetadata.MetadataReferenceTableName))
+//        {
+//            return Collections.emptyList();
+//        }
+//
+//        final String metadataReferenceQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s, %s FROM %s;",
+//                                                               "reference_scope",
+//                                                               "table_name",
+//                                                               "column_name",
+//                                                               "row_id_value",
+//                                                               "timestamp",
+//                                                               "md_file_id",
+//                                                               "md_parent_id",
+//                                                               GeoPackageMetadata.MetadataReferenceTableName);
+//
+//        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(metadataReferenceQuerySql);
+//            ResultSet         results           = preparedStatement.executeQuery())
+//        {
+//            ResultSetStream.getStream(results)
+//                           .map(resultSet -> { try
+//                                               {
+//                                                   return new MetadataReference(            ReferenceScope.fromText(resultSet.getString(1)),
+//                                                                                                                    resultSet.getString(2),
+//                                                                                                                    resultSet.getString(3),
+//                                                                                                           (Integer)resultSet.getObject(4),
+//                                                                                GeoPackageMetadata.DateFormat.parse(resultSet.getString(5)),
+//                                                                                                      this.getMetadata(resultSet.getInt(6)),
+//                                                                                                      this.getMetadata(resultSet.getInt(7)));
+//                                               }
+//                                               catch(final Exception ex)
+//                                               {
+//                                                   System.err.println("Error converting ");
+//                                               }
+//                                             })
+//
+//
+//        }
+//    }
 
     /**
      * Creates the GeoPackage metadata table
@@ -514,13 +556,11 @@ public class GeoPackageMetadata
             {
                 if(result.isBeforeFirst())
                 {
-                    final String timestampString = result.getString(1);
-
                     return new MetadataReference(referenceScope,
                                                  tableName,
                                                  columnName,
                                                  rowIdentifier,
-                                                 GeoPackageMetadata.DateFormat.parse(timestampString),
+                                                 GeoPackageMetadata.DateFormat.parse(result.getString(1)),
                                                  fileIdentifier,
                                                  parentIdentifier);
                 }
