@@ -276,8 +276,8 @@ public class GeoPackageCore
      * <br>
      * <br>
      * <b>**WARNING**</b> this does not do a database commit. It is expected
-     * that an addition will always come with other database inserts that may
-     * all need to be committed or rollback as a single transaction.
+     * that this transaction will always be paired with others that need to be
+     * committed or rollback as a single transaction.
      *
      * @param tableName
      *             The name of the tiles, feature, or extension specific content table
@@ -542,12 +542,11 @@ public class GeoPackageCore
 
     /**
      * Adds a spatial reference system (SRS) to the gpkg_spatial_ref_sys table.
-     *
      * <br>
      * <br>
      * <b>**WARNING**</b> this does not do a database commit. It is expected
-     * that an addition will always come with other database inserts that may
-     * all need to be committed or rollback as a single transaction.
+     * that this transaction will always be paired with others that need to be
+     * committed or rollback as a single transaction.
      *
      * @param name
      *             Human readable name of this spatial reference system
