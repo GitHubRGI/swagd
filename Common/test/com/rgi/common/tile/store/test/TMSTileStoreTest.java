@@ -43,7 +43,7 @@ import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TmsTileStore;
 
 public class TMSTileStoreTest {
-	// TODO fix these tests
+	
 	@Rule
 	public TemporaryFolder testFolder = new TemporaryFolder();
 	private final Random randomGenerator = new Random();
@@ -178,50 +178,6 @@ public class TMSTileStoreTest {
 	public void breakConstructorLocation() {
 		this.tmsDir = this.createTMSFolderMercator(4);
 		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 3857), null);
-	}
-
-	@Test(expected = TileStoreException.class)
-	public void breakEmptyTMSDirectory() {
-		this.tmsDir = this.createEmptyTMSFolderMercator(4);
-		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
-	}
-	@Test(expected = TileStoreException.class)
-	public void breakInvalidTMSRowFoldersLowerLeft() {
-		this.tmsDir = this.createInvalidTMSRowFoldersMercator(4);
-		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
-	}
-
-	@Test(expected = TileStoreException.class)
-	public void breakInvalidTMSRowFoldersUpperLeft() {
-		this.tmsDir = this.createInvalidTMSRowFoldersMercator(4);
-		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
-	}
-
-	@Test(expected = TileStoreException.class)
-	public void breakEmptyTMSRowFoldersLowerLeft() {
-		this.tmsDir = this.createEmptyTMSRowFoldersMercator(4);
-		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
-	}
-
-	@Test(expected = TileStoreException.class)
-	public void breakEmptyTMSRowFoldersUpperLeft() {
-		this.tmsDir = this.createEmptyTMSRowFoldersMercator(4);
-		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
-	}
-
-	@Test(expected = TileStoreException.class)
-	public void breakMismatchedMimeTypes() throws TileStoreException, IOException {
-		this.tmsDir = this.createTMSFolderMercator(4);
-		final BufferedImage img = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
-		final Path zoomOneRowZero = this.tmsDir.resolve("1").resolve("0").resolve("0" + ".jpeg");
-		ImageIO.write(img, "JPEG", zoomOneRowZero.toFile());
-		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
-	}
-
-	@Test(expected = TileStoreException.class)
-	public void breakBoundsCalc() throws TileStoreException {
-		this.tmsDir = this.createTMSFolderMercator(4);
-		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
 	}
 
 	@Test

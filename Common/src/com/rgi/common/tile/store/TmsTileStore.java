@@ -165,7 +165,7 @@ public class TmsTileStore implements TileStore
     @Override
     public Tile addTile(final AbsoluteTileCoordinate coordinate, final BufferedImage image) throws TileException
     {
-        final String outputFormat = "PNG";  // TODO how do we want to pick this ?
+        final String outputFormat = "png";  // TODO how do we want to pick this ?
 
         final AbsoluteTileCoordinate tmsCoordiante = coordinate.transform(TmsTileStore.Origin);
 
@@ -176,6 +176,10 @@ public class TmsTileStore implements TileStore
                                                                                        outputFormat));
         try
         {
+        	// Image will not write unless the directories exist leading to it.
+        	if (!tilePath.getParent().toFile().exists()) {
+        		(new File(tilePath.getParent().toString())).mkdirs();
+        	}
             if(!ImageIO.write(image, outputFormat, tilePath.toFile()))
             {
                 throw new TileException(String.format("No appropriate image writer found for format '%s'", outputFormat));
@@ -217,7 +221,6 @@ public class TmsTileStore implements TileStore
         }
 
         final Range minmax = Stream.of(directory.listFiles())
-                                   .filter(file -> file.isFile())
                                    .collect(() -> new Range(Integer.MAX_VALUE, Integer.MIN_VALUE),
                                             (range, file) -> { try
                                                                {
