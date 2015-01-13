@@ -1113,7 +1113,7 @@ public class GeoPackageCoreAPITest
     																				definition, 
     																				description);
     		
-    		SpatialReferenceSystem srsFound = gpkg.core().getSpatialReferenceSystem("NaMe", 
+    		SpatialReferenceSystem srsFound = gpkg.core().getSpatialReferenceSystem("oRgaNiZaTiOn", 
     																				organizationSrsId);
     		
     		assertTrue("The GeoPackage did not return the expected values for the Spatial Reference System Object when "
