@@ -292,11 +292,11 @@ public class GeoPackageExtensions
 
     /**
      * Creates the tables required for storing extensions
-     *
+     * <br>
+     * <br>
      * <b>**WARNING**</b> this does not do a database commit. It is expected
-     * that an the creation of tile tables will always come with other
-     * database inserts that may  all need to be committed or rollback as a
-     * single transaction.
+     * that this transaction will always be paired with others that need to be
+     * committed or rollback as a single transaction.
      *
      * @throws SQLException
      */

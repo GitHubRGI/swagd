@@ -19,8 +19,11 @@
 package com.rgi.geopackage.metadata;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 
+import com.rgi.geopackage.DatabaseUtility;
 import com.rgi.geopackage.verification.FailedRequirement;
 
 public class GeoPackageMetadata
@@ -44,6 +47,82 @@ public class GeoPackageMetadata
     public Collection<FailedRequirement> getFailedRequirements()
     {
         return new MetadataVerifier(this.databaseConnection).getFailedRequirements();
+    }
+
+//    public Metadata addMetadata(final Scope    scope,
+//                                final URI      standardUri,
+//                                final MimeType mimeType,
+//                                final String   metadata)
+//    {
+//        final Metadata existingMetadata = this.getMetadata(scope, standardUri, mimeType, metadata);
+//
+//        if(existingMetadata != null)
+//        {
+//            return existingMetadata;
+//        }
+//        else
+//        {
+//            try
+//            {
+//                this.createMetadataTableNoCommit();  // Create the metadata table if it doesn't exist
+//
+//                // TODO do insert
+//
+//
+//                this.databaseConnection.commit();
+//
+//                return this.getMetadata(scope, standardUri, mimeType, metadata);
+//            }
+//            catch(final Exception ex)
+//            {
+//                this.databaseConnection.rollback();
+//                throw ex;
+//            }
+//        }
+//    }
+
+    /**
+     * Creates the GeoPackage metadata table
+     * <br>
+     * <br>
+     * <b>**WARNING**</b> this does not do a database commit. It is expected
+     * that this transaction will always be paired with others that need to be
+     * committed or rollback as a single transaction.
+     *
+     * @throws SQLException
+     */
+    protected void createMetadataTableNoCommit() throws SQLException
+    {
+        // Create the tile matrix set table or view
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageMetadata.MetadataTableName))
+        {
+            try(Statement statement = this.databaseConnection.createStatement())
+            {
+                statement.executeUpdate(this.getMetadataTableCreationSql());
+            }
+        }
+    }
+
+    /**
+     * Creates the GeoPackage metadata reference table
+     * <br>
+     * <br>
+     * <b>**WARNING**</b> this does not do a database commit. It is expected
+     * that this transaction will always be paired with others that need to be
+     * committed or rollback as a single transaction.
+     *
+     * @throws SQLException
+     */
+    protected void createMetadataReferenceTableNoCommit() throws SQLException
+    {
+        // Create the tile matrix table or view
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageMetadata.MetadataReferenceTableName))
+        {
+            try(Statement statement = this.databaseConnection.createStatement())
+            {
+                statement.executeUpdate(this.getMetadataReferenceTableCreationSql());
+            }
+        }
     }
 
     @SuppressWarnings("static-method")

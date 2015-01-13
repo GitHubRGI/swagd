@@ -373,16 +373,15 @@ public class GeoPackageAPITest
      * @throws SQLException
      * @throws Exception
      */
-    //TODO: have two nulls...
     @Test(expected = IllegalArgumentException.class)
     public void addTileSetWithNullTileSetEntry() throws SQLException, Exception
     {
         final File testFile = this.getRandomFile(3);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            gpkg.tiles().addTile(null, null, new RelativeTileCoordinate(0, 0, 0),createImageBytes());
+        	TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(4326));
+            gpkg.tiles().addTile(null, gpkg.tiles().getTileMatrix(tileSet, 0), new RelativeTileCoordinate(0, 0, 0), createImageBytes());
             fail("Expected GeoPackage to throw an IllegalArgumentException when giving a null value for tileSetEntry.");
-
         }
         finally
         {
@@ -1985,6 +1984,64 @@ public class GeoPackageAPITest
             }
         }
     }
+    
+    /**
+     * This ensures that when a user tries to add
+     * the same tileSet two times that the TileSet object
+     * that is returned is the one that already exists in
+     * the GeoPackage and verifies its contents
+     * 
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void addSameTileSetTwice() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	final File testFile = this.getRandomFile(13);
+    	try(GeoPackage gpkg = new GeoPackage(testFile))
+    	{
+    		String      tableName   = "tableName";
+    		String      identifier  = "identifier";
+    		String      description = "description";
+    		BoundingBox boundingBox = new BoundingBox(1.0,2.0,3.0,4.0);
+    		
+    		SpatialReferenceSystem srs = gpkg.core().getSpatialReferenceSystem(0);
+    		
+    		TileSet tileSet = gpkg.tiles().addTileSet(tableName, 
+    												  identifier, 
+    												  description, 
+    												  boundingBox, 
+    												  srs);
+    		
+    		TileSet sameTileSet = gpkg.tiles().addTileSet(tableName, 
+    				            						  identifier, 
+    													  description, 
+    													  boundingBox, 
+    													  srs);
+    		
+    		assertTrue("The GeoPackage did not return the same tile set when trying to add the same tile set twice.",
+    				   sameTileSet.equals(tileSet.getTableName(), 
+    						   			  tileSet.getDataType(), 
+    						   			  tileSet.getIdentifier(), 
+    						   			  tileSet.getDescription(), 
+    						   			  tileSet.getBoundingBox(), 
+    						   			  tileSet.getSpatialReferenceSystem()));
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    	
+    }
 
     /**
      * Expects GeoPackage to throw an IllegalArgumentException
@@ -2183,6 +2240,42 @@ public class GeoPackageAPITest
                         gpkgSrs == null);
         }
         finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Asks the GeoPackage to retrieve a Spatial Reference System
+     * that doesn't exist in the GeoPackage and verifies the GeoPackage
+     * returns a null value.
+     * 
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void getSpatialReferenceSystem3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	final File testFile = this.getRandomFile(7);
+    	
+    	try(GeoPackage gpkg = new GeoPackage(testFile))
+    	{
+    		final SpatialReferenceSystem gpkgSrs = gpkg.core().getSpatialReferenceSystem("org", 222);
+    		assertTrue("The GeoPackage did not return a null value for spatial reference system as expected "
+    				   	+ "using the method getSpatialReferenceSystem(String, int) when searching for a spatial "
+    				   	+ "reference system that did not exist in the GeoPackage.",
+    				   gpkgSrs == null);
+    	}
+    	finally
         {
             if(testFile.exists())
             {
@@ -3382,6 +3475,41 @@ public class GeoPackageAPITest
             }
         }
     }
+    /**
+     * Tests if a GeoPackage will throw an IllegalArgumentException
+     * when a user tries to add a negative value for zoom level 
+     * (when adding a tile Matrix entry)
+     * 
+     * @throws SQLException
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addTileMatrixWithNegativeZoomLevel() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    {
+    	final File testFile = this.getRandomFile(12);
+    	try(GeoPackage gpkg = new GeoPackage(testFile))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+    												  "identifier", 
+    												  "description", 
+    												  new BoundingBox(1.0,2.0,3.0,4.0), 
+    												  gpkg.core().getSpatialReferenceSystem(0));
+    		gpkg.tiles().addTileMatrix(tileSet, -1, 2, 4, 6, 8, 10, 12);
+    	}
+    	finally 
+    	{
+			if (testFile.exists()) 
+			{
+				if (!testFile.delete()) 
+				{
+					throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+				}
+			}
+		}
+	}
 
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException
@@ -3560,6 +3688,31 @@ public class GeoPackageAPITest
             }
         }
     }
+    
+//    @Test
+//    public void getTileMatrixSetWithANonTilesGeoPackage() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+//    {
+//    	final File testFile = this.getRandomFile(15);
+//    	try(GeoPackage gpkg = new GeoPackage(testFile))
+//    	{
+//    		//TODO: how to create a tileSet without having the tables gpkg_tile_matrix and gpkg_tile_matrix_set created...to test the exception thrown
+//    		//when trying to get a tile matrix set from the database
+//    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(4326));
+//    		gpkg.tiles().getTileMatrixSet(tileSet);
+//    		
+//    	}
+//    	finally
+//        {
+//            if(testFile.exists())
+//            {
+//                if(!testFile.delete())
+//                {
+//                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+//                }
+//            }
+//        }
+//    	
+//    }
     
     private static byte[] createImageBytes() throws IOException
     {

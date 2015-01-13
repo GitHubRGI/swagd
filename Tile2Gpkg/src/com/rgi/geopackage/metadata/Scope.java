@@ -12,7 +12,7 @@ import java.util.stream.Stream;
  * code column in Metadata Table Definition.
  * </blockquote>
  *
- * @see <a href="http://www.geopackage.org/spec/#_table_data_values_8">GeoPackage specification - 2.4.2.1.2. Table Data Values</a>
+ * @see <a href="http://www.geopackage.org/spec/#_table_data_values_8">OGC® GeoPackage Encoding Standard - 2.4.2.1.2. Table Data Values</a>
  *
  */
 public enum Scope

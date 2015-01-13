@@ -4,6 +4,24 @@ import java.net.URI;
 
 import javax.activation.MimeType;
 
+/**
+ * GeoPackage Metadata
+ *
+ * <blockquote cite="http://www.geopackage.org/spec/#_metadata_table" type="cite">
+ * The first component of GeoPackage metadata is the gpkg_metadata table that
+ * MAY contain metadata in MIME encodings structured in accordance with any
+ * authoritative metadata specification, such as ISO 19115, ISO 19115-2, ISO
+ * 19139, Dublin Core, CSDGM, DDMS, NMF/NMIS, etc. The GeoPackage
+ * interpretation of what constitutes "metadata" is a broad one that includes
+ * UML models encoded in XMI, GML Application Schemas, ISO 19110 feature
+ * catalogues, OWL and SKOS taxonomies, etc.
+ * </blockquote>
+ *
+ * @author Luke Lambert
+ *
+ * @see <a href="http://www.geopackage.org/spec/#_metadata_table">OGC® GeoPackage Encoding Standard - 2.4.2. Metadata Table</a>
+ *
+ */
 public class Metadata
 {
     /**

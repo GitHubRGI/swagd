@@ -2,9 +2,19 @@ package com.rgi.geopackage.metadata;
 
 import java.util.Date;
 
+/**
+ * Links metadata in the gpkg_metadata table to data in the feature, and tiles tables.
+ *
+ * @see <a href="http://www.geopackage.org/spec/#_metadata_reference_table">OGC® GeoPackage Encoding Standard - 2.4.3. Metadata Reference Table</a>
+ *
+ * @author Luke Lambert
+ *
+ */
 public class MetadataReference
 {
     /**
+     * Constructor
+     *
      * @param referenceScope
      *             Lowercase metadata reference scope; one of 'geopackage', 'table','column', 'row', 'row/col'
      * @param tableName
@@ -20,13 +30,13 @@ public class MetadataReference
      * @param parentIdentifier
      *             gpkg_metadata table identifier column value for the hierarchical parent gpkg_metadata for the gpkg_metadata to which this gpkg_metadata_reference applies, or NULL if file identifier forms the root of a metadata hierarchy
      */
-    public MetadataReference(final String   referenceScope,
-                             final String   tableName,
-                             final String   columnName,
-                             final Integer  rowIdentifier,
-                             final Date     timestamp,
-                             final Metadata fileIdentifier,
-                             final Metadata parentIdentifier)
+    protected MetadataReference(final String   referenceScope,
+                                final String   tableName,
+                                final String   columnName,
+                                final Integer  rowIdentifier,
+                                final Date     timestamp,
+                                final Metadata fileIdentifier,
+                                final Metadata parentIdentifier)
     {
         this.referenceScope = ReferenceScope.fromText(referenceScope);
 

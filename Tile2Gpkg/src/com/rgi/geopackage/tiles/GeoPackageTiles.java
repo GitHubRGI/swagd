@@ -123,7 +123,7 @@ public class GeoPackageTiles
                                  boundingBox,
                                  spatialReferenceSystem);
 
-            this.addTileMatrixSet(tableName,
+            this.addTileMatrixSetNoCommit(tableName,
                                   boundingBox,
                                   spatialReferenceSystem); // Add tile matrix set metadata
 
@@ -578,6 +578,11 @@ public class GeoPackageTiles
 
     /**
      * Adds a tile matrix assocated with a tile set
+     * <br>
+     * <br>
+     * <b>**WARNING**</b> this does not do a database commit. It is expected
+     * that this transaction will always be paired with others that need to be
+     * committed or rollback as a single transaction.
      *
      * @param tableName
      *             Name of the tile set
@@ -588,9 +593,9 @@ public class GeoPackageTiles
      *
      * @throws SQLException
      */
-    private void addTileMatrixSet(final String                 tableName,
-                                  final BoundingBox            boundingBox,
-                                  final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
+    private void addTileMatrixSetNoCommit(final String                 tableName,
+                                          final BoundingBox            boundingBox,
+                                          final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
     {
         if(tableName == null || tableName.isEmpty())
         {
@@ -812,11 +817,11 @@ public class GeoPackageTiles
 
     /**
      * Creates the tables required for storing tiles
-     *
+     * <br>
+     * <br>
      * <b>**WARNING**</b> this does not do a database commit. It is expected
-     * that an the creation of tile tables will always come with other
-     * database inserts that may  all need to be committed or rollback as a
-     * single transaction.
+     * that this transaction will always be paired with others that need to be
+     * committed or rollback as a single transaction.
      *
      * @throws SQLException
      */
