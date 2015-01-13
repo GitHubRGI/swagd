@@ -16,7 +16,7 @@ public class MetadataReference
      * Constructor
      *
      * @param referenceScope
-     *             Lowercase metadata reference scope; one of 'geopackage', 'table','column', 'row', 'row/col'
+     *             Reference scope
      * @param tableName
      *             Name of the table to which this metadata reference applies, or NULL for referenceScope of 'geopackage'
      * @param columnName
@@ -30,27 +30,30 @@ public class MetadataReference
      * @param parentIdentifier
      *             gpkg_metadata table identifier column value for the hierarchical parent gpkg_metadata for the gpkg_metadata to which this gpkg_metadata_reference applies, or NULL if file identifier forms the root of a metadata hierarchy
      */
-    protected MetadataReference(final String   referenceScope,
-                                final String   tableName,
-                                final String   columnName,
-                                final Integer  rowIdentifier,
-                                final Date     timestamp,
-                                final Metadata fileIdentifier,
-                                final Metadata parentIdentifier)
+    protected MetadataReference(final ReferenceScope referenceScope,
+                                final String         tableName,
+                                final String         columnName,
+                                final Integer        rowIdentifier,
+                                final Date           timestamp,
+                                final Metadata       fileIdentifier,
+                                final Metadata       parentIdentifier)
     {
-        this.referenceScope = ReferenceScope.fromText(referenceScope);
+        if(referenceScope == null)
+        {
+           throw new IllegalArgumentException("Reference scope may not be null");
+        }
 
-        if(this.referenceScope == ReferenceScope.GeoPackage && tableName != null)
+        if(referenceScope == ReferenceScope.GeoPackage && tableName != null)
         {
             throw new IllegalArgumentException("Reference scopes of 'geopackage' must have null for the associated table name, and other reference scope values must have non-null table names");    // Requirement 72
         }
 
-        if(!ReferenceScope.isColumnScope(this.referenceScope) && columnName != null)
+        if(!ReferenceScope.isColumnScope(referenceScope) && columnName != null)
         {
             throw new IllegalArgumentException("Reference scopes 'geopackage', 'table' or 'row' must have a null column name. Reference scope values of 'column' or 'row/col' must have a non-null column name"); // Requirement 73
         }
 
-        if(ReferenceScope.isRowScope(this.referenceScope) && rowIdentifier == null)
+        if(ReferenceScope.isRowScope(referenceScope) && rowIdentifier == null)
         {
             throw new IllegalArgumentException(String.format("Reference scopes of 'geopackage', 'table' or 'column' must have a null row identifier.  Reference scopes of 'row' or 'row/col', must contain a reference to a row record in the '%s' table",
                                                              tableName)); // Requirement 74
@@ -76,6 +79,7 @@ public class MetadataReference
             throw new IllegalArgumentException("File identifier may not be null");
         }
 
+        this.referenceScope   = referenceScope;
         this.tableName        = tableName;
         this.columnName       = columnName;
         this.rowIdentifier    = rowIdentifier;

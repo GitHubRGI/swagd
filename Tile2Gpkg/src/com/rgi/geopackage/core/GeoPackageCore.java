@@ -428,10 +428,10 @@ public class GeoPackageCore
             {
                 while(results.next())
                 {
-                    final Date lastChange = null;
+                    Date lastChange = null;
                     try
                     {
-                        GeoPackageCore.DateFormat.parse(results.getString(5));
+                        lastChange = GeoPackageCore.DateFormat.parse(results.getString(5));
                     }
                     catch(final ParseException ex)
                     {

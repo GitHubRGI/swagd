@@ -40,7 +40,7 @@ public class TileProfileFactory
         switch(coordinateReferenceSystem.toString())
         {
             case "EPSG:900913":
-            case "EPSG:3785":
+            case "EPSG:3785":   // deprecated by the EPSG
             case "EPSG:3857":
             case "OSGEO:41001": return new SphericalMercatorTileProfile();
 
