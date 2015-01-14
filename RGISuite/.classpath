@@ -22,8 +22,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/Gdal2Tiles"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Geopackage"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/GeoViewer"/>
-	<classpathentry kind="lib" path="lib/qtjambi-4.8.5.jar"/>
-	<classpathentry kind="lib" path="lib/qtjambi-native-win32-mingw-4.8.5.jar"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
