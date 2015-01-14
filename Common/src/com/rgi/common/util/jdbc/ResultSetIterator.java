@@ -26,7 +26,7 @@ import java.util.function.Function;
 /**
  * Based on idea found here: https://stackoverflow.com/a/1870090/16434
  *
- * @author LukeLambert
+ * @author Luke Lambert
  *
  * @param <T>
  */

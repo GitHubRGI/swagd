@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  *
  * @see <a href="http://www.geopackage.org/spec/#_table_data_values_7">OGC® GeoPackage Encoding Standard - 2.3.3.1.2. Table Data Values</a>
  *
- * @author LukeLambert
+ * @author Luke Lambert
  */
 
 public enum Type

@@ -31,7 +31,7 @@ package com.rgi.geopackage.schema;
  * @see <a href="http://www.geopackage.org/spec/#_data_column_constraints">OGC® GeoPackage Encoding Standard - 2.3.3. Data Column Constraints</a>
  * @see <a href="http://www.geopackage.org/spec/#gpkg_data_column_constraints_cols">OGC® GeoPackage Encoding Standard - Table 12. Data Column Constraints Table or View Definition</a>
  *
- * @author LukeLambert
+ * @author Luke Lambert
  *
  */
 public class DataColumnConstraint
