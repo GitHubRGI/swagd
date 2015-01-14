@@ -19,7 +19,6 @@
 package com.rgi.geopackage.metadata;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,7 +31,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.DatabaseUtility;
@@ -72,7 +70,7 @@ public class GeoPackageMetadata
      *             MIME encoding of metadata
      * @param metadata
      *             Metadata text
-     * @return Returns the newly added Metadata object
+     * @return Returns the newly added {@link Metadata} object
      * @throws SQLException
      */
     public Metadata addMetadata(final Scope    scope,
@@ -160,7 +158,7 @@ public class GeoPackageMetadata
      *             gpkg_metadata table identifier column value for the metadata to which this gpkg_metadata_reference applies
      * @param parentIdentifier
      *             gpkg_metadata table identifier column value for the hierarchical parent gpkg_metadata for the gpkg_metadata to which this gpkg_metadata_reference applies, or NULL if file identifier forms the root of a metadata hierarchy
-     * @return Returns the newly added MetadataReference object
+     * @return Returns the newly added {@link MetadataReference} object
      * @throws SQLException
      */
     public MetadataReference addMetadataReference(final ReferenceScope referenceScope,
@@ -267,7 +265,7 @@ public class GeoPackageMetadata
     /**
      * Gets all entries in the GeoPackage metadata table
      *
-     * @return Returns a collection of Metadata objects
+     * @return Returns a collection of {@link Metadata} objects
      * @throws SQLException
      */
     public Collection<Metadata> getMetadata() throws SQLException
@@ -315,15 +313,12 @@ public class GeoPackageMetadata
      *
      * @param identifier
      *             Metadata primary key
-     * @return Returns an object representing an entry in the GeoPackage metadata table, or null if no entry matches the supplied criteria
+     * @return Returns an instance of {@link Metadata} representing an entry in the GeoPackage metadata table, or null if no entry matches the supplied criteria
      * @throws SQLException
-     * @throws MimeTypeParseException
-     * @throws URISyntaxException
      */
-    public Metadata getMetadata(final Integer identifier) throws SQLException
+    public Metadata getMetadata(final int identifier) throws SQLException
     {
-        if(identifier == null ||
-           !DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageMetadata.MetadataTableName))
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageMetadata.MetadataTableName))
         {
             return null;
         }
@@ -357,6 +352,12 @@ public class GeoPackageMetadata
         }
     }
 
+    /**
+     * Gets all entries in the GeoPackage metadata reference table
+     *
+     * @return Returns a collection of {@link MetadataReference} objects
+     * @throws SQLException
+     */
     public Collection<MetadataReference> getMetadataReferences() throws SQLException
     {
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageMetadata.MetadataReferenceTableName))
@@ -484,7 +485,7 @@ public class GeoPackageMetadata
      *             MIME encoding of metadata
      * @param metadata
      *             Metadata text
-     * @return Returns an object representing an entry in the GeoPackage metadata table, or null if no entry matches the supplied criteria
+     * @return Returns an an instance of {@link Metadata} representing an entry in the GeoPackage metadata table, or null if no entry matches the supplied criteria
      * @throws SQLException
      */
     private Metadata getMetadata(final String scope,
@@ -544,7 +545,7 @@ public class GeoPackageMetadata
      *             gpkg_metadata table identifier column value for the metadata to which this gpkg_metadata_reference applies
      * @param parentIdentifier
      *             gpkg_metadata table identifier column value for the hierarchical parent gpkg_metadata for the gpkg_metadata to which this gpkg_metadata_reference applies, or NULL if file identifier forms the root of a metadata hierarchy
-     * @return Returns an object representing an entry in the GeoPackage metadata reference table, or null if no entry matches the supplied criteria
+     * @return Returns an instance of {@link MetadataReference} representing an entry in the GeoPackage metadata reference table, or null if no entry matches the supplied criteria
      * @throws SQLException
      */
     public MetadataReference getMetadataReference(final String  referenceScope,
