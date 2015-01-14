@@ -100,7 +100,7 @@
               <shadedClassifierName>shaded</shadedClassifierName>
               <transformers>
                   <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                      <mainClass>com.rgi.common.common.GeoSuite</mainClass>
+                      <mainClass>com.rgi.suite.GeoSuite</mainClass>
                   </transformer>
               </transformers>
           </configuration>
@@ -122,7 +122,7 @@
                       <outfile>${project.build.directory}/SWAGD.exe</outfile>
                       <downloadUrl>http://java.com/download</downloadUrl>
                       <classPath>
-                          <mainClass>com.rgi.common.common.GeoSuite</mainClass>
+                          <mainClass>com.rgi.suite.GeoSuite</mainClass>
                           <preCp>anything</preCp>
                       </classPath>
                       <!--icon>/res/res/icons/corps.png</icon-->
