@@ -34,6 +34,8 @@ import java.util.stream.Collectors;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.geopackage.features.GeoPackageFeatures;
+import com.rgi.geopackage.metadata.GeoPackageMetadata;
+import com.rgi.geopackage.schema.GeoPackageSchema;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.FailedRequirement;
@@ -178,9 +180,11 @@ public class GeoPackage implements AutoCloseable
             DatabaseUtility.setPragmaForeignKeys(this.databaseConnection, true);
 
             this.core       = new GeoPackageCore      (this.databaseConnection);
-            this.extensions = new GeoPackageExtensions(this.databaseConnection);
-            this.tiles      = new GeoPackageTiles     (this.databaseConnection, this.core);
             this.features   = new GeoPackageFeatures  (this.databaseConnection, this.core);
+            this.tiles      = new GeoPackageTiles     (this.databaseConnection, this.core);
+            this.schema     = new GeoPackageSchema    (this.databaseConnection);
+            this.metadata   = new GeoPackageMetadata  (this.databaseConnection);
+            this.extensions = new GeoPackageExtensions(this.databaseConnection);
 
             if(isNewFile)
             {
@@ -327,13 +331,13 @@ public class GeoPackage implements AutoCloseable
     }
 
     /**
-     * Access to GeoPackage's "extensions" functionality
+     * Access to GeoPackage's "features" functionality
      *
-     * @return returns a handle to a GeoPackageExetensions object
+     * @return returns a handle to a GeoPackageFeatures object
      */
-    public GeoPackageExtensions extensions()
+    public GeoPackageFeatures features()
     {
-        return this.extensions;
+        return this.features;
     }
 
     /**
@@ -347,13 +351,33 @@ public class GeoPackage implements AutoCloseable
     }
 
     /**
-     * Access to GeoPackage's "features" functionality
+     * Access to GeoPackage's "schema" functionality
      *
-     * @return returns a handle to a GeoPackageFeatures object
+     * @return returns a handle to a GeoPackageTiles object
      */
-    public GeoPackageFeatures features()
+    public GeoPackageSchema schema()
     {
-        return this.features;
+        return this.schema;
+    }
+
+    /**
+     * Access to GeoPackage's "extensions" functionality
+     *
+     * @return returns a handle to a GeoPackageExetensions object
+     */
+    public GeoPackageExtensions extensions()
+    {
+        return this.extensions;
+    }
+
+    /**
+     * Access to GeoPackage's "metadata" functionality
+     *
+     * @return returns a handle to a GeoPackageMetadata object
+     */
+    public GeoPackageMetadata metadata()
+    {
+        return this.metadata;
     }
 
     public enum OpenMode
@@ -366,9 +390,12 @@ public class GeoPackage implements AutoCloseable
     private final File                 file;
     private final Connection           databaseConnection;
     private final GeoPackageCore       core;
-    private final GeoPackageExtensions extensions;
-    private final GeoPackageTiles      tiles;
     private final GeoPackageFeatures   features;
+    private final GeoPackageTiles      tiles;
+    private final GeoPackageSchema     schema;
+    private final GeoPackageMetadata   metadata;
+    private final GeoPackageExtensions extensions;
+
 
     private String sqliteVersion;
 

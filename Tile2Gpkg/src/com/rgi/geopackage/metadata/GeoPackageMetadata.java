@@ -446,8 +446,8 @@ public class GeoPackageMetadata
     @SuppressWarnings("static-method")
     protected String getMetadataTableCreationSql()
     {
-        // http://www.geopackage.org/spec/#gpkg_extensions_cols
-        // http://www.geopackage.org/spec/#gpkg_extensions_sql
+        // http://www.geopackage.org/spec/#gpkg_metadata_cols
+        // http://www.geopackage.org/spec/#gpkg_metadata_sql
         return "CREATE TABLE " + GeoPackageMetadata.MetadataTableName + "\n" +
                 "(id              INTEGER CONSTRAINT m_pk PRIMARY KEY ASC NOT NULL UNIQUE,             -- Metadata primary key\n"                                                                      +
                 " md_scope        TEXT                                    NOT NULL DEFAULT 'dataset',  -- Case sensitive name of the data scope to which this metadata applies; see Metadata Scopes\n" +
@@ -460,8 +460,8 @@ public class GeoPackageMetadata
     @SuppressWarnings("static-method")
     protected String getMetadataReferenceTableCreationSql()
     {
-        // http://www.geopackage.org/spec/#gpkg_extensions_cols
-        // http://www.geopackage.org/spec/#gpkg_extensions_sql
+        // http://www.geopackage.org/spec/#gpkg_metadata_reference_cols
+        // http://www.geopackage.org/spec/#gpkg_metadata_reference_sql
         return "CREATE TABLE " + GeoPackageMetadata.MetadataReferenceTableName + "\n" +
                 "(reference_scope TEXT     NOT NULL,                                                -- Lowercase metadata reference scope; one of 'geopackage', 'table','column', 'row', 'row/col'\n" +
                 " table_name      TEXT,                                                             -- Name of the table to which this metadata reference applies, or NULL for reference_scope of 'geopackage'\n" +
@@ -548,12 +548,12 @@ public class GeoPackageMetadata
      * @return Returns an instance of {@link MetadataReference} representing an entry in the GeoPackage metadata reference table, or null if no entry matches the supplied criteria
      * @throws SQLException
      */
-    public MetadataReference getMetadataReference(final String  referenceScope,
-                                                  final String  tableName,
-                                                  final String  columnName,
-                                                  final Integer rowIdentifier,
-                                                  final int     fileIdentifier,
-                                                  final Integer parentIdentifier) throws SQLException
+    private MetadataReference getMetadataReference(final String  referenceScope,
+                                                   final String  tableName,
+                                                   final String  columnName,
+                                                   final Integer rowIdentifier,
+                                                   final int     fileIdentifier,
+                                                   final Integer parentIdentifier) throws SQLException
     {
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageMetadata.MetadataTableName))
         {
