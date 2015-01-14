@@ -60,7 +60,7 @@ public class DataColumnConstraint
                                 final Number  minimum,
                                 final Boolean minimumIsInclusive,
                                 final Number  maximum,
-                                final String  maximumIsInclusive,
+                                final Boolean maximumIsInclusive,
                                 final String  description)
     {
         this.constraintName     = constraintName;
@@ -124,7 +124,7 @@ public class DataColumnConstraint
     /**
      * @return the maximumIsInclusive
      */
-    public String getMaximumIsInclusive()
+    public Boolean getMaximumIsInclusive()
     {
         return this.maximumIsInclusive;
     }
@@ -143,6 +143,6 @@ public class DataColumnConstraint
     private final Number  minimum;
     private final Boolean minimumIsInclusive;
     private final Number  maximum;
-    private final String  maximumIsInclusive;
+    private final Boolean maximumIsInclusive;
     private final String  description;
 }
