@@ -14,7 +14,9 @@ import java.util.stream.Stream;
  *
  * @see <a href="http://www.geopackage.org/spec/#_table_data_values_8">OGC® GeoPackage Encoding Standard - 2.4.2.1.2. Table Data Values</a>
  *
+ * @author LukeLambert
  */
+
 public enum Scope
 {
     // http://www.geopackage.org/spec/#metadata_scopes
@@ -48,15 +50,13 @@ public enum Scope
     public static Scope fromString(final String inName)
     {
         return Stream.of(Scope.values())
-                     .filter(scope -> scope.getName().equalsIgnoreCase(inName))
+                     .filter(scope -> scope.toString().equalsIgnoreCase(inName))
                      .findFirst()
                      .orElse(null);
     }
 
-    /**
-     * @return the name
-     */
-    public String getName()
+    @Override
+    public String toString()
     {
         return this.name;
     }
