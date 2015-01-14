@@ -32,7 +32,7 @@ package com.rgi.geopackage.schema;
  * @see <a href="http://www.geopackage.org/spec/#_schema">OGC® GeoPackage Encoding Standard - 2.3.2. Data Columns</a>
  * @see <a href="http://www.geopackage.org/spec/#gpkg_data_columns_cols">OGC® GeoPackage Encoding Standard - Table 11. Data Columns Table or View Definition</a>
  *
- * @author LukeLambert
+ * @author Luke Lambert
  *
  */
 public class DataColumn

@@ -204,7 +204,7 @@ public class GeoPackageMetadata
             throw new IllegalArgumentException("File identifier may not be null");
         }
 
-        // TODO test referential integrity for table, column and row parameters
+        // TODO test referential integrity for table, column and row parameters - instead of using a table name, an Content object can be used
 
         final Integer parentIdInteger = parentIdentifier == null ? null
                                                                  : parentIdentifier.getIdentifier();
