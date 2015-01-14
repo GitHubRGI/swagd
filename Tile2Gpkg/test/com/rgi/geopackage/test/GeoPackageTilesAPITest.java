@@ -1067,6 +1067,133 @@ public class GeoPackageTilesAPITest
     }
     
     /**
+     * This adds a tile to a GeoPackage and verifies
+     * that the Tile object added into the GeoPackage
+     * is the same Tile object returned.
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws ConformanceException
+     * @throws IOException
+     */
+    @Test
+    public void addTileMethodByCrsTileCoordinate() throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    {
+    	File testFile = this.getRandomFile(18);
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+    												  "identifier", 
+    												  "description", 
+    												  new BoundingBox(-80.0, -180.0, 80.0, 180.0), 
+    												  gpkg.core().getSpatialReferenceSystem(4326));
+    		int zoomLevel = 2;
+    		int matrixWidth = 2;
+    		int matrixHeight = 2;
+    		int tileWidth = 256;
+    		int tileHeight = 256;
+    		double pixelXSize = (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth;
+    		double pixelYSize = (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight;
+    		
+    		TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 
+    														   zoomLevel, 
+    														   matrixWidth, 
+    														   matrixHeight, 
+    														   tileWidth, 
+    														   tileHeight, 
+    														   pixelXSize, 
+    														   pixelYSize);
+    		
+    		CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
+    		
+    		CrsTileCoordinate crsTileCoordinate = new CrsTileCoordinate(-60.0, 0.0, zoomLevel, coordinateReferenceSystem);
+    		
+    		Tile tileAdded = gpkg.tiles().addTile(tileSet, tileMatrix, crsTileCoordinate, createImageBytes());
+    		
+    		Tile tileFound = gpkg.tiles().getTile(tileSet, crsTileCoordinate);
+    		
+    		assertTrue("The GeoPackage did not return the tile Expected.",
+    				   tileAdded.getColumn() == tileFound.getColumn() &&
+    				   tileAdded.getIdentifier() == tileFound.getIdentifier() &&
+    				   tileAdded.getRow()       == tileFound.getRow() &&
+    				   tileAdded.getZoomLevel() == tileFound.getZoomLevel() &&
+    				   Arrays.equals(tileAdded.getImageData(), tileFound.getImageData()));
+    		
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * This adds a tile to a GeoPackage and verifies
+     * that the Tile object added into the GeoPackage
+     * is the same Tile object returned.
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws ConformanceException
+     * @throws IOException
+     */
+    @Test
+    public void addTileMethodByCrsTileCoordinateNullValue() throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    {
+    	File testFile = this.getRandomFile(18);
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+    												  "identifier", 
+    												  "description", 
+    												  new BoundingBox(-80.0, -180.0, 80.0, 180.0), 
+    												  gpkg.core().getSpatialReferenceSystem(4326));
+    		int zoomLevel = 2;
+    		int matrixWidth = 2;
+    		int matrixHeight = 2;
+    		int tileWidth = 256;
+    		int tileHeight = 256;
+    		double pixelXSize = (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth;
+    		double pixelYSize = (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight;
+    		
+    		TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 
+    														   zoomLevel, 
+    														   matrixWidth, 
+    														   matrixHeight, 
+    														   tileWidth, 
+    														   tileHeight, 
+    														   pixelXSize, 
+    														   pixelYSize);
+    		
+    		CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
+    		
+    		int differentZoomLevel = 12;
+    		CrsTileCoordinate crsTileCoordinate = new CrsTileCoordinate(-60.0, 0.0, differentZoomLevel, coordinateReferenceSystem);
+    		
+    		Tile tileAdded = gpkg.tiles().addTile(tileSet, tileMatrix, crsTileCoordinate, createImageBytes());
+    		
+    		assertTrue("The Geopackage returned a Tile object that is null when there did not exist a "
+    						+ "tile matrix set with a tile at the zoom level indicated in CRS coodinate",
+    				   tileAdded == null);
+    		
+    		
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
      * Test if the GeoPackage can successfully add non empty tiles to a GeoPackage  without throwing an error.
      *
      * @throws SQLException
@@ -1603,6 +1730,52 @@ public class GeoPackageTilesAPITest
            }
        }
    }
+    
+    /**
+     * This adds a tile to a GeoPackage and verifies
+     * that the Tile object added into the GeoPackage
+     * is the same Tile object returned.
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws ConformanceException
+     * @throws IOException
+     */
+    @Test
+    public void getTileRelativeTileCoordinateNonExistant() throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    {
+    	File testFile = this.getRandomFile(18);
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+    												  "identifier", 
+    												  "description", 
+    												  new BoundingBox(-80.0, -180.0, 80.0, 180.0), 
+    												  gpkg.core().getSpatialReferenceSystem(4326));
+    		int zoomLevel = 2;
+    		
+    		CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
+    		
+    		CrsTileCoordinate crsTileCoordinate = new CrsTileCoordinate(-60.0, 0.0, zoomLevel, coordinateReferenceSystem);
+    		
+    		Tile tileFound = gpkg.tiles().getTile(tileSet, crsTileCoordinate);
+    		
+    		assertTrue("The Geopackage returned a Tile object that is null when there did not exist a "
+    						+ "tile with that particular crsTileCoodinate",
+    				   tileFound == null);
+    		
+    		
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
     
     /**
      * Tests if the GeoPackage will return the all and the correct zoom levels in a GeoPackage
@@ -3002,6 +3175,81 @@ public class GeoPackageTilesAPITest
             }
         }
     }
+    
+//    @Test//TODO: fix this test
+//    public void crsToRelativeTileCoordinateMultipleZoomLevels() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+//    {
+//    	int zoomLevel = 5;
+//    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+//    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(1.25, -35.76, zoomLevel, geodeticRefSys);
+//    	
+//    	File testFile = this.getRandomFile(8);
+//    	
+//    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+//    	{
+//    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+//    												  "identifier", 
+//    												  "description", 
+//    												  new BoundingBox(-60.0, -100.0, 60.0, 100.0), 
+//    												  gpkg.core().getSpatialReferenceSystem(4326));
+//    		
+//    		int matrixWidth1  = 16;
+//    		int matrixHeight1 = 24;
+//    		int pixelXSize   = 256;
+//    		int pixelYSize   = 512;
+//    		
+//    		gpkg.tiles().addTileMatrix(tileSet, 
+//									   zoomLevel, 
+//									   matrixWidth1, 
+//									   matrixHeight1, 
+//									   pixelXSize, 
+//									   pixelYSize, 
+//									   (tileSet.getBoundingBox().getWidth() /matrixWidth1 )/pixelXSize, 
+//									   (tileSet.getBoundingBox().getHeight()/matrixHeight1)/pixelYSize);
+//    		
+//    		int matrixWidth2  = 4;
+//    		int matrixHeight2 = 6;
+//    		int zoomLevel2 = 3;
+//    		
+//    		gpkg.tiles().addTileMatrix(tileSet, 
+//									   zoomLevel2, 
+//									   matrixWidth2, 
+//									   matrixHeight2, 
+//									   pixelXSize, 
+//									   pixelYSize, 
+//									   (tileSet.getBoundingBox().getWidth() /matrixWidth2 )/pixelXSize, 
+//									   (tileSet.getBoundingBox().getHeight()/matrixHeight2)/pixelYSize);
+//    		int matrixWidth3  = 8;
+//    		int matrixHeight3 = 12;
+//    		int zoomLevel3 = 4;
+//    		gpkg.tiles().addTileMatrix(tileSet, 
+//									   zoomLevel3, 
+//									   matrixWidth3, 
+//									   matrixHeight3, 
+//									   pixelXSize, 
+//									   pixelYSize, 
+//									   (tileSet.getBoundingBox().getWidth() /matrixWidth3 )/pixelXSize, 
+//									   (tileSet.getBoundingBox().getHeight()/matrixHeight3)/pixelYSize);
+//    		
+//    		
+//    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsCoord);
+//    		
+//    		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
+//    								   + "\nExpected Row: 5, Expected Column: 12. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
+//                       relativeCoord.getRow() == 5 && relativeCoord.getColumn() == 12);
+//    		
+//    	}
+//    	finally
+//        {
+//            if(testFile.exists())
+//            {
+//                if(!testFile.delete())
+//                {
+//                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+//                }
+//            }
+//        }
+//    }
 
 
     private static byte[] createImageBytes() throws IOException
