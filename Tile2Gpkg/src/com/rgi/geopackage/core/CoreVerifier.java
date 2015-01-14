@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import com.rgi.geopackage.DatabaseUtility;
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.ColumnDefinition;
 import com.rgi.geopackage.verification.ForeignKeyDefinition;
@@ -53,6 +54,8 @@ import com.rgi.geopackage.verification.Verifier;
  */
 public class CoreVerifier extends Verifier
 {
+	private boolean hasContentsTable;
+	private boolean hasSpatialReferenceSystemTable;
     /**
      * Constructor
      *
@@ -68,6 +71,24 @@ public class CoreVerifier extends Verifier
         }
 
         this.file = file;
+        
+        try
+        {
+        	this.hasContentsTable = this.tableExists(GeoPackageCore.ContentsTableName);
+        }
+        catch(SQLException ex)
+        {
+        	this.hasContentsTable = false;
+        }
+        
+        try
+        {
+        	this.hasSpatialReferenceSystemTable = this.tableExists(GeoPackageCore.SpatialRefSysTableName);
+        }
+        catch(SQLException ex)
+        {
+        	this.hasSpatialReferenceSystemTable = false;
+        }
     }
 
     /**
@@ -172,7 +193,7 @@ public class CoreVerifier extends Verifier
      * A GeoPackage SHALL only contain data elements, SQL constructs and GeoPackage extensions with the "gpkg" author name specified in this encoding standard.
      * </blockquote>
      *
-     * @return Returns true, this test is checked by other tests in GeoPackage CoreVerifier
+     * @return Returns true, this test is checked by other tests in GeoPackage CoreVerifier and TilesVerifier
      */
     @Requirement(number = 4,
                  text = "A GeoPackage SHALL only contain data elements, SQL constructs and GeoPackage extensions with the \"gpkg\" author name specified in this encoding standard.",
@@ -202,28 +223,31 @@ public class CoreVerifier extends Verifier
                  severity = Severity.Error)
     public void Requirement5() throws SQLException, AssertionError
     {
-        final String query = "SELECT table_name FROM gpkg_contents;";
-
-        try(Statement stmt      = this.getSqliteConnection().createStatement();
-            ResultSet tableName = stmt.executeQuery(query);)
-        {
-            while(tableName.next())
-            {
-                final String table_name = tableName.getString("table_name");
-
-                try(Statement stmt2           = this.getSqliteConnection().createStatement();
-                    ResultSet pragmaTableinfo = stmt2.executeQuery(String.format("PRAGMA table_info(%s);", table_name));)
-                {
-                    while(pragmaTableinfo.next())
-                    {
-                        final String dataType         = pragmaTableinfo.getString("type");
-                        final boolean correctDataType = Verifier.checkDataType(dataType);
-
-                        assertTrue(String.format("Incorrect data type encountered: %s  From table: %s", dataType, table_name), correctDataType);
-                    }
-                }
-            }
-        }
+    	if(this.hasContentsTable)
+    	{
+	        final String query = "SELECT table_name FROM gpkg_contents;";
+	
+	        try(Statement stmt      = this.getSqliteConnection().createStatement();
+	            ResultSet tableName = stmt.executeQuery(query);)
+	        {
+	            while(tableName.next())
+	            {
+	                final String table_name = tableName.getString("table_name");
+	
+	                try(Statement stmt2           = this.getSqliteConnection().createStatement();
+	                    ResultSet pragmaTableinfo = stmt2.executeQuery(String.format("PRAGMA table_info(%s);", table_name));)
+	                {
+	                    while(pragmaTableinfo.next())
+	                    {
+	                        final String dataType         = pragmaTableinfo.getString("type");
+	                        final boolean correctDataType = Verifier.checkDataType(dataType);
+	
+	                        assertTrue(String.format("Incorrect data type encountered: %s  From table: %s", dataType, table_name), correctDataType);
+	                    }
+	                }
+	            }
+	        }
+    	}
     }
 
     /**
@@ -346,9 +370,17 @@ public class CoreVerifier extends Verifier
     @Requirement(number = 10,
                  text = "A GeoPackage SHALL include a gpkg_spatial_ref_sys table per clause 1.1.2.1.1 Table Definition, Table Spatial Ref Sys Table Definition and Table gpkg_spatial_ref_sys Table Definition SQL.",
                  severity = Severity.Error)
-    public void Requirement10() throws SQLException, AssertionError
+    public void Requirement10() throws AssertionError, SQLException
     {
-        this.verifyTable(CoreVerifier.SpatialReferenceSystemDefinition);
+    	if(this.hasSpatialReferenceSystemTable)
+    	{
+    		this.verifyTable(CoreVerifier.SpatialReferenceSystemDefinition);
+    	}
+    	else
+    	{
+    		throw new AssertionError("The GeoPackage does not contain a gpkg_spatial_ref_sys table."
+    								   + "  This is a required table for all GeoPackages.");
+    	}
     }
 
     /**
@@ -374,34 +406,36 @@ public class CoreVerifier extends Verifier
                  severity = Severity.Warning)
     public void Requirement11() throws SQLException, AssertionError
     {
-        final String query  = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = -1    AND       organization  = 'NONE' AND organization_coordsys_id = -1    AND definition = 'undefined';";
-        final String query2 = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id =  0    AND       organization  = 'NONE' AND organization_coordsys_id =  0    AND definition = 'undefined';";
-        final String query3 = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id =  4326 AND LOWER(organization) = 'epsg' AND organization_coordsys_id =  4326;";
-
-        try(Statement stmt             = this.getSqliteConnection().createStatement();
-            ResultSet srsdefaultvalues = stmt.executeQuery(query);
-            )
+    	if(this.hasSpatialReferenceSystemTable)
+    	{
+	        final String query  = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = -1    AND       organization  = 'NONE' AND organization_coordsys_id = -1    AND definition = 'undefined';";
+	        final String query2 = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id =  0    AND       organization  = 'NONE' AND organization_coordsys_id =  0    AND definition = 'undefined';";
+	        final String query3 = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id =  4326 AND LOWER(organization) = 'epsg' AND organization_coordsys_id =  4326;";
+	
+	        try(Statement stmt             = this.getSqliteConnection().createStatement();
+	            ResultSet srsdefaultvalues = stmt.executeQuery(query))
             {
                 // make sure the result sets are not empty
                 assertTrue(String.format("The gpkg_spatial_ref_sys does not contain the default values needed to meet the standard."
                                         + "\n Need to include a record with this information: %s", query),
                                           srsdefaultvalues.next());
             }
-        try(Statement stmt2 = this.getSqliteConnection().createStatement();
-            ResultSet srsdefaultvalue2 = stmt2.executeQuery(query2))
-                {
+	        try(Statement stmt2 = this.getSqliteConnection().createStatement();
+	            ResultSet srsdefaultvalue2 = stmt2.executeQuery(query2))
+            {
 
-                 assertTrue(String.format("The gpkg_spatial_ref_sys does not contain the default values needed to meet the standard."
-                                    + "\n Need to include a record with this information: %s", query2),
-                                     srsdefaultvalue2.next());
-                }
-        try(Statement stmt3 = this.getSqliteConnection().createStatement();
-            ResultSet srsdefaultvalue3 = stmt3.executeQuery(query3))
-                {
-                    assertTrue(String.format("The gpkg_spatial_ref_sys does not contain the default values needed to meet the standard."
-                                    + "\n Need to include a record with this information: %s", query3),
-                                     srsdefaultvalue3.next());
-                }
+             assertTrue(String.format("The gpkg_spatial_ref_sys does not contain the default values needed to meet the standard."
+                                + "\n Need to include a record with this information: %s", query2),
+                                 srsdefaultvalue2.next());
+            }
+	        try(Statement stmt3 = this.getSqliteConnection().createStatement();
+	            ResultSet srsdefaultvalue3 = stmt3.executeQuery(query3))
+            {
+                assertTrue(String.format("The gpkg_spatial_ref_sys does not contain the default values needed to meet the standard."
+                                + "\n Need to include a record with this information: %s", query3),
+                                 srsdefaultvalue3.next());
+            }
+    	}
     }
 
 
@@ -419,22 +453,27 @@ public class CoreVerifier extends Verifier
                  severity = Severity.Error)
     public void Requirement12() throws SQLException, AssertionError
     {
-        final String query = "SELECT DISTINCT gc.srs_id AS gc_srid, srs.srs_name, srs.srs_id, srs.organization, srs.organization_coordsys_id, "
-                            + " srs.definition FROM gpkg_contents AS gc LEFT OUTER JOIN gpkg_spatial_ref_sys AS srs ON srs.srs_id = gc.srs_id;";
-
-        try(Statement stmt       = this.getSqliteConnection().createStatement();
-            ResultSet srsdefined = stmt.executeQuery(query);)
-        {
-
-            while(srsdefined.next())
-            {
-                final String srsGC  = srsdefined.getString("gc_srid");
-                final String srsSRS = srsdefined.getString("srs_id");
-
-                assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined.\n gpkg_contents srs_id: %s gpkg_spatial_ref_sys srs_id: %s", srsGC, srsSRS), srsGC != null && srsSRS !=null);
-            }
-
-        }
+    	if(this.hasContentsTable && this.hasSpatialReferenceSystemTable)
+    	{
+	        final String query = "SELECT DISTINCT gc.srs_id AS gc_srid, srs.srs_name, srs.srs_id, srs.organization, srs.organization_coordsys_id, "
+	        					  + " srs.definition FROM gpkg_contents AS gc LEFT OUTER JOIN gpkg_spatial_ref_sys AS srs ON srs.srs_id = gc.srs_id;";
+	
+	        try(Statement stmt       = this.getSqliteConnection().createStatement();
+	            ResultSet srsdefined = stmt.executeQuery(query))
+	        {
+	
+	            while(srsdefined.next())
+	            {
+	                final String srsGC  = srsdefined.getString("gc_srid");
+	                final String srsSRS = srsdefined.getString("srs_id");
+	
+	                assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined.\n gpkg_contents srs_id: %s gpkg_spatial_ref_sys srs_id: %s", 
+	                						 srsGC, 
+	                						 srsSRS), 
+	                           srsGC != null && srsSRS !=null);
+	            }
+	        }
+    	}
     }
 
     /**
@@ -453,7 +492,15 @@ public class CoreVerifier extends Verifier
                  severity = Severity.Error)
     public void Requirement13() throws SQLException, AssertionError
     {
-        this.verifyTable(CoreVerifier.ContentTableDefinition);
+    	if(this.hasContentsTable)
+    	{
+    		this.verifyTable(CoreVerifier.ContentTableDefinition);
+    	}
+    	else
+    	{
+    		throw new AssertionError("The GeoPackage does not contain a gpkg_contents table.  "
+    									+ "This is a required table for all GeoPackages.");
+    	}
     }
 
     /**
@@ -467,39 +514,52 @@ public class CoreVerifier extends Verifier
      * @throws AssertionError
      */
     @Requirement(number = 14,
-                 text = "The table_name column value in a <code>gpkg_contents table row SHALL contain the name of a SQLite table or view.",
+                 text = "The table_name column value in a gpkg_contents table row SHALL contain the name of a SQLite table or view.",
                  severity = Severity.Warning)
     public void Requirement14() throws SQLException, AssertionError
     {
-        final String query = "SELECT DISTINCT gc.table_name AS gc_table, sm.tbl_name FROM gpkg_contents AS gc LEFT OUTER JOIN sqlite_master AS sm ON gc.table_name = sm.tbl_name;";
-
-        try(Statement stmt        = this.getSqliteConnection().createStatement();
-            ResultSet gctablename = stmt.executeQuery(query);)
-        {
-            // check runtime options (foreign keys)
-            while(gctablename.next())
-            {
-                final String gctable  = gctablename.getString("gc_table");
-                final String tbl_name = gctablename.getString("tbl_name");
-                assertTrue(String.format("The table_name value in gpkg_contents table is invalid for the table: %s", tbl_name), gctable != null);
-            }
-        }
-
-        //check foreign key constraints
-        final String query2 = "PRAGMA foreign_key_list(gpkg_contents);";
-
-        try(Statement stmt           = this.getSqliteConnection().createStatement();
-            ResultSet gpkgContentsFK = stmt.executeQuery(query2))
-        {
-            assertTrue("Tile Matrix Table does not have a Foreign Key constraint enabled on the column table_name to referenced the column table_name in gpkg_contents.", gpkgContentsFK.next());
-
-            final String refTable = gpkgContentsFK.getString("table");
-            final String from     = gpkgContentsFK.getString("from");
-            final String to       = gpkgContentsFK.getString("to");
-
-            final boolean goodFKConstraint = (refTable.equals("gpkg_spatial_ref_sys") && from.equals("srs_id") && to.equals("srs_id"));
-            assertTrue("The gpkg_contents Table does not have a Foreign Key constraint enabled on the column srs_id to referenced the column srs_id in gpkg_spatial_ref_sys.", goodFKConstraint);
-        }
+    	if(this.hasContentsTable)
+    	{
+	        final String query = "SELECT DISTINCT gc.table_name AS gc_table, sm.tbl_name "
+	        				   + "FROM gpkg_contents AS gc "
+	        				   + "LEFT OUTER JOIN sqlite_master AS sm "
+	        				   + "ON gc.table_name = sm.tbl_name;";
+	
+	        try(Statement stmt        = this.getSqliteConnection().createStatement();
+	            ResultSet gctablename = stmt.executeQuery(query);)
+	        {
+	            // check runtime options (foreign keys)
+	            while(gctablename.next())
+	            {
+	                final String gctable  = gctablename.getString("gc_table");
+	                final String tbl_name = gctablename.getString("tbl_name");
+	                assertTrue(String.format("The table_name value in gpkg_contents table is invalid for the table: %s", 
+	                						 tbl_name),
+	                		   gctable != null);
+	            }
+	        }
+	
+	        //check foreign key constraints
+	        final String query2 = "PRAGMA foreign_key_list(gpkg_contents);";
+	
+	        try(Statement stmt           = this.getSqliteConnection().createStatement();
+	            ResultSet gpkgContentsFK = stmt.executeQuery(query2))
+	        {
+	            assertTrue("Tile Matrix Table does not have a Foreign Key constraint enabled on the column table_name to "
+	            				+ "referenced the column table_name in gpkg_contents.", 
+	            		   gpkgContentsFK.next());
+	
+	            final String refTable = gpkgContentsFK.getString("table");
+	            final String from     = gpkgContentsFK.getString("from");
+	            final String to       = gpkgContentsFK.getString("to");
+	
+	            final boolean goodFKConstraint = (refTable.equals("gpkg_spatial_ref_sys") && from.equals("srs_id") && to.equals("srs_id"));
+	            
+	            assertTrue("The gpkg_contents Table does not have a Foreign Key constraint enabled on the column srs_id to referenced the "
+	            				+ "column srs_id in gpkg_spatial_ref_sys.", 
+	            		   goodFKConstraint);
+	        }
+    	}
     }
 
     /**
@@ -508,49 +568,54 @@ public class CoreVerifier extends Verifier
      * Values of the <code>gpkg_contents</code> table <code>last_change</code> column SHALL be in
      * <a href="http://www.iso.org/iso/catalogue_detail?csnumber=40874">ISO 8601 </a></a>
      * format containing a complete date plus UTC hours, minutes, seconds and a decimal fraction of a second,
-     * with a ‘Z’ (‘zulu’) suffix indicating UTC.
+     * with a 'Z' ('zulu') suffix indicating UTC.
      * </blockquote>
      * @return Returns true if it meets the specified requirement; otherwise false;
      * @throws SQLException
      * @throws AssertionError
      */
-    @Requirement(number = 15,
-                 text = "Values of the gpkg_contents table last_change column SHALL be in ISO 8601 format containing a complete date plus UTC hours, minutes, seconds and a decimal fraction of a second, with a 'Z' ('zulu') suffix indicating UTC.",
+    @Requirement(number   = 15,
+                 text     = "Values of the gpkg_contents table last_change column SHALL be in ISO 8601 "
+                 		    + "format containing a complete date plus UTC hours, minutes, seconds and a "
+                 		    + "decimal fraction of a second, with a 'Z' ('zulu') suffix indicating UTC.",
                  severity = Severity.Warning)
     public void Requirement15() throws SQLException, AssertionError
     {
-        final String query = "SELECT last_change FROM gpkg_contents;";
-
-        try(Statement stmt       = this.getSqliteConnection().createStatement();
-            ResultSet lastchange = stmt.executeQuery(query);)
-        {
-            // check format of last_change column
-            while(lastchange.next())
-            {
-                final String data       = lastchange.getString("last_change");
-                final String formatdate = data;
-
-                try
-                {
-                    final SimpleDateFormat formatter  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.'SS'Z'");
-
-                    formatter.parse(formatdate);
-                }
-                catch(final ParseException ex)
-                {
-                    final SimpleDateFormat formatter2  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-
-                    try
-                    {
-                        formatter2.parse(data);
-                    }
-                    catch(final Exception e)
-                    {
-                        fail("A field in the last_change column in gpkg_contents table was not in the correct format. " + ex.getMessage());
-                    }
-                }
-            }
-        }
+    	if(this.hasContentsTable)
+    	{
+	        final String query = "SELECT last_change FROM gpkg_contents;";
+	
+	        try(Statement stmt       = this.getSqliteConnection().createStatement();
+	            ResultSet lastchange = stmt.executeQuery(query);)
+	        {
+	            // check format of last_change column
+	            while(lastchange.next())
+	            {
+	                final String data       = lastchange.getString("last_change");
+	                final String formatdate = data;
+	
+	                try
+	                {
+	                    final SimpleDateFormat formatter  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.'SS'Z'");
+	
+	                    formatter.parse(formatdate);
+	                }
+	                catch(final ParseException ex)
+	                {
+	                    final SimpleDateFormat formatter2  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	
+	                    try
+	                    {
+	                        formatter2.parse(data);
+	                    }
+	                    catch(final ParseException e)
+	                    {
+	                        fail("A field in the last_change column in gpkg_contents table was not in the correct format. " + ex.getMessage());
+	                    }
+	                }
+	            }
+	        }
+    	}
     }
 
     /**
@@ -568,14 +633,17 @@ public class CoreVerifier extends Verifier
                  severity = Severity.Error)
     public void Requirement16() throws SQLException, AssertionError
     {
-        final String query = "PRAGMA foreign_key_check('gpkg_contents');";
-
-        try(Statement stmt       = this.getSqliteConnection().createStatement();
-            ResultSet foreignKey = stmt.executeQuery(query);)
-        {
-            // check runtime options (foreign keys)
-            assertTrue("There are violations on the foreign keys in the table gpkg_contents", !foreignKey.next());
-        }
+    	if(this.hasContentsTable)
+	    	{
+	        final String query = "PRAGMA foreign_key_check('gpkg_contents');";
+	
+	        try(Statement stmt       = this.getSqliteConnection().createStatement();
+	            ResultSet foreignKey = stmt.executeQuery(query);)
+	        {
+	            // check runtime options (foreign keys)
+	            assertTrue("There are violations on the foreign keys in the table gpkg_contents", !foreignKey.next());
+	        }
+    	}
     }
 
     private final File file;
@@ -613,5 +681,10 @@ public class CoreVerifier extends Verifier
 
         SpatialReferenceSystemDefinition = new TableDefinition("gpkg_spatial_ref_sys",
                                                                spatialReferenceSystemColumns);
+    }
+    
+    private boolean tableExists(String tableName) throws SQLException
+    {
+    	return DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), tableName);
     }
 }
