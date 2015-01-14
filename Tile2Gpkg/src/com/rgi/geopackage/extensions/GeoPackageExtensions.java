@@ -95,7 +95,7 @@ public class GeoPackageExtensions
      *             Name of the column that requires the extension. When NULL, the extension is required for the entire table
      * @param extensionName
      *             The case sensitive name of the extension that is required, in the form <author>_<extension_name> where <author> indicates the person or organization that developed and maintains the extension. The valid character set for <author> is [a-zA-Z0-9]. The valid character set for <extension_name> is [a-zA-Z0-9_]
-     * @return Returns an object that represents an entry in the GeoPackage extensions table
+     * @return Returns an instance of {@link Extension} that represents an entry in the GeoPackage extensions table
      * @throws SQLException
      */
     public Extension getExtension(final String tableName, final String columnName, final String extensionName) throws SQLException
@@ -138,7 +138,7 @@ public class GeoPackageExtensions
     /**
      * Gets the entries of the GeoPackage extension table as a collection of extension objects
      *
-     * @return Returns all of the entries in the GeoPackage extensions
+     * @return Returns a collection of {@link Extension} objects that represent all of the entries in the GeoPackage extensions table
      * @throws SQLException
      */
     public Collection<Extension> getExtensions() throws SQLException
@@ -191,8 +191,10 @@ public class GeoPackageExtensions
      * @param extensionName
      *             The case sensitive name of the extension that is required, in the form <author>_<extension_name> where <author> indicates the person or organization that developed and maintains the extension. The valid character set for <author> is [a-zA-Z0-9]. The valid character set for <extension_name> is [a-zA-Z0-9_]
      * @param definition
+     *             Definition of the extension in the form specfied by the template in <a href="http://www.geopackage.org/spec/#extension_template">GeoPackage Extension Template (Normative)</a> or reference thereto.
      * @param scope
-     * @return Returns the added extension
+     *             Indicates scope of extension effects on readers / writers
+     * @return Returns an instance of {@link Extension} that represents the new extension entry
      * @throws SQLException
      */
     public Extension addExtension(final String tableName,

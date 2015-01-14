@@ -14,9 +14,9 @@ package com.rgi.geopackage.metadata;
  * catalogues, OWL and SKOS taxonomies, etc.
  * </blockquote>
  *
- * @author Luke Lambert
- *
  * @see <a href="http://www.geopackage.org/spec/#_metadata_table">OGC® GeoPackage Encoding Standard - 2.4.2. Metadata Table</a>
+ *
+ * @author Luke Lambert
  *
  */
 public class Metadata

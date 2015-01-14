@@ -18,6 +18,21 @@
 
 package com.rgi.geopackage.extensions;
 
+/**
+ * GeoPackage Extension Scopes
+ *
+ * <blockquote cite="http://www.geopackage.org/spec/#_requirement-84" type="cite">
+ * The scope column value in a gpkg_extensions row SHALL be lowercase
+ * "read-write" for an extension that affects both readers and writers, or
+ * "write-only" for an extension that affects only writers.
+ * </blockquote>
+ *
+ * @see <a href="http://www.geopackage.org/spec/#gpkg_extensions_cols">OGC® GeoPackage Encoding Standard - Table 17. GeoPackage Extensions Table or View Definition (Table or View Name: gpkg_extensions)</a>
+ * @see <a href="http://www.geopackage.org/spec/#_requirement-84">OGC® GeoPackage Encoding Standard - Requirement 84</a>
+ *
+ * @author Luke Lambert
+ *
+ */
 public enum Scope
 {
     ReadWrite("read-write"),
