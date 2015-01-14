@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.geopackage.features.GeoPackageFeatures;
+import com.rgi.geopackage.metadata.GeoPackageMetadata;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.FailedRequirement;
@@ -181,6 +182,7 @@ public class GeoPackage implements AutoCloseable
             this.extensions = new GeoPackageExtensions(this.databaseConnection);
             this.tiles      = new GeoPackageTiles     (this.databaseConnection, this.core);
             this.features   = new GeoPackageFeatures  (this.databaseConnection, this.core);
+            this.metadata   = new GeoPackageMetadata  (this.databaseConnection);
 
             if(isNewFile)
             {
@@ -356,6 +358,16 @@ public class GeoPackage implements AutoCloseable
         return this.features;
     }
 
+    /**
+     * Access to GeoPackage's "metadata" functionality
+     *
+     * @return returns a handle to a GeoPackageMetadata object
+     */
+    public GeoPackageMetadata metadata()
+    {
+        return this.metadata;
+    }
+
     public enum OpenMode
     {
         OpenOrCreate,
@@ -367,6 +379,7 @@ public class GeoPackage implements AutoCloseable
     private final Connection           databaseConnection;
     private final GeoPackageCore       core;
     private final GeoPackageExtensions extensions;
+    private final GeoPackageMetadata   metadata;
     private final GeoPackageTiles      tiles;
     private final GeoPackageFeatures   features;
 
