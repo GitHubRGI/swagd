@@ -148,9 +148,27 @@ public class GeoPackageSchema
 
     }
 
-//    public DataColumnConstraint addDataColumnConstraint()
+    // TODO
+//    public DataColumnConstraint addDataColumnConstraint(final String  constraintName,
+//                                                        final Type    constraintType,
+//                                                        final String  value,
+//                                                        final Number  minimum,
+//                                                        final Boolean minimumIsInclusive,
+//                                                        final Number  maximum,
+//                                                        final Boolean maximumIsInclusive,
+//                                                        final String  description)
 //    {
+//        if(constraintName == null || constraintName.isEmpty())
+//        {
+//            throw new IllegalArgumentException("Constraint name may not be null or empty");
+//        }
 //
+//        if(constraintType == null)
+//        {
+//            throw new IllegalArgumentException("Constraint type may not be null");
+//        }
+//
+//        // TODO check requirements 61 through 67
 //    }
 
     /**
