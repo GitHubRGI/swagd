@@ -199,7 +199,7 @@ public class GeoPackageCore
      */
     public SpatialReferenceSystem getSpatialReferenceSystem(final String organization, final int organizationSrsId) throws SQLException
     {
-        final String srsQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s WHERE organization = ? COLLATE NOCASE AND organization_coordsys_id = ?;",
+        final String srsQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s WHERE organization COLLATE NOCASE IN (?) AND organization_coordsys_id = ?;",
                                                  "srs_name",
                                                  "srs_id",
                                                  "organization",
