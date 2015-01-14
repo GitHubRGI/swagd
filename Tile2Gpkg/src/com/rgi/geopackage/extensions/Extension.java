@@ -68,7 +68,7 @@ public class Extension
         this.columnName    = columnName;
         this.extensionName = extensionName;
         this.definition    = definition;
-        this.scope         = Scope.fromText(scope);
+        this.scope         = scope;
     }
 
     public boolean equals(final String inTableName,
@@ -119,7 +119,7 @@ public class Extension
     /**
      * @return the scope
      */
-    public Scope getScope()
+    public String getScope()
     {
         return this.scope;
     }
@@ -134,7 +134,7 @@ public class Extension
     private final String columnName;
     private final String extensionName;
     private final String definition;
-    private final Scope  scope;
+    private final String scope;
 
     public static final String ExtensionNameRegularExpression = "[a-zA-Z0-9]+_[a-zA-Z0-9_]+";
 }

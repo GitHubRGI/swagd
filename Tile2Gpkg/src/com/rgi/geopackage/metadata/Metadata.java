@@ -1,8 +1,5 @@
 package com.rgi.geopackage.metadata;
 
-import java.net.URI;
-
-import javax.activation.MimeType;
 
 /**
  * GeoPackage Metadata
@@ -38,39 +35,18 @@ public class Metadata
      * @param metadata
      *             Metadata text
      */
-    protected Metadata(final int      identifier,
-                       final Scope    scope,
-                       final URI      standardUri,
-                       final MimeType mimeType,
-                       final String   metadata)
+    protected Metadata(final int    identifier,
+                       final String scope,
+                       final String standardUri,
+                       final String mimeType,
+                       final String metadata)
     {
-        if(scope == null)
-        {
-            throw new IllegalArgumentException("Scope may not be null");
-        }
-
-        if(standardUri == null)
-        {
-            throw new IllegalArgumentException("Standard URI may not be null");
-        }
-
-        if(mimeType == null)
-        {
-            throw new IllegalArgumentException("Mime type may not be null");
-        }
-
-        if(metadata == null)
-        {
-            throw new IllegalArgumentException("Metadata may not be null");
-        }
-
         this.identifier  = identifier;
         this.scope       = scope;
         this.standardUri = standardUri;
         this.mimeType    = mimeType;
         this.metadata    = metadata;
     }
-
 
     /**
      * @return the identifier
@@ -83,7 +59,7 @@ public class Metadata
     /**
      * @return the scope
      */
-    public Scope getScope()
+    public String getScope()
     {
         return this.scope;
     }
@@ -91,7 +67,7 @@ public class Metadata
     /**
      * @return the standardUri
      */
-    public URI getStandardUri()
+    public String getStandardUri()
     {
         return this.standardUri;
     }
@@ -99,7 +75,7 @@ public class Metadata
     /**
      * @return the mimeType
      */
-    public MimeType getMimeType()
+    public String getMimeType()
     {
         return this.mimeType;
     }
@@ -112,9 +88,9 @@ public class Metadata
         return this.metadata;
     }
 
-    private final int      identifier;
-    private final Scope    scope;
-    private final URI      standardUri;
-    private final MimeType mimeType;
-    private final String   metadata;
+    private final int   identifier;
+    private final String scope;
+    private final String standardUri;
+    private final String mimeType;
+    private final String metadata;
 }

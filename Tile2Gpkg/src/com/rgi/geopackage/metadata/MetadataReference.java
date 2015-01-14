@@ -1,6 +1,5 @@
 package com.rgi.geopackage.metadata;
 
-import java.util.Date;
 
 /**
  * Links metadata in the gpkg_metadata table to data in the feature, and tiles tables.
@@ -16,7 +15,7 @@ public class MetadataReference
      * Constructor
      *
      * @param referenceScope
-     *             Reference scope
+     *             Lowercase metadata reference scope; one of ‘geopackage’, ‘table’,‘column’, ’row’, ’row/col’
      * @param tableName
      *             Name of the table to which this metadata reference applies, or NULL for referenceScope of 'geopackage'
      * @param columnName
@@ -30,55 +29,14 @@ public class MetadataReference
      * @param parentIdentifier
      *             gpkg_metadata table identifier column value for the hierarchical parent gpkg_metadata for the gpkg_metadata to which this gpkg_metadata_reference applies, or NULL if file identifier forms the root of a metadata hierarchy
      */
-    protected MetadataReference(final ReferenceScope referenceScope,
-                                final String         tableName,
-                                final String         columnName,
-                                final Integer        rowIdentifier,
-                                final Date           timestamp,
-                                final Metadata       fileIdentifier,
-                                final Metadata       parentIdentifier)
+    protected MetadataReference(final String  referenceScope,
+                                final String  tableName,
+                                final String  columnName,
+                                final Integer rowIdentifier,
+                                final String  timestamp,
+                                final int     fileIdentifier,
+                                final Integer parentIdentifier)
     {
-        if(referenceScope == null)
-        {
-           throw new IllegalArgumentException("Reference scope may not be null");
-        }
-
-        if(referenceScope == ReferenceScope.GeoPackage && tableName != null)
-        {
-            throw new IllegalArgumentException("Reference scopes of 'geopackage' must have null for the associated table name, and other reference scope values must have non-null table names");    // Requirement 72
-        }
-
-        if(!ReferenceScope.isColumnScope(referenceScope) && columnName != null)
-        {
-            throw new IllegalArgumentException("Reference scopes 'geopackage', 'table' or 'row' must have a null column name. Reference scope values of 'column' or 'row/col' must have a non-null column name"); // Requirement 73
-        }
-
-        if(ReferenceScope.isRowScope(referenceScope) && rowIdentifier == null)
-        {
-            throw new IllegalArgumentException(String.format("Reference scopes of 'geopackage', 'table' or 'column' must have a null row identifier.  Reference scopes of 'row' or 'row/col', must contain a reference to a row record in the '%s' table",
-                                                             tableName)); // Requirement 74
-        }
-
-        if(tableName != null && tableName.isEmpty())
-        {
-            throw new IllegalArgumentException("If table name is non-null, it may not be empty");
-        }
-
-        if(columnName != null && columnName.isEmpty())
-        {
-            throw new IllegalArgumentException("If column name is non-null, it may not be empty");
-        }
-
-        if(timestamp == null)
-        {
-            throw new IllegalArgumentException("Timestamp may not be null");
-        }
-
-        if(fileIdentifier == null)
-        {
-            throw new IllegalArgumentException("File identifier may not be null");
-        }
-
         this.referenceScope   = referenceScope;
         this.tableName        = tableName;
         this.columnName       = columnName;
@@ -91,7 +49,7 @@ public class MetadataReference
     /**
      * @return the referenceScope
      */
-    public ReferenceScope getReferenceScope()
+    public String getReferenceScope()
     {
         return this.referenceScope;
     }
@@ -123,7 +81,7 @@ public class MetadataReference
     /**
      * @return the timestamp
      */
-    public Date getTimestamp()
+    public String getTimestamp()
     {
         return this.timestamp;
     }
@@ -131,7 +89,7 @@ public class MetadataReference
     /**
      * @return the fileIdentifier
      */
-    public Metadata getFileIdentifier()
+    public int getFileIdentifier()
     {
         return this.fileIdentifier;
     }
@@ -139,15 +97,15 @@ public class MetadataReference
     /**
      * @return the parentIdentifier
      */
-    public Metadata getParentIdentifier()
+    public Integer getParentIdentifier()
     {
         return this.parentIdentifier;
     }
-    private final ReferenceScope referenceScope;
-    private final String         tableName;
-    private final String         columnName;
-    private final Integer        rowIdentifier;
-    private final Date           timestamp;
-    private final Metadata       fileIdentifier;
-    private final Metadata       parentIdentifier;
+    private final String   referenceScope;
+    private final String  tableName;
+    private final String  columnName;
+    private final Integer rowIdentifier;
+    private final String  timestamp;
+    private final int     fileIdentifier;
+    private final Integer parentIdentifier;
 }

@@ -48,15 +48,13 @@ public enum Scope
     public static Scope fromString(final String inName)
     {
         return Stream.of(Scope.values())
-                     .filter(scope -> scope.getName().equalsIgnoreCase(inName))
+                     .filter(scope -> scope.toString().equalsIgnoreCase(inName))
                      .findFirst()
                      .orElse(null);
     }
 
-    /**
-     * @return the name
-     */
-    public String getName()
+    @Override
+    public String toString()
     {
         return this.name;
     }
