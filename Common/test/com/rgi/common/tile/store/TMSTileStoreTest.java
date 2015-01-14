@@ -16,7 +16,7 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.common.tile.store.test;
+package com.rgi.common.tile.store;
 
 import static org.junit.Assert.assertTrue;
 

@@ -16,7 +16,7 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.common.test;
+package com.rgi.common;
 
 import java.util.Random;
 
