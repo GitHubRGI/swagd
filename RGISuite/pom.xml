@@ -119,7 +119,7 @@
                   <configuration>
                       <headerType>gui</headerType>
                       <jar>${project.build.directory}/${project.artifactId}-${project.version}-shaded.jar</jar>
-                      <outfile>${project.build.directory}/ERDC-GRL-Tiler.exe</outfile>
+                      <outfile>${project.build.directory}/SWAGD.exe</outfile>
                       <downloadUrl>http://java.com/download</downloadUrl>
                       <classPath>
                           <mainClass>com.rgi.common.common.GeoSuite</mainClass>
@@ -134,13 +134,13 @@
                           <fileVersion>1.0.0.0</fileVersion>
                           <txtFileVersion>${project.version}</txtFileVersion>
                           <fileDescription>${project.name}</fileDescription>
-                          <copyright>2014 ERDC-GRL, US Army Corps of Engineers</copyright>
+                          <copyright>Copyright (C) 2014 Reinventing Geospatial, Inc</copyright>
                           <productVersion>1.0.0.0</productVersion>
                           <txtProductVersion>1.0.0.0</txtProductVersion>
                           <productName>${project.name}</productName>
-                          <companyName>RGi on behalf of ERDC-GRL, US Army Corps of Engineers</companyName>
-                          <internalName>ERDC-GRL-Tiler</internalName>
-                          <originalFilename>ERDC-GRL-Tiler.exe</originalFilename>
+                          <companyName>Reinventing Geospatial, Inc</companyName>
+                          <internalName>SWAGD</internalName>
+                          <originalFilename>SWAGD.exe</originalFilename>
                       </versionInfo>
                   </configuration>
               </execution>
