@@ -26,8 +26,6 @@ import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Random;
 
@@ -39,7 +37,6 @@ import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.Content;
-import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
@@ -55,7 +52,6 @@ public class GeoPackageCoreAPITest
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
-
     
     /**Tests if the GeoPackage class when accepting a file {using the method create(File file)}, the file is the same when using the getFile() method.
     *
@@ -169,7 +165,8 @@ public class GeoPackageCoreAPITest
        try(GeoPackage gpkg = new GeoPackage(testFile))
        {
            assertTrue(String.format("The GeoPackage Application Id is incorrect. Application Id Expected (in int):  %d  Application Id recieved: %d",
-                                           geoPackageApplicationId, gpkg.getApplicationId()), gpkg.getApplicationId() == geoPackageApplicationId);
+                                           geoPackageApplicationId, gpkg.getApplicationId()), 
+                                    gpkg.getApplicationId() == geoPackageApplicationId);
        }
        finally
        {
@@ -273,8 +270,7 @@ public class GeoPackageCoreAPITest
     public void addExistingContentVerify() throws Exception
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-            Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
             //Content information
             final String                  tableName   = "tableName";
@@ -287,14 +283,11 @@ public class GeoPackageCoreAPITest
             final TileSet tileSet  = gpkg.tiles().addTileSet(tableName, identifier, description, boundingBox, srs);
             final String  dataType = tileSet.getDataType();
 
-            gpkg.close();//close the geopackage
-
-            //create GeoPackage Core object
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
              //try to add the same content twice
-            final Content content = gpkgCore.addContent(tableName, dataType, identifier, description, boundingBox, srs);
+            final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, srs);
 
-            assertTrue(content.getBoundingBox()           .equals(tileSet.getBoundingBox()) &&
+            assertTrue("The GeoPackage returned false when it should have returned true when the content entries were equal.",
+            		   content.getBoundingBox()           .equals(tileSet.getBoundingBox()) &&
                        content.getDataType()              .equals(tileSet.getDataType())    &&
                        content.getDescription()           .equals(tileSet.getDescription()) &&
                        content.getIdentifier()            .equals(tileSet.getIdentifier())  &&
@@ -323,20 +316,15 @@ public class GeoPackageCoreAPITest
     public void addExistingContentWithSameTableNameAndDifferentOtherValues() throws Exception
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-            Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
             //Content information
             final String                  tableName   = "tableName";
             final SpatialReferenceSystem  srs         = gpkg.core().getSpatialReferenceSystem(4326);
 
-            gpkg.close();//close the geopackage
-
-            //create GeoPackage Core object
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
              //try to add the same content twice
-            gpkgCore.addContent(tableName, "dataType",  "identifier",  "description", new BoundingBox(null,null,null,null), srs);
-            gpkgCore.addContent(tableName, "dataType2", "identifier2", "description", new BoundingBox(null,null,null,null), srs);
+            gpkg.core().addContent(tableName, "dataType",  "identifier",  "description", new BoundingBox(null,null,null,null), srs);
+            gpkg.core().addContent(tableName, "dataType2", "identifier2", "description", new BoundingBox(null,null,null,null), srs);
 
             fail("Expected GeoPackage Core to throw an IllegalArgumentException when trying to add content with the same tablename but differing other fields");
 
@@ -1184,14 +1172,9 @@ public class GeoPackageCoreAPITest
     public void addContentBadTableName() throws Exception
     {
         final File testFile = this.getRandomFile(10);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-            Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.close();
-
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
-
-            gpkgCore.addContent("", "dataType", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkgCore.getSpatialReferenceSystem(-1));
+            gpkg.core().addContent("", "dataType", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method an empty string for tableName");
         }
         finally
@@ -1216,14 +1199,9 @@ public class GeoPackageCoreAPITest
     public void addContentBadTableName2() throws Exception
     {
         final File testFile = this.getRandomFile(10);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-            Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.close();
-
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
-
-            gpkgCore.addContent(null, "dataType", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkgCore.getSpatialReferenceSystem(-1));
+            gpkg.core().addContent(null, "dataType", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a null value for tableName");
         }
         finally
@@ -1248,14 +1226,9 @@ public class GeoPackageCoreAPITest
     public void addContentBadTableName3() throws Exception
     {
         final File testFile = this.getRandomFile(10);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-            Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.close();
-
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
-
-            gpkgCore.addContent("123", "dataType", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkgCore.getSpatialReferenceSystem(-1));
+            gpkg.core().addContent("123", "dataType", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a table name that does not begin with letters or underscore");
         }
         finally
@@ -1280,14 +1253,9 @@ public class GeoPackageCoreAPITest
     public void addContentBadTableName4() throws Exception
     {
         final File testFile = this.getRandomFile(10);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-            Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.close();
-
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
-
-            gpkgCore.addContent("gpkg_table", "dataType", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkgCore.getSpatialReferenceSystem(-1));
+            gpkg.core().addContent("gpkg_table", "dataType", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a table name that begins with gpkg");
         }
         finally
@@ -1301,7 +1269,7 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-
+    
     /**
      * Tests GeoPackageCore if it throws an IllegalArgumentException
      * when giving an empty string for getContnent's tablename
@@ -1312,14 +1280,9 @@ public class GeoPackageCoreAPITest
     public void getContentBadTableName() throws Exception
     {
         final File testFile = this.getRandomFile(10);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-            Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.close();
-
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
-
-            gpkgCore.getContent("", null);
+            gpkg.core().getContent("", null);
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a table name that is an empty string");
         }
         finally
@@ -1344,14 +1307,9 @@ public class GeoPackageCoreAPITest
     public void getContentBadTableName2() throws Exception
     {
         final File testFile = this.getRandomFile(10);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-            Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.close();
-
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
-
-            gpkgCore.getContent(null, null);
+        	gpkg.core().getContent(null, null);
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a table name that is null");
         }
         finally
@@ -1376,14 +1334,9 @@ public class GeoPackageCoreAPITest
     public void getContentBadContentFactory() throws Exception
     {
         final File testFile = this.getRandomFile(10);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-            Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.close();
-
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
-
-            gpkgCore.getContent("tables", null);
+            gpkg.core().getContent("tables", null);
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a null value for contentFactory");
         }
         finally
@@ -1407,14 +1360,9 @@ public class GeoPackageCoreAPITest
     public void addContentBadDataType() throws Exception
     {
         final File testFile = this.getRandomFile(10);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-            Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.close();
-
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
-
-            gpkgCore.addContent("thetable", "", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkgCore.getSpatialReferenceSystem(-1));
+        	gpkg.core().addContent("thetable", "", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method an empty string for data type");
         }
         finally
@@ -1438,14 +1386,9 @@ public class GeoPackageCoreAPITest
     public void addContentBadDataType2() throws Exception
     {
         final File testFile = this.getRandomFile(10);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-            Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.close();
-
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
-
-            gpkgCore.addContent("thetable", null, "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkgCore.getSpatialReferenceSystem(-1));
+        	gpkg.core().addContent("thetable", null, "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a null value for data type");
         }
         finally
@@ -1469,13 +1412,9 @@ public class GeoPackageCoreAPITest
     public void getContentBadDataType() throws Exception
     {
         final File testFile = this.getRandomFile(12);
-        try (GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-             Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try (GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.close();
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
-
-            gpkgCore.getContent(null, null, gpkgCore.getSpatialReferenceSystem(-1));
+        	gpkg.core().getContent(null, null, gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected GeoPackage Core to throw an IllegalArgumentException when passing null for the dataType in getContent method");
         }
         finally
@@ -1499,13 +1438,9 @@ public class GeoPackageCoreAPITest
     public void getContentBadDataType2() throws Exception
     {
         final File testFile = this.getRandomFile(12);
-        try (GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
-             Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try (GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.close();
-            final GeoPackageCore gpkgCore = new GeoPackageCore(con);
-
-            gpkgCore.getContent("", null, gpkgCore.getSpatialReferenceSystem(-1));
+        	gpkg.core().getContent("", null, gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected GeoPackage Core to throw an IllegalArgumentException when passing an empty string for the dataType in getContent method");
         }
         finally
@@ -1550,13 +1485,252 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-
-    private Connection getConnection(final String filePath) throws Exception
+    
+    /**
+     * This Tests the Contents equal method and
+     * ensures it returns false when the content's 
+     * table name doesn't match.
+     * 
+     * @throws SQLException
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws ConformanceException
+     */
+    @Test
+    public void equalsContent() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
     {
-        Class.forName("org.sqlite.JDBC"); // Register the driver
-
-        return DriverManager.getConnection("jdbc:sqlite:" + filePath);
+    	final File testFile = this.getRandomFile(18);
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		String tableName = "tableName";
+    		String dataType  = "tiles";
+    		String identifier = "identifier";
+    		String description = "description";
+    		BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+    		SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+    		
+    		Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
+    		
+    		assertTrue("Returned true when it should have returned false when using the Contents equals method.", 
+    				   !content.equals("different Table Name", 
+    					 	   		   dataType, 
+    					 	   		   identifier, 
+    						   		   description, 
+    						   		   boundingBox, 
+    						   		   spatialReferenceSystem));
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    	
     }
+    
+    /**
+     * This Tests the Contents equal method and
+     * ensures it returns false when the content's 
+     * bounding boxes don't match.
+     * 
+     * @throws SQLException
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws ConformanceException
+     */
+    @Test
+    public void equalsContent2() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    {
+    	final File testFile = this.getRandomFile(18);
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		String tableName = "tableName";
+    		String dataType  = "tiles";
+    		String identifier = "identifier";
+    		String description = "description";
+    		BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+    		SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+    		
+    		Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
+    		
+    		assertTrue("Returned true when it should have returned false when using the Contents equals method.", 
+    					!content.equals(tableName, 
+    								    dataType, 
+    								    identifier,
+    								    description, 
+    								    new BoundingBox(1.0, 2.0, 3.0, 4.0), 
+    								    spatialReferenceSystem));
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    	
+    }
+    
+    /**
+     * This Tests the Contents equal method and
+     * ensures it returns false when the content's 
+     * description doesn't match.
+     * 
+     * @throws SQLException
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws ConformanceException
+     */
+    @Test
+    public void equalsContent3() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    {
+    	final File testFile = this.getRandomFile(18);
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		String tableName = "tableName";
+    		String dataType  = "tiles";
+    		String identifier = "identifier";
+    		String description = "description";
+    		BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+    		SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+    		
+    		Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
+    		
+    		assertTrue("Returned true when it should have returned false when using the Contents equals method.", 
+    				   !content.equals(tableName, 
+    						   		   dataType, 
+    						   		   identifier, 
+    						   		   "different description", 
+    						   		   boundingBox, 
+    						   		   spatialReferenceSystem));
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * This Tests the Contents equal method and
+     * ensures it returns false when the content's 
+     * spatial reference systems don't match.
+     * 
+     * @throws SQLException
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws ConformanceException
+     */
+    @Test
+    public void equalsContent4() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    {
+    	final File testFile = this.getRandomFile(18);
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		String tableName = "tableName";
+    		String dataType  = "tiles";
+    		String identifier = "identifier";
+    		String description = "description";
+    		BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+    		SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+    		
+    		Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
+    		
+    		assertTrue("Returned true when it should have returned false when using the Contents equals method.", 
+    				   !content.equals(tableName, 
+    					 	   		   dataType, 
+    					 	   		   identifier, 
+    						   		   description, 
+    						   		   boundingBox, 
+    						   		   gpkg.core().getSpatialReferenceSystem(0)));
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * This Tests the Contents equal method and
+     * ensures it returns false when the content's 
+     * description doesn't match.
+     * 
+     * @throws SQLException
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws ConformanceException
+     */
+    @Test
+    public void equalsContent5() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    {
+    	final File testFile = this.getRandomFile(18);
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		String tableName = "tableName";
+    		String dataType  = "tiles";
+    		String identifier = null;
+    		String description = null;
+    		BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+    		SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+    		
+    		Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
+    		
+    		assertTrue("Returned true when it should have returned false when using the Contents equals method.", 
+    				   !content.equals(tableName, 
+    						 		   dataType, 
+    						   		   null, 
+    						   		   "different description", 
+    						   		   boundingBox, 
+    						   		   spatialReferenceSystem));
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    
+//    TODO
+//    @Test
+//    public void getFailedRequirements()
+//    {
+//    	File testFile = this.getRandomFile(9);
+//    	testFile.createNewFile();
+//    	try()
+//    	{
+//    		
+//    	}
+//    }
+
     private String getRanString(final int length)
     {
         final String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";

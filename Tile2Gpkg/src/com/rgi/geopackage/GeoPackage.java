@@ -179,7 +179,7 @@ public class GeoPackage implements AutoCloseable
 
             DatabaseUtility.setPragmaForeignKeys(this.databaseConnection, true);
 
-            this.core       = new GeoPackageCore      (this.databaseConnection);
+            this.core       = new GeoPackageCore      (this.databaseConnection, isNewFile);
             this.features   = new GeoPackageFeatures  (this.databaseConnection, this.core);
             this.tiles      = new GeoPackageTiles     (this.databaseConnection, this.core);
             this.schema     = new GeoPackageSchema    (this.databaseConnection);
@@ -193,8 +193,6 @@ public class GeoPackage implements AutoCloseable
                                                            .asIntBuffer()
                                                            .get());
                 this.databaseConnection.commit();
-
-                this.core.createDefaultTables();
             }
 
             if(verifyConformance)

@@ -45,8 +45,8 @@ public class GeoPackageTiles
      *
      * @param databaseConnection
      *             The open connection to the database that contains a GeoPackage
-     * @param dataModel
-     *             Controls how a GeoPackage's tables are created
+     * @param core
+     *             Access to GeoPackage's "core" methods
      */
     public GeoPackageTiles(final Connection databaseConnection, final GeoPackageCore core)
     {
@@ -438,7 +438,7 @@ public class GeoPackageTiles
                         final CrsTileCoordinate coordinate,
                         final byte[]            imageData) throws SQLException
     {
-        final RelativeTileCoordinate relativeCoordinate = this.srsToRelativeTileCoordinate(tileSet, coordinate);
+        final RelativeTileCoordinate relativeCoordinate = this.crsToRelativeTileCoordinate(tileSet, coordinate);
         return relativeCoordinate != null ? this.addTile(tileSet,
                                                          tileMatrix,
                                                          relativeCoordinate,
@@ -512,7 +512,7 @@ public class GeoPackageTiles
     public Tile getTile(final TileSet           tileSet,
                         final CrsTileCoordinate coordinate) throws SQLException
     {
-        final RelativeTileCoordinate relativeCoordiante = this.srsToRelativeTileCoordinate(tileSet, coordinate);
+        final RelativeTileCoordinate relativeCoordiante = this.crsToRelativeTileCoordinate(tileSet, coordinate);
         return relativeCoordiante != null ? this.getTile(tileSet, relativeCoordiante)
                                           : null;
     }
@@ -646,7 +646,7 @@ public class GeoPackageTiles
      *             A handle to a set of tiles
      * @param zoomLevel
      *             Zoom level of the tile matrix
-     * @return
+     * @return Returns a tile set's tile matrix that corresponds to the input level, or null if one doesn't exist
      * @throws SQLException
      */
     public TileMatrix getTileMatrix(final TileSet tileSet, final int zoomLevel) throws SQLException
@@ -739,7 +739,17 @@ public class GeoPackageTiles
         }
     }
 
-    public RelativeTileCoordinate srsToRelativeTileCoordinate(final TileSet           tileSet,
+    /**
+     * Convert a CRS coordinate to a tile coordinate relative to a tile set
+     *
+     * @param tileSet
+     *             A handle to a set of tiles
+     * @param crsTileCoordinate
+     *             A coordinate with a specified coordinate reference system and zoom level
+     * @return Returns a tile coordinate relative and specific to the input tile set.  The input CRS coordinate would be contained in the the associated tile bounds.
+     * @throws SQLException
+     */
+    public RelativeTileCoordinate crsToRelativeTileCoordinate(final TileSet           tileSet,
                                                               final CrsTileCoordinate crsTileCoordinate) throws SQLException
     {
         if(tileSet == null)
@@ -758,9 +768,9 @@ public class GeoPackageTiles
             throw new IllegalArgumentException("Coordinate transformation is not currently supported.  The incoming spatial reference system must match that of the tile set's");
         }
 
-        final List<TileMatrix> tileMatrices = this.getTileMatrices(tileSet);    // The query that gets these values sorts them ascendingly
+        final TileMatrix tileMatrix = this.getTileMatrix(tileSet, crsTileCoordinate.getZoomLevel());
 
-        if(!tileMatrices.stream().anyMatch(tileMatrix -> tileMatrix.getZoomLevel() == crsTileCoordinate.getZoomLevel()))
+        if(tileMatrix == null)
         {
             return null;    // No tile matrix for the requested zoom level
         }
@@ -773,46 +783,22 @@ public class GeoPackageTiles
             return null;    // The requested srs coordinate is outside the bounds of our data
         }
 
-        Integer lastZoomLevel = null;
-        Coordinate<Double> topLeft = tileSetBounds.getMin();
+        final Coordinate<Double> topLeft = tileSetBounds.getMin();
 
-        for(final TileMatrix tileMatrix : tileMatrices)
-        {
-            if(lastZoomLevel != null && tileMatrix.getZoomLevel() != lastZoomLevel + 1)
-            {
-                System.err.format("Relative coordinate for tile set %s (%s) cannot be calculated for zoom level %d. Zoom level %d is missing.",
-                                  tileSet.getIdentifier(),
-                                  tileSet.getTableName(),
-                                  crsTileCoordinate.getZoomLevel(),
-                                  lastZoomLevel + 1);
-                return null; // There's a gap between zoom levels for this tile set, so it's not possible (TODO *i think*) to calculate the bounds of any subsequent tile matrix
-            }
+        final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
+        final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();
 
-            final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
-            final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();
+        final double normalizedSrsTileCoordinateY = crsTileCoordinate.getY() - topLeft.getY();
+        final double normalizedSrsTileCoordinateX = crsTileCoordinate.getX() - topLeft.getX();
 
-            final double normalizedSrsTileCoordinateY = crsTileCoordinate.getY() - topLeft.getY();
-            final double normalizedSrsTileCoordinateX = crsTileCoordinate.getX() - topLeft.getX();
+        final int tileY = normalizedSrsTileCoordinateY != 0.0 ? (int)(Math.ceil(normalizedSrsTileCoordinateY / tileHeightInSrs)) - 1
+                                                              : 0; // Special case. If the normalized y component is 0.0, tileY should be 0, rather than - 1
+        final int tileX = normalizedSrsTileCoordinateX != 0.0 ? (int)(Math.ceil(normalizedSrsTileCoordinateX / tileWidthInSrs))  - 1
+                                                              : 0; // Special case. If the normalized x component is 0.0, tileX should be 0, rather than - 1
 
-            final int tileY = normalizedSrsTileCoordinateY != 0.0 ? (int)(Math.ceil(normalizedSrsTileCoordinateY / tileHeightInSrs)) - 1
-                                                                  : 0; // Special case. If the normalized y component is 0.0, the value should be 0, rather than - 1
-            final int tileX = normalizedSrsTileCoordinateX != 0.0 ? (int)(Math.ceil(normalizedSrsTileCoordinateX / tileWidthInSrs))  - 1
-                                                                  : 0; // Special case. If the normalized x component is 0.0, the value should be 0, rather than - 1
-
-
-            if(tileMatrix.getZoomLevel() == crsTileCoordinate.getZoomLevel())
-            {
-                return new RelativeTileCoordinate(tileY,
-                                                  tileX,
-                                                  crsTileCoordinate.getZoomLevel());
-            }
-
-            lastZoomLevel = tileMatrix.getZoomLevel();
-            topLeft = new Coordinate<>(topLeft.getY() + (tileY * tileHeightInSrs),
-                                       topLeft.getX() + (tileX * tileWidthInSrs));
-        }
-
-        return null;
+        return new RelativeTileCoordinate(tileY,
+                                          tileX,
+                                          crsTileCoordinate.getZoomLevel());
     }
 
     /**
