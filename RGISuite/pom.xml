@@ -111,7 +111,7 @@
           <version>1.5.1</version>
           <executions>
               <execution>
-                  <id>l4j-clui</id>
+                  <id>l4j-cli</id>
                   <phase>package</phase>
                   <goals>
                       <goal>launch4j</goal>
@@ -128,6 +128,7 @@
                       <!--icon>/res/res/icons/corps.png</icon-->
                       <jre>
                           <minVersion>1.6.0</minVersion>
+                          <maxVersion>1.8.0</maxVersion>
                           <jdkPreference>preferJre</jdkPreference>
                       </jre>
                       <versionInfo>
