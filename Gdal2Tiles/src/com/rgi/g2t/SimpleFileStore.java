@@ -38,9 +38,13 @@ import com.rgi.common.tile.store.TileStoreException;
 public class SimpleFileStore implements TileStore {
   private File rootFolder = null;
   private int projection;
+  private String imageFormat;
 
-  public SimpleFileStore(String location, String name, int projection) throws TileStoreException {
-    String filePart = name;
+  public SimpleFileStore(String name, int projection, String location, String imageFormat) throws TileStoreException {
+	  if (!"png".equalsIgnoreCase(imageFormat) && !"jpg".equalsIgnoreCase(imageFormat))
+		  throw new IllegalArgumentException("Only PNG and JPG formats supported");
+	  this.imageFormat = imageFormat;
+	  String filePart = name;
     if (filePart.contains(".")) {
       filePart = filePart.substring(0, filePart.indexOf('.'));
     }
@@ -67,7 +71,7 @@ public class SimpleFileStore implements TileStore {
         File xFolder = new File(zFolder, xName);
         for (String yName : xFolder.list()) {
           try {
-            Integer.parseInt(yName.replaceAll("\\.png", ""));
+            Integer.parseInt(yName.replaceAll("\\."+imageFormat, ""));
             ++count;
           } catch (NumberFormatException nfe) {
             // do nothing
@@ -133,9 +137,9 @@ public class SimpleFileStore implements TileStore {
         throw new TileStoreException("Unable to create folders");
       }
     }
-    File yFile = new File(xFolder, coordinate.getY()+".png");
+    File yFile = new File(xFolder, coordinate.getY()+"."+imageFormat);
     try {
-      ImageIO.write(image, "png", yFile);
+      ImageIO.write(image, imageFormat, yFile);
     } catch (IOException ioe) {
       throw new TileStoreException("Unable to write tile to file", ioe);
     }

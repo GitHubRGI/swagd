@@ -99,7 +99,9 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor 
 
       TileStore tileStore = null;
       try {
-        tileStore = new SimpleFileStore(opts.get(Setting.TileFolder), file.getName(), profile.getID());
+    	  String imageFormat = Settings.Type.valueOf(opts.get(Setting.TileType)).name();
+    	  String outputFolder = opts.get(Setting.TileFolder);
+        tileStore = new SimpleFileStore(file.getName(), profile.getID(), outputFolder, imageFormat);
       } catch (TileStoreException tse) {
         System.err.println("Unable to create tile store for input file "+file.getName());
         continue;
