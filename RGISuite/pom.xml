@@ -98,20 +98,61 @@
               </artifactSet>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <shadedClassifierName>shaded</shadedClassifierName>
-              <transformers>
+              <!--transformers>
                   <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                       <mainClass>com.rgi.suite.GeoSuite</mainClass>
                   </transformer>
-              </transformers>
+              </transformers-->
           </configuration>
       </plugin>
       <plugin>
+          <groupId>org.bluestemsoftware.open.maven.plugin</groupId>
+          <artifactId>launch4j-plugin</artifactId>
+          <version>1.5.0.0</version>
+          <executions>
+              <execution>
+                  <id>l4j-gui</id>
+                  <phase>package</phase>
+                  <goals>
+                      <goal>launch4j</goal>
+                  </goals>
+                  <configuration>
+                      <headerType>gui</headerType>
+                      <outfile>target/swagd.exe</outfile>
+                      <jar>target/${artifactId}-${version}-shaded.jar</jar>
+                      <errTitle>SWAGD Err</errTitle>
+                      <classPath>
+                          <mainClass>com.rgi.suite.GeoSuite</mainClass>
+                      </classPath>
+                      <!--icon></icon-->
+                      <jre>
+                          <minVersion>1.6.0</minVersion>
+                          <maxVersion>1.8.0</maxVersion>
+                          <initialHeapSize>128</initialHeapSize>
+                          <maxHeapSize>1024</maxHeapSize>
+                      </jre>
+                      <versionInfo>
+                          <fileVersion>1.0.0.0</fileVersion>
+                          <txtFileVersion>1.0.0.0</txtFileVersion>
+                          <fileDescription>${project.name}</fileDescription>
+                          <copyright>Copyright (C) 2014 Reinventing Geospatial, Inc</copyright>
+                          <productVersion>1.0.0.0</productVersion>
+                          <txtProductVersion>1.0.0.0</txtProductVersion>
+                          <productName>SWAGD</productName>
+                          <internalName>SWAGD</internalName>
+                          <originalFilename>SWAGD.exe</originalFilename>
+                      </versionInfo>
+                  </configuration>
+              </execution>
+          </executions>
+      </plugin>
+      <!--plugin>
           <groupId>com.akathist.maven.plugins.launch4j</groupId>
           <artifactId>launch4j-maven-plugin</artifactId>
           <version>1.5.1</version>
           <executions>
               <execution>
-                  <id>l4j-cli</id>
+                  <id>l4j-clui</id>
                   <phase>package</phase>
                   <goals>
                       <goal>launch4j</goal>
@@ -125,7 +166,7 @@
                           <mainClass>com.rgi.suite.GeoSuite</mainClass>
                           <preCp>anything</preCp>
                       </classPath>
-                      <!--icon>/res/res/icons/corps.png</icon-->
+                      <icon>/res/res/icons/corps.png</icon>
                       <jre>
                           <minVersion>1.6.0</minVersion>
                           <maxVersion>1.8.0</maxVersion>
@@ -146,7 +187,7 @@
                   </configuration>
               </execution>
           </executions>
-      </plugin>
+      </plugin-->
     </plugins>
   </build>
 </project>
