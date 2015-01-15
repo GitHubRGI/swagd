@@ -288,7 +288,7 @@ public class GeoPackageCore
 
         if(boundingBox == null)
         {
-            throw new IllegalArgumentException("Bounding box cannot be mull.");
+            throw new IllegalArgumentException("Bounding box cannot be null.");
         }
 
         final Content existingContent = this.getContent(tableName);
