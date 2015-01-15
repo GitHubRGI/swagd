@@ -26,8 +26,6 @@ import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Random;
 
@@ -1272,34 +1270,6 @@ public class GeoPackageCoreAPITest
         }
     }
     
-
-    /**
-     * Tests if the GeoPackageCore throws an IllegalArgumentException
-     * when adding content with a bad bounding box value for the
-     * Content
-     * @throws Exception
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void addContentBadBoundingBox() throws Exception
-    {
-        final File testFile = this.getRandomFile(10);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
-        {
-            gpkg.core().addContent("gpkg_table", "dataType", "identifier", "description", new BoundingBox(0.0,0.0,-1.0, 10.0), gpkg.core().getSpatialReferenceSystem(-1));
-            fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the Bounding box a Max X value that is less than Min X value");
-        }
-        finally
-        {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
-        }
-    }
-
     /**
      * Tests GeoPackageCore if it throws an IllegalArgumentException
      * when giving an empty string for getContnent's tablename
