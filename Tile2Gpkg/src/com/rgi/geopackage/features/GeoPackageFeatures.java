@@ -29,6 +29,14 @@ import com.rgi.geopackage.verification.FailedRequirement;
 
 public class GeoPackageFeatures
 {
+    /**
+     * Constructor
+     *
+     * @param databaseConnection
+     *             The open connection to the database that contains a GeoPackage
+     * @param core
+     *             Access to GeoPackage's "core" methods
+     */
     public GeoPackageFeatures(final Connection databaseConnection, final GeoPackageCore core)
     {
         this.databaseConnection = databaseConnection;
