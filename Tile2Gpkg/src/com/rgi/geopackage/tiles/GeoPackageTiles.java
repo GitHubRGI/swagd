@@ -759,7 +759,7 @@ public class GeoPackageTiles
 
         if(crsTileCoordinate == null)
         {
-            throw new IllegalArgumentException("SRS coordinate may not be null");
+            throw new IllegalArgumentException("CRS coordinate may not be null");
         }
 
         if(!crsTileCoordinate.getCoordinateReferenceSystem().getAuthority().equalsIgnoreCase(tileSet.getSpatialReferenceSystem().getOrganization()) ||
