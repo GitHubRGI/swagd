@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.geopackage.DatabaseUtility;
 import com.rgi.geopackage.verification.FailedRequirement;
 
 /**
@@ -45,12 +46,30 @@ public class GeoPackageCore
      *
      * @param databaseConnection
      *             The open connection to the database that contains a GeoPackage
-     * @param dataModel
-     *             Controls how a GeoPackage's tables are created
+     * @throws SQLException
      */
-    public GeoPackageCore(final Connection databaseConnection)
+    public GeoPackageCore(final Connection databaseConnection) throws SQLException
+    {
+        this(databaseConnection, false);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param databaseConnection
+     *             The open connection to the database that contains a GeoPackage
+     * @param createDefaults
+     *             If true, GeoPackageCore will create the default tables and entries required by all standard
+     * @throws SQLException
+     */
+    public GeoPackageCore(final Connection databaseConnection, final boolean createDefaults) throws SQLException
     {
         this.databaseConnection = databaseConnection;
+
+        if(createDefaults)
+        {
+            this.createDefaultTables();
+        }
     }
 
     /**
@@ -84,61 +103,6 @@ public class GeoPackageCore
             final ResultSet         tileResult        = preparedStatement.executeQuery();)
         {
             return tileResult.getLong(1);
-        }
-    }
-
-    /**
-     * Create the default tables
-     *
-     * @throws SQLException
-     */
-    public void createDefaultTables() throws SQLException
-    {
-        try
-        {
-            // Create the spatial ref system table
-            try(Statement statement = this.databaseConnection.createStatement())
-            {
-                statement.executeUpdate(this.getSpatialReferenceSystemCreationSql());
-            }
-
-            // Add the default entries to the spatial ref system table
-            // See: http://www.geopackage.org/spec/#spatial_ref_sys -> 1.1.2.1.2. Table Data Values, Requirement 11
-            this.addSpatialReferenceSystemNoCommit("World Geodetic System (WGS) 1984",
-                                                   4326,
-                                                   "EPSG",
-                                                   4326,
-                                                   "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]", // http://spatialreference.org/ref/epsg/wgs-84/ogcwkt/
-                                                   "World Geodetic System 1984");
-
-            this.addSpatialReferenceSystemNoCommit("Undefined Cartesian Coordinate Reference System",
-                                                   -1,
-                                                   "NONE",
-                                                   -1,
-                                                   "undefined",
-                                                   "undefined Cartesian coordinate reference system");
-
-            this.addSpatialReferenceSystemNoCommit("Undefined Geographic Coordinate Reference System",
-                                                   0,
-                                                   "NONE",
-                                                   0,
-                                                   "undefined",
-                                                   "undefined Geographic coordinate reference system");
-
-            // Create the package contents table or view
-            try(Statement statement = this.databaseConnection.createStatement())
-            {
-                // http://www.geopackage.org/spec/#gpkg_contents_sql
-                // http://www.geopackage.org/spec/#_contents
-                statement.executeUpdate(this.getContentsCreationSql());
-            }
-
-            this.databaseConnection.commit();
-        }
-        catch(final Exception ex)
-        {
-            this.databaseConnection.rollback();
-            throw ex;
         }
     }
 
@@ -632,17 +596,64 @@ public class GeoPackageCore
     }
 
     /**
-     * Gets a specific entry in the contents table based on the name of the table the entry corresponds to
+     * Create the default tables, and default SRS entries
      *
-     * @param tableName
-     *             Table name to search for
-     * @return Returns a {@link Content}
      * @throws SQLException
      */
-    private Content getContent(final String tableName) throws SQLException
+    protected void createDefaultTables() throws SQLException
     {
-        return this.getContent(tableName,
-                               (inTableName, inDataType, inIdentifier, inDescription, inLastChange, inBoundingBox, inSpatialReferenceSystem) -> new Content(inTableName, inDataType, inIdentifier, inDescription, inLastChange, inBoundingBox, inSpatialReferenceSystem));
+        try
+        {
+            // Create the spatial ref system table
+            if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageCore.SpatialRefSysTableName))
+            {
+                try(Statement statement = this.databaseConnection.createStatement())
+                {
+                    statement.executeUpdate(this.getSpatialReferenceSystemCreationSql());
+                }
+            }
+
+            // Add the default entries to the spatial ref system table
+            // See: http://www.geopackage.org/spec/#spatial_ref_sys -> 1.1.2.1.2. Table Data Values, Requirement 11
+            this.addSpatialReferenceSystemNoCommit("World Geodetic System (WGS) 1984",
+                                                   4326,
+                                                   "EPSG",
+                                                   4326,
+                                                   "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]", // http://spatialreference.org/ref/epsg/wgs-84/ogcwkt/
+                                                   "World Geodetic System 1984");
+
+            this.addSpatialReferenceSystemNoCommit("Undefined Cartesian Coordinate Reference System",
+                                                   -1,
+                                                   "NONE",
+                                                   -1,
+                                                   "undefined",
+                                                   "undefined Cartesian coordinate reference system");
+
+            this.addSpatialReferenceSystemNoCommit("Undefined Geographic Coordinate Reference System",
+                                                   0,
+                                                   "NONE",
+                                                   0,
+                                                   "undefined",
+                                                   "undefined Geographic coordinate reference system");
+
+            // Create the package contents table or view
+            if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageCore.ContentsTableName))
+            {
+                try(Statement statement = this.databaseConnection.createStatement())
+                {
+                    // http://www.geopackage.org/spec/#gpkg_contents_sql
+                    // http://www.geopackage.org/spec/#_contents
+                    statement.executeUpdate(this.getContentsCreationSql());
+                }
+            }
+
+            this.databaseConnection.commit();
+        }
+        catch(final Exception ex)
+        {
+            this.databaseConnection.rollback();
+            throw ex;
+        }
     }
 
     @SuppressWarnings("static-method")
@@ -676,6 +687,20 @@ public class GeoPackageCore
               " max_y       DOUBLE,                                                           -- Bounding box maximum northing or latitude for all content in table_name\n"  +
               " srs_id      INTEGER,                                                          -- Spatial Reference System ID: gpkg_spatial_ref_sys.srs_id; when data_type is features, SHALL also match gpkg_geometry_columns.srs_id; When data_type is tiles, SHALL also match gpkg_tile_matrix_set.srs.id\n" +
               " CONSTRAINT fk_gc_r_srs_id FOREIGN KEY (srs_id) REFERENCES gpkg_spatial_ref_sys(srs_id));";
+    }
+
+    /**
+     * Gets a specific entry in the contents table based on the name of the table the entry corresponds to
+     *
+     * @param tableName
+     *             Table name to search for
+     * @return Returns a {@link Content}
+     * @throws SQLException
+     */
+    private Content getContent(final String tableName) throws SQLException
+    {
+        return this.getContent(tableName,
+                               (inTableName, inDataType, inIdentifier, inDescription, inLastChange, inBoundingBox, inSpatialReferenceSystem) -> new Content(inTableName, inDataType, inIdentifier, inDescription, inLastChange, inBoundingBox, inSpatialReferenceSystem));
     }
 
     private final Connection databaseConnection;
