@@ -2690,7 +2690,7 @@ public class GeoPackageTilesAPITest
 					   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
 					   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
     		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsCoord);
+    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
     		
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 0, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
@@ -2749,7 +2749,7 @@ public class GeoPackageTilesAPITest
 					   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
 					   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
     		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsCoord);
+    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
     		
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 0, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
@@ -2808,7 +2808,7 @@ public class GeoPackageTilesAPITest
 									   (tileSet.getBoundingBox().getWidth() /matrixWidth )/pixelXSize, 
 									   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
     		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsCoord);
+    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
     		
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 1, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
@@ -2867,7 +2867,7 @@ public class GeoPackageTilesAPITest
     								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
     		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsCoord);
+    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
     		
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 1, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
@@ -2937,7 +2937,7 @@ public class GeoPackageTilesAPITest
     								   (tileSet.getBoundingBox().getWidth() /matrixWidth )/pixelXSize, 
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
     		
-    		RelativeTileCoordinate relativeCoord = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
+    		RelativeTileCoordinate relativeCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
     		
     		assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordiante.  "
     								+ "	\nExpected Row: 0, Expected Column: 0.\nActual Row: %d, Actual Column: %d.",
@@ -3010,7 +3010,7 @@ public class GeoPackageTilesAPITest
 									   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
 									   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
 			
-			RelativeTileCoordinate relativeCoord = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
+			RelativeTileCoordinate relativeCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
     		
     		assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordiante.  "
     								+ "	\nExpected Row: 0, Expected Column: 1.\nActual Row: %d, Actual Column: %d.",
@@ -3083,7 +3083,7 @@ public class GeoPackageTilesAPITest
 									   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
 									   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
     		
-    		RelativeTileCoordinate relativeCoord = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
+    		RelativeTileCoordinate relativeCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
     		
     		assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordiante.  "
     								+ "	\nExpected Row: 1, Expected Column: 0.\nActual Row: %d, Actual Column: %d.",
@@ -3155,7 +3155,7 @@ public class GeoPackageTilesAPITest
 									   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
 									   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
     		
-    		RelativeTileCoordinate relativeCoord = gpkg.tiles().srsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
+    		RelativeTileCoordinate relativeCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
     		
     		assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordiante.  "
     								+ "	\nExpected Row: 1, Expected Column: 1.\nActual Row: %d, Actual Column: %d.",
