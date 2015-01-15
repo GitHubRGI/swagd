@@ -23,9 +23,12 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Random;
 
@@ -37,6 +40,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.Content;
+import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
@@ -48,7 +52,6 @@ import com.rgi.geopackage.verification.ConformanceException;
 @SuppressWarnings("static-method")
 public class GeoPackageCoreAPITest
 {
-
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
@@ -1717,19 +1720,6 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
-    
-//    TODO
-//    @Test
-//    public void getFailedRequirements()
-//    {
-//    	File testFile = this.getRandomFile(9);
-//    	testFile.createNewFile();
-//    	try()
-//    	{
-//    		
-//    	}
-//    }
 
     private String getRanString(final int length)
     {

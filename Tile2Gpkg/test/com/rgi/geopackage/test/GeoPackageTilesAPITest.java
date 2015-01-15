@@ -71,7 +71,6 @@ public class GeoPackageTilesAPITest
     public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
 
-
     /**
      * This tests if a GeoPackage can add a tile set successfully without throwing errors.
      *
@@ -3611,6 +3610,315 @@ public class GeoPackageTilesAPITest
             }
         }
     }
+    
+    /**
+     * Tests if a GeoPackage will throw the appropriate 
+     * exception when giving the method a null value for
+     * crsCoordinate.
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void crsToRelativeTileCoordException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	File testFile = this.getRandomFile(8);
+    	
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+    												  "identifier", 
+    												  "description", 
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    												  gpkg.core().getSpatialReferenceSystem(4326));
+    		
+    		gpkg.tiles().crsToRelativeTileCoordinate(tileSet, null);
+    		
+    		fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to input a crs tile coordinate that was null to the method crsToRelativeTileCoordinate.");
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Tests if a GeoPackage will throw the appropriate 
+     * exception when giving the method a null value for
+     * crsCoordinate.
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void crsToRelativeTileCoordException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	File testFile = this.getRandomFile(8);
+    	
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("Police", 99);
+    		CrsTileCoordinate 		  crsCoord 					= new CrsTileCoordinate(20, 15, 1, coordinateReferenceSystem);
+    		
+    		gpkg.tiles().crsToRelativeTileCoordinate(null, crsCoord);
+    		
+    		fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to input a tileSet that was null to the method crsToRelativeTileCoordinate.");
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * This tests that the appropriate exception
+     * is thrown when trying to find a crs coordinate
+     * from a different SRS from the tiles.
+     * 
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void crsToRelativeTileCoordException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	int zoomLevel = 15;
+    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(50, 20, zoomLevel, geodeticRefSys);//lower right tile
+    	
+    	File testFile = this.getRandomFile(8);
+    	
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+    												  "identifier", 
+    												  "description", 
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    												  gpkg.core().getSpatialReferenceSystem(-1));
+    		int matrixWidth = 2;
+    		int matrixHeight = 2;
+    		int pixelXSize = 256;
+    		int pixelYSize = 256;
+    		
+    		gpkg.tiles().addTileMatrix(tileSet, 
+    								   zoomLevel, 
+    								   matrixWidth, 
+    								   matrixHeight, 
+    								   pixelXSize, 
+    								   pixelYSize, 
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+    		
+    		gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+    		
+    		fail("Expected the GoePackage to throw an exception when the crs coordinate and the tiles are from two different projections.");
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * This tests that the appropriate exception
+     * is thrown when trying to find a crs coordinate
+     * from with a zoom level that is not in the matrix table
+     * 
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void crsToRelativeTileCoordException4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	int zoomLevel = 15;
+    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(50, 20, zoomLevel, geodeticRefSys);//lower right tile
+    	
+    	File testFile = this.getRandomFile(8);
+    	
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+    												  "identifier", 
+    												  "description", 
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    												  gpkg.core().getSpatialReferenceSystem(4326));
+    		int matrixWidth = 2;
+    		int matrixHeight = 2;
+    		int pixelXSize = 256;
+    		int pixelYSize = 256;
+    		int differentZoomLevel = 12;
+    		
+    		gpkg.tiles().addTileMatrix(tileSet, 
+    								   differentZoomLevel, 
+    								   matrixWidth, 
+    								   matrixHeight, 
+    								   pixelXSize, 
+    								   pixelYSize, 
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+    		
+    		RelativeTileCoordinate relativeTileCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+    		
+    		assertTrue("Expected the GeoPackage to return a null value when the crs tile coordinate zoom level is not in the tile matrix table.",
+    				  relativeTileCoord == null);
+    		
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * This tests that the appropriate exception
+     * is thrown when trying to find a crs coordinate
+     * is not within bounds
+     * 
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void crsToRelativeTileCoordException5() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	int zoomLevel = 15;
+    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(-50, 20, zoomLevel, geodeticRefSys);//lower right tile
+    	
+    	File testFile = this.getRandomFile(8);
+    	
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+    												  "identifier", 
+    												  "description", 
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    												  gpkg.core().getSpatialReferenceSystem(4326));
+    		int matrixWidth = 2;
+    		int matrixHeight = 2;
+    		int pixelXSize = 256;
+    		int pixelYSize = 256;
+    		
+    		gpkg.tiles().addTileMatrix(tileSet, 
+    								   zoomLevel, 
+    								   matrixWidth, 
+    								   matrixHeight, 
+    								   pixelXSize, 
+    								   pixelYSize, 
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+    		
+    		RelativeTileCoordinate relativeTileCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+    		
+    		assertTrue("Expected the GeoPackage to return a null value when the crs tile coordinate is outside of the bounding box.",
+    				  relativeTileCoord == null);
+    		
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * This tests that the appropriate exception
+     * is thrown when trying to find a crs coordinate
+     * from a different SRS from the tiles.
+     * 
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void crsToRelativeTileCoordException6() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+    	int zoomLevel = 15;
+    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG", 3857);
+    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(50, 20, zoomLevel, geodeticRefSys);//lower right tile
+    	
+    	File testFile = this.getRandomFile(8);
+    	
+    	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+    	{
+    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+    												  "identifier", 
+    												  "description", 
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    												  gpkg.core().getSpatialReferenceSystem(4326));
+    		int matrixWidth = 2;
+    		int matrixHeight = 2;
+    		int pixelXSize = 256;
+    		int pixelYSize = 256;
+    		
+    		gpkg.tiles().addTileMatrix(tileSet, 
+    								   zoomLevel, 
+    								   matrixWidth, 
+    								   matrixHeight, 
+    								   pixelXSize, 
+    								   pixelYSize, 
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+    		
+    		gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+    		
+    		fail("Expected the GoePackage to throw an exception when the crs coordinate and the tiles are from two different projections.");
+    	}
+    	finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
 
     private static byte[] createImageBytes() throws IOException
     {
