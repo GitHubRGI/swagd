@@ -37,6 +37,8 @@ package com.rgi.geopackage.schema;
 public class DataColumnConstraint
 {
     /**
+     * Constructor
+     *
      * @param constraintName
      *             Case sensitive name of constraint
      * @param constraintType
@@ -46,11 +48,11 @@ public class DataColumnConstraint
      * @param minimum
      *             Minimum value for "range" or <code>null</code> for "enum" or "glob" constraintType
      * @param minimumIsInclusive
-     *             <code>false</code> if minimum value is exclusive, or <code>true</code> if minimum value is inclusive
+     *             <code>false</code> if minimum value is exclusive, <code>true</code> if minimum value is inclusive, or <code>null</code> for "enum" or "glob" constraintType
      * @param maximum
      *             Maximum value for "range" or <code>null</code> for "enum" or "glob" constraintType
      * @param maximumIsInclusive
-     *             <code>false</code> if maximum value is exclusive, or <code>true</code> if maximum value is inclusive
+     *             <code>false</code> if maximum value is exclusive, <code>true</code> if maximum value is inclusive, or <code>null</code> for "enum" or "glob" constraintType
      * @param description
      *             For ranges and globs, describes the constraint; for enums, describes the enum value.
      */
