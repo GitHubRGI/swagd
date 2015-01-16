@@ -1122,7 +1122,12 @@ public class TilesVerifier extends Verifier
                   severity =  Severity.Warning)
 	public void Requirement54() throws AssertionError
     {
-		if (this.hasTileMatrixTable)
+		final class Foo
+		{
+
+		};
+
+        if (this.hasTileMatrixTable)
 		{
 			final String query = "SELECT DISTINCT table_name FROM gpkg_tile_matrix;";
 
@@ -1130,7 +1135,7 @@ public class TilesVerifier extends Verifier
 				 ResultSet pyramidTableName = stmt.executeQuery(query))
 			{
 
-				while (pyramidTableName.next())
+				while (pyramidTableName.next()) // TODO create stream
 				{
 					final String pyramidName = pyramidTableName.getString("table_name");
 					// this query will only pull the incorrect values for the
@@ -1138,6 +1143,7 @@ public class TilesVerifier extends Verifier
 					// of the tile_column value for the pyramid user data table
 					// SHOULD be null otherwise those fields are in violation
 					// of the range
+
 					final String query2 = String.format("SELECT DISTINCT udt.id, "
 																	 + "gtmm.matrix_width  AS gtmm_width,"
 																	 + "gtmm.zoom_level, "
@@ -1147,21 +1153,23 @@ public class TilesVerifier extends Verifier
 															         + " udt.zoom_level  = gtmm.zoom_level AND"
 															         + " gtmm.table_name = '%s'            AND"
 															         + " (udt_column < 0 OR udt_column > (gtmm_width - 1));",
-									                   pyramidName, pyramidName);
+									                   pyramidName,
+									                   pyramidName);   // TODO use format parameter indices
 
+					// TODO can this be part of the SQL query? if not, use .filter on the stream above
 					if (DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), pyramidName))
 					{
 						try (Statement stmt2            = this.getSqliteConnection().createStatement();
 							 ResultSet incorrectColumns = stmt2.executeQuery(query2))
 						{
-							while(incorrectColumns.next())
+							while(incorrectColumns.next())   // TODO use stream to map table names (above) to tiles in violation
 							{
 								final int matrixWidth         = incorrectColumns.getInt("gtmm_width");
 								final int tileMatrixZoomLevel = incorrectColumns.getInt("zoom_level");
 								final int pyramidTileId       = incorrectColumns.getInt("id");
 								final int pyramidTileColumn   = incorrectColumns.getInt("udt_column");//this should be null
 
-
+								// TODO this will cause the function to fail after the first incorrect assertion.  we want all tiles in violation
 								Assert.assertTrue(String.format("The Pyramid User Data table tile_column value must be greater than zero"
 														      + " and less than or equal to the Tile Matrix's table's width (in this case is %d) minus 1,"
 														      + " when the zoom_level in the Tile Matrix Table equals the zoom_level "
@@ -1199,7 +1207,8 @@ public class TilesVerifier extends Verifier
     		      severity = Severity.Warning)
 	public void Requirement55() throws AssertionError
     {
-		if (this.hasTileMatrixTable)
+		// TODO this is a lot of code, and it's very similar to the above function. consider abstracting
+        if (this.hasTileMatrixTable)
 		{
 			final String query = "SELECT DISTINCT table_name FROM gpkg_tile_matrix;";
 
