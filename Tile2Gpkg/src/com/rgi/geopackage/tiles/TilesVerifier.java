@@ -1195,12 +1195,17 @@ public class TilesVerifier extends Verifier
 											                              .map(resultSet -> {  try
 											                                                   {
 											                                                      TileData tileData    = new TileData();
-											                                                      
+											                                                      tileData.column      = incorrectColumns.getInt("udt_column"); //if this value is null
+                                    																															//column is in valid range
+																                                  if(resultSet.wasNull())
+																                                  {
+																                                	  return null;
+																                                  }
+																                                  
 											                                                      tileData.id          = incorrectColumns.getInt("id");
 											                                                      tileData.matrixWidth = incorrectColumns.getInt("gtmm_width");
-											                                                      tileData.column      = incorrectColumns.getInt("udt_column");
 											                                                      tileData.zoomLevel   = incorrectColumns.getInt("zoom_level");
-											                                                    
+											                                                      
 											                                                      return new AbstractMap.SimpleImmutableEntry<>(pyramidName, tileData);
 											                                                   }
 											                                                   catch (final Exception ex1)
