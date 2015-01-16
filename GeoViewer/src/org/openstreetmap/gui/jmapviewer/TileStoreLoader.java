@@ -20,7 +20,6 @@ package org.openstreetmap.gui.jmapviewer;
 
 import java.awt.image.BufferedImage;
 
-import org.openstreetmap.gui.jmapviewer.Tile;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileJob;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoaderListener;
@@ -32,67 +31,91 @@ import com.rgi.common.tile.store.TileStore;
 
 /**
  * Class responsible for loading TMS tiles to a JMapViewer.
- * 
+ *
  * @author Steven D. Lander
  *
  */
-public class TileStoreLoader implements TileLoader {
+public class TileStoreLoader implements TileLoader
+{
 
-	protected TileLoaderListener listener;
-	protected TileSource tileSource;
-	protected TileStore tileStore;
-	protected static final BufferedImage TRANSPARENT_TILE = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
-	
-	public TileStoreLoader(TileStore tileStore, TileLoaderListener listener) {
-		this.tileStore = tileStore;
-		this.listener = listener;
-		this.tileSource = new TileSourceShell(tileStore);
-	}
+    protected TileLoaderListener         listener;
+    protected TileSource                 tileSource;
+    protected TileStore                  tileStore;
+    protected static final BufferedImage TRANSPARENT_TILE = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
 
-	@Override
-	public TileJob createTileLoaderJob(Tile tile) {
-		return new TileJob() {
-			@Override
-			public void run() {
-				synchronized (tile) {
-					if ((tile.isLoaded() && !tile.hasError()) || tile.isLoading())
-						return;
-					tile.loaded = false;
-					tile.error = false;
-					tile.loading = true;
-				}
-				try {
-					AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(tile.getYtile(), tile.getXtile(), tile.getZoom(),
-							TileOrigin.LowerLeft);
-					com.rgi.common.tile.Tile commonTile = TileStoreLoader.this.tileStore.getTile(tileCoord);
-					if (commonTile != null) {
-						tile.setImage(commonTile.getImageContents());
-					} else {
-						tile.setError("No tile available at this location.");
-						tile.setImage(TRANSPARENT_TILE);
-					}
-					tile.setLoaded(true);
-					TileStoreLoader.this.listener.tileLoadingFinished(tile, true);
-				} catch (Exception exception) {
-					// Error encountered during tile retrieval
-					tile.setError(exception.getMessage());
-					TileStoreLoader.this.listener.tileLoadingFinished(tile, false);
-				} finally {
-					tile.loading = false;
-					tile.setLoaded(true);
-				}
-			}
+    public TileStoreLoader(final TileStore tileStore, final TileLoaderListener listener)
+    {
+        this.tileStore = tileStore;
+        this.listener = listener;
+        this.tileSource = new TileSourceShell(tileStore);
+    }
 
-			@Override
-			public Tile getTile() {
-				return tile;
-			}
-		};
-	}
+    @Override
+    public TileJob createTileLoaderJob(final Tile tile)
+    {
+        return new TileJob()
+        {
+            @Override
+            public void run()
+            {
+                synchronized(tile)
+                {
+                    if((tile.isLoaded() && !tile.hasError()) || tile.isLoading())
+                    {
+                        return;
+                    }
+                    tile.loaded = false;
+                    tile.error = false;
+                    tile.loading = true;
+                }
 
-	@Override
-	public String toString() {
-		return getClass().getSimpleName();
-	}
+                try
+                {
+                    final AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(tile.getYtile(),
+                                                                                        tile.getXtile(),
+                                                                                        tile.getZoom(),
+                                                                                        TileOrigin.LowerLeft);
+
+                    final com.rgi.common.tile.Tile commonTile = TileStoreLoader.this.tileStore.getTile(tileCoord);
+
+                    if(commonTile != null)
+                    {
+                        tile.setImage(commonTile.getImageContents());
+                    }
+                    else
+                    {
+                        tile.setError("No tile available at this location.");
+                        tile.setImage(TRANSPARENT_TILE);
+                    }
+
+                    tile.setLoaded(true);
+                    TileStoreLoader.this.listener.tileLoadingFinished(tile, true);
+                }
+                catch(final Exception exception)
+                {
+                    // Error encountered during tile retrieval
+                    tile.setError(exception.getMessage());
+                    TileStoreLoader.this.listener.tileLoadingFinished(tile, false);
+                }
+                finally
+                {
+                    tile.loading = false;
+                    tile.setLoaded(true);
+                }
+            }
+
+            @Override
+            public Tile getTile()
+            {
+                return tile;
+            }
+        };
+    }
+
+    @Override
+    public String toString()
+    {
+        return this.getClass().getSimpleName();
+    }
 
 }
