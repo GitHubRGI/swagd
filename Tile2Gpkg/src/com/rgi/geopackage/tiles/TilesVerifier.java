@@ -60,11 +60,9 @@ public class TilesVerifier extends Verifier
 {
     public static final double EPSILON = 0.0001;
     private Set<String> allPyramidUserDataTables;
-    private Set<String> pyramidTablesInContents;
-    private Set<String> pyramidTablesInTileMatrix;
     private boolean hasTileMatrixTable;
     private boolean hasTileMatrixSetTable;
-    
+    private Set<String> pyramidTablesInContents;
 
     public TilesVerifier(final Connection sqliteConnection) throws SQLException
     {
@@ -98,7 +96,6 @@ public class TilesVerifier extends Verifier
         }
 
         final String query2 = "SELECT table_name FROM gpkg_contents WHERE data_type = 'tiles';";
-        
         try(Statement createStmt2       = this.getSqliteConnection().createStatement();
             ResultSet contentsPyramidTables = createStmt2.executeQuery(query2))
         {
@@ -119,38 +116,6 @@ public class TilesVerifier extends Verifier
         {
         	this.pyramidTablesInContents = Collections.emptySet();
         }
-        
-        String query3  = "SELECT DISTINCT table_name FROM gpkg_tile_matrix;";
-        
-        try(Statement createStmt3             = this.getSqliteConnection().createStatement();
-            ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(query3))
-        {
-        this.pyramidTablesInTileMatrix = ResultSetStream.getStream(tileMatrixPyramidTables)
-	    											    .map(resultSet -> {  try
-	    											  					     {
-	    											    						String pyramidName = resultSet.getString("table_name");
-	    											    					    if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), pyramidName))
-	    											    					    {
-	    											    					    	return pyramidName;
-	    											    					    }
-	    											    					    else
-	    											    					    {
-	    												  					       return null;
-	    											    					    }
-	    											  					     }
-	    											  					     catch(final SQLException ex)
-	    											  					     {
-	    											  						     return null;
-	    											  					     }
-        											  				  	  })
-        											    .filter(Objects::nonNull)
-        											    .collect(Collectors.toSet());
-        }
-        catch(final SQLException ex)
-        {
-        	this.pyramidTablesInTileMatrix = Collections.emptySet();
-        }
-        
 
         this.hasTileMatrixSetTable = this.tileMatrixSetTableExists();
         this.hasTileMatrixTable    = this.tileMatrixTableExists();
@@ -1148,7 +1113,6 @@ public class TilesVerifier extends Verifier
 	 * </blockquote>
 	 * </div>
      * @throws AssertionError
-     * @throws SQLException 
      */
     @Requirement (number = 54,
                   text   = "For each distinct table_name from the gpkg_tile_matrix (tm) table, "
@@ -1156,41 +1120,21 @@ public class TilesVerifier extends Verifier
                              + "GeoPackage SHALL be in the range 0 <= tp.tile_column <= tm.matrix_width - 1 "
                              + "where the tm and tp zoom_level column values are equal. ",
                   severity =  Severity.Warning)
-	public void Requirement54() throws AssertionError, SQLException
+	public void Requirement54() throws AssertionError
     {
-		class TileData
+		final class Foo
 		{
-			int id;
-			int matrixWidth;
-			int column;
-			int zoomLevel;
+
 		};
 
         if (this.hasTileMatrixTable)
 		{
-			for(String pyramidName : this.pyramidTablesInTileMatrix)
-			{
-        	// this query will only pull the incorrect values for the
-			// pyramid user data table's column width, the value
-			// of the tile_column value for the pyramid user data table
-			// SHOULD be null otherwise those fields are in violation
-			// of the range
+			final String query = "SELECT DISTINCT table_name FROM gpkg_tile_matrix;";
 
-			final String query2 = String.format("SELECT DISTINCT udt.id, "
-															 + "gtmm.matrix_width  AS gtmm_width,"
-															 + "gtmm.zoom_level, "
-															 + "udt.tile_column    AS udt_column"
-													   + " FROM gpkg_tile_matrix AS gtmm "
-												       + "LEFT OUTER JOIN %s AS udt ON"
-													         + " udt.zoom_level  = gtmm.zoom_level AND"
-													         + " gtmm.table_name = '%s'            AND"
-													         + " (udt_column < 0 OR udt_column > (gtmm_width - 1));",
-							                   pyramidName,
-							                   pyramidName);   // TODO use format parameter indices
-
-			try (Statement stmt2            = this.getSqliteConnection().createStatement();
-				 ResultSet incorrectColumns = stmt2.executeQuery(query2))
+			try (Statement stmt             = this.getSqliteConnection().createStatement();
+				 ResultSet pyramidTableName = stmt.executeQuery(query))
 			{
+<<<<<<< HEAD
 				final Map<String, TileData> allTileData =  ResultSetStream.getStream(incorrectColumns)
 											                              .map(resultSet -> {  try
 											                                                   {
@@ -1228,9 +1172,62 @@ public class TilesVerifier extends Verifier
 //											 tileMatrixZoomLevel,
 //									         pyramidName),
 //							    incorrectColumns.wasNull());
+=======
+
+				while (pyramidTableName.next()) // TODO create stream
+				{
+					final String pyramidName = pyramidTableName.getString("table_name");
+					// this query will only pull the incorrect values for the
+					// pyramid user data table's column width, the value
+					// of the tile_column value for the pyramid user data table
+					// SHOULD be null otherwise those fields are in violation
+					// of the range
+
+					final String query2 = String.format("SELECT DISTINCT udt.id, "
+																	 + "gtmm.matrix_width  AS gtmm_width,"
+																	 + "gtmm.zoom_level, "
+																	 + "udt.tile_column    AS udt_column"
+															   + " FROM gpkg_tile_matrix AS gtmm "
+														       + "LEFT OUTER JOIN %s AS udt ON"
+															         + " udt.zoom_level  = gtmm.zoom_level AND"
+															         + " gtmm.table_name = '%s'            AND"
+															         + " (udt_column < 0 OR udt_column > (gtmm_width - 1));",
+									                   pyramidName,
+									                   pyramidName);   // TODO use format parameter indices
+
+					// TODO can this be part of the SQL query? if not, use .filter on the stream above
+					if (DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), pyramidName))
+					{
+						try (Statement stmt2            = this.getSqliteConnection().createStatement();
+							 ResultSet incorrectColumns = stmt2.executeQuery(query2))
+						{
+							while(incorrectColumns.next())   // TODO use stream to map table names (above) to tiles in violation
+							{
+								final int matrixWidth         = incorrectColumns.getInt("gtmm_width");
+								final int tileMatrixZoomLevel = incorrectColumns.getInt("zoom_level");
+								final int pyramidTileId       = incorrectColumns.getInt("id");
+								final int pyramidTileColumn   = incorrectColumns.getInt("udt_column");//this should be null
+
+								// TODO this will cause the function to fail after the first incorrect assertion.  we want all tiles in violation
+								Assert.assertTrue(String.format("The Pyramid User Data table tile_column value must be greater than zero"
+														      + " and less than or equal to the Tile Matrix's table's width (in this case is %d) minus 1,"
+														      + " when the zoom_level in the Tile Matrix Table equals the zoom_level "
+														      + "in the Pyramid User Data Table. Invalid tile id: %d with tile_column value: %d at zoom_level: %d Pyramid Table: %s",
+												         matrixWidth,
+														 pyramidTileId,
+														 pyramidTileColumn,
+														 tileMatrixZoomLevel,
+												         pyramidName),
+										    incorrectColumns.wasNull());
+							}
+						}
+					}
+				}
+			} catch (final Exception ex) {
+				Assert.fail(ex.getMessage());
+>>>>>>> parent of 5aab1e4... adjusting TileVerifier Requirements 54 and 55
 			}
 		}
-	  }
 	}
     /**
      * <div class="title">Requirement 55</div>
