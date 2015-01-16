@@ -1110,13 +1110,14 @@ public class TilesVerifier extends Verifier
 	                            {
 	                                if (invalidZooms.next())
 	                                {
-	                                    Assert.fail(String.format("There are zoom_levels in the Pyramid User Data Table: %s  such that the zoom level is bigger than the maximum zoom level: %d or smaller than the minimum zoom_level: %d"
-	                                                        + " that was determined by the gpkg_tile_matrix Table.  Invalid tile with an id of %d from table %s",
-	                                                        pyramidName,
-	                                                        maxZoom,
-	                                                        minZoom,
-	                                                        invalidZooms.getInt("id"),
-	                                                        pyramidName));
+	                                    Assert.fail(String.format("There are zoom_levels in the Pyramid User Data Table: %s  such that the zoom level "
+	                                    							+ "is bigger than the maximum zoom level: %d or smaller than the minimum zoom_level: %d"
+	                                                                + " that was determined by the gpkg_tile_matrix Table.  Invalid tile with an id of %d from table %s",
+	                                                              pyramidName,
+	                                                              maxZoom,
+	                                                              minZoom,
+	                                                              invalidZooms.getInt("id"),
+	                                                              pyramidName));
 	                                }
 	                            }
 	                            catch (final Exception ex)
@@ -1179,15 +1180,11 @@ public class TilesVerifier extends Verifier
 			    {
 					while (incorrectColumns.next()) 
 					{
-						final int matrixWidth = incorrectColumns
-								.getInt("gtmm_width");
-						final int tileMatrixZoomLevel = incorrectColumns
-								.getInt("zoom_level");
-						final int pyramidTileId = incorrectColumns
-								.getInt("id");
-						final int pyramidTileColumn = incorrectColumns
-								.getInt("udt_column");// this should be
-														// null
+						final int matrixWidth         = incorrectColumns.getInt("gtmm_width");
+						final int tileMatrixZoomLevel = incorrectColumns.getInt("zoom_level");
+						final int pyramidTileId       = incorrectColumns.getInt("id");
+						final int pyramidTileColumn   = incorrectColumns.getInt("udt_column");// this should be
+																							  // null
 						
 						Assert.assertTrue(String.format("The Pyramid User Data table %s tile_column value %d must be greater than zero"
 															+ " and less than or equal to the Tile Matrix's table's width (in this case is %d) minus 1."
@@ -1197,7 +1194,7 @@ public class TilesVerifier extends Verifier
 														matrixWidth,
 													    pyramidTileId,
 													    tileMatrixZoomLevel), 
-										incorrectColumns.wasNull());
+										 incorrectColumns.wasNull());
 					}
 				}
 			}
