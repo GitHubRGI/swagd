@@ -22,13 +22,17 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.junit.Assert;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.DatabaseUtility;
@@ -44,6 +48,7 @@ import com.rgi.geopackage.verification.Verifier;
 public class ExtensionsVerifier extends Verifier
 {
 	private boolean hasGpkgExtensionsTable;
+	private Map<String, String> gpkgExtensionsTableNameColumnName;
 	
     public ExtensionsVerifier(final Connection sqliteConnection)
     {
@@ -56,6 +61,36 @@ public class ExtensionsVerifier extends Verifier
         catch(SQLException ex)
         {
             this.hasGpkgExtensionsTable = false;
+        }
+        
+        if(this.hasGpkgExtensionsTable)
+        {
+
+    		String query = "SELECT table_name, column_name FROM gpkg_extensions;";
+    		
+    		try(Statement stmt				    = this.getSqliteConnection().createStatement();
+    		    ResultSet tableNameColumnNameRS = stmt.executeQuery(query))
+    		{
+    			this.gpkgExtensionsTableNameColumnName = ResultSetStream.getStream(tableNameColumnNameRS)
+																	    .map(resultSet ->{    try
+																							  {
+																			   					  String tableName = resultSet.getString("table_name");
+																			   					  String columnName = resultSet.getString("column_name");
+																								  return new AbstractMap.SimpleImmutableEntry<>(tableName,columnName);
+																							  }
+																		    				  catch(SQLException ex)
+																		    				  {
+																		    					  return null;
+																		    				  }
+																	   					}) 
+																	   	.filter(Objects::nonNull)
+												                        .collect(Collectors.toMap(entry -> entry.getKey(),
+												                                                  entry -> entry.getValue()));
+    		}
+    		catch(SQLException ex)
+    		{
+    		  this.gpkgExtensionsTableNameColumnName = Collections.emptyMap();
+    		}
         }
     }
     
@@ -85,7 +120,6 @@ public class ExtensionsVerifier extends Verifier
     	{
     		this.verifyTable(ExtensionsTableDefinition);
     	}
-    	
     }
     
 
@@ -132,26 +166,251 @@ public class ExtensionsVerifier extends Verifier
     {
     	if(this.hasGpkgExtensionsTable)
     	{
-    		String query = "SELECT table_name, column_name FROM gpkg_extensions;";
-    		
-    		try(Statement stmt				    = this.getSqliteConnection().createStatement();
-    		    ResultSet tableNameColumnNameRS = stmt.executeQuery(query))
-    		{
-    			while(tableNameColumnNameRS.next())
-    			{
-    				String tableName  = tableNameColumnNameRS.getString("table_name");
-    				String columnName = tableNameColumnNameRS.getString("column_name");
-    				
-    				//TODO:create a method that will compare and pass if both values are null or if they both match
-    				
-    			}
+			for(String tableName: this.gpkgExtensionsTableNameColumnName.keySet())
+			{
+				String columnName = this.gpkgExtensionsTableNameColumnName.get(tableName);
+				boolean validEntry = tableName == null ? columnName == null: true;  // if table name is null then so must column name
+				Assert.assertTrue("The value in table_name can only be null if column_name is also null.",
+						          validEntry);
+			}
+			//check that the table_name in GeoPackage Extensions references a table in sqlite master
+    		String query2 = "SELECT DISTINCT ge.table_name AS ge_table, "
+    									  + "sm.tbl_name   AS sm_table "
+    							  + "FROM  gpkg_extensions AS ge "
+    							  + "LEFT OUTER JOIN sqlite_master AS sm ON "
+    							  										  + "ge.table_name = sm.tbl_name";
+    		try(Statement stmt2                = this.getSqliteConnection().createStatement();
+    		    ResultSet tablesReferencedInSM = stmt2.executeQuery(query2))
+		    {
+    			Map<String, String> tablesMatchesFound = ResultSetStream.getStream(tablesReferencedInSM)
+	    															    .map(resultSet ->{    try
+							    															  {
+		    																   					   String geTableName = resultSet.getString("ge_table");
+		    																   					   String smTableName = resultSet.getString("sm_table");
+							    																   return new AbstractMap.SimpleImmutableEntry<>(geTableName,smTableName);
+							    															  }
+		    															    				  catch(SQLException ex)
+		    															    				  {
+		    															    					  return null;
+		    															    				  }
+	    															   					}) 
+	    															   	.filter(Objects::nonNull)
+	    		                                                        .collect(Collectors.toMap(entry -> entry.getKey(),
+	                                                                                              entry -> entry.getValue()));
     			
-    		}
+    			for(String geTable: tablesMatchesFound.keySet())
+    			{
+    				Assert.assertTrue(String.format("The table %s does not exist in the sqlite master table. "
+    													+ "Either create table %s or delete this entry.", 
+    												geTable,
+    												geTable),
+    								  this.equals(geTable, tablesMatchesFound.get(geTable)));
+    			}
+		    }
     				
     	}
     	
     }
     
+    /**
+     * <div class="title">Requirement 81</div>
+	 * <blockquote>
+	 * The <code>column_name</code> column value in a <code>gpkg_extensions</code> 
+	 * row SHALL be the name of a column in the table specified by the <code>table_name</code>
+	 *  column value for that row, or be NULL.
+	 * </blockquote>
+	 * </div>
+     * @throws SQLException 
+     */
+    @Requirement (number   = 81,
+    			  text     = "The column_name column value in a gpkg_extensions row SHALL"
+    			  				+ " be the name of a column in the table specified by the "
+    			  				+ "table_name column value for that row, or be NULL.",
+    			  severity = Severity.Warning)
+    public void Requirement81() throws SQLException
+    {
+    	if(this.hasGpkgExtensionsTable && !this.gpkgExtensionsTableNameColumnName.isEmpty())
+    	{
+    		for(String tableName: this.gpkgExtensionsTableNameColumnName.keySet())
+    		{
+    			String columnName = this.gpkgExtensionsTableNameColumnName.get(tableName);
+    			
+    			if(tableName != null && columnName != null)
+    			{
+    				String query = String.format("PRAGMA table_info(%s);", tableName);
+    				
+    				try(Statement stmt      = this.getSqliteConnection().createStatement();
+    					ResultSet tableInfo = stmt.executeQuery(query))
+    				{
+    					boolean columnExists = ResultSetStream.getStream(tableInfo)
+    														  .anyMatch(resultSet -> { try
+																					   {
+																						  return resultSet.getString(columnName) != null;
+																					   }
+																					   catch(SQLException ex)
+																					   {
+																						  return false;
+																					   }
+																					  });
+    					
+    					Assert.assertTrue(String.format("The column %s does not exist in the table %s. "
+    												      + "Please either add this column to this table "
+    												      + "or delete the record in gpkg_extensions.", 
+    												    tableName, 
+    												    columnName), 
+    							          columnExists);
+    				}
+    			}
+    		}
+    	}
+    }
+    
+    /**
+     * <div class="title">Requirement 82</div>
+	 * <blockquote>
+	 * Each <code>extension_name</code> column value in a <code>gpkg_extensions</code> 
+	 * row SHALL be a unique case sensitive value of the form &lt;author&gt;_&lt;extension_name&gt; 
+	 * where &lt;author&gt; indicates the person or organization that developed and
+	 * maintains the extension. The valid character set for <author> SHALL be [a-zA-Z0-9].
+	 * The valid character set for &lt;extension_name&gt; SHALL be [a-zA-Z0-9_].
+	 * An <code>extension_name</code> for the “gpkg” author name SHALL be one of those defined in 
+	 * this encoding standard or in an OGC Best Practices Document that extends it.
+	 * </blockquote>
+	 * </div>
+     * @throws SQLException 
+     */
+    @Requirement (number 	= 82,
+    			  text      = "Each extension_name column value in a gpkg_extensions row SHALL be a "
+    					  		+ "unique case sensitive value of the form <author>_<extension_name> "
+    					  		+ "where <author> indicates the person or organization that developed "
+    					  		+ "and maintains the extension. The valid character set for <author> "
+    					  		+ "SHALL be [a-zA-Z0-9]. The valid character set for <extension_name> "
+    					  		+ "SHALL be [a-zA-Z0-9_]. An extension_name for the “gpkg” author name "
+    					  		+ "SHALL be one of those defined in this encoding standard or in an OGC "
+    					  		+ "Best Practices Document that extends it.",
+    			  severity  = Severity.Warning)
+    public void Requirement82() throws SQLException
+    {
+    	if(this.hasGpkgExtensionsTable)
+    	{
+    		String query = "SELECT extension_name FROM gpkg_extensions;";
+    		
+    		try(Statement stmt           = this.getSqliteConnection().createStatement();
+    			ResultSet extensionNames = stmt.executeQuery(query))
+    		{
+    			Set<String> invalidExtensionNames = ResultSetStream.getStream(extensionNames)
+    															   .map(resultSet -> { try
+    															   						{
+																	   						String extensionName = resultSet.getString("extension_name");
+																	   						String author[]      = extensionName.split("_", 2);
+																	   						
+																	   						if(author.length != 2)
+																	   						{
+																	   							return extensionName;
+																	   						}
+																	   						if(author[0].matches("gpkg") || !author[0].matches("[a-zA-Z0-9]+") || !author[1].matches("[a-zA-Z0-9_]+"))
+																	   						{
+																	   							return extensionName;
+																	   						}
+																	   						else
+																	   						{
+																	   							return null; 
+																	   						}
+    																   					}
+    															   						catch(SQLException ex)
+					    															    {
+					    															   		return null;					
+					    															    }
+    															   					 })
+    															   .filter(Objects::nonNull)
+    															   .collect(Collectors.toSet());
+    			
+    			Assert.assertTrue("The following extension_name(s) are invalid: \n".concat(String.join("\n", invalidExtensionNames)), invalidExtensionNames.isEmpty());
+    		}
+    	}
+    }
+    
+    /**
+     * <div class="title">Requirement 83</div>
+	 * <blockquote>
+	 * The definition column value in a <code>gpkg_extensions</code>
+	 *  row SHALL contain or reference the text that results from documenting 
+	 *  an extension by filling out the GeoPackage Extension Template in 
+	 *  <a href="http://www.geopackage.org/spec/#extension_template"> 
+	 *  GeoPackage Extension Template (Normative)</a>.
+	 * </blockquote>
+	 * </div>
+     * @throws SQLException 
+     */
+    @Requirement (number    = 83,
+    		      text      = "The definition column value in a gpkg_extensions row SHALL "
+    		      				+ "contain or reference the text that results from documenting "
+    		      				+ "an extension by filling out the GeoPackage Extension Template "
+    		      				+ "in GeoPackage Extension Template (Normative).",
+    		      severity  = Severity.Warning)
+    public void Requirement83() throws SQLException
+    {
+    	//TODO: Ask about how restrictive we want the strings to be
+    	if(this.hasGpkgExtensionsTable)
+    	{
+    		String query = "SELECT table_name,"
+    					 + "FROM gpkg_extensions "
+    					 + "WHERE definition NOT LIKE 'Annex%' "
+    					 + "AND   definition NOT LIKE 'http%' "
+    					 + "AND   definition NOT LIKE 'mailto%' "
+    					 + "AND   definition NOT LIKE 'Extension Title%';";
+    		
+    		try(Statement stmt                    = this.getSqliteConnection().createStatement();
+    			ResultSet invalidDefinitionValues = stmt.executeQuery(query))
+    		{
+    			if(invalidDefinitionValues.next())
+    			{
+    				Assert.fail(String.format("The following table_name values in gpkg_extension table have invalid values for the definition column.", 
+    										  String.join("\n", invalidDefinitionValues.getString("table_name"))));
+    			}
+    		}
+    	}
+    }
+    
+    /**
+     * <div class="title">Requirement 84</div>
+	 * <blockquote>
+	 * The scope column value in a <code>gpkg_extensions</code> row SHALL be 
+	 * lowercase "read-write" for an extension that affects both readers and writers, 
+	 * or "write-only" for an extension that affects only writers.
+	 * </blockquote>
+	 * </div>
+     * @throws SQLException 
+     */
+    @Requirement(number   = 84,
+    			 text     = "The scope column value in a gpkg_extensions row SHALL be lowercase "
+    			 			+ "\"read-write\" for an extension that affects both readers and writers, "
+    			 			+ "or \"write-only\" for an extension that affects only writers. ",
+    			 severity = Severity.Warning)
+    public void Requirement84() throws SQLException
+    {
+    	if(this.hasGpkgExtensionsTable)
+    	{
+    		String query = "SELECT scope FROM gpkg_extensions WHERE scope != 'read-write' AND scope != 'write-only'";
+    		
+    		try(Statement stmt               = this.getSqliteConnection().createStatement();
+    			ResultSet invalidScopeValues = stmt.executeQuery(query))
+    		{
+    			Assert.assertTrue("There is(are) value(s) in the column scope in gpkg_extensions"
+    								+ " table that is not 'read-only' or 'write-only' in all lowercase letters.", 
+    					          !invalidScopeValues.next());
+    		}
+    				
+    	}
+    }
+    
+    
+   
+    
+    private boolean equals(String first, String second)
+    {
+    	return first == null ? second == null : first.equals(second);
+    }
     
     
     
