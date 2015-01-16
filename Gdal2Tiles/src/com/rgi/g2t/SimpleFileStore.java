@@ -30,27 +30,34 @@ import javax.imageio.ImageIO;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
-import com.rgi.common.tile.Tile;
+import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileException;
+import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.store.TileStore;
 import com.rgi.common.tile.store.TileStoreException;
 
 public class SimpleFileStore implements TileStore {
   private File rootFolder = null;
-  private int projection;
+  private final TileProfile tileProfile;
+  private final TileOrigin tileOrigin;
   private String imageFormat;
 
-  public SimpleFileStore(String name, int projection, String location, String imageFormat) throws TileStoreException {
+  public SimpleFileStore(String name, final TileProfile tileProfile, final TileOrigin tileOrigin, String location, String imageFormat) throws TileStoreException {
 	  if (!"png".equalsIgnoreCase(imageFormat) && !"jpg".equalsIgnoreCase(imageFormat))
-		  throw new IllegalArgumentException("Only PNG and JPG formats supported");
+    {
+        throw new IllegalArgumentException("Only PNG and JPG formats supported");
+    }
 	  this.imageFormat = imageFormat;
+	  this.tileProfile = tileProfile;
+	  this.tileOrigin  = tileOrigin;
 	  String filePart = name;
     if (filePart.contains(".")) {
       filePart = filePart.substring(0, filePart.indexOf('.'));
     }
-    rootFolder = new File(new File(location, Integer.toString(projection)), filePart);
-    if (!rootFolder.exists()) {
-      if (!rootFolder.mkdirs()) {
+    this.rootFolder = new File(new File(location, Integer.toString(this.tileProfile.getCoordinateReferenceSystem().getIdentifier())), filePart);
+    if (!this.rootFolder.exists()) {
+      if (!this.rootFolder.mkdirs()) {
         throw new TileStoreException("Unable to create folders");
       }
     }
@@ -64,14 +71,14 @@ public class SimpleFileStore implements TileStore {
   @Override
   public long countTiles() throws TileStoreException {
     long count = 0;
-    Set<Integer> zoomLevels = getZoomLevels();
+    Set<Integer> zoomLevels = this.getZoomLevels();
     for (Integer z : zoomLevels) {
-      File zFolder = new File(rootFolder, ""+z);
+      File zFolder = new File(this.rootFolder, ""+z);
       for (String xName : zFolder.list()) {
         File xFolder = new File(zFolder, xName);
         for (String yName : xFolder.list()) {
           try {
-            Integer.parseInt(yName.replaceAll("\\."+imageFormat, ""));
+            Integer.parseInt(yName.replaceAll("\\."+this.imageFormat, ""));
             ++count;
           } catch (NumberFormatException nfe) {
             // do nothing
@@ -85,9 +92,9 @@ public class SimpleFileStore implements TileStore {
   @Override
   public long calculateSize() throws TileStoreException {
     long count = 0;
-    Set<Integer> zoomLevels = getZoomLevels();
+    Set<Integer> zoomLevels = this.getZoomLevels();
     for (Integer z : zoomLevels) {
-      File zFolder = new File(rootFolder, ""+z);
+      File zFolder = new File(this.rootFolder, ""+z);
       for (String xName : zFolder.list()) {
         File xFolder = new File(zFolder, xName);
         for (String yName : xFolder.list()) {
@@ -99,8 +106,8 @@ public class SimpleFileStore implements TileStore {
   }
 
   @Override
-  public Tile getTile(AbsoluteTileCoordinate coordinate) throws TileException, TileStoreException {
-    File zoomFolder = new File(rootFolder, ""+coordinate.getZoomLevel());
+  public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileException, TileStoreException {
+    File zoomFolder = new File(this.rootFolder, ""+zoomLevel);
     if (!zoomFolder.exists()) {
       if (!zoomFolder.mkdirs()) {
         throw new TileStoreException("Unable to create folders");
@@ -119,37 +126,39 @@ public class SimpleFileStore implements TileStore {
     } catch (IOException ioe) {
       throw new TileStoreException("Unable to read tile from file", ioe);
     }
-    return new Tile(coordinate, image);
+    return image;
   }
 
   @Override
-  public Tile addTile(AbsoluteTileCoordinate coordinate, BufferedImage image)
+  public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image)
       throws TileException, TileStoreException {
-    File zoomFolder = new File(rootFolder, ""+coordinate.getZoomLevel());
+    File zoomFolder = new File(this.rootFolder, ""+zoomLevel);
     if (!zoomFolder.exists()) {
       if (!zoomFolder.mkdirs()) {
         throw new TileStoreException("Unable to create folders");
       }
     }
-    File xFolder = new File(zoomFolder, ""+coordinate.getX());
+
+    final AbsoluteTileCoordinate absTileCoordinate = this.tileProfile.crsToAbsoluteTileCoordinate(coordinate, zoomLevel, this.tileOrigin);
+
+    File xFolder = new File(zoomFolder, ""+absTileCoordinate.getX());
     if (!xFolder.exists()) {
       if (!xFolder.mkdirs()) {
         throw new TileStoreException("Unable to create folders");
       }
     }
-    File yFile = new File(xFolder, coordinate.getY()+"."+imageFormat);
+    File yFile = new File(xFolder, absTileCoordinate.getY()+"."+this.imageFormat);
     try {
-      ImageIO.write(image, imageFormat, yFile);
+      ImageIO.write(image, this.imageFormat, yFile);
     } catch (IOException ioe) {
       throw new TileStoreException("Unable to write tile to file", ioe);
     }
-    return new Tile(coordinate, image);
   }
 
   @Override
   public Set<Integer> getZoomLevels() throws TileStoreException {
     Set<Integer> zoomLevels = new TreeSet<Integer>();
-    String[] files = rootFolder.list(new FilenameFilter() {
+    String[] files = this.rootFolder.list(new FilenameFilter() {
       @Override
       public boolean accept(File dir, String name) {
         try {
@@ -168,6 +177,6 @@ public class SimpleFileStore implements TileStore {
 
   @Override
   public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-    return new CoordinateReferenceSystem("EPSG", projection);
+    return this.tileProfile.getCoordinateReferenceSystem();
   }
 }
