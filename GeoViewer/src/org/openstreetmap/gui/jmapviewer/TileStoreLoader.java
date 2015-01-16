@@ -23,10 +23,12 @@ import java.awt.image.BufferedImage;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileJob;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoaderListener;
-import org.openstreetmap.gui.jmapviewer.interfaces.TileSource;
 
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.profile.TileProfile;
+import com.rgi.common.tile.profile.TileProfileFactory;
 import com.rgi.common.tile.store.TileStore;
 
 /**
@@ -37,17 +39,18 @@ import com.rgi.common.tile.store.TileStore;
  */
 public class TileStoreLoader implements TileLoader
 {
-
-    protected TileLoaderListener         listener;
-    protected TileSource                 tileSource;
-    protected TileStore                  tileStore;
-    protected static final BufferedImage TRANSPARENT_TILE = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
+    private TileLoaderListener         listener;
+    //private TileSource                 tileSource;
+    private TileStore                  tileStore;
+    private TileProfile                tileProfile;
+    private static final BufferedImage TRANSPARENT_TILE = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
 
     public TileStoreLoader(final TileStore tileStore, final TileLoaderListener listener)
     {
-        this.tileStore = tileStore;
-        this.listener = listener;
-        this.tileSource = new TileSourceShell(tileStore);
+        this.tileStore   = tileStore;
+        this.tileProfile = TileProfileFactory.create(tileStore.getCoordinateReferenceSystem());
+        this.listener    = listener;
+        //this.tileSource  = new TileSourceShell(tileStore);
     }
 
     @Override
@@ -71,16 +74,13 @@ public class TileStoreLoader implements TileLoader
 
                 try
                 {
-                    final AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(tile.getYtile(),
-                                                                                        tile.getXtile(),
-                                                                                        tile.getZoom(),
-                                                                                        TileOrigin.LowerLeft);
+                    CrsCoordinate crsCoordinate = TileStoreLoader.this.tileProfile.absoluteToCrsCoordinate(new AbsoluteTileCoordinate(tile.getYtile(), tile.getXtile(), tile.getZoom(), TileOrigin.LowerLeft));
 
-                    final com.rgi.common.tile.Tile commonTile = TileStoreLoader.this.tileStore.getTile(tileCoord);
+                    final BufferedImage image = TileStoreLoader.this.tileStore.getTile(crsCoordinate, tile.getZoom());
 
-                    if(commonTile != null)
+                    if(image != null)
                     {
-                        tile.setImage(commonTile.getImageContents());
+                        tile.setImage(image);
                     }
                     else
                     {

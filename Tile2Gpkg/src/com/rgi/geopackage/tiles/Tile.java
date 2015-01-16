@@ -19,19 +19,25 @@
 package com.rgi.geopackage.tiles;
 
 /**
+ * An object representation of an entry in a tile pyramid user data table
  * @author Luke Lambert
  *
  */
 public class Tile
 {
     /**
-     * An object representation of an entry in a tile pyramid user data table
+     * Constructor
      *
      * @param identifier
+     *             Autoincrement primary key
      * @param zoomLevel
+     *             zoom level
      * @param row
+     *             Y component of the tile's cartesian coordinate
      * @param column
+     *             X component of the tile's cartesian coordinate
      * @param imageData
+     *             Bytes of an image file
      */
     protected Tile(final int    identifier,
                    final int    zoomLevel,

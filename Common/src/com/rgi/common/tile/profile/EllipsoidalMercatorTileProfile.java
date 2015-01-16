@@ -23,14 +23,14 @@ import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.Dimension2D;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.Coordinate;
-import com.rgi.common.coordinates.CrsTileCoordinate;
+import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 
 /**
  * @author Luke Lambert
  *
  */
-public class EllipsoidalMercatorTileProfile extends TileProfile
+public class EllipsoidalMercatorTileProfile implements TileProfile
 {
     /**
      * Constructor
@@ -51,8 +51,6 @@ public class EllipsoidalMercatorTileProfile extends TileProfile
      */
     public EllipsoidalMercatorTileProfile(final double earthEquatorialRadiusScaleFactor, final CoordinateReferenceSystem coordinateReferenceSystem)
     {
-        super(2);
-
         this.coordinateReferenceSystem = coordinateReferenceSystem;
 
         this.earthEquatorialRadiusScaleFactor = earthEquatorialRadiusScaleFactor;
@@ -64,7 +62,7 @@ public class EllipsoidalMercatorTileProfile extends TileProfile
     }
 
     @Override
-    public AbsoluteTileCoordinate crsToAbsoluteTileCoordinate(final Coordinate<Double> coordinate, final int zoomLevel, final TileOrigin origin)
+    public AbsoluteTileCoordinate crsToAbsoluteTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel, final TileOrigin origin)
     {
         if(coordinate == null)
         {
@@ -81,11 +79,16 @@ public class EllipsoidalMercatorTileProfile extends TileProfile
             throw new IllegalArgumentException("Origin may not be null");
         }
 
+        if(coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        {
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
+        }
+
         throw new RuntimeException("Method not implemented");
     }
 
     @Override
-    public CrsTileCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate)
+    public CrsCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate)
     {
         if(absoluteTileCoordinate == null)
         {
@@ -101,7 +104,7 @@ public class EllipsoidalMercatorTileProfile extends TileProfile
         //
         //final double metersY = ;
         //
-        //return new CrsTileCoordinate(metersY,
+        //return new CrsCoordinate(metersY,
         //                             metersX,
         //                             absoluteTileCoordinate.getZoomLevel(),
         //                             this.getCoordinateReferenceSystem());
@@ -125,7 +128,8 @@ public class EllipsoidalMercatorTileProfile extends TileProfile
 		                        metersToLon(coordinate.getX()));
 	}
 
-	public BoundingBox getBounds()
+	@Override
+    public BoundingBox getBounds()
     {
         final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; // TODO IS THIS RIGHT? Verify!
 

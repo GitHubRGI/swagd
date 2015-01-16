@@ -32,8 +32,7 @@ import javax.imageio.ImageIO;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.Dimension2D;
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
-import com.rgi.common.tile.Tile;
+import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileException;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
@@ -111,22 +110,31 @@ public class GeoPackageTileStore implements TileStore
     }
 
     @Override
-    public Tile getTile(final AbsoluteTileCoordinate coordinate) throws TileException
+    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileException
     {
         if(coordinate == null)
         {
             throw new IllegalArgumentException("Coordinate may not be null");
         }
 
+        if(coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        {
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
+        }
+
         try
         {
-            final com.rgi.geopackage.tiles.Tile tile = this.geoPackage
-                                                           .tiles()
-                                                           .getTile(this.tileSet,
-                                                                    this.tileProfile.absoluteToCrsCoordinate(coordinate));
+            final com.rgi.geopackage.tiles.Tile tile = this.geoPackage.tiles().getTile(this.tileSet, coordinate, zoomLevel);
 
-            return tile != null ? new Tile(coordinate, ImageIO.read(new ByteArrayInputStream(tile.getImageData())))
-                                : null;
+            if(tile == null)
+            {
+                return null;
+            }
+
+            try(ByteArrayInputStream imageInputStream = new ByteArrayInputStream(tile.getImageData()))
+            {
+                return ImageIO.read(imageInputStream);
+            }
         }
         catch(final SQLException | IOException ex)
         {
@@ -135,7 +143,7 @@ public class GeoPackageTileStore implements TileStore
     }
 
     @Override
-    public Tile addTile(final AbsoluteTileCoordinate coordinate, final BufferedImage image) throws TileException
+    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileException
     {
         if(coordinate == null)
         {
@@ -145,6 +153,11 @@ public class GeoPackageTileStore implements TileStore
         if(image == null)
         {
             throw new IllegalArgumentException("Image may not be null");
+        }
+
+        if(coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        {
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
         final String outputFormat = "PNG";  // TODO how do we want to pick this ?
@@ -158,30 +171,28 @@ public class GeoPackageTileStore implements TileStore
 
             TileMatrix tileMatrix = null;
 
-            if(!this.tileMatricies.containsKey(coordinate.getZoomLevel()))
+            if(!this.tileMatricies.containsKey(zoomLevel))
             {
-                tileMatrix = this.addTileMatrix(coordinate.getZoomLevel(), image.getHeight(), image.getWidth());
-                this.tileMatricies.put(coordinate.getZoomLevel(),
-                                       tileMatrix);
+                tileMatrix = this.addTileMatrix(zoomLevel, image.getHeight(), image.getWidth());
+                this.tileMatricies.put(zoomLevel, tileMatrix);
             }
             else
             {
-                tileMatrix = this.tileMatricies.get(coordinate.getZoomLevel());
+                tileMatrix = this.tileMatricies.get(zoomLevel);
             }
 
             this.geoPackage
                 .tiles()
                 .addTile(this.tileSet,
                          tileMatrix,
-                         this.tileProfile.absoluteToCrsCoordinate(coordinate),
+                         coordinate,
+                         zoomLevel,
                          outputStream.toByteArray());
         }
         catch(final Exception ex)
         {
            throw new TileException(ex);
         }
-
-        return new Tile(coordinate, image);
     }
 
     @Override

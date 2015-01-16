@@ -33,9 +33,10 @@ import javax.imageio.ImageIO;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
-import com.rgi.common.tile.Tile;
+import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileException;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.profile.TileProfile;
 
 /**
  * @author Luke Lambert
@@ -45,7 +46,7 @@ import com.rgi.common.tile.TileOrigin;
  */
 public class TileCluster implements TileStore
 {
-    public TileCluster(final Path location, final String setName, final int levels, final int breakPoint, final CoordinateReferenceSystem coordinateReferenceSystem)
+    public TileCluster(final Path location, final String setName, final int levels, final int breakPoint, final TileProfile tileProfile)
     {
         if(location == null)
         {
@@ -67,11 +68,11 @@ public class TileCluster implements TileStore
             throw new IllegalArgumentException("Break point must be less than zoomLevels");
         }
 
-        this.location                  = location;
-        this.setName                   = setName;
-        this.zoomLevels                = levels;
-        this.breakPoint                = breakPoint;
-        this.coordinateReferenceSystem = coordinateReferenceSystem;
+        this.location    = location;
+        this.setName     = setName;
+        this.zoomLevels  = levels;
+        this.breakPoint  = breakPoint;
+        this.tileProfile = tileProfile;
     }
 
     @Override
@@ -96,7 +97,7 @@ public class TileCluster implements TileStore
     }
 
     @Override
-    public Tile getTile(final AbsoluteTileCoordinate coordinate) throws TileException
+    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileException
     {
         if(coordinate == null)
         {
@@ -104,9 +105,12 @@ public class TileCluster implements TileStore
         }
 
         // First determine the cluster that will hold the data
-        final AbsoluteTileCoordinate clusterCoordinate = coordinate.transform(TileCluster.Origin);
-        final ClusterAddress clusterAddress    = this.getClusterAddress(clusterCoordinate);
-        final File           clusterFile       = this.getClusterFile(clusterAddress);
+        final AbsoluteTileCoordinate clusterCoordinate = this.tileProfile.crsToAbsoluteTileCoordinate(coordinate,
+                                                                                                      zoomLevel,
+                                                                                                      TileCluster.Origin);
+
+        final ClusterAddress clusterAddress = this.getClusterAddress(clusterCoordinate);
+        final File           clusterFile    = this.getClusterFile(clusterAddress);
 
         if(!clusterFile.canRead())
         {
@@ -134,9 +138,10 @@ public class TileCluster implements TileStore
             randomAccessFile.seek(tilePositionOffset);
             randomAccessFile.readFully(imageData);
 
-            final BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(imageData));
-
-            return new Tile(clusterCoordinate, bufferedImage);
+            try(ByteArrayInputStream imageInputStream = new ByteArrayInputStream(imageData))
+            {
+                return ImageIO.read(imageInputStream);
+            }
         }
         catch(final IOException ex)
         {
@@ -145,7 +150,7 @@ public class TileCluster implements TileStore
     }
 
     @Override
-    public Tile addTile(final AbsoluteTileCoordinate coordinate, final BufferedImage image) throws TileException
+    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileException
     {
         if(coordinate == null)
         {
@@ -157,9 +162,16 @@ public class TileCluster implements TileStore
             throw new IllegalArgumentException("Image may not be null");
         }
 
-        final AbsoluteTileCoordinate clusterCoordinate = coordinate.transform(TileCluster.Origin);
-        final ClusterAddress clusterAddress    = this.getClusterAddress(clusterCoordinate);
-        final File           clusterFile       = this.getClusterFile(clusterAddress);
+        if(coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        {
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
+        }
+
+        final AbsoluteTileCoordinate clusterCoordinate = this.tileProfile.crsToAbsoluteTileCoordinate(coordinate,
+                                                                                                      zoomLevel,
+                                                                                                      TileCluster.Origin);
+        final ClusterAddress clusterAddress = this.getClusterAddress(clusterCoordinate);
+        final File           clusterFile    = this.getClusterFile(clusterAddress);
 
         // If the file doesn't exist, set up an empty cluster file
         if(!clusterFile.exists())
@@ -211,8 +223,6 @@ public class TileCluster implements TileStore
         {
             throw new TileException(ex);
         }
-
-        return new Tile(coordinate, image);
     }
 
     @Override
@@ -225,7 +235,7 @@ public class TileCluster implements TileStore
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
-        return this.coordinateReferenceSystem;
+        return this.tileProfile.getCoordinateReferenceSystem();
     }
 
     private ClusterAddress getClusterAddress(final AbsoluteTileCoordinate coordinate)
@@ -350,11 +360,11 @@ public class TileCluster implements TileStore
                                                   TileCluster.RowByteSize         +
                                                   TileCluster.LengthByteSize;
 
-    private final Path                      location;
-    private final String                    setName;
-    private final int                       zoomLevels;
-    private final int                       breakPoint;
-    private final CoordinateReferenceSystem coordinateReferenceSystem;
+    private final Path        location;
+    private final String      setName;
+    private final int         zoomLevels;
+    private final int         breakPoint;
+    private final TileProfile tileProfile;
 
     private class ClusterAddress
     {

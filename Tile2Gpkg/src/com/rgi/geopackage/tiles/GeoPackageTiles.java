@@ -32,7 +32,7 @@ import java.util.Set;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.Coordinate;
-import com.rgi.common.coordinates.CrsTileCoordinate;
+import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.geopackage.DatabaseUtility;
 import com.rgi.geopackage.core.GeoPackageCore;
@@ -451,17 +451,20 @@ public class GeoPackageTiles
      *             Tile matrix associated with the tile set at the corresponding zoom level
      * @param coordinate
      *             The coordinate of the tile in units of the tile set's spatial reference system
+     * @param zoomLevel
+     *             Zoom level
      * @param imageData
      *             The bytes of the image file
      * @throws SQLException
      * @throws TileReferentialIntegrityException
      */
-    public Tile addTile(final TileSet           tileSet,
-                        final TileMatrix        tileMatrix,
-                        final CrsTileCoordinate coordinate,
-                        final byte[]            imageData) throws SQLException
+    public Tile addTile(final TileSet       tileSet,
+                        final TileMatrix    tileMatrix,
+                        final CrsCoordinate coordinate,
+                        final int           zoomLevel,
+                        final byte[]        imageData) throws SQLException
     {
-        final RelativeTileCoordinate relativeCoordinate = this.crsToRelativeTileCoordinate(tileSet, coordinate);
+        final RelativeTileCoordinate relativeCoordinate = this.crsToRelativeTileCoordinate(tileSet, coordinate, zoomLevel);
         return relativeCoordinate != null ? this.addTile(tileSet,
                                                          tileMatrix,
                                                          relativeCoordinate,
@@ -529,13 +532,16 @@ public class GeoPackageTiles
      *             Handle to the tile set that the requested tile should belong
      * @param coordinate
      *            Coordinate, in the units of the tile set's spatial reference system, of the requested tile
+     * @param zoomLevel
+     *            Zoom level
      * @return Returns the rquested tile, or null if it's not found
      * @throws SQLException
      */
-    public Tile getTile(final TileSet           tileSet,
-                        final CrsTileCoordinate coordinate) throws SQLException
+    public Tile getTile(final TileSet       tileSet,
+                        final CrsCoordinate coordinate,
+                        final int           zoomLevel) throws SQLException
     {
-        final RelativeTileCoordinate relativeCoordiante = this.crsToRelativeTileCoordinate(tileSet, coordinate);
+        final RelativeTileCoordinate relativeCoordiante = this.crsToRelativeTileCoordinate(tileSet, coordinate, zoomLevel);
         return relativeCoordiante != null ? this.getTile(tileSet, relativeCoordiante)
                                           : null;
     }
@@ -767,25 +773,28 @@ public class GeoPackageTiles
      *
      * @param tileSet
      *             A handle to a set of tiles
-     * @param crsTileCoordinate
-     *             A coordinate with a specified coordinate reference system and zoom level
+     * @param crsCoordinate
+     *             A coordinate with a specified coordinate reference system
+     * @param zoomLevel
+     *            Zoom level
      * @return Returns a tile coordinate relative and specific to the input tile set.  The input CRS coordinate would be contained in the the associated tile bounds.
      * @throws SQLException
      */
-    public RelativeTileCoordinate crsToRelativeTileCoordinate(final TileSet           tileSet,
-                                                              final CrsTileCoordinate crsTileCoordinate) throws SQLException
+    public RelativeTileCoordinate crsToRelativeTileCoordinate(final TileSet       tileSet,
+                                                              final CrsCoordinate crsCoordinate,
+                                                              final int           zoomLevel) throws SQLException
     {
         if(tileSet == null)
         {
             throw new IllegalArgumentException("Tile set may not be null");
         }
 
-        if(crsTileCoordinate == null)
+        if(crsCoordinate == null)
         {
             throw new IllegalArgumentException("CRS coordinate may not be null");
         }
 
-        final CoordinateReferenceSystem crs = crsTileCoordinate.getCoordinateReferenceSystem();
+        final CoordinateReferenceSystem crs = crsCoordinate.getCoordinateReferenceSystem();
         final SpatialReferenceSystem    srs = this.core.getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
 
         if(!crs.getAuthority().equalsIgnoreCase(srs.getOrganization()) ||
@@ -794,7 +803,7 @@ public class GeoPackageTiles
             throw new IllegalArgumentException("Coordinate transformation is not currently supported.  The incoming spatial reference system must match that of the tile set's");
         }
 
-        final TileMatrix tileMatrix = this.getTileMatrix(tileSet, crsTileCoordinate.getZoomLevel());
+        final TileMatrix tileMatrix = this.getTileMatrix(tileSet, zoomLevel);
 
         if(tileMatrix == null)
         {
@@ -804,7 +813,7 @@ public class GeoPackageTiles
         final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
         final BoundingBox   tileSetBounds = tileMatrixSet.getBoundingBox();
 
-        if(!tileSetBounds.contains(crsTileCoordinate))
+        if(!tileSetBounds.contains(crsCoordinate))
         {
             return null;    // The requested srs coordinate is outside the bounds of our data
         }
@@ -814,8 +823,8 @@ public class GeoPackageTiles
         final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
         final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();
 
-        final double normalizedSrsTileCoordinateY = crsTileCoordinate.getY() - topLeft.getY();
-        final double normalizedSrsTileCoordinateX = crsTileCoordinate.getX() - topLeft.getX();
+        final double normalizedSrsTileCoordinateY = crsCoordinate.getY() - topLeft.getY();
+        final double normalizedSrsTileCoordinateX = crsCoordinate.getX() - topLeft.getX();
 
         final int tileY = normalizedSrsTileCoordinateY != 0.0 ? (int)(Math.ceil(normalizedSrsTileCoordinateY / tileHeightInSrs)) - 1
                                                               : 0; // Special case. If the normalized y component is 0.0, tileY should be 0, rather than - 1
@@ -824,7 +833,7 @@ public class GeoPackageTiles
 
         return new RelativeTileCoordinate(tileY,
                                           tileX,
-                                          crsTileCoordinate.getZoomLevel());
+                                          zoomLevel);
     }
 
     /**

@@ -40,7 +40,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.Coordinate;
-import com.rgi.common.tile.Tile;
+import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileException;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
@@ -142,16 +142,27 @@ public class TmsTileStore implements TileStore
     }
 
     @Override
-    public Tile getTile(final AbsoluteTileCoordinate coordinate) throws TileException
+    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileException
     {
-        final AbsoluteTileCoordinate tmsCoordiante = coordinate.transform(TmsTileStore.Origin);
+        if(coordinate == null)
+        {
+            throw new IllegalArgumentException("Coordinate may not be null");
+        }
+
+        if(coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        {
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
+        }
+
+        final AbsoluteTileCoordinate tmsCoordiante = this.profile.crsToAbsoluteTileCoordinate(coordinate, zoomLevel, TmsTileStore.Origin);
+
         final Optional<File> tileFile = this.getTiles(tmsCoordiante).findFirst();    // TODO prioritize list based on file type suitability (prefer transparency, etc)
 
         if(tileFile.isPresent())
         {
             try
             {
-                return new Tile(coordinate, ImageIO.read(tileFile.get()));
+                return ImageIO.read(tileFile.get());
             }
             catch(final IOException ex)
             {
@@ -163,11 +174,28 @@ public class TmsTileStore implements TileStore
     }
 
     @Override
-    public Tile addTile(final AbsoluteTileCoordinate coordinate, final BufferedImage image) throws TileException
+    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileException
     {
+        if(coordinate == null)
+        {
+            throw new IllegalArgumentException("Coordinate may not be null");
+        }
+
+        if(image == null)
+        {
+            throw new IllegalArgumentException("Image may not be null");
+        }
+
+        if(coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        {
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
+        }
+
         final String outputFormat = "png";  // TODO how do we want to pick this ?
 
-        final AbsoluteTileCoordinate tmsCoordiante = coordinate.transform(TmsTileStore.Origin);
+        final AbsoluteTileCoordinate tmsCoordiante = this.profile.crsToAbsoluteTileCoordinate(coordinate,
+                                                                                              zoomLevel,
+                                                                                              TmsTileStore.Origin);
 
         final Path tilePath = tmsPath(this.location,
                                       tmsCoordiante.getZoomLevel(),
@@ -180,6 +208,7 @@ public class TmsTileStore implements TileStore
         	if (!tilePath.getParent().toFile().exists()) {
         		(new File(tilePath.getParent().toString())).mkdirs();
         	}
+
             if(!ImageIO.write(image, outputFormat, tilePath.toFile()))
             {
                 throw new TileException(String.format("No appropriate image writer found for format '%s'", outputFormat));
@@ -189,8 +218,6 @@ public class TmsTileStore implements TileStore
         {
             throw new TileException(ex);
         }
-
-        return new Tile(coordinate, image);
     }
 
     @Override

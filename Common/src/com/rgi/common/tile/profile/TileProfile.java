@@ -22,37 +22,21 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.Dimension2D;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
-import com.rgi.common.coordinates.Coordinate;
-import com.rgi.common.coordinates.CrsTileCoordinate;
+import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 
 /**
  * @author Luke Lambert
  *
  */
-public abstract class TileProfile
+public interface TileProfile
 {
-    /**
-     * Constructor
-     *
-     * @param accuracyDegree Acceptable degree of accuracy (decimal places) for the coordinate values of this profile
-     */
-    protected TileProfile(final int accuracyDegree)
-    {
-        if(accuracyDegree < 0)
-        {
-            throw new IllegalArgumentException("Accuracy degree must be greater than 0");
-        }
-
-        this.accuracyDegree = accuracyDegree;
-    }
-
     /**
      * Returns the bounds of the world in CRS units.
      * @return the bounds of the world in crs units
      */
-    public abstract BoundingBox getBounds();
-    
+    public BoundingBox getBounds();
+
     /**
      * Determines what tile the coordinate lies in
      *
@@ -60,7 +44,7 @@ public abstract class TileProfile
      * @param zoomLevel Zoom level value for input coordinate
      * @return Returns the tile that the coordinate coresponds to
      */
-    public abstract AbsoluteTileCoordinate crsToAbsoluteTileCoordinate(final Coordinate<Double> coordinate, final int zoomLevel, final TileOrigin origin);
+    public AbsoluteTileCoordinate crsToAbsoluteTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel, final TileOrigin origin);
 
     /**
      * Determines the profile unit coordinate for the specified tile
@@ -69,25 +53,9 @@ public abstract class TileProfile
      *             Tile coordinate (tile y, x, zoom level)
      * @return Returns the coordinate that the tile coresponds to
      */
-    public abstract CrsTileCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate);
+    public CrsCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate);
 
-    public abstract Dimension2D getTileDimensions(final int zoomLevel);
+    public Dimension2D getTileDimensions(final int zoomLevel);
 
-    public abstract CoordinateReferenceSystem getCoordinateReferenceSystem();
-
-    /**
-     * @param ordinate Scalar double
-     * @return Returns a String representation of the input ordinate truncated to the accuracy degree (number of decimals) for this profile
-     */
-    public String truncate(final double ordinate)
-    {
-        final double n = Math.pow(10, this.accuracyDegree);
-        return String.format("%." + this.accuracyDegree + "d",
-                             ((int)(ordinate*n))/n);
-    }
-
-    /**
-     * Acceptable degree of accuracy (decimal places) for the coordinate values of this profile
-     */
-    private final int accuracyDegree;
+    public CoordinateReferenceSystem getCoordinateReferenceSystem();
 }

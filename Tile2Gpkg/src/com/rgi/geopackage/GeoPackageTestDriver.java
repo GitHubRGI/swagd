@@ -21,7 +21,7 @@ package com.rgi.geopackage;
 import java.io.File;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.coordinates.CrsTileCoordinate;
+import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileSet;
 
@@ -65,7 +65,8 @@ public class GeoPackageTestDriver
 
                 gpkg.tiles().addTile(tileSet,
                                      tileMatrix,
-                                     new CrsTileCoordinate(-90.0, -180.0, 0, "EPSG", 4326),
+                                     new CrsCoordinate(-90.0, -180.0, "EPSG", 4326),
+                                     0,
                                      new byte[] {});
             }
         }

@@ -23,7 +23,7 @@ import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.Dimension2D;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.Coordinate;
-import com.rgi.common.coordinates.CrsTileCoordinate;
+import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 
 /**
@@ -32,15 +32,10 @@ import com.rgi.common.tile.TileOrigin;
  * Methods based on the previous Python implementation in tiles2gpkg_parallel.py
  *
  */
-public class SphericalMercatorTileProfile extends TileProfile
+public class SphericalMercatorTileProfile implements TileProfile
 {
-    public SphericalMercatorTileProfile()
-    {
-        super(2);
-    }
-
     @Override
-    public AbsoluteTileCoordinate crsToAbsoluteTileCoordinate(final Coordinate<Double> coordinate, final int zoomLevel, final TileOrigin origin)
+    public AbsoluteTileCoordinate crsToAbsoluteTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel, final TileOrigin origin)
     {
         if(coordinate == null)
         {
@@ -57,6 +52,11 @@ public class SphericalMercatorTileProfile extends TileProfile
             throw new IllegalArgumentException("Origin may not be null");
         }
 
+        if(coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        {
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
+        }
+
         final double tileSubdivision = Math.pow(2.0, zoomLevel);
 
         // Round off the fractional tile
@@ -67,7 +67,7 @@ public class SphericalMercatorTileProfile extends TileProfile
     }
 
     @Override
-    public CrsTileCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate)
+    public CrsCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate)
     {
         if(absoluteTileCoordinate == null)
         {
@@ -78,10 +78,9 @@ public class SphericalMercatorTileProfile extends TileProfile
 
         final AbsoluteTileCoordinate transformed = absoluteTileCoordinate.transform(TileOrigin.LowerLeft);
 
-        return new CrsTileCoordinate(((transformed.getY() * EarthEquatorialCircumfrence) / tileSubdivision) - (EarthEquatorialCircumfrence / 2.0),
-                                     ((transformed.getX() * EarthEquatorialCircumfrence) / tileSubdivision) - (EarthEquatorialCircumfrence / 2.0),
-                                     absoluteTileCoordinate.getZoomLevel(),
-                                     this.getCoordinateReferenceSystem());
+        return new CrsCoordinate(((transformed.getY() * EarthEquatorialCircumfrence) / tileSubdivision) - (EarthEquatorialCircumfrence / 2.0),
+                                 ((transformed.getX() * EarthEquatorialCircumfrence) / tileSubdivision) - (EarthEquatorialCircumfrence / 2.0),
+                                 this.getCoordinateReferenceSystem());
     }
 
     @Override
