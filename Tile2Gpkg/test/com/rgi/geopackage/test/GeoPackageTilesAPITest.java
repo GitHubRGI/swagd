@@ -128,7 +128,7 @@ public class GeoPackageTilesAPITest
         final File testFile = this.getRandomFile(3);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-        	TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(4326));
+        	final TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(4326));
             gpkg.tiles().addTile(null, gpkg.tiles().getTileMatrix(tileSet, 0), new RelativeTileCoordinate(0, 0, 0), createImageBytes());
             fail("Expected GeoPackage to throw an IllegalArgumentException when giving a null value for tileSetEntry.");
         }
@@ -358,7 +358,7 @@ public class GeoPackageTilesAPITest
         }
     }
 
-   
+
 
     /**
      * Tests if a GeoPackage will throw an error when adding a tileset with the same name as another tileset in the GeoPackage.
@@ -404,7 +404,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if a GeoPackage can add 2 Tile Matrix entries with
      * the two different tile pyramids can be entered into one gpkg
@@ -436,12 +436,12 @@ public class GeoPackageTilesAPITest
             {
                 assertTrue("The tile entry's information in the GeoPackage does not match what was originally given to a GeoPackage",
                            tileSetContnentEntries.stream()
-                                                 .anyMatch(tileEntry -> tileEntry.getBoundingBox()           .equals(gpkgEntry.getBoundingBox())             &&
-                                                                        tileEntry.getDataType()              .equals(gpkgEntry.getDataType())                &&
-                                                                        tileEntry.getSpatialReferenceSystem().equals(gpkgEntry.getSpatialReferenceSystem())  &&
-                                                                        tileEntry.getDescription()           .equals(gpkgEntry.getDescription())             &&
-                                                                        tileEntry.getIdentifier()            .equals(gpkgEntry.getIdentifier())              &&
-                                                                        tileEntry.getTableName()             .equals(gpkgEntry.getTableName())));
+                                                 .anyMatch(tileEntry -> tileEntry.getBoundingBox().equals(gpkgEntry.getBoundingBox()) &&
+                                                                        tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
+                                                                        tileEntry.getDescription().equals(gpkgEntry.getDescription()) &&
+                                                                        tileEntry.getIdentifier() .equals(gpkgEntry.getIdentifier())  &&
+                                                                        tileEntry.getTableName()  .equals(gpkgEntry.getTableName())   &&
+                                                                        tileEntry.getSpatialReferenceSystemIdentifier().equals(gpkgEntry.getSpatialReferenceSystemIdentifier())));
             }
         }
         finally
@@ -455,13 +455,13 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This ensures that when a user tries to add
      * the same tileSet two times that the TileSet object
      * that is returned is the one that already exists in
      * the GeoPackage and verifies its contents
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -474,32 +474,32 @@ public class GeoPackageTilesAPITest
     	final File testFile = this.getRandomFile(13);
     	try(GeoPackage gpkg = new GeoPackage(testFile))
     	{
-    		String      tableName   = "tableName";
-    		String      identifier  = "identifier";
-    		String      description = "description";
-    		BoundingBox boundingBox = new BoundingBox(1.0,2.0,3.0,4.0);
-    		
-    		SpatialReferenceSystem srs = gpkg.core().getSpatialReferenceSystem(0);
-    		
-    		TileSet tileSet = gpkg.tiles().addTileSet(tableName, 
-    												  identifier, 
-    												  description, 
-    												  boundingBox, 
+    		final String      tableName   = "tableName";
+    		final String      identifier  = "identifier";
+    		final String      description = "description";
+    		final BoundingBox boundingBox = new BoundingBox(1.0,2.0,3.0,4.0);
+
+    		final SpatialReferenceSystem srs = gpkg.core().getSpatialReferenceSystem(0);
+
+    		final TileSet tileSet = gpkg.tiles().addTileSet(tableName,
+    												  identifier,
+    												  description,
+    												  boundingBox,
     												  srs);
-    		
-    		TileSet sameTileSet = gpkg.tiles().addTileSet(tableName, 
-    				            						  identifier, 
-    													  description, 
-    													  boundingBox, 
+
+    		final TileSet sameTileSet = gpkg.tiles().addTileSet(tableName,
+    				            						  identifier,
+    													  description,
+    													  boundingBox,
     													  srs);
-    		
+
     		assertTrue("The GeoPackage did not return the same tile set when trying to add the same tile set twice.",
-    				   sameTileSet.equals(tileSet.getTableName(), 
-    						   			  tileSet.getDataType(), 
-    						   			  tileSet.getIdentifier(), 
-    						   			  tileSet.getDescription(), 
-    						   			  tileSet.getBoundingBox(), 
-    						   			  tileSet.getSpatialReferenceSystem()));
+    				   sameTileSet.equals(tileSet.getTableName(),
+    						   			  tileSet.getDataType(),
+    						   			  tileSet.getIdentifier(),
+    						   			  tileSet.getDescription(),
+    						   			  tileSet.getBoundingBox(),
+    						   			  tileSet.getSpatialReferenceSystemIdentifier()));
     	}
     	finally
         {
@@ -511,7 +511,7 @@ public class GeoPackageTilesAPITest
                 }
             }
         }
-    	
+
     }
 
     /**
@@ -551,7 +551,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Expects GeoPackage to throw an IllegalArgumentException
      * when giving addTileSet a parameter with a null value
@@ -588,7 +588,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Expects GeoPackage to throw an IllegalArgumentException
      * when giving addTileSet a parameter with a null value
@@ -625,7 +625,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the GeoPackage will throw an IllegalArgumentException when The table name is an empty string
      * for TileSet.
@@ -658,7 +658,7 @@ public class GeoPackageTilesAPITest
              }
          }
      }
-    
+
 
     /**
      * Tests if a GeoPackage will return the same tileSets that was given to the GeoPackage when adding tileSets.
@@ -701,12 +701,12 @@ public class GeoPackageTilesAPITest
             {
                 assertTrue("The tile entry's information in the GeoPackage does not match what was originally given to a GeoPackage",
                            tileSetContnentEntries.stream()
-                                                 .anyMatch(tileEntry -> tileEntry.getBoundingBox()           .equals(gpkgEntry.getBoundingBox())             &&
-                                                                        tileEntry.getDataType()              .equals(gpkgEntry.getDataType())                &&
-                                                                        tileEntry.getSpatialReferenceSystem().equals(gpkgEntry.getSpatialReferenceSystem())  &&
-                                                                        tileEntry.getDescription()           .equals(gpkgEntry.getDescription())             &&
-                                                                        tileEntry.getIdentifier()            .equals(gpkgEntry.getIdentifier())              &&
-                                                                        tileEntry.getTableName()             .equals(gpkgEntry.getTableName())));
+                                                 .anyMatch(tileEntry -> tileEntry.getBoundingBox().equals(gpkgEntry.getBoundingBox()) &&
+                                                                        tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
+                                                                        tileEntry.getDescription().equals(gpkgEntry.getDescription()) &&
+                                                                        tileEntry.getIdentifier() .equals(gpkgEntry.getIdentifier())  &&
+                                                                        tileEntry.getTableName()  .equals(gpkgEntry.getTableName())   &&
+                                                                        tileEntry.getSpatialReferenceSystemIdentifier().equals(gpkgEntry.getSpatialReferenceSystemIdentifier())));
             }
         }
         finally
@@ -748,7 +748,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the getTileSet returns null when the tile table
      * does not exist
@@ -807,7 +807,7 @@ public class GeoPackageTilesAPITest
                        tileSet.getIdentifier() .equals(returnedTileSet.getIdentifier())  &&
                        tileSet.getLastChange() .equals(returnedTileSet.getLastChange())  &&
                        tileSet.getTableName()  .equals(returnedTileSet.getTableName())   &&
-                       tileSet.getSpatialReferenceSystem().equals(returnedTileSet.getSpatialReferenceSystem()));
+                       tileSet.getSpatialReferenceSystemIdentifier().equals(returnedTileSet.getSpatialReferenceSystemIdentifier()));
         }
         finally
         {
@@ -1016,7 +1016,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Geopackage throws an SQLException when opening a Geopackage since it does not contain the default tables
      * inside after bypassing the verifier.
@@ -1064,7 +1064,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This adds a tile to a GeoPackage and verifies
      * that the Tile object added into the GeoPackage
@@ -1077,46 +1077,46 @@ public class GeoPackageTilesAPITest
     @Test
     public void addTileMethodByCrsTileCoordinate() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
-    	File testFile = this.getRandomFile(18);
+    	final File testFile = this.getRandomFile(18);
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(-80.0, -180.0, 80.0, 180.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(-80.0, -180.0, 80.0, 180.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int zoomLevel = 2;
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int tileWidth = 256;
-    		int tileHeight = 256;
-    		double pixelXSize = (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth;
-    		double pixelYSize = (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight;
-    		
-    		TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 
-    														   zoomLevel, 
-    														   matrixWidth, 
-    														   matrixHeight, 
-    														   tileWidth, 
-    														   tileHeight, 
-    														   pixelXSize, 
+    		final int zoomLevel = 2;
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int tileWidth = 256;
+    		final int tileHeight = 256;
+    		final double pixelXSize = (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth;
+    		final double pixelYSize = (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight;
+
+    		final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet,
+    														   zoomLevel,
+    														   matrixWidth,
+    														   matrixHeight,
+    														   tileWidth,
+    														   tileHeight,
+    														   pixelXSize,
     														   pixelYSize);
-    		
-    		CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
-    		
-    		CrsTileCoordinate crsTileCoordinate = new CrsTileCoordinate(-60.0, 0.0, zoomLevel, coordinateReferenceSystem);
-    		
-    		Tile tileAdded = gpkg.tiles().addTile(tileSet, tileMatrix, crsTileCoordinate, createImageBytes());
-    		
-    		Tile tileFound = gpkg.tiles().getTile(tileSet, crsTileCoordinate);
-    		
+
+    		final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
+
+    		final CrsTileCoordinate crsTileCoordinate = new CrsTileCoordinate(-60.0, 0.0, zoomLevel, coordinateReferenceSystem);
+
+    		final Tile tileAdded = gpkg.tiles().addTile(tileSet, tileMatrix, crsTileCoordinate, createImageBytes());
+
+    		final Tile tileFound = gpkg.tiles().getTile(tileSet, crsTileCoordinate);
+
     		assertTrue("The GeoPackage did not return the tile Expected.",
     				   tileAdded.getColumn() == tileFound.getColumn() &&
     				   tileAdded.getIdentifier() == tileFound.getIdentifier() &&
     				   tileAdded.getRow()       == tileFound.getRow() &&
     				   tileAdded.getZoomLevel() == tileFound.getZoomLevel() &&
     				   Arrays.equals(tileAdded.getImageData(), tileFound.getImageData()));
-    		
+
     	}
     	finally
         {
@@ -1129,7 +1129,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This adds a tile to a GeoPackage and verifies
      * that the Tile object added into the GeoPackage
@@ -1142,43 +1142,43 @@ public class GeoPackageTilesAPITest
     @Test
     public void addTileMethodByCrsTileCoordinateNullValue() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
-    	File testFile = this.getRandomFile(18);
+    	final File testFile = this.getRandomFile(18);
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(-80.0, -180.0, 80.0, 180.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(-80.0, -180.0, 80.0, 180.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int zoomLevel = 2;
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int tileWidth = 256;
-    		int tileHeight = 256;
-    		double pixelXSize = (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth;
-    		double pixelYSize = (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight;
-    		
-    		TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 
-    														   zoomLevel, 
-    														   matrixWidth, 
-    														   matrixHeight, 
-    														   tileWidth, 
-    														   tileHeight, 
-    														   pixelXSize, 
+    		final int zoomLevel = 2;
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int tileWidth = 256;
+    		final int tileHeight = 256;
+    		final double pixelXSize = (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth;
+    		final double pixelYSize = (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight;
+
+    		final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet,
+    														   zoomLevel,
+    														   matrixWidth,
+    														   matrixHeight,
+    														   tileWidth,
+    														   tileHeight,
+    														   pixelXSize,
     														   pixelYSize);
-    		
-    		CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
-    		
-    		int differentZoomLevel = 12;
-    		CrsTileCoordinate crsTileCoordinate = new CrsTileCoordinate(-60.0, 0.0, differentZoomLevel, coordinateReferenceSystem);
-    		
-    		Tile tileAdded = gpkg.tiles().addTile(tileSet, tileMatrix, crsTileCoordinate, createImageBytes());
-    		
+
+    		final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
+
+    		final int differentZoomLevel = 12;
+    		final CrsTileCoordinate crsTileCoordinate = new CrsTileCoordinate(-60.0, 0.0, differentZoomLevel, coordinateReferenceSystem);
+
+    		final Tile tileAdded = gpkg.tiles().addTile(tileSet, tileMatrix, crsTileCoordinate, createImageBytes());
+
     		assertTrue("The Geopackage returned a Tile object that is null when there did not exist a "
     						+ "tile matrix set with a tile at the zoom level indicated in CRS coodinate",
     				   tileAdded == null);
-    		
-    		
+
+
     	}
     	finally
         {
@@ -1191,7 +1191,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Test if the GeoPackage can successfully add non empty tiles to a GeoPackage  without throwing an error.
      *
@@ -1241,7 +1241,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the GeoPackage will throw an SQLException when adding
      * a duplicate tile to the GeoPackage.
@@ -1412,7 +1412,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the GeoPackage throws an IllegalArgumentException
      * when trying to add a tile with a parameter that is null (tileMatrix)
@@ -1633,7 +1633,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-  
+
     /**
      * Tests if GeoPackage will throw an IllegalArgumentException when using getTile method with null value for table name.
      * @throws SQLException
@@ -1729,7 +1729,7 @@ public class GeoPackageTilesAPITest
            }
        }
    }
-    
+
     /**
      * This adds a tile to a GeoPackage and verifies
      * that the Tile object added into the GeoPackage
@@ -1742,27 +1742,27 @@ public class GeoPackageTilesAPITest
     @Test
     public void getTileRelativeTileCoordinateNonExistant() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
-    	File testFile = this.getRandomFile(18);
+    	final File testFile = this.getRandomFile(18);
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(-80.0, -180.0, 80.0, 180.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(-80.0, -180.0, 80.0, 180.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int zoomLevel = 2;
-    		
-    		CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
-    		
-    		CrsTileCoordinate crsTileCoordinate = new CrsTileCoordinate(-60.0, 0.0, zoomLevel, coordinateReferenceSystem);
-    		
-    		Tile tileFound = gpkg.tiles().getTile(tileSet, crsTileCoordinate);
-    		
+    		final int zoomLevel = 2;
+
+    		final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
+
+    		final CrsTileCoordinate crsTileCoordinate = new CrsTileCoordinate(-60.0, 0.0, zoomLevel, coordinateReferenceSystem);
+
+    		final Tile tileFound = gpkg.tiles().getTile(tileSet, crsTileCoordinate);
+
     		assertTrue("The Geopackage returned a Tile object that is null when there did not exist a "
     						+ "tile with that particular crsTileCoodinate",
     				   tileFound == null);
-    		
-    		
+
+
     	}
     	finally
         {
@@ -1775,7 +1775,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the GeoPackage will return the all and the correct zoom levels in a GeoPackage
      *
@@ -1884,7 +1884,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Verifies that the GeoPackage counts the correct number of rows
      * with the method getRowCount
@@ -2352,9 +2352,9 @@ public class GeoPackageTilesAPITest
     }
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException
-     * when a user tries to add a negative value for zoom level 
+     * when a user tries to add a negative value for zoom level
      * (when adding a tile Matrix entry)
-     * 
+     *
      * @throws SQLException
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -2367,25 +2367,25 @@ public class GeoPackageTilesAPITest
     	final File testFile = this.getRandomFile(12);
     	try(GeoPackage gpkg = new GeoPackage(testFile))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(1.0,2.0,3.0,4.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(1.0,2.0,3.0,4.0),
     												  gpkg.core().getSpatialReferenceSystem(0));
     		gpkg.tiles().addTileMatrix(tileSet, -1, 2, 4, 6, 8, 10, 12);
     	}
-    	finally 
+    	finally
     	{
-			if (testFile.exists()) 
+			if (testFile.exists())
 			{
-				if (!testFile.delete()) 
+				if (!testFile.delete())
 				{
 					throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
 				}
 			}
 		}
 	}
-    
+
     /**
      * Tests if given a non empty tile Matrix Metadata information can be added without throwing an error.
      *
@@ -2577,7 +2577,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if getTileMatrixSet retrieves the values that is expected
      *
@@ -2620,7 +2620,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the GeoPackage will throw a GeoPackage Conformance Exception
      * when given a GeoPackage that violates a requirement with a severity equal
@@ -2648,11 +2648,11 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the GeoPackage can convert an
      * Geodetic crsCoordinate to a relative tile coordinate
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -2662,39 +2662,39 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordinateUpperRightGeodetic() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 1;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(32.423521, -45.234567, zoomLevel, geodeticRefSys);//upper right tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 1;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(32.423521, -45.234567, zoomLevel, geodeticRefSys);//upper right tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-					   zoomLevel, 
-					   matrixWidth, 
-					   matrixHeight, 
-					   pixelXSize, 
-					   pixelYSize, 
-					   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+					   zoomLevel,
+					   matrixWidth,
+					   matrixHeight,
+					   pixelXSize,
+					   pixelYSize,
+					   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
 					   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 0, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
                        relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 1);
-    		
+
     	}
     	finally
         {
@@ -2707,11 +2707,11 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the GeoPackage can convert an
      * Geodetic crsCoordinate to a relative tile coordinate
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -2721,39 +2721,39 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordinateUpperLeftGeodetic() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 1;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(0, -180, zoomLevel, geodeticRefSys);//upper left tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 1;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(0, -180, zoomLevel, geodeticRefSys);//upper left tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-					   zoomLevel, 
-					   matrixWidth, 
-					   matrixHeight, 
-					   pixelXSize, 
-					   pixelYSize, 
-					   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+					   zoomLevel,
+					   matrixWidth,
+					   matrixHeight,
+					   pixelXSize,
+					   pixelYSize,
+					   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
 					   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 0, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
                        relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 0);
-    		
+
     	}
     	finally
         {
@@ -2766,11 +2766,11 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the GeoPackage can convert an
      * Geodetic crsCoordinate to a relative tile coordinate
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -2780,39 +2780,39 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordinateLowerLeftGeodetic() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 1;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(49, -90, zoomLevel, geodeticRefSys);//lower left tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 1;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(49, -90, zoomLevel, geodeticRefSys);//lower left tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-									   zoomLevel, 
-									   matrixWidth, 
-									   matrixHeight, 
-									   pixelXSize, 
-									   pixelYSize, 
-									   (tileSet.getBoundingBox().getWidth() /matrixWidth )/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+									   zoomLevel,
+									   matrixWidth,
+									   matrixHeight,
+									   pixelXSize,
+									   pixelYSize,
+									   (tileSet.getBoundingBox().getWidth() /matrixWidth )/pixelXSize,
 									   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 1, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
                        relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 0);
-    		
+
     	}
     	finally
         {
@@ -2825,11 +2825,11 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the GeoPackage can convert an
      * Geodetic crsCoordinate to a relative tile coordinate
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -2839,35 +2839,35 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordinateLowerRightGeodetic() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 1;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(80, 0, zoomLevel, geodeticRefSys);//lower right tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 1;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(80, 0, zoomLevel, geodeticRefSys);//lower right tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-    								   zoomLevel, 
-    								   matrixWidth, 
-    								   matrixHeight, 
-    								   pixelXSize, 
-    								   pixelYSize, 
-    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+    								   zoomLevel,
+    								   matrixWidth,
+    								   matrixHeight,
+    								   pixelXSize,
+    								   pixelYSize,
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 1, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
                        relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 1);
@@ -2883,67 +2883,67 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the GeoPackage can convert an
      * Global Mercator crsCoordinate to a relative tile coordinate
-     * 
-     * @throws ConformanceException 
-     * @throws SQLException 
-     * @throws FileNotFoundException 
-     * @throws ClassNotFoundException 
-     * @throws FileAlreadyExistsException 
+     *
+     * @throws ConformanceException
+     * @throws SQLException
+     * @throws FileNotFoundException
+     * @throws ClassNotFoundException
+     * @throws FileAlreadyExistsException
      * @throws IOException
      */
     @Test
     public void crsToRelativeTileCoordinateUpperLeftGlobalMercator() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 6;
-    	
-    	CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-    	Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-43, -45);
-    	CrsTileCoordinate         crsMercatorCoord = new CrsTileCoordinate(coordInMeters.getY(), coordInMeters.getX(), zoomLevel, globalMercator);
-    	
-    	File testFile = this.getRandomFile(9);
-    	
+    	final int zoomLevel = 6;
+
+    	final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
+    	final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-43, -45);
+    	final CrsTileCoordinate         crsMercatorCoord = new CrsTileCoordinate(coordInMeters.getY(), coordInMeters.getX(), zoomLevel, globalMercator);
+
+    	final File testFile = this.getRandomFile(9);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-60.0, -90.0);
-    		Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 10.0,   5.0);
-    		
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(minBoundingBoxCoord.getY(), minBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX()), 
-    												  gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator", 
-    														  							    3395, 
-    														  							    "EPSG", 
-    														  							    3395, 
-    														  							    "definition", 
+    		final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-60.0, -90.0);
+    		final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 10.0,   5.0);
+
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(minBoundingBoxCoord.getY(), minBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX()),
+    												  gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator",
+    														  							    3395,
+    														  							    "EPSG",
+    														  							    3395,
+    														  							    "definition",
     														  							    "description"));
-    		
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-    								   zoomLevel, 
-    								   matrixWidth, 
-    								   matrixHeight, 
-    								   pixelXSize, 
-    								   pixelYSize, 
-    								   (tileSet.getBoundingBox().getWidth() /matrixWidth )/pixelXSize, 
+
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+    								   zoomLevel,
+    								   matrixWidth,
+    								   matrixHeight,
+    								   pixelXSize,
+    								   pixelYSize,
+    								   (tileSet.getBoundingBox().getWidth() /matrixWidth )/pixelXSize,
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
+
     		assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordiante.  "
     								+ "	\nExpected Row: 0, Expected Column: 0.\nActual Row: %d, Actual Column: %d.",
-    								relativeCoord.getRow(), 
+    								relativeCoord.getRow(),
     								relativeCoord.getColumn()),
     					relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 0);
-    		
+
     	}
     	finally
         {
@@ -2955,68 +2955,68 @@ public class GeoPackageTilesAPITest
                 }
             }
         }
-    	
+
     }
-    
+
     /**
      * Tests if the GeoPackage can convert an
      * Global Mercator crsCoordinate to a relative tile coordinate
-     * 
-     * @throws ConformanceException 
-     * @throws SQLException 
-     * @throws FileNotFoundException 
-     * @throws ClassNotFoundException 
-     * @throws FileAlreadyExistsException 
+     *
+     * @throws ConformanceException
+     * @throws SQLException
+     * @throws FileNotFoundException
+     * @throws ClassNotFoundException
+     * @throws FileAlreadyExistsException
      * @throws IOException
      */
     @Test
     public void crsToRelativeTileCoordinateUpperRightGlobalMercator() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 6;
-    	
-    	CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-    	Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-40, -42);
-    	CrsTileCoordinate         crsMercatorCoord = new CrsTileCoordinate(coordInMeters.getY(), coordInMeters.getX(), zoomLevel, globalMercator);
-    	
-    	File testFile = this.getRandomFile(9);
-    	
+    	final int zoomLevel = 6;
+
+    	final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
+    	final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-40, -42);
+    	final CrsTileCoordinate         crsMercatorCoord = new CrsTileCoordinate(coordInMeters.getY(), coordInMeters.getX(), zoomLevel, globalMercator);
+
+    	final File testFile = this.getRandomFile(9);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-60.0, -90.0);
-    		Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 10.0,   5.0);
-    		
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(minBoundingBoxCoord.getY(), minBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX()), 
-    												  gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator", 
-    														  							    3395, 
-    														  							    "EPSG", 
-    														  							    3395, 
-    														  							    "definition", 
+    		final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-60.0, -90.0);
+    		final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 10.0,   5.0);
+
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(minBoundingBoxCoord.getY(), minBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX()),
+    												  gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator",
+    														  							    3395,
+    														  							    "EPSG",
+    														  							    3395,
+    														  							    "definition",
     														  							    "description"));
-			int matrixWidth = 2;
-			int matrixHeight = 2;
-			int pixelXSize = 256;
-			int pixelYSize = 256;
-			
-			gpkg.tiles().addTileMatrix(tileSet, 
-									   zoomLevel, 
-									   matrixWidth, 
-									   matrixHeight, 
-									   pixelXSize, 
-									   pixelYSize, 
-									   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+			final int matrixWidth = 2;
+			final int matrixHeight = 2;
+			final int pixelXSize = 256;
+			final int pixelYSize = 256;
+
+			gpkg.tiles().addTileMatrix(tileSet,
+									   zoomLevel,
+									   matrixWidth,
+									   matrixHeight,
+									   pixelXSize,
+									   pixelYSize,
+									   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
 									   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-			
-			RelativeTileCoordinate relativeCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
-    		
+
+			final RelativeTileCoordinate relativeCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
+
     		assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordiante.  "
     								+ "	\nExpected Row: 0, Expected Column: 1.\nActual Row: %d, Actual Column: %d.",
-    								relativeCoord.getRow(), 
+    								relativeCoord.getRow(),
     								relativeCoord.getColumn()),
     					relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 1);
-    		
+
     	}
     	finally
         {
@@ -3028,68 +3028,68 @@ public class GeoPackageTilesAPITest
                 }
             }
         }
-    	
+
     }
-    
+
     /**
      * Tests if the GeoPackage can convert an
      * Global Mercator crsCoordinate to a relative tile coordinate
-     * 
-     * @throws ConformanceException 
-     * @throws SQLException 
-     * @throws FileNotFoundException 
-     * @throws ClassNotFoundException 
-     * @throws FileAlreadyExistsException 
+     *
+     * @throws ConformanceException
+     * @throws SQLException
+     * @throws FileNotFoundException
+     * @throws ClassNotFoundException
+     * @throws FileAlreadyExistsException
      * @throws IOException
      */
     @Test
     public void crsToRelativeTileCoordinateLowerLeftGlobalMercator() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 6;
-    	
-    	CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-    	Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(9, -47);
-    	CrsTileCoordinate         crsMercatorCoord = new CrsTileCoordinate(coordInMeters.getY(), coordInMeters.getX(), zoomLevel, globalMercator);
-    	
-    	File testFile = this.getRandomFile(9);
-    	
+    	final int zoomLevel = 6;
+
+    	final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
+    	final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(9, -47);
+    	final CrsTileCoordinate         crsMercatorCoord = new CrsTileCoordinate(coordInMeters.getY(), coordInMeters.getX(), zoomLevel, globalMercator);
+
+    	final File testFile = this.getRandomFile(9);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-60.0, -90.0);
-    		Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 10.0,   5.0);
-    		
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(minBoundingBoxCoord.getY(), minBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX()), 
-    												  gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator", 
-    														  							    3395, 
-    														  							    "EPSG", 
-    														  							    3395, 
-    														  							    "definition", 
+    		final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-60.0, -90.0);
+    		final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 10.0,   5.0);
+
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(minBoundingBoxCoord.getY(), minBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX()),
+    												  gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator",
+    														  							    3395,
+    														  							    "EPSG",
+    														  							    3395,
+    														  							    "definition",
     														  							    "description"));
-			int matrixWidth = 2;
-			int matrixHeight = 2;
-			int pixelXSize = 256;
-			int pixelYSize = 256;
-			
-			gpkg.tiles().addTileMatrix(tileSet, 
-									   zoomLevel, 
-									   matrixWidth, 
-									   matrixHeight, 
-									   pixelXSize, 
-									   pixelYSize, 
-									   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+			final int matrixWidth = 2;
+			final int matrixHeight = 2;
+			final int pixelXSize = 256;
+			final int pixelYSize = 256;
+
+			gpkg.tiles().addTileMatrix(tileSet,
+									   zoomLevel,
+									   matrixWidth,
+									   matrixHeight,
+									   pixelXSize,
+									   pixelYSize,
+									   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
 									   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
+
     		assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordiante.  "
     								+ "	\nExpected Row: 1, Expected Column: 0.\nActual Row: %d, Actual Column: %d.",
-    								relativeCoord.getRow(), 
+    								relativeCoord.getRow(),
     								relativeCoord.getColumn()),
     					relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 0);
-    		
+
     	}
     	finally
         {
@@ -3102,66 +3102,66 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the GeoPackage can convert an
      * Global Mercator crsCoordinate to a relative tile coordinate
-     * 
-     * @throws ConformanceException 
-     * @throws SQLException 
-     * @throws FileNotFoundException 
-     * @throws ClassNotFoundException 
-     * @throws FileAlreadyExistsException 
+     *
+     * @throws ConformanceException
+     * @throws SQLException
+     * @throws FileNotFoundException
+     * @throws ClassNotFoundException
+     * @throws FileAlreadyExistsException
      * @throws IOException
      */
     @Test
     public void crsToRelativeTileCoordinateLowerRightGlobalMercator() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 6;
-    	
-    	CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-    	Coordinate<Double> 		  coordInMeters    = LatLongConversions.latLongToMeters(9,5);
-    	CrsTileCoordinate 		  crsMercatorCoord = new CrsTileCoordinate(coordInMeters.getY(), coordInMeters.getX(), zoomLevel, globalMercator);
-    	
-    	File testFile = this.getRandomFile(9);
-    	
+    	final int zoomLevel = 6;
+
+    	final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
+    	final Coordinate<Double> 		  coordInMeters    = LatLongConversions.latLongToMeters(9,5);
+    	final CrsTileCoordinate 		  crsMercatorCoord = new CrsTileCoordinate(coordInMeters.getY(), coordInMeters.getX(), zoomLevel, globalMercator);
+
+    	final File testFile = this.getRandomFile(9);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-60.0, -90.0);
-    		Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 10.0,   5.0);
-    		
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(minBoundingBoxCoord.getY(), minBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX()), 
-    												  gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator", 
-    														  							    3395, 
-    														  							    "EPSG", 
-    														  							    3395, 
-    														  							    "definition", 
+    		final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-60.0, -90.0);
+    		final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 10.0,   5.0);
+
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(minBoundingBoxCoord.getY(), minBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX()),
+    												  gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator",
+    														  							    3395,
+    														  							    "EPSG",
+    														  							    3395,
+    														  							    "definition",
     														  							    "description"));
-			int matrixWidth = 2;
-			int matrixHeight = 2;
-			int pixelXSize = 256;
-			int pixelYSize = 256;
-			
-			gpkg.tiles().addTileMatrix(tileSet, 
-									   zoomLevel, 
-									   matrixWidth, 
-									   matrixHeight, 
-									   pixelXSize, 
-									   pixelYSize, 
-									   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+			final int matrixWidth = 2;
+			final int matrixHeight = 2;
+			final int pixelXSize = 256;
+			final int pixelYSize = 256;
+
+			gpkg.tiles().addTileMatrix(tileSet,
+									   zoomLevel,
+									   matrixWidth,
+									   matrixHeight,
+									   pixelXSize,
+									   pixelYSize,
+									   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
 									   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsMercatorCoord);
+
     		assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordiante.  "
     								+ "	\nExpected Row: 1, Expected Column: 1.\nActual Row: %d, Actual Column: %d.",
-    								relativeCoord.getRow(), 
+    								relativeCoord.getRow(),
     								relativeCoord.getColumn()),
     					relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 1);
-    		
+
     	}
     	finally
         {
@@ -3178,9 +3178,9 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage can translate a
      * crs to a relative tile coordinate when there
-     * are multiple zoom levels and when there are 
+     * are multiple zoom levels and when there are
      * more tiles at the higher zoom
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -3190,65 +3190,65 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordinateMultipleZoomLevels() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 5;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(1.25, -27.5, zoomLevel, geodeticRefSys);
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 5;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(1.25, -27.5, zoomLevel, geodeticRefSys);
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(-60.0, -100.0, 60.0, 100.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(-60.0, -100.0, 60.0, 100.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		
-    		int matrixWidth1  = 16;
-    		int matrixHeight1 = 24;
-    		int pixelXSize   = 256;
-    		int pixelYSize   = 512;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-									   zoomLevel, 
-									   matrixWidth1, 
-									   matrixHeight1, 
-									   pixelXSize, 
-									   pixelYSize, 
-									   (tileSet.getBoundingBox().getWidth() /matrixWidth1 )/pixelXSize, 
+
+    		final int matrixWidth1  = 16;
+    		final int matrixHeight1 = 24;
+    		final int pixelXSize   = 256;
+    		final int pixelYSize   = 512;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+									   zoomLevel,
+									   matrixWidth1,
+									   matrixHeight1,
+									   pixelXSize,
+									   pixelYSize,
+									   (tileSet.getBoundingBox().getWidth() /matrixWidth1 )/pixelXSize,
 									   (tileSet.getBoundingBox().getHeight()/matrixHeight1)/pixelYSize);
-    		
-    		int matrixWidth2  = 4;
-    		int matrixHeight2 = 6;
-    		int zoomLevel2 = 3;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-									   zoomLevel2, 
-									   matrixWidth2, 
-									   matrixHeight2, 
-									   pixelXSize, 
-									   pixelYSize, 
-									   (tileSet.getBoundingBox().getWidth() /matrixWidth2 )/pixelXSize, 
+
+    		final int matrixWidth2  = 4;
+    		final int matrixHeight2 = 6;
+    		final int zoomLevel2 = 3;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+									   zoomLevel2,
+									   matrixWidth2,
+									   matrixHeight2,
+									   pixelXSize,
+									   pixelYSize,
+									   (tileSet.getBoundingBox().getWidth() /matrixWidth2 )/pixelXSize,
 									   (tileSet.getBoundingBox().getHeight()/matrixHeight2)/pixelYSize);
-    		int matrixWidth3  = 8;
-    		int matrixHeight3 = 12;
-    		int zoomLevel3 = 4;
-    		gpkg.tiles().addTileMatrix(tileSet, 
-									   zoomLevel3, 
-									   matrixWidth3, 
-									   matrixHeight3, 
-									   pixelXSize, 
-									   pixelYSize, 
-									   (tileSet.getBoundingBox().getWidth() /matrixWidth3 )/pixelXSize, 
+    		final int matrixWidth3  = 8;
+    		final int matrixHeight3 = 12;
+    		final int zoomLevel3 = 4;
+    		gpkg.tiles().addTileMatrix(tileSet,
+									   zoomLevel3,
+									   matrixWidth3,
+									   matrixHeight3,
+									   pixelXSize,
+									   pixelYSize,
+									   (tileSet.getBoundingBox().getWidth() /matrixWidth3 )/pixelXSize,
 									   (tileSet.getBoundingBox().getHeight()/matrixHeight3)/pixelYSize);
-    		
-    		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+
+    		final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 12, Expected Column: 5. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
                        relativeCoord.getRow() == 12 && relativeCoord.getColumn() == 5);
-    		
+
     	}
     	finally
         {
@@ -3261,12 +3261,12 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This tests the validity of the transformation of
-     * crs to relative tile coordinate when the crs 
+     * crs to relative tile coordinate when the crs
      * coordinate lies in the middle of four tiles.
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -3276,35 +3276,35 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordEdgeCase() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 15;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(36.45, 76.4875, zoomLevel, geodeticRefSys);//lower right tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 15;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(36.45, 76.4875, zoomLevel, geodeticRefSys);//lower right tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, -180.0, 85.05, 90.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, -180.0, 85.05, 90.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 20;
-    		int matrixHeight = 7;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-    								   zoomLevel, 
-    								   matrixWidth, 
-    								   matrixHeight, 
-    								   pixelXSize, 
-    								   pixelYSize, 
-    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 20;
+    		final int matrixHeight = 7;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+    								   zoomLevel,
+    								   matrixWidth,
+    								   matrixHeight,
+    								   pixelXSize,
+    								   pixelYSize,
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 2, Expected Column: 18. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
                        relativeCoord.getRow() == 2 && relativeCoord.getColumn() == 18);
@@ -3320,10 +3320,10 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This tests the validity of the transformation of
-     * crs to relative tile coordinate when the crs 
+     * crs to relative tile coordinate when the crs
      * coordinate lies between two tiles on top of each other
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -3334,35 +3334,35 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordEdgeCase2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 15;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(25, 10, zoomLevel, geodeticRefSys);//lower right tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 15;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(25, 10, zoomLevel, geodeticRefSys);//lower right tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-    								   zoomLevel, 
-    								   matrixWidth, 
-    								   matrixHeight, 
-    								   pixelXSize, 
-    								   pixelYSize, 
-    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+    								   zoomLevel,
+    								   matrixWidth,
+    								   matrixHeight,
+    								   pixelXSize,
+    								   pixelYSize,
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 0, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
                        relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 0);
@@ -3378,10 +3378,10 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This tests the validity of the transformation of
-     * crs to relative tile coordinate when the crs 
+     * crs to relative tile coordinate when the crs
      * coordinate lies on the left border
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -3392,35 +3392,35 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordEdgeCase3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 15;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(20, 0, zoomLevel, geodeticRefSys);//lower right tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 15;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(20, 0, zoomLevel, geodeticRefSys);//lower right tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-    								   zoomLevel, 
-    								   matrixWidth, 
-    								   matrixHeight, 
-    								   pixelXSize, 
-    								   pixelYSize, 
-    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+    								   zoomLevel,
+    								   matrixWidth,
+    								   matrixHeight,
+    								   pixelXSize,
+    								   pixelYSize,
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 0, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
                        relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 0);
@@ -3436,10 +3436,10 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This tests the validity of the transformation of
-     * crs to relative tile coordinate when the crs 
+     * crs to relative tile coordinate when the crs
      * coordinate lies on the right border
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -3450,35 +3450,35 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordEdgeCase4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 15;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(20, 30, zoomLevel, geodeticRefSys);//lower right tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 15;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(20, 30, zoomLevel, geodeticRefSys);//lower right tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-    								   zoomLevel, 
-    								   matrixWidth, 
-    								   matrixHeight, 
-    								   pixelXSize, 
-    								   pixelYSize, 
-    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+    								   zoomLevel,
+    								   matrixWidth,
+    								   matrixHeight,
+    								   pixelXSize,
+    								   pixelYSize,
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 0, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
                        relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 1);
@@ -3494,10 +3494,10 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This tests the validity of the transformation of
-     * crs to relative tile coordinate when the crs 
+     * crs to relative tile coordinate when the crs
      * coordinate lies on the top border
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -3508,35 +3508,35 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordEdgeCase5() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 15;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(0, 20, zoomLevel, geodeticRefSys);//lower right tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 15;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(0, 20, zoomLevel, geodeticRefSys);//lower right tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-    								   zoomLevel, 
-    								   matrixWidth, 
-    								   matrixHeight, 
-    								   pixelXSize, 
-    								   pixelYSize, 
-    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+    								   zoomLevel,
+    								   matrixWidth,
+    								   matrixHeight,
+    								   pixelXSize,
+    								   pixelYSize,
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 0, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
                        relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 1);
@@ -3552,10 +3552,10 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This tests the validity of the transformation of
-     * crs to relative tile coordinate when the crs 
+     * crs to relative tile coordinate when the crs
      * coordinate lies on the bottom border
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -3566,35 +3566,35 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordEdgeCase6() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 15;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(50, 20, zoomLevel, geodeticRefSys);//lower right tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 15;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(50, 20, zoomLevel, geodeticRefSys);//lower right tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-    								   zoomLevel, 
-    								   matrixWidth, 
-    								   matrixHeight, 
-    								   pixelXSize, 
-    								   pixelYSize, 
-    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+    								   zoomLevel,
+    								   matrixWidth,
+    								   matrixHeight,
+    								   pixelXSize,
+    								   pixelYSize,
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+    		final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
     								   + "\nExpected Row: 1, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
                        relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 1);
@@ -3610,9 +3610,9 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
-     * Tests if a GeoPackage will throw the appropriate 
+     * Tests if a GeoPackage will throw the appropriate
      * exception when giving the method a null value for
      * crsCoordinate.
      * @throws FileAlreadyExistsException
@@ -3624,18 +3624,18 @@ public class GeoPackageTilesAPITest
     @Test(expected = IllegalArgumentException.class)
     public void crsToRelativeTileCoordException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	File testFile = this.getRandomFile(8);
-    	
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		
+
     		gpkg.tiles().crsToRelativeTileCoordinate(tileSet, null);
-    		
+
     		fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to input a crs tile coordinate that was null to the method crsToRelativeTileCoordinate.");
     	}
     	finally
@@ -3649,9 +3649,9 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
-     * Tests if a GeoPackage will throw the appropriate 
+     * Tests if a GeoPackage will throw the appropriate
      * exception when giving the method a null value for
      * crsCoordinate.
      * @throws FileAlreadyExistsException
@@ -3663,15 +3663,15 @@ public class GeoPackageTilesAPITest
     @Test(expected = IllegalArgumentException.class)
     public void crsToRelativeTileCoordException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	File testFile = this.getRandomFile(8);
-    	
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("Police", 99);
-    		CrsTileCoordinate 		  crsCoord 					= new CrsTileCoordinate(20, 15, 1, coordinateReferenceSystem);
-    		
+    		final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("Police", 99);
+    		final CrsTileCoordinate 		  crsCoord 					= new CrsTileCoordinate(20, 15, 1, coordinateReferenceSystem);
+
     		gpkg.tiles().crsToRelativeTileCoordinate(null, crsCoord);
-    		
+
     		fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to input a tileSet that was null to the method crsToRelativeTileCoordinate.");
     	}
     	finally
@@ -3685,12 +3685,12 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This tests that the appropriate exception
      * is thrown when trying to find a crs coordinate
      * from a different SRS from the tiles.
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -3700,35 +3700,35 @@ public class GeoPackageTilesAPITest
     @Test(expected = IllegalArgumentException.class)
     public void crsToRelativeTileCoordException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 15;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(50, 20, zoomLevel, geodeticRefSys);//lower right tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 15;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(50, 20, zoomLevel, geodeticRefSys);//lower right tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0),
     												  gpkg.core().getSpatialReferenceSystem(-1));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-    								   zoomLevel, 
-    								   matrixWidth, 
-    								   matrixHeight, 
-    								   pixelXSize, 
-    								   pixelYSize, 
-    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+    								   zoomLevel,
+    								   matrixWidth,
+    								   matrixHeight,
+    								   pixelXSize,
+    								   pixelYSize,
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
+
     		gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
     		fail("Expected the GoePackage to throw an exception when the crs coordinate and the tiles are from two different projections.");
     	}
     	finally
@@ -3742,12 +3742,12 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This tests that the appropriate exception
      * is thrown when trying to find a crs coordinate
      * from with a zoom level that is not in the matrix table
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -3757,39 +3757,39 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordException4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 15;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(50, 20, zoomLevel, geodeticRefSys);//lower right tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 15;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(50, 20, zoomLevel, geodeticRefSys);//lower right tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		int differentZoomLevel = 12;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-    								   differentZoomLevel, 
-    								   matrixWidth, 
-    								   matrixHeight, 
-    								   pixelXSize, 
-    								   pixelYSize, 
-    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+    		final int differentZoomLevel = 12;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+    								   differentZoomLevel,
+    								   matrixWidth,
+    								   matrixHeight,
+    								   pixelXSize,
+    								   pixelYSize,
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeTileCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+    		final RelativeTileCoordinate relativeTileCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue("Expected the GeoPackage to return a null value when the crs tile coordinate zoom level is not in the tile matrix table.",
     				  relativeTileCoord == null);
-    		
+
     	}
     	finally
         {
@@ -3802,12 +3802,12 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This tests that the appropriate exception
      * is thrown when trying to find a crs coordinate
      * is not within bounds
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -3817,38 +3817,38 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordException5() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 15;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(-50, 20, zoomLevel, geodeticRefSys);//lower right tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 15;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(-50, 20, zoomLevel, geodeticRefSys);//lower right tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-    								   zoomLevel, 
-    								   matrixWidth, 
-    								   matrixHeight, 
-    								   pixelXSize, 
-    								   pixelYSize, 
-    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+    								   zoomLevel,
+    								   matrixWidth,
+    								   matrixHeight,
+    								   pixelXSize,
+    								   pixelYSize,
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
-    		RelativeTileCoordinate relativeTileCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
+    		final RelativeTileCoordinate relativeTileCoord = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
+
     		assertTrue("Expected the GeoPackage to return a null value when the crs tile coordinate is outside of the bounding box.",
     				  relativeTileCoord == null);
-    		
+
     	}
     	finally
         {
@@ -3861,12 +3861,12 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * This tests that the appropriate exception
      * is thrown when trying to find a crs coordinate
      * from a different SRS from the tiles.
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -3876,35 +3876,35 @@ public class GeoPackageTilesAPITest
     @Test(expected = IllegalArgumentException.class)
     public void crsToRelativeTileCoordException6() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-    	int zoomLevel = 15;
-    	CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG", 3857);
-    	CrsTileCoordinate crsCoord = new CrsTileCoordinate(50, 20, zoomLevel, geodeticRefSys);//lower right tile
-    	
-    	File testFile = this.getRandomFile(8);
-    	
+    	final int zoomLevel = 15;
+    	final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG", 3857);
+    	final CrsTileCoordinate crsCoord = new CrsTileCoordinate(50, 20, zoomLevel, geodeticRefSys);//lower right tile
+
+    	final File testFile = this.getRandomFile(8);
+
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
-    												  "identifier", 
-    												  "description", 
-    												  new BoundingBox(0.0, 0.0, 50.0, 30.0), 
+    		final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+    												  "identifier",
+    												  "description",
+    												  new BoundingBox(0.0, 0.0, 50.0, 30.0),
     												  gpkg.core().getSpatialReferenceSystem(4326));
-    		int matrixWidth = 2;
-    		int matrixHeight = 2;
-    		int pixelXSize = 256;
-    		int pixelYSize = 256;
-    		
-    		gpkg.tiles().addTileMatrix(tileSet, 
-    								   zoomLevel, 
-    								   matrixWidth, 
-    								   matrixHeight, 
-    								   pixelXSize, 
-    								   pixelYSize, 
-    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize, 
+    		final int matrixWidth = 2;
+    		final int matrixHeight = 2;
+    		final int pixelXSize = 256;
+    		final int pixelYSize = 256;
+
+    		gpkg.tiles().addTileMatrix(tileSet,
+    								   zoomLevel,
+    								   matrixWidth,
+    								   matrixHeight,
+    								   pixelXSize,
+    								   pixelYSize,
+    								   (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
     								   (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
-    		
+
     		gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord);
-    		
+
     		fail("Expected the GoePackage to throw an exception when the crs coordinate and the tiles are from two different projections.");
     	}
     	finally
@@ -3918,7 +3918,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
 
     private static byte[] createImageBytes() throws IOException
     {
@@ -3955,7 +3955,7 @@ public class GeoPackageTilesAPITest
 
         return testFile;
     }
-   
+
     private Connection getConnection(final String filePath) throws Exception
     {
         Class.forName("org.sqlite.JDBC"); // Register the driver

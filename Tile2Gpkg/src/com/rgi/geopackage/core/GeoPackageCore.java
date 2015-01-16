@@ -25,11 +25,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.DatabaseUtility;
@@ -295,7 +293,7 @@ public class GeoPackageCore
 
         if(existingContent != null)
         {
-            if(!existingContent.equals(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem))
+            if(!existingContent.equals(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem.getIdentifier()))
             {
                 throw new IllegalArgumentException("A content with this table name or identifier already exists but with different properties");
             }
@@ -392,33 +390,16 @@ public class GeoPackageCore
             {
                 while(results.next())
                 {
-                    Date lastChange = null;
-                    try
-                    {
-                        lastChange = GeoPackageCore.DateFormat.parse(results.getString(5));
-                    }
-                    catch(final ParseException ex)
-                    {
-                        // This should never be reached
-                        // do nothing, lastChange is already null which is what we'll pass along.
-                        ex.printStackTrace();
-                    }
-
-                    final Integer srsId = (Integer)results.getObject(10);
-
-                    final SpatialReferenceSystem spatialReferenceSystem = (srsId != null) ? this.getSpatialReferenceSystem(srsId)
-                                                                                          : null;
-
                     content.add(contentFactory.create(results.getString(1),                          // table name
                                                       results.getString(2),                          // data type
                                                       results.getString(3),                          // identifier
                                                       results.getString(4),                          // description
-                                                      lastChange,                                    // last change
+                                                      results.getString(5),                          // last change
                                                       new BoundingBox((Double)results.getObject(7),  // min y        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
                                                                       (Double)results.getObject(6),  // min x
                                                                       (Double)results.getObject(9),  // max y
                                                                       (Double)results.getObject(8)), // max x
-                                                      spatialReferenceSystem));                      // srs id
+                                                      (Integer)results.getObject(10)));              // srs id
                 }
             }
         }
@@ -470,33 +451,16 @@ public class GeoPackageCore
             {
                 if(result.isBeforeFirst())
                 {
-                    Date lastChange = null;
-                    try
-                    {
-                        lastChange = GeoPackageCore.DateFormat.parse(result.getString(4));
-                    }
-                    catch(final ParseException ex)
-                    {
-                        // This should never be reached
-                        // do nothing, lastChange is already null which is what we'll pass along.
-                        ex.printStackTrace();
-                    }
-
-                    final Integer srsId = (Integer)result.getObject(9);
-
-                    final SpatialReferenceSystem spatialReferenceSystem = (srsId != null) ? this.getSpatialReferenceSystem(srsId)
-                                                                                          : null;
-
                     return contentFactory.create(tableName,                                    // table name
                                                  result.getString(1),                          // data type
                                                  result.getString(2),                          // identifier
                                                  result.getString(3),                          // description
-                                                 lastChange,                                   // last change
+                                                 result.getString(4),                          // last change
                                                  new BoundingBox((Double)result.getObject(6),  // min y        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
                                                                  (Double)result.getObject(5),  // min x
                                                                  (Double)result.getObject(8),  // max y
                                                                  (Double)result.getObject(7)), // max x
-                                                 spatialReferenceSystem);                      // srs id
+                                                 (Integer)result.getObject(9));                // srs id
                 }
 
                 return null;

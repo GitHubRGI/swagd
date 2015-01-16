@@ -18,8 +18,6 @@
 
 package com.rgi.geopackage.core;
 
-import java.util.Date;
-
 import com.rgi.common.BoundingBox;
 
 /**
@@ -29,11 +27,11 @@ import com.rgi.common.BoundingBox;
  */
 public interface ContentFactory<T extends Content>
 {
-    public T create(final String                 tableName,
-                    final String                 dataType,
-                    final String                 identifier,
-                    final String                 description,
-                    final Date                   lastChange,
-                    final BoundingBox            boundingBox,
-                    final SpatialReferenceSystem spatialReferenceSystem);
+    public T create(final String      tableName,
+                    final String      dataType,
+                    final String      identifier,
+                    final String      description,
+                    final String      lastChange,
+                    final BoundingBox boundingBox,
+                    final Integer     spatialReferenceSystemIdentifier);
 }

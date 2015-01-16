@@ -18,11 +18,8 @@
 
 package com.rgi.geopackage.tiles;
 
-import java.util.Date;
-
 import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.core.Content;
-import com.rgi.geopackage.core.SpatialReferenceSystem;
 
 /**
  * @author Luke Lambert
@@ -44,14 +41,14 @@ public class TileSet extends Content
      * @param boundingBox
      *             Bounding box for all content in tableName
      * @param spatialReferenceSystem
-     *             Spatial Reference System (SRS)
+     *             Spatial Reference System (SRS) identifier
      */
-    protected TileSet(final String                 tableName,
-                      final String                 identifier,
-                      final String                 description,
-                      final Date                   lastChange,
-                      final BoundingBox            boundingBox,
-                      final SpatialReferenceSystem spatialReferenceSystem)
+    protected TileSet(final String      tableName,
+                      final String      identifier,
+                      final String      description,
+                      final String      lastChange,
+                      final BoundingBox boundingBox,
+                      final int         spatialReferenceSystemIdentifier)
     {
         super(tableName,
               TileSet.TileContentType,
@@ -59,7 +56,7 @@ public class TileSet extends Content
               description,
               lastChange,
               boundingBox,
-              spatialReferenceSystem);
+              spatialReferenceSystemIdentifier);
     }
 
     public static final String TileContentType = "tiles";

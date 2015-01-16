@@ -18,11 +18,8 @@
 
 package com.rgi.geopackage.features;
 
-import java.util.Date;
-
 import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.core.Content;
-import com.rgi.geopackage.core.SpatialReferenceSystem;
 
 /**
  * @author Luke Lambert
@@ -44,15 +41,15 @@ public class FeatureSet extends Content
      *             Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
      * @param boundingBox
      *             Bounding box for all content in tableName
-     * @param spatialReferenceSystem
+     * @param spatialReferenceSystemIdentifier
      *             Spatial Reference System (SRS)
      */
-    protected FeatureSet(final String                 tableName,
-                         final String                 identifier,
-                         final String                 description,
-                         final Date                   lastChange,
-                         final BoundingBox            boundingBox,
-                         final SpatialReferenceSystem spatialReferenceSystem)
+    protected FeatureSet(final String      tableName,
+                         final String      identifier,
+                         final String      description,
+                         final String      lastChange,
+                         final BoundingBox boundingBox,
+                         final int         spatialReferenceSystemIdentifier)
     {
         super(tableName,
               FeatureSet.FeatureContentType,
@@ -60,7 +57,7 @@ public class FeatureSet extends Content
               description,
               lastChange,
               boundingBox,
-              spatialReferenceSystem);
+              spatialReferenceSystemIdentifier);
     }
 
     public final static String FeatureContentType = "features";

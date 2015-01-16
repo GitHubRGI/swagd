@@ -23,12 +23,9 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Random;
 
@@ -40,7 +37,6 @@ import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.Content;
-import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
@@ -55,7 +51,7 @@ public class GeoPackageCoreAPITest
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
-    
+
     /**Tests if the GeoPackage class when accepting a file {using the method create(File file)}, the file is the same when using the getFile() method.
     *
     * @throws SQLException
@@ -150,7 +146,7 @@ public class GeoPackageCoreAPITest
        }
    }
 
-   
+
    /**
     * Creates a GeoPackage with a file and checks to make sure that the Application Id is set correctly.
     *
@@ -168,7 +164,7 @@ public class GeoPackageCoreAPITest
        try(GeoPackage gpkg = new GeoPackage(testFile))
        {
            assertTrue(String.format("The GeoPackage Application Id is incorrect. Application Id Expected (in int):  %d  Application Id recieved: %d",
-                                           geoPackageApplicationId, gpkg.getApplicationId()), 
+                                           geoPackageApplicationId, gpkg.getApplicationId()),
                                     gpkg.getApplicationId() == geoPackageApplicationId);
        }
        finally
@@ -263,7 +259,7 @@ public class GeoPackageCoreAPITest
            }
        }
    }
-    
+
     /**
      * Tests if the GeoPackage will throw an IllegalArgumentException when trying to add
      * the same content twice
@@ -295,7 +291,7 @@ public class GeoPackageCoreAPITest
                        content.getDescription()           .equals(tileSet.getDescription()) &&
                        content.getIdentifier()            .equals(tileSet.getIdentifier())  &&
                        content.getLastChange()            .equals(tileSet.getLastChange())  &&
-                       content.getSpatialReferenceSystem().equals(tileSet.getSpatialReferenceSystem()));
+                       content.getSpatialReferenceSystemIdentifier().equals(tileSet.getSpatialReferenceSystemIdentifier()));
 
         }
         finally
@@ -343,7 +339,7 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
+
 
     /**
      * Tests if a GeoPackage throws an IllegalArgumentException when
@@ -611,7 +607,7 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
+
     /**
      * Tests to see if a null description can be inserted into the GeoPackage and
      * verifies that getSpatialReferenceSystem returns the same SRS as it was
@@ -974,7 +970,7 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
+
     /**
      * Tests if GeoPackage returns the correct specified SRS identified by the srs Id.
      * @throws SQLException
@@ -1034,12 +1030,12 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
+
     /**
      * Asks the GeoPackage to retrieve a Spatial Reference System
      * that doesn't exist in the GeoPackage and verifies the GeoPackage
      * returns a null value.
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -1050,7 +1046,7 @@ public class GeoPackageCoreAPITest
     public void getSpatialReferenceSystem3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
     	final File testFile = this.getRandomFile(7);
-    	
+
     	try(GeoPackage gpkg = new GeoPackage(testFile))
     	{
     		final SpatialReferenceSystem gpkgSrs = gpkg.core().getSpatialReferenceSystem("org", 222);
@@ -1070,9 +1066,9 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
+
     /**
-     * This tests if the GeoPackage can return a spatial 
+     * This tests if the GeoPackage can return a spatial
      * reference system object that was created by the user
      *  and verify that it is the expected values when using the method
      * getSpatialReferenceSystem(String, int) also ensures
@@ -1087,26 +1083,26 @@ public class GeoPackageCoreAPITest
     public void getSpatialReferenceSystem4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
     	final File testFile = this.getRandomFile(9);
-    	
+
     	try(GeoPackage gpkg = new GeoPackage(testFile))
     	{
-    		String name              = "name";
-    		int    identifier        = 222;
-    		String organization      = "organization";
-    		int    organizationSrsId = 333;
-    		String definition        = "definition";
-    		String description       = "description";
-    		
-    		SpatialReferenceSystem srsAdded = gpkg.core().addSpatialReferenceSystem(name, 
-    																				identifier, 
+    		final String name              = "name";
+    		final int    identifier        = 222;
+    		final String organization      = "organization";
+    		final int    organizationSrsId = 333;
+    		final String definition        = "definition";
+    		final String description       = "description";
+
+    		final SpatialReferenceSystem srsAdded = gpkg.core().addSpatialReferenceSystem(name,
+    																				identifier,
     																				organization,
-    																				organizationSrsId, 
-    																				definition, 
+    																				organizationSrsId,
+    																				definition,
     																				description);
-    		
-    		SpatialReferenceSystem srsFound = gpkg.core().getSpatialReferenceSystem("oRgaNiZaTiOn", 
+
+    		final SpatialReferenceSystem srsFound = gpkg.core().getSpatialReferenceSystem("oRgaNiZaTiOn",
     																				organizationSrsId);
-    		
+
     		assertTrue("The GeoPackage did not return the expected values for the Spatial Reference System Object when "
     					+ "asking to retrieve the SRS object through the getSpatialReferenceSystem(String, int) method.",
     				   srsFound.equals(srsAdded));
@@ -1122,12 +1118,12 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
+
     /**
-     * This tests if the GeoPackage can return a spatial 
+     * This tests if the GeoPackage can return a spatial
      * reference system object from the default values already in the GeoPackage
      * and verify it is the expected values when using the method
-     * getSpatialReferenceSystem(String, int) 
+     * getSpatialReferenceSystem(String, int)
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -1138,15 +1134,15 @@ public class GeoPackageCoreAPITest
     public void getSpatialReferenceSystem5() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
     	final File testFile = this.getRandomFile(9);
-    	
+
     	try(GeoPackage gpkg = new GeoPackage(testFile))
     	{
-    		
-    		SpatialReferenceSystem srsAdded = gpkg.core().getSpatialReferenceSystem(0);
-    		
-    		SpatialReferenceSystem srsFound = gpkg.core().getSpatialReferenceSystem("NONE", 
+
+    		final SpatialReferenceSystem srsAdded = gpkg.core().getSpatialReferenceSystem(0);
+
+    		final SpatialReferenceSystem srsFound = gpkg.core().getSpatialReferenceSystem("NONE",
     																				 0);
-    		
+
     		assertTrue("The GeoPackage did not return the expected values for the Spatial Reference System Object when "
     					+ "asking to retrieve the SRS object through the getSpatialReferenceSystem(String, int) method.",
     				   srsFound.equals(srsAdded));
@@ -1272,7 +1268,7 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
+
     /**
      * Tests GeoPackageCore if it throws an IllegalArgumentException
      * when giving an empty string for getContnent's tablename
@@ -1457,7 +1453,7 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
+
     /**
      * Tests if the GeoPackage will throw an IllegalArgumentException when given a null
      * parameter for getContent.
@@ -1488,12 +1484,12 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
+
     /**
      * This Tests the Contents equal method and
-     * ensures it returns false when the content's 
+     * ensures it returns false when the content's
      * table name doesn't match.
-     * 
+     *
      * @throws SQLException
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -1506,22 +1502,22 @@ public class GeoPackageCoreAPITest
     	final File testFile = this.getRandomFile(18);
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		String tableName = "tableName";
-    		String dataType  = "tiles";
-    		String identifier = "identifier";
-    		String description = "description";
-    		BoundingBox boundingBox = new BoundingBox(null, null, null, null);
-    		SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
-    		
-    		Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
-    		
-    		assertTrue("Returned true when it should have returned false when using the Contents equals method.", 
-    				   !content.equals("different Table Name", 
-    					 	   		   dataType, 
-    					 	   		   identifier, 
-    						   		   description, 
-    						   		   boundingBox, 
-    						   		   spatialReferenceSystem));
+    		final String tableName = "tableName";
+    		final String dataType  = "tiles";
+    		final String identifier = "identifier";
+    		final String description = "description";
+    		final BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+    		final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+
+    		final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
+
+    		assertTrue("Returned true when it should have returned false when using the Contents equals method.",
+    				   !content.equals("different Table Name",
+    					 	   		   dataType,
+    					 	   		   identifier,
+    						   		   description,
+    						   		   boundingBox,
+    						   		   spatialReferenceSystem.getIdentifier()));
     	}
     	finally
         {
@@ -1533,14 +1529,14 @@ public class GeoPackageCoreAPITest
                 }
             }
         }
-    	
+
     }
-    
+
     /**
      * This Tests the Contents equal method and
-     * ensures it returns false when the content's 
+     * ensures it returns false when the content's
      * bounding boxes don't match.
-     * 
+     *
      * @throws SQLException
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -1553,22 +1549,22 @@ public class GeoPackageCoreAPITest
     	final File testFile = this.getRandomFile(18);
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		String tableName = "tableName";
-    		String dataType  = "tiles";
-    		String identifier = "identifier";
-    		String description = "description";
-    		BoundingBox boundingBox = new BoundingBox(null, null, null, null);
-    		SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
-    		
-    		Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
-    		
-    		assertTrue("Returned true when it should have returned false when using the Contents equals method.", 
-    					!content.equals(tableName, 
-    								    dataType, 
+    		final String tableName = "tableName";
+    		final String dataType  = "tiles";
+    		final String identifier = "identifier";
+    		final String description = "description";
+    		final BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+    		final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+
+    		final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
+
+    		assertTrue("Returned true when it should have returned false when using the Contents equals method.",
+    					!content.equals(tableName,
+    								    dataType,
     								    identifier,
-    								    description, 
-    								    new BoundingBox(1.0, 2.0, 3.0, 4.0), 
-    								    spatialReferenceSystem));
+    								    description,
+    								    new BoundingBox(1.0, 2.0, 3.0, 4.0),
+    								    spatialReferenceSystem.getIdentifier()));
     	}
     	finally
         {
@@ -1580,14 +1576,14 @@ public class GeoPackageCoreAPITest
                 }
             }
         }
-    	
+
     }
-    
+
     /**
      * This Tests the Contents equal method and
-     * ensures it returns false when the content's 
+     * ensures it returns false when the content's
      * description doesn't match.
-     * 
+     *
      * @throws SQLException
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -1600,22 +1596,22 @@ public class GeoPackageCoreAPITest
     	final File testFile = this.getRandomFile(18);
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		String tableName = "tableName";
-    		String dataType  = "tiles";
-    		String identifier = "identifier";
-    		String description = "description";
-    		BoundingBox boundingBox = new BoundingBox(null, null, null, null);
-    		SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
-    		
-    		Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
-    		
-    		assertTrue("Returned true when it should have returned false when using the Contents equals method.", 
-    				   !content.equals(tableName, 
-    						   		   dataType, 
-    						   		   identifier, 
-    						   		   "different description", 
-    						   		   boundingBox, 
-    						   		   spatialReferenceSystem));
+    		final String tableName = "tableName";
+    		final String dataType  = "tiles";
+    		final String identifier = "identifier";
+    		final String description = "description";
+    		final BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+    		final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+
+    		final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
+
+    		assertTrue("Returned true when it should have returned false when using the Contents equals method.",
+    				   !content.equals(tableName,
+    						   		   dataType,
+    						   		   identifier,
+    						   		   "different description",
+    						   		   boundingBox,
+    						   		   spatialReferenceSystem.getIdentifier()));
     	}
     	finally
         {
@@ -1628,12 +1624,12 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
+
     /**
      * This Tests the Contents equal method and
-     * ensures it returns false when the content's 
+     * ensures it returns false when the content's
      * spatial reference systems don't match.
-     * 
+     *
      * @throws SQLException
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -1646,22 +1642,24 @@ public class GeoPackageCoreAPITest
     	final File testFile = this.getRandomFile(18);
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		String tableName = "tableName";
-    		String dataType  = "tiles";
-    		String identifier = "identifier";
-    		String description = "description";
-    		BoundingBox boundingBox = new BoundingBox(null, null, null, null);
-    		SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
-    		
-    		Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
-    		
-    		assertTrue("Returned true when it should have returned false when using the Contents equals method.", 
-    				   !content.equals(tableName, 
-    					 	   		   dataType, 
-    					 	   		   identifier, 
-    						   		   description, 
-    						   		   boundingBox, 
-    						   		   gpkg.core().getSpatialReferenceSystem(0)));
+    		final String tableName = "tableName";
+    		final String dataType  = "tiles";
+    		final String identifier = "identifier";
+    		final String description = "description";
+    		final BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+    		final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+
+    		final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
+
+    		assertTrue("Returned true when it should have returned false when using the Contents equals method.",
+    				   !content.equals(tableName,
+    					 	   		   dataType,
+    					 	   		   identifier,
+    						   		   description,
+    						   		   boundingBox,
+    						   		   gpkg.core()
+    						   		       .getSpatialReferenceSystem(0)
+    						   		       .getIdentifier()));
     	}
     	finally
         {
@@ -1674,12 +1672,12 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
+
     /**
      * This Tests the Contents equal method and
-     * ensures it returns false when the content's 
+     * ensures it returns false when the content's
      * description doesn't match.
-     * 
+     *
      * @throws SQLException
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -1692,22 +1690,22 @@ public class GeoPackageCoreAPITest
     	final File testFile = this.getRandomFile(18);
     	try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
     	{
-    		String tableName = "tableName";
-    		String dataType  = "tiles";
-    		String identifier = null;
-    		String description = null;
-    		BoundingBox boundingBox = new BoundingBox(null, null, null, null);
-    		SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
-    		
-    		Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
-    		
-    		assertTrue("Returned true when it should have returned false when using the Contents equals method.", 
-    				   !content.equals(tableName, 
-    						 		   dataType, 
-    						   		   null, 
-    						   		   "different description", 
-    						   		   boundingBox, 
-    						   		   spatialReferenceSystem));
+    		final String tableName = "tableName";
+    		final String dataType  = "tiles";
+    		final String identifier = null;
+    		final String description = null;
+    		final BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+    		final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+
+    		final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
+
+    		assertTrue("Returned true when it should have returned false when using the Contents equals method.",
+    				   !content.equals(tableName,
+    						 		   dataType,
+    						   		   null,
+    						   		   "different description",
+    						   		   boundingBox,
+    						   		   spatialReferenceSystem.getIdentifier()));
     	}
     	finally
         {
@@ -1744,7 +1742,7 @@ public class GeoPackageCoreAPITest
 
         return testFile;
     }
-    
+
     private String sqliteVersionToString(final int randomInt)
     {
         // Major/minor/revision, https://www.sqlite.org/fileformat2.html

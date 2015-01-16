@@ -39,6 +39,7 @@ import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
 import com.rgi.common.tile.store.TileStore;
 import com.rgi.common.tile.store.TileStoreException;
+import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileSet;
 
@@ -61,10 +62,13 @@ public class GeoPackageTileStore implements TileStore
             throw new IllegalArgumentException("Tile set may not be null or empty");
         }
 
-        this.geoPackage    = geoPackage;
-        this.tileSet       = tileSet;
-        this.tileProfile   = TileProfileFactory.create(tileSet.getSpatialReferenceSystem().getOrganization(),
-                                                       tileSet.getSpatialReferenceSystem().getOrganizationSrsId());
+        final SpatialReferenceSystem srs = geoPackage.core().getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
+
+        this.geoPackage                = geoPackage;
+        this.tileSet                   = tileSet;
+        this.coordinateReferenceSystem = new CoordinateReferenceSystem(srs.getOrganization(), srs.getOrganizationSrsId());
+        this.tileProfile               = TileProfileFactory.create(this.coordinateReferenceSystem);
+
         this.tileMatricies = geoPackage.tiles()
                                        .getTileMatrices(tileSet)
                                        .stream()
@@ -116,8 +120,10 @@ public class GeoPackageTileStore implements TileStore
 
         try
         {
-            final com.rgi.geopackage.tiles.Tile tile = this.geoPackage.tiles().getTile(this.tileSet,
-                                                                                      this.tileProfile.absoluteToCrsCoordinate(coordinate));
+            final com.rgi.geopackage.tiles.Tile tile = this.geoPackage
+                                                           .tiles()
+                                                           .getTile(this.tileSet,
+                                                                    this.tileProfile.absoluteToCrsCoordinate(coordinate));
 
             return tile != null ? new Tile(coordinate, ImageIO.read(new ByteArrayInputStream(tile.getImageData())))
                                 : null;
@@ -163,11 +169,12 @@ public class GeoPackageTileStore implements TileStore
                 tileMatrix = this.tileMatricies.get(coordinate.getZoomLevel());
             }
 
-            this.geoPackage.tiles()
-                           .addTile(this.tileSet,
-                                    tileMatrix,
-                                    this.tileProfile.absoluteToCrsCoordinate(coordinate),
-                                    outputStream.toByteArray());
+            this.geoPackage
+                .tiles()
+                .addTile(this.tileSet,
+                         tileMatrix,
+                         this.tileProfile.absoluteToCrsCoordinate(coordinate),
+                         outputStream.toByteArray());
         }
         catch(final Exception ex)
         {
@@ -180,8 +187,7 @@ public class GeoPackageTileStore implements TileStore
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
-        return new CoordinateReferenceSystem(this.tileSet.getSpatialReferenceSystem().getOrganization(),
-                                             this.tileSet.getSpatialReferenceSystem().getOrganizationSrsId());
+        return this.coordinateReferenceSystem;
     }
 
     private TileMatrix addTileMatrix(final int zoomLevel, final int pixelHeight, final int pixelWidth) throws SQLException
@@ -215,8 +221,9 @@ public class GeoPackageTileStore implements TileStore
         }
     }
 
-    private final GeoPackage               geoPackage;
-    private final TileSet                  tileSet;
-    private final TileProfile              tileProfile;
-    private final Map<Integer, TileMatrix> tileMatricies;
+    private final GeoPackage                geoPackage;
+    private final TileSet                   tileSet;
+    private final CoordinateReferenceSystem coordinateReferenceSystem;
+    private final TileProfile               tileProfile;
+    private final Map<Integer, TileMatrix>  tileMatricies;
 }

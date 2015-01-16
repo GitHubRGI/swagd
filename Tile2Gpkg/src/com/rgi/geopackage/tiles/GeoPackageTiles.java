@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsTileCoordinate;
 import com.rgi.common.tile.TileOrigin;
@@ -88,6 +89,28 @@ public class GeoPackageTiles
                               final BoundingBox            boundingBox,
                               final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
     {
+        if(tableName == null || tableName.isEmpty())
+        {
+            throw new IllegalArgumentException("Tile set name may not be null");
+        }
+
+        // TODO check that a table with the same name doesn't exist
+
+        if(!tableName.matches("^[_a-zA-Z]\\w*"))
+        {
+            throw new IllegalArgumentException("The tile set's name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
+        }
+
+        if(tableName.startsWith("gpkg_"))
+        {
+            throw new IllegalArgumentException("The tile set's name may not start with the reserved prefix 'gpkg_'");
+        }
+
+        if(boundingBox == null)
+        {
+            throw new IllegalArgumentException("Bounding box cannot be mull.");
+        }
+
         final TileSet existingContent = this.getTileSet(tableName);
 
         if(existingContent != null)
@@ -97,7 +120,7 @@ public class GeoPackageTiles
                                       identifier,
                                       description,
                                       boundingBox,
-                                      spatialReferenceSystem))
+                                      spatialReferenceSystem.getOrganizationSrsId()))
             {
                 return existingContent;
             }
@@ -762,8 +785,11 @@ public class GeoPackageTiles
             throw new IllegalArgumentException("CRS coordinate may not be null");
         }
 
-        if(!crsTileCoordinate.getCoordinateReferenceSystem().getAuthority().equalsIgnoreCase(tileSet.getSpatialReferenceSystem().getOrganization()) ||
-           crsTileCoordinate.getCoordinateReferenceSystem().getIdentifier() != tileSet.getSpatialReferenceSystem().getOrganizationSrsId())
+        final CoordinateReferenceSystem crs = crsTileCoordinate.getCoordinateReferenceSystem();
+        final SpatialReferenceSystem    srs = this.core.getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
+
+        if(!crs.getAuthority().equalsIgnoreCase(srs.getOrganization()) ||
+           crs.getIdentifier() != srs.getIdentifier())
         {
             throw new IllegalArgumentException("Coordinate transformation is not currently supported.  The incoming spatial reference system must match that of the tile set's");
         }

@@ -18,8 +18,6 @@
 
 package com.rgi.geopackage.core;
 
-import java.util.Date;
-
 import com.rgi.common.BoundingBox;
 
 /**
@@ -43,49 +41,24 @@ public class Content
      *             Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
      * @param boundingBox
      *             Bounding box for all content in tableName
-     * @param spatialReferenceSystem
+     * @param spatialReferenceSystemIdentifier
      *             Spatial Reference System (SRS)
      */
-    protected Content(final String                 tableName,
-                      final String                 dataType,
-                      final String                 identifier,
-                      final String                 description,
-                      final Date                   lastChange,
-                      final BoundingBox            boundingBox,
-                      final SpatialReferenceSystem spatialReferenceSystem)
+    protected Content(final String      tableName,
+                      final String      dataType,
+                      final String      identifier,
+                      final String      description,
+                      final String      lastChange,
+                      final BoundingBox boundingBox,
+                      final Integer     spatialReferenceSystemIdentifier)
     {
-        if(tableName == null || tableName.isEmpty())
-        {
-            throw new IllegalArgumentException("Tile set name may not be null");
-        }
-
-        if(!tableName.matches("^[_a-zA-Z]\\w*"))
-        {
-            throw new IllegalArgumentException("The tile set's name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
-        }
-
-        if(tableName.startsWith("gpkg_"))
-        {
-            throw new IllegalArgumentException("The tile set's name may not start with the reserved prefix 'gpkg_'");
-        }
-
-        if(dataType == null || dataType.isEmpty())
-        {
-            throw new IllegalArgumentException("Data type cannot be null, or empty.");
-        }
-
-        if(boundingBox == null)
-        {
-            throw new IllegalArgumentException("Bounding box cannot be mull.");
-        }
-
-        this.tableName              = tableName;
-        this.dataType               = dataType;
-        this.identifier             = identifier;
-        this.description            = description;
-        this.lastChange             = lastChange;
-        this.boundingBox            = boundingBox;
-        this.spatialReferenceSystem = spatialReferenceSystem;
+        this.tableName                        = tableName;
+        this.dataType                         = dataType;
+        this.identifier                       = identifier;
+        this.description                      = description;
+        this.lastChange                       = lastChange;
+        this.boundingBox                      = boundingBox;
+        this.spatialReferenceSystemIdentifier = spatialReferenceSystemIdentifier;
     }
 
     /**
@@ -123,7 +96,7 @@ public class Content
     /**
      * @return Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
      */
-    public Date getLastChange()
+    public String getLastChange()
     {
         return this.lastChange;
     }
@@ -139,24 +112,24 @@ public class Content
     /**
      * @return Spatial Reference System (SRS)
      */
-    public SpatialReferenceSystem getSpatialReferenceSystem()
+    public Integer getSpatialReferenceSystemIdentifier()
     {
-        return this.spatialReferenceSystem;
+        return this.spatialReferenceSystemIdentifier;
     }
 
-    public boolean equals(final String                 inTableName,
-                          final String                 inDataType,
-                          final String                 inIdentifier,
-                          final String                 inDescription,
-                          final BoundingBox            inBoundingBox,
-                          final SpatialReferenceSystem inSpatialReferenceSystem)
+    public boolean equals(final String      inTableName,
+                          final String      inDataType,
+                          final String      inIdentifier,
+                          final String      inDescription,
+                          final BoundingBox inBoundingBox,
+                          final Integer     inSpatialReferenceSystemIdentifier)
     {
-        return        this.tableName       .equals(inTableName)   &&
-                      this.dataType        .equals(inDataType)    &&
-                      this.boundingBox     .equals(inBoundingBox) &&
-               equals(this.identifier,             inIdentifier)  &&
-               equals(this.description,            inDescription) &&
-               equals(this.spatialReferenceSystem, inSpatialReferenceSystem);
+        return        this.tableName  .equals(inTableName)   &&
+                      this.dataType   .equals(inDataType)    &&
+                      this.boundingBox.equals(inBoundingBox) &&
+               equals(this.identifier, inIdentifier)         &&
+               equals(this.description,inDescription)        &&
+               equals(this.spatialReferenceSystemIdentifier, inSpatialReferenceSystemIdentifier);
     }
 
     private static <T> boolean equals(final T first, final T second)
@@ -165,11 +138,11 @@ public class Content
                              : first.equals(second);
     }
 
-    private final String                 tableName;
-    private final String                 dataType;
-    private final String                 identifier;
-    private final String                 description;
-    private final Date                   lastChange;
-    private final BoundingBox            boundingBox;
-    private final SpatialReferenceSystem spatialReferenceSystem;
+    private final String      tableName;
+    private final String      dataType;
+    private final String      identifier;
+    private final String      description;
+    private final String      lastChange;
+    private final BoundingBox boundingBox;
+    private final Integer     spatialReferenceSystemIdentifier;
 }
