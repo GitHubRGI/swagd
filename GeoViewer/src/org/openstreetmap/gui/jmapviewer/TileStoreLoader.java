@@ -68,7 +68,7 @@ public class TileStoreLoader implements TileLoader
                         return;
                     }
                     tile.loaded = false;
-                    tile.error = false;
+                    tile.error   = false;
                     tile.loading = true;
                 }
 

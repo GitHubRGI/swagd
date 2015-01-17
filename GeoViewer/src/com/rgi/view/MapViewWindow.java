@@ -125,7 +125,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
             if(!tileStore.getCoordinateReferenceSystem().getAuthority().equals("EPSG") ||
                tileStore.getCoordinateReferenceSystem().getIdentifier() != 3857)
             {
-                throw new UnsupportedOperationException("Zooming to the data currently only works for EPSG:3875 - spherical (web) mercator");
+                throw new UnsupportedOperationException("Zooming to the data currently only works for EPSG:3857 - spherical (web) mercator");
             }
 
             // TODO this is a complete hack to get something working.  This code needs to rely on a more general mechanism to convert the center of the tile set's bounding box from it's CRS to the (presumed) CRS of jmapviewer, EPSG:4326
