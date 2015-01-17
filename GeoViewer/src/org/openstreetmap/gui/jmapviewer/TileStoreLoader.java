@@ -39,10 +39,10 @@ import com.rgi.common.tile.store.TileStore;
  */
 public class TileStoreLoader implements TileLoader
 {
-    private TileLoaderListener         listener;
+    private final TileLoaderListener         listener;
     //private TileSource                 tileSource;
-    private TileStore                  tileStore;
-    private TileProfile                tileProfile;
+    private final TileStore                  tileStore;
+    private final TileProfile                tileProfile;
     private static final BufferedImage TRANSPARENT_TILE = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
 
     public TileStoreLoader(final TileStore tileStore, final TileLoaderListener listener)
@@ -74,7 +74,11 @@ public class TileStoreLoader implements TileLoader
 
                 try
                 {
-                    CrsCoordinate crsCoordinate = TileStoreLoader.this.tileProfile.absoluteToCrsCoordinate(new AbsoluteTileCoordinate(tile.getYtile(), tile.getXtile(), tile.getZoom(), TileOrigin.LowerLeft));
+                    final int y = tile.getYtile();
+                    final int x = tile.getXtile();
+                    final int z = tile.getZoom();
+
+                    final CrsCoordinate crsCoordinate = TileStoreLoader.this.tileProfile.absoluteToCrsCoordinate(new AbsoluteTileCoordinate(tile.getYtile(), tile.getXtile(), tile.getZoom(), TileOrigin.LowerLeft));
 
                     final BufferedImage image = TileStoreLoader.this.tileStore.getTile(crsCoordinate, tile.getZoom());
 

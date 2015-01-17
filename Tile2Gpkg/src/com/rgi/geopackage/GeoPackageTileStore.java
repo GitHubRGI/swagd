@@ -201,6 +201,20 @@ public class GeoPackageTileStore implements TileStore
         return this.coordinateReferenceSystem;
     }
 
+    @Override
+    public Set<Integer> getZoomLevels() throws TileStoreException
+    {
+        try
+        {
+            return this.geoPackage.tiles()
+                                  .getTileZoomLevels(this.tileSet);
+        }
+        catch(final SQLException ex)
+        {
+            throw new TileStoreException(ex);
+        }
+    }
+
     private TileMatrix addTileMatrix(final int zoomLevel, final int pixelHeight, final int pixelWidth) throws SQLException
     {
         final int tileDimension = (int)Math.pow(2.0, zoomLevel);    // Assumes zoom*2 convension, with 1 tile at zoom level 0
@@ -216,20 +230,6 @@ public class GeoPackageTileStore implements TileStore
                                              pixelWidth,
                                              dimensions.getHeight() / pixelHeight,
                                              dimensions.getWidth()  / pixelWidth);
-    }
-
-    @Override
-    public Set<Integer> getZoomLevels() throws TileStoreException
-    {
-        try
-        {
-            return this.geoPackage.tiles()
-                                  .getTileZoomLevels(this.tileSet);
-        }
-        catch(final SQLException ex)
-        {
-            throw new TileStoreException(ex);
-        }
     }
 
     private final GeoPackage                geoPackage;

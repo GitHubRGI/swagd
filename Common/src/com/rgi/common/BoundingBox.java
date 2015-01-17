@@ -101,6 +101,12 @@ public class BoundingBox
         return this.getMaxX() - this.getMinX();
     }
 
+    public Coordinate<Double> getCenter()
+    {
+        return new Coordinate<>(this.getHeight() / 2.0,
+                                this.getWidth()  / 2.0);
+    }
+
     /**
      * @return the minY
      */

@@ -22,11 +22,13 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
+import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.JMapViewerTree;
 import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
@@ -86,16 +88,10 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         TileStore tileStore = null;
         if(this.location.isDirectory())
         {
-            // TMS or WMTS based directory
-            // create a TMS tile store
+            // TMS or WMTS based directory create a TMS tile store
             tileStore = new TmsTileStore(new SphericalMercatorTileProfile(), this.location.toPath());
         }
-        else if(this.location.getName().toLowerCase().endsWith(".gpkg")) // File
-                                                                         // based
-                                                                         // tile
-                                                                         // store
-                                                                         // like
-                                                                         // GPKG
+        else if(this.location.getName().toLowerCase().endsWith(".gpkg"))
         {
             try
             {
@@ -126,18 +122,18 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         try
         {
             // TODO
-            // final Coordinate<Double> topLeft =
-            // tileStore.calculateBounds().getMin();
+            if(!tileStore.getCoordinateReferenceSystem().getAuthority().equals("EPSG") ||
+               tileStore.getCoordinateReferenceSystem().getIdentifier() != 3857)
+            {
+                throw new UnsupportedOperationException("Zooming to the data currently only works for EPSG:3875 - spherical (web) mercator");
+            }
 
-            // Coordinate 4326geographicCoordinate = transform topLeft FROM
-            // (tileStore.getSrsAuthority, tileStore.getSrsAuthority) TO
-            // ("EPSG", 4326) TODO is jmapviewer really in 4326?
+            // TODO this is a complete hack to get something working.  This code needs to rely on a more general mechanism to convert the center of the tile set's bounding box from it's CRS to the (presumed) CRS of jmapviewer, EPSG:4326
+            final com.rgi.common.coordinates.Coordinate<Double> center = SphericalMercatorTileProfile.metersToGeographic(tileStore.calculateBounds().getCenter());
 
-            // this.map()
-            // .setDisplayPosition(new Coordinate(geoCoord.getLatitude(),
-            // geoCoord.getLongitude()),
-            // Collections.min(tileStore.getZoomLevels()));
-            System.err.println("The tile store data isn't going to be zoomed to -> the coordinate conversion stuff is still being worked out");
+            this.map().setDisplayPosition(new Coordinate(center.getY(),
+                                                         center.getX()),
+                                          Collections.min(tileStore.getZoomLevels()));
         }
         catch(final Exception e)
         {

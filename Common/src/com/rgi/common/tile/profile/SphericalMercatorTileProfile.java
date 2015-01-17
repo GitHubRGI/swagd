@@ -29,8 +29,6 @@ import com.rgi.common.tile.TileOrigin;
 /**
  * @author Luke Lambert
  *
- * Methods based on the previous Python implementation in tiles2gpkg_parallel.py
- *
  */
 public class SphericalMercatorTileProfile implements TileProfile
 {

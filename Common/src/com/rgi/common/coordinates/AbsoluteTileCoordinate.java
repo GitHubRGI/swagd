@@ -46,7 +46,7 @@ public class AbsoluteTileCoordinate extends Coordinate<Integer>
      * @param origin
      *             The the corner of the tile that represents the coordinate
      */
-    public AbsoluteTileCoordinate(final Integer row, final Integer column, final int zoomLevel, final TileOrigin origin)
+    public AbsoluteTileCoordinate(final int row, final int column, final int zoomLevel, final TileOrigin origin)
     {
         super(row, column);
 
@@ -64,7 +64,7 @@ public class AbsoluteTileCoordinate extends Coordinate<Integer>
     /**
      * @return Returns the row (y) portion of the coordinate
      */
-    public Integer getRow()
+    public int getRow()
     {
         return this.getY();
     }
@@ -72,7 +72,7 @@ public class AbsoluteTileCoordinate extends Coordinate<Integer>
     /**
      * @return Returns the column (x) portion of the coordinate
      */
-    public Integer getColumn()
+    public int getColumn()
     {
         return this.getX();
     }
@@ -101,10 +101,12 @@ public class AbsoluteTileCoordinate extends Coordinate<Integer>
      */
     public AbsoluteTileCoordinate transform(final TileOrigin to)
     {
-      int size = (int)Math.pow(2, zoomLevel);
-      int row = origin.getDeltaY() * to.getDeltaY() < 0 ? size - 1 - getY() : getY();
-      int column = origin.getDeltaX() * to.getDeltaX() < 0 ? size - 1 - getX() : getX();
-      return new AbsoluteTileCoordinate(row, column, zoomLevel, to);
+      final int size = (int)Math.pow(2, this.zoomLevel);
+
+      final int row    = this.origin.getDeltaY() * to.getDeltaY() < 0 ? size - 1 - this.getY() : this.getY();
+      final int column = this.origin.getDeltaX() * to.getDeltaX() < 0 ? size - 1 - this.getX() : this.getX();
+
+      return new AbsoluteTileCoordinate(row, column, this.zoomLevel, to);
     }
 
     private final int        zoomLevel;
