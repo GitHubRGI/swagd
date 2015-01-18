@@ -103,8 +103,8 @@ public class BoundingBox
 
     public Coordinate<Double> getCenter()
     {
-        return new Coordinate<>(this.getHeight() / 2.0,
-                                this.getWidth()  / 2.0);
+        return new Coordinate<>((this.getMaxY() + this.getMinY()) / 2.0,
+                                (this.getMaxX() + this.getMinX()) / 2.0);
     }
 
     /**

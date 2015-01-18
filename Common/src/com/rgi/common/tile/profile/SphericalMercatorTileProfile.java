@@ -101,19 +101,8 @@ public class SphericalMercatorTileProfile implements TileProfile
 		                        metersToLon(coordinate.getX()));
 	}
 
-	private static double metersToLon(final Double meters)
 	{
-		// TODO use Math.toRadians()/Math.toDegrees()
-	    return (meters / (Math.PI * EarthEquatorialRadius)) * 180.0;
-	}
-
-	private static double metersToLat(final Double meters)
-	{
-		// TODO use Math.toRadians()/Math.toDegrees()
-	    return Math.toDegrees(2 * Math.atan(Math.exp(metersToLon(meters) * Math.PI / 180.0)) - Math.PI / 2);
-	}
-
-	@Override
+    @Override
 	public BoundingBox getBounds()
     {
 	    return new BoundingBox(-Math.PI * EarthEquatorialRadius,
@@ -123,12 +112,12 @@ public class SphericalMercatorTileProfile implements TileProfile
     }
 
     /**
-     * Datum's spheroid's semi-major axis (raidus of earth) in meters
+     * Datum's spheroid's semi-major axis (radius of earth) in meters
      */
     public static final double EarthEquatorialRadius = 6378137.0;
 
     /**
-     * Earth's equatorial circumfrence (based on the datum's spheroid's semi-major axis, raidus) in meters
+     * Earth's equatorial circumference (based on the datum's spheroid's semi-major axis, radius) in meters
      */
     public static final double EarthEquatorialCircumfrence = 2.0 * Math.PI * EarthEquatorialRadius;
 

@@ -35,6 +35,7 @@ import com.rgi.common.tile.store.TileStore;
  * Class responsible for loading TMS tiles to a JMapViewer.
  *
  * @author Steven D. Lander
+ * @author Luke D. Lambert
  *
  */
 public class TileStoreLoader implements TileLoader
@@ -67,20 +68,16 @@ public class TileStoreLoader implements TileLoader
                     {
                         return;
                     }
-                    tile.loaded = false;
+                    tile.loaded  = false;
                     tile.error   = false;
                     tile.loading = true;
+
+                    // TODO do we need to move the .setImage call into the synchronized block?
                 }
 
                 try
                 {
-                    final int y = tile.getYtile();
-                    final int x = tile.getXtile();
-                    final int z = tile.getZoom();
-
-                    final CrsCoordinate crsCoordinate = TileStoreLoader.this.tileProfile.absoluteToCrsCoordinate(new AbsoluteTileCoordinate(tile.getYtile(), tile.getXtile(), tile.getZoom(), TileOrigin.LowerLeft));
-
-                    final BufferedImage image = TileStoreLoader.this.tileStore.getTile(crsCoordinate, tile.getZoom());
+                    final BufferedImage image = TileStoreLoader.this.tileStore.getTile(TileStoreLoader.this.toCrsCoordinate(tile), tile.getZoom());
 
                     if(image != null)
                     {
@@ -92,7 +89,6 @@ public class TileStoreLoader implements TileLoader
                         tile.setImage(TRANSPARENT_TILE);
                     }
 
-                    tile.setLoaded(true);
                     TileStoreLoader.this.listener.tileLoadingFinished(tile, true);
                 }
                 catch(final Exception exception)
@@ -121,5 +117,16 @@ public class TileStoreLoader implements TileLoader
     {
         return this.getClass().getSimpleName();
     }
+
+    private CrsCoordinate toCrsCoordinate(final Tile tile)
+    {
+        return this.tileProfile
+                   .absoluteToCrsCoordinate(new AbsoluteTileCoordinate(tile.getYtile(),
+                                                                       tile.getXtile(),
+                                                                       tile.getZoom(),
+                                                                       TileStoreLoader.Origin));
+    }
+
+    public static TileOrigin Origin = TileOrigin.UpperLeft; // Tile origin for JMapViewer
 
 }
