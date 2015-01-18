@@ -97,11 +97,11 @@ public class SphericalMercatorTileProfile implements TileProfile
 
     public static Coordinate<Double> metersToGeographic(final Coordinate<Double> coordinate)
 	{
-		return new Coordinate<>(metersToLat(coordinate.getY()),
-		                        metersToLon(coordinate.getX()));
+		// TODO algorithm documentation
+        return new Coordinate<>(Math.toDegrees(2 * Math.atan(Math.exp(coordinate.getY() / EarthEquatorialRadius)) - Math.PI / 2),
+		                        Math.toDegrees(coordinate.getX() / EarthEquatorialRadius));
 	}
 
-	{
     @Override
 	public BoundingBox getBounds()
     {
