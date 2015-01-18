@@ -56,7 +56,7 @@ public interface TileStore
     public long countTiles() throws TileStoreException;
 
     /**
-     * Calculate the size of this tile store.
+     * Calculate the byte size of this tile store.
      *
      * @return The approximate size of this tile store in bytes.
      */

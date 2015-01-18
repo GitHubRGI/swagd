@@ -42,7 +42,7 @@ public interface TileProfile
      *
      * @param coordinate Coordinate in the same unit as this tile profile
      * @param zoomLevel Zoom level value for input coordinate
-     * @return Returns the tile that the coordinate coresponds to
+     * @return Returns the tile that the coordinate corresponds to
      */
     public AbsoluteTileCoordinate crsToAbsoluteTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel, final TileOrigin origin);
 
@@ -51,7 +51,7 @@ public interface TileProfile
      *
      * @param absoluteTileCoordinate
      *             Tile coordinate (tile y, x, zoom level)
-     * @return Returns the coordinate that the tile coresponds to
+     * @return Returns the coordinate that the tile corresponds to
      */
     public CrsCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate);
 
