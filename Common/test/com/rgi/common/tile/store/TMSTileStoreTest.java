@@ -35,7 +35,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
-import com.rgi.common.tile.TileException;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
@@ -235,7 +234,7 @@ public class TMSTileStoreTest {
 	}
 
 	@Test
-	public void verifyTileRetrieval() throws TileException {
+	public void verifyTileRetrieval() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderMercator(4);
 
 		final int zoomLevel = 1;
@@ -249,7 +248,7 @@ public class TMSTileStoreTest {
 	}
 
 	@Test
-	public void verifyTileInsertion() throws TileException {
+	public void verifyTileInsertion() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderMercator(4);
 
 		final TileProfile tileProfile = TileProfileFactory.create("EPSG", 3857);
