@@ -323,6 +323,5 @@ public class Verifier
                                                                       "TEXT",           "BLOB",            "DATE",         "DATETIME",
                                                                       "GEOMETRY",       "POINT",           "LINESTRING",   "POLYGON",
                                                                       "MULTIPOINT",     "MULTILINESTRING", "MULTIPOLYGON", "GEOMETRYCOLLECTION",
-                                                                      "CIRCULARSTRING", "COMPOUNDCURVE",   "CURVEPOLYGON", "SURFACE",
                                                                       "INTEGER");
 }
