@@ -26,6 +26,10 @@ import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileException;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public interface TileStoreReader
 {
     /**

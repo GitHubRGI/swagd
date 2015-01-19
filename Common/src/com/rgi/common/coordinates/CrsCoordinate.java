@@ -50,5 +50,24 @@ public class CrsCoordinate extends Coordinate<Double>
         return this.coordinateReferenceSystem;
     }
 
-    final CoordinateReferenceSystem coordinateReferenceSystem;
+    @Override
+    public boolean equals(final Object object)
+    {
+        if(object == null || object.getClass() != CrsCoordinate.class)
+        {
+            return false;
+        }
+
+        final CrsCoordinate other = (CrsCoordinate)object;
+
+        return super.equals(other) && this.coordinateReferenceSystem.equals(other.coordinateReferenceSystem);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return super.hashCode() ^ this.coordinateReferenceSystem.hashCode();
+    }
+
+    private final CoordinateReferenceSystem coordinateReferenceSystem;
 }
