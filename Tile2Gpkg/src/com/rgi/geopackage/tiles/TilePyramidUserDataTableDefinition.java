@@ -18,19 +18,23 @@
 
 package com.rgi.geopackage.tiles;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import com.rgi.geopackage.verification.ColumnDefinition;
 import com.rgi.geopackage.verification.ForeignKeyDefinition;
 import com.rgi.geopackage.verification.TableDefinition;
+import com.rgi.geopackage.verification.UniqueDefinition;
 
 public class TilePyramidUserDataTableDefinition extends TableDefinition
 {
     private final static Map<String, ColumnDefinition> Columns;
     private final static Set<ForeignKeyDefinition>     ForeignKeys;
+    private final static Set<UniqueDefinition>         UniqueColumnGroups;
 
     static
     {
@@ -43,13 +47,15 @@ public class TilePyramidUserDataTableDefinition extends TableDefinition
         Columns.put("tile_data",    new ColumnDefinition("BLOB",    true, false, false, null));
 
         ForeignKeys = Collections.emptySet();
+        UniqueColumnGroups =  new HashSet<>(Arrays.asList(new UniqueDefinition("zoom_level", "tile_column", "tile_row")));
     }
 
     public TilePyramidUserDataTableDefinition(final String name)
     {
         super(name,
               TilePyramidUserDataTableDefinition.Columns,
-              TilePyramidUserDataTableDefinition.ForeignKeys);
+              TilePyramidUserDataTableDefinition.ForeignKeys,
+              TilePyramidUserDataTableDefinition.UniqueColumnGroups);
     }
 
 }
