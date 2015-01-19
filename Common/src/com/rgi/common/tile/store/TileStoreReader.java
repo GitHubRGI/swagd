@@ -26,14 +26,7 @@ import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileException;
 
-/**
- * An representation of a container of tiles.
- *
- * @author Steven D. Lander
- * @author Luke D. Lambert
- *
- */
-public interface TileStore
+public interface TileStoreReader
 {
     /**
      * Calculate the bounds of this tile store.
@@ -77,22 +70,6 @@ public interface TileStore
     public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileException, TileStoreException;
 
     /**
-     * Insert a tile into this tile store via a BufferedImage and tile
-     * coordinates.
-     *
-     * @param image
-     *            The BufferedImage stream containing the tile data.
-     * @param zoomLevel
-     *            The zoom level of the tile.
-     * @param coordinate
-     *            The row and column Cartesian representation of the tile.
-     * @throws TileStoreException
-     *             A TileStoreException is thrown when an error occurs while
-     *             inserting this tile into the tile store.
-     */
-    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileException, TileStoreException;
-
-    /**
      * Ask the tile store for all the zoom levels that it contains.
      *
      * @return A list of integers that represent zoom levels this tile store
@@ -107,5 +84,4 @@ public interface TileStore
      * @return returns the tile store's coordinate reference system
      */
     public CoordinateReferenceSystem getCoordinateReferenceSystem();
-
 }
