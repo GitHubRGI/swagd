@@ -24,7 +24,6 @@ import java.util.Set;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.tile.TileException;
 
 /**
  * An representation of a container of tiles.
@@ -71,10 +70,9 @@ public interface TileStore
      *            The zoom level of the tile.
      * @return A buffered image, or null if the tile store has no tile data for the specified coordinate
      * @throws TileStoreException
-     *             A TileStoreException occurs if either the tile does not exist
-     *             or another error occurs during tile retrieval.
+     *             A TileStoreException occurs if an error occurs during tile retrieval.
      */
-    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileException, TileStoreException;
+    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException;
 
     /**
      * Insert a tile into this tile store via a BufferedImage and tile
@@ -90,7 +88,7 @@ public interface TileStore
      *             A TileStoreException is thrown when an error occurs while
      *             inserting this tile into the tile store.
      */
-    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileException, TileStoreException;
+    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException;
 
     /**
      * Ask the tile store for all the zoom levels that it contains.

@@ -33,7 +33,6 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.Dimension2D;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.tile.TileException;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
 import com.rgi.common.tile.store.TileStore;
@@ -110,7 +109,7 @@ public class GeoPackageTileStore implements TileStore
     }
 
     @Override
-    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileException
+    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException
     {
         if(coordinate == null)
         {
@@ -138,12 +137,12 @@ public class GeoPackageTileStore implements TileStore
         }
         catch(final SQLException | IOException ex)
         {
-            throw new TileException(ex);
+            throw new TileStoreException(ex);
         }
     }
 
     @Override
-    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileException
+    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException
     {
         if(coordinate == null)
         {
@@ -166,7 +165,7 @@ public class GeoPackageTileStore implements TileStore
         {
             if(!ImageIO.write(image, outputFormat, outputStream))
             {
-                throw new TileException(String.format("No appropriate image writer found for format '%s'", outputFormat));
+                throw new TileStoreException(String.format("No appropriate image writer found for format '%s'", outputFormat));
             }
 
             TileMatrix tileMatrix = null;
@@ -191,7 +190,7 @@ public class GeoPackageTileStore implements TileStore
         }
         catch(final Exception ex)
         {
-           throw new TileException(ex);
+           throw new TileStoreException(ex);
         }
     }
 

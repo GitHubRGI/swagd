@@ -41,7 +41,6 @@ import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.tile.TileException;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
 
@@ -142,7 +141,7 @@ public class TmsTileStore implements TileStore
     }
 
     @Override
-    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileException
+    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException
     {
         if(coordinate == null)
         {
@@ -166,7 +165,7 @@ public class TmsTileStore implements TileStore
             }
             catch(final IOException ex)
             {
-                throw new TileException(ex);
+                throw new TileStoreException(ex);
             }
         }
 
@@ -174,7 +173,7 @@ public class TmsTileStore implements TileStore
     }
 
     @Override
-    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileException
+    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException
     {
         if(coordinate == null)
         {
@@ -211,12 +210,12 @@ public class TmsTileStore implements TileStore
 
             if(!ImageIO.write(image, outputFormat, tilePath.toFile()))
             {
-                throw new TileException(String.format("No appropriate image writer found for format '%s'", outputFormat));
+                throw new TileStoreException(String.format("No appropriate image writer found for format '%s'", outputFormat));
             }
         }
         catch(final IOException ex)
         {
-            throw new TileException(ex);
+            throw new TileStoreException(ex);
         }
     }
 

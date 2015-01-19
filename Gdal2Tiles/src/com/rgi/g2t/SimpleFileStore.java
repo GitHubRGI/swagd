@@ -20,7 +20,6 @@ package com.rgi.g2t;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;
@@ -31,7 +30,6 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.tile.TileException;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.store.TileStore;
@@ -41,9 +39,9 @@ public class SimpleFileStore implements TileStore {
   private File rootFolder = null;
   private final TileProfile tileProfile;
   private final TileOrigin tileOrigin;
-  private String imageFormat;
+  private final String imageFormat;
 
-  public SimpleFileStore(String name, final TileProfile tileProfile, final TileOrigin tileOrigin, String location, String imageFormat) throws TileStoreException {
+  public SimpleFileStore(final String name, final TileProfile tileProfile, final TileOrigin tileOrigin, final String location, final String imageFormat) throws TileStoreException {
 	  if (!"png".equalsIgnoreCase(imageFormat) && !"jpg".equalsIgnoreCase(imageFormat))
     {
         throw new IllegalArgumentException("Only PNG and JPG formats supported");
@@ -71,16 +69,16 @@ public class SimpleFileStore implements TileStore {
   @Override
   public long countTiles() throws TileStoreException {
     long count = 0;
-    Set<Integer> zoomLevels = this.getZoomLevels();
-    for (Integer z : zoomLevels) {
-      File zFolder = new File(this.rootFolder, ""+z);
-      for (String xName : zFolder.list()) {
-        File xFolder = new File(zFolder, xName);
-        for (String yName : xFolder.list()) {
+    final Set<Integer> zoomLevels = this.getZoomLevels();
+    for (final Integer z : zoomLevels) {
+      final File zFolder = new File(this.rootFolder, ""+z);
+      for (final String xName : zFolder.list()) {
+        final File xFolder = new File(zFolder, xName);
+        for (final String yName : xFolder.list()) {
           try {
             Integer.parseInt(yName.replaceAll("\\."+this.imageFormat, ""));
             ++count;
-          } catch (NumberFormatException nfe) {
+          } catch (final NumberFormatException nfe) {
             // do nothing
           }
         } // for each y
@@ -92,12 +90,12 @@ public class SimpleFileStore implements TileStore {
   @Override
   public long calculateSize() throws TileStoreException {
     long count = 0;
-    Set<Integer> zoomLevels = this.getZoomLevels();
-    for (Integer z : zoomLevels) {
-      File zFolder = new File(this.rootFolder, ""+z);
-      for (String xName : zFolder.list()) {
-        File xFolder = new File(zFolder, xName);
-        for (String yName : xFolder.list()) {
+    final Set<Integer> zoomLevels = this.getZoomLevels();
+    for (final Integer z : zoomLevels) {
+      final File zFolder = new File(this.rootFolder, ""+z);
+      for (final String xName : zFolder.list()) {
+        final File xFolder = new File(zFolder, xName);
+        for (final String yName : xFolder.list()) {
           count += new File(yName).length();
         } // for each y
       } // for each x
@@ -106,24 +104,24 @@ public class SimpleFileStore implements TileStore {
   }
 
   @Override
-  public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileException, TileStoreException {
-    File zoomFolder = new File(this.rootFolder, ""+zoomLevel);
+  public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException {
+    final File zoomFolder = new File(this.rootFolder, ""+zoomLevel);
     if (!zoomFolder.exists()) {
       if (!zoomFolder.mkdirs()) {
         throw new TileStoreException("Unable to create folders");
       }
     }
-    File xFolder = new File(zoomFolder, ""+coordinate.getX());
+    final File xFolder = new File(zoomFolder, ""+coordinate.getX());
     if (!xFolder.exists()) {
       if (!xFolder.mkdirs()) {
         throw new TileStoreException("Unable to create folders");
       }
     }
-    File yFile = new File(xFolder, coordinate.getY()+".png");
+    final File yFile = new File(xFolder, coordinate.getY()+".png");
     BufferedImage image;
     try {
       image = ImageIO.read(yFile);
-    } catch (IOException ioe) {
+    } catch (final IOException ioe) {
       throw new TileStoreException("Unable to read tile from file", ioe);
     }
     return image;
@@ -131,8 +129,8 @@ public class SimpleFileStore implements TileStore {
 
   @Override
   public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image)
-      throws TileException, TileStoreException {
-    File zoomFolder = new File(this.rootFolder, ""+zoomLevel);
+      throws TileStoreException {
+    final File zoomFolder = new File(this.rootFolder, ""+zoomLevel);
     if (!zoomFolder.exists()) {
       if (!zoomFolder.mkdirs()) {
         throw new TileStoreException("Unable to create folders");
@@ -141,35 +139,32 @@ public class SimpleFileStore implements TileStore {
 
     final AbsoluteTileCoordinate absTileCoordinate = this.tileProfile.crsToAbsoluteTileCoordinate(coordinate, zoomLevel, this.tileOrigin);
 
-    File xFolder = new File(zoomFolder, ""+absTileCoordinate.getX());
+    final File xFolder = new File(zoomFolder, ""+absTileCoordinate.getX());
     if (!xFolder.exists()) {
       if (!xFolder.mkdirs()) {
         throw new TileStoreException("Unable to create folders");
       }
     }
-    File yFile = new File(xFolder, absTileCoordinate.getY()+"."+this.imageFormat);
+    final File yFile = new File(xFolder, absTileCoordinate.getY()+"."+this.imageFormat);
     try {
       ImageIO.write(image, this.imageFormat, yFile);
-    } catch (IOException ioe) {
+    } catch (final IOException ioe) {
       throw new TileStoreException("Unable to write tile to file", ioe);
     }
   }
 
   @Override
   public Set<Integer> getZoomLevels() throws TileStoreException {
-    Set<Integer> zoomLevels = new TreeSet<Integer>();
-    String[] files = this.rootFolder.list(new FilenameFilter() {
-      @Override
-      public boolean accept(File dir, String name) {
+    final Set<Integer> zoomLevels = new TreeSet<Integer>();
+    final String[] files = this.rootFolder.list((dir, name) -> {
         try {
           Integer.parseInt(name);
-        } catch (NumberFormatException nfe) {
+        } catch (final NumberFormatException nfe) {
           return false;
         }
         return new File(name).isDirectory();
-      }
-    });
-    for (String file : files) {
+      });
+    for (final String file : files) {
       zoomLevels.add(Integer.parseInt(file));
     }
     return zoomLevels;
