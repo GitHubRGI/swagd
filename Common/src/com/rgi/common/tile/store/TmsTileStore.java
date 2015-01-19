@@ -148,7 +148,7 @@ public class TmsTileStore implements TileStore
             throw new IllegalArgumentException("Coordinate may not be null");
         }
 
-        if(coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        if(!coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
         {
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }

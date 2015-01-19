@@ -35,10 +35,16 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
 
+/**
+ * @author Steven D. Lander
+ * @author Luke D. Lambert
+ *
+ */
 public class TMSTileStoreTest {
 
 	@Rule
@@ -242,9 +248,16 @@ public class TMSTileStoreTest {
 
 		this.tmsStore = new TmsTileStore(tileProfile, this.tmsDir);
 		final AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(0, 0, zoomLevel, TileOrigin.LowerLeft);
-		final BufferedImage testTile = this.tmsStore.getTile(tileProfile.absoluteToCrsCoordinate(tileCoord), zoomLevel);
-		// TODO
-		//assertTrue(testTile.equals(?));
+
+		final CrsCoordinate crsCoordinate = tileProfile.absoluteToCrsCoordinate(tileCoord);
+
+		final BufferedImage image = createImage();
+
+		this.tmsStore.addTile(crsCoordinate, zoomLevel, image);
+
+		final BufferedImage tileImage = this.tmsStore.getTile(crsCoordinate, zoomLevel);
+
+		assertTrue(tileImage.equals(image));
 	}
 
 	@Test
@@ -255,12 +268,18 @@ public class TMSTileStoreTest {
 
 		this.tmsStore = new TmsTileStore(tileProfile, this.tmsDir);
 		final Path tilePath = this.tmsDir.resolve("5").resolve("0").resolve("0.png");
-		final BufferedImage img = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
-		final Graphics2D graphics = img.createGraphics();
-		graphics.setPaint(new Color(255, 0, 0));
-		graphics.fillRect(0, 0, 256, 256);
+		final BufferedImage img = createImage();
 		final AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(0, 0, 5, TileOrigin.LowerLeft);
 		this.tmsStore.addTile(tileProfile.absoluteToCrsCoordinate(tileCoord), 5, img);
 		assertTrue(tilePath.toFile().exists());
+	}
+
+	private static BufferedImage createImage()
+	{
+	    final BufferedImage img = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
+        final Graphics2D graphics = img.createGraphics();
+        graphics.setPaint(new Color(255, 0, 0));
+        graphics.fillRect(0, 0, 256, 256);
+        return img;
 	}
 }
