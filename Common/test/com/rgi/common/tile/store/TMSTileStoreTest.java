@@ -257,7 +257,7 @@ public class TMSTileStoreTest {
 
 		final BufferedImage tileImage = this.tmsStore.getTile(crsCoordinate, zoomLevel);
 
-		assertTrue(tileImage.equals(image));
+		assertTrue(bufferedImagesEqual(image, tileImage));
 	}
 
 	@Test
@@ -282,4 +282,25 @@ public class TMSTileStoreTest {
         graphics.fillRect(0, 0, 256, 256);
         return img;
 	}
+
+	private static boolean bufferedImagesEqual(final BufferedImage img1, final BufferedImage img2)
+	{
+        if(img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight())
+        {
+            return false;
+        }
+
+        for(int x = 0; x < img1.getWidth(); x++)
+        {
+            for(int y = 0; y < img1.getHeight(); y++)
+            {
+                if(img1.getRGB(x, y) != img2.getRGB(x, y))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }
