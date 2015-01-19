@@ -21,7 +21,8 @@ package com.rgi.geopackage;
 import java.io.File;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.coordinates.CrsCoordinate;
+import com.rgi.common.tile.profile.GlobalGeodeticTileProfile;
+import com.rgi.common.tile.store.TmsTileStore;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileSet;
 
@@ -35,10 +36,26 @@ public class GeoPackageTestDriver
 {
     public static void main(final String[] args)
     {
-        final File file = new File("test.gpkg");
-        if(file.exists())
+        GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NormalZoom2"),    1, 1);
+        GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NotNormalZoom2"), 2, 3);
+    }
+
+    private static void createGeoPackageFromFolder(final File directory, final int zoomLevel0Columns, final int zoomLevel0Rows)
+    {
+        if(directory == null || !directory.isDirectory() || !directory.exists())
         {
-            if(!file.delete())
+            throw new IllegalArgumentException("Directory cannot be null, it must specify a directory, and it must exist");
+        }
+
+        final String folderName = directory.toPath().getFileName().toString();
+
+        final File gpkgfFile = new File(String.format("%s/%s.gpkg",
+                                                 directory,
+                                                 folderName));
+
+        if(gpkgfFile.exists())
+        {
+            if(!gpkgfFile.delete())
             {
                 throw new RuntimeException("Unable to delete old gpkg");
             }
@@ -46,28 +63,83 @@ public class GeoPackageTestDriver
 
         try
         {
-            try(GeoPackage gpkg = new GeoPackage(file))
+            try(final GeoPackage gpkg = new GeoPackage(gpkgfFile))
             {
-                final TileSet tileSet = gpkg.tiles().addTileSet("foo",
-                                                          "foo",
-                                                          "foo",
-                                                          new BoundingBox(-90.0, -180.0, 90.0, 180.0),
-                                                          gpkg.core().getSpatialReferenceSystem(4326));
+                final TmsTileStore tmsTileStore = new TmsTileStore(new GlobalGeodeticTileProfile(),
+                                                                   directory.toPath());
 
-                final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet,
-                                                                   0,
-                                                                   1,
-                                                                   1,
-                                                                   1,
-                                                                   1,
-                                                                   360.0,
-                                                                   180.0);
+                final BoundingBox boundingBox = new BoundingBox(-90.0, -180.0, 90.0, 180.0);
 
-                gpkg.tiles().addTile(tileSet,
-                                     tileMatrix,
-                                     new CrsCoordinate(-90.0, -180.0, "EPSG", 4326),
-                                     0,
-                                     new byte[] {});
+                final TileSet tileSet = gpkg.tiles().addTileSet(folderName,
+                                                                "test tiles",
+                                                                String.format("GeoPackage with numbered test tiles, %dx%d tiles at zoom 0, and a \"zoom times two\" convention for subsequent levels.", zoomLevel0Columns, zoomLevel0Rows),
+                                                                boundingBox,
+                                                                gpkg.core()
+                                                                    .getSpatialReferenceSystem(tmsTileStore.getCoordinateReferenceSystem()
+                                                                                                           .getIdentifier()));
+
+                final int pixelWidth  = 256;
+                final int pixelHeight = 256;
+
+                for(final int zoomLevel : tmsTileStore.getZoomLevels())
+                {
+                    final int tileColumns = zoomLevel0Columns * (int)Math.pow(2.0, zoomLevel);
+                    final int tileRows    = zoomLevel0Rows    * (int)Math.pow(2.0, zoomLevel);
+
+                    final TileMatrix tileMatrix = gpkg.tiles()
+                                                      .addTileMatrix(tileSet,
+                                                                     zoomLevel,
+                                                                     tileColumns,
+                                                                     tileRows,
+                                                                     pixelWidth,
+                                                                     pixelHeight,
+                                                                     (boundingBox.getWidth()  / tileColumns) / pixelWidth,
+                                                                     (boundingBox.getHeight() / tileRows)    / pixelHeight);
+
+                }
+
+//                class Tile
+//                {
+//                    public Tile(final String filename)
+//                    {
+//                        this.z = Integer.parseInt(filename.substring(0, 0));
+//                        this.x = Integer.parseInt(filename.substring(1, 1));
+//                        this.y = Integer.parseInt(filename.substring(2, 2));
+//
+//                        this.filename = filename;
+//                    }
+//
+//                    public int z;
+//                    public int x;
+//                    public int y;
+//
+//                    public String filename;
+//                }
+//
+//                final Map<Integer, List<Tile>> tiles = Stream.of(directory.listFiles())
+//                                                             .map(file -> new Tile(file.getName()))
+//                                                             .collect(Collectors.groupingBy(tile -> tile.z));
+//
+//                for(final Entry<Integer, List<Tile>> zoomLevel : tiles.entrySet())
+//                {
+//                    final TileMatrix tileMatrix = gpkg.tiles()
+//                                                      .addTileMatrix(tileSet,
+//                                                                     0,
+//                                                                     1,
+//                                                                     1,
+//                                                                     1,
+//                                                                     1,
+//                                                                     360.0,
+//                                                                     180.0);
+//
+//                gpkg.tiles().addTile(tileSet,
+//                                     tileMatrix,
+//                                     new CrsCoordinate(-90.0, -180.0, "EPSG", 4326),
+//                                     0,
+//                                     new byte[] {});
+//                }
+
+
             }
         }
         catch(final Exception ex)

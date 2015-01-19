@@ -155,7 +155,7 @@ public class SimpleFileStore implements TileStore {
 
   @Override
   public Set<Integer> getZoomLevels() throws TileStoreException {
-    final Set<Integer> zoomLevels = new TreeSet<Integer>();
+    final Set<Integer> zoomLevels = new TreeSet<>();
     final String[] files = this.rootFolder.list((dir, name) -> {
         try {
           Integer.parseInt(name);
