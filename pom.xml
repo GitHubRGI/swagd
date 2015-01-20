@@ -3,44 +3,215 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                         http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <!-- Relationships block -->
-  <groupId>com.rgi.TilingApp</groupId>
-  <artifactId>SWAGD</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>Software for Aggregating Geospatial Data</name>
-  <packaging>pom</packaging>
-  <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+    <!-- Relationships block -->
+    <groupId>com.rgi.TilingApp</groupId>
+    <artifactId>SWAGD</artifactId>
+    <version>0.0.1</version>
+    <name>Software for Aggregating Geospatial Data</name>
+    <packaging>pom</packaging>
+    <properties>
+        <jacoco.version>0.7.2.201409121644</jacoco.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <build.directory.Common>Common/target</build.directory.Common>
+        <build.directory.Gdal2Tiles>Gdal2Tiles/target</build.directory.Gdal2Tiles>
+        <build.directory.GeoViewer>GeoViewer/target</build.directory.GeoViewer>
+        <build.directory.IntegrationTest>IntegrationTest/target</build.directory.IntegrationTest>
+        <build.directory.Tile2Gpkg>Tile2Gpkg/target</build.directory.Tile2Gpkg>
+        <build.directory.Packager>Packager/target</build.directory.Packager>
+        <build.directory.RGISuite>RGISuite/target</build.directory.RGISuite>
+        <classes.directory.Common>Common/target</classes.directory.Common>
+        <classes.directory.Gdal2Tiles>Gdal2Tiles/target/classes</classes.directory.Gdal2Tiles>
+        <classes.directory.GeoViewer>GeoViewer/target/classes</classes.directory.GeoViewer>
+        <classes.directory.IntegrationTest>IntegrationTest/target/classes</classes.directory.IntegrationTest>
+        <classes.directory.Tile2Gpkg>Tile2Gpkg/target/classes</classes.directory.Tile2Gpkg>
+        <classes.directory.Packager>Packager/target/classes</classes.directory.Packager>
+        <classes.directory.RGISuite>RGISuite/target/classes</classes.directory.RGISuite>
+        <sources.directory.Common>Common/src/com/rgi/common</sources.directory.Common>
+        <sources.directory.Gdal2Tiles>Gdal2Tiles/src</sources.directory.Gdal2Tiles>
+        <sources.directory.GeoViewer>GeoViewer/src</sources.directory.GeoViewer>
+        <sources.directory.IntegrationTest>IntegrationTest/src</sources.directory.IntegrationTest>
+        <sources.directory.Tile2Gpkg>Tile2Gpkg/src</sources.directory.Tile2Gpkg>
+        <sources.directory.Packager>Packager/src</sources.directory.Packager>
+        <sources.directory.RGISuite>RGISuite/src</sources.directory.RGISuite>
+        <generated-sources.directory.Common>Common/target/generated-sources/annotations</generated-sources.directory.Common>
+        <generated-sources.directory.Gdal2Tiles>Gdal2Tiles/target/generated-sources/annotations</generated-sources.directory.Gdal2Tiles>
+        <generated-sources.directory.GeoViewer>GeoViewer/target/generated-sources/annotations</generated-sources.directory.GeoViewer>
+        <generated-sources.directory.IntegrationTest>IntegrationTest/target/generated-sources/annotations</generated-sources.directory.IntegrationTest>
+        <generated-sources.directory.Tile2Gpkg>Tile2Gpkg/target/generated-sources/annotations</generated-sources.directory.Tile2Gpkg>
+        <generated-sources.directory.Packager>Packager/target/generated-sources/annotations</generated-sources.directory.Packager>
+        <generated-sources.directory.RGISuite>RGISuite/target/generated-sources/annotations</generated-sources.directory.RGISuite>
+    </properties>
 
-  <modules>
-    <module>Common</module>
-    <module>Gdal2Tiles</module>
-    <module>GeoViewer</module>
-    <module>IntegrationTest</module>
-    <module>Tile2Gpkg</module>
-    <module>Packager</module>
-    <module>RGISuite</module>
-  </modules>
+    <modules>
+        <module>Common</module>
+        <module>Gdal2Tiles</module>
+        <module>GeoViewer</module>
+        <module>IntegrationTest</module>
+        <module>Tile2Gpkg</module>
+        <module>Packager</module>
+        <module>RGISuite</module>
+    </modules>
 
-  <build>
-      <plugins>
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>2.5.1</version>
-              <configuration>
-                  <source>1.8</source>
-                  <target>1.8</target>
-              </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.eluder.coveralls</groupId>
-            <artifactId>coveralls-maven-plugin</artifactId>
-            <version>3.0.1</version>
-          </plugin>
-      </plugins>
-  </build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${basedir}/target/jacoco.exec</destFile>
+                            <propertyName>surefireArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <phase>default-check</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>jacoco-dependency-ant</id>
+                            <goals>
+                                <goal>copy</goal>
+                            </goals>
+                            <phase>process-test-resources</phase>
+                            <inherited>false</inherited>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>org.jacoco</groupId>
+                                        <artifactId>org.jacoco.ant</artifactId>
+                                        <version>${jacoco.version}</version>
+                                    </artifactItem>
+                                </artifactItems>
+                                <stripVersion>true</stripVersion>
+                                <outputDirectory>${basedir}/target/jacoco-jars</outputDirectory>
+                            </configuration>
+                        </execution>
+                    </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo message="Generating JaCoCo Reports" />
+                                <taskdef name="report" classname="org.jacoco.ant.ReportTask">
+                                    <classpath path="${basedir}/target/jacoco-jars/org.jacoco.ant.jar" />
+                                </taskdef>
+                                <mkdir dir="${basedir}/target/coverage-report" />
+                            </target>
+                            <report>
+                                <executiondata>
+                                    <fileset dir="${build.directory.Common}">
+                                        <include name="jacoco.exec" />
+                                    </fileset>
+                                    <fileset dir="${build.directory.Gdal2Tiles}">
+                                        <include name="jacoco.exec" />
+                                    </fileset>
+                                    <fileset dir="${build.directory.GeoViewer}">
+                                        <include name="jacoco.exec" />
+                                    </fileset>
+                                    <fileset dir="${build.directory.IntegrationTest}">
+                                        <include name="jacoco.exec" />
+                                    </fileset>
+                                    <fileset dir="${build.directory.Tile2Gpkg}">
+                                        <include name="jacoco.exec" />
+                                    </fileset>
+                                    <fileset dir="${build.directory.Packager}">
+                                        <include name="jacoco.exec" />
+                                    </fileset>
+                                    <fileset dir="${build.directory.RGISuite}">
+                                        <include name="jacoco.exec" />
+                                    </fileset>
+                                </executiondata>
+                                <structure name="jacoco-multi Coverage Project">
+                                    <group name="jacoco-multi">
+                                        <classfiles>
+                                            <fileset dir="${classes.directory.Common}" />
+                                            <fileset dir="${classes.directory.Gdal2Tiles}" />
+                                            <fileset dir="${classes.directory.GeoViewer}" />
+                                            <fileset dir="${classes.directory.IntegrationTest}" />
+                                            <fileset dir="${classes.directory.Tile2Gpkg}" />
+                                            <fileset dir="${classes.directory.Packager}" />
+                                            <fileset dir="${classes.directory.RGISuite}" />
+                                        </classfiles>
+                                        <sourcefiles encoding="UTF-8">
+                                            <fileset dir="${sources.directory.Common}" />
+                                            <fileset dir="${sources.directory.Gdal2Tiles}" />
+                                            <fileset dir="${sources.directory.GeoViewer}" />
+                                            <fileset dir="${sources.directory.IntegrationTest}" />
+                                            <fileset dir="${sources.directory.Tile2Gpkg}" />
+                                            <fileset dir="${sources.directory.Packager}" />
+                                            <fileset dir="${sources.directory.RGISuite}" />
+                                            <fileset dir="${generated-sources.directory.Common}" />
+                                            <fileset dir="${generated-sources.directory.Gdal2Tiles}" />
+                                            <fileset dir="${generated-sources.directory.GeoViewer}" />
+                                            <fileset dir="${generated-sources.directory.IntegrationTest}" />
+                                            <fileset dir="${generated-sources.directory.Tile2Gpkg}" />
+                                            <fileset dir="${generated-sources.directory.Packager}" />
+                                            <fileset dir="${generated-sources.directory.RGISuite}" />
+                                        </sourcefiles>
+                                    </group>
+                                </structure>
+                                <html destdir="${basedir}/target/coverage-report/html" />
+                                <xml destdir="${basedir}/target/coverage-report/coverage-report.xml" />
+                                <csv destdir="${basedir}/target/coverage-report/coverage-report.csv" />
+                            </report>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>org.jacoco.ant</artifactId>
+                        <version>${jacoco.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>3.0.1</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>

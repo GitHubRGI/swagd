@@ -119,7 +119,7 @@
                   <configuration>
                       <headerType>gui</headerType>
                       <outfile>target/swagd.exe</outfile>
-                      <jar>target/${artifactId}-${version}-shaded.jar</jar>
+                      <jar>target/${project.artifactId}-${project.version}-shaded.jar</jar>
                       <errTitle>SWAGD Err</errTitle>
                       <classPath>
                           <mainClass>com.rgi.suite.GeoSuite</mainClass>

@@ -32,8 +32,6 @@
           <groupId>org.openstreetmap</groupId>
           <artifactId>JMapViewer</artifactId>
           <version>1.05</version>
-          <scope>system</scope>
-          <systemPath>${basedir}/lib/JMapViewer-1.05.jar</systemPath>
       </dependency>
   </dependencies>
 
