@@ -121,5 +121,5 @@ public class SphericalMercatorTileProfile implements TileProfile
      */
     public static final double EarthEquatorialCircumfrence = 2.0 * Math.PI * EarthEquatorialRadius;
 
-    public final static CoordinateReferenceSystem CoordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
+    private final static CoordinateReferenceSystem CoordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
 }

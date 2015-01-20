@@ -91,7 +91,7 @@ public class GlobalGeodeticTileProfile implements TileProfile
 	@Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
-        return SphericalMercatorTileProfile.CoordinateReferenceSystem;
+        return GlobalGeodeticTileProfile.CoordinateReferenceSystem;
     }
 
 	public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
@@ -105,7 +105,7 @@ public class GlobalGeodeticTileProfile implements TileProfile
         return GlobalGeodeticTileProfile.Bounds;
     }
 
-    public final static CoordinateReferenceSystem CoordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
+    private final static CoordinateReferenceSystem CoordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
 
     /**
      * The Unprojected bounds of this tile profile, in degrees
