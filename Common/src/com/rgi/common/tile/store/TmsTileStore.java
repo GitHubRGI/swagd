@@ -43,6 +43,8 @@ import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
+import com.rgi.common.tile.scheme.TileScheme;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 
 /**
  * @author Steven D. Lander
@@ -79,6 +81,7 @@ public class TmsTileStore implements TileStore
         }
 
         this.profile  = profile;
+        this.scheme   = new ZoomTimesTwo(1, 1, TmsTileStore.Origin);
         this.location = location;
     }
 
@@ -333,6 +336,12 @@ public class TmsTileStore implements TileStore
                                                         .collect(Collectors.toSet());
     }
 
+    @Override
+    public TileScheme getTileScheme()
+    {
+        return this.scheme;
+    }
+
     private static String withoutExtension(final File file)
     {
         return file.getName().replaceFirst("[.][^.]+$", "");
@@ -397,7 +406,8 @@ public class TmsTileStore implements TileStore
     }
 
     private final TileProfile profile;
+    private final TileScheme  scheme;
     private final Path        location;
 
-    private static  TileOrigin Origin = TileOrigin.LowerLeft;
+    private static TileOrigin Origin = TileOrigin.LowerLeft;
 }

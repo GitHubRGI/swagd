@@ -24,6 +24,7 @@ import java.util.Set;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.CrsCoordinate;
+import com.rgi.common.tile.scheme.TileScheme;
 
 /**
  * An representation of a container of tiles.
@@ -105,5 +106,7 @@ public interface TileStore
      * @return returns the tile store's coordinate reference system
      */
     public CoordinateReferenceSystem getCoordinateReferenceSystem();
+
+    public TileScheme getTileScheme();
 
 }

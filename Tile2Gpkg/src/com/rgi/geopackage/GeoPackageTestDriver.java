@@ -22,7 +22,11 @@ import java.io.File;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.tile.profile.GlobalGeodeticTileProfile;
+import com.rgi.common.tile.scheme.MatrixDimensions;
+import com.rgi.common.tile.scheme.TileScheme;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TmsTileStore;
+import com.rgi.geopackage.tiles.GeoPackageTiles;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileSet;
 
@@ -36,11 +40,11 @@ public class GeoPackageTestDriver
 {
     public static void main(final String[] args)
     {
-        GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NormalZoom2"),    1, 1);
-        GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NotNormalZoom2"), 2, 3);
+        GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NormalZoom2"),    new ZoomTimesTwo(1, 1, GeoPackageTiles.Origin));
+        GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NotNormalZoom2"), new ZoomTimesTwo(2, 3, GeoPackageTiles.Origin));
     }
 
-    private static void createGeoPackageFromFolder(final File directory, final int zoomLevel0Columns, final int zoomLevel0Rows)
+    private static void createGeoPackageFromFolder(final File directory, final TileScheme tileScheme)
     {
         if(directory == null || !directory.isDirectory() || !directory.exists())
         {
@@ -68,11 +72,13 @@ public class GeoPackageTestDriver
                 final TmsTileStore tmsTileStore = new TmsTileStore(new GlobalGeodeticTileProfile(),
                                                                    directory.toPath());
 
-                final BoundingBox boundingBox = new BoundingBox(-90.0, -180.0, 90.0, 180.0);
+                final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 90.0, 180.0);
 
                 final TileSet tileSet = gpkg.tiles().addTileSet(folderName,
                                                                 "test tiles",
-                                                                String.format("GeoPackage with numbered test tiles, %dx%d tiles at zoom 0, and a \"zoom times two\" convention for subsequent levels.", zoomLevel0Columns, zoomLevel0Rows),
+                                                                String.format("GeoPackage with numbered test tiles, %dx%d tiles at zoom 0, and a \"zoom times two\" convention for subsequent levels.",
+                                                                              tileScheme.dimensions(0).getHeight(),
+                                                                              tileScheme.dimensions(0).getWidth()),
                                                                 boundingBox,
                                                                 gpkg.core()
                                                                     .getSpatialReferenceSystem(tmsTileStore.getCoordinateReferenceSystem()
@@ -83,18 +89,19 @@ public class GeoPackageTestDriver
 
                 for(final int zoomLevel : tmsTileStore.getZoomLevels())
                 {
-                    final int tileColumns = zoomLevel0Columns * (int)Math.pow(2.0, zoomLevel);
-                    final int tileRows    = zoomLevel0Rows    * (int)Math.pow(2.0, zoomLevel);
+                    final MatrixDimensions matrixDimensions = tileScheme.dimensions(zoomLevel);
 
                     final TileMatrix tileMatrix = gpkg.tiles()
                                                       .addTileMatrix(tileSet,
                                                                      zoomLevel,
-                                                                     tileColumns,
-                                                                     tileRows,
+                                                                     matrixDimensions.getWidth(),
+                                                                     matrixDimensions.getHeight(),
                                                                      pixelWidth,
                                                                      pixelHeight,
-                                                                     (boundingBox.getWidth()  / tileColumns) / pixelWidth,
-                                                                     (boundingBox.getHeight() / tileRows)    / pixelHeight);
+                                                                     (boundingBox.getWidth()  / matrixDimensions.getWidth())  / pixelWidth,
+                                                                     (boundingBox.getHeight() / matrixDimensions.getHeight()) / pixelHeight);
+
+
 
                 }
 

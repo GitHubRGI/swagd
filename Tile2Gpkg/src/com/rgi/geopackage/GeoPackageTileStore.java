@@ -35,9 +35,12 @@ import com.rgi.common.Dimension2D;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
+import com.rgi.common.tile.scheme.TileScheme;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStore;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
+import com.rgi.geopackage.tiles.GeoPackageTiles;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileSet;
 
@@ -64,6 +67,7 @@ public class GeoPackageTileStore implements TileStore
 
         this.geoPackage                = geoPackage;
         this.tileSet                   = tileSet;
+        this.tileScheme                = new ZoomTimesTwo(1, 1, GeoPackageTiles.Origin);
         this.coordinateReferenceSystem = new CoordinateReferenceSystem(srs.getOrganization(), srs.getOrganizationSrsId());
         this.tileProfile               = TileProfileFactory.create(this.coordinateReferenceSystem);
 
@@ -214,6 +218,12 @@ public class GeoPackageTileStore implements TileStore
         }
     }
 
+    @Override
+    public TileScheme getTileScheme()
+    {
+        return this.tileScheme;
+    }
+
     private TileMatrix addTileMatrix(final int zoomLevel, final int pixelHeight, final int pixelWidth) throws SQLException
     {
         final int tileDimension = (int)Math.pow(2.0, zoomLevel);    // Assumes zoom*2 convension, with 1 tile at zoom level 0
@@ -235,5 +245,7 @@ public class GeoPackageTileStore implements TileStore
     private final TileSet                   tileSet;
     private final CoordinateReferenceSystem coordinateReferenceSystem;
     private final TileProfile               tileProfile;
+    private final TileScheme                tileScheme;
     private final Map<Integer, TileMatrix>  tileMatricies;
+
 }

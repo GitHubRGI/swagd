@@ -36,9 +36,12 @@ import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
+import com.rgi.common.tile.scheme.TileScheme;
 
 /**
  * @author Luke Lambert
+ *
+ * TODO This implementation is incomplete, and not ready for use
  *
  * TODO give attribution for this code "Tile-Based Geospatial Information Systems" by John T. Sample and Elias Ioup, Chapter 8 and specifically Listing 8.3 "Tile Clusters implementation" e.i. ClusteredTileStream
  *
@@ -72,6 +75,7 @@ public class TileCluster implements TileStore
         this.zoomLevels  = levels;
         this.breakPoint  = breakPoint;
         this.tileProfile = tileProfile;
+        this.tileScheme  = null;    // TODO
     }
 
     @Override
@@ -237,6 +241,12 @@ public class TileCluster implements TileStore
         return this.tileProfile.getCoordinateReferenceSystem();
     }
 
+    @Override
+    public TileScheme getTileScheme()
+    {
+        return this.tileScheme;
+    }
+
     private ClusterAddress getClusterAddress(final AbsoluteTileCoordinate coordinate)
     {
         if(coordinate.getZoomLevel() <= 0 || coordinate.getZoomLevel() > this.zoomLevels)
@@ -261,9 +271,8 @@ public class TileCluster implements TileStore
                endZoomLevel = this.zoomLevels;
         }
 
-
         final int    zoomLevelDifference = coordinate.getZoomLevel() - targetZoomLevel; // Compute the difference between the target cluster zoom level and the tile zoom level
-        final double levelFactor         = Math.pow(2, zoomLevelDifference);           // Level factor is the number of tiles at zoom level "coordinate.getZoomLevel()" for a cluster that starts at "target zoom level"
+        final double levelFactor         = Math.pow(2, zoomLevelDifference);            // Level factor is the number of tiles at zoom level "coordinate.getZoomLevel()" for a cluster that starts at "target zoom level"
 
         // Divide the row and column by the coordinate.getZoomLevel() factor to get the row and column address of the cluster we are using
         final long clusterRow    = (long)Math.floor(coordinate.getRow()    / levelFactor);
@@ -364,6 +373,7 @@ public class TileCluster implements TileStore
     private final int         zoomLevels;
     private final int         breakPoint;
     private final TileProfile tileProfile;
+    private final TileScheme  tileScheme;
 
     private class ClusterAddress
     {
