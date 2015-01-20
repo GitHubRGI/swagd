@@ -53,7 +53,7 @@ public class GeoPackageSchema
      *
      * @return The metadata GeoPackage requirements this GeoPackage fails to conform to
      */
-    public Collection<FailedRequirement> getFailedRequirements()
+    public Collection<FailedRequirement> getFailedRequirements() throws SQLException
     {
         return new SchemaVerifier(this.databaseConnection).getFailedRequirements();
     }
