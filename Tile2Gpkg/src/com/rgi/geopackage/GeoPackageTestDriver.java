@@ -46,6 +46,7 @@ public class GeoPackageTestDriver
     public static void main(final String[] args)
     {
         GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NormalZoom2"),    new ZoomTimesTwo(1, 1, GeoPackageTiles.Origin));
+        // This won't work until I figure out how I want to set up a tile store with a tile scheme
         //GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NotNormalZoom2"), new ZoomTimesTwo(2, 3, GeoPackageTiles.Origin));
     }
 
@@ -79,15 +80,16 @@ public class GeoPackageTestDriver
 
                 final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 90.0, 180.0);
 
-                final TileSet tileSet = gpkg.tiles().addTileSet(folderName,
-                                                                "test tiles",
-                                                                String.format("GeoPackage with numbered test tiles, %dx%d tiles at zoom 0, and a \"zoom times two\" convention for subsequent levels.",
-                                                                              tileScheme.dimensions(0).getHeight(),
-                                                                              tileScheme.dimensions(0).getWidth()),
-                                                                boundingBox,
-                                                                gpkg.core()
-                                                                    .getSpatialReferenceSystem(tmsTileStore.getCoordinateReferenceSystem()
-                                                                                                           .getIdentifier()));
+                final TileSet tileSet = gpkg.tiles()
+                                            .addTileSet(folderName,
+                                                        "test tiles",
+                                                        String.format("GeoPackage with numbered test tiles, %dx%d tiles at zoom 0, and a \"zoom times two\" convention for subsequent levels.",
+                                                                      tileScheme.dimensions(0).getHeight(),
+                                                                      tileScheme.dimensions(0).getWidth()),
+                                                        boundingBox,
+                                                        gpkg.core()
+                                                            .getSpatialReferenceSystem(tmsTileStore.getCoordinateReferenceSystem()
+                                                                                                   .getIdentifier()));
 
                 final int pixelWidth  = 256;
                 final int pixelHeight = 256;
