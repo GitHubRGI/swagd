@@ -129,7 +129,7 @@ public class GeoPackageTestDriver
 
                                     gpkg.tiles().addTile(tileSet,
                                                          tileMatrix,
-                                                         new RelativeTileCoordinate(/*matrixDimensions.getHeight() - 1 -*/ row,
+                                                         new RelativeTileCoordinate(row,
                                                                                     column,
                                                                                     zoomLevel),
                                                          outputStream.toByteArray());
