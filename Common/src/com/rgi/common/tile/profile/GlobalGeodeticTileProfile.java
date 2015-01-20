@@ -105,7 +105,7 @@ public class GlobalGeodeticTileProfile implements TileProfile
         return GlobalGeodeticTileProfile.Bounds;
     }
 
-    public final static CoordinateReferenceSystem CoordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
+    public final static CoordinateReferenceSystem CoordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
 
     /**
      * The Unprojected bounds of this tile profile, in degrees
