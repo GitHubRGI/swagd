@@ -32,6 +32,7 @@ import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
+import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.store.TileStore;
 import com.rgi.common.tile.store.TileStoreException;
 
@@ -174,4 +175,10 @@ public class SimpleFileStore implements TileStore {
   public CoordinateReferenceSystem getCoordinateReferenceSystem() {
     return this.tileProfile.getCoordinateReferenceSystem();
   }
+
+    @Override
+    public TileScheme getTileScheme()
+    {
+        return null;    // TODO
+    }
 }
