@@ -71,7 +71,7 @@
                         <jacocoReport>${jacoco.report.packager}</jacocoReport>
                         <jacocoReport>${jacoco.report.rgisuite}</jacocoReport>
                     </jacocoReports>
-                    <dryRun>true</dryRun>
+                    <!--dryRun>true</dryRun-->
                 </configuration>
             </plugin>
         </plugins>
