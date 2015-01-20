@@ -51,7 +51,7 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor 
     super(factory);
   }
 
-  private Set<TaskMonitor> monitors = new HashSet<TaskMonitor>();
+  private Set<TaskMonitor> monitors = new HashSet<>();
 
   @Override
   public void addMonitor(TaskMonitor monitor) {
@@ -109,13 +109,13 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor 
         continue;
       }
 
-      Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(this.createTileJob(file, tileStore, opts, this))));
+      Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createTileJob(file, tileStore, opts, this))));
       jobWaiter.setDaemon(true);
       jobWaiter.start();
     }
   }
 
-  private Runnable createTileJob(File file, TileStore tileStore, Settings opts, TaskMonitor monitor) {
+  private static Runnable createTileJob(File file, TileStore tileStore, Settings opts, TaskMonitor monitor) {
     return new TileJob(file, tileStore, opts, monitor);
     //    return new FakeTileJob(file, opts, monitor);
   }

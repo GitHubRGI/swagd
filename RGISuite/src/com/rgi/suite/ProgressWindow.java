@@ -35,29 +35,29 @@ import com.rgi.suite.ApplicationContext.Window;
 
 public class ProgressWindow extends AbstractWindow implements TaskMonitor {
   private JProgressBar progressBar;
-  
+
 	public ProgressWindow(ApplicationContext context) {
 		super(context);
 	}
 
 	@Override
 	public void activate() {
-	  progressBar.setIndeterminate(true);
-	  Task task = context.getActiveTask();
+	  this.progressBar.setIndeterminate(true);
+	  Task task = this.context.getActiveTask();
 	  if (task instanceof MonitorableTask) {
 	    ((MonitorableTask)task).addMonitor(this);
 	  }
 	}
-	
+
 	@Override
 	protected void buildContentPane() {
 		this.contentPane = new JPanel(new GridBagLayout());
-		progressBar = new JProgressBar(0, 100);
+		this.progressBar = new JProgressBar(0, 100);
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.weightx = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(20,20,20,20);
-		contentPane.add(progressBar, gbc);
+		this.contentPane.add(this.progressBar, gbc);
 	}
 
 	@Override
@@ -86,33 +86,33 @@ public class ProgressWindow extends AbstractWindow implements TaskMonitor {
 		gbc.insets = new Insets(10, 10, 10, 10);
 		this.navPane.add(stopButton, gbc);
 	}
-	
+
 	@Override
 	public void setMaximum(int max) {
-    progressBar.setIndeterminate(false);
-	  progressBar.setMaximum(max);
+    this.progressBar.setIndeterminate(false);
+	  this.progressBar.setMaximum(max);
 	}
-	
+
 	@Override
 	public void setProgress(int value) {
 	  System.out.println("Progress set to: "+value);
-    progressBar.setIndeterminate(false);
-    progressBar.setValue(value);
+    this.progressBar.setIndeterminate(false);
+    this.progressBar.setValue(value);
 	}
-	
+
 	@Override
 	public void cancelled() {
 	  // TODO: switch to spinning "waiting" bar
-	  progressBar.setIndeterminate(true);
+	  this.progressBar.setIndeterminate(true);
 	}
-	
+
 	@Override
 	public void finished() {
-	  context.transitionTo(Window.DONE);
+	  this.context.transitionTo(Window.DONE);
 	}
 	@Override
 	public void setError(Exception e) {
-	  context.setError(e);
-	  context.transitionTo(Window.ERROR);
+	  this.context.setError(e);
+	  this.context.transitionTo(Window.ERROR);
 	}
 }

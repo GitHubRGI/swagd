@@ -104,55 +104,110 @@ public class SimpleFileStore implements TileStore {
     return count;
   }
 
-  @Override
-  public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException {
-    final File zoomFolder = new File(this.rootFolder, ""+zoomLevel);
-    if (!zoomFolder.exists()) {
-      if (!zoomFolder.mkdirs()) {
-        throw new TileStoreException("Unable to create folders");
-      }
-    }
-    final File xFolder = new File(zoomFolder, ""+coordinate.getX());
-    if (!xFolder.exists()) {
-      if (!xFolder.mkdirs()) {
-        throw new TileStoreException("Unable to create folders");
-      }
-    }
-    final File yFile = new File(xFolder, coordinate.getY()+".png");
-    BufferedImage image;
-    try {
-      image = ImageIO.read(yFile);
-    } catch (final IOException ioe) {
-      throw new TileStoreException("Unable to read tile from file", ioe);
-    }
-    return image;
-  }
+    @Override
+    public BufferedImage getTile(int row, int column, int zoomLevel) throws TileStoreException
+    {
+        final File zoomFolder = new File(this.rootFolder, "" + zoomLevel);
+        if(!zoomFolder.exists())
+        {
+            if(!zoomFolder.mkdirs())
+            {
+                throw new TileStoreException("Unable to create folders");
+            }
+        }
+        final File xFolder = new File(zoomFolder, "" + column);
+        if(!xFolder.exists())
+        {
+            if(!xFolder.mkdirs())
+            {
+                throw new TileStoreException("Unable to create folders");
+            }
+        }
+        final File yFile = new File(xFolder, row + ".png");
+        BufferedImage image;
+        try
+        {
+            image = ImageIO.read(yFile);
+        }
+        catch(final IOException ioe)
+        {
+            throw new TileStoreException("Unable to read tile from file", ioe);
+        }
 
-  @Override
-  public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image)
-      throws TileStoreException {
-    final File zoomFolder = new File(this.rootFolder, ""+zoomLevel);
-    if (!zoomFolder.exists()) {
-      if (!zoomFolder.mkdirs()) {
-        throw new TileStoreException("Unable to create folders");
-      }
+        return image;
     }
 
-    final AbsoluteTileCoordinate absTileCoordinate = this.tileProfile.crsToAbsoluteTileCoordinate(coordinate, zoomLevel, this.tileOrigin);
+    @Override
+    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException
+    {
+        if(coordinate == null)
+        {
+            throw new IllegalArgumentException("Coordinate may not be null");
+        }
 
-    final File xFolder = new File(zoomFolder, ""+absTileCoordinate.getX());
-    if (!xFolder.exists()) {
-      if (!xFolder.mkdirs()) {
-        throw new TileStoreException("Unable to create folders");
-      }
+        if(!coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        {
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
+        }
+
+        final AbsoluteTileCoordinate absCoordinate = this.tileProfile.crsToAbsoluteTileCoordinate(coordinate, zoomLevel, this.tileOrigin);
+
+        return this.getTile(absCoordinate.getRow(),
+                            absCoordinate.getColumn(),
+                            zoomLevel);
     }
-    final File yFile = new File(xFolder, absTileCoordinate.getY()+"."+this.imageFormat);
-    try {
-      ImageIO.write(image, this.imageFormat, yFile);
-    } catch (final IOException ioe) {
-      throw new TileStoreException("Unable to write tile to file", ioe);
+
+    @Override
+    public void addTile(int row, int column, int zoomLevel, BufferedImage image) throws TileStoreException
+    {
+        final File zoomFolder = new File(this.rootFolder, ""+zoomLevel);
+        if(!zoomFolder.exists())
+        {
+            if(!zoomFolder.mkdirs())
+            {
+                throw new TileStoreException("Unable to create folders");
+            }
+        }
+
+        final File xFolder = new File(zoomFolder, "" + column);
+        if(!xFolder.exists())
+        {
+            if(!xFolder.mkdirs())
+            {
+                throw new TileStoreException("Unable to create folders");
+            }
+        }
+        final File yFile = new File(xFolder, row + "." + this.imageFormat);
+        try
+        {
+            ImageIO.write(image, this.imageFormat, yFile);
+        }
+        catch(final IOException ioe)
+        {
+            throw new TileStoreException("Unable to write tile to file", ioe);
+        }
     }
-  }
+
+    @Override
+    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException
+    {
+        if(coordinate == null)
+        {
+            throw new IllegalArgumentException("Coordinate may not be null");
+        }
+
+        if(!coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        {
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
+        }
+
+        final AbsoluteTileCoordinate absTileCoordinate = this.tileProfile.crsToAbsoluteTileCoordinate(coordinate, zoomLevel, this.tileOrigin);
+
+        this.addTile(absTileCoordinate.getRow(),
+                     absTileCoordinate.getColumn(),
+                     zoomLevel,
+                     image);
+    }
 
   @Override
   public Set<Integer> getZoomLevels() throws TileStoreException {

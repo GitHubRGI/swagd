@@ -19,17 +19,13 @@
 
 package com.rgi.g2t;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-
 import java.util.concurrent.Future;
 
-import com.rgi.common.task.Settings;
 import com.rgi.common.task.TaskMonitor;
 
 public class FakeTileJob implements Runnable {
@@ -37,10 +33,10 @@ public class FakeTileJob implements Runnable {
   private TaskMonitor monitor;
   double tileTotal = 0;
   int tileCount = 0;
-  
-  List<Future<?>> tasks = new ArrayList<Future<?>>();
-  
-  public FakeTileJob(File file, Settings settings, TaskMonitor monitor) {
+
+  List<Future<?>> tasks = new ArrayList<>();
+
+  public FakeTileJob(/*File file, Settings settings, */TaskMonitor monitor) {
     this.monitor = monitor;
   }
 
@@ -50,49 +46,51 @@ public class FakeTileJob implements Runnable {
     int zoomLevels = r.nextInt(8) + 4;
     System.out.println("faking "+zoomLevels+" zoom levels");
     for (int i = 0; i < zoomLevels; ++i) {
-      tasks.add(executor.submit(new FakeScaleWorker(i)));
+      this.tasks.add(this.executor.submit(new FakeScaleWorker(i)));
     }
-    
-    while (!tasks.isEmpty()) {
+
+    while (!this.tasks.isEmpty()) {
       try {
-        Future<?> task = tasks.remove(0);
+        Future<?> task = this.tasks.remove(0);
         if (task != null) {
           task.get();
         }
-        monitor.setProgress((int)(100 * (++tileCount) / tileTotal));
+        this.monitor.setProgress((int)(100 * (++this.tileCount) / this.tileTotal));
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
-    monitor.finished();
+    this.monitor.finished();
   }
-  
+
   private class FakeScaleWorker implements Runnable {
     private int zoomLevel;
-    
+
     public FakeScaleWorker(int zoomLevel) {
       this.zoomLevel = zoomLevel;
-      ++tileTotal;
+      ++FakeTileJob.this.tileTotal;
     }
-    
+
+    @Override
     public void run() {
       try {
         Thread.sleep(5000);
       } catch (InterruptedException ie) {
         // do nothing
       }
-      monitor.setMaximum(100);
-      int numTiles = (int)Math.pow(2, zoomLevel);
+      FakeTileJob.this.monitor.setMaximum(100);
+      int numTiles = (int)Math.pow(2, this.zoomLevel);
       for (int j = 0; j < numTiles; ++j) {
-        tasks.add(executor.submit(new FakeTileWorker()));
+        FakeTileJob.this.tasks.add(FakeTileJob.this.executor.submit(new FakeTileWorker()));
       }
     }
   }
 
   private class FakeTileWorker implements Runnable {
     public FakeTileWorker() {
-      ++tileTotal;
+      ++FakeTileJob.this.tileTotal;
     }
+    @Override
     public void run() {
       try {
         Thread.sleep(200);

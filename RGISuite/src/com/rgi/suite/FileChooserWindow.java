@@ -43,17 +43,17 @@ public class FileChooserWindow extends BaseWindow {
 	
 	@Override
 	public void activate() {
-	  Task task = context.getActiveTask();
+	  Task task = this.context.getActiveTask();
 	  if (task != null) {
 	    TaskFactory factory = task.getFactory();
-      fileChooser.setMultiSelectionEnabled(factory.selectMultiple());
+      this.fileChooser.setMultiSelectionEnabled(factory.selectMultiple());
      if (factory.selectFilesOnly())
-	      fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+	      this.fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	    else if (factory.selectFoldersOnly())
-	      fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+	      this.fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 	    else 
-	      fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-      fileChooser.setToolTipText(factory.getFilePrompt());
+	      this.fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+      this.fileChooser.setToolTipText(factory.getFilePrompt());
 	  }
 	}
 	

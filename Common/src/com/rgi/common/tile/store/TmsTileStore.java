@@ -144,21 +144,9 @@ public class TmsTileStore implements TileStore
     }
 
     @Override
-    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException
+    public BufferedImage getTile(int row, int column, int zoomLevel) throws TileStoreException
     {
-        if(coordinate == null)
-        {
-            throw new IllegalArgumentException("Coordinate may not be null");
-        }
-
-        if(!coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
-        {
-            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
-        }
-
-        final AbsoluteTileCoordinate tmsCoordiante = this.profile.crsToAbsoluteTileCoordinate(coordinate, zoomLevel, TmsTileStore.Origin);
-
-        final Optional<File> tileFile = this.getTiles(tmsCoordiante).findFirst();    // TODO prioritize list based on file type suitability (prefer transparency, etc)
+        final Optional<File> tileFile = this.getTiles(row, column, zoomLevel).findFirst();    // TODO prioritize list based on file type suitability (prefer transparency, etc)
 
         if(tileFile.isPresent())
         {
@@ -173,6 +161,24 @@ public class TmsTileStore implements TileStore
         }
 
         return null;
+    }
+
+    @Override
+    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException
+    {
+        if(coordinate == null)
+        {
+            throw new IllegalArgumentException("Coordinate may not be null");
+        }
+
+        if(!coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        {
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
+        }
+
+        final AbsoluteTileCoordinate tmsCoordiante = this.profile.crsToAbsoluteTileCoordinate(coordinate, zoomLevel, TmsTileStore.Origin);
+
+        return this.getTile(tmsCoordiante.getRow(), tmsCoordiante.getColumn(), zoomLevel);
     }
 
     @Override
@@ -193,23 +199,39 @@ public class TmsTileStore implements TileStore
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
-        final String outputFormat = "png";  // TODO how do we want to pick this ?
-
         final AbsoluteTileCoordinate tmsCoordiante = this.profile.crsToAbsoluteTileCoordinate(coordinate,
                                                                                               zoomLevel,
                                                                                               TmsTileStore.Origin);
 
+        this.addTile(tmsCoordiante.getRow(),
+                     tmsCoordiante.getColumn(),
+                     zoomLevel,
+                     image);
+
+
+    }
+
+    @Override
+    public void addTile(int row, int column, int zoomLevel, BufferedImage image) throws TileStoreException
+    {
+        if(image == null)
+        {
+            throw new IllegalArgumentException("Image may not be null");
+        }
+
+        final String outputFormat = "png";  // TODO how do we want to pick this ?
+
         final Path tilePath = tmsPath(this.location,
-                                      tmsCoordiante.getZoomLevel(),
-                                      tmsCoordiante.getColumn()).resolve(String.format("%d.%s",
-                                                                                       tmsCoordiante.getRow(),
-                                                                                       outputFormat));
+                                      zoomLevel,
+                                      column).resolve(String.format("%d.%s",
+                                                                    row,
+                                                                    outputFormat));
         try
         {
-        	// Image will not write unless the directories exist leading to it.
-        	if (!tilePath.getParent().toFile().exists()) {
-        		(new File(tilePath.getParent().toString())).mkdirs();
-        	}
+            // Image will not write unless the directories exist leading to it.
+            if (!tilePath.getParent().toFile().exists()) {
+                (new File(tilePath.getParent().toString())).mkdirs();
+            }
 
             if(!ImageIO.write(image, outputFormat, tilePath.toFile()))
             {
@@ -358,26 +380,18 @@ public class TmsTileStore implements TileStore
         return newPath;
     }
 
-    private Stream<File> getTiles(final AbsoluteTileCoordinate coordinate)
+    private Stream<File> getTiles(int row, int column, int zoomLevel)
     {
         final File[] files = tmsPath(this.location,
-                                     coordinate.getZoomLevel(),
-                                     coordinate.getX()).toFile()
-                                                       .listFiles(); // All of the files in directory zoomLevel/x/
+                                     zoomLevel,
+                                     column).toFile()
+                                            .listFiles(); // All of the files in directory zoomLevel/x/
 
         return files == null ? Stream.empty()
                              : Stream.of(files)
-                                     .filter(file -> { try
-                                                       {
-                                                           return file.isFile() &&
-                                                                  withoutExtension(file).equals(String.valueOf(coordinate.getY())) &&
-                                                                  fileIsImage(file);
-                                                       }
-                                                       catch(final Exception ex)
-                                                       {
-                                                           return false;
-                                                       }
-                                                     });
+                                     .filter(file -> file.isFile() &&
+                                                     withoutExtension(file).equals(String.valueOf(row)) &&
+                                                     fileIsImage(file));
     }
 
     private static boolean fileIsImage(final File file)

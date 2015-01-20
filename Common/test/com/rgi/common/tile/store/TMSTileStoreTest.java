@@ -83,7 +83,8 @@ public class TMSTileStoreTest {
 		}
 	}
 
-	private Path createInvalidTMSFolderMercator(final int zooms) {
+	@SuppressWarnings("unused")
+    private Path createInvalidTMSFolderMercator(final int zooms) {
 		try {
 			final File tmsFolder = this.testFolder.newFolder(this.getRanString(8));
 			for (int i = 0; i < zooms; i++) {
@@ -104,7 +105,8 @@ public class TMSTileStoreTest {
 		}
 	}
 
-	private Path createEmptyTMSFolderMercator(final int zooms) {
+	@SuppressWarnings("unused")
+    private Path createEmptyTMSFolderMercator(final int zooms) {
 		try {
 			final File tmsFolder = this.testFolder.newFolder(this.getRanString(8));
 			for (int i = 0; i < zooms; i++) {
@@ -120,7 +122,8 @@ public class TMSTileStoreTest {
 		}
 	}
 
-	private Path createInvalidTMSRowFoldersMercator(final int zooms) {
+	@SuppressWarnings("unused")
+    private Path createInvalidTMSRowFoldersMercator(final int zooms) {
 		try {
 			final File tmsFolder = this.testFolder.newFolder(this.getRanString(8));
 			for (int i = 0; i < zooms; i++) {
@@ -136,7 +139,8 @@ public class TMSTileStoreTest {
 		}
 	}
 
-	private Path createEmptyTMSRowFoldersMercator(final int zooms) {
+	@SuppressWarnings("unused")
+    private Path createEmptyTMSRowFoldersMercator(final int zooms) {
 		try {
 			final File tmsFolder = this.testFolder.newFolder(this.getRanString(8));
 			for (int i = 0; i < zooms; i++) {

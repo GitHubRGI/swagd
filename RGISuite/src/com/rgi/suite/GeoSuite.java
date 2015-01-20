@@ -39,11 +39,12 @@ public class GeoSuite {
 		});
 	}
 
-	private static void runHeadless(String[] args) {
+	private static void runHeadless(@SuppressWarnings("unused") String[] args) {
 		// TODO
 	}
 
-	public static void main(String[] args) {
+	@SuppressWarnings("unused")
+    public static void main(String[] args) {
 		if (args != null && args.length > 0) {
 			GeoSuite.runHeadless(args);
 		} else {

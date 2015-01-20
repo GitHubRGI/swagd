@@ -53,71 +53,71 @@ public class ExtensionsVerifier extends Verifier
 		String columnName;
 		String extensionName;
 	}
-	
-	
-	
+
+
+
 	private boolean hasGpkgExtensionsTable;
 	private Map<ExtensionData, String> gpkgExtensionsDataAndColumnName;
-	
+
     public ExtensionsVerifier(final Connection sqliteConnection)
     {
         super(sqliteConnection);
-        
+
         try
         {
-           this.hasGpkgExtensionsTable = DatabaseUtility.tableOrViewExists(getSqliteConnection(), GeoPackageExtensions.ExtensionsTableName);
+           this.hasGpkgExtensionsTable = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageExtensions.ExtensionsTableName);
         }
-        catch(SQLException ex)
+        catch(final SQLException ex)
         {
             this.hasGpkgExtensionsTable = false;
         }
-        
+
         if(this.hasGpkgExtensionsTable)
         {
 
-    		String query = "SELECT table_name, column_name, extension_name FROM gpkg_extensions;";
-    		
+    		final String query = "SELECT table_name, column_name, extension_name FROM gpkg_extensions;";
+
     		try(Statement stmt				    = this.getSqliteConnection().createStatement();
     		    ResultSet tableNameColumnNameRS = stmt.executeQuery(query))
     		{
     			this.gpkgExtensionsDataAndColumnName = ResultSetStream.getStream(tableNameColumnNameRS)
 																	    .map(resultSet ->{    try
 																							  {
-																	    						  ExtensionData extensionData = new ExtensionData();
+																	    						  final ExtensionData extensionData = new ExtensionData();
 																	    						  extensionData.tableName     = resultSet.getString("table_name");
 																	    						  extensionData.columnName    = resultSet.getString("column_name");
 																			   					  extensionData.extensionName = resultSet.getString("extension_name");
 																								  return new AbstractMap.SimpleImmutableEntry<>(extensionData, extensionData.columnName);
 																							  }
-																		    				  catch(SQLException ex)
+																		    				  catch(final SQLException ex)
 																		    				  {
 																		    					  return null;
 																		    				  }
-																	   					}) 
+																	   					})
 																	   	.filter(Objects::nonNull)
 												                        .collect(Collectors.toMap(entry -> entry.getKey(),
 												                                                  entry -> entry.getValue()));
     		}
-    		catch(SQLException ex)
+    		catch(final SQLException ex)
     		{
     		  this.gpkgExtensionsDataAndColumnName = Collections.emptyMap();
     		}
         }
     }
-    
+
     /**
      * <div class="title">Requirement 78</div>
 	 * <blockquote>
 	 * A GeoPackage MAY contain a table or updateable view named gpkg_extensions.
-	 * If present this table SHALL be defined per clause 2.5.2.1.1 
-	 * <a href="http://www.geopackage.org/spec/#extensions_table_definition">Table Definition</a>, 
-	 * <a href="http://www.geopackage.org/spec/#gpkg_extensions_cols">GeoPackage Extensions Table or 
-	 * View Definition (Table or View Name: gpkg_extensions)</a> and 
+	 * If present this table SHALL be defined per clause 2.5.2.1.1
+	 * <a href="http://www.geopackage.org/spec/#extensions_table_definition">Table Definition</a>,
+	 * <a href="http://www.geopackage.org/spec/#gpkg_extensions_cols">GeoPackage Extensions Table or
+	 * View Definition (Table or View Name: gpkg_extensions)</a> and
 	 * <a href="http://www.geopackage.org/spec/#gpkg_extensions_sql">gpkg_extensions Table Definition SQL</a>.
 	 * </blockquote>
 	 * </div>
-     * @throws SQLException 
-     * @throws AssertionError 
+     * @throws SQLException
+     * @throws AssertionError
      */
     @Requirement (number   = 78,
     		      text     = "A GeoPackage MAY contain a table or updateable view named gpkg_extensions."
@@ -129,16 +129,16 @@ public class ExtensionsVerifier extends Verifier
     {
     	if(this.hasGpkgExtensionsTable)
     	{
-    		this.verifyTable(ExtensionsTableDefinition);
+    		this.verifyTable(ExtensionsVerifier.ExtensionsTableDefinition);
     	}
     }
-    
+
 
     /**
      * <div class="title">Requirement 79</div>
 	 * <blockquote>
 	 * Every extension of a GeoPackage SHALL be registered in a corresponding row in the gpkg_extensions table.
-	 * The absence of a gpkg_extensions table or the absence of rows in gpkg_extnsions table SHALL both indicate 
+	 * The absence of a gpkg_extensions table or the absence of rows in gpkg_extnsions table SHALL both indicate
 	 * the absence of extensions to a GeoPackage.
 	 * </blockquote>
 	 * </div>
@@ -151,21 +151,21 @@ public class ExtensionsVerifier extends Verifier
     			 severity = Severity.Warning)
     public void Requirement79()
     {
-    	
-    	
+    	// TODO
+
     }
-    
+
     /**
      * <div class="title">Requirement 80</div>
 	 * <blockquote>
-	 * Values of the <code>gpkg_extensions</code> <code>table_name</code> 
-	 * column SHALL reference values in the <code>gpkg_contents</code> 
+	 * Values of the <code>gpkg_extensions</code> <code>table_name</code>
+	 * column SHALL reference values in the <code>gpkg_contents</code>
 	 * <code>table_name</code> column or be NULL.
 	 * They SHALL NOT be NULL for rows where the <code>column_name
 	 * </code> value is not NULL.
 	 * </blockquote>
 	 * </div>
-     * @throws SQLException 
+     * @throws SQLException
      */
     @Requirement(number   = 80,
     			 text     = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
@@ -177,15 +177,15 @@ public class ExtensionsVerifier extends Verifier
     {
     	if(this.hasGpkgExtensionsTable)
     	{
-			for(ExtensionData extensionData: this.gpkgExtensionsDataAndColumnName.keySet())
+			for(final ExtensionData extensionData: this.gpkgExtensionsDataAndColumnName.keySet())
 			{
-				String columnName = this.gpkgExtensionsDataAndColumnName.get(extensionData);
-				boolean validEntry = extensionData.tableName == null ? columnName == null: true;  // if table name is null then so must column name
+				final String columnName = this.gpkgExtensionsDataAndColumnName.get(extensionData);
+				final boolean validEntry = extensionData.tableName == null ? columnName == null: true;  // if table name is null then so must column name
 				Assert.assertTrue("The value in table_name can only be null if column_name is also null.",
 						          validEntry);
 			}
 			//check that the table_name in GeoPackage Extensions references a table in sqlite master
-    		String query2 = "SELECT DISTINCT ge.table_name AS ge_table, "
+    		final String query2 = "SELECT DISTINCT ge.table_name AS ge_table, "
     									  + "sm.tbl_name   AS sm_table "
     							  + "FROM  gpkg_extensions AS ge "
     							  + "LEFT OUTER JOIN sqlite_master AS sm ON "
@@ -193,45 +193,45 @@ public class ExtensionsVerifier extends Verifier
     		try(Statement stmt2                = this.getSqliteConnection().createStatement();
     		    ResultSet tablesReferencedInSM = stmt2.executeQuery(query2))
 		    {
-    			Map<String, String> tablesMatchesFound = ResultSetStream.getStream(tablesReferencedInSM)
+    			final Map<String, String> tablesMatchesFound = ResultSetStream.getStream(tablesReferencedInSM)
 	    															    .map(resultSet ->{    try
 							    															  {
-		    																   					   String geTableName = resultSet.getString("ge_table");
-		    																   					   String smTableName = resultSet.getString("sm_table");
+		    																   					   final String geTableName = resultSet.getString("ge_table");
+		    																   					   final String smTableName = resultSet.getString("sm_table");
 							    																   return new AbstractMap.SimpleImmutableEntry<>(geTableName,smTableName);
 							    															  }
-		    															    				  catch(SQLException ex)
+		    															    				  catch(final SQLException ex)
 		    															    				  {
 		    															    					  return null;
 		    															    				  }
-	    															   					}) 
+	    															   					})
 	    															   	.filter(Objects::nonNull)
 	    		                                                        .collect(Collectors.toMap(entry -> entry.getKey(),
 	                                                                                              entry -> entry.getValue()));
-    			
-    			for(String geTable: tablesMatchesFound.keySet())
+
+    			for(final String geTable: tablesMatchesFound.keySet())
     			{
     				Assert.assertTrue(String.format("The table %s does not exist in the sqlite master table. "
-    													+ "Either create table %s or delete this entry.", 
+    													+ "Either create table %s or delete this entry.",
     												geTable,
     												geTable),
-    								  this.equals(geTable, tablesMatchesFound.get(geTable)));
+    								  ExtensionsVerifier.equals(geTable, tablesMatchesFound.get(geTable)));
     			}
 		    }
-    				
+
     	}
-    	
+
     }
-    
+
     /**
      * <div class="title">Requirement 81</div>
 	 * <blockquote>
-	 * The <code>column_name</code> column value in a <code>gpkg_extensions</code> 
+	 * The <code>column_name</code> column value in a <code>gpkg_extensions</code>
 	 * row SHALL be the name of a column in the table specified by the <code>table_name</code>
 	 *  column value for that row, or be NULL.
 	 * </blockquote>
 	 * </div>
-     * @throws SQLException 
+     * @throws SQLException
      */
     @Requirement (number   = 81,
     			  text     = "The column_name column value in a gpkg_extensions row SHALL"
@@ -242,53 +242,53 @@ public class ExtensionsVerifier extends Verifier
     {
     	if(this.hasGpkgExtensionsTable && !this.gpkgExtensionsDataAndColumnName.isEmpty())
     	{
-    		for(ExtensionData extensionData: this.gpkgExtensionsDataAndColumnName.keySet())
+    		for(final ExtensionData extensionData: this.gpkgExtensionsDataAndColumnName.keySet())
     		{
-    			String columnName = extensionData.columnName;
-    			
+    			final String columnName = extensionData.columnName;
+
     			if(extensionData.tableName != null && columnName != null)
     			{
-    				String query = String.format("PRAGMA table_info(%s);", extensionData.tableName);
-    				
+    				final String query = String.format("PRAGMA table_info(%s);", extensionData.tableName);
+
     				try(Statement stmt      = this.getSqliteConnection().createStatement();
     					ResultSet tableInfo = stmt.executeQuery(query))
     				{
-    					boolean columnExists = ResultSetStream.getStream(tableInfo)
+    					final boolean columnExists = ResultSetStream.getStream(tableInfo)
     														  .anyMatch(resultSet -> { try
 																					   {
 																						  return resultSet.getString("name").equals(columnName);
 																					   }
-																					   catch(SQLException ex)
+																					   catch(final SQLException ex)
 																					   {
 																						  return false;
 																					   }
 																					  });
-    					
+
     					Assert.assertTrue(String.format("The column %s does not exist in the table %s. "
     												      + "Please either add this column to this table "
-    												      + "or delete the record in gpkg_extensions.", 
-    												    columnName, 
-    												    extensionData.tableName), 
+    												      + "or delete the record in gpkg_extensions.",
+    												    columnName,
+    												    extensionData.tableName),
     							          columnExists);
     				}
     			}
     		}
     	}
     }
-    
+
     /**
      * <div class="title">Requirement 82</div>
 	 * <blockquote>
-	 * Each <code>extension_name</code> column value in a <code>gpkg_extensions</code> 
-	 * row SHALL be a unique case sensitive value of the form &lt;author&gt;_&lt;extension_name&gt; 
+	 * Each <code>extension_name</code> column value in a <code>gpkg_extensions</code>
+	 * row SHALL be a unique case sensitive value of the form &lt;author&gt;_&lt;extension_name&gt;
 	 * where &lt;author&gt; indicates the person or organization that developed and
 	 * maintains the extension. The valid character set for <author> SHALL be [a-zA-Z0-9].
 	 * The valid character set for &lt;extension_name&gt; SHALL be [a-zA-Z0-9_].
-	 * An <code>extension_name</code> for the “gpkg” author name SHALL be one of those defined in 
+	 * An <code>extension_name</code> for the ï¿½gpkgï¿½ author name SHALL be one of those defined in
 	 * this encoding standard or in an OGC Best Practices Document that extends it.
 	 * </blockquote>
 	 * </div>
-     * @throws SQLException 
+     * @throws SQLException
      */
     @Requirement (number 	= 82,
     			  text      = "Each extension_name column value in a gpkg_extensions row SHALL be a "
@@ -296,7 +296,7 @@ public class ExtensionsVerifier extends Verifier
     					  		+ "where <author> indicates the person or organization that developed "
     					  		+ "and maintains the extension. The valid character set for <author> "
     					  		+ "SHALL be [a-zA-Z0-9]. The valid character set for <extension_name> "
-    					  		+ "SHALL be [a-zA-Z0-9_]. An extension_name for the “gpkg” author name "
+    					  		+ "SHALL be [a-zA-Z0-9_]. An extension_name for the ï¿½gpkgï¿½ author name "
     					  		+ "SHALL be one of those defined in this encoding standard or in an OGC "
     					  		+ "Best Practices Document that extends it.",
     			  severity  = Severity.Warning)
@@ -304,34 +304,34 @@ public class ExtensionsVerifier extends Verifier
     {
     	if(this.hasGpkgExtensionsTable)
     	{
-    		
-    		Set<String> invalidExtensionNames = this.gpkgExtensionsDataAndColumnName.keySet()
+
+    		final Set<String> invalidExtensionNames = this.gpkgExtensionsDataAndColumnName.keySet()
     																				  .stream()
-    																				  .map(extensionData -> this.verifyExtensionName(extensionData.extensionName))
+    																				  .map(extensionData -> ExtensionsVerifier.verifyExtensionName(extensionData.extensionName))
     																				  .filter(data -> data != null)
     																				  .collect(Collectors.toSet());
-    		
+
     		Assert.assertTrue("The following extension_name(s) are invalid: \n".concat(
     																	 String.join(invalidExtensionNames.stream()
     																			 						  .map(extensionName -> extensionName)
     																			 						  .filter(Objects::nonNull)
-    																			 						  .collect(Collectors.joining(", ")), "\n")), 
+    																			 						  .collect(Collectors.joining(", ")), "\n")),
     						  invalidExtensionNames.isEmpty());
-    	
+
     	}
     }
-    
+
     /**
      * <div class="title">Requirement 83</div>
 	 * <blockquote>
 	 * The definition column value in a <code>gpkg_extensions</code>
-	 *  row SHALL contain or reference the text that results from documenting 
-	 *  an extension by filling out the GeoPackage Extension Template in 
-	 *  <a href="http://www.geopackage.org/spec/#extension_template"> 
+	 *  row SHALL contain or reference the text that results from documenting
+	 *  an extension by filling out the GeoPackage Extension Template in
+	 *  <a href="http://www.geopackage.org/spec/#extension_template">
 	 *  GeoPackage Extension Template (Normative)</a>.
 	 * </blockquote>
 	 * </div>
-     * @throws SQLException 
+     * @throws SQLException
      */
     @Requirement (number    = 83,
     		      text      = "The definition column value in a gpkg_extensions row SHALL "
@@ -344,50 +344,50 @@ public class ExtensionsVerifier extends Verifier
     	//TODO: Ask about how restrictive we want the strings to be
     	if(this.hasGpkgExtensionsTable)
     	{
-    		String query = "SELECT table_name "
+    		final String query = "SELECT table_name "
     					 + "FROM gpkg_extensions "
     					 + "WHERE definition NOT LIKE 'Annex%' "
     					 + "AND   definition NOT LIKE 'http%' "
     					 + "AND   definition NOT LIKE 'mailto%' "
     					 + "AND   definition NOT LIKE 'Extension Title%';";
-    		
+
     		try(Statement stmt                    = this.getSqliteConnection().createStatement();
     			ResultSet invalidDefinitionValues = stmt.executeQuery(query))
     		{
-    				List<String> invalidDefinitions = ResultSetStream.getStream(invalidDefinitionValues)
+    				final List<String> invalidDefinitions = ResultSetStream.getStream(invalidDefinitionValues)
     															     .map(resultSet ->
 																				   { try
 																				     {
 																					   return resultSet.getString("table_name");
 																				     }
-																				     catch(SQLException ex)
+																				     catch(final SQLException ex)
 																				     {
-																				    	return null; 
+																				    	return null;
 																				     }
 																				   })
 																	 .filter(Objects::nonNull)
 																     .collect(Collectors.toList());
-    				
-    				Assert.assertTrue(String.format("The following table_name values in gpkg_extension table have invalid values for the definition column: %s.", 
+
+    				Assert.assertTrue(String.format("The following table_name values in gpkg_extension table have invalid values for the definition column: %s.",
     						    					invalidDefinitions.stream()
-    						    									  .collect(Collectors.joining(", "))), 
+    						    									  .collect(Collectors.joining(", "))),
     						          invalidDefinitions.isEmpty());
-    				
+
     		}
     	}
     }
-    
-    
-	
+
+
+
     /**
      * <div class="title">Requirement 84</div>
 	 * <blockquote>
-	 * The scope column value in a <code>gpkg_extensions</code> row SHALL be 
-	 * lowercase "read-write" for an extension that affects both readers and writers, 
+	 * The scope column value in a <code>gpkg_extensions</code> row SHALL be
+	 * lowercase "read-write" for an extension that affects both readers and writers,
 	 * or "write-only" for an extension that affects only writers.
 	 * </blockquote>
 	 * </div>
-     * @throws SQLException 
+     * @throws SQLException
      */
     @Requirement(number   = 84,
     			 text     = "The scope column value in a gpkg_extensions row SHALL be lowercase "
@@ -398,64 +398,60 @@ public class ExtensionsVerifier extends Verifier
     {
     	if(this.hasGpkgExtensionsTable)
     	{
-    		String query = "SELECT scope FROM gpkg_extensions WHERE scope != 'read-write' AND scope != 'write-only'";
-    		
+    		final String query = "SELECT scope FROM gpkg_extensions WHERE scope != 'read-write' AND scope != 'write-only'";
+
     		try(Statement stmt               = this.getSqliteConnection().createStatement();
     			ResultSet invalidScopeValues = stmt.executeQuery(query))
     		{
-    			List<String> invalidScope = ResultSetStream.getStream(invalidScopeValues)
+    			final List<String> invalidScope = ResultSetStream.getStream(invalidScopeValues)
 														   .map(resultSet -> { try
 															 				  {
 															 					return resultSet.getString("scope");
 															 				  }
-															 				  catch(SQLException ex)
+															 				  catch(final SQLException ex)
 																			  {
-																			  	return null;								
+																			  	return null;
 																			  }
 														  					 })
 													       .filter(Objects::nonNull)
 													       .collect(Collectors.toList());
-    			
+
     			Assert.assertTrue(String.format("There is(are) value(s) in the column scope in gpkg_extensions"
     												+ " table that is not 'read-write' or 'write-only' in all "
-    												+ "lowercase letters. The following value(s)  is(are) incorrect: %s", 
-    								            invalidScope.stream().collect(Collectors.joining(", "))), 
+    												+ "lowercase letters. The following value(s)  is(are) incorrect: %s",
+    								            invalidScope.stream().collect(Collectors.joining(", "))),
     					          invalidScope.isEmpty());
     		}
-    				
+
     	}
     }
-    
-    
-    private String verifyExtensionName(String extensionName) 
-	{
-		String author[] = extensionName.split("_", 2);
 
-		if (author.length != 2) 
+
+    private static String verifyExtensionName(final String extensionName)
+	{
+		final String author[] = extensionName.split("_", 2);
+
+		if (author.length != 2)
 		{
 			return extensionName;
 		}
 		if (author[0].matches("gpkg")               ||
 		    !author[0].matches("[a-zA-Z0-9]+")      ||
-		    !author[1].matches("[a-zA-Z0-9_]+")) 
+		    !author[1].matches("[a-zA-Z0-9_]+"))
 		{
 			return extensionName;
-		} 
-		else 
-		{
-			return null;
 		}
+        return null;
 	}
-    
-    
-    private boolean equals(String first, String second)
+
+
+    private static boolean equals(final String first, final String second)
     {
     	return first == null ? second == null : first.equals(second);
     }
-    
-    
-    
+
     private static final TableDefinition ExtensionsTableDefinition;
+
     static
     {
         final Map<String, ColumnDefinition> extensionsTableColumns = new HashMap<>();

@@ -38,7 +38,7 @@ import com.rgi.common.task.Task;
 
 public class ApplicationContext extends JFrame {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -4996528794673998019L;
 	private Task task;
@@ -62,7 +62,7 @@ public class ApplicationContext extends JFrame {
 
 		this.props = new Properties();
 		try {
-			this.props.load(getClass().getResourceAsStream("geosuite.properties"));
+			this.props.load(this.getClass().getResourceAsStream("geosuite.properties"));
 		} catch (IOException ioe) {
 			JOptionPane.showMessageDialog(null, "RGI Suite", "Unable to load properties", JOptionPane.OK_OPTION);
 			ioe.printStackTrace();
@@ -71,17 +71,17 @@ public class ApplicationContext extends JFrame {
 
 		this.settings = new Settings();
 
-		Container c = getContentPane();
+		Container c = this.getContentPane();
 		c.setLayout(new BorderLayout());
 		c.add(this.contentPanel, BorderLayout.CENTER);
 		c.add(this.navPanel, BorderLayout.SOUTH);
 
-		setTitle("RGI Tiling and Geopackaging Suite");
-		setSize(640, 480);
-		setResizable(false);
-		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		this.setTitle("RGI Tiling and Geopackaging Suite");
+		this.setSize(640, 480);
+		this.setResizable(false);
+		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		// show the window
-		addWindowListener(new WindowAdapter() {
+		this.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent event) {
 				int option = JOptionPane.showConfirmDialog(ApplicationContext.this, "Are you sure you want to exit?",
@@ -94,7 +94,7 @@ public class ApplicationContext extends JFrame {
 	}
 
 	public void go() {
-		setVisible(true);
+		this.setVisible(true);
 	}
 
 	void addWindow(Window window, ApplicationWindow windowContent) {
@@ -110,13 +110,13 @@ public class ApplicationContext extends JFrame {
 	public Properties getProperties() {
 		return this.props;
 	}
-	
+
 	public void setError(Exception error) {
 	  this.error = error;
 	}
-	
+
 	public Exception getError() {
-	  return error;
+	  return this.error;
 	}
 
 	public void transitionTo(Window window) {

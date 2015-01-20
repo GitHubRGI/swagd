@@ -41,6 +41,8 @@ import com.rgi.common.tile.store.TileStore;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
+import com.rgi.geopackage.tiles.RelativeTileCoordinate;
+import com.rgi.geopackage.tiles.Tile;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileSet;
 
@@ -113,6 +115,22 @@ public class GeoPackageTileStore implements TileStore
     }
 
     @Override
+    public BufferedImage getTile(final int row, final int column, final int zoomLevel) throws TileStoreException
+    {
+        try
+        {
+            return GeoPackageTileStore.getImage(this.geoPackage
+                                                    .tiles()
+                                                    .getTile(this.tileSet,
+                                                             new RelativeTileCoordinate(row, column, zoomLevel)));
+        }
+        catch(final SQLException ex)
+        {
+            throw new TileStoreException(ex);
+        }
+    }
+
+    @Override
     public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException
     {
         if(coordinate == null)
@@ -127,21 +145,29 @@ public class GeoPackageTileStore implements TileStore
 
         try
         {
-            final com.rgi.geopackage.tiles.Tile tile = this.geoPackage.tiles().getTile(this.tileSet, coordinate, zoomLevel);
+            return GeoPackageTileStore.getImage(this.geoPackage.tiles().getTile(this.tileSet, coordinate, zoomLevel));
+        }
+        catch(final SQLException ex)
+        {
+            throw new TileStoreException(ex);
+        }
+    }
 
-            if(tile == null)
-            {
-                return null;
-            }
-
-            try(ByteArrayInputStream imageInputStream = new ByteArrayInputStream(tile.getImageData()))
-            {
-                return ImageIO.read(imageInputStream);
-            }
+    @Override
+    public void addTile(final int row, final int column, final int zoomLevel, final BufferedImage image) throws TileStoreException
+    {
+        try
+        {
+            this.geoPackage
+                .tiles()
+                .addTile(this.tileSet,
+                         this.getTileMatrix(zoomLevel, image.getHeight(), image.getWidth()),
+                         new RelativeTileCoordinate(row, column, zoomLevel),
+                         GeoPackageTileStore.getBytes(image));
         }
         catch(final SQLException | IOException ex)
         {
-            throw new TileStoreException(ex);
+           throw new TileStoreException(ex);
         }
     }
 
@@ -163,36 +189,17 @@ public class GeoPackageTileStore implements TileStore
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
-        final String outputFormat = "PNG";  // TODO how do we want to pick this ?
-
-        try(final ByteArrayOutputStream outputStream = new ByteArrayOutputStream())
+        try
         {
-            if(!ImageIO.write(image, outputFormat, outputStream))
-            {
-                throw new TileStoreException(String.format("No appropriate image writer found for format '%s'", outputFormat));
-            }
-
-            TileMatrix tileMatrix = null;
-
-            if(!this.tileMatricies.containsKey(zoomLevel))
-            {
-                tileMatrix = this.addTileMatrix(zoomLevel, image.getHeight(), image.getWidth());
-                this.tileMatricies.put(zoomLevel, tileMatrix);
-            }
-            else
-            {
-                tileMatrix = this.tileMatricies.get(zoomLevel);
-            }
-
             this.geoPackage
                 .tiles()
                 .addTile(this.tileSet,
-                         tileMatrix,
+                         this.getTileMatrix(zoomLevel, image.getHeight(), image.getWidth()),
                          coordinate,
                          zoomLevel,
-                         outputStream.toByteArray());
+                         GeoPackageTileStore.getBytes(image));
         }
-        catch(final Exception ex)
+        catch(final SQLException | IOException ex)
         {
            throw new TileStoreException(ex);
         }
@@ -224,6 +231,58 @@ public class GeoPackageTileStore implements TileStore
         return this.tileScheme;
     }
 
+    private TileMatrix getTileMatrix(final int zoomLevel, final int imageHeight, final int imageWidth) throws SQLException
+    {
+        TileMatrix tileMatrix = null;
+
+        if(!this.tileMatricies.containsKey(zoomLevel))
+        {
+            tileMatrix = this.addTileMatrix(zoomLevel, imageHeight, imageWidth);
+            this.tileMatricies.put(zoomLevel, tileMatrix);
+        }
+        else
+        {
+            tileMatrix = this.tileMatricies.get(zoomLevel);
+        }
+
+        return tileMatrix;
+    }
+
+    private static BufferedImage getImage(final Tile tile) throws TileStoreException
+    {
+        try
+        {
+            if(tile == null)
+            {
+                return null;
+            }
+
+            try(ByteArrayInputStream imageInputStream = new ByteArrayInputStream(tile.getImageData()))
+            {
+                return ImageIO.read(imageInputStream);
+            }
+        }
+        catch(final IOException ex)
+        {
+            throw new TileStoreException(ex);
+        }
+    }
+
+    private static byte[] getBytes(final BufferedImage image) throws IOException, TileStoreException
+    {
+        final String outputFormat = "PNG";  // TODO how do we want to pick this ?
+
+        try(@SuppressWarnings("resource") final ByteArrayOutputStream outputStream = new ByteArrayOutputStream())   // This warning suppression shouldn't be necessary. Ecilpse bug?
+        {
+            if(!ImageIO.write(image, outputFormat, outputStream))
+            {
+                throw new TileStoreException(String.format("No appropriate image writer found for format '%s'", outputFormat));
+            }
+
+            return outputStream.toByteArray();
+        }
+    }
+
     private TileMatrix addTileMatrix(final int zoomLevel, final int pixelHeight, final int pixelWidth) throws SQLException
     {
         final int tileDimension = (int)Math.pow(2.0, zoomLevel);    // Assumes zoom*2 convension, with 1 tile at zoom level 0
@@ -247,5 +306,4 @@ public class GeoPackageTileStore implements TileStore
     private final TileProfile               tileProfile;
     private final TileScheme                tileScheme;
     private final Map<Integer, TileMatrix>  tileMatricies;
-
 }

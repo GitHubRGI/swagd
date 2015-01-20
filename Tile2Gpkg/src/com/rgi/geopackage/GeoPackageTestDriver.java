@@ -18,7 +18,11 @@
 
 package com.rgi.geopackage;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+
+import javax.imageio.ImageIO;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.tile.profile.GlobalGeodeticTileProfile;
@@ -27,6 +31,7 @@ import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TmsTileStore;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
+import com.rgi.geopackage.tiles.RelativeTileCoordinate;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileSet;
 
@@ -41,7 +46,7 @@ public class GeoPackageTestDriver
     public static void main(final String[] args)
     {
         GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NormalZoom2"),    new ZoomTimesTwo(1, 1, GeoPackageTiles.Origin));
-        GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NotNormalZoom2"), new ZoomTimesTwo(2, 3, GeoPackageTiles.Origin));
+        //GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NotNormalZoom2"), new ZoomTimesTwo(2, 3, GeoPackageTiles.Origin));
     }
 
     private static void createGeoPackageFromFolder(final File directory, final TileScheme tileScheme)
@@ -87,6 +92,8 @@ public class GeoPackageTestDriver
                 final int pixelWidth  = 256;
                 final int pixelHeight = 256;
 
+                final String outputFormat = "JPG";
+
                 for(final int zoomLevel : tmsTileStore.getZoomLevels())
                 {
                     final MatrixDimensions matrixDimensions = tileScheme.dimensions(zoomLevel);
@@ -101,52 +108,30 @@ public class GeoPackageTestDriver
                                                                      (boundingBox.getWidth()  / matrixDimensions.getWidth())  / pixelWidth,
                                                                      (boundingBox.getHeight() / matrixDimensions.getHeight()) / pixelHeight);
 
+                    for(int row = 0; row < matrixDimensions.getHeight(); ++row)
+                    {
+                        for(int column = 0; column < matrixDimensions.getWidth(); ++column)
+                        {
+                            final BufferedImage image = tmsTileStore.getTile(row, column, zoomLevel);
 
+                            if(image != null)
+                            {
+                                try(final ByteArrayOutputStream outputStream = new ByteArrayOutputStream())
+                                {
+                                    if(!ImageIO.write(image, outputFormat, outputStream))
+                                    {
+                                        System.err.format("No appropriate image writer found for format '%s'", outputFormat);
+                                    }
 
+                                    gpkg.tiles().addTile(tileSet,
+                                                         tileMatrix,
+                                                         new RelativeTileCoordinate(row, column, zoomLevel),
+                                                         outputStream.toByteArray());
+                                }
+                            }
+                        }
+                    }
                 }
-
-//                class Tile
-//                {
-//                    public Tile(final String filename)
-//                    {
-//                        this.z = Integer.parseInt(filename.substring(0, 0));
-//                        this.x = Integer.parseInt(filename.substring(1, 1));
-//                        this.y = Integer.parseInt(filename.substring(2, 2));
-//
-//                        this.filename = filename;
-//                    }
-//
-//                    public int z;
-//                    public int x;
-//                    public int y;
-//
-//                    public String filename;
-//                }
-//
-//                final Map<Integer, List<Tile>> tiles = Stream.of(directory.listFiles())
-//                                                             .map(file -> new Tile(file.getName()))
-//                                                             .collect(Collectors.groupingBy(tile -> tile.z));
-//
-//                for(final Entry<Integer, List<Tile>> zoomLevel : tiles.entrySet())
-//                {
-//                    final TileMatrix tileMatrix = gpkg.tiles()
-//                                                      .addTileMatrix(tileSet,
-//                                                                     0,
-//                                                                     1,
-//                                                                     1,
-//                                                                     1,
-//                                                                     1,
-//                                                                     360.0,
-//                                                                     180.0);
-//
-//                gpkg.tiles().addTile(tileSet,
-//                                     tileMatrix,
-//                                     new CrsCoordinate(-90.0, -180.0, "EPSG", 4326),
-//                                     0,
-//                                     new byte[] {});
-//                }
-
-
             }
         }
         catch(final Exception ex)

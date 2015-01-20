@@ -34,31 +34,31 @@ import com.rgi.suite.ApplicationContext.Window;
 
 public class ErrorWindow extends AbstractWindow {
   JTextArea errorPanel;
-  
+
   public ErrorWindow(ApplicationContext context) {
     super(context);
   }
-  
+
   @Override
   public void activate() {
-    Exception e = context.getError();
+    Exception e = this.context.getError();
     if (e != null) {
       // set editor pane content to stack trace of error
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       e.printStackTrace(new PrintStream(out));
-      errorPanel.setText(new String(out.toByteArray()));
+      this.errorPanel.setText(new String(out.toByteArray()));
     }
   }
-  
+
   @Override
   protected void buildContentPane() {
-    contentPane = new JPanel(new GridBagLayout());
-    errorPanel = new JTextArea();
+    this.contentPane = new JPanel(new GridBagLayout());
+    this.errorPanel = new JTextArea();
     GridBagConstraints gbc = new GridBagConstraints();
     gbc.weightx = 1;
     gbc.weighty = 1;
     gbc.fill = GridBagConstraints.BOTH;
-    contentPane.add(errorPanel, gbc);
+    this.contentPane.add(this.errorPanel, gbc);
   }
 
   @Override
@@ -73,7 +73,7 @@ public class ErrorWindow extends AbstractWindow {
 
       @Override
       public void actionPerformed(ActionEvent event) {
-        context.transitionTo(Window.MAIN);
+        ErrorWindow.this.context.transitionTo(Window.MAIN);
       }
     });
     cancelButton.setHideActionText(true);

@@ -63,10 +63,25 @@ public interface TileStore
     public long calculateSize() throws TileStoreException;
 
     /**
-     * Get a tile at a specified zoom, row (x), and column (y).
+     * Get a tile at a specified zoom, row (y), and column (x).
+     *
+     * @param row
+     *             The 'y' portion of the coordinate. This value is relative to this tile store's tile scheme.
+     * @param column
+     *             The 'x' portion of the coordinate. This value is relative to this tile store's tile scheme.
+     * @param zoomLevel
+     *            The zoom level of the tile.
+     * @return A buffered image, or null if the tile store has no tile data for the specified coordinate
+     * @throws TileStoreException
+     *             A TileStoreException occurs if an error occurs during tile retrieval.
+     */
+    public BufferedImage getTile(final int row, final int column, final int zoomLevel) throws TileStoreException;
+
+    /**
+     * Get a tile at a specified zoom, and geographic coordinate.
      *
      * @param coordinate
-     *            Location that corresponds to the requested tile
+     *            Geographic coordinate that corresponds to the requested tile
      * @param zoomLevel
      *            The zoom level of the tile.
      * @return A buffered image, or null if the tile store has no tile data for the specified coordinate
@@ -76,20 +91,36 @@ public interface TileStore
     public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException;
 
     /**
-     * Insert a tile into this tile store via a BufferedImage and tile
-     * coordinates.
+     * Insert a tile into this tile store via at a row and column that corresponds to a geographic coordinate
      *
-     * @param image
-     *            The BufferedImage stream containing the tile data.
+     * @param coordinate
+     *            The geographic coordinate that corresponds to the tile.
      * @param zoomLevel
      *            The zoom level of the tile.
-     * @param coordinate
-     *            The row and column Cartesian representation of the tile.
+     * @param image
+     *            The BufferedImage containing the tile data.
      * @throws TileStoreException
      *             A TileStoreException is thrown when an error occurs while
      *             inserting this tile into the tile store.
      */
     public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException;
+
+    /**
+     * Insert a tile into this tile store via at a row and column that corresponds to a geographic coordinate
+     *
+     * @param row
+     *             The 'y' portion of the coordinate. This value is relative to this tile store's tile scheme.
+     * @param column
+     *             The 'x' portion of the coordinate. This value is relative to this tile store's tile scheme.
+     * @param zoomLevel
+     *            The zoom level of the tile.
+     * @param image
+     *            The BufferedImage containing the tile data.
+     * @throws TileStoreException
+     *             A TileStoreException is thrown when an error occurs while
+     *             inserting this tile into the tile store.
+     */
+    public void addTile(final int row, final int column, final int zoomLevel, final BufferedImage image) throws TileStoreException;
 
     /**
      * Ask the tile store for all the zoom levels that it contains.

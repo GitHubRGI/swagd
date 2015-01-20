@@ -100,19 +100,9 @@ public class TileCluster implements TileStore
     }
 
     @Override
-    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException
+    public BufferedImage getTile(int row, int column, int zoomLevel) throws TileStoreException
     {
-        if(coordinate == null)
-        {
-            throw new IllegalArgumentException("Coordinate may not be null");
-        }
-
-        // First determine the cluster that will hold the data
-        final AbsoluteTileCoordinate clusterCoordinate = this.tileProfile.crsToAbsoluteTileCoordinate(coordinate,
-                                                                                                      zoomLevel,
-                                                                                                      TileCluster.Origin);
-
-        final ClusterAddress clusterAddress = this.getClusterAddress(clusterCoordinate);
+        final ClusterAddress clusterAddress = this.getClusterAddress(row, column, zoomLevel);
         final File           clusterFile    = this.getClusterFile(clusterAddress);
 
         if(!clusterFile.canRead())
@@ -122,7 +112,7 @@ public class TileCluster implements TileStore
 
         try(final RandomAccessFile randomAccessFile = new RandomAccessFile(clusterFile, "r"))
         {
-            final long indexPosition = this.getIndexPosition(clusterCoordinate);
+            final long indexPosition = this.getIndexPosition(row, column, zoomLevel);
 
             randomAccessFile.seek(indexPosition);
 
@@ -153,27 +143,32 @@ public class TileCluster implements TileStore
     }
 
     @Override
-    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException
+    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException
     {
         if(coordinate == null)
         {
             throw new IllegalArgumentException("Coordinate may not be null");
         }
 
-        if(image == null)
+        if(!coordinate.getCoordinateReferenceSystem().equals(this.tileProfile.getCoordinateReferenceSystem()))
         {
-            throw new IllegalArgumentException("Image may not be null");
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
-        if(!coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
-        {
-            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
-        }
-
+        // First determine the cluster that will hold the data
         final AbsoluteTileCoordinate clusterCoordinate = this.tileProfile.crsToAbsoluteTileCoordinate(coordinate,
                                                                                                       zoomLevel,
                                                                                                       TileCluster.Origin);
-        final ClusterAddress clusterAddress = this.getClusterAddress(clusterCoordinate);
+
+        return this.getTile(clusterCoordinate.getRow(),
+                            clusterCoordinate.getColumn(),
+                            zoomLevel);
+    }
+
+    @Override
+    public void addTile(int row, int column, int zoomLevel, BufferedImage image) throws TileStoreException
+    {
+        final ClusterAddress clusterAddress = this.getClusterAddress(row, column, zoomLevel);
         final File           clusterFile    = this.getClusterFile(clusterAddress);
 
         // If the file doesn't exist, set up an empty cluster file
@@ -209,12 +204,12 @@ public class TileCluster implements TileStore
 
             randomAccessFile.writeLong(TileCluster.MagicNumber);
             randomAccessFile.writeLong(TileCluster.MagicNumber);
-            randomAccessFile.writeLong(clusterCoordinate.getColumn());
-            randomAccessFile.writeLong(clusterCoordinate.getRow());
+            randomAccessFile.writeLong(column);
+            randomAccessFile.writeLong(row);
             randomAccessFile.writeInt (imageData.length);
             randomAccessFile.write    (imageData);
 
-            final long indexPosition = this.getIndexPosition(clusterCoordinate);
+            final long indexPosition = this.getIndexPosition(row, column, zoomLevel);
 
             randomAccessFile.seek(indexPosition);
 
@@ -226,6 +221,33 @@ public class TileCluster implements TileStore
         {
             throw new TileStoreException(ex);
         }
+    }
+
+    @Override
+    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException
+    {
+        if(coordinate == null)
+        {
+            throw new IllegalArgumentException("Coordinate may not be null");
+        }
+
+        if(image == null)
+        {
+            throw new IllegalArgumentException("Image may not be null");
+        }
+
+        if(!coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        {
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
+        }
+
+        final AbsoluteTileCoordinate clusterCoordinate = this.tileProfile.crsToAbsoluteTileCoordinate(coordinate,
+                                                                                                      zoomLevel,
+                                                                                                      TileCluster.Origin);
+        this.addTile(clusterCoordinate.getRow(),
+                     clusterCoordinate.getColumn(),
+                     zoomLevel,
+                     image);
     }
 
     @Override
@@ -247,9 +269,9 @@ public class TileCluster implements TileStore
         return this.tileScheme;
     }
 
-    private ClusterAddress getClusterAddress(final AbsoluteTileCoordinate coordinate)
+    private ClusterAddress getClusterAddress(int row, int column, int zoomLevel)
     {
-        if(coordinate.getZoomLevel() <= 0 || coordinate.getZoomLevel() > this.zoomLevels)
+        if(zoomLevel <= 0 || zoomLevel > this.zoomLevels)
         {
             throw new IllegalArgumentException(String.format("Level must be between [0, %d]",
                                                              this.zoomLevels));
@@ -258,7 +280,7 @@ public class TileCluster implements TileStore
         int targetZoomLevel = 0;
         int    endZoomLevel = 0;
 
-        if(coordinate.getZoomLevel() < this.breakPoint)
+        if(zoomLevel < this.breakPoint)
         {
             // Tile goes in one of top two clusters
             targetZoomLevel = 1;
@@ -271,12 +293,12 @@ public class TileCluster implements TileStore
                endZoomLevel = this.zoomLevels;
         }
 
-        final int    zoomLevelDifference = coordinate.getZoomLevel() - targetZoomLevel; // Compute the difference between the target cluster zoom level and the tile zoom level
-        final double levelFactor         = Math.pow(2, zoomLevelDifference);            // Level factor is the number of tiles at zoom level "coordinate.getZoomLevel()" for a cluster that starts at "target zoom level"
+        final int    zoomLevelDifference = zoomLevel - targetZoomLevel;       // Compute the difference between the target cluster zoom level and the tile zoom level
+        final double levelFactor         = Math.pow(2, zoomLevelDifference);  // Level factor is the number of tiles at zoom level "coordinate.getZoomLevel()" for a cluster that starts at "target zoom level"
 
         // Divide the row and column by the coordinate.getZoomLevel() factor to get the row and column address of the cluster we are using
-        final long clusterRow    = (long)Math.floor(coordinate.getRow()    / levelFactor);
-        final long clusterColumn = (long)Math.floor(coordinate.getColumn() / levelFactor);
+        final long clusterRow    = (long)Math.floor(row    / levelFactor);
+        final long clusterColumn = (long)Math.floor(column / levelFactor);
 
         return new ClusterAddress(clusterRow,
                                   clusterColumn,
@@ -331,14 +353,14 @@ public class TileCluster implements TileStore
         return count;
     }
 
-    private long getIndexPosition(final AbsoluteTileCoordinate coordinate)
+    private long getIndexPosition(int row, int column, int zoomLevel)
     {
-        final ClusterAddress clusterAddress = this.getClusterAddress(coordinate); // compute the local address that's the relative address of the tile in the cluster
+        final ClusterAddress clusterAddress = this.getClusterAddress(row, column, zoomLevel); // compute the local address that's the relative address of the tile in the cluster
 
-        final int localZoomLevel = coordinate.getZoomLevel() - clusterAddress.startlevel;
+        final int localZoomLevel = zoomLevel - clusterAddress.startlevel;
 
-        final long localRow    = (long)(coordinate.getRow()    - (Math.pow(2 , localZoomLevel) * clusterAddress.row));
-        final long localColumn = (long)(coordinate.getColumn() - (Math.pow(2 , localZoomLevel) * clusterAddress.column));
+        final long localRow    = (long)(row    - (Math.pow(2 , localZoomLevel) * clusterAddress.row));
+        final long localColumn = (long)(column - (Math.pow(2 , localZoomLevel) * clusterAddress.column));
 
         final int columnsAtLocallevel = (int)Math.pow(2 , localZoomLevel);
 
@@ -390,4 +412,6 @@ public class TileCluster implements TileStore
             this.endlevel   = endlevel;
         }
     }
+
+
 }

@@ -30,7 +30,7 @@ public class ZoomTimesTwo implements TileScheme
             throw new IllegalArgumentException("Tile origin may not be null");
         }
 
-        for(int zoomLevel = MinZoomLevel; zoomLevel <= MaxZoomLevel; ++zoomLevel)
+        for(int zoomLevel = MinZoomLevel; zoomLevel < MaxZoomLevel; ++zoomLevel)
         {
             this.zoomLevels[zoomLevel] = new MatrixDimensions(initialHeight * (int)Math.pow(2.0, zoomLevel),    // For high zoom levels, and an initial height/width > 1, these values can overflow the maximum size of an integer.  It's unlikely that anyone is going to be using zoom levels that high.
                                                               initialWidth  * (int)Math.pow(2.0, zoomLevel));

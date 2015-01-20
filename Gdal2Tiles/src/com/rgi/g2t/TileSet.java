@@ -26,7 +26,7 @@ public class TileSet {
 
   @Override
   public String toString() {
-    return String.format("Z: %d North: %d; West: %d; South: %d; East: %d", zoomLevel, getNorth(), getWest(), getSouth(), getEast());
+    return String.format("Z: %d North: %d; West: %d; South: %d; East: %d", this.zoomLevel, getNorth(), getWest(), getSouth(), getEast());
   }
 
   @Override
@@ -35,7 +35,6 @@ public class TileSet {
       return false;
     }
 
-    @SuppressWarnings("unchecked")
     final TileSet other = (TileSet)object;
 
     return this.zoomLevel == other.zoomLevel &&
@@ -51,28 +50,28 @@ public class TileSet {
    * @return the north bound
    */
   public int getNorth() {
-    return origin == TileOrigin.UpperLeft || origin == TileOrigin.UpperRight ? 0 : (int)Math.pow(2, zoomLevel);
+    return this.origin == TileOrigin.UpperLeft || this.origin == TileOrigin.UpperRight ? 0 : (int)Math.pow(2, this.zoomLevel);
   }
 
   /**
    * @return the west bound
    */
   public int getWest() {
-      return origin == TileOrigin.UpperLeft || origin == TileOrigin.LowerLeft ? 0 : (int)Math.pow(2, zoomLevel);
+      return this.origin == TileOrigin.UpperLeft || this.origin == TileOrigin.LowerLeft ? 0 : (int)Math.pow(2, this.zoomLevel);
   }
 
   /**
    * @return the south bound
    */
   public int getSouth() {
-      return origin == TileOrigin.LowerLeft || origin == TileOrigin.LowerRight ? 0 : (int)Math.pow(2, zoomLevel);
+      return this.origin == TileOrigin.LowerLeft || this.origin == TileOrigin.LowerRight ? 0 : (int)Math.pow(2, this.zoomLevel);
   }
 
   /**
    * @return the east bound
    */
   public int getEast() {
-      return origin == TileOrigin.UpperRight || origin == TileOrigin.LowerRight ? 0 : (int)Math.pow(2, zoomLevel);
+      return this.origin == TileOrigin.UpperRight || this.origin == TileOrigin.LowerRight ? 0 : (int)Math.pow(2, this.zoomLevel);
   }
 
   /**
