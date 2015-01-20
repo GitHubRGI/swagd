@@ -42,12 +42,12 @@ public class TileProfileFactory
             case "EPSG:900913":
             case "EPSG:3785":   // deprecated by the EPSG
             case "EPSG:3857":
-            case "OSGEO:41001": return new SphericalMercatorTileProfile();
+            case "OSGEO:41001": return SphericalMercatorTileProfile;
 
 
-            case "EPSG:3395": return new EllipsoidalMercatorTileProfile(); // AKA Global Mercator
+            case "EPSG:3395": return EllipsoidalMercatorTileProfile; // AKA Global Mercator
 
-            case "EPSG:4326": return new GlobalGeodeticTileProfile();
+            case "EPSG:4326": return GlobalGeodeticTileProfile;
 
             //case "EPSG:9804": // Mercator (variant A)
             //case "EPSG:9805": // Mercator (variant B)
@@ -56,4 +56,10 @@ public class TileProfileFactory
             default: throw new RuntimeException(String.format("Unsupported spatial reference system: %s", coordinateReferenceSystem));
         }
     }
+
+    private static final SphericalMercatorTileProfile   SphericalMercatorTileProfile   = new SphericalMercatorTileProfile();
+    private static final EllipsoidalMercatorTileProfile EllipsoidalMercatorTileProfile = new EllipsoidalMercatorTileProfile();
+    private static final GlobalGeodeticTileProfile      GlobalGeodeticTileProfile      = new GlobalGeodeticTileProfile();
+    //private static final ScaledWorldMercatorTileProfile ScaledWorldMercatorTileProfile = new ScaledWorldMercatorTileProfile();
+
 }

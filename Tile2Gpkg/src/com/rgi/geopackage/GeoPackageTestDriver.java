@@ -125,9 +125,13 @@ public class GeoPackageTestDriver
                                         System.err.format("No appropriate image writer found for format '%s'", outputFormat);
                                     }
 
+
+
                                     gpkg.tiles().addTile(tileSet,
                                                          tileMatrix,
-                                                         new RelativeTileCoordinate(row, column, zoomLevel),
+                                                         new RelativeTileCoordinate(/*matrixDimensions.getHeight() - 1 -*/ row,
+                                                                                    column,
+                                                                                    zoomLevel),
                                                          outputStream.toByteArray());
                                 }
                             }

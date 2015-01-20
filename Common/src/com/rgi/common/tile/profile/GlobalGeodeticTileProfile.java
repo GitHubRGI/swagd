@@ -105,6 +105,12 @@ public class GlobalGeodeticTileProfile implements TileProfile
         return GlobalGeodeticTileProfile.Bounds;
     }
 
+	@Override
+    public Coordinate<Double> toGlobalGeodetic(Coordinate<Double> coordinate)
+    {
+        return coordinate;
+    }
+
     private final static CoordinateReferenceSystem CoordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
 
     /**
