@@ -3,27 +3,34 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                         http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
   <!-- Relationships block -->
-  <groupId>com.rgi.TilingApp</groupId>
-  <artifactId>SWAGD</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>Software for Aggregating Geospatial Data</name>
-  <packaging>pom</packaging>
-  <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+    <groupId>com.rgi.TilingApp</groupId>
+    <artifactId>SWAGD</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>Software for Aggregating Geospatial Data</name>
+    <packaging>pom</packaging>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jacoco.report.common>${basedir}/Common/target/site/jacoco/jacoco.xml</jacoco.report.common>
+        <jacoco.report.gdal2tiles>${basedir}/Gdal2Tiles/target/site/jacoco/jacoco.xml</jacoco.report.gdal2tiles>
+        <jacoco.report.geoviewer>${basedir}/GeoViewer/target/site/jacoco/jacoco.xml</jacoco.report.geoviewer>
+        <jacoco.report.integrationtest>${basedir}/IntegrationTest/target/site/jacoco/jacoco.xml</jacoco.report.integrationtest>
+        <jacoco.report.tile2gpkg>${basedir}/Tile2Gpkg/target/site/jacoco/jacoco.xml</jacoco.report.tile2gpkg>
+        <jacoco.report.packager>${basedir}/Packager/target/site/jacoco/jacoco.xml</jacoco.report.packager>
+        <jacoco.report.rgisuite>${basedir}/RGISuite/target/site/jacoco/jacoco.xml</jacoco.report.rgisuite>
+    </properties>
 
-  <modules>
-    <module>Common</module>
-    <module>Gdal2Tiles</module>
-    <module>GeoViewer</module>
-    <module>IntegrationTest</module>
-    <module>Tile2Gpkg</module>
-    <module>Packager</module>
-    <module>RGISuite</module>
-  </modules>
+    <modules>
+        <module>Common</module>
+        <module>Gdal2Tiles</module>
+        <module>GeoViewer</module>
+        <module>IntegrationTest</module>
+        <module>Tile2Gpkg</module>
+        <module>Packager</module>
+        <module>RGISuite</module>
+    </modules>
 
   <build>
       <plugins>
@@ -40,6 +47,17 @@
             <groupId>org.eluder.coveralls</groupId>
             <artifactId>coveralls-maven-plugin</artifactId>
             <version>3.0.1</version>
+            <configuration>
+                <jacocoReports>
+                    <jacocoReport>${jacoco.report.common}</jacocoReport>
+                    <jacocoReport>${jacoco.report.gdal2tiles}</jacocoReport>
+                    <jacocoReport>${jacoco.report.geoviewer}</jacocoReport>
+                    <jacocoReport>${jacoco.report.integrationtest}</jacocoReport>
+                    <jacocoReport>${jacoco.report.tile2gpkg}</jacocoReport>
+                    <jacocoReport>${jacoco.report.packager}</jacocoReport>
+                    <jacocoReport>${jacoco.report.rgisuite}</jacocoReport>
+                </jacocoReports>
+            </configuration>
           </plugin>
       </plugins>
   </build>
