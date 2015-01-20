@@ -18,9 +18,11 @@
           <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
-          <groupId>org.gdal</groupId>
+          <groupId>com.osgeo</groupId>
           <artifactId>gdal</artifactId>
           <version>1.11.0</version>
+          <scope>system</scope>
+          <systemPath>${basedir}/lib/gdal.jar</systemPath>
       </dependency>
       <dependency>
           <groupId>junit</groupId>
