@@ -14,13 +14,13 @@
     <properties>
         <jacoco.version>0.7.2.201409121644</jacoco.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jacoco.report.common>${basedir}/Common/target/site/jacoco/jacoco.xml</jacoco.report.common>
-        <jacoco.report.gdal2tiles>${basedir}/Gdal2Tiles/target/site/jacoco/jacoco.xml</jacoco.report.gdal2tiles>
-        <jacoco.report.geoviewer>${basedir}/GeoViewer/target/site/jacoco/jacoco.xml</jacoco.report.geoviewer>
-        <jacoco.report.integrationtest>${basedir}/IntegrationTest/target/site/jacoco/jacoco.xml</jacoco.report.integrationtest>
-        <jacoco.report.tile2gpkg>${basedir}/Tile2Gpkg/target/site/jacoco/jacoco.xml</jacoco.report.tile2gpkg>
-        <jacoco.report.packager>${basedir}/Packager/target/site/jacoco/jacoco.xml</jacoco.report.packager>
-        <jacoco.report.rgisuite>${basedir}/RGISuite/target/site/jacoco/jacoco.xml</jacoco.report.rgisuite>
+        <jacoco.report.common>Common/target/site/jacoco/jacoco.xml</jacoco.report.common>
+        <jacoco.report.gdal2tiles>Gdal2Tiles/target/site/jacoco/jacoco.xml</jacoco.report.gdal2tiles>
+        <jacoco.report.geoviewer>GeoViewer/target/site/jacoco/jacoco.xml</jacoco.report.geoviewer>
+        <jacoco.report.integrationtest>IntegrationTest/target/site/jacoco/jacoco.xml</jacoco.report.integrationtest>
+        <jacoco.report.tile2gpkg>Tile2Gpkg/target/site/jacoco/jacoco.xml</jacoco.report.tile2gpkg>
+        <jacoco.report.packager>Packager/target/site/jacoco/jacoco.xml</jacoco.report.packager>
+        <jacoco.report.rgisuite>RGISuite/target/site/jacoco/jacoco.xml</jacoco.report.rgisuite>
     </properties>
 
     <modules>
@@ -33,46 +33,47 @@
         <module>RGISuite</module>
     </modules>
 
-  <build>
-      <plugins>
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>2.5.1</version>
-              <configuration>
-                  <source>1.8</source>
-                  <target>1.8</target>
-              </configuration>
-          </plugin>
-          <plugin>
-              <groupId>org.jacoco</groupId>
-              <artifactId>jacoco-maven-plugin</artifactId>
-              <version>${jacoco.version}</version>
-              <executions>
-                  <execution>
-                      <id>default-prepare-agent</id>
-                      <goals>
-                          <goal>prepare-agent</goal>
-                      </goals>
-                  </execution>
-              </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.eluder.coveralls</groupId>
-            <artifactId>coveralls-maven-plugin</artifactId>
-            <version>3.0.1</version>
-            <configuration>
-                <jacocoReports>
-                    <jacocoReport>${jacoco.report.common}</jacocoReport>
-                    <jacocoReport>${jacoco.report.gdal2tiles}</jacocoReport>
-                    <jacocoReport>${jacoco.report.geoviewer}</jacocoReport>
-                    <jacocoReport>${jacoco.report.integrationtest}</jacocoReport>
-                    <jacocoReport>${jacoco.report.tile2gpkg}</jacocoReport>
-                    <jacocoReport>${jacoco.report.packager}</jacocoReport>
-                    <jacocoReport>${jacoco.report.rgisuite}</jacocoReport>
-                </jacocoReports>
-            </configuration>
-          </plugin>
-      </plugins>
-  </build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>3.0.1</version>
+                <configuration>
+                    <jacocoReports>
+                        <jacocoReport>${jacoco.report.common}</jacocoReport>
+                        <jacocoReport>${jacoco.report.gdal2tiles}</jacocoReport>
+                        <jacocoReport>${jacoco.report.geoviewer}</jacocoReport>
+                        <jacocoReport>${jacoco.report.integrationtest}</jacocoReport>
+                        <jacocoReport>${jacoco.report.tile2gpkg}</jacocoReport>
+                        <jacocoReport>${jacoco.report.packager}</jacocoReport>
+                        <jacocoReport>${jacoco.report.rgisuite}</jacocoReport>
+                    </jacocoReports>
+                    <dryRun>true</dryRun>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
