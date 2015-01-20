@@ -174,10 +174,12 @@ public class ExtensionsVerifier extends Verifier
      *
      * @throws SQLException
      */
-    @Requirement(number = 80, text = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
-            + "in the gpkg_extensions table. The absence of a gpkg_extensions table or "
-            + "the absence of rows in gpkg_extnsions table SHALL both indicate the absence "
-            + "of extensions to a GeoPackage.", severity = Severity.Warning)
+    @Requirement(number = 80, 
+                 text   = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
+                            + "in the gpkg_extensions table. The absence of a gpkg_extensions table or "
+                            + "the absence of rows in gpkg_extnsions table SHALL both indicate the absence "
+                            + "of extensions to a GeoPackage.", 
+                severity = Severity.Warning)
     public void Requirement80() throws SQLException
     {
         if (this.hasGpkgExtensionsTable)
@@ -204,12 +206,9 @@ public class ExtensionsVerifier extends Verifier
                                                                         .map(resultSet ->
                                                                                         {  try
                                                                                             {
-                                                                                                final String geTableName = resultSet
-                                                                                                        .getString("ge_table");
-                                                                                                final String smTableName = resultSet
-                                                                                                        .getString("sm_table");
-                                                                                                return new AbstractMap.SimpleImmutableEntry<>(
-                                                                                                        geTableName, smTableName);
+                                                                                                final String geTableName = resultSet.getString("ge_table");
+                                                                                                final String smTableName = resultSet.getString("sm_table");
+                                                                                                return new AbstractMap.SimpleImmutableEntry<>(geTableName, smTableName);
                                                                                             } catch (final SQLException ex)
                                                                                             {
                                                                                                 return null;
@@ -262,9 +261,9 @@ public class ExtensionsVerifier extends Verifier
                                                               .anyMatch(resultSet ->
                                                                                     {   try
                                                                                         {
-                                                                                            return resultSet.getString("name")
-                                                                                                    .equals(columnName);
-                                                                                        } catch (final SQLException ex)
+                                                                                            return resultSet.getString("name").equals(columnName);
+                                                                                        } 
+                                                                                        catch (final SQLException ex)
                                                                                         {
                                                                                             return false;
                                                                                         }
@@ -336,10 +335,12 @@ public class ExtensionsVerifier extends Verifier
      *
      * @throws SQLException
      */
-    @Requirement(number = 83, text = "The definition column value in a gpkg_extensions row SHALL "
-            + "contain or reference the text that results from documenting "
-            + "an extension by filling out the GeoPackage Extension Template "
-            + "in GeoPackage Extension Template (Normative).", severity = Severity.Warning)
+    @Requirement(number = 83, 
+                 text   = "The definition column value in a gpkg_extensions row SHALL "
+                            + "contain or reference the text that results from documenting "
+                            + "an extension by filling out the GeoPackage Extension Template "
+                            + "in GeoPackage Extension Template (Normative).", 
+                 severity = Severity.Warning)
     public void Requirement83() throws SQLException
     {
         // TODO: Ask about how restrictive we want the strings to be
@@ -464,8 +465,8 @@ public class ExtensionsVerifier extends Verifier
         extensionsTableColumns.put("scope",           new ColumnDefinition("TEXT", true,  false, false, null));
 
         ExtensionsTableDefinition = new TableDefinition(GeoPackageExtensions.ExtensionsTableName,
-                                                extensionsTableColumns,
-                                                Collections.emptySet(),
-                                                new HashSet<>(Arrays.asList(new UniqueDefinition("table_name", "column_name", "extension_name"))));
+                                                        extensionsTableColumns,
+                                                        Collections.emptySet(),
+                                                        new HashSet<>(Arrays.asList(new UniqueDefinition("table_name", "column_name", "extension_name"))));
     }
 }

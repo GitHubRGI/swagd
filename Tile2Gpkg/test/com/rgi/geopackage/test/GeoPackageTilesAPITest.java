@@ -2974,7 +2974,7 @@ public class GeoPackageTilesAPITest
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
         final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-40, -42);
-        final CrsCoordinate         crsMercatorCoord = new CrsCoordinate(coordInMeters.getY(), coordInMeters.getX(), globalMercator);
+        final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getY(), coordInMeters.getX(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
 
