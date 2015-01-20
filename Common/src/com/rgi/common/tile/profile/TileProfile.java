@@ -22,6 +22,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.Dimension2D;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 
@@ -55,7 +56,26 @@ public interface TileProfile
      */
     public CrsCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate);
 
+    /**
+     * TODO
+     *
+     * @param zoomLevel
+     * @return
+     */
     public Dimension2D getTileDimensions(final int zoomLevel);
 
+    /**
+     * @return TODO
+     */
     public CoordinateReferenceSystem getCoordinateReferenceSystem();
+
+    /**
+     * TODO
+     *
+     * This is *temporary* because we don't have a good coordinate transformation mechanism
+     *
+     * @param coordinate
+     * @return
+     */
+    public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate);
 }

@@ -95,12 +95,13 @@ public class SphericalMercatorTileProfile implements TileProfile
         return SphericalMercatorTileProfile.CoordinateReferenceSystem;
     }
 
-    public static Coordinate<Double> metersToGeographic(final Coordinate<Double> coordinate)
-	{
-		// TODO algorithm documentation
+    @Override
+    public Coordinate<Double> toGlobalGeodetic(Coordinate<Double> coordinate)
+    {
+        // TODO algorithm documentation
         return new Coordinate<>(Math.toDegrees(2 * Math.atan(Math.exp(coordinate.getY() / EarthEquatorialRadius)) - Math.PI / 2),
-		                        Math.toDegrees(coordinate.getX() / EarthEquatorialRadius));
-	}
+                                Math.toDegrees(coordinate.getX() / EarthEquatorialRadius));
+    }
 
     @Override
 	public BoundingBox getBounds()

@@ -139,6 +139,13 @@ public class EllipsoidalMercatorTileProfile implements TileProfile
                                 Math.PI * this.scaledEarthEquatorialRadius);
     }
 
+	@Override
+    public Coordinate<Double> toGlobalGeodetic(Coordinate<Double> coordinate)
+    {
+        return new Coordinate<>(metersToLat(coordinate.getY()),
+                                metersToLon(coordinate.getX()));
+    }
+
 	/**
 	 * Converts a meters X coordinate of WGS 84
 	 * Ellipsoid World Mercator EPSG(3395) to its
@@ -152,7 +159,7 @@ public class EllipsoidalMercatorTileProfile implements TileProfile
 	 */
 	private static double metersToLon(final double meters)
 	{
-		return Math.toDegrees(meters/UnscaledEarthEquatorialRadius);
+	    return Math.toDegrees(meters/UnscaledEarthEquatorialRadius);
 	}
 
     /**

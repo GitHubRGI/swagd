@@ -37,7 +37,10 @@ import org.openstreetmap.gui.jmapviewer.interfaces.JMapViewerEventListener;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 
 import com.rgi.common.tile.profile.SphericalMercatorTileProfile;
+import com.rgi.common.tile.profile.TileProfile;
+import com.rgi.common.tile.profile.TileProfileFactory;
 import com.rgi.common.tile.store.TileStore;
+import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TmsTileStore;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
@@ -46,24 +49,52 @@ import com.rgi.geopackage.tiles.TileSet;
 
 public class MapViewWindow extends JFrame implements JMapViewerEventListener
 {
-
     private static final long serialVersionUID = 1337L;
     private JMapViewerTree    treeMap;
     private TileLoader        loader;
-    private final File        location;
+    //private final File        location;
 
     public MapViewWindow(final File location)
     {
-        super("Tile Viewer");
-        this.location = location;
-        this.initialize();
+        this("Tile Viewer", location);
     }
 
     public MapViewWindow(final String title, final File location)
     {
         super(title);
-        this.location = location;
-        this.initialize();
+
+        this.treeMap = new JMapViewerTree("Visualized tile set");
+
+        this.map().addJMVListener(this);
+        this.setLayout(new BorderLayout());
+        this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        this.setExtendedState(Frame.MAXIMIZED_BOTH);
+        final JPanel panel = new JPanel();
+        this.add(panel, BorderLayout.NORTH);
+
+        TileStore tileStore = MapViewWindow.pickTileStore(location);
+
+        this.loader = new TileStoreLoader(tileStore, this.map());
+
+        this.map().setTileLoader(this.loader);
+
+
+        TileProfile profile = TileProfileFactory.create(tileStore.getCoordinateReferenceSystem());
+
+        try
+        {
+            final com.rgi.common.coordinates.Coordinate<Double> center = profile.toGlobalGeodetic(tileStore.calculateBounds().getCenter());
+
+            this.map().setDisplayPosition(new Coordinate(center.getY(),
+                                                         center.getX()),
+                                          Collections.min(tileStore.getZoomLevels()));
+        }
+        catch(TileStoreException ex)
+        {
+            ex.printStackTrace();
+        }
+
+        this.add(this.treeMap, BorderLayout.CENTER);
     }
 
     @Override
@@ -75,71 +106,34 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         // resolution or current zoom level.
     }
 
-    private void initialize()
+    private static TileStore pickTileStore(final File location)
     {
-        this.treeMap = new JMapViewerTree("Visualized tile set");
-        this.map().addJMVListener(this);
-        this.setLayout(new BorderLayout());
-        this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        this.setExtendedState(Frame.MAXIMIZED_BOTH);
-        final JPanel panel = new JPanel();
-        this.add(panel, BorderLayout.NORTH);
-
-        TileStore tileStore = null;
-        if(this.location.isDirectory())
+        if(location.isDirectory()) // TMS or WMTS based directory create a TMS tile store
         {
-            // TMS or WMTS based directory create a TMS tile store
-            tileStore = new TmsTileStore(new SphericalMercatorTileProfile(), this.location.toPath());
+            return new TmsTileStore(new SphericalMercatorTileProfile(), location.toPath());
         }
-        else if(this.location.getName().toLowerCase().endsWith(".gpkg"))
+
+        if(location.getName().toLowerCase().endsWith(".gpkg"))
         {
             try
             {
-                final GeoPackage gpkg = new GeoPackage(this.location, OpenMode.Open);
+                final GeoPackage gpkg = new GeoPackage(location, OpenMode.Open);
+
                 final Collection<TileSet> tileSets = gpkg.tiles().getTileSets();
+
                 if(tileSets.size() > 0)
                 {
-                    final TileSet set = tileSets.iterator().next();
-                    // final SpatialReferenceSystem srs =
-                    // set.getSpatialReferenceSystem();
-                    tileStore = new GeoPackageTileStore(gpkg, set);
+                    final TileSet set = tileSets.iterator().next(); // TODO this just picks the first one
+                    return new GeoPackageTileStore(gpkg, set);
                 }
             }
             catch(final Exception e)
             {
-                //
                 e.printStackTrace();
             }
         }
-        else
-        {
-            throw new NullPointerException("Tile store unable to be generated.");
-        }
 
-        this.loader = new TileStoreLoader(tileStore, this.map());
-        this.map().setTileLoader(this.loader);
-
-        try
-        {
-            // TODO
-            if(!tileStore.getCoordinateReferenceSystem().getAuthority().equals("EPSG") ||
-               tileStore.getCoordinateReferenceSystem().getIdentifier() != 3857)
-            {
-                throw new UnsupportedOperationException("Zooming to the data currently only works for EPSG:3857 - spherical (web) mercator");
-            }
-
-            // TODO this is a complete hack to get something working.  This code needs to rely on a more general mechanism to convert the center of the tile set's bounding box from it's CRS to the (presumed) CRS of jmapviewer, EPSG:4326
-            final com.rgi.common.coordinates.Coordinate<Double> center = SphericalMercatorTileProfile.metersToGeographic(tileStore.calculateBounds().getCenter());
-
-            this.map().setDisplayPosition(new Coordinate(center.getY(),
-                                                         center.getX()),
-                                          Collections.min(tileStore.getZoomLevels()));
-        }
-        catch(final Exception e)
-        {
-            e.printStackTrace();
-        }
-        this.add(this.treeMap, BorderLayout.CENTER);
+        throw new NullPointerException("Tile store unable to be generated.");
     }
 
     private JMapViewer map()
