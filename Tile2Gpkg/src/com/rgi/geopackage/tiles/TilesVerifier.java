@@ -59,14 +59,14 @@ import com.rgi.geopackage.verification.Verifier;
 
 public class TilesVerifier extends Verifier
 {
-    private class TileData
+    private class TileData implements Comparable<TileData>
     {
-        int matrixWidth;
-        int matrixHeight;
-        int zoomLevel;
-        int tileID;
-        int tileRow;
-        int tileColumn;
+        int     matrixWidth;
+        int     matrixHeight;
+        int     zoomLevel;
+        Integer tileID;
+        int     tileRow;
+        int     tileColumn;
         
         public String columnInvalidToString()
         {
@@ -76,6 +76,12 @@ public class TilesVerifier extends Verifier
         public String rowInvalidToString() 
         {
             return String.format("Tile id: %4d, range: 0 to %2d, matrix_height: %2d, zoom_level: %2d.", tileID, matrixHeight - 1, matrixHeight, zoomLevel);
+        }
+
+        @Override
+        public int compareTo(TileData other)
+        {
+           return this.tileID.compareTo(other.tileID);
         }
     }
     /**
@@ -1219,6 +1225,7 @@ public class TilesVerifier extends Verifier
                                                                                                        tileData.getKey(),
                                                                                                        tileData.getValue()
                                                                                                                .stream()
+                                                                                                               .sorted()
                                                                                                                .map(tileInfo ->tileInfo.columnInvalidToString())
                                                                                                                .collect(Collectors.joining("\n"))
                                                                                                       )
@@ -1309,8 +1316,9 @@ public class TilesVerifier extends Verifier
                                                                                      String.format("\nFor the tile_row: %d\n%s", 
                                                                                                    tileData.getKey(),
                                                                                                    tileData.getValue().stream()
-                                                                                                                       .map(tileInfo -> tileInfo.rowInvalidToString())
-                                                                                                                       .collect(Collectors.joining("\n"))
+                                                                                                                      .sorted()
+                                                                                                                      .map(tileInfo -> tileInfo.rowInvalidToString())
+                                                                                                                      .collect(Collectors.joining("\n"))
                                                                                                    )
                                                                          ).collect(Collectors.joining("\n"))), 
                                     incorrectTileRowSet.isEmpty());
