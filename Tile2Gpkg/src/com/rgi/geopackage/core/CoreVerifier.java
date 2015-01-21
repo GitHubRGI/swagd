@@ -233,17 +233,20 @@ public class CoreVerifier extends Verifier
 	            while(tableName.next())
 	            {
 	                final String table_name = tableName.getString("table_name");
-	
-	                try(Statement stmt2           = this.getSqliteConnection().createStatement();
-	                    ResultSet pragmaTableinfo = stmt2.executeQuery(String.format("PRAGMA table_info(%s);", table_name));)
+	                
+	                if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), table_name))
 	                {
-	                    while(pragmaTableinfo.next())
-	                    {
-	                        final String dataType         = pragmaTableinfo.getString("type");
-	                        final boolean correctDataType = Verifier.checkDataType(dataType);
-	
-	                        assertTrue(String.format("Incorrect data type encountered: %s  From table: %s", dataType, table_name), correctDataType);
-	                    }
+    	                try(Statement stmt2           = this.getSqliteConnection().createStatement();
+    	                    ResultSet pragmaTableinfo = stmt2.executeQuery(String.format("PRAGMA table_info(%s);", table_name));)
+    	                {
+    	                    while(pragmaTableinfo.next())
+    	                    {
+    	                        final String dataType         = pragmaTableinfo.getString("type");
+    	                        final boolean correctDataType = Verifier.checkDataType(dataType);
+    	
+    	                        assertTrue(String.format("Incorrect data type encountered: %s  From table: %s", dataType, table_name), correctDataType);
+    	                    }
+    	                }
 	                }
 	            }
 	        }
@@ -534,8 +537,8 @@ public class CoreVerifier extends Verifier
 	                final String gctable  = gctablename.getString("gc_table");
 	                final String tbl_name = gctablename.getString("tbl_name");
 	                assertTrue(String.format("The table_name value in gpkg_contents table is invalid for the table: %s", 
-	                						 tbl_name),
-	                		   gctable != null);
+	                						 gctable),
+	                		   tbl_name != null);
 	            }
 	        }
 	
@@ -546,7 +549,7 @@ public class CoreVerifier extends Verifier
 	            ResultSet gpkgContentsFK = stmt.executeQuery(query2))
 	        {
 	            assertTrue("Tile Matrix Table does not have a Foreign Key constraint enabled on the column table_name to "
-	            				+ "referenced the column table_name in gpkg_contents.", 
+	            				+ "reference the column table_name in gpkg_contents.", 
 	            		   gpkgContentsFK.next());
 	
 	            final String refTable = gpkgContentsFK.getString("table");
