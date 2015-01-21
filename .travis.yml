@@ -6,14 +6,12 @@ jdk:
     - oraclejdk8
 install: mvn compile
 script: mvn test
-after_success:
-    - mvn jacoco:report coveralls:report
 addons:
   coverity_scan:
     project:
       name: "GitHubRGI/swagd"
       description: "Build submitted via Travis CI"
-    notification_email: stevendlander@gmail.com
+    notification_email: build@rgi-corp.com
     build_command_prepend: "mvn clean"
     build_command:   "mvn -DskipTests=true package"
     branch_pattern: coverity_scan
