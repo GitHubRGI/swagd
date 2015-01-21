@@ -81,7 +81,7 @@ public class TmsTileStore implements TileStore
         }
 
         this.profile  = profile;
-        this.scheme   = new ZoomTimesTwo(1, 1, TmsTileStore.Origin);
+        this.scheme   = new ZoomTimesTwo(0, 31, 1, 1, TmsTileStore.Origin);
         this.location = location;
     }
 
@@ -202,13 +202,10 @@ public class TmsTileStore implements TileStore
         final AbsoluteTileCoordinate tmsCoordiante = this.profile.crsToAbsoluteTileCoordinate(coordinate,
                                                                                               zoomLevel,
                                                                                               TmsTileStore.Origin);
-
         this.addTile(tmsCoordiante.getRow(),
                      tmsCoordiante.getColumn(),
                      zoomLevel,
                      image);
-
-
     }
 
     @Override

@@ -284,13 +284,12 @@ public class GeoPackage implements AutoCloseable
      *
      * @param continueAfterCoreErrors
      *             If true, GeoPackage subsystem requirement violations will be
-     *             reported even if there are fatal requirement violations in
-     *             the core.  Subsystem requirement verifications assumes that
-     *             a GeoPackage is at least minimally operable (e.g. core
-     *             tables are defined to the standard), and may behave
-     *             unexpectedly if it does not.  In this state, the reported
-     *             failed requirements of GeoPackage subsystems may only be of
-     *             minimal value.
+     *             reported even if there are fatal violations in the core.
+     *             Subsystem verifications assumes that a GeoPackage is at
+     *             least minimally operable (e.g. core tables are defined to
+     *             the standard), and may behave unexpectedly if the GeoPackage
+     *             does not. In this state, the reported failures of GeoPackage
+     *             subsystems may only be of minimal value.
      * @return the GeoPackage requirements this GeoPackage fails to conform to
      */
     public Collection<FailedRequirement> getFailedRequirements(final boolean continueAfterCoreErrors) throws SQLException
