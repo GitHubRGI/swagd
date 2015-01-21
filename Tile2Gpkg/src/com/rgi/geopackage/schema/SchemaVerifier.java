@@ -63,11 +63,20 @@ public class SchemaVerifier extends Verifier
         String  constraintName;
         String  constraintType;
         String  value;
-        double  min;
-        boolean minIsInclusive;
-        double  max;
-        boolean maxIsInclusive;
+        Double  min;
+        Boolean minIsInclusive;
+        Double  max;
+        Boolean maxIsInclusive;
         String  description;
+        
+        public String invalidMinMaxWithRangeType()
+        {
+           return String.format("constraint_name: %10s, constraint_type: %5s, invalid min: %3d, invalid max: %3d",
+                                 this.constraintName, 
+                                 this.constraintType, 
+                                 this.min, 
+                                 this.max);   
+        }
     }
     
     
@@ -178,25 +187,28 @@ public class SchemaVerifier extends Verifier
         {
             for(DataColumns dataColumn: this.dataColumnsValues)
             {
-                String query = String.format("PRAGMA table_info(%s);", dataColumn.tableName);
-                
-                try(Statement stmt        = this.getSqliteConnection().createStatement();
-                    ResultSet tableInfoRS = stmt.executeQuery(query))
+                if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), dataColumn.tableName))
                 {
-                    boolean columnExists = ResultSetStream.getStream(tableInfoRS)
-                                                          .anyMatch(resultSet -> { try
-                                                                                   {
-                                                                                      return resultSet.getString("name").equals(dataColumn.columnName);
-                                                                                   }
-                                                                                   catch(SQLException ex)
-                                                                                   {
-                                                                                       return false;    
-                                                                                   }
-                                                                                  });
-                    Assert.assertTrue(String.format("The column %s does not exist in the table %s.", 
-                                                    dataColumn.columnName, 
-                                                    dataColumn.tableName), 
-                                      columnExists);
+                    String query = String.format("PRAGMA table_info(%s);", dataColumn.tableName);
+                    
+                    try(Statement stmt        = this.getSqliteConnection().createStatement();
+                        ResultSet tableInfoRS = stmt.executeQuery(query))
+                    {
+                        boolean columnExists = ResultSetStream.getStream(tableInfoRS)
+                                                              .anyMatch(resultSet -> { try
+                                                                                       {
+                                                                                          return resultSet.getString("name").equals(dataColumn.columnName);
+                                                                                       }
+                                                                                       catch(SQLException ex)
+                                                                                       {
+                                                                                           return false;    
+                                                                                       }
+                                                                                      });
+                        Assert.assertTrue(String.format("The column %s does not exist in the table %s.", 
+                                                        dataColumn.columnName, 
+                                                        dataColumn.tableName), 
+                                          columnExists);
+                    }
                 }
             }
         }
@@ -382,9 +394,44 @@ public class SchemaVerifier extends Verifier
                   severity = Severity.Warning)
     public void Requirement64()
     {
-        
+        if(this.hasDataColumnsConstraintsTable)
+        {
+            List<DataColumnConstraints> invalidConstraintValuesWithRange = this.dataColumnConstraintsValues.stream()
+                                                                                                           .filter(constraintValue -> constraintValue.constraintType.equals("range"))
+                                                                                                           .filter(constraintValue -> constraintValue.min == null ||
+                                                                                                                                      constraintValue.max == null ||
+                                                                                                                                      constraintValue.min >= constraintValue.max)
+                                                                                                           .collect(Collectors.toList());
+            
+            Assert.assertTrue(String.format("The following records in gpkg_data_column_constraints have invalid values for min, or max or both:\n%s",
+                                            invalidConstraintValuesWithRange.stream()
+                                                                            .map(constraintValue -> constraintValue.invalidMinMaxWithRangeType())
+                                                                            .collect(Collectors.joining("\n"))),
+                              invalidConstraintValuesWithRange.isEmpty());
+                   
+        }
     }
     
+    /**
+     * <div class="title">Requirement 65</div> <blockquote> The
+     * <code>gpkg_data_column_constraints</code> table MAY be empty. If it
+     * contains rows with <code>constraint_type</code> column values of "range",
+     * the <code>minIsInclusive</code> and <code>maxIsInclusive</code> column
+     * values for those rows SHALL be 0 or 1. </blockquote> </div>
+     * 
+     * @param constraintType
+     * @return
+     */
+    
+    @Requirement (number   = 65,
+                  text     = "The gpkg_data_column_constraints table MAY be empty. If it contains "
+                              + "rows with constraint_type column values of \"range\", the minIsInclusive "
+                              + "and maxIsInclusive column values for those rows SHALL be 0 or 1. ",
+                  severity = Severity.Warning)
+    public void Requirement65()
+    {
+        
+    }
     
     private boolean validConstraintType(String constraintType)
     {
@@ -409,8 +456,16 @@ public class SchemaVerifier extends Verifier
                                                           dataColumnConstraints.constraintType = resultSet.getString("constraint_type");
                                                           dataColumnConstraints.value          = resultSet.getString("value");
                                                           dataColumnConstraints.min            = resultSet.getDouble("min");
+                                                          if(resultSet.wasNull())
+                                                          {
+                                                              dataColumnConstraints.min = null;
+                                                          }
                                                           dataColumnConstraints.minIsInclusive = resultSet.getBoolean("minIsInclusive");
                                                           dataColumnConstraints.max            = resultSet.getDouble("max");
+                                                          if(resultSet.wasNull())
+                                                          {
+                                                              dataColumnConstraints.max = null;
+                                                          }
                                                           dataColumnConstraints.maxIsInclusive = resultSet.getBoolean("maxIsInclusive");
                                                           dataColumnConstraints.description    = resultSet.getString("description");
                                                           
@@ -422,13 +477,15 @@ public class SchemaVerifier extends Verifier
                                                       }
                                                     })
                                   .filter(Objects::nonNull)
-                                                    .collect(Collectors.toList());
+                                  .collect(Collectors.toList());
         }
         catch(SQLException ex)
         {
             return Collections.emptyList();
         }
     }
+    
+    
     private List<DataColumns> getDataColumnValues()
     {
         String query = "SELECT table_name, column_name, constraint_name FROM gpkg_data_columns;";
