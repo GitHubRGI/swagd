@@ -541,27 +541,6 @@ public class CoreVerifier extends Verifier
 	                		   tbl_name != null);
 	            }
 	        }
-	
-	        //check foreign key constraints
-	        final String query2 = "PRAGMA foreign_key_list(gpkg_contents);";
-	
-	        try(Statement stmt           = this.getSqliteConnection().createStatement();
-	            ResultSet gpkgContentsFK = stmt.executeQuery(query2))
-	        {
-	            assertTrue("Tile Matrix Table does not have a Foreign Key constraint enabled on the column table_name to "
-	            				+ "reference the column table_name in gpkg_contents.", 
-	            		   gpkgContentsFK.next());
-	
-	            final String refTable = gpkgContentsFK.getString("table");
-	            final String from     = gpkgContentsFK.getString("from");
-	            final String to       = gpkgContentsFK.getString("to");
-	
-	            final boolean goodFKConstraint = (refTable.equals("gpkg_spatial_ref_sys") && from.equals("srs_id") && to.equals("srs_id"));
-	            
-	            assertTrue("The gpkg_contents Table does not have a Foreign Key constraint enabled on the column srs_id to referenced the "
-	            				+ "column srs_id in gpkg_spatial_ref_sys.", 
-	            		   goodFKConstraint);
-	        }
     	}
     }
 
