@@ -16,7 +16,7 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.common.tile.store;
+package com.rgi.common.tile.store.reader;
 
 import java.awt.image.BufferedImage;
 import java.util.Set;
@@ -25,6 +25,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileException;
+import com.rgi.common.tile.store.TileStoreException;
 
 /**
  * @author Luke Lambert

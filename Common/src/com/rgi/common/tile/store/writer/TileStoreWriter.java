@@ -16,12 +16,13 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.common.tile.store;
+package com.rgi.common.tile.store.writer;
 
 import java.awt.image.BufferedImage;
 
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileException;
+import com.rgi.common.tile.store.TileStoreException;
 
 /**
  * @author Luke Lambert

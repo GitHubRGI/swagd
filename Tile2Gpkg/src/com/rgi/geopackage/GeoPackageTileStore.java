@@ -35,6 +35,7 @@ import com.rgi.common.Dimension2D;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
+import com.rgi.common.tile.scheme.MatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStore;
@@ -69,7 +70,7 @@ public class GeoPackageTileStore implements TileStore
 
         this.geoPackage                = geoPackage;
         this.tileSet                   = tileSet;
-        this.tileScheme                = new ZoomTimesTwo(1, 1, GeoPackageTiles.Origin);
+        this.tileScheme                = new ZoomTimesTwo(0, 31, 1, 1, GeoPackageTiles.Origin);
         this.coordinateReferenceSystem = new CoordinateReferenceSystem(srs.getOrganization(), srs.getOrganizationSrsId());
         this.tileProfile               = TileProfileFactory.create(this.coordinateReferenceSystem);
 
@@ -285,15 +286,15 @@ public class GeoPackageTileStore implements TileStore
 
     private TileMatrix addTileMatrix(final int zoomLevel, final int pixelHeight, final int pixelWidth) throws SQLException
     {
-        final int tileDimension = (int)Math.pow(2.0, zoomLevel);    // Assumes zoom*2 convension, with 1 tile at zoom level 0
+        final MatrixDimensions matrixDimensions = this.tileScheme.dimensions(zoomLevel);
 
         final Dimension2D dimensions = this.tileProfile.getTileDimensions(zoomLevel);
 
         return this.geoPackage.tiles()
                               .addTileMatrix(this.tileSet,
                                              zoomLevel,
-                                             tileDimension,
-                                             tileDimension,
+                                             matrixDimensions.getWidth(),
+                                             matrixDimensions.getHeight(),
                                              pixelHeight,
                                              pixelWidth,
                                              dimensions.getHeight() / pixelHeight,

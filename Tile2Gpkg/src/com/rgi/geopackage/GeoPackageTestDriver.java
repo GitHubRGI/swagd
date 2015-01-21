@@ -45,7 +45,7 @@ public class GeoPackageTestDriver
 {
     public static void main(final String[] args)
     {
-        GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NormalZoom2"),    new ZoomTimesTwo(1, 1, GeoPackageTiles.Origin));
+        GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NormalZoom2"),    new ZoomTimesTwo(1, 31, 1, 1, GeoPackageTiles.Origin));
         // This won't work until I figure out how I want to set up a tile store with a tile scheme
         //GeoPackageTestDriver.createGeoPackageFromFolder(new File("C:/Users/corp/Desktop/geopackage sample data/NotNormalZoom2"), new ZoomTimesTwo(2, 3, GeoPackageTiles.Origin));
     }

@@ -33,10 +33,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.DatabaseUtility;
+import com.rgi.geopackage.verification.Assert;
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.ColumnDefinition;
 import com.rgi.geopackage.verification.Requirement;
@@ -173,6 +172,7 @@ public class ExtensionsVerifier extends Verifier
      * </code> value is not NULL. </blockquote> </div>
      *
      * @throws SQLException
+     * @throws AssertionError 
      */
     @Requirement(number = 80, 
                  text   = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
@@ -180,7 +180,7 @@ public class ExtensionsVerifier extends Verifier
                             + "the absence of rows in gpkg_extnsions table SHALL both indicate the absence "
                             + "of extensions to a GeoPackage.", 
                 severity = Severity.Warning)
-    public void Requirement80() throws SQLException
+    public void Requirement80() throws SQLException, AssertionError
     {
         if (this.hasGpkgExtensionsTable)
         {
@@ -238,11 +238,12 @@ public class ExtensionsVerifier extends Verifier
      * </blockquote> </div>
      *
      * @throws SQLException
+     * @throws AssertionError 
      */
     @Requirement(number = 81, text = "The column_name column value in a gpkg_extensions row SHALL"
             + " be the name of a column in the table specified by the "
             + "table_name column value for that row, or be NULL.", severity = Severity.Warning)
-    public void Requirement81() throws SQLException
+    public void Requirement81() throws SQLException, AssertionError
     {
         if (this.hasGpkgExtensionsTable && !this.gpkgExtensionsDataAndColumnName.isEmpty())
         {
@@ -294,6 +295,7 @@ public class ExtensionsVerifier extends Verifier
      * Document that extends it. </blockquote> </div>
      *
      * @throws SQLException
+     * @throws AssertionError 
      */
     @Requirement(number = 82, text = "Each extension_name column value in a gpkg_extensions row SHALL be a "
             + "unique case sensitive value of the form <author>_<extension_name> "
@@ -303,7 +305,7 @@ public class ExtensionsVerifier extends Verifier
             + "SHALL be [a-zA-Z0-9_]. An extension_name for the �gpkg� author name "
             + "SHALL be one of those defined in this encoding standard or in an OGC "
             + "Best Practices Document that extends it.", severity = Severity.Warning)
-    public void Requirement82() throws SQLException
+    public void Requirement82() throws SQLException, AssertionError
     {
         if (this.hasGpkgExtensionsTable)
         {
@@ -334,6 +336,7 @@ public class ExtensionsVerifier extends Verifier
      * Extension Template (Normative)</a>. </blockquote> </div>
      *
      * @throws SQLException
+     * @throws AssertionError 
      */
     @Requirement(number = 83, 
                  text   = "The definition column value in a gpkg_extensions row SHALL "
@@ -341,7 +344,7 @@ public class ExtensionsVerifier extends Verifier
                             + "an extension by filling out the GeoPackage Extension Template "
                             + "in GeoPackage Extension Template (Normative).", 
                  severity = Severity.Warning)
-    public void Requirement83() throws SQLException
+    public void Requirement83() throws SQLException, AssertionError
     {
         // TODO: Ask about how restrictive we want the strings to be
         if (this.hasGpkgExtensionsTable)
@@ -389,11 +392,12 @@ public class ExtensionsVerifier extends Verifier
  * </blockquote>
  * </div>
      * @throws SQLException
+     * @throws AssertionError 
      */
     @Requirement(number = 84, text = "The scope column value in a gpkg_extensions row SHALL be lowercase "
             + "\"read-write\" for an extension that affects both readers and writers, "
             + "or \"write-only\" for an extension that affects only writers. ", severity = Severity.Warning)
-    public void Requirement84() throws SQLException
+    public void Requirement84() throws SQLException, AssertionError
     {
         if (this.hasGpkgExtensionsTable)
         {
