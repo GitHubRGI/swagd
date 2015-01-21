@@ -16,9 +16,8 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
+package com.rgi.suite;
 
-package com.rgi.g2t.test;
-
-public class GdalTest {
+public class HeadlessTest {
     // TODO
 }
