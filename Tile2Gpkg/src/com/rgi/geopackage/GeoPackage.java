@@ -279,9 +279,11 @@ public class GeoPackage implements AutoCloseable
         final List<FailedRequirement> failedRequirements = new ArrayList<>();
 
         failedRequirements.addAll(this.core      .getFailedRequirements(this.file));
-        failedRequirements.addAll(this.extensions.getFailedRequirements());
-        failedRequirements.addAll(this.tiles     .getFailedRequirements());
         failedRequirements.addAll(this.features  .getFailedRequirements());
+        failedRequirements.addAll(this.tiles     .getFailedRequirements());
+        failedRequirements.addAll(this.schema    .getFailedRequirements());
+        failedRequirements.addAll(this.metadata  .getFailedRequirements());
+        failedRequirements.addAll(this.extensions.getFailedRequirements());
 
         return failedRequirements;
     }
