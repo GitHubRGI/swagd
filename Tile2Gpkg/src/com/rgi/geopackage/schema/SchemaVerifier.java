@@ -29,18 +29,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-
-
-
-
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.DatabaseUtility;
-import com.rgi.geopackage.extensions.GeoPackageExtensions;
+import com.rgi.geopackage.verification.Assert;
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.ColumnDefinition;
 import com.rgi.geopackage.verification.ForeignKeyDefinition;
@@ -67,11 +61,10 @@ public class SchemaVerifier extends Verifier
         Boolean minIsInclusive;
         Double  max;
         Boolean maxIsInclusive;
-        String  description;
         
         public String invalidMinMaxWithRangeType()
         {
-           return String.format("constraint_name: %10s, constraint_type: %5s, invalid min: %3d, invalid max: %3d",
+           return String.format("constraint_name: %10s, constraint_type: %5s, invalid min: %.3f, invalid max: %.3f.",
                                  this.constraintName, 
                                  this.constraintType, 
                                  this.min, 
@@ -129,12 +122,13 @@ public class SchemaVerifier extends Verifier
      * SHALL reference values in the <code>gpkg_contents</code>
      * <code>table_name</code> column. </blockquote> </div>
      * @throws SQLException 
+     * @throws AssertionError 
      */
     @Requirement(number   = 57,
                  text     = "Values of the gpkg_data_columns table table_name column value "
                              + "SHALL reference values in the gpkg_contents table_name column.",
                  severity = Severity.Error)
-    public void Requirement57() throws SQLException
+    public void Requirement57() throws SQLException, AssertionError
     {
         if(this.hasDataColumnsTable)
         {
@@ -175,13 +169,14 @@ public class SchemaVerifier extends Verifier
      * </div>
      * 
      * @throws SQLException
+     * @throws AssertionError 
      */
     @Requirement (number   = 58,
                   text     = "The column_name column value in a gpkg_data_columns table row "
                               + "SHALL contain the name of a column in the SQLite table or view "
                               + "identified by the table_name column value. ",
                   severity = Severity.Warning)
-    public void Requirement58() throws SQLException
+    public void Requirement58() throws SQLException, AssertionError
     {
         if(this.hasDataColumnsTable)
         {
@@ -219,13 +214,14 @@ public class SchemaVerifier extends Verifier
      * column value in a gpkg_data_columns table MAY be NULL. If it is not NULL,
      * it SHALL contain a case sensitive constraint_name column value from the
      * gpkg_data_column_constraints table. </blockquote> </div>
+     * @throws AssertionError 
      */
     @Requirement (number    = 59,
                   text      = "The constraint_name column value in a gpkg_data_columns table MAY be NULL. "
                                   + "If it is not NULL, it SHALL contain a case sensitive constraint_name "
                                   + "column value from the gpkg_data_column_constraints table. ",
                   severity  = Severity.Warning)
-    public void Requirement59()
+    public void Requirement59() throws AssertionError
     {
         if(this.hasDataColumnsTable && this.hasDataColumnsConstraintsTable)
         {
@@ -262,7 +258,7 @@ public class SchemaVerifier extends Verifier
                               + "gpkg_data_column_constraints. If present it SHALL be defined "
                               + "per clause 2.3.3.1.1 Table Definition, Data Column Constraints "
                               + "Table or View Definition and gpkg_data_columns Table Definition SQL. ",
-                  severity = Severity.Warning)
+                  severity = Severity.Error)
     public void Requirement60() throws AssertionError, SQLException
     {
         if(this.hasDataColumnsConstraintsTable)
@@ -276,6 +272,7 @@ public class SchemaVerifier extends Verifier
      * <code>gpkg_data_column_constraints</code> table MAY be empty. If it
      * contains data, the lowercase <code>constraint_type</code> column values
      * SHALL be one of "range", "enum", or "glob". </blockquote> </div>
+     * @throws AssertionError 
      */
     @Requirement (number   = 61,
                   text     = "The gpkg_data_column_constraints table MAY be empty. "
@@ -283,14 +280,14 @@ public class SchemaVerifier extends Verifier
                               + "column values SHALL be one of \"range\", \"enum\", or "
                               + "\"glob\". ",
                   severity = Severity.Warning)
-    public void Requirement61()
+    public void Requirement61() throws AssertionError
     {
         if(this.hasDataColumnsConstraintsTable)
         {
             boolean validConstraintType = this.dataColumnConstraintsValues.stream()
                                                                           .allMatch(dataColumnConstraintValue -> this.validConstraintType(dataColumnConstraintValue.constraintType));   
             
-            Assert.assertTrue(String.format("There is(are) value(s) in gpkg_data_column_constraints table constraint_type that does not match \"range\" or \"enum\" or \"glob\". The invalid value(s): %s",
+            Assert.assertTrue(String.format("There is(are) value(s) in gpkg_data_column_constraints table constraint_type that does not match \"range\" or \"enum\" or \"glob\". The invalid value(s): %s.",
                                             this.dataColumnConstraintsValues.stream()
                                                                             .filter(dataColumnConstraintValue -> !this.validConstraintType(dataColumnConstraintValue.constraintType))
                                                                             .map(value -> value.constraintType).collect(Collectors.joining(", "))), 
@@ -304,13 +301,14 @@ public class SchemaVerifier extends Verifier
      * constraint_type values of <em>range</em> and <em>glob</em> SHALL be
      * unique. </blockquote> </div>
      * @throws SQLException 
+     * @throws AssertionError 
      */
     @Requirement (number   = 62,
                   text     = "gpkg_data_column_constraint constraint_name values "
                               + "for rows with constraint_type values of range and "
                               + "glob SHALL be unique. ",
                   severity = Severity.Warning)
-    public void Requirement62() throws SQLException
+    public void Requirement62() throws SQLException, AssertionError
     {
         if(this.hasDataColumnsConstraintsTable)
         {
@@ -356,6 +354,7 @@ public class SchemaVerifier extends Verifier
      * contains rows with constraint_type column values of "range", the
      * <code>value</code> column values for those rows SHALL be NULL.
      * </blockquote> </div>
+     * @throws AssertionError 
      */
     @Requirement (number   = 63,
                   text     = "The gpkg_data_column_constraints table MAY be empty. "
@@ -363,7 +362,7 @@ public class SchemaVerifier extends Verifier
                                   + "values of \"range\", the value column values for "
                                   + "those rows SHALL be NULL. ",
                   severity = Severity.Warning)
-    public void Requirement63()
+    public void Requirement63() throws AssertionError
     {
         if(this.hasDataColumnsConstraintsTable)
         {
@@ -386,13 +385,15 @@ public class SchemaVerifier extends Verifier
      * the <code>min</code> column values for those rows SHALL be NOT NULL and
      * less than the <code>max</code> column value which shall be NOT NULL.
      * </blockquote> </div>
+     * @throws AssertionError 
+     * 
      */
     @Requirement (number   = 64,
                   text     = "The gpkg_data_column_constraints table MAY be empty. If it contains rows with "
                                   + "constraint_type column values of \"range\", the min column values for those "
                                   + "rows SHALL be NOT NULL and less than the max column value which shall be NOT NULL.",
                   severity = Severity.Warning)
-    public void Requirement64()
+    public void Requirement64() throws AssertionError
     {
         if(this.hasDataColumnsConstraintsTable)
         {
@@ -421,6 +422,7 @@ public class SchemaVerifier extends Verifier
      * 
      * @param constraintType
      * @return
+     * @throws AssertionError 
      */
     
     @Requirement (number   = 65,
@@ -428,11 +430,102 @@ public class SchemaVerifier extends Verifier
                               + "rows with constraint_type column values of \"range\", the minIsInclusive "
                               + "and maxIsInclusive column values for those rows SHALL be 0 or 1. ",
                   severity = Severity.Warning)
-    public void Requirement65()
+    public void Requirement65() throws AssertionError
     {
-        
+        if(this.hasDataColumnsConstraintsTable)
+        {
+            List<DataColumnConstraints> invalidMinIsInclusiveRecords = this.dataColumnConstraintsValues.stream()
+                                                                                                       .filter(columnValue ->  columnValue.constraintType.equals("range"))
+                                                                                                       .filter(columnValue -> !columnValue.minIsInclusive.equals(Boolean.TRUE) &&
+                                                                                                                              !columnValue.minIsInclusive.equals(Boolean.FALSE))
+                                                                                                       .collect(Collectors.toList());
+            
+            List<DataColumnConstraints> invalidMaxIsInclusiveRecords = this.dataColumnConstraintsValues.stream()
+                                                                                                       .filter(columnValue ->  columnValue.constraintType.equals("range"))
+                                                                                                       .filter(columnValue -> !columnValue.maxIsInclusive.equals(Boolean.TRUE) &&
+                                                                                                                              !columnValue.maxIsInclusive.equals(Boolean.FALSE))
+                                                                                                       .collect(Collectors.toList());
+            
+            Assert.assertTrue(String.format("The following are violations on either the minIsInclusive or maxIsIclusive columns "
+                                            + "in the gpkg_data_column_constraints table for which the values are not 0 or 1. %s. \n%s.", 
+                                            invalidMinIsInclusiveRecords.stream()
+                                                                        .map(record -> String.format("Invalid minIsInclusive for constraint_name: %10s.", record.constraintName))
+                                                                        .collect(Collectors.joining(", ")),
+                                            invalidMaxIsInclusiveRecords.stream()
+                                                                        .map(record -> String.format("Invalid maxIsInclusive for constraint_name: %10s.", record.constraintName))
+                                                                        .collect(Collectors.joining(", "))), 
+                             invalidMinIsInclusiveRecords.isEmpty() && invalidMaxIsInclusiveRecords.isEmpty());
+            
+        }   
     }
     
+    /**
+     * <div class="title">Requirement 66</div> <blockquote> The
+     * <code>gpkg_data_column_constraints</code> table MAY be empty. If it
+     * contains rows with <code>constraint_type</code> column values of "enum"
+     * or "glob", the <code>min</code>, <code>max</code>,
+     * <code>minIsInclusive</code> and <code>maxIsInclusive</code> column values
+     * for those rows SHALL be NULL. </blockquote> </div>
+     * @throws AssertionError 
+     */
+    @Requirement (number   = 66,
+                  text     = "The gpkg_data_column_constraints table MAY be empty. If it contains "
+                             + "rows with constraint_type column values of \"enum\" or \"glob\", the min,"
+                             + " max, minIsInclusive and maxIsInclusive column values for those rows SHALL be NULL.",
+                  severity = Severity.Warning)
+    public void Requirement66() throws AssertionError
+    {
+        if(this.hasDataColumnsConstraintsTable)
+        {
+            List<DataColumnConstraints> invalidConstraintRecords = this.getDataColumnConstraintsValues().stream()
+                                                                                                        .filter(columnValue -> columnValue.constraintType.equals("enum") ||
+                                                                                                                               columnValue.constraintType.equals("glob"))
+                                                                                                        .filter(columnValue -> !(columnValue.min == null            &&
+                                                                                                                                 columnValue.max == null            &&
+                                                                                                                                 columnValue.minIsInclusive == null &&
+                                                                                                                                 columnValue.maxIsInclusive == null))
+                                                                                                        .collect(Collectors.toList());
+            Assert.assertTrue(String.format("The following constraint_name(s) have a constraint_type of \"enum\" or \"glob\" "
+                                            + "and do NOT have null values for min, max, minIsInclusive, and/or maxIsInclusive. "
+                                            + "\nInvalid constraint_name(s): %s.", 
+                                            invalidConstraintRecords.stream()
+                                                                    .map(columnValue -> columnValue.constraintName)
+                                                                    .collect(Collectors.joining(", "))),
+                              invalidConstraintRecords.isEmpty());
+        }
+    }
+    
+    /**
+     * <div class="title">Requirement 67</div> <blockquote> The
+     * <code>gpkg_data_column_constraints</code> table MAY be empty. If it
+     * contains rows with <code>constraint_type</code> column values of "enum"
+     * or "glob", the <code>value</code> column SHALL NOT be NULL. </blockquote>
+     * </div>
+     * @throws AssertionError 
+     */
+    @Requirement (number = 67,
+                  text     = "The gpkg_data_column_constraints table MAY be empty. "
+                              + "If it contains rows with constraint_type column values "
+                              + "of \"enum\" or \"glob\", the value column SHALL NOT be NULL. ",
+                  severity = Severity.Warning)
+    public void Requirement67() throws AssertionError
+    {
+        if(this.hasDataColumnsConstraintsTable)
+        {
+            List<DataColumnConstraints> invalidValueRecords = this.getDataColumnConstraintsValues().stream()
+                                                                                                   .filter(columnValue -> columnValue.constraintType.equals("enum") ||
+                                                                                                                          columnValue.constraintType.equals("glob"))
+                                                                                                   .filter(columnValue -> columnValue.value == null)
+                                                                                                   .collect(Collectors.toList());
+            Assert.assertTrue(String.format("The following constraint_name(s) from the gpkg_data_column_constraints "
+                                              + "table have invalid values for the column value. \nInvalid value with "
+                                              + "constraint_name as: %s.", 
+                                            invalidValueRecords.stream()
+                                                               .map(columnValue -> columnValue.constraintName)
+                                                               .collect(Collectors.joining(", "))), 
+                             invalidValueRecords.isEmpty());
+        }
+    }
     private boolean validConstraintType(String constraintType)
     {
         return constraintType.equals("range")    ||
@@ -442,7 +535,7 @@ public class SchemaVerifier extends Verifier
     
     private List<DataColumnConstraints> getDataColumnConstraintsValues()
     {
-        String query = "SELECT constraint_name, constraint_type, value, min, minIsInclusive, max, maxIsInclusive, description FROM gpkg_data_column_constraints;";
+        String query = "SELECT constraint_name, constraint_type, value, min, minIsInclusive, max, maxIsInclusive FROM gpkg_data_column_constraints;";
         
         try(Statement stmt                   = this.getSqliteConnection().createStatement();
             ResultSet tableNamesAndColumnsRS = stmt.executeQuery(query))
@@ -455,19 +548,31 @@ public class SchemaVerifier extends Verifier
                                                           dataColumnConstraints.constraintName = resultSet.getString("constraint_name");
                                                           dataColumnConstraints.constraintType = resultSet.getString("constraint_type");
                                                           dataColumnConstraints.value          = resultSet.getString("value");
+                                                          if(resultSet.wasNull())
+                                                          {
+                                                              dataColumnConstraints.value = null;
+                                                          }
                                                           dataColumnConstraints.min            = resultSet.getDouble("min");
                                                           if(resultSet.wasNull())
                                                           {
                                                               dataColumnConstraints.min = null;
                                                           }
                                                           dataColumnConstraints.minIsInclusive = resultSet.getBoolean("minIsInclusive");
+                                                          if(resultSet.wasNull())
+                                                          {
+                                                              dataColumnConstraints.minIsInclusive = null;
+                                                          }
                                                           dataColumnConstraints.max            = resultSet.getDouble("max");
                                                           if(resultSet.wasNull())
                                                           {
                                                               dataColumnConstraints.max = null;
                                                           }
                                                           dataColumnConstraints.maxIsInclusive = resultSet.getBoolean("maxIsInclusive");
-                                                          dataColumnConstraints.description    = resultSet.getString("description");
+                                                          if(resultSet.wasNull())
+                                                          {
+                                                              dataColumnConstraints.maxIsInclusive = null;
+                                                          }
+                                                          //dataColumnConstraints.description    = resultSet.getString("description"); //TODO does this column exist??
                                                           
                                                           return dataColumnConstraints;
                                                       }
@@ -510,7 +615,7 @@ public class SchemaVerifier extends Verifier
                                                       }
                                                     })
                                   .filter(Objects::nonNull)
-                                                    .collect(Collectors.toList());
+                                  .collect(Collectors.toList());
         }
         catch(SQLException ex)
         {
@@ -539,14 +644,14 @@ public class SchemaVerifier extends Verifier
         
         final Map<String, ColumnDefinition> dataColumnConstraintsColumns = new HashMap<>();
         
-        dataColumnConstraintsColumns.put("constraint_name",   new ColumnDefinition("TEXT",    true, true,  false, null));
-        dataColumnConstraintsColumns.put("constraint_type",   new ColumnDefinition("TEXT",    true, true,  false, null));
-        dataColumnConstraintsColumns.put("value",             new ColumnDefinition("TEXT",    true, false, false, null));
-        dataColumnConstraintsColumns.put("min",               new ColumnDefinition("NUMERIC", true, false, false, null));
-        dataColumnConstraintsColumns.put("minIsInclusive",    new ColumnDefinition("BOOLEAN", true, false, false, null));
-        dataColumnConstraintsColumns.put("max",               new ColumnDefinition("NUMERIC", true, false, false, null));
-        dataColumnConstraintsColumns.put("maxIsInclusive",    new ColumnDefinition("BOOLEAN", true, false, false, null));
-        dataColumnConstraintsColumns.put("description",       new ColumnDefinition("TEXT",    true, false, false, null));
+        dataColumnConstraintsColumns.put("constraint_name",   new ColumnDefinition("TEXT",    true,  false, false, null));
+        dataColumnConstraintsColumns.put("constraint_type",   new ColumnDefinition("TEXT",    true,  false, false, null));
+        dataColumnConstraintsColumns.put("value",             new ColumnDefinition("TEXT",    false, false, false, null));
+        dataColumnConstraintsColumns.put("min",               new ColumnDefinition("NUMERIC", false, false, false, null));
+        dataColumnConstraintsColumns.put("minIsInclusive",    new ColumnDefinition("BOOLEAN", false, false, false, null));
+        dataColumnConstraintsColumns.put("max",               new ColumnDefinition("NUMERIC", false, false, false, null));
+        dataColumnConstraintsColumns.put("maxIsInclusive",    new ColumnDefinition("BOOLEAN", false, false, false, null));
+      //  dataColumnConstraintsColumns.put("description",       new ColumnDefinition("TEXT",    false, false, false, null));//TODO check with daisey
         
         DataColumnConstraintsTableDefinition = new TableDefinition(GeoPackageSchema.DataColumnConstraintsTableName,
                                                                    dataColumnConstraintsColumns,
