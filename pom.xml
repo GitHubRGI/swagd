@@ -13,7 +13,7 @@
     <properties>
         <jdk.version>1.8</jdk.version>
         <jacoco.version>0.7.2.201409121644</jacoco.version>
-        <compiler.version>2.5.1</compiler.version>
+        <compiler.version>3.1</compiler.version>
         <coveralls.version>3.0.1</coveralls.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jacoco.report.common>Common/target/site/jacoco/jacoco.xml</jacoco.report.common>
