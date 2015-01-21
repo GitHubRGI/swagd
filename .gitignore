@@ -46,3 +46,6 @@ local.properties
 
 .settings/
 *.gpkg
+
+# Ignore coverity scan folder
+cov-int
