@@ -4,4 +4,4 @@ jdk:
 install: mvn compile
 script: mvn test
 after_success:
-    - mvn clean jacoco:report coveralls:report
+    - mvn jacoco:report coveralls:report

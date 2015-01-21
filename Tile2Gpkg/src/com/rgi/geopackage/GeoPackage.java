@@ -276,12 +276,38 @@ public class GeoPackage implements AutoCloseable
      */
     public Collection<FailedRequirement> getFailedRequirements() throws SQLException
     {
+        return this.getFailedRequirements(false);
+    }
+
+    /**
+     * Requirements this GeoPackage failed to meet
+     *
+     * @param continueAfterCoreErrors
+     *             If true, GeoPackage subsystem requirement violations will be
+     *             reported even if there are fatal requirement violations in
+     *             the core.  Subsystem requirement verifications assumes that
+     *             a GeoPackage is at least minimally operable (e.g. core
+     *             tables are defined to the standard), and may behave
+     *             unexpectedly if it does not.  In this state, the reported
+     *             failed requirements of GeoPackage subsystems may only be of
+     *             minimal value.
+     * @return the GeoPackage requirements this GeoPackage fails to conform to
+     */
+    public Collection<FailedRequirement> getFailedRequirements(final boolean continueAfterCoreErrors) throws SQLException
+    {
         final List<FailedRequirement> failedRequirements = new ArrayList<>();
 
-        failedRequirements.addAll(this.core      .getFailedRequirements(this.file));
-        failedRequirements.addAll(this.extensions.getFailedRequirements());
-        failedRequirements.addAll(this.tiles     .getFailedRequirements());
-        failedRequirements.addAll(this.features  .getFailedRequirements());
+        failedRequirements.addAll(this.core.getFailedRequirements(this.file));
+
+        // Skip verifying GeoPackage subsystems if there are fatal errors in core
+        if(continueAfterCoreErrors || !failedRequirements.stream().anyMatch(failedRequirement -> failedRequirement.getRequirement().severity() == Severity.Error))
+        {
+            failedRequirements.addAll(this.features  .getFailedRequirements());
+            failedRequirements.addAll(this.tiles     .getFailedRequirements());
+            failedRequirements.addAll(this.schema    .getFailedRequirements());
+            failedRequirements.addAll(this.metadata  .getFailedRequirements());
+            failedRequirements.addAll(this.extensions.getFailedRequirements());
+        }
 
         return failedRequirements;
     }
