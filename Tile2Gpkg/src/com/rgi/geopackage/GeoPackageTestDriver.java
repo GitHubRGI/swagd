@@ -29,7 +29,7 @@ import com.rgi.common.tile.profile.GlobalGeodeticTileProfile;
 import com.rgi.common.tile.scheme.MatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
-import com.rgi.common.tile.store.TmsTileStore;
+import com.rgi.common.tile.store.tms.TmsTileStore;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
 import com.rgi.geopackage.tiles.RelativeTileCoordinate;
 import com.rgi.geopackage.tiles.TileMatrix;

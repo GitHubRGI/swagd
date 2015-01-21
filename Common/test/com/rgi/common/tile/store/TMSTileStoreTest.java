@@ -39,6 +39,7 @@ import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
+import com.rgi.common.tile.store.tms.TmsTileStore;
 
 /**
  * @author Steven D. Lander
@@ -191,56 +192,56 @@ public class TMSTileStoreTest {
 	public void verifyMercBoundsCalcLeft() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderMercator(4);
 		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
-		assertTrue(this.tmsStore.calculateBounds().getMinX().doubleValue() == -20037508.342789244);
+		assertTrue(this.tmsStore.getBounds().getMinX().doubleValue() == -20037508.342789244);
 	}
 
 	@Test
 	public void verifyMercBoundsCalcRight() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderMercator(4);
 		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
-		assertTrue(this.tmsStore.calculateBounds().getMaxX().doubleValue() == 20037508.342789244);
+		assertTrue(this.tmsStore.getBounds().getMaxX().doubleValue() == 20037508.342789244);
 	}
 
 	@Test
 	public void verifyMercBoundsCalcTop() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderMercator(4);
 		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
-		assertTrue(this.tmsStore.calculateBounds().getMaxY().doubleValue() == 20037508.342789244);
+		assertTrue(this.tmsStore.getBounds().getMaxY().doubleValue() == 20037508.342789244);
 	}
 
 	@Test
 	public void verifyMercBoundsCalcBottom() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderMercator(4);
 		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
-		assertTrue(this.tmsStore.calculateBounds().getMinY().doubleValue() == -20037508.342789244);
+		assertTrue(this.tmsStore.getBounds().getMinY().doubleValue() == -20037508.342789244);
 	}
 
 	@Test
 	public void verifyGeodBoundsCalcLeft() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderGeodetic(4);
 		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 4326), this.tmsDir);
-		assertTrue(this.tmsStore.calculateBounds().getMinX().doubleValue() == -180.0);
+		assertTrue(this.tmsStore.getBounds().getMinX().doubleValue() == -180.0);
 	}
 
 	@Test
 	public void verifyGeodBoundsCalcRight() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderGeodetic(4);
 		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 4326), this.tmsDir);
-		assertTrue(this.tmsStore.calculateBounds().getMaxX().doubleValue() == 180.0);
+		assertTrue(this.tmsStore.getBounds().getMaxX().doubleValue() == 180.0);
 	}
 
 	@Test
 	public void verifyGeodBoundsCalcTop() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderGeodetic(4);
 		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 4326), this.tmsDir);
-		assertTrue(this.tmsStore.calculateBounds().getMaxY().doubleValue() == 90.0);
+		assertTrue(this.tmsStore.getBounds().getMaxY().doubleValue() == 90.0);
 	}
 
 	@Test
 	public void verifyGeodBoundsCalcBottom() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderGeodetic(4);
 		this.tmsStore = new TmsTileStore(TileProfileFactory.create("EPSG", 4326), this.tmsDir);
-		assertTrue(this.tmsStore.calculateBounds().getMinY().doubleValue() == -90.0);
+		assertTrue(this.tmsStore.getBounds().getMinY().doubleValue() == -90.0);
 	}
 
 	@Test

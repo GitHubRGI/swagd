@@ -79,14 +79,14 @@ public class TileCluster implements TileStore
     }
 
     @Override
-    public BoundingBox calculateBounds()
+    public BoundingBox getBounds()
     {
         // TODO
         throw new RuntimeException("Not implemented");
     }
 
     @Override
-    public long calculateSize()
+    public long getByteSize()
     {
         // TODO
         throw new RuntimeException("Not implemented");

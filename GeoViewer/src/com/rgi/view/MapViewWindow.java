@@ -41,7 +41,7 @@ import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
 import com.rgi.common.tile.store.TileStore;
 import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TmsTileStore;
+import com.rgi.common.tile.store.tms.TmsTileStore;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.GeoPackageTileStore;
@@ -83,7 +83,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
         try
         {
-            final com.rgi.common.coordinates.Coordinate<Double> center = profile.toGlobalGeodetic(tileStore.calculateBounds().getCenter());
+            final com.rgi.common.coordinates.Coordinate<Double> center = profile.toGlobalGeodetic(tileStore.getBounds().getCenter());
 
             this.map().setDisplayPosition(new Coordinate(center.getY(),
                                                          center.getX()),
