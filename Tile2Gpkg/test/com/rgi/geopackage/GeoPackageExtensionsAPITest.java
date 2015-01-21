@@ -1,4 +1,4 @@
-package com.rgi.geopackage.test;
+package com.rgi.geopackage;
 
 import java.io.File;
 import java.nio.file.FileSystems;

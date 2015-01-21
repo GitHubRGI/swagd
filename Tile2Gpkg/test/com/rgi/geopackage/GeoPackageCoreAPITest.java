@@ -16,7 +16,7 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.geopackage.test;
+package com.rgi.geopackage;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
