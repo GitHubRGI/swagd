@@ -113,26 +113,23 @@ public class TileJob implements Runnable {
 		osr.UseExceptions();
 		gdal.AllRegister();
 		try {
-			tile(this.file);
+			tile(file);
 			System.out.println("Done.");
 		} catch (TilingException te) {
-			System.err.println("Unable to complete tiling job: "
-					+ te.getMessage());
+			System.err.println("Unable to complete tiling job: " + te.getMessage());
 			te.printStackTrace();
 		}
 	}
 
 	private void tile(File inputFile) throws TilingException {
-		this.profileSetting = Settings.Profile.valueOf(this.settings
-				.get(Setting.TileProfile));
-		this.tileProfile = TileProfileFactory.create(this.profileSetting.getAuthority(),
-				this.profileSetting.getID());
+		profileSetting = Settings.Profile.valueOf(this.settings.get(Setting.TileProfile));
+		tileProfile = TileProfileFactory.create(profileSetting.getAuthority(),
+												profileSetting.getID());
 
-		this.inputDS = null;
+		inputDS = null;
 		try {
-			this.inputDS = gdal.Open(inputFile.getAbsolutePath(),
-					gdalconstConstants.GA_ReadOnly);
-			if (this.inputDS == null) {
+			inputDS = gdal.Open(inputFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
+			if (inputDS == null) {
 				System.err.println("GDALOpen failed: " + gdal.GetLastErrorNo());
 				System.err.println(gdal.GetLastErrorMsg());
 				return;
@@ -141,66 +138,65 @@ public class TileJob implements Runnable {
 			System.err.println("Unable to open input file: " + e.getMessage());
 		}
 
-		if (this.inputDS.getRasterCount() == 0) {
+		if (inputDS.getRasterCount() == 0) {
 			throw new IllegalArgumentException("Input file contains no rasters");
 		}
 
 		// try to determine input SRS
-		this.inputWKT = this.inputDS.GetProjection();
-		if (this.inputWKT == null && this.inputDS.GetGCPCount() != 0) {
-			this.inputWKT = this.inputDS.GetGCPProjection();
+		inputWKT = inputDS.GetProjection();
+		if (inputWKT == null && inputDS.GetGCPCount() != 0) {
+			inputWKT = inputDS.GetGCPProjection();
 		}
-		this.inputSRS = null;
-		if (this.inputWKT != null) {
-			this.inputSRS = new SpatialReference();
-			this.inputSRS.ImportFromWkt(this.inputWKT);
+		inputSRS = null;
+		if (inputWKT != null) {
+			inputSRS = new SpatialReference();
+			inputSRS.ImportFromWkt(inputWKT);
 		}
 
-		double[] inputGT = this.inputDS.GetGeoTransform();
+		double[] inputGT = inputDS.GetGeoTransform();
 		if (inputGT[2] != 0 || inputGT[4] != 0) {
 			throw new IllegalArgumentException(
 					"Georeference of the input file contains rotation or skew. Such file is not supported.");
 		}
 
-		this.noDataColor = this.settings.getColor(Setting.NoDataColor);
+		noDataColor = settings.getColor(Setting.NoDataColor);
 
-		this.outputSRS = null;
-		if (Arrays.equals(inputGT,
-				new double[] { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 })
-				&& this.inputDS.GetGCPCount() == 0) {
+		outputSRS = null;
+		if (Arrays.equals(inputGT, new double[] { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 }) &&
+			inputDS.GetGCPCount() == 0) {
 			throw new IllegalArgumentException(
 					"Unable to generate non-raster tiles from non-georeferenced input");
 		}
 
-		this.outputSRS = new SpatialReference();
-		this.outputSRS.ImportFromEPSG(this.profileSetting.getID());
+		outputSRS = new SpatialReference();
+		outputSRS.ImportFromEPSG(profileSetting.getID());
 
-		this.outputDS = null;
+		outputDS = null;
 
 		// confirm reprojection is needed:
 		// no input projection? nothing to reproject!
 		// input matches output projection? no need to reproject
-		if (this.inputSRS != null
-				&& !this.inputSRS.ExportToProj4().equals(this.outputSRS.ExportToProj4())) {
+		if (inputSRS != null
+				&& !inputSRS.ExportToProj4().equals(outputSRS.ExportToProj4())) {
 			// TODO: get user preference resample quality
 			int resample = gdalconstConstants.GRA_Bilinear;
-			this.outputDS = gdal.AutoCreateWarpedVRT(this.inputDS, this.inputWKT,
-					this.outputSRS.ExportToWkt(), resample);
-			if (this.outputDS == null) {
+			outputDS = gdal.AutoCreateWarpedVRT(inputDS, inputWKT,
+					outputSRS.ExportToWkt(), resample);
+			if (outputDS == null) {
 				System.err.println("AutoCreateWarpedVRT returned null!");
 				return;
 			}
 		} else {
-			this.outputDS = this.inputDS;
+			outputDS = inputDS;
 		}
-		double[] outputGT = this.outputDS.GetGeoTransform();
-		BufferedImage source = convert(this.outputDS);
+		double[] outputGT = outputDS.GetGeoTransform();
+		BufferedImage source = convert(outputDS);
 
 		// image georeference points
 		Coordinate<Double> imageUpperLeft = new Coordinate<>(outputGT[0], outputGT[3]);
 		Coordinate<Double> imageLowerRight =
-				new Coordinate<>(outputGT[0] + outputGT[1] * this.outputDS.getRasterXSize(),
-									   outputGT[3] + outputGT[5] * this.outputDS.getRasterYSize());
+				new Coordinate<>(outputGT[0] + outputGT[1] * outputDS.getRasterXSize(),
+									   outputGT[3] + outputGT[5] * outputDS.getRasterYSize());
 
 		// generate tiles in compliance with TMS spec
 		// zoom level resolutions are in powers of 2
@@ -208,75 +204,147 @@ public class TileJob implements Runnable {
 		// TODO: get user's output preference coordinate system
 		// TODO: get bounds for user's preferred output coordinate system
 
+		// we'll be doing a lot of log2(x) (i.e. log base 2 of x). Since there isn't a 
+		// built-in function for this, we'll do log10(x)/log10(2). Rather than
+		// calculate log10(2) over and over, we'll do it once and store it here.
 		double log = Math.log(2);
-		BoundingBox worldBounds = this.tileProfile.getBounds();
+		BoundingBox worldBounds = tileProfile.getBounds();
+		// we'll be doing these calculations once for width and once for height
+		// but we'll start with width
 		double totalWorld = worldBounds.getWidth();
+		// the resolution in srs units per pixel of the reprojected source image
+		// probably won't perfectly match the resolution of one of our zoom levels,
+		// so we need to determine which zoom level it's closest to, so we can 
+		// scale down or up with the least loss or addition of data.
+		// Since zoom level resolutions will always be related to the number of
+		// tiles at a zoom level, and number of tiles will always be a power of 2, 
+		// we can reverse the calculation to get a fractional zoom level.
+		// Resolution = Size of the World / ( Number of Tiles * Pixels per Tile )
+		// and Number of Tiles(z) = 2 ^ z
+		// so
+		// z = log2( Size of the World / (Resolution * Pixels per Tile) )
 		double fractionalZoom = Math.log(worldBounds.getWidth()
 				/ (outputGT[1] * TILESIZE))
 				/ log; // fractional native zoom level for X
+		// now the 2 closest zoom levels will be the ceiling and floor of our 
+		// fractional zoom level. We'll calculate the resolution for each zoom
+		// level, and the difference between the zoom level resolution and
+		// our source image resolution. Whichever zoom level has the smallest
+		// difference in resolution from our source resolution will become our
+		// max zoom level.
 		// if all resolutions are identical, default to zooming larger
-		this.maxZoom = (int) Math.ceil(fractionalZoom);
-		double zoomResolution = totalWorld / (Math.pow(2, this.maxZoom) * TILESIZE);
+		// take the ceiling of our fractional zoom level
+		maxZoom = (int) Math.ceil(fractionalZoom);
+		// calculate the resolution for that zoom level
+		double zoomResolution = totalWorld / (Math.pow(2, maxZoom) * TILESIZE);
+		// take the difference between the zoom level resolution and the source resolution
+		// the zoom level resolution should be smaller due to the larger number of tiles.
 		double zoomDiff = outputGT[1] - zoomResolution;
+		// take the floor of our fractional zoom level
 		int tempZoom = (int) Math.floor(fractionalZoom);
+		// calculate the resolution for that zoom level
 		zoomResolution = totalWorld / (Math.pow(2, tempZoom) * TILESIZE);
+		// take the difference in resolutions and compare to our previous difference
 		if ((zoomResolution - outputGT[1]) < zoomDiff) {
-			this.maxZoom = tempZoom;
+			// a smaller difference means we've found a preferred zoom level
+			maxZoom = tempZoom;
+			// store the difference for future comparison
 			zoomDiff = outputGT[1] - zoomResolution;
 		}
+		// repeat the above calculations, but this time for height
 		totalWorld = worldBounds.getHeight();
+		// keep in mind that the resolution for Y is reported as negative,
+		// calculate the fractional zoom level for the source resolution
 		fractionalZoom = Math.log(totalWorld / ((-outputGT[5]) * TILESIZE))
 				/ log; // fractional native zoom level for X
+		// take the ceiling of our fractional zoom level
 		tempZoom = (int) Math.ceil(fractionalZoom);
+		// calculate the resolution
 		zoomResolution = totalWorld / (Math.pow(2, tempZoom) * TILESIZE);
+		// take the difference (again, negative resolution for Y from GDAL) 
+		// and compare to our previous smallest difference
 		if (((-outputGT[5]) - zoomResolution) < zoomDiff) {
-			this.maxZoom = tempZoom;
+			// a smaller difference means we've found a preferred zoom level
+			maxZoom = tempZoom;
+			// store the difference for future comparison
 			zoomDiff = zoomResolution - (-outputGT[5]);
 		}
+		// take the floor of our fractional zoom level
 		tempZoom = (int) Math.floor(fractionalZoom);
+		// calculate the resolution for that zoom level
 		zoomResolution = totalWorld / (Math.pow(2, tempZoom) * TILESIZE);
+		// take the difference (again, negative resolution for Y from GDAL) 
+		// and compare to our previous smallest difference. 
 		if ((zoomResolution - (-outputGT[5])) < zoomDiff) {
-			this.maxZoom = tempZoom;
+			// a smaller difference means we've found a preferred zoom level
+			maxZoom = tempZoom;
 		}
 
-		// next, find the zoom level where the entire image fits one tile
-		this.minZoom = (int) Math.floor(Math.log(worldBounds.getWidth()
-				/ (outputGT[1] * this.outputDS.getRasterXSize()))
+		// next, find the zoom level where the entire image fits one tile.
+		// similar to the above calculation for closest zoom level, but
+		// this time instead of choosing between ceiling and floor
+		// zoom levels, we'll always choose the floor. As before, the 
+		// calculation for fractional zoom level is:
+		// Resolution = Size of the World / ( Number of Tiles * Pixels per Tile )
+		// where, again, Number of Tiles is 2 ^ z 
+		// This time Resolution = Size of the Image / Pixels per Tile
+		// Plugging in this resolution, Pixels per Tile multiplies out, 
+		// and the calculation reduces to:
+		// z = log2( Size of the World / Size of the Image )
+		// again, do it once for width and once for height
+		minZoom = (int) Math.floor(Math.log(worldBounds.getWidth()
+				/ (outputGT[1] * outputDS.getRasterXSize()))
 				/ log);
 		tempZoom = (int) Math.floor(Math.log(worldBounds.getHeight()
-				/ ((-outputGT[5]) * this.outputDS.getRasterYSize()))
+				/ ((-outputGT[5]) * outputDS.getRasterYSize()))
 				/ log);
-		if (tempZoom < this.minZoom) {
-			this.minZoom = tempZoom;
+		// choose the lower of the calculated zoom levels
+		if (tempZoom < minZoom) {
+			minZoom = tempZoom;
 		}
 
 		// TODO: get user preference for origin, use preference to calculate
 		// bounds
-		TileOrigin origin = TileOrigin
-				.valueOf(this.settings.get(Setting.TileOrigin));
+		TileOrigin origin = TileOrigin.valueOf(settings.get(Setting.TileOrigin));
 
 		int numTilesWidth = 1;
 		int numTilesHeight = 1;
 
-		// decrease minimum zoom until the entire image fits entirely within a
-		// single tile
+		// We know our minimum zoom is of sufficient resolution that our
+		// source image will fit entirely within the tile size, but it
+		// might not be aligned appropriately to actually fall entirely
+		// within the bounds of a single tile. As such, we need to
+		// decrease the minimum zoom until the entire image fits
+		// entirely within the bounds of a single tile
 		Coordinate<Integer> minZoomUpperLeftTileCoordinate = null;
 		Coordinate<Integer> minZoomLowerRightTileCoordinate = null;
 		do {
-			// TileMatrix minMatrix = new TileMatrix(profile, minZoom, origin);
-			TileSet matrixBounds = new TileSet(this.minZoom, origin);
-			int zoomLevelSize = (int) Math.pow(2, this.minZoom);
+			// Calculate the tile set parameters for the zoom level
+			TileSet matrixBounds = new TileSet(minZoom, origin);
+			// Determine into which tile in the tile set the upper left 
+			// corner of our source image will fall
 			minZoomUpperLeftTileCoordinate = transform(worldBounds,
 					imageUpperLeft, matrixBounds);
+			// Determine into which tile in the tile set the lower right
+			// corner of our source image will fall
 			minZoomLowerRightTileCoordinate = transform(worldBounds,
 					imageLowerRight, matrixBounds);
+			// calculate the number of tiles these coordinates span
+			// we take the absolute value so we don't have to care about
+			// origin, and whether the coordinates increase or decrease
+			// left to right and top to bottom. Add one because the 
+			// max coordinate should be inclusive of its tile, not exclusive
 			numTilesWidth = Math.abs(minZoomUpperLeftTileCoordinate.getX()
 					- minZoomLowerRightTileCoordinate.getX()) + 1;
 			numTilesHeight = Math.abs(minZoomUpperLeftTileCoordinate.getY()
 					- minZoomLowerRightTileCoordinate.getY()) + 1;
+			// if the number of tiles needed for either height or width 
+			// exceeds 1, decrease the minimum zoom level and try again.
 			if (numTilesWidth > 1 || numTilesHeight > 1) {
-				--this.minZoom;
+				--minZoom;
 			}
+			// If we've done our work right this should happen no more
+			// than once, but just in case, we'll put it in a loop.
 		} while (numTilesWidth > 1 || numTilesHeight > 1);
 
 		// TODO: get user preference for generating a GPKG-compliant set of
@@ -290,7 +358,7 @@ public class TileJob implements Runnable {
 		// generate base tile set
 		// TileMatrix maxMatrix = new TileMatrix(profile, maxZoom,
 		// Origin.BottomLeft);
-		TileSet matrixBounds = new TileSet(this.maxZoom, origin);
+		TileSet matrixBounds = new TileSet(maxZoom, origin);
 		Coordinate<Integer> upperLeftTileCoordinate = transform(worldBounds,
 				imageUpperLeft, matrixBounds);
 		Coordinate<Integer> lowerRightTileCoordinate = transform(worldBounds,
@@ -300,52 +368,49 @@ public class TileJob implements Runnable {
 		numTilesHeight = Math.abs(lowerRightTileCoordinate.getY()
 				- upperLeftTileCoordinate.getY()) + 1;
 
-		int zoomLevelSize = (int) Math.pow(2, this.maxZoom);
+		int zoomLevelTiles = (int) Math.pow(2, maxZoom);
 
 		// srs units (e.g. meters) per pixel = (world size / num tiles) / pixels
 		// per tile
-		double rx = (this.tileProfile.getBounds().getWidth() / zoomLevelSize)
-				/ TILESIZE;
-		double ry = (this.tileProfile.getBounds().getHeight() / zoomLevelSize)
-				/ TILESIZE;
+		double rx = (tileProfile.getBounds().getWidth() / zoomLevelTiles) / TILESIZE;
+		double ry = (tileProfile.getBounds().getHeight() / zoomLevelTiles) / TILESIZE;
 
 		// pixels = (pixels * meters per pixel) / meters per pixel
 		// w' = (w * r) / r'
-		int scaledWidth = (int) ((this.outputDS.getRasterXSize() * outputGT[1]) / rx);
-		int scaledHeight = (int) ((this.outputDS.getRasterYSize() * (-outputGT[5])) / ry);
+		int scaledWidth = (int) ((outputDS.getRasterXSize() * outputGT[1]) / rx);
+		int scaledHeight = (int) ((outputDS.getRasterYSize() * (-outputGT[5])) / ry);
 
 		// TileMatrixSet maxTileSet = new TileMatrixSet(maxMatrix);
 		// Tile upperLeftTile = tileStore.addTile(upperLeftTileCoordinate);
-		Dimension2D tileBounds = this.tileProfile.getTileDimensions(this.maxZoom);
+		Dimension2D tileBounds = tileProfile.getTileDimensions(maxZoom);
 
 		// pixels = (meters - meters) / meters per pixel
 		int offsetX = (int) ((outputGT[0] - tileBounds.getWidth()) / rx);
 		int offsetY = (int) ((tileBounds.getHeight() - outputGT[3]) / ry);
 
 		for (int x = 0; x < numTilesWidth; ++x) {
-			int tileX = upperLeftTileCoordinate.getX()
-					+ (x * origin.getDeltaX());
+			int tileX = upperLeftTileCoordinate.getX() + (x * origin.getDeltaX());
 			for (int y = 0; y < numTilesHeight; ++y) {
-				int tileY = upperLeftTileCoordinate.getY()
-						+ (y * origin.getDeltaY());
-				BufferedImage tileImage = new BufferedImage(TILESIZE, TILESIZE,
-						BufferedImage.TYPE_INT_ARGB);
+				int tileY = upperLeftTileCoordinate.getY() + (y * origin.getDeltaY());
+				BufferedImage tileImage = new BufferedImage(TILESIZE, TILESIZE, BufferedImage.TYPE_INT_ARGB);
 				Graphics2D g = tileImage.createGraphics();
 				g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-						RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+								   RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 				g.setColor(this.noDataColor);
 				g.fillRect(0, 0, TILESIZE, TILESIZE);
-				g.drawImage(source, offsetX - (x * TILESIZE), offsetY
-						- (y * TILESIZE), scaledWidth, scaledHeight, null);
+				g.drawImage(source, offsetX - (x * TILESIZE), 
+							offsetY	- (y * TILESIZE), scaledWidth, scaledHeight, null);
 				try {
-					this.tileStore.addTile(this.tileProfile.absoluteToCrsCoordinate(new AbsoluteTileCoordinate(tileY, tileX, this.maxZoom, origin)), this.maxZoom, tileImage);
+					tileStore.addTile(
+							tileProfile.absoluteToCrsCoordinate(
+									new AbsoluteTileCoordinate(tileY, tileX, maxZoom, origin)), maxZoom, tileImage);
 				} catch (Exception e) {
 					throw new TilingException("Unable to add tile", e);
 				}
 			}
 		}
 
-		for (int z = this.maxZoom - 1; z >= this.minZoom; --z) {
+		for (int z = maxZoom - 1; z >= minZoom; --z) {
 			// TileMatrix matrix = new TileMatrix(profile, z, origin);
 			matrixBounds = new TileSet(z, origin);
 			upperLeftTileCoordinate = transform(worldBounds, imageUpperLeft,
@@ -357,80 +422,75 @@ public class TileJob implements Runnable {
 			numTilesHeight = Math.abs(lowerRightTileCoordinate.getY()
 					- upperLeftTileCoordinate.getY()) + 1;
 
-			zoomLevelSize = (int) Math.pow(2, z);
+			zoomLevelTiles = (int) Math.pow(2, z);
 			// srs units (e.g. meters) per pixel = (world size / num tiles) /
 			// pixels per tile
-			rx = (this.tileProfile.getBounds().getWidth() / zoomLevelSize)
-					/ TILESIZE;
-			ry = (this.tileProfile.getBounds().getHeight() / zoomLevelSize)
-					/ TILESIZE;
+			rx = (tileProfile.getBounds().getWidth() / zoomLevelTiles) / TILESIZE;
+			ry = (tileProfile.getBounds().getHeight() / zoomLevelTiles) / TILESIZE;
 
 			// pixels = (pixels * meters per pixel) / meters per pixel
 			// w' = (w * r) / r'
-			scaledWidth = (int) ((this.outputDS.getRasterXSize() * outputGT[1]) / rx);
-			scaledHeight = (int) ((this.outputDS.getRasterYSize() * (-outputGT[5])) / ry);
+			scaledWidth = (int) ((outputDS.getRasterXSize() * outputGT[1]) / rx);
+			scaledHeight = (int) ((outputDS.getRasterYSize() * (-outputGT[5])) / ry);
 
 			// upperLeftTile = maxTileSet.addTile(upperLeftTileCoordinate);
-			tileBounds = this.tileProfile.getTileDimensions(this.maxZoom);
+			tileBounds = tileProfile.getTileDimensions(maxZoom);
 			offsetX = (int) ((outputGT[0] - tileBounds.getWidth()) / rx);
 			offsetY = (int) ((tileBounds.getHeight() - outputGT[3]) / ry);
 
 			// TileMatrixSet tileSet = new TileMatrixSet(matrix);
 			for (int x = 0; x < numTilesWidth; ++x) {
-				int tileX = upperLeftTileCoordinate.getX()
-						+ (x * origin.getDeltaX());
+				int tileX = upperLeftTileCoordinate.getX() + (x * origin.getDeltaX());
 				for (int y = 0; y < numTilesHeight; ++y) {
-					int tileY = upperLeftTileCoordinate.getY()
-							+ (y * origin.getDeltaY());
-					BufferedImage tileImage = new BufferedImage(TILESIZE,
-							TILESIZE, BufferedImage.TYPE_INT_ARGB);
+					int tileY = upperLeftTileCoordinate.getY() + (y * origin.getDeltaY());
+					BufferedImage tileImage = new BufferedImage(TILESIZE, TILESIZE, BufferedImage.TYPE_INT_ARGB);
 					Graphics2D g = tileImage.createGraphics();
 					g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-							RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+									   RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
 					if (direct) {
-						g.drawImage(source, offsetX - (x * TILESIZE), offsetY
-								- (y * TILESIZE), scaledWidth, scaledHeight,
-								null);
+						g.drawImage(source, offsetX - (x * TILESIZE), 
+									offsetY - (y * TILESIZE), scaledWidth, scaledHeight, null);
 					} else {
 						// generate tile using next highest zoom level's tiles.
-						BufferedImage preScaled = new BufferedImage(
-								2 * TILESIZE, 2 * TILESIZE,
-								BufferedImage.TYPE_INT_ARGB);
+						BufferedImage preScaled = new BufferedImage(2 * TILESIZE, 2 * TILESIZE, BufferedImage.TYPE_INT_ARGB);
 						Graphics2D g_scaled = preScaled.createGraphics();
 						for (int zx = 0; zx < 2; ++zx) {
 							for (int zy = 0; zy < 2; ++zy) {
-								AbsoluteTileCoordinate tileCoordinate = new AbsoluteTileCoordinate(
-										(2 * tileX) + f(zx, origin.getDeltaX()),
-										(2 * tileY) + f(zy, origin.getDeltaY()),
-										z, origin);
+								// The coordinate of the tile that we need to stitch into our new tile is
+								// double our current coordinate, plus the appropriate offset based on the
+								// iterator and origin.
+								AbsoluteTileCoordinate tileCoordinate = 
+										new AbsoluteTileCoordinate((2 * tileX) + f(zx, origin.getDeltaX()),
+																   (2 * tileY) + f(zy, origin.getDeltaY()),
+																   z, origin);
 								Tile upperTile;
 								try {
-									upperTile = new Tile(tileCoordinate, this.tileStore.getTile(this.tileProfile.absoluteToCrsCoordinate(tileCoordinate), tileCoordinate.getZoomLevel()));
+									upperTile = new Tile(tileCoordinate, 
+														 tileStore.getTile(tileProfile.absoluteToCrsCoordinate(tileCoordinate), 
+																 		   tileCoordinate.getZoomLevel()));
 								} catch (Exception e) {
-									throw new TilingException(
-											"Problem getting tile", e);
+									throw new TilingException("Problem getting tile", e);
 								}
 								if (upperTile == null && compliant) {
-									upperTile = createCompliant(z + 1,
-											tileCoordinate, origin, this.maxZoom);
+									upperTile = createCompliant(z + 1, tileCoordinate, origin, maxZoom);
 								}
 								if (upperTile == null) {
-									g_scaled.setColor(this.noDataColor);
-									g_scaled.fillRect(zx * TILESIZE, zy
-											* TILESIZE, TILESIZE, TILESIZE);
+									g_scaled.setColor(noDataColor);
+									g_scaled.fillRect(zx * TILESIZE, zy * TILESIZE, TILESIZE, TILESIZE);
 								} else {
-									g_scaled.drawImage(
-											upperTile.getImageContents(), zx
-													* TILESIZE, zy * TILESIZE,
-											TILESIZE, TILESIZE, null);
+									g_scaled.drawImage(upperTile.getImageContents(), 
+													   zx * TILESIZE, zy * TILESIZE,
+													   TILESIZE, TILESIZE, null);
 								}
 							}
 						}
 						g.drawImage(preScaled, 0, 0, TILESIZE, TILESIZE, null);
 					}
 					try {
-						this.tileStore.addTile(this.tileProfile.absoluteToCrsCoordinate(new AbsoluteTileCoordinate(tileY, tileX, z, origin)), z, tileImage);
+						tileStore.addTile(
+								tileProfile.absoluteToCrsCoordinate(
+										new AbsoluteTileCoordinate(tileY, tileX, z, origin)), z, tileImage);
 					} catch (Exception e) {
 						throw new TilingException("Problem adding tile", e);
 					}
@@ -440,6 +500,40 @@ public class TileJob implements Runnable {
 	}
 
 	// TODO Attn Duff: documentation please
+	// What, this wasn't immediately obvious? :D
+	// the short answer: given a z value of 0 or 1, and a d value of -1 or 1,
+	// inverts z if d is -1.
+	// the long answer:
+	// When stitching tiles from a higher zoom level
+	// together to create a tile for this zoom level,
+	// we need to get the correct tile coordinates
+	// based on the tile set's origin. The origin contains
+	// a delta value (d) for the x and y directions, to inform
+	// us whether it is a left-to-right or right-to-left 
+	// system, and top-to-bottom or bottom-to-top system.
+	// we always iterate left-to-right and top-to-bottom (i.e.
+	// upper left origin) but if our origin is lower right (dx=-1, dy=-1), 
+	// then we need to transform our iterators like so:
+	// +---+---+     +---+---+
+	// |0,0|0,1|     |1,1|1,0|
+	// +---+---+ --> +---+---+
+	// |1,0|1,1|     |0,1|0,0|
+	// +---+---+     +---+---+
+	// e.g.: getting source tiles to build tile 4,4:
+	// z=n	         z=n+1         z=n+1
+	//               upper left    lower right
+	// +-------+     +---+---+     +---+---+ 
+	// |       |     |8,8|9,8|     |9,9|8,9|
+	// |  4,4  |     +---+---+     +---+---+
+	// |       |     |8,9|9,9|     |9,8|8,8|
+	// +-------+     +---+---+     +---+---+
+	/**
+	 * given a z value of 0 or 1, and a d value of -1 or 1,
+	 * inverts z if d is -1.
+	 * @param z the iterator, 0 or 1
+	 * @param d the origin delta, -1 or 1
+	 * @return the transformed z value
+	 */
 	private static int f(int z, int d) {
 		return d > 0 ? z : z > 0 ? 0 : 1;
 	}
@@ -494,7 +588,7 @@ public class TileJob implements Runnable {
 		// writeTile(tile);
 		try {
 			final AbsoluteTileCoordinate tileCoordinate = new AbsoluteTileCoordinate(position.getY(), position.getX(), maxZoom, origin);
-		    this.tileStore.addTile(this.tileProfile.absoluteToCrsCoordinate(tileCoordinate), maxZoom, tileImage);
+		    tileStore.addTile(tileProfile.absoluteToCrsCoordinate(tileCoordinate), maxZoom, tileImage);
 			return new Tile(tileCoordinate, tileImage);
 		} catch (Exception e) {
 			throw new TilingException("Unable to add tile", e);
