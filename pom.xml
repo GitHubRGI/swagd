@@ -5,14 +5,16 @@
                         http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-  <!-- Relationships block -->
     <groupId>com.rgi.TilingApp</groupId>
     <artifactId>SWAGD</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Software for Aggregating Geospatial Data</name>
     <packaging>pom</packaging>
     <properties>
+        <jdk.version>1.8</jdk.version>
         <jacoco.version>0.7.2.201409121644</jacoco.version>
+        <compiler.version>2.5.1</compiler.version>
+        <coveralls.version>3.0.1</coveralls.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jacoco.report.common>Common/target/site/jacoco/jacoco.xml</jacoco.report.common>
         <jacoco.report.gdal2tiles>Gdal2Tiles/target/site/jacoco/jacoco.xml</jacoco.report.gdal2tiles>
@@ -38,10 +40,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
+                <version>${compiler.version}</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -60,7 +62,7 @@
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>${coveralls.version}</version>
                 <configuration>
                     <jacocoReports>
                         <jacocoReport>${jacoco.report.common}</jacocoReport>
@@ -71,7 +73,7 @@
                         <jacocoReport>${jacoco.report.packager}</jacocoReport>
                         <jacocoReport>${jacoco.report.rgisuite}</jacocoReport>
                     </jacocoReports>
-                    <!--dryRun>true</dryRun-->
+                    <dryRun>true</dryRun>
                 </configuration>
             </plugin>
         </plugins>
