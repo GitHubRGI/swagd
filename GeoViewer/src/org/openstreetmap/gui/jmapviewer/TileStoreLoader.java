@@ -78,6 +78,10 @@ public class TileStoreLoader implements TileLoader
 
                 try
                 {
+//                    final int x = tile.getXtile();
+//                    final int y = tile.getYtile();
+//                    final int z = tile.getZoom();
+
                     final BufferedImage image = TileStoreLoader.this.tileStore.getTile(TileStoreLoader.this.toCrsCoordinate(tile), tile.getZoom());
 
                     if(image != null)

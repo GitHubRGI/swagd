@@ -52,7 +52,7 @@ public class ZoomTimesTwo implements TileScheme
 
         this.zoomLevelDimensions = new MatrixDimensions[maximumZoomLevel - minimumZoomLevel];
 
-        for(int zoomLevel = 0; zoomLevel < maximumZoomLevel; ++zoomLevel)
+        for(int zoomLevel = minimumZoomLevel; zoomLevel < maximumZoomLevel; ++zoomLevel)
         {
             this.zoomLevelDimensions[zoomLevel - minimumZoomLevel] = new MatrixDimensions(initialHeight * (int)Math.pow(2.0, zoomLevel),
                                                                                           initialWidth  * (int)Math.pow(2.0, zoomLevel));

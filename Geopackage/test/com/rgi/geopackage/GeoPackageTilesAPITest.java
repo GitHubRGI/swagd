@@ -49,7 +49,6 @@ import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.LatLongConversions;
 import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.RelativeTileCoordinate;
@@ -2809,7 +2808,7 @@ public class GeoPackageTilesAPITest
 
             Assert.assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
                                        + "\nExpected Row: 1, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
-                       relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 0);
+                       relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 1);
 
         }
         finally
@@ -2868,7 +2867,7 @@ public class GeoPackageTilesAPITest
 
             Assert.assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
                                        + "\nExpected Row: 1, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
-                       relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 1);
+                       relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 2);
         }
         finally
         {
@@ -3158,7 +3157,7 @@ public class GeoPackageTilesAPITest
                                     + "    \nExpected Row: 1, Expected Column: 1.\nActual Row: %d, Actual Column: %d.",
                                     relativeCoord.getRow(),
                                     relativeCoord.getColumn()),
-                        relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 1);
+                        relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 2);
 
         }
         finally
@@ -3305,7 +3304,7 @@ public class GeoPackageTilesAPITest
 
             Assert.assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
                                        + "\nExpected Row: 2, Expected Column: 18. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
-                       relativeCoord.getRow() == 2 && relativeCoord.getColumn() == 18);
+                       relativeCoord.getRow() == 3 && relativeCoord.getColumn() == 18);
         }
         finally
         {
@@ -3363,7 +3362,7 @@ public class GeoPackageTilesAPITest
 
             Assert.assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
                                        + "\nExpected Row: 0, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
-                       relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 0);
+                       relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 0);
         }
         finally
         {
@@ -3479,7 +3478,7 @@ public class GeoPackageTilesAPITest
 
             Assert.assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
                                        + "\nExpected Row: 0, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
-                       relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 1);
+                       relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 2);
         }
         finally
         {
@@ -3595,7 +3594,7 @@ public class GeoPackageTilesAPITest
 
             Assert.assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
                                        + "\nExpected Row: 1, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
-                       relativeCoord.getRow() == 1 && relativeCoord.getColumn() == 1);
+                       relativeCoord.getRow() == 2 && relativeCoord.getColumn() == 1);
         }
         finally
         {
