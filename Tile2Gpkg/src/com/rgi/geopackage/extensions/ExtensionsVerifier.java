@@ -43,7 +43,11 @@ import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.TableDefinition;
 import com.rgi.geopackage.verification.UniqueDefinition;
 import com.rgi.geopackage.verification.Verifier;
-
+/**
+ * 
+ * @author Jenifer Cochran
+ *
+ */
 public class ExtensionsVerifier extends Verifier
 {
     private class ExtensionData

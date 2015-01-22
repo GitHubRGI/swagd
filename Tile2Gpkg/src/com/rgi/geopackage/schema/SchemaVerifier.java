@@ -43,7 +43,11 @@ import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.TableDefinition;
 import com.rgi.geopackage.verification.UniqueDefinition;
 import com.rgi.geopackage.verification.Verifier;
-
+/**
+ * 
+ * @author Jenifer Cochran
+ *
+ */
 public class SchemaVerifier extends Verifier
 {
     private class DataColumns
@@ -222,7 +226,7 @@ public class SchemaVerifier extends Verifier
                                   + "column value from the gpkg_data_column_constraints table. ",
                   severity  = Severity.Warning)
     public void Requirement59() throws AssertionError
-    {
+    {//TODO bug with printing out info
         if(this.hasDataColumnsTable && this.hasDataColumnsConstraintsTable)
         {
             for(DataColumnConstraints dataColumnConstraints: this.dataColumnConstraintsValues)
@@ -572,7 +576,6 @@ public class SchemaVerifier extends Verifier
                                                           {
                                                               dataColumnConstraints.maxIsInclusive = null;
                                                           }
-                                                          //dataColumnConstraints.description    = resultSet.getString("description"); //TODO does this column exist??
                                                           
                                                           return dataColumnConstraints;
                                                       }
