@@ -30,7 +30,7 @@
         <module>Gdal2Tiles</module>
         <module>GeoViewer</module>
         <module>IntegrationTest</module>
-        <module>Tile2Gpkg</module>
+        <module>Geopackage</module>
         <module>Packager</module>
         <module>RGISuite</module>
     </modules>
