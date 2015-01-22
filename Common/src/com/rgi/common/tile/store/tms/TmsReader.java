@@ -339,7 +339,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     }
 
     private Set<Integer> zoomLevels = null;
-    private BoundingBox  bounds    = null;
-    private long         tileCount = -1;
-    private long         storeSize = -1;
+    private BoundingBox  bounds     = null;
+    private long         tileCount  = -1;
+    private long         storeSize  = -1;
 }

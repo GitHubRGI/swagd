@@ -37,12 +37,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.gdal.gdal.Band;
 import org.gdal.gdal.Dataset;
@@ -63,25 +58,26 @@ import com.rgi.common.tile.Tile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
-import com.rgi.common.tile.store.TileStore;
+import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.common.tile.store.TileStoreWriter;
 
 public class TileJob implements Runnable {
 	private static final int TILESIZE = 256;
-	private static final String TILEEXT = "png";
+	//private static final String TILEEXT = "png";
 
-	private File file = null;
-	private String fileName = null;
-	private Settings settings = null;
-	private Profile profileSetting = null;
-	private TileProfile tileProfile = null;
-	private SpatialReference inputSRS = null;
-	private Dataset inputDS = null;
-	private String inputWKT = null;
-	private SpatialReference outputSRS = null;
-	private Dataset outputDS = null;
+	private File file;
+	//private String fileName;
+	private Settings settings;
+	private Profile profileSetting;
+	private TileProfile tileProfile;
+	private SpatialReference inputSRS;
+	private Dataset inputDS;
+	private String inputWKT;
+	private SpatialReference outputSRS;
+	private Dataset outputDS;
 	private int minZoom = 0;
 	private int maxZoom = 0;
-	private Color noDataColor = null;
+	private Color noDataColor;
 
 	// adfGeoTransform[0] /* top left x */
 	// adfGeoTransform[1] /* w-e pixel resolution */
@@ -89,21 +85,23 @@ public class TileJob implements Runnable {
 	// adfGeoTransform[3] /* top left y */
 	// adfGeoTransform[4] /* 0 */
 	// adfGeoTransform[5] /* n-s pixel resolution (negative value) */
-	private double[] inputGT = null;
-	private double[] outputGT = null;
+	//private double[] inputGT;
+	//private double[] outputGT;
 
-	private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-	private List<Future<?>> tasks = new ArrayList<>();
+	//private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	//private List<Future<?>> tasks = new ArrayList<>();
 
-	private TileStore tileStore = null;
+	private final TileStoreReader tileStoreReader;
+	private final TileStoreWriter tileStoreWriter;
 
 	private TaskMonitor monitor;
-	private double workTotal = 0;
-	private int workUnits = 0;
+	//private double workTotal = 0;
+	//private int workUnits = 0;
 
-	public TileJob(File file, TileStore tileStore, Settings settings, TaskMonitor monitor) {
+	public TileJob(File file, TileStoreReader tileStoreReader, TileStoreWriter tileStoreWriter, Settings settings, TaskMonitor monitor) {
 		this.file = file;
-		this.tileStore = tileStore;
+		this.tileStoreReader = tileStoreReader;
+		this.tileStoreWriter = tileStoreWriter;
 		this.settings = settings;
 		this.monitor = monitor;
 	}
@@ -204,7 +202,7 @@ public class TileJob implements Runnable {
 		// TODO: get user's output preference coordinate system
 		// TODO: get bounds for user's preferred output coordinate system
 
-		// we'll be doing a lot of log2(x) (i.e. log base 2 of x). Since there isn't a 
+		// we'll be doing a lot of log2(x) (i.e. log base 2 of x). Since there isn't a
 		// built-in function for this, we'll do log10(x)/log10(2). Rather than
 		// calculate log10(2) over and over, we'll do it once and store it here.
 		double log = Math.log(2);
@@ -214,10 +212,10 @@ public class TileJob implements Runnable {
 		double totalWorld = worldBounds.getWidth();
 		// the resolution in srs units per pixel of the reprojected source image
 		// probably won't perfectly match the resolution of one of our zoom levels,
-		// so we need to determine which zoom level it's closest to, so we can 
+		// so we need to determine which zoom level it's closest to, so we can
 		// scale down or up with the least loss or addition of data.
 		// Since zoom level resolutions will always be related to the number of
-		// tiles at a zoom level, and number of tiles will always be a power of 2, 
+		// tiles at a zoom level, and number of tiles will always be a power of 2,
 		// we can reverse the calculation to get a fractional zoom level.
 		// Resolution = Size of the World / ( Number of Tiles * Pixels per Tile )
 		// and Number of Tiles(z) = 2 ^ z
@@ -226,7 +224,7 @@ public class TileJob implements Runnable {
 		double fractionalZoom = Math.log(worldBounds.getWidth()
 				/ (outputGT[1] * TILESIZE))
 				/ log; // fractional native zoom level for X
-		// now the 2 closest zoom levels will be the ceiling and floor of our 
+		// now the 2 closest zoom levels will be the ceiling and floor of our
 		// fractional zoom level. We'll calculate the resolution for each zoom
 		// level, and the difference between the zoom level resolution and
 		// our source image resolution. Whichever zoom level has the smallest
@@ -261,7 +259,7 @@ public class TileJob implements Runnable {
 		tempZoom = (int) Math.ceil(fractionalZoom);
 		// calculate the resolution
 		zoomResolution = totalWorld / (Math.pow(2, tempZoom) * TILESIZE);
-		// take the difference (again, negative resolution for Y from GDAL) 
+		// take the difference (again, negative resolution for Y from GDAL)
 		// and compare to our previous smallest difference
 		if (((-outputGT[5]) - zoomResolution) < zoomDiff) {
 			// a smaller difference means we've found a preferred zoom level
@@ -273,8 +271,8 @@ public class TileJob implements Runnable {
 		tempZoom = (int) Math.floor(fractionalZoom);
 		// calculate the resolution for that zoom level
 		zoomResolution = totalWorld / (Math.pow(2, tempZoom) * TILESIZE);
-		// take the difference (again, negative resolution for Y from GDAL) 
-		// and compare to our previous smallest difference. 
+		// take the difference (again, negative resolution for Y from GDAL)
+		// and compare to our previous smallest difference.
 		if ((zoomResolution - (-outputGT[5])) < zoomDiff) {
 			// a smaller difference means we've found a preferred zoom level
 			maxZoom = tempZoom;
@@ -283,12 +281,12 @@ public class TileJob implements Runnable {
 		// next, find the zoom level where the entire image fits one tile.
 		// similar to the above calculation for closest zoom level, but
 		// this time instead of choosing between ceiling and floor
-		// zoom levels, we'll always choose the floor. As before, the 
+		// zoom levels, we'll always choose the floor. As before, the
 		// calculation for fractional zoom level is:
 		// Resolution = Size of the World / ( Number of Tiles * Pixels per Tile )
-		// where, again, Number of Tiles is 2 ^ z 
+		// where, again, Number of Tiles is 2 ^ z
 		// This time Resolution = Size of the Image / Pixels per Tile
-		// Plugging in this resolution, Pixels per Tile multiplies out, 
+		// Plugging in this resolution, Pixels per Tile multiplies out,
 		// and the calculation reduces to:
 		// z = log2( Size of the World / Size of the Image )
 		// again, do it once for width and once for height
@@ -321,7 +319,7 @@ public class TileJob implements Runnable {
 		do {
 			// Calculate the tile set parameters for the zoom level
 			TileSet matrixBounds = new TileSet(minZoom, origin);
-			// Determine into which tile in the tile set the upper left 
+			// Determine into which tile in the tile set the upper left
 			// corner of our source image will fall
 			minZoomUpperLeftTileCoordinate = transform(worldBounds,
 					imageUpperLeft, matrixBounds);
@@ -332,13 +330,13 @@ public class TileJob implements Runnable {
 			// calculate the number of tiles these coordinates span
 			// we take the absolute value so we don't have to care about
 			// origin, and whether the coordinates increase or decrease
-			// left to right and top to bottom. Add one because the 
+			// left to right and top to bottom. Add one because the
 			// max coordinate should be inclusive of its tile, not exclusive
 			numTilesWidth = Math.abs(minZoomUpperLeftTileCoordinate.getX()
 					- minZoomLowerRightTileCoordinate.getX()) + 1;
 			numTilesHeight = Math.abs(minZoomUpperLeftTileCoordinate.getY()
 					- minZoomLowerRightTileCoordinate.getY()) + 1;
-			// if the number of tiles needed for either height or width 
+			// if the number of tiles needed for either height or width
 			// exceeds 1, decrease the minimum zoom level and try again.
 			if (numTilesWidth > 1 || numTilesHeight > 1) {
 				--minZoom;
@@ -381,7 +379,7 @@ public class TileJob implements Runnable {
 		int scaledHeight = (int) ((outputDS.getRasterYSize() * (-outputGT[5])) / ry);
 
 		// TileMatrixSet maxTileSet = new TileMatrixSet(maxMatrix);
-		// Tile upperLeftTile = tileStore.addTile(upperLeftTileCoordinate);
+		// Tile upperLeftTile = tileStoreWriter.addTile(upperLeftTileCoordinate);
 		Dimension2D tileBounds = tileProfile.getTileDimensions(maxZoom);
 
 		// pixels = (meters - meters) / meters per pixel
@@ -398,10 +396,10 @@ public class TileJob implements Runnable {
 								   RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 				g.setColor(this.noDataColor);
 				g.fillRect(0, 0, TILESIZE, TILESIZE);
-				g.drawImage(source, offsetX - (x * TILESIZE), 
+				g.drawImage(source, offsetX - (x * TILESIZE),
 							offsetY	- (y * TILESIZE), scaledWidth, scaledHeight, null);
 				try {
-					tileStore.addTile(
+					tileStoreWriter.addTile(
 							tileProfile.absoluteToCrsCoordinate(
 									new AbsoluteTileCoordinate(tileY, tileX, maxZoom, origin)), maxZoom, tileImage);
 				} catch (Exception e) {
@@ -449,7 +447,7 @@ public class TileJob implements Runnable {
 									   RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
 					if (direct) {
-						g.drawImage(source, offsetX - (x * TILESIZE), 
+						g.drawImage(source, offsetX - (x * TILESIZE),
 									offsetY - (y * TILESIZE), scaledWidth, scaledHeight, null);
 					} else {
 						// generate tile using next highest zoom level's tiles.
@@ -460,14 +458,14 @@ public class TileJob implements Runnable {
 								// The coordinate of the tile that we need to stitch into our new tile is
 								// double our current coordinate, plus the appropriate offset based on the
 								// iterator and origin.
-								AbsoluteTileCoordinate tileCoordinate = 
+								AbsoluteTileCoordinate tileCoordinate =
 										new AbsoluteTileCoordinate((2 * tileX) + f(zx, origin.getDeltaX()),
 																   (2 * tileY) + f(zy, origin.getDeltaY()),
 																   z, origin);
 								Tile upperTile;
 								try {
-									upperTile = new Tile(tileCoordinate, 
-														 tileStore.getTile(tileProfile.absoluteToCrsCoordinate(tileCoordinate), 
+									upperTile = new Tile(tileCoordinate,
+														 tileStoreReader.getTile(tileProfile.absoluteToCrsCoordinate(tileCoordinate),
 																 		   tileCoordinate.getZoomLevel()));
 								} catch (Exception e) {
 									throw new TilingException("Problem getting tile", e);
@@ -479,7 +477,7 @@ public class TileJob implements Runnable {
 									g_scaled.setColor(noDataColor);
 									g_scaled.fillRect(zx * TILESIZE, zy * TILESIZE, TILESIZE, TILESIZE);
 								} else {
-									g_scaled.drawImage(upperTile.getImageContents(), 
+									g_scaled.drawImage(upperTile.getImageContents(),
 													   zx * TILESIZE, zy * TILESIZE,
 													   TILESIZE, TILESIZE, null);
 								}
@@ -488,7 +486,7 @@ public class TileJob implements Runnable {
 						g.drawImage(preScaled, 0, 0, TILESIZE, TILESIZE, null);
 					}
 					try {
-						tileStore.addTile(
+						tileStoreWriter.addTile(
 								tileProfile.absoluteToCrsCoordinate(
 										new AbsoluteTileCoordinate(tileY, tileX, z, origin)), z, tileImage);
 					} catch (Exception e) {
@@ -509,10 +507,10 @@ public class TileJob implements Runnable {
 	// we need to get the correct tile coordinates
 	// based on the tile set's origin. The origin contains
 	// a delta value (d) for the x and y directions, to inform
-	// us whether it is a left-to-right or right-to-left 
+	// us whether it is a left-to-right or right-to-left
 	// system, and top-to-bottom or bottom-to-top system.
 	// we always iterate left-to-right and top-to-bottom (i.e.
-	// upper left origin) but if our origin is lower right (dx=-1, dy=-1), 
+	// upper left origin) but if our origin is lower right (dx=-1, dy=-1),
 	// then we need to transform our iterators like so:
 	// +---+---+     +---+---+
 	// |0,0|0,1|     |1,1|1,0|
@@ -522,7 +520,7 @@ public class TileJob implements Runnable {
 	// e.g.: getting source tiles to build tile 4,4:
 	// z=n	         z=n+1         z=n+1
 	//               upper left    lower right
-	// +-------+     +---+---+     +---+---+ 
+	// +-------+     +---+---+     +---+---+
 	// |       |     |8,8|9,8|     |9,9|8,9|
 	// |  4,4  |     +---+---+     +---+---+
 	// |       |     |8,9|9,9|     |9,8|8,8|
@@ -569,7 +567,7 @@ public class TileJob implements Runnable {
 							z, origin);
 					Tile upperTile;
 					try {
-						upperTile = new Tile(tileCoordinate, this.tileStore.getTile(this.tileProfile.absoluteToCrsCoordinate(tileCoordinate), tileCoordinate.getZoomLevel()));
+						upperTile = new Tile(tileCoordinate, this.tileStoreReader.getTile(this.tileProfile.absoluteToCrsCoordinate(tileCoordinate), tileCoordinate.getZoomLevel()));
 					} catch (Exception e) {
 						throw new TilingException("Unable to get tile", e);
 					}
@@ -588,7 +586,7 @@ public class TileJob implements Runnable {
 		// writeTile(tile);
 		try {
 			final AbsoluteTileCoordinate tileCoordinate = new AbsoluteTileCoordinate(position.getY(), position.getX(), maxZoom, origin);
-		    tileStore.addTile(tileProfile.absoluteToCrsCoordinate(tileCoordinate), maxZoom, tileImage);
+		    tileStoreWriter.addTile(tileProfile.absoluteToCrsCoordinate(tileCoordinate), maxZoom, tileImage);
 			return new Tile(tileCoordinate, tileImage);
 		} catch (Exception e) {
 			throw new TilingException("Unable to add tile", e);

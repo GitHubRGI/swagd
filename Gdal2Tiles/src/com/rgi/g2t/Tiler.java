@@ -38,8 +38,9 @@ import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfileFactory;
-import com.rgi.common.tile.store.TileStore;
 import com.rgi.common.tile.store.TileStoreException;
+import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.common.tile.store.TileStoreWriter;
 
 public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor {
   ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -99,24 +100,24 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor 
     File[] files = opts.getFiles(Setting.FileSelection);
     for (File file : files) {
 
-      TileStore tileStore = null;
       try {
-    	  String imageFormat = Settings.Type.valueOf(opts.get(Setting.TileType)).name();
-    	  String outputFolder = opts.get(Setting.TileFolder);
-        tileStore = new SimpleFileStore(file.getName(), TileProfileFactory.create("EPSG", profile.getID()), TileOrigin.UpperLeft, outputFolder, imageFormat);   // TODO is this the correct origin?
+          String imageFormat = Settings.Type.valueOf(opts.get(Setting.TileType)).name();
+          String outputFolder = opts.get(Setting.TileFolder);
+
+          TileStoreReader tileReader = new SimpleFileStoreReader(file.getName(), TileProfileFactory.create("EPSG", profile.getID()), TileOrigin.UpperLeft, outputFolder, imageFormat);   // TODO is this the correct origin?
+          TileStoreWriter tileWriter = new SimpleFileStoreWriter(file.getName(), TileProfileFactory.create("EPSG", profile.getID()), TileOrigin.UpperLeft, outputFolder, imageFormat);   // TODO is this the correct origin?
+
+          Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createTileJob(file, tileReader, tileWriter, opts, this))));
+          jobWaiter.setDaemon(true);
+          jobWaiter.start();
       } catch (TileStoreException tse) {
         System.err.println("Unable to create tile store for input file "+file.getName());
-        continue;
       }
-
-      Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createTileJob(file, tileStore, opts, this))));
-      jobWaiter.setDaemon(true);
-      jobWaiter.start();
     }
   }
 
-  private static Runnable createTileJob(File file, TileStore tileStore, Settings opts, TaskMonitor monitor) {
-    return new TileJob(file, tileStore, opts, monitor);
+  private static Runnable createTileJob(File file, TileStoreReader tileStoreReader, TileStoreWriter tileStoreWriter, Settings opts, TaskMonitor monitor) {
+    return new TileJob(file, tileStoreReader, tileStoreWriter, opts, monitor);
     //    return new FakeTileJob(file, opts, monitor);
   }
 
