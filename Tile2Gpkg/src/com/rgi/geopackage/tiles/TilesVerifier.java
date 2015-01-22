@@ -157,14 +157,9 @@ public class TilesVerifier extends Verifier
                                                         .map(resultSet -> {  try
                                                                                  {
                                                                                    final String pyramidName = resultSet.getString("table_name");
-                                                                                   if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), pyramidName))
-                                                                                   {
-                                                                                       return pyramidName;
-                                                                                   }
-                                                                                   else
-                                                                                   {
-                                                                                       return null;
-                                                                                   }
+                                                                                   return DatabaseUtility.tableOrViewExists(this.getSqliteConnection(),
+                                                                                                                            pyramidName) ? pyramidName
+                                                                                                                                         : null;
                                                                              }
                                                                              catch(final SQLException ex)
                                                                              {
@@ -1297,9 +1292,9 @@ public class TilesVerifier extends Verifier
                                                                                                                        tileData.matrixHeight = resultSet.getInt("gtmm_height");
                                                                                                                        tileData.zoomLevel = resultSet.getInt("udt_zoom");
                                                                                                                        tileData.tileID     = resultSet.getInt("udt_id");
-        
+
                                                                                                                        return tileData;
-        
+
                                                                                                                   }
                                                                                                                   catch(final SQLException ex)
                                                                                                                   {
