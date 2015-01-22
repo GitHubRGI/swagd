@@ -815,7 +815,7 @@ public class GeoPackageTiles
 
         if(!tileSetBounds.contains(crsCoordinate))
         {
-            return null;    // The requested srs coordinate is outside the bounds of our data
+            return null;    // The requested SRS coordinate is outside the bounds of our data
         }
 
         final Coordinate<Double> topLeft = tileSetBounds.getMin();
@@ -826,10 +826,8 @@ public class GeoPackageTiles
         final double normalizedSrsTileCoordinateY = crsCoordinate.getY() - topLeft.getY();
         final double normalizedSrsTileCoordinateX = crsCoordinate.getX() - topLeft.getX();
 
-        final int tileY = normalizedSrsTileCoordinateY != 0.0 ? (int)(Math.ceil(normalizedSrsTileCoordinateY / tileHeightInSrs)) - 1
-                                                              : 0; // Special case. If the normalized y component is 0.0, tileY should be 0, rather than - 1
-        final int tileX = normalizedSrsTileCoordinateX != 0.0 ? (int)(Math.ceil(normalizedSrsTileCoordinateX / tileWidthInSrs))  - 1
-                                                              : 0; // Special case. If the normalized x component is 0.0, tileX should be 0, rather than - 1
+        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);
+        final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
 
         return new RelativeTileCoordinate(tileY,
                                           tileX,
