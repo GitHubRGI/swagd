@@ -28,7 +28,7 @@ import com.rgi.common.tile.profile.TileProfile;
  * @author Luke D. Lambert
  *
  */
-public class TmsTileStore
+abstract class TmsTileStore
 {
     /**
      * Constructor
@@ -38,7 +38,7 @@ public class TmsTileStore
      * @param location
      *            The location of this tile store on-disk.
      */
-    public TmsTileStore(final TileProfile profile, final Path location)
+    protected TmsTileStore(final TileProfile profile, final Path location)
     {
         if(profile == null)
         {

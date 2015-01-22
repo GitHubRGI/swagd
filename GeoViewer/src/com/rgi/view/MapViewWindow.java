@@ -39,19 +39,18 @@ import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 import com.rgi.common.tile.profile.SphericalMercatorTileProfile;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
-import com.rgi.common.tile.store.TileStore;
 import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.tms.TmsTileStore;
+import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
-import com.rgi.geopackage.GeoPackageTileStore;
 import com.rgi.geopackage.tiles.TileSet;
 
 public class MapViewWindow extends JFrame implements JMapViewerEventListener
 {
     private static final long serialVersionUID = 1337L;
-    private JMapViewerTree    treeMap;
-    private TileLoader        loader;
+    private final JMapViewerTree    treeMap;
+    private final TileLoader        loader;
     //private final File        location;
 
     public MapViewWindow(final File location)
@@ -72,14 +71,14 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         final JPanel panel = new JPanel();
         this.add(panel, BorderLayout.NORTH);
 
-        TileStore tileStore = MapViewWindow.pickTileStore(location);
+        final TileStore tileStore = MapViewWindow.pickTileStore(location);
 
         this.loader = new TileStoreLoader(tileStore, this.map());
 
         this.map().setTileLoader(this.loader);
 
 
-        TileProfile profile = TileProfileFactory.create(tileStore.getCoordinateReferenceSystem());
+        final TileProfile profile = TileProfileFactory.create(tileStore.getCoordinateReferenceSystem());
 
         try
         {
@@ -89,7 +88,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
                                                          center.getX()),
                                           Collections.min(tileStore.getZoomLevels()));
         }
-        catch(TileStoreException ex)
+        catch(final TileStoreException ex)
         {
             ex.printStackTrace();
         }
@@ -106,11 +105,11 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         // resolution or current zoom level.
     }
 
-    private static TileStore pickTileStore(final File location)
+    private static TileStoreReader pickTileStore(final File location)
     {
         if(location.isDirectory()) // TMS or WMTS based directory create a TMS tile store
         {
-            return new TmsTileStore(new SphericalMercatorTileProfile(), location.toPath());
+            return new TmsReader(new SphericalMercatorTileProfile(), location.toPath());   // TODO: we need a way of selecting the profile/CRS
         }
 
         if(location.getName().toLowerCase().endsWith(".gpkg"))
@@ -124,7 +123,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
                 if(tileSets.size() > 0)
                 {
                     final TileSet set = tileSets.iterator().next(); // TODO this just picks the first one
-                    return new GeoPackageTileStore(gpkg, set);
+                    return new GeoPackageTileStoreReader(gpkg, set);
                 }
             }
             catch(final Exception e)
