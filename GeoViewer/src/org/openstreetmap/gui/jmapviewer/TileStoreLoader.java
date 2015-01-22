@@ -29,7 +29,7 @@ import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
-import com.rgi.common.tile.store.TileStore;
+import com.rgi.common.tile.store.TileStoreReader;
 
 /**
  * Class responsible for loading TMS tiles to a JMapViewer.
@@ -40,13 +40,14 @@ import com.rgi.common.tile.store.TileStore;
  */
 public class TileStoreLoader implements TileLoader
 {
-    private final TileLoaderListener         listener;
+    private final TileLoaderListener listener;
     //private TileSource                 tileSource;
-    private final TileStore                  tileStore;
-    private final TileProfile                tileProfile;
+    private final TileStoreReader    tileStore;
+    private final TileProfile        tileProfile;
+
     private static final BufferedImage TRANSPARENT_TILE = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
 
-    public TileStoreLoader(final TileStore tileStore, final TileLoaderListener listener)
+    public TileStoreLoader(final TileStoreReader tileStore, final TileLoaderListener listener)
     {
         this.tileStore   = tileStore;
         this.tileProfile = TileProfileFactory.create(tileStore.getCoordinateReferenceSystem());

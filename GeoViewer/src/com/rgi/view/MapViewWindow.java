@@ -36,6 +36,8 @@ import org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent;
 import org.openstreetmap.gui.jmapviewer.interfaces.JMapViewerEventListener;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 
+import store.GeoPackageReader;
+
 import com.rgi.common.tile.profile.SphericalMercatorTileProfile;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
@@ -71,7 +73,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         final JPanel panel = new JPanel();
         this.add(panel, BorderLayout.NORTH);
 
-        final TileStore tileStore = MapViewWindow.pickTileStore(location);
+        final TileStoreReader tileStore = MapViewWindow.pickTileStore(location);
 
         this.loader = new TileStoreLoader(tileStore, this.map());
 
@@ -123,7 +125,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
                 if(tileSets.size() > 0)
                 {
                     final TileSet set = tileSets.iterator().next(); // TODO this just picks the first one
-                    return new GeoPackageTileStoreReader(gpkg, set);
+                    return new GeoPackageReader(gpkg, set);
                 }
             }
             catch(final Exception e)
