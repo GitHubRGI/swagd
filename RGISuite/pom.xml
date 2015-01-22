@@ -7,6 +7,8 @@
 
     <properties>
         <jacoco.version>0.7.2.201409121644</jacoco.version>
+        <project.url>https://github.com/GitHubRGI/swagd</project.url>
+        <jar.plugin.version>2.5</jar.plugin.version>
     </properties>
 
   <parent>
@@ -84,6 +86,24 @@
                   </configuration>
               </execution>
           </executions>
+      </plugin>
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${jar.plugin.version}</version>
+          <configuration>
+              <archive>
+                  <index>true</index>
+                  <manifest>
+                      <addClasspath>true</addClasspath>
+                      <mainClass>com.rgi.suite.GeoSuite</mainClass>
+                  </manifest>
+                  <manifestEntries>
+                      <mode>development</mode>
+                      <url>${project.url}</url>
+                  </manifestEntries>
+              </archive>
+          </configuration>
       </plugin>
       <plugin>
           <groupId>org.apache.maven.plugins</groupId>
