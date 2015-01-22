@@ -23,22 +23,21 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
-import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileSource;
 
-import com.rgi.common.tile.store.TileStore;
 import com.rgi.common.tile.store.TileStoreException;
+import com.rgi.common.tile.store.TileStoreReader;
 
 public class TileSourceShell implements TileSource {
-	
-	private TileStore tileStore;
+
+	private final TileStoreReader tileStore;
 	private Set<Integer> zooms;
 
-	public TileSourceShell(TileStore tileStore) {
+	public TileSourceShell(final TileStoreReader tileStore) {
 		this.tileStore = tileStore;
 		try {
 			this.zooms = tileStore.getZoomLevels();
-		} catch (TileStoreException e) {
+		} catch (final TileStoreException e) {
 			e.printStackTrace();
 		}
 	}
@@ -49,7 +48,7 @@ public class TileSourceShell implements TileSource {
 	}
 
 	@Override
-	public String getAttributionText(int zoom, Coordinate topLeft, Coordinate botRight) {
+	public String getAttributionText(final int zoom, final Coordinate topLeft, final Coordinate botRight) {
 		return null;
 	}
 
@@ -99,7 +98,7 @@ public class TileSourceShell implements TileSource {
 	}
 
 	@Override
-	public String getTileUrl(int zoom, int tilex, int tiley) throws IOException {
+	public String getTileUrl(final int zoom, final int tilex, final int tiley) throws IOException {
 		return null;
 	}
 
@@ -114,55 +113,55 @@ public class TileSourceShell implements TileSource {
 	}
 
 	@Override
-	public double getDistance(double la1, double lo1, double la2, double lo2) {
+	public double getDistance(final double la1, final double lo1, final double la2, final double lo2) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int LonToX(double aLongitude, int aZoomlevel) {
+	public int LonToX(final double aLongitude, final int aZoomlevel) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int LatToY(double aLat, int aZoomlevel) {
+	public int LatToY(final double aLat, final int aZoomlevel) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public double XToLon(int aX, int aZoomlevel) {
+	public double XToLon(final int aX, final int aZoomlevel) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public double YToLat(int aY, int aZoomlevel) {
+	public double YToLat(final int aY, final int aZoomlevel) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public double lonToTileX(double lon, int zoom) {
+	public double lonToTileX(final double lon, final int zoom) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public double latToTileY(double lat, int zoom) {
+	public double latToTileY(final double lat, final int zoom) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public double tileXToLon(int x, int zoom) {
+	public double tileXToLon(final int x, final int zoom) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public double tileYToLat(int y, int zoom) {
+	public double tileYToLat(final int y, final int zoom) {
 		// TODO Auto-generated method stub
 		return 0;
 	}

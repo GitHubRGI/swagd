@@ -16,7 +16,7 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.common.tile.store.reader;
+package com.rgi.common.tile.store;
 
 import java.awt.image.BufferedImage;
 import java.util.Set;
@@ -24,8 +24,6 @@ import java.util.Set;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.tile.TileException;
-import com.rgi.common.tile.store.TileStoreException;
 
 /**
  * @author Luke Lambert
@@ -41,7 +39,7 @@ public interface TileStoreReader
      * @throws A
      *             TileStoreException in the event of a specific error.
      */
-    public BoundingBox calculateBounds() throws TileStoreException;
+    public BoundingBox getBounds() throws TileStoreException;
 
     /**
      * Count the number of tiles in this tile store.
@@ -54,25 +52,39 @@ public interface TileStoreReader
     public long countTiles() throws TileStoreException;
 
     /**
-     * Calculate the byte size of this tile store.
+     * Return the byte size of this tile store.
      *
      * @return The approximate size of this tile store in bytes.
      */
-    public long calculateSize() throws TileStoreException;
+    public long getByteSize() throws TileStoreException;
 
     /**
-     * Get a tile at a specified zoom, row (x), and column (y).
+     * Get a tile at a specified zoom, row (y), and column (x).
      *
-     * @param coordinate
-     *            Location that corresponds to the requested tile
+     * @param row
+     *             The 'y' portion of the coordinate. This value is relative to this tile store's tile scheme.
+     * @param column
+     *             The 'x' portion of the coordinate. This value is relative to this tile store's tile scheme.
      * @param zoomLevel
      *            The zoom level of the tile.
      * @return A buffered image, or null if the tile store has no tile data for the specified coordinate
      * @throws TileStoreException
-     *             A TileStoreException occurs if either the tile does not exist
-     *             or another error occurs during tile retrieval.
+     *             A TileStoreException occurs if an error occurs during tile retrieval.
      */
-    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileException, TileStoreException;
+    public BufferedImage getTile(final int row, final int column, final int zoomLevel) throws TileStoreException;
+
+    /**
+     * Get a tile at a specified zoom, and geographic coordinate.
+     *
+     * @param coordinate
+     *            Geographic coordinate that corresponds to the requested tile
+     * @param zoomLevel
+     *            The zoom level of the tile.
+     * @return A buffered image, or null if the tile store has no tile data for the specified coordinate
+     * @throws TileStoreException
+     *             A TileStoreException occurs if an error occurs during tile retrieval.
+     */
+    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException;
 
     /**
      * Ask the tile store for all the zoom levels that it contains.

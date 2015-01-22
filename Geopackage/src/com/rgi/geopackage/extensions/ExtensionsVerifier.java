@@ -172,13 +172,13 @@ public class ExtensionsVerifier extends Verifier
      * </code> value is not NULL. </blockquote> </div>
      *
      * @throws SQLException
-     * @throws AssertionError 
+     * @throws AssertionError
      */
-    @Requirement(number = 80, 
+    @Requirement(number = 80,
                  text   = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
                             + "in the gpkg_extensions table. The absence of a gpkg_extensions table or "
                             + "the absence of rows in gpkg_extnsions table SHALL both indicate the absence "
-                            + "of extensions to a GeoPackage.", 
+                            + "of extensions to a GeoPackage.",
                 severity = Severity.Warning)
     public void Requirement80() throws SQLException, AssertionError
     {
@@ -224,7 +224,7 @@ public class ExtensionsVerifier extends Verifier
                                                        + "Either create table %s or delete this entry.",
                                                     geTable,
                                                     geTable),
-                                     this.equals(geTable, tablesMatchesFound.get(geTable)));
+                                      ExtensionsVerifier.equals(geTable, tablesMatchesFound.get(geTable)));
                 }
             }
         }
@@ -238,7 +238,7 @@ public class ExtensionsVerifier extends Verifier
      * </blockquote> </div>
      *
      * @throws SQLException
-     * @throws AssertionError 
+     * @throws AssertionError
      */
     @Requirement(number = 81, text = "The column_name column value in a gpkg_extensions row SHALL"
             + " be the name of a column in the table specified by the "
@@ -263,7 +263,7 @@ public class ExtensionsVerifier extends Verifier
                                                                                     {   try
                                                                                         {
                                                                                             return resultSet.getString("name").equals(columnName);
-                                                                                        } 
+                                                                                        }
                                                                                         catch (final SQLException ex)
                                                                                         {
                                                                                             return false;
@@ -295,7 +295,7 @@ public class ExtensionsVerifier extends Verifier
      * Document that extends it. </blockquote> </div>
      *
      * @throws SQLException
-     * @throws AssertionError 
+     * @throws AssertionError
      */
     @Requirement(number = 82, text = "Each extension_name column value in a gpkg_extensions row SHALL be a "
             + "unique case sensitive value of the form <author>_<extension_name> "
@@ -305,14 +305,14 @@ public class ExtensionsVerifier extends Verifier
             + "SHALL be [a-zA-Z0-9_]. An extension_name for the �gpkg� author name "
             + "SHALL be one of those defined in this encoding standard or in an OGC "
             + "Best Practices Document that extends it.", severity = Severity.Warning)
-    public void Requirement82() throws SQLException, AssertionError
+    public void Requirement82() throws AssertionError
     {
         if (this.hasGpkgExtensionsTable)
         {
 
             final Set<String> invalidExtensionNames = this.gpkgExtensionsDataAndColumnName.keySet()
                                                                                     .stream()
-                                                                                    .map(extensionData -> this.verifyExtensionName(extensionData.extensionName))
+                                                                                    .map(extensionData -> ExtensionsVerifier.verifyExtensionName(extensionData.extensionName))
                                                                                     .filter(data -> data != null)
                                                                                     .collect(Collectors.toSet());
 
@@ -336,13 +336,13 @@ public class ExtensionsVerifier extends Verifier
      * Extension Template (Normative)</a>. </blockquote> </div>
      *
      * @throws SQLException
-     * @throws AssertionError 
+     * @throws AssertionError
      */
-    @Requirement(number = 83, 
+    @Requirement(number = 83,
                  text   = "The definition column value in a gpkg_extensions row SHALL "
                             + "contain or reference the text that results from documenting "
                             + "an extension by filling out the GeoPackage Extension Template "
-                            + "in GeoPackage Extension Template (Normative).", 
+                            + "in GeoPackage Extension Template (Normative).",
                  severity = Severity.Warning)
     public void Requirement83() throws SQLException, AssertionError
     {
@@ -392,7 +392,7 @@ public class ExtensionsVerifier extends Verifier
  * </blockquote>
  * </div>
      * @throws SQLException
-     * @throws AssertionError 
+     * @throws AssertionError
      */
     @Requirement(number = 84, text = "The scope column value in a gpkg_extensions row SHALL be lowercase "
             + "\"read-write\" for an extension that affects both readers and writers, "
@@ -432,7 +432,7 @@ public class ExtensionsVerifier extends Verifier
         }
     }
 
-    private String verifyExtensionName(final String extensionName)
+    private static String verifyExtensionName(final String extensionName)
     {
         final String author[] = extensionName.split("_", 2);
 
@@ -440,20 +440,20 @@ public class ExtensionsVerifier extends Verifier
         {
             return extensionName;
         }
-        if (author[0].matches("gpkg") || !author[0].matches("[a-zA-Z0-9]+")
-                || !author[1].matches("[a-zA-Z0-9_]+"))
+        if ( author[0].matches("gpkg") ||
+            !author[0].matches("[a-zA-Z0-9]+") ||
+            !author[1].matches("[a-zA-Z0-9_]+"))
         {
             return extensionName;
-        } else
-        {
-            return null;
         }
-}
+
+        return null;
+    }
 
 
-    private boolean equals(final String first, final String second)
+    private static boolean equals(final String first, final String second)
     {
-    return first == null ? second == null : first.equals(second);
+        return first == null ? second == null : first.equals(second);
     }
 
     private static final TableDefinition ExtensionsTableDefinition;

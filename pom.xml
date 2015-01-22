@@ -13,14 +13,14 @@
     <properties>
         <jdk.version>1.8</jdk.version>
         <jacoco.version>0.7.2.201409121644</jacoco.version>
-        <compiler.version>2.5.1</compiler.version>
+        <compiler.version>3.1</compiler.version>
         <coveralls.version>3.0.1</coveralls.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jacoco.report.common>Common/target/site/jacoco/jacoco.xml</jacoco.report.common>
         <jacoco.report.gdal2tiles>Gdal2Tiles/target/site/jacoco/jacoco.xml</jacoco.report.gdal2tiles>
         <jacoco.report.geoviewer>GeoViewer/target/site/jacoco/jacoco.xml</jacoco.report.geoviewer>
         <jacoco.report.integrationtest>IntegrationTest/target/site/jacoco/jacoco.xml</jacoco.report.integrationtest>
-        <jacoco.report.tile2gpkg>Tile2Gpkg/target/site/jacoco/jacoco.xml</jacoco.report.tile2gpkg>
+        <jacoco.report.tile2gpkg>Geopackage/target/site/jacoco/jacoco.xml</jacoco.report.tile2gpkg>
         <jacoco.report.packager>Packager/target/site/jacoco/jacoco.xml</jacoco.report.packager>
         <jacoco.report.rgisuite>RGISuite/target/site/jacoco/jacoco.xml</jacoco.report.rgisuite>
     </properties>
@@ -30,7 +30,7 @@
         <module>Gdal2Tiles</module>
         <module>GeoViewer</module>
         <module>IntegrationTest</module>
-        <module>Tile2Gpkg</module>
+        <module>Geopackage</module>
         <module>Packager</module>
         <module>RGISuite</module>
     </modules>
