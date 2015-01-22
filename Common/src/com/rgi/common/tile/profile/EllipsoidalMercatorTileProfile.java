@@ -57,7 +57,7 @@ public class EllipsoidalMercatorTileProfile implements TileProfile
         this.scaledEarthEquatorialRadius      = UnscaledEarthEquatorialRadius * earthEquatorialRadiusScaleFactor;
         this.earthEquatorialCircumfrence      = 2.0 * Math.PI * this.scaledEarthEquatorialRadius;
 
-        //final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; // TODO IS THIS RIGHT? Verify!
+        //final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; //IS THIS RIGHT? Verify!
         //final double earthPolarCircumfrence = 2.0 * Math.PI * scaledEarthPolarRadius;
     }
 
