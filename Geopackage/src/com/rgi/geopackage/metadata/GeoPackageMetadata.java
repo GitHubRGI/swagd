@@ -53,8 +53,9 @@ public class GeoPackageMetadata
      * Metadata requirements this GeoPackage failed to meet
      *
      * @return The metadata GeoPackage requirements this GeoPackage fails to conform to
+     * @throws SQLException 
      */
-    public Collection<FailedRequirement> getFailedRequirements()
+    public Collection<FailedRequirement> getFailedRequirements() throws SQLException
     {
         return new MetadataVerifier(this.databaseConnection).getFailedRequirements();
     }
