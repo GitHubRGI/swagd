@@ -22,7 +22,7 @@ package com.rgi.geopackage.metadata;
  * GeoPackage Metadata Reference Scopes
  *
  * <blockquote cite="http://www.geopackage.org/spec/#_requirement-71" type="cite">
- * Every gpkg_metadata_reference table reference scope column value SHALL be one of ‘geopackage’, ‘table’, ‘column’, ’row’, ’row/col’ in lowercase.
+ * Every gpkg_metadata_reference table reference scope column value SHALL be one of 'geopackage', 'table', 'column', 'row', 'row/col' in lowercase.
  * </blockquote>
  *
  * @see <a href="http://www.geopackage.org/spec/#gpkg_metadata_reference_cols">OGC® GeoPackage Encoding Standard - Table 16. Metadata Reference Table Definition (Table Name: gpkg_metadata_reference)</a>

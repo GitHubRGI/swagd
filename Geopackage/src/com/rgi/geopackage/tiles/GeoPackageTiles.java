@@ -472,6 +472,51 @@ public class GeoPackageTiles
                                           : null;
     }
 
+//    public Tile updateTile(final TileSet tileSet,
+//                           final Tile    tile,
+//                           final byte[]  imageData) throws SQLException
+//    {
+//        if(tileSet == null)
+//        {
+//            throw new IllegalArgumentException("Tile set may not be null");
+//        }
+//
+//        if(tile == null)
+//        {
+//           throw new IllegalArgumentException("Tile may not be null");
+//        }
+//
+//        if(imageData == null)
+//        {
+//           throw new IllegalArgumentException("Image data may not be null");
+//        }
+//
+//        final String updateTileSql = String.format("UPDATE %s SET %s = ? WHERE %s = ? AND %s = ? AND %s = ?",
+//                                                   tileSet.getTableName(),
+//                                                   "tile_data",
+//                                                   "zoom_level",
+//                                                   "tile_column",
+//                                                   "tile_row");
+//
+//        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(updateTileSql))
+//        {
+//            preparedStatement.setBytes(1, imageData);  // .setBlob() does not work as advertised in the sqlite-jdbc driver.  See this post by the developer: https://groups.google.com/d/msg/xerial/FfNOo-dPlsE/hUQWDPrZvSYJ
+//            preparedStatement.setInt  (2, tile.getZoomLevel());
+//            preparedStatement.setInt  (3, tile.getColumn());
+//            preparedStatement.setInt  (4, tile.getRow());
+//
+//            preparedStatement.executeUpdate();
+//        }
+//
+//        this.databaseConnection.commit();
+//
+//        return new Tile(tile.getIdentifier(),
+//                        tile.getZoomLevel(),
+//                        tile.getRow(),
+//                        tile.getColumn(),
+//                        imageData);
+//    }
+
     /**
      * Gets a tile
      *
@@ -479,7 +524,7 @@ public class GeoPackageTiles
      *             Handle to the tile set that the requested tile should belong
      * @param coordinate
      *            Coordinate relative to the tile set, of the requested tile
-     * @return Returns the rquested tile, or null if it's not found
+     * @return Returns the requested tile, or null if it's not found
      * @throws SQLException
      */
     public Tile getTile(final TileSet                tileSet,
@@ -534,7 +579,7 @@ public class GeoPackageTiles
      *            Coordinate, in the units of the tile set's spatial reference system, of the requested tile
      * @param zoomLevel
      *            Zoom level
-     * @return Returns the rquested tile, or null if it's not found
+     * @return Returns the requested tile, or null if it's not found
      * @throws SQLException
      */
     public Tile getTile(final TileSet       tileSet,
@@ -606,12 +651,12 @@ public class GeoPackageTiles
     }
 
     /**
-     * Adds a tile matrix assocated with a tile set
+     * Adds a tile matrix associated with a tile set
      * <br>
      * <br>
      * <b>**WARNING**</b> this does not do a database commit. It is expected
      * that this transaction will always be paired with others that need to be
-     * committed or rollback as a single transaction.
+     * committed or roll back as a single transaction.
      *
      * @param tableName
      *             Name of the tile set
@@ -829,6 +874,12 @@ public class GeoPackageTiles
         final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);
         final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
 
+        System.out.format("Crs coord %s -> z: %d, x: %d, y: %d\n",
+                          crsCoordinate,
+                          zoomLevel,
+                          tileX,
+                          tileY);
+
         return new RelativeTileCoordinate(tileY,
                                           tileX,
                                           zoomLevel);
@@ -840,7 +891,7 @@ public class GeoPackageTiles
      * <br>
      * <b>**WARNING**</b> this does not do a database commit. It is expected
      * that this transaction will always be paired with others that need to be
-     * committed or rollback as a single transaction.
+     * committed or roll back as a single transaction.
      *
      * @throws SQLException
      */

@@ -150,7 +150,7 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
     {
         final String outputFormat = "PNG";  // TODO how do we want to pick this ?
 
-        try(@SuppressWarnings("resource") final ByteArrayOutputStream outputStream = new ByteArrayOutputStream())   // This warning suppression shouldn't be necessary. Ecilpse bug?
+        try(@SuppressWarnings("resource") final ByteArrayOutputStream outputStream = new ByteArrayOutputStream())   // This warning suppression shouldn't be necessary. Eclipse bug?
         {
             if(!ImageIO.write(image, outputFormat, outputStream))
             {
