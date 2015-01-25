@@ -19,7 +19,6 @@
 package com.rgi.geopackage;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -37,8 +36,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,6 +46,7 @@ import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.LatLongConversions;
 import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
+import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.RelativeTileCoordinate;
@@ -3920,14 +3918,7 @@ public class GeoPackageTilesAPITest
 
     private static byte[] createImageBytes() throws IOException
     {
-        final BufferedImage img = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
-
-        try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream())
-        {
-            ImageIO.write(img, "PNG", outputStream);
-
-            return outputStream.toByteArray();
-        }
+        return ImageUtility.bufferedImageToBytes(new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB), "PNG");
     }
 
     private String getRanString(final int length)

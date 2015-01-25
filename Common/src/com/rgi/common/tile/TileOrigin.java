@@ -20,6 +20,7 @@ package com.rgi.common.tile;
 
 /**
  * @author Luke Lambert
+ * @author Duff Means
  *
  */
 public enum TileOrigin

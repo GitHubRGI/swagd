@@ -871,7 +871,7 @@ public class GeoPackageTiles
         final double normalizedSrsTileCoordinateY = crsCoordinate.getY() - topLeft.getY();
         final double normalizedSrsTileCoordinateX = crsCoordinate.getX() - topLeft.getX();
 
-        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);
+        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);  // TODO this will return max matrix height + 1 at the far right edge of the SRS
         final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
 
         System.out.format("Crs coord %s -> z: %d, x: %d, y: %d\n",
