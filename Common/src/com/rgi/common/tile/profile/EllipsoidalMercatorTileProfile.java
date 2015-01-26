@@ -305,7 +305,7 @@ public class EllipsoidalMercatorTileProfile implements TileProfile
     private final double scaledEarthEquatorialRadius;
 
     /**
-     * Earth's equatorial circumfrence (based on the datum's spheroid's semi-major axis, raidus) in meters
+     * Earth's equatorial circumference (based on the datum's spheroid's semi-major axis, raidus) in meters
      */
     @SuppressWarnings("unused")
     private final double earthEquatorialCircumfrence;

@@ -19,14 +19,11 @@
 package com.rgi.common.tile.store.tilecluster;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
 import java.util.Set;
-
-import javax.imageio.ImageIO;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
@@ -35,6 +32,7 @@ import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.common.util.ImageUtility;
 
 /**
  * @author Luke Lambert
@@ -113,10 +111,7 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
             randomAccessFile.seek(tilePositionOffset);
             randomAccessFile.readFully(imageData);
 
-            try(ByteArrayInputStream imageInputStream = new ByteArrayInputStream(imageData))
-            {
-                return ImageIO.read(imageInputStream);
-            }
+            return ImageUtility.bytesToBufferedImage(imageData);
         }
         catch(final IOException ex)
         {

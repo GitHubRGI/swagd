@@ -19,18 +19,16 @@
 package store;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
-
-import javax.imageio.ImageIO;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.tiles.RelativeTileCoordinate;
 import com.rgi.geopackage.tiles.Tile;
@@ -141,17 +139,14 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
 
     private static BufferedImage getImage(final Tile tile) throws TileStoreException
     {
+        if(tile == null)
+        {
+            return null;
+        }
+
         try
         {
-            if(tile == null)
-            {
-                return null;
-            }
-
-            try(ByteArrayInputStream imageInputStream = new ByteArrayInputStream(tile.getImageData()))
-            {
-                return ImageIO.read(imageInputStream);
-            }
+            return ImageUtility.bytesToBufferedImage(tile.getImageData());
         }
         catch(final IOException ex)
         {

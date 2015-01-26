@@ -19,20 +19,18 @@
 package com.rgi.common.tile.store.tilecluster;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
 
-import javax.imageio.ImageIO;
-
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
+import com.rgi.common.util.ImageUtility;
 
 /**
  * @author Luke Lambert
@@ -79,16 +77,9 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
 
         final String outputFormat = "PNG";  // TODO how do we want to pick this ?
 
-        try(final RandomAccessFile      randomAccessFile  = new RandomAccessFile(clusterFile, "rw");
-            @SuppressWarnings("resource")
-            final ByteArrayOutputStream outputStream      = new ByteArrayOutputStream())
+        try(final RandomAccessFile randomAccessFile  = new RandomAccessFile(clusterFile, "rw"))
         {
-            if(!ImageIO.write(image, outputFormat, outputStream))
-            {
-                throw new TileStoreException(String.format("No appropriate image writer found for format '%s'", outputFormat));
-            }
-
-            final byte[] imageData = outputStream.toByteArray();
+            final byte[] imageData = ImageUtility.bufferedImageToBytes(image, outputFormat);
 
             // Write the data at the end of the tile file
             final long tilePosition = randomAccessFile.length();

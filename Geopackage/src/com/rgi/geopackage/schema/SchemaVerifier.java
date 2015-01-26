@@ -43,7 +43,11 @@ import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.TableDefinition;
 import com.rgi.geopackage.verification.UniqueDefinition;
 import com.rgi.geopackage.verification.Verifier;
-
+/**
+ * 
+ * @author Jenifer Cochran
+ *
+ */
 public class SchemaVerifier extends Verifier
 {
     private class DataColumns
@@ -230,7 +234,8 @@ public class SchemaVerifier extends Verifier
                 if(dataColumnConstraints.constraintName != null || !dataColumnConstraints.constraintName.isEmpty())
                 {
                     final boolean containsConstraint = this.dataColumnsValues.stream()
-                                                                       .anyMatch(dataColumn -> dataColumn.constraintName.equals(dataColumnConstraints.constraintName));
+                                                                             .filter(dataColumn -> dataColumn.constraintName != null)
+                                                                             .anyMatch(dataColumn -> dataColumn.constraintName.equals(dataColumnConstraints.constraintName));
 
                     Assert.assertTrue(String.format("The constraint_name %s in gpkg_data_columns is not referenced in gpkg_data_constraints table in the column constraint_name.",
                                                     dataColumnConstraints.constraintName),
@@ -367,7 +372,7 @@ public class SchemaVerifier extends Verifier
         if(this.hasDataColumnsConstraintsTable)
         {
             final List<DataColumnConstraints> invalidColumnConstraintRecords = this.dataColumnConstraintsValues.stream()
-                                                                                                         .filter(dataColumnConstraint -> dataColumnConstraint.constraintType.equals("range"))
+                                                                                                         .filter(dataColumnConstraint -> Type.Range.equals(dataColumnConstraint.constraintType))
                                                                                                          .filter(dataColumnConstraint -> dataColumnConstraint.value != null)
                                                                                                          .collect(Collectors.toList());
 
@@ -398,7 +403,7 @@ public class SchemaVerifier extends Verifier
         if(this.hasDataColumnsConstraintsTable)
         {
             final List<DataColumnConstraints> invalidConstraintValuesWithRange = this.dataColumnConstraintsValues.stream()
-                                                                                                           .filter(constraintValue -> constraintValue.constraintType.equals("range"))
+                                                                                                           .filter(constraintValue -> Type.Range.equals(constraintValue.constraintType))
                                                                                                            .filter(constraintValue -> constraintValue.min == null ||
                                                                                                                                       constraintValue.max == null ||
                                                                                                                                       constraintValue.min >= constraintValue.max)
@@ -434,18 +439,18 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsConstraintsTable)
         {
-            final List<DataColumnConstraints> invalidMinIsInclusiveRecords = this.dataColumnConstraintsValues.stream()
-                                                                                                       .filter(columnValue ->  columnValue.constraintType.equals("range"))
-                                                                                                       .filter(columnValue -> !columnValue.minIsInclusive.equals(Boolean.TRUE) &&
-                                                                                                                              !columnValue.minIsInclusive.equals(Boolean.FALSE))
+            List<DataColumnConstraints> invalidMinIsInclusiveRecords = this.dataColumnConstraintsValues.stream()
+                                                                                                       .filter(columnValue ->  Type.Range.equals(columnValue.constraintType))
+                                                                                                       .filter(columnValue -> !Boolean.TRUE.equals(columnValue.minIsInclusive) &&
+                                                                                                                              !Boolean.FALSE.equals(columnValue.minIsInclusive))
                                                                                                        .collect(Collectors.toList());
 
-            final List<DataColumnConstraints> invalidMaxIsInclusiveRecords = this.dataColumnConstraintsValues.stream()
-                                                                                                       .filter(columnValue ->  columnValue.constraintType.equals("range"))
-                                                                                                       .filter(columnValue -> !columnValue.maxIsInclusive.equals(Boolean.TRUE) &&
-                                                                                                                              !columnValue.maxIsInclusive.equals(Boolean.FALSE))
+            List<DataColumnConstraints> invalidMaxIsInclusiveRecords = this.dataColumnConstraintsValues.stream()
+                                                                                                       .filter(columnValue ->  Type.Range.equals(columnValue.constraintType))
+                                                                                                       .filter(columnValue -> !Boolean.TRUE.equals(columnValue.maxIsInclusive) &&
+                                                                                                                              !Boolean.FALSE.equals(columnValue.maxIsInclusive))
                                                                                                        .collect(Collectors.toList());
-
+            
             Assert.assertTrue(String.format("The following are violations on either the minIsInclusive or maxIsIclusive columns "
                                             + "in the gpkg_data_column_constraints table for which the values are not 0 or 1. %s. \n%s.",
                                             invalidMinIsInclusiveRecords.stream()
@@ -477,9 +482,9 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsConstraintsTable)
         {
-            final List<DataColumnConstraints> invalidConstraintRecords = this.getDataColumnConstraintsValues().stream()
-                                                                                                        .filter(columnValue -> columnValue.constraintType.equals("enum") ||
-                                                                                                                               columnValue.constraintType.equals("glob"))
+            List<DataColumnConstraints> invalidConstraintRecords = this.getDataColumnConstraintsValues().stream()
+                                                                                                        .filter(columnValue -> Type.Enum.equals(columnValue.constraintType) ||
+                                                                                                                               Type.Glob.equals(columnValue.constraintType))
                                                                                                         .filter(columnValue -> !(columnValue.min == null            &&
                                                                                                                                  columnValue.max == null            &&
                                                                                                                                  columnValue.minIsInclusive == null &&
@@ -512,9 +517,9 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsConstraintsTable)
         {
-            final List<DataColumnConstraints> invalidValueRecords = this.getDataColumnConstraintsValues().stream()
-                                                                                                   .filter(columnValue -> columnValue.constraintType.equals("enum") ||
-                                                                                                                          columnValue.constraintType.equals("glob"))
+            List<DataColumnConstraints> invalidValueRecords = this.getDataColumnConstraintsValues().stream()
+                                                                                                   .filter(columnValue -> Type.Enum.equals(columnValue.constraintType) ||
+                                                                                                                          Type.Glob.equals(columnValue.constraintType))
                                                                                                    .filter(columnValue -> columnValue.value == null)
                                                                                                    .collect(Collectors.toList());
             Assert.assertTrue(String.format("The following constraint_name(s) from the gpkg_data_column_constraints "

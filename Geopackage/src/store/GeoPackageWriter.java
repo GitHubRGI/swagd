@@ -19,13 +19,10 @@
 package store;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import javax.imageio.ImageIO;
 
 import com.rgi.common.Dimension2D;
 import com.rgi.common.coordinates.CrsCoordinate;
@@ -34,6 +31,7 @@ import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
+import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
 import com.rgi.geopackage.tiles.RelativeTileCoordinate;
@@ -70,7 +68,7 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
                 .addTile(this.tileSet,
                          this.getTileMatrix(zoomLevel, image.getHeight(), image.getWidth()),
                          new RelativeTileCoordinate(row, column, zoomLevel),
-                         getBytes(image));
+                         ImageUtility.bufferedImageToBytes(image, OutputImageFormat));
         }
         catch(final SQLException | IOException ex)
         {
@@ -104,7 +102,7 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
                          this.getTileMatrix(zoomLevel, image.getHeight(), image.getWidth()),
                          coordinate,
                          zoomLevel,
-                         getBytes(image));
+                         ImageUtility.bufferedImageToBytes(image, OutputImageFormat));
         }
         catch(final SQLException | IOException ex)
         {
@@ -146,21 +144,8 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
                                              dimensions.getWidth()  / pixelWidth);
     }
 
-    private static byte[] getBytes(final BufferedImage image) throws IOException, TileStoreException
-    {
-        final String outputFormat = "PNG";  // TODO how do we want to pick this ?
-
-        try(@SuppressWarnings("resource") final ByteArrayOutputStream outputStream = new ByteArrayOutputStream())   // This warning suppression shouldn't be necessary. Ecilpse bug?
-        {
-            if(!ImageIO.write(image, outputFormat, outputStream))
-            {
-                throw new TileStoreException(String.format("No appropriate image writer found for format '%s'", outputFormat));
-            }
-
-            return outputStream.toByteArray();
-        }
-    }
-
     private final Map<Integer, TileMatrix> tileMatricies;
     private final TileScheme               tileScheme;
+
+    private static final String OutputImageFormat = "PNG";  // TODO how do we want to pick this ?
 }
