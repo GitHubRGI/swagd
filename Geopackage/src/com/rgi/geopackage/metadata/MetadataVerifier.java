@@ -47,6 +47,10 @@ import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.TableDefinition;
 import com.rgi.geopackage.verification.Verifier;
 
+/**
+ * @author Luke Lambert
+ * @author Jenifer Cochran
+ */
 public class MetadataVerifier extends Verifier
 {
     private boolean                 hasMetadataTable;
@@ -256,7 +260,7 @@ public class MetadataVerifier extends Verifier
                                                                                            .collect(Collectors.toList());
               Assert.assertTrue(String.format("The following table_name value(s) in gpkg_metadata_reference table are invalid. "
                                                + "The table_name value(s) must reference the table_name(s) in gpkg_contents table. "
-                                               + " \n%s.", 
+                                               + " \n%s", 
                                               invalidTableNameValues.stream()
                                                                     .map(tableName -> String.format("reference_scope: %s, invalid table_name: %s.", 
                                                                                                     tableName.reference_scope, 
@@ -300,7 +304,7 @@ public class MetadataVerifier extends Verifier
             
             Assert.assertTrue(String.format("The following column_name values from gpkg_metadata_reference table are invalid. "
                                                 + "They contain a reference_scope of either 'geopackage', 'table' or 'row' and "
-                                                + "need to have a column_value of NULL.\n",
+                                                + "need to have a column_value of NULL.\n%s",
                                             invalidColumnNameValues.stream()
                                                                    .map(value -> String.format("reference_scope: %s, invalid column_name: %s.", value.reference_scope, value.column_name))
                                                                    .collect(Collectors.joining("\n"))), 
@@ -370,7 +374,7 @@ public class MetadataVerifier extends Verifier
                                                                                       .filter(columnValue -> columnValue.row_id_value != null)
                                                                                       .collect(Collectors.toList());
             Assert.assertTrue(String.format("The following row_id_value(s) has(have) a reference_scope value of 'geopackage', "
-                                                + "'table' or 'column and do not have a value of NULL in row_id_value.\n %s.", 
+                                                + "'table' or 'column and do not have a value of NULL in row_id_value.\n %s", 
                                             invalidColumnValues.stream()
                                                                .map(columnValue -> String.format("reference_scope: %s, invalid row_id_value: %d.", columnValue.reference_scope, columnValue.row_id_value))
                                                                .collect(Collectors.joining("\n"))),
@@ -464,9 +468,12 @@ public class MetadataVerifier extends Verifier
                                                                                                                                                   metadataReferenceValue.md_file_id.equals(metadataValue.id))))
                                                                               .collect(Collectors.toList());
             Assert.assertTrue(String.format("The following md_file_id(s) from gpkg_metadata_reference table "
-                                               + "do not reference an id column value from the gpkg_metadata table.", 
+                                               + "do not reference an id column value from the gpkg_metadata table.\n%s", 
                                             invalidIds.stream()
-                                                      .map(invalidId -> String.format("invalid md_file_id: %s.",invalidId.md_file_id))
+                                                      .map(invalidId -> String.format("invalid md_file_id: %s, md_parent_id: %d, reference_scope: %s.",
+                                                                                      invalidId.md_file_id,
+                                                                                      invalidId.md_parent_id, 
+                                                                                      invalidId.reference_scope))
                                                       .collect(Collectors.joining("\n"))), 
                               invalidIds.isEmpty());
         }
@@ -536,11 +543,27 @@ public class MetadataVerifier extends Verifier
                                                                 
                                                                 metadataReference.reference_scope   = resultSet.getString("reference_scope");
                                                                 metadataReference.table_name        = resultSet.getString("table_name");
+                                                                if(resultSet.wasNull())
+                                                                {
+                                                                    metadataReference.table_name = null;
+                                                                }
                                                                 metadataReference.column_name       = resultSet.getString("column_name");
+                                                                if(resultSet.wasNull())
+                                                                {
+                                                                    metadataReference.column_name = null;
+                                                                }
                                                                 metadataReference.row_id_value      = resultSet.getInt("row_id_value");
+                                                                if(resultSet.wasNull())
+                                                                {
+                                                                    metadataReference.row_id_value = null;
+                                                                }
                                                                 metadataReference.timestamp         = resultSet.getString("timestamp");
                                                                 metadataReference.md_file_id        = resultSet.getInt("md_file_id");
                                                                 metadataReference.md_parent_id      = resultSet.getInt("md_parent_id");
+                                                                if(resultSet.wasNull())
+                                                                {
+                                                                    metadataReference.md_parent_id = null;
+                                                                }
                                                                 
                                                                 return metadataReference;
                                                            }
@@ -646,7 +669,6 @@ public class MetadataVerifier extends Verifier
                                                                metadataReferenceTableColumns,
                                                                new HashSet<>(Arrays.asList(new ForeignKeyDefinition(GeoPackageMetadata.MetadataTableName, "md_parent_id", "id"), 
                                                                                            new ForeignKeyDefinition(GeoPackageMetadata.MetadataTableName, "md_file_id", "id"))));
-
 
         
     }
