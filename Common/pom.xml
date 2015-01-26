@@ -14,6 +14,7 @@
         <compiler.version>3.1</compiler.version>
         <jdk.version>1.8</jdk.version>
         <mockrunner.version>1.0.5</mockrunner.version>
+        <findbugs.version>3.0.0</findbugs.version>
     </properties>
 
   <parent>
@@ -29,12 +30,26 @@
           <version>${junit.version}</version>
       </dependency>
       <dependency>
-      	<groupId>com.mockrunner</groupId>
-      	<artifactId>mockrunner-jdbc</artifactId>
-      	<version>${mockrunner.version}</version>
-      	<scope>test</scope>
+        <groupId>com.mockrunner</groupId>
+        <artifactId>mockrunner-jdbc</artifactId>
+        <version>${mockrunner.version}</version>
+        <scope>test</scope>
       </dependency>
   </dependencies>
+
+  <reporting>
+      <plugins>
+          <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>findbugs-maven-plugin</artifactId>
+              <version>${findbugs.version}</version>
+              <configuration>
+                  <xmlOutput>true</xmlOutput>
+                  <xmlOutputDirectory>target/site</xmlOutputDirectory>
+              </configuration>
+          </plugin>
+      </plugins>
+  </reporting>
 
   <build>
     <sourceDirectory>src</sourceDirectory>
