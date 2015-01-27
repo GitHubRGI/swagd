@@ -9,35 +9,33 @@
         <jacoco.version>0.7.2.201409121644</jacoco.version>
     </properties>
 
-  <parent>
+    <parent>
       <groupId>com.rgi.TilingApp</groupId>
       <artifactId>SWAGD</artifactId>
       <version>0.0.1-SNAPSHOT</version>
-  </parent>
+    </parent>
 
-  <dependencies>
-      <dependency>
-          <groupId>Common</groupId>
-          <artifactId>Common</artifactId>
-          <version>0.0.1-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-          <groupId>com.osgeo</groupId>
-          <artifactId>gdal</artifactId>
-          <version>1.11.0</version>
-          <scope>system</scope>
-          <systemPath>${basedir}/lib/gdal.jar</systemPath>
-      </dependency>
-      <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <version>4.11</version>
-      </dependency>
-  </dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>Common</groupId>
+            <artifactId>Common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.osgeo</groupId>
+            <artifactId>gdal</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+        </dependency>
+    </dependencies>
 
-  <reporting>
-      <plugins>
-          <plugin>
+    <reporting>
+        <plugins>
+            <plugin>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>findbugs-maven-plugin</artifactId>
               <version>${findbugs.version}</version>
@@ -45,40 +43,50 @@
                   <xmlOutput>true</xmlOutput>
                   <xmlOutputDirectory>target/site</xmlOutputDirectory>
               </configuration>
-          </plugin>
-      </plugins>
-  </reporting>
+            </plugin>
+        </plugins>
+    </reporting>
 
-  <build>
-    <sourceDirectory>src</sourceDirectory>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-      <plugin>
-          <groupId>org.jacoco</groupId>
-          <artifactId>jacoco-maven-plugin</artifactId>
-          <version>${jacoco.version}</version>
-          <executions>
-              <execution>
-                  <goals>
-                      <goal>prepare-agent</goal>
-                  </goals>
-              </execution>
-              <execution>
-                  <id>report</id>
-                  <phase>prepare-package</phase>
-                  <goals>
-                      <goal>report</goal>
-                  </goals>
-              </execution>
-          </executions>
-      </plugin>
-    </plugins>
-  </build>
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                          <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                          <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
