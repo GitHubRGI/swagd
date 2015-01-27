@@ -24,6 +24,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Properties;
 
 import javax.swing.JButton;
@@ -34,7 +36,6 @@ import com.rgi.suite.ApplicationContext.Window;
 
 public class ErrorWindow extends AbstractWindow {
   JTextArea errorPanel;
-
   public ErrorWindow(ApplicationContext context) {
     super(context);
   }
@@ -45,8 +46,12 @@ public class ErrorWindow extends AbstractWindow {
     if (e != null) {
       // set editor pane content to stack trace of error
       ByteArrayOutputStream out = new ByteArrayOutputStream();
-      e.printStackTrace(new PrintStream(out));
-      this.errorPanel.setText(new String(out.toByteArray()));
+      try {
+        e.printStackTrace(new PrintStream(out, false, UTF8Charset.name()));
+      } catch (UnsupportedEncodingException e1) {
+        // TODO Auto-generated catch block
+        e1.printStackTrace();}
+      this.errorPanel.setText(new String(out.toByteArray(), UTF8Charset));
     }
   }
 
@@ -84,4 +89,6 @@ public class ErrorWindow extends AbstractWindow {
     gbc.insets = new Insets(10, 10, 10, 10);
     this.navPane.add(cancelButton, gbc);
   }
+  
+  private static final Charset UTF8Charset = Charset.forName("UTF-8");
 }

@@ -24,6 +24,7 @@ import java.awt.Container;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -61,8 +62,8 @@ public class ApplicationContext extends JFrame {
 		this.navPanel = new JPanel(new CardLayout());
 
 		this.props = new Properties();
-		try {
-			this.props.load(this.getClass().getResourceAsStream("geosuite.properties"));
+		try(InputStream inputStream = this.getClass().getResourceAsStream("geosuite.properties")) {
+			this.props.load(inputStream);
 		} catch (IOException ioe) {
 			JOptionPane.showMessageDialog(null, "RGI Suite", "Unable to load properties", JOptionPane.OK_OPTION);
 			ioe.printStackTrace();

@@ -23,6 +23,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.Properties;
 
 import javax.swing.DefaultComboBoxModel;
@@ -190,8 +191,8 @@ public class SettingsWindow extends AbstractWindow {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				Settings settings = SettingsWindow.this.context.getSettings();
-				apply(settings);
 				try {
+				    apply(settings);
 					settings.save();
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(SettingsWindow.this.contentPane, "Unable to save settings!");
@@ -245,11 +246,11 @@ public class SettingsWindow extends AbstractWindow {
 																		// to
 		this.nullDataColorButton.setColor(settings.getColor(Setting.NoDataColor));
 		Integer quality = Integer.parseInt(settings.get(Setting.Quality));
-		((SpinnerNumberModel) this.outputQualitySpinner.getModel()).setValue(new Integer(quality));
+		((SpinnerNumberModel) this.outputQualitySpinner.getModel()).setValue(Integer.valueOf(quality));
 		int tileHeight = Integer.parseInt(settings.get(Setting.TileHeight));
-		((SpinnerNumberModel) this.tileHeightSpinner.getModel()).setValue(new Integer(tileHeight));
+		((SpinnerNumberModel) this.tileHeightSpinner.getModel()).setValue(Integer.valueOf(tileHeight));
 		int tileWidth = Integer.parseInt(settings.get(Setting.TileWidth));
-		((SpinnerNumberModel) this.tileWidthSpinner.getModel()).setValue(new Integer(tileWidth));
+		((SpinnerNumberModel) this.tileWidthSpinner.getModel()).setValue(Integer.valueOf(tileWidth));
 		try {
 			this.tileOriginChoice.setSelectedItem(TileOrigin.valueOf(settings.get(Setting.TileOrigin)));
 		} catch (Exception e) {
@@ -258,7 +259,7 @@ public class SettingsWindow extends AbstractWindow {
 		this.outputProfileChoice.setSelectedItem(Profile.valueOf(settings.get(Setting.TileProfile)));
 	}
 
-	public void apply(Settings settings) {
+	public void apply(Settings settings) throws IOException {
 		settings.set(Setting.TileFolder, this.tileOutputPathField.getText());
 		settings.set(Setting.NoDataColor, this.nullDataColorButton.getColor());
 		settings.set(Setting.Quality, this.outputQualitySpinner.getValue().toString());
