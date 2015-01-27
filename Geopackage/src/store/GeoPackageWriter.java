@@ -140,8 +140,8 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
                                              matrixDimensions.getHeight(),
                                              pixelHeight,
                                              pixelWidth,
-                                             dimensions.getHeight() / pixelHeight,
-                                             dimensions.getWidth()  / pixelWidth);
+                                             dimensions.getWidth()  / pixelWidth,
+                                             dimensions.getHeight() / pixelHeight);
     }
 
     private final Map<Integer, TileMatrix> tileMatricies;
