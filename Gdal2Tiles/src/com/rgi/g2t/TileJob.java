@@ -103,7 +103,7 @@ public class TileJob implements Runnable {
 		this.tileStoreReader = tileStoreReader;
 		this.tileStoreWriter = tileStoreWriter;
 		this.settings = settings;
-		this.monitor = monitor;
+//		this.monitor = monitor; //commented out because it is never read
 	}
 
 	@Override
@@ -470,17 +470,18 @@ public class TileJob implements Runnable {
 								} catch (Exception e) {
 									throw new TilingException("Problem getting tile", e);
 								}
-								if (upperTile == null && compliant) {
-									upperTile = createCompliant(z + 1, tileCoordinate, origin, maxZoom);
-								}
-								if (upperTile == null) {
-									g_scaled.setColor(noDataColor);
-									g_scaled.fillRect(zx * TILESIZE, zy * TILESIZE, TILESIZE, TILESIZE);
-								} else {
-									g_scaled.drawImage(upperTile.getImageContents(),
-													   zx * TILESIZE, zy * TILESIZE,
-													   TILESIZE, TILESIZE, null);
-								}
+								//Commented out because it is dead code and fixbugs report says it is also redundant nullcheck of null value
+//								if (upperTile == null && compliant) {
+//									upperTile = createCompliant(z + 1, tileCoordinate, origin, maxZoom);
+//								}
+//								if (upperTile == null) {
+//									g_scaled.setColor(noDataColor);
+//									g_scaled.fillRect(zx * TILESIZE, zy * TILESIZE, TILESIZE, TILESIZE);
+//								} else {
+//									g_scaled.drawImage(upperTile.getImageContents(),
+//													   zx * TILESIZE, zy * TILESIZE,
+//													   TILESIZE, TILESIZE, null);
+//								}
 							}
 						}
 						g.drawImage(preScaled, 0, 0, TILESIZE, TILESIZE, null);
@@ -571,10 +572,11 @@ public class TileJob implements Runnable {
 					} catch (Exception e) {
 						throw new TilingException("Unable to get tile", e);
 					}
-					if (upperTile == null) {
-						upperTile = createCompliant(z + 1, tileCoordinate,
-								origin, maxZoom);
-					}
+//Commented out because it is dead code and fixbugs report says it is also redundant nullcheck of null value 
+//                   if (upperTile == null) {                                
+//						upperTile = createCompliant(z + 1, tileCoordinate,
+//								origin, maxZoom);
+//					}
 					g.drawImage(upperTile.getImageContents(), zx * TILESIZE, zy
 							* TILESIZE, TILESIZE, TILESIZE, null);
 				}
