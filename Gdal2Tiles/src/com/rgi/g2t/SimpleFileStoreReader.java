@@ -45,6 +45,11 @@ public class SimpleFileStoreReader extends SimpleFileStore implements TileStoreR
     public SimpleFileStoreReader(String name, TileProfile tileProfile, TileOrigin tileOrigin, String location, String imageFormat) throws TileStoreException
     {
         super(name, tileProfile, tileOrigin, location, imageFormat);
+
+        if(!this.rootFolder.canRead())
+        {
+            throw new TileStoreException("Unable to read folder: " + this.rootFolder.getAbsolutePath());
+        }
     }
 
     @Override

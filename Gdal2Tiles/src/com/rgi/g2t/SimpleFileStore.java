@@ -50,9 +50,5 @@ abstract class SimpleFileStore
         String filePart = name.replaceFirst("[.][^.]+$", "");   // Remove any ".<extension>"
 
         this.rootFolder = new File(new File(location, Integer.toString(this.tileProfile.getCoordinateReferenceSystem().getIdentifier())), filePart);
-        if(!this.rootFolder.canRead())
-        {
-            throw new TileStoreException("Unable to read folders");
-        }
     }
 }
