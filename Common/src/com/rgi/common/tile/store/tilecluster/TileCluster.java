@@ -155,7 +155,7 @@ abstract class TileCluster
     protected final int         breakPoint;
     protected final TileProfile tileProfile;
 
-    protected class ClusterAddress
+    protected static class ClusterAddress
     {
         final long row;
         final long column;

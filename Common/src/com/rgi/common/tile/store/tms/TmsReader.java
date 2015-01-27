@@ -164,7 +164,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         return this.profile.getCoordinateReferenceSystem();
     }
 
-    private class Range
+    private static class Range
     {
         public Range(final int minimum, final int maximum)
         {
