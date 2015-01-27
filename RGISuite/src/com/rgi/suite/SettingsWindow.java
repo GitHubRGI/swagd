@@ -246,11 +246,11 @@ public class SettingsWindow extends AbstractWindow {
 																		// to
 		this.nullDataColorButton.setColor(settings.getColor(Setting.NoDataColor));
 		Integer quality = Integer.parseInt(settings.get(Setting.Quality));
-		((SpinnerNumberModel) this.outputQualitySpinner.getModel()).setValue(Integer.valueOf(quality));
+		((SpinnerNumberModel) this.outputQualitySpinner.getModel()).setValue(quality);
 		int tileHeight = Integer.parseInt(settings.get(Setting.TileHeight));
-		((SpinnerNumberModel) this.tileHeightSpinner.getModel()).setValue(Integer.valueOf(tileHeight));
+		((SpinnerNumberModel) this.tileHeightSpinner.getModel()).setValue(tileHeight);
 		int tileWidth = Integer.parseInt(settings.get(Setting.TileWidth));
-		((SpinnerNumberModel) this.tileWidthSpinner.getModel()).setValue(Integer.valueOf(tileWidth));
+		((SpinnerNumberModel) this.tileWidthSpinner.getModel()).setValue(tileWidth);
 		try {
 			this.tileOriginChoice.setSelectedItem(TileOrigin.valueOf(settings.get(Setting.TileOrigin)));
 		} catch (Exception e) {

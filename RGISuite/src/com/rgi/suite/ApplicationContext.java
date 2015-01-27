@@ -67,7 +67,7 @@ public class ApplicationContext extends JFrame {
 		} catch (IOException ioe) {
 			JOptionPane.showMessageDialog(null, "RGI Suite", "Unable to load properties", JOptionPane.OK_OPTION);
 			ioe.printStackTrace();
-			System.exit(1);
+			throw new RuntimeException(ioe.getMessage());
 		}
 
 		this.settings = new Settings();
