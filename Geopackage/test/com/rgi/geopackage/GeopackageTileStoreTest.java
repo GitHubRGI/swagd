@@ -166,50 +166,60 @@ public class GeopackageTileStoreTest
         }
     }
     
+    /**
+     * Tests if the tile retrieved is the same as it was given
+     * (or as expected) using getTile from GeoPackage Reader
+     * getTile (row, column, zoom)
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws IOException
+     * @throws TileStoreException
+     */
+    @Test
+    public void getTile() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
+    {
+
+        File testFile = this.getRandomFile(8);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            BoundingBox      bBox  = new BoundingBox(0.0, 0.0, 180.0, 180.0);
+            TileSet          tileSet    = gpkg.tiles().addTileSet("TableName", "identifier", "description", bBox, gpkg.core().getSpatialReferenceSystem(4326));
+            
+            int zoomLevel = 2;
+            int matrixWidth = 3;
+            int matrixHeight = 3;
+            int tileWidth = 256;
+            int tileHeight = 256;
+            double pixelXSize = bBox.getWidth()/tileWidth;
+            double pixelYSize = bBox.getHeight()/tileHeight;
+            
+            TileMatrix             tileMatrix = gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
+            RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
+            //add tiles
+            Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes());
+                                gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), createImageBytes());
+            GeoPackageReader      gpkgReader    = new GeoPackageReader(gpkg, tileSet);
+            
+            BufferedImage         returnedImage = gpkgReader.getTile(coordinate.getRow(), coordinate.getColumn(), coordinate.getZoomLevel());
+            
+            Assert.assertArrayEquals("The tile image data returned from getTile in GeoPackage reader wasn't the same as the one given.", 
+                                     tileExpected.getImageData(), 
+                                     ImageUtility.bufferedImageToBytes(returnedImage, "PNG"));
+            
+        }
+        finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
     
-//    @Test
-//    public void getTile() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
-//    {
-//
-//        File testFile = this.getRandomFile(8);
-//        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
-//        {
-//            BoundingBox      bBox  = new BoundingBox(0.0,0.0,180.0,180.0);
-//            TileSet          tileSet    = gpkg.tiles().addTileSet("TableName", "identifier", "description", bBox, gpkg.core().getSpatialReferenceSystem(4326));
-//            
-//            int zoomLevel = 2;
-//            int matrixWidth = 3;
-//            int matrixHeight = 3;
-//            int tileWidth = 256;
-//            int tileHeight = 256;
-//            double pixelXSize = bBox.getWidth()/tileWidth;
-//            double pixelYSize = bBox.getHeight()/tileHeight;
-//            
-//            TileMatrix             tileMatrix = gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
-//            RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
-//            //add tiles
-//            Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes());
-//            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), createImageBytes());
-//            GeoPackageReader      gpkgReader    = new GeoPackageReader(gpkg, tileSet);
-//            BufferedImage         returnedImage = gpkgReader.getTile(coordinate.getRow(), coordinate.getColumn(), coordinate.getZoomLevel());
-//           
-//            BufferedImage         expectedImage = ImageIO.read(new ByteArrayInputStream(tileExpected.getImageData()));
-//            //byte[] returnedTileInBytes = ((DataBufferByte) returnedImage.getData().getDataBuffer()).getData();
-//            
-//            Assert.assertEquals("The tile image data returned from getTile in GeoPackage reader wasn't the same as the one given.", expectedImage, returnedImage);
-//            
-//        }
-//        finally
-//        {
-//            if(testFile.exists())
-//            {
-//                if(!testFile.delete())
-//                {
-//                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-//                }
-//            }
-//        }
-//    }
     
     private String getRanString(final int length)
     {
