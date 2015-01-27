@@ -66,7 +66,7 @@ public class CoordinateReferenceSystem
     @Override
     public boolean equals(final Object object)
     {
-        if(object == null || object.getClass() != CoordinateReferenceSystem.class)
+        if(object == null || object.getClass() != this.getClass())
         {
             return false;
         }

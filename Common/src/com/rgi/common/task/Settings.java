@@ -22,6 +22,7 @@ import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -33,11 +34,11 @@ import com.rgi.common.util.BinUtil;
 
 public class Settings {
   public enum Setting {
-    TileHeight(new Integer(TILESIZE)),
-    TileWidth(new Integer(TILESIZE)),
+    TileHeight(Integer.valueOf(TILESIZE)),
+    TileWidth(Integer.valueOf(TILESIZE)),
     TileOrigin(com.rgi.common.tile.TileOrigin.LowerLeft),
     TileType(Type.PNG),
-    Quality(new Integer(70)),
+    Quality(Integer.valueOf(70)),
     TileFolder(System.getProperty("user.home")),
     FileSelection(null),
     NoDataColor(TRANSPARENT),
@@ -150,7 +151,7 @@ public class Settings {
 	return null;
   }
   
-  public void set(Setting setting, Color value) {
+  public void set(Setting setting, Color value) throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     try {
       new ObjectOutputStream(out).writeObject(value);

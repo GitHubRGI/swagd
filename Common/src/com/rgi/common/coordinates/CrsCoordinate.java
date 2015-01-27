@@ -53,7 +53,7 @@ public class CrsCoordinate extends Coordinate<Double>
     @Override
     public boolean equals(final Object object)
     {
-        if(object == null || object.getClass() != CrsCoordinate.class)
+        if(object == null || object.getClass() != this.getClass())
         {
             return false;
         }

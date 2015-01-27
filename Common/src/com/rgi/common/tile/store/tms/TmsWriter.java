@@ -101,7 +101,12 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
         {
             // Image will not write unless the directories exist leading to it.
             if (!tilePath.getParent().toFile().exists()) {
-                (new File(tilePath.getParent().toString())).mkdirs();
+                boolean directoryFound = (new File(tilePath.getParent().toString())).mkdirs();
+                
+                if(!directoryFound)
+                {
+                    throw new TileStoreException(String.format("The directory does not exist leading to the Image. Invalid directory: %s", tilePath.getParent().toString()));
+                }
             }
 
             if(!ImageIO.write(image, outputFormat, tilePath.toFile()))

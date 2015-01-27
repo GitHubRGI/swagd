@@ -26,14 +26,14 @@ public class ZoomLevel
 {
     public static void verify(final int zoomLevel)
     {
-        if(zoomLevel < ZoomLevel.MinimumZoomLevel || zoomLevel > ZoomLevel.MaximumZoomLevel)
+        if(zoomLevel < ZoomLevel.minimumZoomLevel || zoomLevel > ZoomLevel.maximumZoomLevel)
         {
             throw new IllegalArgumentException(String.format("Zoom level must be in the range [%d, %d]",
-                                                             ZoomLevel.MinimumZoomLevel,
-                                                             ZoomLevel.MaximumZoomLevel));
+                                                             ZoomLevel.minimumZoomLevel,
+                                                             ZoomLevel.maximumZoomLevel));
         }
     }
 
-    public static int MinimumZoomLevel = 0;  // inclusive
-    public static int MaximumZoomLevel = 31; // Inclusive
+    public final static int minimumZoomLevel = 0;  // inclusive
+    public final static int maximumZoomLevel = 31; // Inclusive
 }

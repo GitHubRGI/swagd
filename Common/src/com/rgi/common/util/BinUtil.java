@@ -140,10 +140,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 public class BinUtil {
 	private final static String MAP = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-
+    private final static Charset UTF8Charset = Charset.forName("UTF-8");
 	/**
 	 * Encodes the contents of the InputStream using Base64, and writes the
 	 * result to the OutputStream.
@@ -188,8 +190,9 @@ public class BinUtil {
 	 * @param data
 	 *            the data to be Base64 encoded
 	 * @return the encoded data
+	 * @throws IOException 
 	 */
-	public static String encode(byte[] data) {
+	public static String encode(byte[] data) throws IOException {
 		ByteArrayInputStream in = new ByteArrayInputStream(data);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {
@@ -200,7 +203,13 @@ public class BinUtil {
 			// No need to close() ByteArrayInputStream and ByteArrayOutputStream
 			ioe.printStackTrace();
 		}
-		return out.toString();
+		try
+        {
+            return out.toString(UTF8Charset.name());
+        } catch (UnsupportedEncodingException e)
+        {
+            throw new IOException("Unable to encode data.");
+        }
 	}
 
 	/**
@@ -270,7 +279,7 @@ public class BinUtil {
 	 */
 	public static byte[] decode(String in) throws IllegalCharacterException, InvalidLengthException {
 		ByteArrayOutputStream outStr = new ByteArrayOutputStream();
-		ByteArrayInputStream inStr = new ByteArrayInputStream(in.getBytes());
+		ByteArrayInputStream inStr = new ByteArrayInputStream(in.getBytes(UTF8Charset));
 		try {
 			decode(inStr, outStr);
 		} catch (IOException ioe) {
@@ -340,7 +349,7 @@ public class BinUtil {
 		System.out.println("  output\t\tPath to output file (ignored if -s is specified)");
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		if (args.length < 2) {
 			usage();
 			return;
@@ -360,10 +369,10 @@ public class BinUtil {
 		long start = System.currentTimeMillis();
 		if ("-s".equalsIgnoreCase(args[1])) {
 			if (encode) {
-				System.out.println(encode(args[2].getBytes()));
+				System.out.println(encode(args[2].getBytes(UTF8Charset)));
 			} else {
 				try {
-					System.out.println(new String(decode(args[2])));
+					System.out.println(new String(decode(args[2]), UTF8Charset));
 				} catch (IllegalCharacterException ice) {
 					System.err.println("Problem with input: Illegal character: " + ice.getMessage());
 				} catch (InvalidLengthException ile) {
