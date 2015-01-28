@@ -21,7 +21,7 @@ package com.rgi.common.coordinates;
 /**
  * @author Luke Lambert
  *
- * @param <T> Extends {@link java.lang.Number}
+ * @param <T> Extends {@link Number}
  */
 public class Coordinate<T extends Number>
 {

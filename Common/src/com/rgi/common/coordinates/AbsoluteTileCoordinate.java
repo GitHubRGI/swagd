@@ -93,7 +93,7 @@ public class AbsoluteTileCoordinate extends Coordinate<Integer>
     @Override
     public boolean equals(final Object object)
     {
-        if(object == null || object.getClass() != AbsoluteTileCoordinate.class)
+        if(object == null || object.getClass() != this.getClass())
         {
             return false;
         }
@@ -103,6 +103,15 @@ public class AbsoluteTileCoordinate extends Coordinate<Integer>
         return super.equals(other)               &&
                this.zoomLevel == other.zoomLevel &&
                this.origin    == other.origin;
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        return this.zoomLevel     ^
+               this.getRow()      ^
+               this.getColumn()   ^
+               this.origin.hashCode();
     }
 
     /**

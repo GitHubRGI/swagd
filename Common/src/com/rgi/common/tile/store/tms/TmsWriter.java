@@ -22,14 +22,22 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
+import javax.activation.MimeType;
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
+import com.rgi.common.util.MimeTypeUtility;
 
 /**
  * @author Luke Lambert
@@ -44,8 +52,32 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
      *            The tile profile this tile store is using.
      * @param location
      *            The location of this tile store on-disk.
+     * @param imageOutputFormat
+     *             Image format for used for output
      */
-    public TmsWriter(final TileProfile profile, final Path location)
+    public TmsWriter(final TileProfile profile,
+                     final Path        location,
+                     final MimeType    imageOutputFormat)
+    {
+        this(profile, location, imageOutputFormat, null);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param profile
+     *            The tile profile this tile store is using.
+     * @param location
+     *            The location of this tile store on-disk.
+     * @param imageOutputFormat
+     *             Image format for used for output
+     * @param imageWriteOptions
+     *             Controls details of the image writing process.  If null, a default ImageWriteParam used instead
+     */
+    public TmsWriter(final TileProfile     profile,
+                     final Path            location,
+                     final MimeType        imageOutputFormat,
+                     final ImageWriteParam imageWriteOptions)
     {
         super(profile, location);
 
@@ -53,6 +85,25 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
         {
             throw new IllegalArgumentException("Specified location cannot be written to");
         }
+
+        if(imageOutputFormat == null)
+        {
+            throw new IllegalArgumentException("Image output format may not be null");
+        }
+
+        this.imageOutputFormat = imageOutputFormat;
+
+        try
+        {
+            this.imageWriter = ImageIO.getImageWritersByMIMEType(imageOutputFormat.toString()).next();
+        }
+        catch(final NoSuchElementException ex)
+        {
+            throw new IllegalArgumentException(String.format("Mime type '%s' is not a supported for image writing by your Java environment", imageOutputFormat.toString()));
+        }
+
+        this.imageWriteOptions = imageWriteOptions != null ? imageWriteOptions
+                                                           : this.imageWriter.getDefaultWriteParam();
     }
 
     @Override
@@ -90,28 +141,29 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
             throw new IllegalArgumentException("Image may not be null");
         }
 
-        final String outputFormat = "png";  // TODO how do we want to pick this ?
-
         final Path tilePath = tmsPath(this.location,
                                       zoomLevel,
                                       column).resolve(String.format("%d.%s",
                                                                     row,
-                                                                    outputFormat));
+                                                                    this.imageOutputFormat.getSubType().toLowerCase()));
         try
         {
             // Image will not write unless the directories exist leading to it.
-            if (!tilePath.getParent().toFile().exists()) {
+            if(!tilePath.getParent().toFile().exists())
+            {
                 boolean directoryFound = (new File(tilePath.getParent().toString())).mkdirs();
-                
+
                 if(!directoryFound)
                 {
-                    throw new TileStoreException(String.format("The directory does not exist leading to the Image. Invalid directory: %s", tilePath.getParent().toString()));
+                    throw new TileStoreException(String.format("Image directory does not exist. Invalid directory: %s", tilePath.getParent().toString()));
                 }
             }
 
-            if(!ImageIO.write(image, outputFormat, tilePath.toFile()))
+            try(final ImageOutputStream fileOutputStream = ImageIO.createImageOutputStream(tilePath.toFile()))
             {
-                throw new TileStoreException(String.format("No appropriate image writer found for format '%s'", outputFormat));
+                this.imageWriter.setOutput(fileOutputStream);
+                this.imageWriter.write(null, new IIOImage(image, null, null), this.imageWriteOptions);
+                fileOutputStream.flush();
             }
         }
         catch(final IOException ex)
@@ -119,4 +171,16 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
             throw new TileStoreException(ex);
         }
     }
+
+    @Override
+    public Set<MimeType> getSupportedImageFormats()
+    {
+        return TmsWriter.SupportedImageFormats;
+    }
+
+    private final MimeType        imageOutputFormat;
+    private final ImageWriter     imageWriter;
+    private final ImageWriteParam imageWriteOptions;
+
+    private static final Set<MimeType> SupportedImageFormats = MimeTypeUtility.createMimeTypeSet(ImageIO.getReaderMIMETypes());
 }

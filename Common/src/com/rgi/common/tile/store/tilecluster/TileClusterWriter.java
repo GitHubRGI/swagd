@@ -24,6 +24,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import javax.activation.MimeType;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
@@ -31,6 +38,7 @@ import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.ImageUtility;
+import com.rgi.common.util.MimeTypeUtility;
 
 /**
  * @author Luke Lambert
@@ -42,11 +50,13 @@ import com.rgi.common.util.ImageUtility;
  */
 public class TileClusterWriter extends TileCluster implements TileStoreWriter
 {
-    public TileClusterWriter(final Path        location,
-                             final String      setName,
-                             final int         levels,
-                             final int         breakPoint,
-                             final TileProfile tileProfile)
+    public TileClusterWriter(final Path            location,
+                             final String          setName,
+                             final int             levels,
+                             final int             breakPoint,
+                             final TileProfile     tileProfile,
+                             final MimeType        imageOutputFormat,
+                             final ImageWriteParam imageWriteOptions)
     {
         super(location, setName, levels, breakPoint, tileProfile);
 
@@ -54,6 +64,23 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
         {
             throw new IllegalArgumentException("Specified location cannot be written to");
         }
+
+        if(imageOutputFormat == null)
+        {
+            throw new IllegalArgumentException("Image output format may not be null");
+        }
+
+        try
+        {
+            this.imageWriter = ImageIO.getImageWritersByMIMEType(imageOutputFormat.toString()).next();
+        }
+        catch(final NoSuchElementException ex)
+        {
+            throw new IllegalArgumentException(String.format("Mime type '%s' is not a supported for image writing by your Java environment", imageOutputFormat.toString()));
+        }
+
+        this.imageWriteOptions = imageWriteOptions != null ? imageWriteOptions
+                                                           : this.imageWriter.getDefaultWriteParam();
     }
 
     @Override
@@ -75,11 +102,9 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
             }
         }
 
-        final String outputFormat = "PNG";  // TODO how do we want to pick this ?
-
         try(final RandomAccessFile randomAccessFile  = new RandomAccessFile(clusterFile, "rw"))
         {
-            final byte[] imageData = ImageUtility.bufferedImageToBytes(image, outputFormat);
+            final byte[] imageData = ImageUtility.bufferedImageToBytes(image, this.imageWriter, this.imageWriteOptions);
 
             // Write the data at the end of the tile file
             final long tilePosition = randomAccessFile.length();
@@ -158,8 +183,15 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
         }
     }
 
+    @Override
+    public Set<MimeType> getSupportedImageFormats()
+    {
+        return TileClusterWriter.SupportedImageFormats;
+    }
 
+    private final ImageWriter     imageWriter;
+    private final ImageWriteParam imageWriteOptions;
 
-    private static final long MagicNumber = 0x772211ee;
-
+    private static final long          MagicNumber           = 0x772211ee;
+    private static final Set<MimeType> SupportedImageFormats = MimeTypeUtility.createMimeTypeSet(ImageIO.getReaderMIMETypes());
 }
