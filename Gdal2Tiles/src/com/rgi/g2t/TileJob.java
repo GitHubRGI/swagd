@@ -94,7 +94,7 @@ public class TileJob implements Runnable {
 	private final TileStoreReader tileStoreReader;
 	private final TileStoreWriter tileStoreWriter;
 
-	private TaskMonitor monitor;
+	//private TaskMonitor monitor;  //commented out because findbugs says this is an unused field
 	//private double workTotal = 0;
 	//private int workUnits = 0;
 
@@ -134,6 +134,7 @@ public class TileJob implements Runnable {
 			}
 		} catch (Exception e) {
 			System.err.println("Unable to open input file: " + e.getMessage());
+			return; 
 		}
 
 		if (inputDS.getRasterCount() == 0) {
@@ -462,14 +463,14 @@ public class TileJob implements Runnable {
 										new AbsoluteTileCoordinate((2 * tileX) + f(zx, origin.getDeltaX()),
 																   (2 * tileY) + f(zy, origin.getDeltaY()),
 																   z, origin);
-								Tile upperTile;
-								try {
-									upperTile = new Tile(tileCoordinate,
-														 tileStoreReader.getTile(tileProfile.absoluteToCrsCoordinate(tileCoordinate),
-																 		   tileCoordinate.getZoomLevel()));
-								} catch (Exception e) {
-									throw new TilingException("Problem getting tile", e);
-								}
+//								Tile upperTile;            //commented out because findbugs says its DLS: Dead store to local variable
+//								try {
+//									upperTile = new Tile(tileCoordinate,
+//														 tileStoreReader.getTile(tileProfile.absoluteToCrsCoordinate(tileCoordinate),
+//																 		   tileCoordinate.getZoomLevel()));
+//								} catch (Exception e) {
+//									throw new TilingException("Problem getting tile", e);
+//								}
 								//Commented out because it is dead code and fixbugs report says it is also redundant nullcheck of null value
 //								if (upperTile == null && compliant) {
 //									upperTile = createCompliant(z + 1, tileCoordinate, origin, maxZoom);

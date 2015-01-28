@@ -140,9 +140,9 @@ public class TileStoreLoader implements TileLoader
                    .absoluteToCrsCoordinate(new AbsoluteTileCoordinate(tile.getYtile(),
                                                                        tile.getXtile(),
                                                                        tile.getZoom(),
-                                                                       Origin));
+                                                                       origin));
     }
 
-    public static TileOrigin Origin = TileOrigin.UpperLeft; // Tile origin for JMapViewer
+    public final static TileOrigin origin = TileOrigin.UpperLeft; // Tile origin for JMapViewer
 
 }
