@@ -2659,7 +2659,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 1;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(32.423521, -45.234567, geodeticRefSys);//upper right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(45.213192, -45.234567, geodeticRefSys);//upper right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -2718,7 +2718,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 1;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(0, -180, geodeticRefSys);//upper left tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(85, -180, geodeticRefSys);//upper left tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -2777,7 +2777,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 1;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(49, -90, geodeticRefSys);//lower left tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(41, -90, geodeticRefSys);//lower left tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -2836,7 +2836,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 1;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(80, 0, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(12, 0, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -2896,7 +2896,7 @@ public class GeoPackageTilesAPITest
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-43, -45);
+        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(5, -45);
         final CrsCoordinate         crsMercatorCoord = new CrsCoordinate(coordInMeters.getY(), coordInMeters.getX(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
@@ -2970,7 +2970,7 @@ public class GeoPackageTilesAPITest
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-40, -42);
+        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(5, -42);
         final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getY(), coordInMeters.getX(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
@@ -3043,7 +3043,7 @@ public class GeoPackageTilesAPITest
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(9, -47);
+        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-45, -47);
         final CrsCoordinate         crsMercatorCoord = new CrsCoordinate(coordInMeters.getY(), coordInMeters.getX(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
@@ -3115,8 +3115,8 @@ public class GeoPackageTilesAPITest
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>           coordInMeters    = LatLongConversions.latLongToMeters(9,5);
-        final CrsCoordinate           crsMercatorCoord = new CrsCoordinate(coordInMeters.getY(), coordInMeters.getX(), globalMercator);
+        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-55,5);
+        final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getY(), coordInMeters.getX(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
 
@@ -3187,7 +3187,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 5;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(1.25, -27.5, geodeticRefSys);
+        final CrsCoordinate crsCoord = new CrsCoordinate(-1.25, -27.5, geodeticRefSys);
 
         final File testFile = this.getRandomFile(8);
 
@@ -3389,17 +3389,17 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(20, 0, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(40, 0, geodeticRefSys);//upper Left tile
 
         final File testFile = this.getRandomFile(8);
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
-                                                      "identifier",
-                                                      "description",
-                                                      new BoundingBox(0.0, 0.0, 50.0, 30.0),
-                                                      gpkg.core().getSpatialReferenceSystem(4326));
+                                                            "identifier",
+                                                            "description",
+                                                            new BoundingBox(0.0, 0.0, 50.0, 30.0),
+                                                            gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
             final int pixelXSize = 256;
@@ -3417,8 +3417,10 @@ public class GeoPackageTilesAPITest
             final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, crsCoord, zoomLevel);
 
             Assert.assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
-                                       + "\nExpected Row: 0, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
-                       relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 0);
+                                                + "\nExpected Row: 0, Expected Column: 0. \nActual Row: %d, Actual Column: %d", 
+                                            relativeCoord.getRow(),
+                                            relativeCoord.getColumn()),
+                             relativeCoord.getRow() == 0 && relativeCoord.getColumn() == 0);
         }
         finally
         {
@@ -3447,7 +3449,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(20, 30, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(30, 30, geodeticRefSys);//upper right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -3505,7 +3507,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(0, 20, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(50, 20, geodeticRefSys);//upper right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -3563,7 +3565,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(50, 20, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(0, 20, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
 
