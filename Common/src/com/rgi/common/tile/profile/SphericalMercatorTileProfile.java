@@ -57,27 +57,43 @@ public class SphericalMercatorTileProfile implements TileProfile
 
         final double tileSubdivision = Math.pow(2.0, zoomLevel);
 
-        // Round off the fractional tile
-        return new AbsoluteTileCoordinate((int)((coordinate.getY() + EarthEquatorialCircumfrence/2.0) / EarthEquatorialCircumfrence * tileSubdivision),
-                                          (int)((coordinate.getX() + EarthEquatorialCircumfrence/2.0) / EarthEquatorialCircumfrence * tileSubdivision),
+        final double tileWidth  = EarthEquatorialCircumfrence / tileSubdivision;
+        final double tileHeight = EarthEquatorialCircumfrence / tileSubdivision;
+
+        double   verticalOriginShift =  origin.getDeltaY() * (EarthEquatorialCircumfrence / 2.0);
+        double horizontalOriginShift = -origin.getDeltaX() * (EarthEquatorialCircumfrence / 2.0);
+
+        return new AbsoluteTileCoordinate((int)((coordinate.getY() -   verticalOriginShift) * tileHeight),
+                                          (int)((coordinate.getX() - horizontalOriginShift) * tileWidth),
                                           zoomLevel,
-                                          TileOrigin.LowerLeft).transform(origin);
+                                          origin);
     }
 
     @Override
-    public CrsCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate)
+    public CrsCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate coordinate)
     {
-        if(absoluteTileCoordinate == null)
+        if(coordinate == null)
         {
             throw new IllegalArgumentException("Tile coordinate may not be null");
         }
 
-        final double tileSubdivision = Math.pow(2.0, absoluteTileCoordinate.getZoomLevel());
+        final int tileRows    = (int)Math.pow(2.0, coordinate.getZoomLevel());
+        final int tileColumns = (int)Math.pow(2.0, coordinate.getZoomLevel());
 
-        final AbsoluteTileCoordinate transformed = absoluteTileCoordinate.transform(TileOrigin.LowerLeft);
+        final double tileHeight = EarthEquatorialCircumfrence / tileRows;
+        final double tileWidth  = EarthEquatorialCircumfrence / tileColumns;
 
-        return new CrsCoordinate(((transformed.getY() * EarthEquatorialCircumfrence) / tileSubdivision) - (EarthEquatorialCircumfrence / 2.0),
-                                 ((transformed.getX() * EarthEquatorialCircumfrence) / tileSubdivision) - (EarthEquatorialCircumfrence / 2.0),
+        final double originShift = (EarthEquatorialCircumfrence / 2.0);
+
+        final int maxTileOrdinate = tileRows    - 1;
+        final int maxTileAbscissa = tileColumns - 1;
+
+        // If the the origin is the same along an axis the xor value will be 0 which cancels out the final (delta) term.
+        final int tileY = coordinate.getY() + (coordinate.getOrigin().getDeltaY() ==  1 ? maxTileOrdinate - 2*coordinate.getY() : 0);
+        final int tileX = coordinate.getX() + (coordinate.getOrigin().getDeltaX() == -1 ? maxTileAbscissa - 2*coordinate.getX() : 0);
+
+        return new CrsCoordinate((tileY * tileHeight) - originShift,
+                                 (tileX * tileWidth)  - originShift,
                                  this.getCoordinateReferenceSystem());
     }
 

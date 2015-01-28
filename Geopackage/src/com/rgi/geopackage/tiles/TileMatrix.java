@@ -18,7 +18,6 @@
 
 package com.rgi.geopackage.tiles;
 
-import com.rgi.common.ZoomLevel;
 
 /**
  * @author Luke Lambert
@@ -61,9 +60,12 @@ public class TileMatrix
             throw new IllegalArgumentException("Table name may not be null or empty");
         }
 
-        ZoomLevel.verify(zoomLevel);
+        if(zoomLevel < 0)
+        {
+            throw new IllegalArgumentException("Zoom level may not be less than 0");
+        }
 
-                if(matrixWidth <= 0)
+        if(matrixWidth <= 0)
         {
             throw new IllegalArgumentException("Matrix width must be greater than 0");
         }

@@ -863,22 +863,16 @@ public class GeoPackageTiles
             return null;    // The requested SRS coordinate is outside the bounds of our data
         }
 
-        final Coordinate<Double> topLeft = tileSetBounds.getMin();
+        final Coordinate<Double> topLeft = new Coordinate<>(tileSetBounds.getMaxY(), tileSetBounds.getMinX());
 
         final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
         final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();
 
-        final double normalizedSrsTileCoordinateY = crsCoordinate.getY() - topLeft.getY();
+        final double normalizedSrsTileCoordinateY = topLeft.getY() - crsCoordinate.getY();
         final double normalizedSrsTileCoordinateX = crsCoordinate.getX() - topLeft.getX();
 
         final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);  // TODO this will return max matrix height + 1 at the far right edge of the SRS
         final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
-
-        System.out.format("Crs coord %s -> z: %d, x: %d, y: %d\n",
-                          crsCoordinate,
-                          zoomLevel,
-                          tileX,
-                          tileY);
 
         return new RelativeTileCoordinate(tileY,
                                           tileX,

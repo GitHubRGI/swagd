@@ -29,6 +29,7 @@ import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
+import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 
 /**
@@ -45,14 +46,20 @@ public class TileStoreLoader implements TileLoader
     private final TileStoreReader    tileStore;
     private final TileProfile        tileProfile;
 
-    private static final BufferedImage TRANSPARENT_TILE = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
+    private final int minimumZoomLevel;
+    private final int maximumZoomLevel;
 
-    public TileStoreLoader(final TileStoreReader tileStore, final TileLoaderListener listener)
+    private static final BufferedImage TransparentTile = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
+
+    public TileStoreLoader(final TileStoreReader tileStore, final TileLoaderListener listener) throws TileStoreException
     {
         this.tileStore   = tileStore;
         this.tileProfile = TileProfileFactory.create(tileStore.getCoordinateReferenceSystem());
         this.listener    = listener;
         //this.tileSource  = new TileSourceShell(tileStore);
+
+        this.minimumZoomLevel = tileStore.getZoomLevels().stream().min(Integer::compare).orElse(-1);
+        this.maximumZoomLevel = tileStore.getZoomLevels().stream().max(Integer::compare).orElse(-1);
     }
 
     @Override
@@ -78,11 +85,15 @@ public class TileStoreLoader implements TileLoader
 
                 try
                 {
-//                    final int x = tile.getXtile();
-//                    final int y = tile.getYtile();
-//                    final int z = tile.getZoom();
+                    BufferedImage image = null;
 
-                    final BufferedImage image = TileStoreLoader.this.tileStore.getTile(TileStoreLoader.this.toCrsCoordinate(tile), tile.getZoom());
+                    if(tile.getZoom() <= TileStoreLoader.this.maximumZoomLevel &&
+                       tile.getZoom() >= TileStoreLoader.this.minimumZoomLevel)
+                    {
+                        final CrsCoordinate crsCoordinate = TileStoreLoader.this.toCrsCoordinate(tile);
+
+                        image = TileStoreLoader.this.tileStore.getTile(crsCoordinate, tile.getZoom());
+                    }
 
                     if(image != null)
                     {
@@ -91,7 +102,7 @@ public class TileStoreLoader implements TileLoader
                     else
                     {
                         tile.setError("No tile available at this location.");
-                        tile.setImage(TRANSPARENT_TILE);
+                        tile.setImage(TransparentTile);
                     }
 
                     TileStoreLoader.this.listener.tileLoadingFinished(tile, true);
@@ -129,7 +140,7 @@ public class TileStoreLoader implements TileLoader
                    .absoluteToCrsCoordinate(new AbsoluteTileCoordinate(tile.getYtile(),
                                                                        tile.getXtile(),
                                                                        tile.getZoom(),
-                                                                       TileStoreLoader.Origin));
+                                                                       Origin));
     }
 
     public static TileOrigin Origin = TileOrigin.UpperLeft; // Tile origin for JMapViewer

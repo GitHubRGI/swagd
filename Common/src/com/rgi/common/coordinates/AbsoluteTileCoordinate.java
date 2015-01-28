@@ -18,11 +18,10 @@
 
 package com.rgi.common.coordinates;
 
-import com.rgi.common.ZoomLevel;
 import com.rgi.common.tile.TileOrigin;
 
 /**
- * A cartesian coordinate for a tile.  Absolute tile coordinates follow a TMS-
+ * A Cartesian coordinate for a tile.  Absolute tile coordinates follow a TMS-
  * like convention.  Zoom level 0 contains a single tile.  Each zoom level
  * covers the entire global extent, and tiles on both axes are numbered 0 to (2^zoomlevel)-1
  * i.e. each tile is bisected horizontally and vertically to create the tiles at
@@ -49,8 +48,6 @@ public class AbsoluteTileCoordinate extends Coordinate<Integer>
     public AbsoluteTileCoordinate(final int row, final int column, final int zoomLevel, final TileOrigin origin)
     {
         super(row, column);
-
-        ZoomLevel.verify(zoomLevel);
 
         if(origin == null)
         {
@@ -91,6 +88,21 @@ public class AbsoluteTileCoordinate extends Coordinate<Integer>
     public TileOrigin getOrigin()
     {
         return this.origin;
+    }
+
+    @Override
+    public boolean equals(final Object object)
+    {
+        if(object == null || object.getClass() != AbsoluteTileCoordinate.class)
+        {
+            return false;
+        }
+
+        final AbsoluteTileCoordinate other = (AbsoluteTileCoordinate)object;
+
+        return super.equals(other)               &&
+               this.zoomLevel == other.zoomLevel &&
+               this.origin    == other.origin;
     }
 
     /**

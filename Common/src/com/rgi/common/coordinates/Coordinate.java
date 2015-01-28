@@ -29,12 +29,12 @@ public class Coordinate<T extends Number>
     {
         if(y == null)
         {
-            throw new IllegalArgumentException("Y cannot be null");
+            throw new IllegalArgumentException("Y may not be null");
         }
 
         if(x == null)
         {
-            throw new IllegalArgumentException("X cannot be null");
+            throw new IllegalArgumentException("X may not be null");
         }
 
         this.y = y;
@@ -58,8 +58,7 @@ public class Coordinate<T extends Number>
         }
 
         @SuppressWarnings("unchecked")
-        final
-        Coordinate<T> other = (Coordinate<T>)object;
+        final Coordinate<T> other = (Coordinate<T>)object;
 
         return this.y == other.y &&
                this.x == other.x;

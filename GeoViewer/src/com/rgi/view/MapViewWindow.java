@@ -55,12 +55,12 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     private final TileLoader        loader;
     //private final File        location;
 
-    public MapViewWindow(final File location)
+    public MapViewWindow(final File location) throws TileStoreException
     {
         this("Tile Viewer", location);
     }
 
-    public MapViewWindow(final String title, final File location)
+    public MapViewWindow(final String title, final File location) throws TileStoreException
     {
         super(title);
 

@@ -33,14 +33,11 @@ public class TileSourceShell implements TileSource {
 	private final TileStoreReader tileStore;
 	private Set<Integer> zooms;
 
-	public TileSourceShell(final TileStoreReader tileStore) {
-		this.tileStore = tileStore;
-		try {
-			this.zooms = tileStore.getZoomLevels();
-		} catch (final TileStoreException e) {
-			e.printStackTrace();
-		}
-	}
+    public TileSourceShell(final TileStoreReader tileStore) throws TileStoreException
+    {
+        this.tileStore = tileStore;
+        this.zooms     = tileStore.getZoomLevels();
+    }
 
 	@Override
 	public boolean requiresAttribution() {

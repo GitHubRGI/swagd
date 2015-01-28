@@ -178,12 +178,12 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
 
     private void calculateBounds() throws TileStoreException
     {
-        final int minimumZoom = this.getTmsRange(this.location.toFile()).minimum; // Get the minimum zoom level
+        final int minimumZoom = TmsReader.getTmsRange(this.location.toFile()).minimum; // Get the minimum zoom level
 
         final Path pathToMinimumZoom = tmsPath(this.location, minimumZoom);
 
-        final Range xRange = this.getTmsRange(pathToMinimumZoom.toFile());
-        final Range yRange = this.getTmsRange(tmsPath(pathToMinimumZoom, xRange.maximum).toFile());
+        final Range xRange = TmsReader.getTmsRange(pathToMinimumZoom.toFile());
+        final Range yRange = TmsReader.getTmsRange(tmsPath(pathToMinimumZoom, xRange.maximum).toFile());
 
         // TODO attention: Lander, this logic needs to be double checked
         final Coordinate<Double> lowerLeftCorner  = this.profile.absoluteToCrsCoordinate(new AbsoluteTileCoordinate(yRange.minimum,     xRange.minimum,     minimumZoom, TmsTileStore.Origin));
@@ -272,7 +272,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
      *             If a file name cannot be parsed to an integer, a
      *             TileStoreException is thrown.
      */
-    private Range getTmsRange(final File directory) throws TileStoreException
+    private static Range getTmsRange(final File directory) throws TileStoreException
     {
         final Range minmax = Stream.of(directory.listFiles())
                                    .collect(() -> new Range(Integer.MAX_VALUE, Integer.MIN_VALUE),

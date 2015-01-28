@@ -22,7 +22,6 @@ import java.io.File;
 
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
-import com.rgi.common.tile.store.TileStoreException;
 
 /**
  * @author Duff Means
@@ -36,7 +35,7 @@ abstract class SimpleFileStore
     protected final TileOrigin  tileOrigin;
     protected final String      imageFormat;
 
-    public SimpleFileStore(final String name, final TileProfile tileProfile, final TileOrigin tileOrigin, final String location, final String imageFormat) throws TileStoreException
+    public SimpleFileStore(final String name, final TileProfile tileProfile, final TileOrigin tileOrigin, final String location, final String imageFormat)
     {
         if(!"png".equalsIgnoreCase(imageFormat) && !"jpg".equalsIgnoreCase(imageFormat))
         {
