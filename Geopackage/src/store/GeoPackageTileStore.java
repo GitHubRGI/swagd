@@ -33,6 +33,10 @@ abstract class GeoPackageTileStore
 
         this.geoPackage  = geoPackage;
         this.tileSet     = tileSet;
+        if(srs == null)
+        {
+        	throw new IllegalArgumentException("SRS may not be null or empty");
+        }
         this.tileProfile = TileProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId());
     }
 

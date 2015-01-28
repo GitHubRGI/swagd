@@ -32,6 +32,7 @@ import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.tiles.RelativeTileCoordinate;
 import com.rgi.geopackage.tiles.Tile;
+import com.rgi.geopackage.tiles.TileMatrixSet;
 import com.rgi.geopackage.tiles.TileSet;
 
 public class GeoPackageReader extends GeoPackageTileStore implements TileStoreReader
@@ -47,9 +48,12 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
         // TODO lazy precalculation ?
         try
         {
-            return this.geoPackage.tiles()
-                                  .getTileMatrixSet(this.tileSet)
-                                  .getBoundingBox();
+        	TileMatrixSet tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
+        	if (tileMatrixSet == null)
+        	{
+        		throw new IllegalArgumentException("Tile Matrix Set cannot be null");
+        	}
+        	return tileMatrixSet.getBoundingBox();
         }
         catch(final Exception ex)
         {

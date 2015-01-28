@@ -158,6 +158,9 @@ public class SimpleFileStoreReader extends SimpleFileStore implements TileStoreR
           }
           return new File(name).isDirectory();
         });
+      if (files == null) {
+    	  throw new IllegalArgumentException("Zoom level file list is null");
+      }
       for (final String file : files) {
         zoomLevels.add(Integer.parseInt(file));
       }
