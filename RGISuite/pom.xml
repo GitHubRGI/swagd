@@ -9,6 +9,8 @@
         <jacoco.version>0.7.2.201409121644</jacoco.version>
         <project.url>https://github.com/GitHubRGI/swagd</project.url>
         <jar.plugin.version>2.5</jar.plugin.version>
+        <resources.plugin.version>2.6</resources.plugin.version>
+        <findbugs.plugin.version>3.0.0</findbugs.plugin.version>
     </properties>
 
   <parent>
@@ -60,7 +62,7 @@
           <plugin>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>findbugs-maven-plugin</artifactId>
-              <version>${findbugs.version}</version>
+              <version>${findbugs.plugin.version}</version>
               <configuration>
                   <xmlOutput>true</xmlOutput>
                   <xmlOutputDirectory>target/site</xmlOutputDirectory>
@@ -81,8 +83,30 @@
       </resource>
     </resources>
     <plugins>
+        <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>${resources.plugin.version}</version>
+            <executions>
+                <execution>
+                    <id>copy-resources</id>
+                    <phase>validate</phase>
+                    <goals>
+                        <goal>copy-resources</goal>
+                    </goals>
+                    <configuration>
+                        <outputDirectory>${basedir}/target/classes/com/rgi/suite/res</outputDirectory>
+                        <includeEmptyDirs>true</includeEmptyDirs>
+                        <resources>
+                            <resource>
+                                <directory>${basedir}/res</directory>
+                                <filtering>false</filtering>
+                            </resource>
+                        </resources>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
       <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <executions>
               <execution>
