@@ -23,12 +23,56 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 public class ImageUtility
 {
+    public static byte[] bufferedImageToBytes(final BufferedImage bufferedImage, final ImageWriter imageWriter, final ImageWriteParam imageWriteParameter) throws IOException
+    {
+        if(bufferedImage == null)
+        {
+            throw new IllegalArgumentException("Buffered image may not be null");
+        }
+
+        if(imageWriter == null)
+        {
+            throw new IllegalArgumentException("Image writer may not be null");
+        }
+
+        if(imageWriteParameter == null)
+        {
+            throw new IllegalArgumentException("Image write parameter may not be null");
+        }
+
+        try(final ByteArrayOutputStream        outputStream     = new ByteArrayOutputStream();
+            final MemoryCacheImageOutputStream memoryCacheImage = new MemoryCacheImageOutputStream(outputStream))
+        {
+            imageWriter.setOutput(memoryCacheImage);
+
+            imageWriter.write(null, new IIOImage(bufferedImage, null, null), imageWriteParameter);
+
+            outputStream.flush();
+
+            return outputStream.toByteArray();
+        }
+    }
+
     public static byte[] bufferedImageToBytes(final BufferedImage bufferedImage, final String outputFormat) throws IOException
     {
+        if(bufferedImage == null)
+        {
+            throw new IllegalArgumentException("Buffered image may not be null");
+        }
+
+        if(outputFormat == null)
+        {
+            throw new IllegalArgumentException("Output format may not be null");
+        }
+
         try(@SuppressWarnings("resource") final ByteArrayOutputStream outputStream = new ByteArrayOutputStream())
         {
             if(!ImageIO.write(bufferedImage, outputFormat, outputStream))
@@ -42,6 +86,11 @@ public class ImageUtility
 
     public static BufferedImage bytesToBufferedImage(final byte[] imageData) throws IOException
     {
+        if(imageData == null)
+        {
+            throw new IllegalArgumentException("Output format may not be null");
+        }
+
         try(ByteArrayInputStream imageInputStream = new ByteArrayInputStream(imageData))
         {
             BufferedImage bufferedImage = ImageIO.read(imageInputStream);

@@ -19,6 +19,9 @@
 package com.rgi.common.tile.store;
 
 import java.awt.image.BufferedImage;
+import java.util.Set;
+
+import javax.activation.MimeType;
 
 import com.rgi.common.coordinates.CrsCoordinate;
 
@@ -59,4 +62,12 @@ public interface TileStoreWriter
      *             inserting this tile into the tile store.
      */
     public void addTile(final int row, final int column, final int zoomLevel, final BufferedImage image) throws TileStoreException;
+
+
+    /**
+     * Reports the image formats that are valid for this type of tile store writer
+     *
+     * @return A set of {@link MimeType}s that this type of tile store writer supports
+     */
+    public Set<MimeType> getSupportedImageFormats();
 }

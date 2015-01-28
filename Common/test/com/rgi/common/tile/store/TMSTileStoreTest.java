@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Random;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.imageio.ImageIO;
 
 import org.junit.Rule;
@@ -252,14 +254,15 @@ public class TMSTileStoreTest {
 	}
 
 	@Test
-	public void verifyTileRetrieval() throws TileStoreException {
+	public void verifyTileRetrieval() throws TileStoreException, MimeTypeParseException {
 		this.tmsDir = this.createTMSFolderMercator(4);
 
 		final int zoomLevel = 1;
 		final TileProfile tileProfile = TileProfileFactory.create("EPSG", 3857);
 
+		TmsWriter tmsWriter = new TmsWriter(tileProfile, this.tmsDir, new MimeType("image", "jpeg"));
 		TmsReader tmsReader = new TmsReader(tileProfile, this.tmsDir);
-		TmsWriter tmsWriter = new TmsWriter(tileProfile, this.tmsDir);
+
 		final AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(0, 0, zoomLevel, TileOrigin.LowerLeft);
 
 		final CrsCoordinate crsCoordinate = tileProfile.absoluteToCrsCoordinate(tileCoord);
@@ -274,12 +277,12 @@ public class TMSTileStoreTest {
 	}
 
 	@Test
-	public void verifyTileInsertion() throws TileStoreException {
+	public void verifyTileInsertion() throws TileStoreException, MimeTypeParseException {
 		this.tmsDir = this.createTMSFolderMercator(4);
 
 		final TileProfile tileProfile = TileProfileFactory.create("EPSG", 3857);
 
-		TmsWriter tmsWriter = new TmsWriter(tileProfile, this.tmsDir);
+		TmsWriter tmsWriter = new TmsWriter(tileProfile, this.tmsDir, new MimeType("image", "jpeg"));
 		final Path tilePath = this.tmsDir.resolve("5").resolve("0").resolve("0.png");
 		final BufferedImage img = createImage();
 		final AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(0, 0, 5, TileOrigin.LowerLeft);

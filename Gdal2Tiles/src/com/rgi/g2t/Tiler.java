@@ -20,6 +20,7 @@
 package com.rgi.g2t;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -29,6 +30,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
+
 import com.rgi.common.task.AbstractTask;
 import com.rgi.common.task.MonitorableTask;
 import com.rgi.common.task.Settings;
@@ -36,12 +40,12 @@ import com.rgi.common.task.Settings.Profile;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
-import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.profile.TileProfile;
 import com.rgi.common.tile.profile.TileProfileFactory;
-import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
+import com.rgi.common.tile.store.tms.TmsReader;
+import com.rgi.common.tile.store.tms.TmsWriter;
 
 public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor {
   ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -106,20 +110,21 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor 
             try
             {
                 String imageFormat = Settings.Type.valueOf(opts.get(Setting.TileType)).name();
-                String outputFolder = opts.get(Setting.TileFolder);
+                Path outputFolder = new File(opts.get(Setting.TileFolder)).toPath();
 
                 final TileProfile tileProfile = TileProfileFactory.create("EPSG", profile.getID());
 
-                final TileOrigin origin = TileOrigin.valueOf(opts.get(Setting.TileOrigin));
+                //final TileOrigin origin = TileOrigin.valueOf(opts.get(Setting.TileOrigin));
 
-                TileStoreWriter tileWriter = new SimpleFileStoreWriter(file.getName(), tileProfile, origin, outputFolder, imageFormat); // TODO is this the correct origin?
-                TileStoreReader tileReader = new SimpleFileStoreReader(file.getName(), tileProfile, origin, outputFolder, imageFormat); // TODO is this the correct origin?
+                TileStoreWriter tileWriter = new TmsWriter(tileProfile, outputFolder, new MimeType("image", imageFormat));
+                TileStoreReader tileReader = new TmsReader(tileProfile, outputFolder);
+
 
                 Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createTileJob(file, tileReader, tileWriter, opts, this))));
                 jobWaiter.setDaemon(true);
                 jobWaiter.start();
             }
-            catch(final TileStoreException ex)
+            catch(final MimeTypeParseException ex)
             {
                 System.err.println("Unable to create tile store for input file " + file.getName() + " " + ex.getMessage());
             }
