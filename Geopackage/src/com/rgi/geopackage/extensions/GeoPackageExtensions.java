@@ -299,7 +299,7 @@ public class GeoPackageExtensions
      * <br>
      * <b>**WARNING**</b> this does not do a database commit. It is expected
      * that this transaction will always be paired with others that need to be
-     * committed or rollback as a single transaction.
+     * committed or roll back as a single transaction.
      *
      * @throws SQLException
      */
