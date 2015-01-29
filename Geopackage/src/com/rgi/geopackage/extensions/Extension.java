@@ -74,7 +74,7 @@ public class Extension
             throw new IllegalArgumentException("If column name is not null, it may not be empty");
         }
 
-        if(extensionName == null || !extensionName.isEmpty())
+        if(extensionName == null || extensionName.isEmpty())
         {
             throw new IllegalArgumentException("Extension name may not be null or empty");
         }

@@ -218,7 +218,7 @@ public class GeoPackageExtensions
             throw new IllegalArgumentException("If column name is not null, it may not be empty");
         }
 
-        if(extensionName == null || !extensionName.isEmpty())
+        if(extensionName == null || extensionName.isEmpty())
         {
             throw new IllegalArgumentException("Extension name may not be null or empty");
         }
@@ -251,11 +251,10 @@ public class GeoPackageExtensions
                                                      "extension_name",
                                                      "definition",
                                                      "scope");
-
+        this.createExtensionTableNoCommit(); // Create the extension table
+        
         try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertExtension))
         {
-            this.createExtensionTableNoCommit();    // Create the extension table
-
             preparedStatement.setString(1, tableName);
             preparedStatement.setString(2, columnName);
             preparedStatement.setString(3, extensionName);
