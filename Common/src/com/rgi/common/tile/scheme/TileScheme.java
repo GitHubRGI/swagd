@@ -71,12 +71,12 @@ public abstract class TileScheme
             throw new IllegalArgumentException("Minimum zoom level must be less than or equal to the maximum");
         }
 
-        if(Integer.MAX_VALUE < initialHeight * Math.pow(2.0, maximumZoomLevel))
+        if(Integer.MAX_VALUE < initialHeight * Math.pow(2.0, maximumZoomLevel) - 1)
         {
             throw new IllegalArgumentException("This combination of initial height and maximum zoom level will cause an integer overflow for tile numbering");
         }
 
-        if(Integer.MAX_VALUE < initialWidth * Math.pow(2.0, maximumZoomLevel))
+        if(Integer.MAX_VALUE < initialWidth * Math.pow(2.0, maximumZoomLevel) - 1)
         {
             throw new IllegalArgumentException("This combination of initial width and maximum zoom level will cause an integer overflow for tile numbering");
         }
