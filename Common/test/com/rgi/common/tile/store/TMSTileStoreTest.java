@@ -20,8 +20,6 @@ package com.rgi.common.tile.store;
 
 import static org.junit.Assert.assertTrue;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -299,33 +297,33 @@ public class TMSTileStoreTest {
 //        assertTrue(tilePath.toFile().exists());
 //    }
 
-    private static BufferedImage createImage()
-    {
-        final BufferedImage img = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
-        final Graphics2D graphics = img.createGraphics();
-        graphics.setPaint(new Color(255, 0, 0));
-        graphics.fillRect(0, 0, 256, 256);
-        return img;
-    }
-
-    private static boolean bufferedImagesEqual(final BufferedImage img1, final BufferedImage img2)
-    {
-        if(img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight())
-        {
-            return false;
-        }
-
-        for(int x = 0; x < img1.getWidth(); x++)
-        {
-            for(int y = 0; y < img1.getHeight(); y++)
-            {
-                if(img1.getRGB(x, y) != img2.getRGB(x, y))
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
+//    private static BufferedImage createImage()
+//    {
+//        final BufferedImage img = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
+//        final Graphics2D graphics = img.createGraphics();
+//        graphics.setPaint(new Color(255, 0, 0));
+//        graphics.fillRect(0, 0, 256, 256);
+//        return img;
+//    }
+//
+//    private static boolean bufferedImagesEqual(final BufferedImage img1, final BufferedImage img2)
+//    {
+//        if(img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight())
+//        {
+//            return false;
+//        }
+//
+//        for(int x = 0; x < img1.getWidth(); x++)
+//        {
+//            for(int y = 0; y < img1.getHeight(); y++)
+//            {
+//                if(img1.getRGB(x, y) != img2.getRGB(x, y))
+//                {
+//                    return false;
+//                }
+//            }
+//        }
+//
+//        return true;
+//    }
 }
