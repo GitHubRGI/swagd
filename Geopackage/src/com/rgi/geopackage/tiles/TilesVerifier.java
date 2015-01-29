@@ -270,9 +270,9 @@ public class TilesVerifier extends Verifier
                     for(int index = 0; index < tileDataSet.size()-1; ++index)
                     {
                         TileData current = tileDataSet.get(index);
-                        TileData next    = tileDataSet.get(index+1);
+                        TileData next    = tileDataSet.get(index + 1);
 
-                        if(current.zoomLevel== next.zoomLevel - 1)
+                        if(current.zoomLevel == next.zoomLevel - 1)
                         {
                             Assert.assertTrue(String.format("Pixel sizes for tile matrix user data tables do not vary by factors of 2"
                                                             + " between adjacent zoom levels in the tile matrix metadata table: %f, %f",
