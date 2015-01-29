@@ -459,10 +459,10 @@ public class TileJob implements Runnable {
 								// The coordinate of the tile that we need to stitch into our new tile is
 								// double our current coordinate, plus the appropriate offset based on the
 								// iterator and origin.
-								AbsoluteTileCoordinate tileCoordinate =
-										new AbsoluteTileCoordinate((2 * tileX) + f(zx, origin.getDeltaX()),
-																   (2 * tileY) + f(zy, origin.getDeltaY()),
-																   z, origin);
+//								AbsoluteTileCoordinate tileCoordinate =
+//										new AbsoluteTileCoordinate((2 * tileX) + f(zx, origin.getDeltaX()), 
+//																   (2 * tileY) + f(zy, origin.getDeltaY()),
+//																   z, origin); //commented out because findbugs says its DLS: dead store to local variable
 //								Tile upperTile;            //commented out because findbugs says its DLS: Dead store to local variable
 //								try {
 //									upperTile = new Tile(tileCoordinate,
