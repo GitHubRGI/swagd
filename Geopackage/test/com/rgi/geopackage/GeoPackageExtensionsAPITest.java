@@ -6,7 +6,7 @@ import org.junit.rules.TemporaryFolder;
 public class GeoPackageExtensionsAPITest
 {
 
-	@Rule
+    @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
 
   //  private final Random randomGenerator = new Random();

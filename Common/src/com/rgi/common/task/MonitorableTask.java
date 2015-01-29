@@ -19,7 +19,7 @@
 package com.rgi.common.task;
 
 public interface MonitorableTask {
-	// A task that can be monitored while running.
+    // A task that can be monitored while running.
   public void addMonitor(TaskMonitor monitor);
   public void requestCancel();
 }

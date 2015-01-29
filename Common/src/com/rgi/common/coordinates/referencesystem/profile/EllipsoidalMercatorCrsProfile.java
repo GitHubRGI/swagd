@@ -142,13 +142,13 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         return this.coordinateReferenceSystem;
     }
 
-	public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
-	{
-		return new Coordinate<>(metersToLat(coordinate.getY()),
-		                        metersToLon(coordinate.getX()));
-	}
+    public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
+    {
+        return new Coordinate<>(metersToLat(coordinate.getY()),
+                                metersToLon(coordinate.getX()));
+    }
 
-	@Override
+    @Override
     public BoundingBox getBounds()
     {
         final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; // TODO IS THIS RIGHT? Verify!
@@ -159,28 +159,28 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
                                 Math.PI * this.scaledEarthEquatorialRadius);
     }
 
-	@Override
+    @Override
     public Coordinate<Double> toGlobalGeodetic(Coordinate<Double> coordinate)
     {
         return new Coordinate<>(metersToLat(coordinate.getY()),
                                 metersToLon(coordinate.getX()));
     }
 
-	/**
-	 * Converts a meters X coordinate of WGS 84
-	 * Ellipsoid World Mercator EPSG(3395) to its
-	 * corresponding longitude value in degrees.
-	 *
-	 * Formula:
-	 *         Longitude(in radian) = meters/UnscaledEarthEquatorialRadius
-	 *
-	 * @param meters in WGS 3395
-	 * @return longitude in Degrees
-	 */
-	private static double metersToLon(final double meters)
-	{
-	    return Math.toDegrees(meters/UnscaledEarthEquatorialRadius);
-	}
+    /**
+     * Converts a meters X coordinate of WGS 84
+     * Ellipsoid World Mercator EPSG(3395) to its
+     * corresponding longitude value in degrees.
+     *
+     * Formula:
+     *         Longitude(in radian) = meters/UnscaledEarthEquatorialRadius
+     *
+     * @param meters in WGS 3395
+     * @return longitude in Degrees
+     */
+    private static double metersToLon(final double meters)
+    {
+        return Math.toDegrees(meters/UnscaledEarthEquatorialRadius);
+    }
 
     /**
      * Converts a meters Y coordinate to of WGS 84

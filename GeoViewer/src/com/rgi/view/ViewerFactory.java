@@ -39,7 +39,7 @@ public class ViewerFactory implements TaskFactory {
 
   @Override
   public String getFilePrompt() {
-	return "Select tile collection to be viewed...";
+    return "Select tile collection to be viewed...";
   }
 
   @Override
@@ -52,7 +52,7 @@ public class ViewerFactory implements TaskFactory {
     // TODO Auto-generated method stub
     return true;
   }
-  
+
   @Override
   public boolean selectFoldersOnly() {
     return false;

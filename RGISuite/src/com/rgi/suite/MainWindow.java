@@ -36,7 +36,7 @@ public class MainWindow extends BaseWindow {
   public MainWindow(ApplicationContext context) {
     super(context);
   }
-  
+
   @Override
 protected void buildContentPane() {
     this.contentPane = new JPanel(new GridBagLayout());
@@ -45,17 +45,17 @@ protected void buildContentPane() {
     gbc.weighty = 1.0;
 
     Properties props = this.context.getProperties();
-    
+
     JButton tileButton = new JButton(new PropertiesAction(props, "tile") {
       /**
-  		 * 
-  		 */
-  		private static final long serialVersionUID = -3249428374853166484L;
-    
-    	@Override
-    	public void actionPerformed(ActionEvent event) {
+           *
+           */
+          private static final long serialVersionUID = -3249428374853166484L;
+
+        @Override
+        public void actionPerformed(ActionEvent event) {
         MainWindow.this.context.setActiveTask(TilerFactory.getInstance().createTask());
-        
+
         MainWindow.this.context.transitionTo(Window.FILECHOOSER);
       }
     });
@@ -63,12 +63,12 @@ protected void buildContentPane() {
     tileButton.setMargin(new Insets(0,0,0,0));
     JButton gpkgButton = new JButton(new PropertiesAction(props, "gpkg") {
       /**
-  		 * 
-  		 */
-  		private static final long serialVersionUID = -1836754318915912580L;
-  
-    	@Override
-    	public void actionPerformed(ActionEvent event) {
+           *
+           */
+          private static final long serialVersionUID = -1836754318915912580L;
+
+        @Override
+        public void actionPerformed(ActionEvent event) {
         MainWindow.this.context.setActiveTask(PackagerFactory.getInstance().createTask());
         MainWindow.this.context.transitionTo(Window.FILECHOOSER);
       }
@@ -77,19 +77,19 @@ protected void buildContentPane() {
     gpkgButton.setMargin(new Insets(0,0,0,0));
     JButton viewButton = new JButton(new PropertiesAction(props, "view") {
       /**
-  		 * 
-  		 */
-  		private static final long serialVersionUID = 1882624675173160883L;
+           *
+           */
+          private static final long serialVersionUID = 1882624675173160883L;
 
-    	@Override
-    	public void actionPerformed(ActionEvent event) {
+        @Override
+        public void actionPerformed(ActionEvent event) {
         MainWindow.this.context.setActiveTask(ViewerFactory.getInstance().createTask());
         MainWindow.this.context.transitionTo(Window.FILECHOOSER);
       }
     });
     viewButton.setHideActionText(true);
     viewButton.setMargin(new Insets(0,0,0,0));
-  
+
     this.contentPane.add(tileButton, gbc);
     this.contentPane.add(gpkgButton, gbc);
     this.contentPane.add(viewButton, gbc);

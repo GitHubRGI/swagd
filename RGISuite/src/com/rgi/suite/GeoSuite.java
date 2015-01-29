@@ -23,33 +23,33 @@ import javax.swing.SwingUtilities;
 import com.rgi.suite.ApplicationContext.Window;
 
 public class GeoSuite {
-	private ApplicationContext context;
-	private GeoSuite() {
-		SwingUtilities.invokeLater(() -> {
-			this.context = new ApplicationContext();
+    private ApplicationContext context;
+    private GeoSuite() {
+        SwingUtilities.invokeLater(() -> {
+            this.context = new ApplicationContext();
 
-			this.context.addWindow(Window.MAIN, new MainWindow(this.context));
-			this.context.addWindow(Window.SETTINGS, new SettingsWindow(this.context));
-			this.context.addWindow(Window.FILECHOOSER, new FileChooserWindow(this.context));
-			this.context.addWindow(Window.PROGRESS, new ProgressWindow(this.context));
-			this.context.addWindow(Window.WINDOWERROR, new ErrorWindow(this.context));
-			this.context.addWindow(Window.DONE, new DoneWindow(this.context));
+            this.context.addWindow(Window.MAIN, new MainWindow(this.context));
+            this.context.addWindow(Window.SETTINGS, new SettingsWindow(this.context));
+            this.context.addWindow(Window.FILECHOOSER, new FileChooserWindow(this.context));
+            this.context.addWindow(Window.PROGRESS, new ProgressWindow(this.context));
+            this.context.addWindow(Window.WINDOWERROR, new ErrorWindow(this.context));
+            this.context.addWindow(Window.DONE, new DoneWindow(this.context));
 
-			this.context.go();
-		});
-	}
+            this.context.go();
+        });
+    }
 
-	private static void runHeadless(@SuppressWarnings("unused") String[] args) {
-		// TODO
-	}
+    private static void runHeadless(@SuppressWarnings("unused") String[] args) {
+        // TODO
+    }
 
-	@SuppressWarnings("unused")
+    @SuppressWarnings("unused")
     public static void main(String[] args) {
-		if (args != null && args.length > 0) {
-			GeoSuite.runHeadless(args);
-		} else {
-			new GeoSuite();
-		}
-	}
+        if (args != null && args.length > 0) {
+            GeoSuite.runHeadless(args);
+        } else {
+            new GeoSuite();
+        }
+    }
 
 }

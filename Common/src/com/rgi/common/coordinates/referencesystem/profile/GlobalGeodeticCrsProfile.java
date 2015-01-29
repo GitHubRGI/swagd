@@ -103,24 +103,24 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
         return new Dimensions(height, width);
     }
 
-	@Override
+    @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
         return GlobalGeodeticCrsProfile.CoordinateReferenceSystem;
     }
 
-	public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
+    public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
     {
         return coordinate;
     }
 
-	@Override
+    @Override
     public BoundingBox getBounds()
     {
         return GlobalGeodeticCrsProfile.Bounds;
     }
 
-	@Override
+    @Override
     public Coordinate<Double> toGlobalGeodetic(Coordinate<Double> coordinate)
     {
         return coordinate;

@@ -130,12 +130,12 @@ public class SphericalMercatorCrsProfile implements CrsProfile
     }
 
     @Override
-	public BoundingBox getBounds()
+    public BoundingBox getBounds()
     {
-	    return new BoundingBox(-Math.PI * EarthEquatorialRadius,
-	                           -Math.PI * EarthEquatorialRadius,
-	                            Math.PI * EarthEquatorialRadius,
-	                            Math.PI * EarthEquatorialRadius);
+        return new BoundingBox(-Math.PI * EarthEquatorialRadius,
+                               -Math.PI * EarthEquatorialRadius,
+                                Math.PI * EarthEquatorialRadius,
+                                Math.PI * EarthEquatorialRadius);
     }
 
     /**

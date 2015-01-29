@@ -26,10 +26,10 @@ public class Viewer extends AbstractTask {
   public Viewer(TaskFactory factory) {
     super(factory);
   }
-  
-	@Override
-	public void execute(Settings opts) {
-		// TODO
-		System.out.println(opts.toString());
-	}
+
+    @Override
+    public void execute(Settings opts) {
+        // TODO
+        System.out.println(opts.toString());
+    }
 }
