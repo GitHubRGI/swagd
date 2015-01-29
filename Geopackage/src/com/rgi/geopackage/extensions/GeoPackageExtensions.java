@@ -105,7 +105,7 @@ public class GeoPackageExtensions
             return null;
         }
 
-        final String extensionQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s WHERE table_name = ? AND column_name = ? AND extension_name = ?;",
+        final String extensionQuerySql = String.format("SELECT %s, %s, %s, %s, %s FROM %s WHERE table_name = ? AND column_name = ? AND extension_name = ?;",
                                                        "table_name",
                                                        "column_name",
                                                        "extension_name",
@@ -252,7 +252,7 @@ public class GeoPackageExtensions
                                                      "definition",
                                                      "scope");
         this.createExtensionTableNoCommit(); // Create the extension table
-        
+
         try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertExtension))
         {
             preparedStatement.setString(1, tableName);
