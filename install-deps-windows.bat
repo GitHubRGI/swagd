@@ -1,7 +1,7 @@
 @echo off
 
-call mvn install:install-file -Dfile=Gdal2Tiles/lib/gdal.jar ^
-    -DgroupId=org.osgeo -DartifactId=gdal -Dversion=1.11.0 ^
+call mvn install:install-file -Dfile=RGISuite/lib/gdal.jar ^
+    -DgroupId=org.osgeo -DartifactId=gdal -Dversion=1.11.1 ^
     -Dpackaging=jar
 echo Exit Code = %ERRORLEVEL%
 if not "%ERRORLEVEL%" == "0" exit /b

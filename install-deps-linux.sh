@@ -1,6 +1,6 @@
 #!/bin/bash
-mvn install:install-file -Dfile=Gdal2Tiles/lib/gdal.jar \
-    -DgroupId=org.osgeo -DartifactId=gdal -Dversion=1.11.0 \
+mvn install:install-file -Dfile=RGISuite/lib/gdal.jar \
+    -DgroupId=org.osgeo -DartifactId=gdal -Dversion=1.11.1 \
     -Dpackaging=jar
 
 mvn install:install-file -Dfile=GeoViewer/lib/JMapViewer-1.05.jar \
