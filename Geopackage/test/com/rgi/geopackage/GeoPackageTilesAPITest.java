@@ -18,6 +18,8 @@
 
 package com.rgi.geopackage;
 
+import static org.junit.Assert.fail;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -641,6 +643,102 @@ public class GeoPackageTilesAPITest
                              gpkg.core().getSpatialReferenceSystem(4326));
 
              Assert.fail("Expected the GeoPackage to throw an IllegalArgumentException when given a TileSet with an empty string for the table name.");
+         }
+         finally
+         {
+             if(testFile.exists())
+             {
+                 if(!testFile.delete())
+                 {
+                     throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                 }
+             }
+         }
+     }
+     
+     /**
+      * Tests if GeoPackageTiles throws an
+      * IllegalArgumentException when giving
+      * a table name with symbols
+      * @throws FileAlreadyExistsException
+      * @throws ClassNotFoundException
+      * @throws FileNotFoundException
+      * @throws SQLException
+      * @throws ConformanceException
+      */
+     @Test(expected = IllegalArgumentException.class)
+     public void addTileIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+     {
+         File testFile = this.getRandomFile(18);
+         
+         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+         {
+             gpkg.tiles().addTileSet("badTableName^", "identifier", "description", new BoundingBox(0.0,0.0,2.0,2.0), gpkg.core().getSpatialReferenceSystem(0));
+             fail("Expected to get an IllegalArgumentException for giving an illegal tablename (with symbols not allowed by GeoPackage)");
+         }
+         finally
+         {
+             if(testFile.exists())
+             {
+                 if(!testFile.delete())
+                 {
+                     throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                 }
+             }
+         }
+     }
+     
+     /**
+      * Tests if GeoPackageTiles throws an
+      * IllegalArgumentException when giving
+      * a table name starting with gpkg
+      * @throws FileAlreadyExistsException
+      * @throws ClassNotFoundException
+      * @throws FileNotFoundException
+      * @throws SQLException
+      * @throws ConformanceException
+      */
+     @Test(expected = IllegalArgumentException.class)
+     public void addTileIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+     {
+         File testFile = this.getRandomFile(18);
+         
+         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+         {
+             gpkg.tiles().addTileSet("gpkg_bad_tablename", "identifier", "description", new BoundingBox(0.0,0.0,2.0,2.0), gpkg.core().getSpatialReferenceSystem(0));
+             fail("Expected to get an IllegalArgumentException for giving an illegal tablename (starting with gpkg_ which is not allowed by GeoPackage)");
+         }
+         finally
+         {
+             if(testFile.exists())
+             {
+                 if(!testFile.delete())
+                 {
+                     throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                 }
+             }
+         }
+     }
+     
+     /**
+      * Tests if GeoPackageTiles throws an
+      * IllegalArgumentException when giving
+      * a table name with a null value
+      * @throws FileAlreadyExistsException
+      * @throws ClassNotFoundException
+      * @throws FileNotFoundException
+      * @throws SQLException
+      * @throws ConformanceException
+      */
+     @Test(expected = IllegalArgumentException.class)
+     public void addTileIllegalArgumentException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+     {
+         File testFile = this.getRandomFile(18);
+         
+         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+         {
+             gpkg.tiles().addTileSet(null, "identifier", "description", new BoundingBox(0.0,0.0,2.0,2.0), gpkg.core().getSpatialReferenceSystem(0));
+             fail("Expected to get an IllegalArgumentException for giving an illegal tablename (a null value)");
          }
          finally
          {
