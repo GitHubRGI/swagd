@@ -46,6 +46,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
+import com.rgi.common.BoundingBox;
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.DatabaseUtility;
 import com.rgi.geopackage.verification.Assert;
@@ -67,6 +68,10 @@ public class TilesVerifier extends Verifier
         Integer tileID;
         int     tileRow;
         int     tileColumn;
+        double  pixelXSize;
+        double  pixelYSize;
+        int     tileWidth;
+        int     tileHeight;
 
         public String columnInvalidToString()
         {
@@ -210,13 +215,14 @@ public class TilesVerifier extends Verifier
      *</blockquote>
      *</div>
      * @throws AssertionError
+     * @throws SQLException 
      */
     @Requirement(number = 34,
                  text = "In a GeoPackage that contains a tile pyramid user data table"
                          + "that contains tile data, by default, zoom level pixel sizes for that "
                          + "table SHALL vary by a factor of 2 between zoom levels in tile matrix metadata table.",
                  severity = Severity.Warning)
-    public void Requirement34() throws AssertionError
+    public void Requirement34() throws AssertionError, SQLException
     {
         if(this.hasTileMatrixTable)
         {
@@ -225,7 +231,11 @@ public class TilesVerifier extends Verifier
                 final String query1 = String.format("SELECT table_name, "
                                                          + "zoom_level, "
                                                          + "pixel_x_size, "
-                                                         + "pixel_y_size "
+                                                         + "pixel_y_size,"
+                                                         + "matrix_width,"
+                                                         + "matrix_height,"
+                                                         + "tile_width,"
+                                                         + "tile_height "
                                                   + "FROM gpkg_tile_matrix "
                                                   + "WHERE table_name = '%s' "
                                                   + "ORDER BY zoom_level ASC;", tableName);
@@ -233,53 +243,104 @@ public class TilesVerifier extends Verifier
                 try (Statement stmt      = this.getSqliteConnection().createStatement();
                      ResultSet pixelInfo = stmt.executeQuery(query1))
                 {
-
-                    Double pixelXCurrent = null;
-                    Double pixelYCurrent = null;
-                    int zoomLevelCurrent = -1000;// arbitrary number to
-                                                 // initialize the variable
-
-                    while (pixelInfo.next())
-                    {
-                        final Double pixelXNext    = pixelInfo.getDouble("pixel_x_size");
-                        final Double pixelYNext    = pixelInfo.getDouble("pixel_y_size");
-                        final int    zoomLevelNext = pixelInfo.getInt("zoom_level");
-
-                        if (pixelXCurrent != null && pixelYCurrent != null && zoomLevelNext == zoomLevelCurrent + 1)
+                    
+                    List<TileData> tileDataSet = ResultSetStream.getStream(pixelInfo)
+                                                                .map(resultSet -> { try
+                                                                                    {
+                                                                                       TileData tileData = new TileData();
+                                                                                       tileData.pixelXSize = resultSet.getDouble("pixel_x_size");
+                                                                                       tileData.pixelYSize = resultSet.getDouble("pixel_y_size");
+                                                                                       tileData.zoomLevel  = resultSet.getInt("zoom_level");
+                                                                                       tileData.matrixHeight = resultSet.getInt("matrix_height");
+                                                                                       tileData.matrixWidth = resultSet.getInt("matrix_width");
+                                                                                       tileData.tileHeight = resultSet.getInt("tile_height");
+                                                                                       tileData.tileWidth  = resultSet.getInt("tile_width");
+                                                                                       
+                                                                                       return tileData;
+                                                                                    }
+                                                                                    catch(SQLException ex)
+                                                                                    {
+                                                                                        return null;
+                                                                                    }
+                                                                                  })
+                                                               .filter(Objects::nonNull)
+                                                               .collect(Collectors.toList());
+                    
+                    if(tileDataSet.size() >=2)  //need at least two zoom levels to check this requirement
+                    {                           //of a factor 2 for pixel sizes with adjacent zooms
+                        boolean needCurrentValues = true;
+                        int     zoomLevelCurrent  = -1000; //Initialize with arbitrary values
+                        Double  pixelXCurrent     = null;
+                        Double  pixelYCurrent     = null;
+                        
+                        for(TileData tileData: tileDataSet)
                         {
-                            Assert.assertTrue(String.format("Pixel sizes for tile matrix user data tables do not vary by factors of 2"
-                                                       + " between adjacent zoom levels in the tile matrix metadata table: %s, %s",
-                                                     pixelXNext.toString(), pixelYNext.toString()),
-                                       TilesVerifier.isEqual((pixelXCurrent / 2), pixelXNext) && TilesVerifier.isEqual((pixelYCurrent / 2), pixelYNext));
-
-                            pixelXCurrent = pixelXNext;
-                            pixelYCurrent = pixelYNext;
-                        }
-                        //this should only execute for the first time through the loop to get the first two records
-                        else if (pixelInfo.next())
-                        {
-                            pixelXCurrent       = pixelInfo.getDouble("pixel_x_size");
-                            pixelYCurrent       = pixelInfo.getDouble("pixel_y_size");
-                            zoomLevelCurrent    = pixelInfo.getInt("zoom_level");
-
-                            if (zoomLevelNext + 1 == zoomLevelCurrent)
+                            if(needCurrentValues)
                             {
-
-                                Assert.assertTrue(String.format("Pixel sizes for tile matrix user data tables do not vary by factors of 2 "
-                                                              + "between adjacent zoom levels in the tile matrix metadata table:(pixel_x_size, pixel_y_size) %s, %s. "
-                                                              + " between zoom levels %d and %d",
-                                                          pixelXCurrent.toString(),
-                                                          pixelYCurrent.toString(),
-                                                          zoomLevelNext,
-                                                          zoomLevelCurrent),
-                                          TilesVerifier.isEqual((pixelXNext / 2), pixelXCurrent) && TilesVerifier.isEqual((pixelYNext / 2), pixelYCurrent));
+                                zoomLevelCurrent  = tileData.zoomLevel;
+                                pixelXCurrent     = tileData.pixelXSize;
+                                pixelYCurrent     = tileData.pixelYSize;
+                                needCurrentValues = false;
+                            }
+                            else
+                            {
+                                int zoomLevelNext = tileData.zoomLevel;
+                                Double pixelXNext = tileData.pixelXSize;
+                                Double pixelYNext = tileData.pixelYSize;
+                                
+                                if(zoomLevelNext == zoomLevelCurrent + 1)
+                                {
+                                  Assert.assertTrue(String.format("Pixel sizes for tile matrix user data tables do not vary by factors of 2"
+                                                                  + " between adjacent zoom levels in the tile matrix metadata table: %s, %s",
+                                                                  pixelXNext.toString(), 
+                                                                  pixelYNext.toString()),
+                                                    TilesVerifier.isEqual((pixelXCurrent / 2), pixelXNext) && 
+                                                    TilesVerifier.isEqual((pixelYCurrent / 2), pixelYNext));
+                                  
+                                  zoomLevelCurrent = zoomLevelNext;
+                                  pixelXCurrent    = pixelXNext;
+                                  pixelYCurrent    = pixelYNext;
+                                }
                             }
                         }
                     }
-                }
-                catch (final SQLException e)
-                {
-                    Assert.fail(e.getMessage());
+                    //This tests if the pixel x values and pixel y values are valid based on their bounding box
+                    //in the tile matrix set
+                    if(this.hasTileMatrixSetTable)
+                    {
+                        String query2 =String.format("SELECT min_x, min_y, max_x, max_y FROM %s WHERE table_name = '%s'", GeoPackageTiles.MatrixSetTableName, tableName);
+                        
+                        try(Statement stmt2         = this.getSqliteConnection().createStatement();
+                            ResultSet boundingBoxRS = stmt2.executeQuery(query2))
+                        {
+                            if(boundingBoxRS.next())
+                            {
+                                double minX = boundingBoxRS.getDouble("min_x");
+                                double minY = boundingBoxRS.getDouble("min_y");
+                                double maxX = boundingBoxRS.getDouble("max_x");
+                                double maxY = boundingBoxRS.getDouble("max_y");
+                                
+                                BoundingBox boundingBox = new BoundingBox(minY, minX, maxY, maxX);
+                                
+                                List<TileData> invalidPixelValues = tileDataSet.stream()
+                                                                               .filter(tileData -> !validPixelValues(tileData, boundingBox))
+                                                                               .collect(Collectors.toList());
+                                
+                                Assert.assertTrue(String.format("Based on the bounding box given in the Tile Matrix Set for table %s, "
+                                                                           + "tile_height, "
+                                                                           + "tile_width, "
+                                                                           + "matrix_width, and "
+                                                                           + "matrix_height, "
+                                                                + "the following pixel values are invalid.",
+                                                                invalidPixelValues.stream()
+                                                                                  .map(tileData -> String.format("Invalid pixel_x_size: %f, Invalid pixel_y_size: %f", 
+                                                                                                                 tileData.pixelXSize, 
+                                                                                                                 tileData.pixelYSize))
+                                                                                  .collect(Collectors.joining("\n"))),
+                                                  invalidPixelValues.isEmpty());
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1322,6 +1383,13 @@ public class TilesVerifier extends Verifier
                 }
             }
         }
+    }
+    
+    private static boolean validPixelValues(TileData tileData, BoundingBox boundingBox)
+    {
+        
+        return isEqual(tileData.pixelXSize, (boundingBox.getWidth()/tileData.matrixWidth)/tileData.tileWidth) &&
+               isEqual(tileData.pixelYSize, (boundingBox.getHeight()/tileData.matrixHeight)/tileData.tileHeight);
     }
 
     /**
