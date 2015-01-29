@@ -47,7 +47,7 @@ import org.gdal.osr.SpatialReference;
 import org.gdal.osr.osr;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.Dimension2D;
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
@@ -381,7 +381,7 @@ public class TileJob implements Runnable {
 
 		// TileMatrixSet maxTileSet = new TileMatrixSet(maxMatrix);
 		// Tile upperLeftTile = tileStoreWriter.addTile(upperLeftTileCoordinate);
-		Dimension2D tileBounds = crsProfile.getTileDimensions(maxZoom);
+		Dimensions tileBounds = crsProfile.getTileDimensions(maxZoom);
 
 		// pixels = (meters - meters) / meters per pixel
 		int offsetX = (int) ((outputGT[0] - tileBounds.getWidth()) / rx);
@@ -401,7 +401,7 @@ public class TileJob implements Runnable {
 							offsetY	- (y * TILESIZE), scaledWidth, scaledHeight, null);
 				try {
 					tileStoreWriter.addTile(
-							crsProfile.absoluteToCrsCoordinate(
+							crsProfile.tileToCrsCoordinate(
 									new AbsoluteTileCoordinate(tileY, tileX, maxZoom, origin)), maxZoom, tileImage);
 				} catch (Exception e) {
 					throw new TilingException("Unable to add tile", e);
@@ -489,7 +489,7 @@ public class TileJob implements Runnable {
 					}
 					try {
 						tileStoreWriter.addTile(
-								crsProfile.absoluteToCrsCoordinate(
+								crsProfile.tileToCrsCoordinate(
 										new AbsoluteTileCoordinate(tileY, tileX, z, origin)), z, tileImage);
 					} catch (Exception e) {
 						throw new TilingException("Problem adding tile", e);
@@ -569,7 +569,7 @@ public class TileJob implements Runnable {
 							z, origin);
 					Tile upperTile;
 					try {
-						upperTile = new Tile(tileCoordinate, this.tileStoreReader.getTile(this.crsProfile.absoluteToCrsCoordinate(tileCoordinate), tileCoordinate.getZoomLevel()));
+						upperTile = new Tile(tileCoordinate, this.tileStoreReader.getTile(this.crsProfile.tileToCrsCoordinate(tileCoordinate), tileCoordinate.getZoomLevel()));
 					} catch (Exception e) {
 						throw new TilingException("Unable to get tile", e);
 					}
@@ -589,7 +589,7 @@ public class TileJob implements Runnable {
 		// writeTile(tile);
 		try {
 			final AbsoluteTileCoordinate tileCoordinate = new AbsoluteTileCoordinate(position.getY(), position.getX(), maxZoom, origin);
-		    tileStoreWriter.addTile(crsProfile.absoluteToCrsCoordinate(tileCoordinate), maxZoom, tileImage);
+		    tileStoreWriter.addTile(crsProfile.tileToCrsCoordinate(tileCoordinate), maxZoom, tileImage);
 			return new Tile(tileCoordinate, tileImage);
 		} catch (Exception e) {
 			throw new TilingException("Unable to add tile", e);

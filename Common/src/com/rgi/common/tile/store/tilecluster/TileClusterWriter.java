@@ -150,7 +150,7 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
-        final AbsoluteTileCoordinate clusterCoordinate = this.crsProfile.crsToAbsoluteTileCoordinate(coordinate,
+        final AbsoluteTileCoordinate clusterCoordinate = this.crsProfile.crsToTileCoordinate(coordinate,
                                                                                                       zoomLevel,
                                                                                                       TileCluster.Origin);
         this.addTile(clusterCoordinate.getRow(),

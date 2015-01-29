@@ -133,7 +133,7 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
         }
 
         // First determine the cluster that will hold the data
-        final AbsoluteTileCoordinate clusterCoordinate = this.crsProfile.crsToAbsoluteTileCoordinate(coordinate,
+        final AbsoluteTileCoordinate clusterCoordinate = this.crsProfile.crsToTileCoordinate(coordinate,
                                                                                                       zoomLevel,
                                                                                                       TileCluster.Origin);
 

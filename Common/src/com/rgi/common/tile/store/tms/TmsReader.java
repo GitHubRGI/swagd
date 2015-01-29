@@ -142,7 +142,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
-        final AbsoluteTileCoordinate tmsCoordiante = this.profile.crsToAbsoluteTileCoordinate(coordinate, zoomLevel, TmsTileStore.Origin);
+        final AbsoluteTileCoordinate tmsCoordiante = this.profile.crsToTileCoordinate(coordinate, zoomLevel, TmsTileStore.Origin);
 
         return this.getTile(tmsCoordiante.getRow(), tmsCoordiante.getColumn(), zoomLevel);
     }
@@ -186,8 +186,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         final Range yRange = TmsReader.getTmsRange(tmsPath(pathToMinimumZoom, xRange.maximum).toFile());
 
         // TODO attention: Lander, this logic needs to be double checked
-        final Coordinate<Double> lowerLeftCorner  = this.profile.absoluteToCrsCoordinate(new AbsoluteTileCoordinate(yRange.minimum,     xRange.minimum,     minimumZoom, TmsTileStore.Origin));
-        final Coordinate<Double> upperRightCorner = this.profile.absoluteToCrsCoordinate(new AbsoluteTileCoordinate(yRange.maximum + 1, xRange.maximum + 1, minimumZoom, TmsTileStore.Origin));
+        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(new AbsoluteTileCoordinate(yRange.minimum,     xRange.minimum,     minimumZoom, TmsTileStore.Origin));
+        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(new AbsoluteTileCoordinate(yRange.maximum + 1, xRange.maximum + 1, minimumZoom, TmsTileStore.Origin));
 
         this.bounds = new BoundingBox(lowerLeftCorner.getY(),
                                       lowerLeftCorner.getX(),

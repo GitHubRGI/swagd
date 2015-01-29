@@ -18,26 +18,48 @@
 
 package com.rgi.common.tile.scheme;
 
-import com.rgi.common.tile.TileOrigin;
-
 /**
  * @author Luke Lambert
  *
  */
-public interface TileScheme
+public class TileMatrixDimensions
 {
     /**
-     * TODO
-     *
-     * @param zoomLevel
-     * @return
+     * @param height
+     * @param width
      */
-    public TileMatrixDimensions dimensions(final int zoomLevel);
+    public TileMatrixDimensions(final int height, final int width)
+    {
+        if(height <= 0)
+        {
+            throw new IllegalArgumentException("Height must be greater than 0");
+        }
+
+        if(width <= 0)
+        {
+            throw new IllegalArgumentException("Height must be greater than 0");
+        }
+
+        this.height = height;
+        this.width  = width;
+    }
 
     /**
-     * TODO
-     *
-     * @return
+     * @return the height (number of rows)
      */
-    public TileOrigin origin();
+    public int getHeight()
+    {
+        return this.height;
+    }
+
+    /**
+     * @return the width (number of columns)
+     */
+    public int getWidth()
+    {
+        return this.width;
+    }
+
+    private final int height;
+    private final int width;
 }

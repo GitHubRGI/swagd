@@ -137,7 +137,7 @@ public class TileStoreLoader implements TileLoader
     private CrsCoordinate toCrsCoordinate(final Tile tile)
     {
         return this.crsProfile
-                   .absoluteToCrsCoordinate(new AbsoluteTileCoordinate(tile.getYtile(),
+                   .tileToCrsCoordinate(new AbsoluteTileCoordinate(tile.getYtile(),
                                                                        tile.getXtile(),
                                                                        tile.getZoom(),
                                                                        origin));

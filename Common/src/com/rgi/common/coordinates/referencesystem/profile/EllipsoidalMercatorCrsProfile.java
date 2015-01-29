@@ -20,11 +20,11 @@ package com.rgi.common.coordinates.referencesystem.profile;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
-import com.rgi.common.Dimension2D;
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
  * @author Luke Lambert
@@ -62,19 +62,21 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     }
 
     @Override
-    public AbsoluteTileCoordinate crsToAbsoluteTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel, final TileOrigin origin)
+    public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate        coordinate,
+                                                   final TileMatrixDimensions dimensions,
+                                                   final TileOrigin           tileOrigin)
     {
         if(coordinate == null)
         {
             throw new IllegalArgumentException("Meter coordinate may not be null");
         }
 
-        if(zoomLevel < 0 || zoomLevel > 31)
+        if(dimensions == null)
         {
-            throw new IllegalArgumentException("Zoom level must be in the range [0, 32)");
+            throw new IllegalArgumentException("Tile matrix dimensions may not be null");
         }
 
-        if(origin == null)
+        if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
@@ -88,11 +90,29 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     }
 
     @Override
-    public CrsCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate)
+    public CrsCoordinate tileToCrsCoordinate(final int                  row,
+                                             final int                  column,
+                                             final TileMatrixDimensions dimensions,
+                                             final TileOrigin           tileOrigin)
     {
-        if(absoluteTileCoordinate == null)
+        if(row < 0)
         {
-            throw new IllegalArgumentException("Tile coordinate may not be null");
+            throw new IllegalArgumentException("Row must be at least 0");
+        }
+
+        if(column < 0)
+        {
+            throw new IllegalArgumentException("Column must be at least 0");
+        }
+
+        if(dimensions == null)
+        {
+            throw new IllegalArgumentException("Tile matrix dimensions may not be null");
+        }
+
+        if(tileOrigin == null)
+        {
+            throw new IllegalArgumentException("Origin may not be null");
         }
 
         // TODO
@@ -111,7 +131,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     }
 
     @Override
-    public Dimension2D getTileDimensions(final int zoomLevel)
+    public Dimensions getTileDimensions(final int zoomLevel)
     {
         throw new RuntimeException("Method not implemented");
     }

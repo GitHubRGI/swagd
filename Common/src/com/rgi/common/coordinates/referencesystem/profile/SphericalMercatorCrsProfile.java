@@ -20,11 +20,11 @@ package com.rgi.common.coordinates.referencesystem.profile;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
-import com.rgi.common.Dimension2D;
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
  * @author Luke Lambert
@@ -33,64 +33,74 @@ import com.rgi.common.tile.TileOrigin;
 public class SphericalMercatorCrsProfile implements CrsProfile
 {
     @Override
-    public AbsoluteTileCoordinate crsToAbsoluteTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel, final TileOrigin origin)
+    public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate        coordinate,
+                                                   final TileMatrixDimensions dimensions,
+                                                   final TileOrigin           tileOrigin)
     {
         if(coordinate == null)
         {
             throw new IllegalArgumentException("Meter coordinate may not be null");
         }
 
-        if(zoomLevel < 0 || zoomLevel > 31)
+        if(dimensions == null)
         {
-            throw new IllegalArgumentException("Zoom level must be in the range [0, 32)");
+            throw new IllegalArgumentException("Tile matrix dimensions may not be null");
         }
 
-        if(origin == null)
+        if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
 
-        if(!coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
-        {
-            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
-        }
+        final double tileWidth  = EarthEquatorialCircumfrence / dimensions.getHeight();
+        final double tileHeight = EarthEquatorialCircumfrence / dimensions.getWidth();
 
-        final double tileSubdivision = Math.pow(2.0, zoomLevel);
+        double   verticalOriginShift =  tileOrigin.getDeltaY() * (EarthEquatorialCircumfrence / 2.0);
+        double horizontalOriginShift = -tileOrigin.getDeltaX() * (EarthEquatorialCircumfrence / 2.0);
 
-        final double tileWidth  = EarthEquatorialCircumfrence / tileSubdivision;
-        final double tileHeight = EarthEquatorialCircumfrence / tileSubdivision;
+        // TODO tile origin transform from TileOrigin.LowerLeft?
 
-        double   verticalOriginShift =  origin.getDeltaY() * (EarthEquatorialCircumfrence / 2.0);
-        double horizontalOriginShift = -origin.getDeltaX() * (EarthEquatorialCircumfrence / 2.0);
-
-        return new AbsoluteTileCoordinate((int)((coordinate.getY() -   verticalOriginShift) * tileHeight),
-                                          (int)((coordinate.getX() - horizontalOriginShift) * tileWidth),
-                                          zoomLevel,
-                                          origin);
+        return new Coordinate<>((int)((coordinate.getY() -   verticalOriginShift) * tileHeight),
+                                (int)((coordinate.getX() - horizontalOriginShift) * tileWidth));
     }
 
     @Override
-    public CrsCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate coordinate)
+    public CrsCoordinate tileToCrsCoordinate(final int                  row,
+                                             final int                  column,
+                                             final TileMatrixDimensions dimensions,
+                                             final TileOrigin           tileOrigin)
     {
-        if(coordinate == null)
+        if(row < 0)
         {
-            throw new IllegalArgumentException("Tile coordinate may not be null");
+            throw new IllegalArgumentException("Row must be at least 0");
         }
 
-        final int tileRows    = (int)Math.pow(2.0, coordinate.getZoomLevel());
-        final int tileColumns = (int)Math.pow(2.0, coordinate.getZoomLevel());
+        if(column < 0)
+        {
+            throw new IllegalArgumentException("Column must be at least 0");
+        }
 
-        final double tileHeight = EarthEquatorialCircumfrence / tileRows;
-        final double tileWidth  = EarthEquatorialCircumfrence / tileColumns;
+        if(dimensions == null)
+        {
+            throw new IllegalArgumentException("Tile matrix dimensions may not be null");
+        }
+
+        if(tileOrigin == null)
+        {
+            throw new IllegalArgumentException("Origin may not be null");
+        }
+
+        final double tileHeight = EarthEquatorialCircumfrence / dimensions.getHeight();
+        final double tileWidth  = EarthEquatorialCircumfrence / dimensions.getWidth();
 
         final double originShift = (EarthEquatorialCircumfrence / 2.0);
 
-        final int maxTileOrdinate = tileRows    - 1;
-        final int maxTileAbscissa = tileColumns - 1;
+        final int maxTileOrdinate = dimensions.getHeight() - 1;
+        final int maxTileAbscissa = dimensions.getWidth()  - 1;
 
         // If the the origin is the same along an axis the xor value will be 0 which cancels out the final (delta) term.
-        final int tileY = coordinate.getY() + (coordinate.getOrigin().getDeltaY() ==  1 ? maxTileOrdinate - 2*coordinate.getY() : 0);
-        final int tileX = coordinate.getX() + (coordinate.getOrigin().getDeltaX() == -1 ? maxTileAbscissa - 2*coordinate.getX() : 0);
+        final int tileY =   row + (tileOrigin.getDeltaY() ==  1 ? maxTileOrdinate - 2*   row : 0);
+        final int tileX = column+ (tileOrigin.getDeltaX() == -1 ? maxTileAbscissa - 2*column : 0);
 
         return new CrsCoordinate((tileY * tileHeight) - originShift,
                                  (tileX * tileWidth)  - originShift,
@@ -98,11 +108,11 @@ public class SphericalMercatorCrsProfile implements CrsProfile
     }
 
     @Override
-    public Dimension2D getTileDimensions(final int zoomLevel)
+    public Dimensions getTileDimensions(final int zoomLevel)
     {
         final double dimension = EarthEquatorialCircumfrence / Math.pow(2.0, zoomLevel);
 
-        return new Dimension2D(dimension, dimension);
+        return new Dimensions(dimension, dimension);
     }
 
     @Override

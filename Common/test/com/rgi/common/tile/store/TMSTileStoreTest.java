@@ -265,7 +265,7 @@ public class TMSTileStoreTest {
 
 		final AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(0, 0, zoomLevel, TileOrigin.LowerLeft);
 
-		final CrsCoordinate crsCoordinate = crsProfile.absoluteToCrsCoordinate(tileCoord);
+		final CrsCoordinate crsCoordinate = crsProfile.tileToCrsCoordinate(tileCoord);
 
 		final BufferedImage image = createImage();
 
@@ -286,7 +286,7 @@ public class TMSTileStoreTest {
 		final Path tilePath = this.tmsDir.resolve("5").resolve("0").resolve("0.png");
 		final BufferedImage img = createImage();
 		final AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(0, 0, 5, TileOrigin.LowerLeft);
-		tmsWriter.addTile(crsProfile.absoluteToCrsCoordinate(tileCoord), 5, img);
+		tmsWriter.addTile(crsProfile.tileToCrsCoordinate(tileCoord), 5, img);
 		assertTrue(tilePath.toFile().exists());
 	}
 

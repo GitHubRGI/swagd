@@ -20,11 +20,11 @@ package com.rgi.common.coordinates.referencesystem.profile;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
-import com.rgi.common.Dimension2D;
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
  * @author Luke Lambert
@@ -42,19 +42,26 @@ public interface CrsProfile
      * Determines what tile the coordinate lies in
      *
      * @param coordinate Coordinate in the same unit as this tile profile
-     * @param zoomLevel Zoom level value for input coordinate
+     * @param dimensions
      * @return Returns the tile that the coordinate corresponds to
      */
-    public AbsoluteTileCoordinate crsToAbsoluteTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel, final TileOrigin origin);
+    public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate        coordinate,
+                                                   final TileMatrixDimensions dimensions,
+                                                   final TileOrigin           tileOrigin);
 
     /**
      * Determines the profile unit coordinate for the specified tile
      *
-     * @param absoluteTileCoordinate
-     *             Tile coordinate (tile y, x, zoom level)
+     * @param row
+     * @param column
+     * @param dimensions
+     * @param tileOrigin
      * @return Returns the coordinate that the tile corresponds to
      */
-    public CrsCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate);
+    public CrsCoordinate tileToCrsCoordinate(final int                  row,
+                                             final int                  column,
+                                             final TileMatrixDimensions dimensions,
+                                             final TileOrigin           tileOrigin);
 
     /**
      * TODO
@@ -62,7 +69,7 @@ public interface CrsProfile
      * @param zoomLevel
      * @return
      */
-    public Dimension2D getTileDimensions(final int zoomLevel);
+    public Dimensions getTileDimensions(final int zoomLevel);
 
     /**
      * @return TODO

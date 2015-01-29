@@ -20,11 +20,11 @@ package com.rgi.common.coordinates.referencesystem.profile;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
-import com.rgi.common.Dimension2D;
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
  * @author Luke Lambert
@@ -33,19 +33,21 @@ import com.rgi.common.tile.TileOrigin;
 public class GlobalGeodeticCrsProfile implements CrsProfile
 {
     @Override
-    public AbsoluteTileCoordinate crsToAbsoluteTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel, final TileOrigin origin)
+    public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate        coordinate,
+                                                   final TileMatrixDimensions dimensions,
+                                                   final TileOrigin           tileOrigin)
     {
         if(coordinate == null)
         {
             throw new IllegalArgumentException("Meter coordinate may not be null");
         }
 
-        if(zoomLevel < 0 || zoomLevel > 31)
+        if(dimensions == null)
         {
-            throw new IllegalArgumentException("Zoom level must be in the range [0, 32)");
+            throw new IllegalArgumentException("Tile matrix dimensions may not be null");
         }
 
-        if(origin == null)
+        if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
@@ -55,37 +57,50 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
         }
 
-        final double tileSubdivision = Math.pow(2.0, zoomLevel);
+        // TODO tile origin transform from TileOrigin.LowerLeft?
 
-        // Round off the fractional tile
-        return new AbsoluteTileCoordinate((int)((coordinate.getY() + Bounds.getHeight()/2.0) / Bounds.getHeight() * tileSubdivision),
-                                          (int)((coordinate.getX() + Bounds.getWidth() /2.0) / Bounds.getWidth()  * tileSubdivision),
-                                          zoomLevel,
-                                          TileOrigin.LowerLeft).transform(origin);
+        return new Coordinate<>((int)((coordinate.getY() + Bounds.getHeight()/2.0) / Bounds.getHeight() * dimensions.getHeight()),
+                                (int)((coordinate.getX() + Bounds.getWidth() /2.0) / Bounds.getWidth()  * dimensions.getWidth()));
     }
 
     @Override
-    public CrsCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate)
+    public CrsCoordinate tileToCrsCoordinate(final int                  row,
+                                             final int                  column,
+                                             final TileMatrixDimensions dimensions,
+                                             final TileOrigin           tileOrigin)
     {
-        if(absoluteTileCoordinate == null)
+        if(row < 0)
         {
-            throw new IllegalArgumentException("Tile coordinate may not be null");
+            throw new IllegalArgumentException("Row must be at least 0");
         }
 
-        final double tileSubdivision = Math.pow(2.0, absoluteTileCoordinate.getZoomLevel());
+        if(column < 0)
+        {
+            throw new IllegalArgumentException("Column must be at least 0");
+        }
 
-        return new CrsCoordinate((absoluteTileCoordinate.getY() * Bounds.getHeight() / tileSubdivision) - Bounds.getHeight() / 2.0,
-                                 (absoluteTileCoordinate.getX() * Bounds.getWidth()  / tileSubdivision) - Bounds.getWidth()  / 2.0,
+        if(dimensions == null)
+        {
+            throw new IllegalArgumentException("Tile matrix dimensions may not be null");
+        }
+
+        if(tileOrigin == null)
+        {
+            throw new IllegalArgumentException("Origin may not be null");
+        }
+
+        return new CrsCoordinate((   row * Bounds.getHeight() / dimensions.getHeight()) - Bounds.getHeight() / 2.0,
+                                 (column * Bounds.getWidth()  / dimensions.getHeight()) - Bounds.getWidth()  / 2.0,
                                  this.getCoordinateReferenceSystem());
     }
 
     @Override
-    public Dimension2D getTileDimensions(final int zoomLevel)
+    public Dimensions getTileDimensions(final int zoomLevel)
     {
         final double height = GlobalGeodeticCrsProfile.Bounds.getHeight() / Math.pow(2.0, zoomLevel);
         final double width  = GlobalGeodeticCrsProfile.Bounds.getWidth()  / Math.pow(2.0, zoomLevel);
 
-        return new Dimension2D(height, width);
+        return new Dimensions(height, width);
     }
 
 	@Override

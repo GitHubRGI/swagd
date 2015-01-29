@@ -50,11 +50,11 @@ public class ZoomTimesTwo implements TileScheme
             throw new IllegalArgumentException("This combination of initial width and maximum zoom level will cause an integer overflow for tile numbering");
         }
 
-        this.zoomLevelDimensions = new MatrixDimensions[maximumZoomLevel - minimumZoomLevel];
+        this.zoomLevelDimensions = new TileMatrixDimensions[maximumZoomLevel - minimumZoomLevel];
 
         for(int zoomLevel = minimumZoomLevel; zoomLevel < maximumZoomLevel; ++zoomLevel)
         {
-            this.zoomLevelDimensions[zoomLevel - minimumZoomLevel] = new MatrixDimensions(initialHeight * (int)Math.pow(2.0, zoomLevel),
+            this.zoomLevelDimensions[zoomLevel - minimumZoomLevel] = new TileMatrixDimensions(initialHeight * (int)Math.pow(2.0, zoomLevel),
                                                                                           initialWidth  * (int)Math.pow(2.0, zoomLevel));
         }
 
@@ -64,7 +64,7 @@ public class ZoomTimesTwo implements TileScheme
     }
 
     @Override
-    public MatrixDimensions dimensions(final int zoomLevel)
+    public TileMatrixDimensions dimensions(final int zoomLevel)
     {
         if(zoomLevel < this.minimumZoomLevel || zoomLevel > this.maximumZoomLevel)
         {
@@ -102,5 +102,5 @@ public class ZoomTimesTwo implements TileScheme
     private final int        minimumZoomLevel;
     private final int        maximumZoomLevel;
 
-    private final MatrixDimensions[] zoomLevelDimensions;
+    private final TileMatrixDimensions[] zoomLevelDimensions;
 }

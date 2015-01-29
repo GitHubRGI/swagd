@@ -31,9 +31,9 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
-import com.rgi.common.Dimension2D;
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.tile.scheme.MatrixDimensions;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStoreException;
@@ -204,15 +204,15 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
 
     private TileMatrix addTileMatrix(final int zoomLevel, final int pixelHeight, final int pixelWidth) throws SQLException
     {
-        final MatrixDimensions matrixDimensions = this.tileScheme.dimensions(zoomLevel);
+        final TileMatrixDimensions tileMatrixDimensions = this.tileScheme.dimensions(zoomLevel);
 
-        final Dimension2D dimensions = this.crsProfile.getTileDimensions(zoomLevel);
+        final Dimensions dimensions = this.crsProfile.getTileDimensions(zoomLevel);
 
         return this.geoPackage.tiles()
                               .addTileMatrix(this.tileSet,
                                              zoomLevel,
-                                             matrixDimensions.getWidth(),
-                                             matrixDimensions.getHeight(),
+                                             tileMatrixDimensions.getWidth(),
+                                             tileMatrixDimensions.getHeight(),
                                              pixelHeight,
                                              pixelWidth,
                                              dimensions.getWidth()  / pixelWidth,
