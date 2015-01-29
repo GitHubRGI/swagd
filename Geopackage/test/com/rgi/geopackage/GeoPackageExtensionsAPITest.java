@@ -8,7 +8,14 @@ public class GeoPackageExtensionsAPITest
 
 	@Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
-    //private final Random randomGenerator = new Random();
+
+  //  private final Random randomGenerator = new Random();
+
+
+
+
+
+
 
 
 //    private String getRanString(final int length)
@@ -34,4 +41,5 @@ public class GeoPackageExtensionsAPITest
 //
 //        return testFile;
 //    }
+
 }

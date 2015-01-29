@@ -1268,6 +1268,37 @@ public class GeoPackageCoreAPITest
             }
         }
     }
+    /**
+     * Tests if GeoPackage Core would throw
+     * an Illegal Argument Exception when passing
+     * a null value for Bounding box
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected= IllegalArgumentException.class)
+    public void addContentBadBoundingBox() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+        File testFile = this.getRandomFile(8);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            gpkg.core().addContent("tablename", "tiles", "identifier", "description", null, gpkg.core().getSpatialReferenceSystem(4326));
+            fail("Expected GeoPackageCore to throw an IllegalArgumentException when giving a null balue for bounding box");
+        }
+        finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+                
+    }
 
     /**
      * Tests GeoPackageCore if it throws an IllegalArgumentException
@@ -1484,6 +1515,7 @@ public class GeoPackageCoreAPITest
             }
         }
     }
+    
 
     /**
      * This Tests the Contents equal method and
