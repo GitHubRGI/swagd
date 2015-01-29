@@ -27,7 +27,7 @@ import java.util.Set;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.store.TileStoreException;
@@ -133,12 +133,12 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
         }
 
         // First determine the cluster that will hold the data
-        final AbsoluteTileCoordinate clusterCoordinate = this.crsProfile.crsToTileCoordinate(coordinate,
-                                                                                                      zoomLevel,
-                                                                                                      TileCluster.Origin);
+        final Coordinate<Integer> clusterCoordinate = this.crsProfile.crsToTileCoordinate(coordinate,
+                                                                                          this.tileScheme.dimensions(zoomLevel),
+                                                                                          TileCluster.Origin);
 
-        return this.getTile(clusterCoordinate.getRow(),
-                            clusterCoordinate.getColumn(),
+        return this.getTile(clusterCoordinate.getY(),
+                            clusterCoordinate.getX(),
                             zoomLevel);
     }
 

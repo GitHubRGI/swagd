@@ -32,7 +32,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.store.TileStoreException;
@@ -124,11 +124,11 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
-        final AbsoluteTileCoordinate tmsCoordiante = this.profile.crsToTileCoordinate(coordinate,
-                                                                                              zoomLevel,
-                                                                                              TmsTileStore.Origin);
-        this.addTile(tmsCoordiante.getRow(),
-                     tmsCoordiante.getColumn(),
+        final Coordinate<Integer> tmsCoordiante = this.profile.crsToTileCoordinate(coordinate,
+                                                                                   this.tileScheme.dimensions(zoomLevel),
+                                                                                   TmsTileStore.Origin);
+        this.addTile(tmsCoordiante.getY(),
+                     tmsCoordiante.getX(),
                      zoomLevel,
                      image);
     }

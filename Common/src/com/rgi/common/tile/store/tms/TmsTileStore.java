@@ -22,6 +22,8 @@ import java.nio.file.Path;
 
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileScheme;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 
 /**
  * @author Steven D. Lander
@@ -57,6 +59,8 @@ abstract class TmsTileStore
 
         this.profile  = profile;
         this.location = location;
+
+        this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1, TmsTileStore.Origin);
     }
 
     protected static Path tmsPath(final Path path, final int... tmsSubDirectories)
@@ -71,7 +75,8 @@ abstract class TmsTileStore
     }
 
     protected final CrsProfile profile;
-    protected final Path        location;
+    protected final Path       location;
+    protected final TileScheme tileScheme;
 
     protected static TileOrigin Origin = TileOrigin.LowerLeft;
 }

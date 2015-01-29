@@ -45,7 +45,7 @@ public class ApplicationContext extends JFrame {
 	private Task task;
 
 	public enum Window {
-		MAIN, FILECHOOSER, PROGRESS, SETTINGS, ERROR, DONE;
+		MAIN, FILECHOOSER, PROGRESS, SETTINGS, WINDOWERROR, DONE;
 	}
 
 	private Settings settings;

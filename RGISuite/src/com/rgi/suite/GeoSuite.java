@@ -32,7 +32,7 @@ public class GeoSuite {
 			this.context.addWindow(Window.SETTINGS, new SettingsWindow(this.context));
 			this.context.addWindow(Window.FILECHOOSER, new FileChooserWindow(this.context));
 			this.context.addWindow(Window.PROGRESS, new ProgressWindow(this.context));
-			this.context.addWindow(Window.ERROR, new ErrorWindow(this.context));
+			this.context.addWindow(Window.WINDOWERROR, new ErrorWindow(this.context));
 			this.context.addWindow(Window.DONE, new DoneWindow(this.context));
 
 			this.context.go();

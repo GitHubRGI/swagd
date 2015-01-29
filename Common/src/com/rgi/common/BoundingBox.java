@@ -139,8 +139,6 @@ public class BoundingBox
         return this.maxX;
     }
 
-    // TODO implement topleft()/bottomleft()/etc...
-
     /**
      * @return the minimum x and y as a coordinate
      */

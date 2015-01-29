@@ -69,7 +69,7 @@ public interface CrsProfile
      * @param zoomLevel
      * @return
      */
-    public Dimensions getTileDimensions(final int zoomLevel);
+    public Dimensions getTileDimensions(final int zoomLevel);   // TODO change this to: final TileMatrixDimensions tileMatrixDimensions
 
     /**
      * @return TODO

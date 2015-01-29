@@ -38,7 +38,6 @@ import javax.imageio.ImageIO;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
@@ -142,9 +141,13 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
-        final AbsoluteTileCoordinate tmsCoordiante = this.profile.crsToTileCoordinate(coordinate, zoomLevel, TmsTileStore.Origin);
+        final Coordinate<Integer> tmsCoordiante = this.profile.crsToTileCoordinate(coordinate,
+                                                                                   this.tileScheme.dimensions(zoomLevel),
+                                                                                   TmsTileStore.Origin);
 
-        return this.getTile(tmsCoordiante.getRow(), tmsCoordiante.getColumn(), zoomLevel);
+        return this.getTile(tmsCoordiante.getY(),
+                            tmsCoordiante.getX(),
+                            zoomLevel);
     }
 
     @Override
@@ -186,8 +189,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         final Range yRange = TmsReader.getTmsRange(tmsPath(pathToMinimumZoom, xRange.maximum).toFile());
 
         // TODO attention: Lander, this logic needs to be double checked
-        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(new AbsoluteTileCoordinate(yRange.minimum,     xRange.minimum,     minimumZoom, TmsTileStore.Origin));
-        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(new AbsoluteTileCoordinate(yRange.maximum + 1, xRange.maximum + 1, minimumZoom, TmsTileStore.Origin));
+        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(yRange.minimum,     xRange.minimum,     this.tileScheme.dimensions(minimumZoom), TmsTileStore.Origin);
+        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(yRange.maximum + 1, xRange.maximum + 1, this.tileScheme.dimensions(minimumZoom), TmsTileStore.Origin);
 
         this.bounds = new BoundingBox(lowerLeftCorner.getY(),
                                       lowerLeftCorner.getX(),

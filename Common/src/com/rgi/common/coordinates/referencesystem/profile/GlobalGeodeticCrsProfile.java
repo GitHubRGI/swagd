@@ -71,12 +71,12 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
     {
         if(row < 0)
         {
-            throw new IllegalArgumentException("Row must be at least 0");
+            throw new IllegalArgumentException("Row must be greater than 0");
         }
 
         if(column < 0)
         {
-            throw new IllegalArgumentException("Column must be at least 0");
+            throw new IllegalArgumentException("Column must be greater than 0");
         }
 
         if(dimensions == null)

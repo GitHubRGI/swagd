@@ -36,11 +36,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
-import com.rgi.common.coordinates.CrsCoordinate;
+import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.common.tile.store.tms.TmsWriter;
 
@@ -254,39 +252,55 @@ public class TMSTileStoreTest {
 	}
 
 	@Test
-	public void verifyTileRetrieval() throws TileStoreException, MimeTypeParseException {
+	public void verifyTileRetrieval() throws TileStoreException, MimeTypeParseException
+	{
 		this.tmsDir = this.createTMSFolderMercator(4);
 
 		final int zoomLevel = 1;
+		final Coordinate<Integer> coordinate = new Coordinate<>(0, 0);
 		final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", 3857);
 
 		TmsWriter tmsWriter = new TmsWriter(crsProfile, this.tmsDir, new MimeType("image", "jpeg"));
 		TmsReader tmsReader = new TmsReader(crsProfile, this.tmsDir);
 
-		final AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(0, 0, zoomLevel, TileOrigin.LowerLeft);
-
-		final CrsCoordinate crsCoordinate = crsProfile.tileToCrsCoordinate(tileCoord);
-
 		final BufferedImage image = createImage();
 
-		tmsWriter.addTile(crsCoordinate, zoomLevel, image);
+		tmsWriter.addTile(coordinate.getY(),
+		                  coordinate.getX(),
+		                  zoomLevel,
+		                  image);
 
-		final BufferedImage tileImage = tmsReader.getTile(crsCoordinate, zoomLevel);
+		final BufferedImage tileImage = tmsReader.getTile(coordinate.getY(),
+		                                                  coordinate.getX(),
+		                                                  zoomLevel);
 
 		assertTrue(bufferedImagesEqual(image, tileImage));
 	}
 
 	@Test
-	public void verifyTileInsertion() throws TileStoreException, MimeTypeParseException {
+	public void verifyTileInsertion() throws TileStoreException, MimeTypeParseException
+	{
 		this.tmsDir = this.createTMSFolderMercator(4);
 
-		final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", 3857);
+		final int zoomLevel = 5;
+        final Coordinate<Integer> coordinate = new Coordinate<>(0, 0);
 
-		TmsWriter tmsWriter = new TmsWriter(crsProfile, this.tmsDir, new MimeType("image", "jpeg"));
-		final Path tilePath = this.tmsDir.resolve("5").resolve("0").resolve("0.png");
+		TmsWriter tmsWriter = new TmsWriter(CrsProfileFactory.create("EPSG", 3857),
+		                                    this.tmsDir,
+		                                    new MimeType("image", "jpeg"));
+
+		final Path tilePath = this.tmsDir
+		                          .resolve(Integer.toString(zoomLevel))
+		                          .resolve(Integer.toString(coordinate.getX()))
+		                          .resolve(Integer.toString(coordinate.getX()) + ".png");
+
 		final BufferedImage img = createImage();
-		final AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(0, 0, 5, TileOrigin.LowerLeft);
-		tmsWriter.addTile(crsProfile.tileToCrsCoordinate(tileCoord), 5, img);
+
+		tmsWriter.addTile(coordinate.getY(),
+		                  coordinate.getX(),
+		                  zoomLevel,
+		                  img);
+
 		assertTrue(tilePath.toFile().exists());
 	}
 

@@ -113,6 +113,6 @@ public class ProgressWindow extends AbstractWindow implements TaskMonitor {
 	@Override
 	public void setError(Exception e) {
 	  this.context.setError(e);
-	  this.context.transitionTo(Window.ERROR);
+	  this.context.transitionTo(Window.WINDOWERROR);
 	}
 }

@@ -32,7 +32,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.store.TileStoreException;
@@ -150,11 +150,11 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
-        final AbsoluteTileCoordinate clusterCoordinate = this.crsProfile.crsToTileCoordinate(coordinate,
-                                                                                                      zoomLevel,
-                                                                                                      TileCluster.Origin);
-        this.addTile(clusterCoordinate.getRow(),
-                     clusterCoordinate.getColumn(),
+        final Coordinate<Integer> clusterCoordinate = this.crsProfile.crsToTileCoordinate(coordinate,
+                                                                                          this.tileScheme.dimensions(zoomLevel),
+                                                                                          TileCluster.Origin);
+        this.addTile(clusterCoordinate.getY(),
+                     clusterCoordinate.getX(),
                      zoomLevel,
                      image);
     }

@@ -24,11 +24,12 @@ import org.openstreetmap.gui.jmapviewer.interfaces.TileJob;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoaderListener;
 
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileScheme;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 
@@ -137,12 +138,13 @@ public class TileStoreLoader implements TileLoader
     private CrsCoordinate toCrsCoordinate(final Tile tile)
     {
         return this.crsProfile
-                   .tileToCrsCoordinate(new AbsoluteTileCoordinate(tile.getYtile(),
-                                                                       tile.getXtile(),
-                                                                       tile.getZoom(),
-                                                                       origin));
+                   .tileToCrsCoordinate(tile.getYtile(),
+                                        tile.getXtile(),
+                                        tileScheme.dimensions(tile.getZoom()),
+                                        origin);
     }
 
-    public final static TileOrigin origin = TileOrigin.UpperLeft; // Tile origin for JMapViewer
+    public final static TileOrigin origin     = TileOrigin.UpperLeft;                                   // Tile origin for JMapViewer
+    public final static TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1, TileStoreLoader.origin);  // Tile scheme for JMapViewer: http://wiki.openstreetmap.org/wiki/Slippy_Map
 
 }

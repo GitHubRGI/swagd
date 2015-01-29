@@ -48,16 +48,17 @@ import org.gdal.osr.osr;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.Coordinate;
+import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.task.Settings;
 import com.rgi.common.task.Settings.Profile;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskMonitor;
-import com.rgi.common.tile.Tile;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileScheme;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 
@@ -70,6 +71,7 @@ public class TileJob implements Runnable {
 	private Settings settings;
 	private Profile profileSetting;
 	private CrsProfile crsProfile;
+	private TileScheme tileScheme;
 	private SpatialReference inputSRS;
 	private Dataset inputDS;
 	private String inputWKT;
@@ -94,7 +96,8 @@ public class TileJob implements Runnable {
 	private final TileStoreReader tileStoreReader;
 	private final TileStoreWriter tileStoreWriter;
 
-	//private TaskMonitor monitor;  //commented out because findbugs says this is an unused field
+	@SuppressWarnings("unused")
+	private TaskMonitor monitor;
 	//private double workTotal = 0;
 	//private int workUnits = 0;
 
@@ -103,7 +106,7 @@ public class TileJob implements Runnable {
 		this.tileStoreReader = tileStoreReader;
 		this.tileStoreWriter = tileStoreWriter;
 		this.settings = settings;
-//		this.monitor = monitor; //commented out because it is never read
+		this.monitor = monitor;
 	}
 
 	@Override
@@ -134,7 +137,7 @@ public class TileJob implements Runnable {
 			}
 		} catch (Exception e) {
 			System.err.println("Unable to open input file: " + e.getMessage());
-			return; 
+			return;
 		}
 
 		if (inputDS.getRasterCount() == 0) {
@@ -306,6 +309,8 @@ public class TileJob implements Runnable {
 		// bounds
 		TileOrigin origin = TileOrigin.valueOf(settings.get(Setting.TileOrigin));
 
+		tileScheme = new ZoomTimesTwo(0, 31, 1, 1, origin);
+
 		int numTilesWidth = 1;
 		int numTilesHeight = 1;
 
@@ -399,13 +404,19 @@ public class TileJob implements Runnable {
 				g.fillRect(0, 0, TILESIZE, TILESIZE);
 				g.drawImage(source, offsetX - (x * TILESIZE),
 							offsetY	- (y * TILESIZE), scaledWidth, scaledHeight, null);
-				try {
-					tileStoreWriter.addTile(
-							crsProfile.tileToCrsCoordinate(
-									new AbsoluteTileCoordinate(tileY, tileX, maxZoom, origin)), maxZoom, tileImage);
-				} catch (Exception e) {
-					throw new TilingException("Unable to add tile", e);
-				}
+                try
+                {
+                    tileStoreWriter.addTile(crsProfile.tileToCrsCoordinate(tileY,
+                                                                           tileX,
+                                                                           tileScheme.dimensions(maxZoom),
+                                                                           origin),
+                                            maxZoom,
+                                            tileImage);
+                }
+                catch(final Exception e)
+                {
+                    throw new TilingException("Unable to add tile", e);
+                }
 			}
 		}
 
@@ -459,41 +470,53 @@ public class TileJob implements Runnable {
 								// The coordinate of the tile that we need to stitch into our new tile is
 								// double our current coordinate, plus the appropriate offset based on the
 								// iterator and origin.
-								AbsoluteTileCoordinate tileCoordinate =
-										new AbsoluteTileCoordinate((2 * tileX) + f(zx, origin.getDeltaX()),
-																   (2 * tileY) + f(zy, origin.getDeltaY()),
-																   z, origin);
-//								Tile upperTile;            //commented out because findbugs says its DLS: Dead store to local variable
-//								try {
-//									upperTile = new Tile(tileCoordinate,
-//														 tileStoreReader.getTile(crsProfile.absoluteToCrsCoordinate(tileCoordinate),
-//																 		   tileCoordinate.getZoomLevel()));
-//								} catch (Exception e) {
-//									throw new TilingException("Problem getting tile", e);
-//								}
-								//Commented out because it is dead code and fixbugs report says it is also redundant nullcheck of null value
-//								if (upperTile == null && compliant) {
-//									upperTile = createCompliant(z + 1, tileCoordinate, origin, maxZoom);
-//								}
-//								if (upperTile == null) {
-//									g_scaled.setColor(noDataColor);
-//									g_scaled.fillRect(zx * TILESIZE, zy * TILESIZE, TILESIZE, TILESIZE);
-//								} else {
-//									g_scaled.drawImage(upperTile.getImageContents(),
-//													   zx * TILESIZE, zy * TILESIZE,
-//													   TILESIZE, TILESIZE, null);
-//								}
+								int absTileX = (2 * tileX) + f(zx, origin.getDeltaX());
+								int absTileY = (2 * tileY) + f(zy, origin.getDeltaY());
+
+                                try
+                                {
+                                    CrsCoordinate crsCoordinate = crsProfile.tileToCrsCoordinate(absTileY, absTileX, this.tileScheme.dimensions(z), origin);
+
+                                    BufferedImage upperTile = tileStoreReader.getTile(crsCoordinate, z);
+
+                                    if(upperTile == null && compliant)
+                                    {
+                                        upperTile = createCompliant(z + 1, absTileY, absTileX, origin, maxZoom);
+                                    }
+                                    if(upperTile == null)
+                                    {
+                                        g_scaled.setColor(noDataColor);
+                                        g_scaled.fillRect(zx * TILESIZE, zy * TILESIZE, TILESIZE, TILESIZE);
+                                    }
+                                    else
+                                    {
+                                        g_scaled.drawImage(upperTile, zx * TILESIZE, zy * TILESIZE, TILESIZE, TILESIZE, null);
+                                    }
+                                }
+                                catch(Exception e)
+                                {
+                                    throw new TilingException("Problem getting tile", e);
+                                }
+
+
 							}
 						}
 						g.drawImage(preScaled, 0, 0, TILESIZE, TILESIZE, null);
 					}
-					try {
-						tileStoreWriter.addTile(
-								crsProfile.tileToCrsCoordinate(
-										new AbsoluteTileCoordinate(tileY, tileX, z, origin)), z, tileImage);
-					} catch (Exception e) {
-						throw new TilingException("Problem adding tile", e);
-					}
+
+                    try
+                    {
+                        tileStoreWriter.addTile(crsProfile.tileToCrsCoordinate(tileY,
+                                                                               tileX,
+                                                                               tileScheme.dimensions(z),
+                                                                               origin),
+                                                z,
+                                                tileImage);
+                    }
+                    catch(final Exception e)
+                    {
+                        throw new TilingException("Problem adding tile", e);
+                    }
 				}
 			}
 		}
@@ -553,48 +576,70 @@ public class TileJob implements Runnable {
 		return new Coordinate<>(outputX, outputY);
 	}
 
-	private Tile createCompliant(int z, Coordinate<Integer> position,
-			TileOrigin origin, int maxZoom) throws TilingException {
-		// TileMatrixSet tileSet = tileSets.get(z);
-		BufferedImage tileImage = new BufferedImage(TILESIZE, TILESIZE,
-				BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = tileImage.createGraphics();
-		if (z < maxZoom) {
-			// TileMatrixSet upperTileSet = tileSets.get(z+1);
-			for (int zx = 0; zx < 2; ++zx) {
-				for (int zy = 0; zy < 2; ++zy) {
-					AbsoluteTileCoordinate tileCoordinate = new AbsoluteTileCoordinate(
-							(2 * position.getX()) + f(zx, origin.getDeltaX()),
-							(2 * position.getY()) + f(zy, origin.getDeltaY()),
-							z, origin);
-					Tile upperTile;
-					try {
-						upperTile = new Tile(tileCoordinate, this.tileStoreReader.getTile(this.crsProfile.tileToCrsCoordinate(tileCoordinate), tileCoordinate.getZoomLevel()));
-					} catch (Exception e) {
-						throw new TilingException("Unable to get tile", e);
-					}
-//Commented out because it is dead code and fixbugs report says it is also redundant nullcheck of null value 
-//                   if (upperTile == null) {                                
-//						upperTile = createCompliant(z + 1, tileCoordinate,
-//								origin, maxZoom);
-//					}
-					g.drawImage(upperTile.getImageContents(), zx * TILESIZE, zy
-							* TILESIZE, TILESIZE, TILESIZE, null);
-				}
-			}
-		} else {
-			g.setColor(this.noDataColor);
-			g.fillRect(0, 0, TILESIZE, TILESIZE);
-		}
-		// writeTile(tile);
-		try {
-			final AbsoluteTileCoordinate tileCoordinate = new AbsoluteTileCoordinate(position.getY(), position.getX(), maxZoom, origin);
-		    tileStoreWriter.addTile(crsProfile.tileToCrsCoordinate(tileCoordinate), maxZoom, tileImage);
-			return new Tile(tileCoordinate, tileImage);
-		} catch (Exception e) {
-			throw new TilingException("Unable to add tile", e);
-		}
-	}
+    private BufferedImage createCompliant(int z,
+                                          int row,
+                                          int column,
+                                          TileOrigin origin,
+                                          int inMaxZoom) throws TilingException
+    {
+        // TileMatrixSet tileSet = tileSets.get(z);
+
+        BufferedImage tileImage = new BufferedImage(TILESIZE, TILESIZE, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = tileImage.createGraphics();
+
+        if(z < inMaxZoom)
+        {
+            // TileMatrixSet upperTileSet = tileSets.get(z+1);
+            for(int zx = 0; zx < 2; ++zx)
+            {
+                for(int zy = 0; zy < 2; ++zy)
+                {
+                    int tileX = (2 * column) + f(zx, origin.getDeltaX());
+                    int tileY = (2 *    row) + f(zy, origin.getDeltaY());
+                    try
+                    {
+                        CrsCoordinate crsCoordinate = this.crsProfile.tileToCrsCoordinate(tileY, tileX, tileScheme.dimensions(z), origin);
+
+                        BufferedImage bufferedImage = this.tileStoreReader.getTile(crsCoordinate, z);
+
+                        if(bufferedImage == null)
+                        {
+                            bufferedImage = createCompliant(z + 1, row, column, origin, inMaxZoom);
+                        }
+
+                        g.drawImage(bufferedImage,
+                                    zx * TILESIZE,
+                                    zy * TILESIZE,
+                                    TILESIZE,
+                                    TILESIZE,
+                                    null);
+                    }
+                    catch(Exception e)
+                    {
+                        throw new TilingException("Unable to get tile", e);
+                    }
+                }
+            }
+        }
+        else
+        {
+            g.setColor(this.noDataColor);
+            g.fillRect(0, 0, TILESIZE, TILESIZE);
+        }
+
+        // writeTile(tile);
+        try
+        {
+            CrsCoordinate crsCoordinate = crsProfile.tileToCrsCoordinate(row, column, tileScheme.dimensions(inMaxZoom), origin);
+            tileStoreWriter.addTile(crsCoordinate, inMaxZoom, tileImage);
+
+            return tileImage;
+        }
+        catch(Exception e)
+        {
+            throw new TilingException("Unable to add tile", e);
+        }
+    }
 
 	public static BufferedImage convert(Dataset poDataset) {
 		Band poBand = null;
@@ -613,7 +658,7 @@ public class TileJob implements Runnable {
 			/* Bands are not 0-base indexed, so we must add 1 */
 			poBand = poDataset.GetRasterBand(band + 1);
 
-			buf_type = poBand.getDataType();
+						buf_type = poBand.getDataType();
 			buf_size = pixels * gdal.GetDataTypeSize(buf_type) / 8;
 
 			ByteBuffer data = ByteBuffer.allocateDirect(buf_size);
@@ -635,6 +680,11 @@ public class TileJob implements Runnable {
 			banks[band] = band;
 			offsets[band] = 0;
 		}
+
+		if(poBand == null)
+        {
+            throw new RuntimeException("The GDAL dataset returned null for a raster band");
+        }
 
 		DataBuffer imgBuffer = null;
 		SampleModel sampleModel = null;
