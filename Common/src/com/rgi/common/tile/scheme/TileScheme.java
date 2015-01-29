@@ -27,21 +27,26 @@ import com.rgi.common.tile.TileOrigin;
 public abstract class TileScheme
 {
     /**
-     * TODO
+     * Constructor
      *
      * @param minimumZoomLevel
+     *             Lowest (numeric) valid level of zoom for this tile scheme.  Must be 0 or greater, and less than or equal to maximumZoomLevel.
      * @param maximumZoomLevel
-     * @param initialHeight
-     * @param initialWidth
+     *             Highest (numeric) valid level of zoom for this tile scheme  Must be 0 or greater, and greater than or equal to minimumZoomLevel.
+     * @param baseZoomLevelTileMatrixHeight
+     *             The number of tiles along the y axis for the lowest zoom level
+     * @param baseZoomLevelTileMatrixWidth
+     *             The number of tiles along the x axis for the lowest zoom level
      * @param origin
+     *             Specifies where tile (0, 0) is in the tile matrix
      */
     public TileScheme(final int        minimumZoomLevel,
                       final int        maximumZoomLevel,
-                      final int        initialHeight,
-                      final int        initialWidth,
+                      final int        baseZoomLevelTileMatrixHeight,
+                      final int        baseZoomLevelTileMatrixWidth,
                       final TileOrigin origin)
     {
-            if(minimumZoomLevel < 0)
+        if(minimumZoomLevel < 0)
         {
             throw new IllegalArgumentException("Minimum zoom level must be at least 0");
         }
@@ -51,12 +56,12 @@ public abstract class TileScheme
             throw new IllegalArgumentException("Maximum zoom level must be at least 0");
         }
 
-        if(initialHeight < 1)
+        if(baseZoomLevelTileMatrixHeight < 1)
         {
             throw new IllegalArgumentException("The initial height must be greater than 0");
         }
 
-        if(initialWidth < 1)
+        if(baseZoomLevelTileMatrixWidth < 1)
         {
             throw new IllegalArgumentException("The initial width must be greater than 0");
         }
@@ -71,12 +76,12 @@ public abstract class TileScheme
             throw new IllegalArgumentException("Minimum zoom level must be less than or equal to the maximum");
         }
 
-        if(Integer.MAX_VALUE < initialHeight * Math.pow(2.0, maximumZoomLevel) - 1)
+        if(Integer.MAX_VALUE < baseZoomLevelTileMatrixHeight * Math.pow(2.0, maximumZoomLevel) - 1)
         {
             throw new IllegalArgumentException("This combination of initial height and maximum zoom level will cause an integer overflow for tile numbering");
         }
 
-        if(Integer.MAX_VALUE < initialWidth * Math.pow(2.0, maximumZoomLevel) - 1)
+        if(Integer.MAX_VALUE < baseZoomLevelTileMatrixWidth * Math.pow(2.0, maximumZoomLevel) - 1)
         {
             throw new IllegalArgumentException("This combination of initial width and maximum zoom level will cause an integer overflow for tile numbering");
         }
@@ -85,20 +90,40 @@ public abstract class TileScheme
         this.minimumZoomLevel = minimumZoomLevel;
         this.maximumZoomLevel = maximumZoomLevel;
     }
+
     /**
-     * TODO
+     * Calculates the height and width of the tile matrix for a given zoom level
      *
-     * @param zoomLevel
-     * @return
+     * @param zoomLevel Zoom Level
+     * @return Returns a {@link TileMatrixDimensions} specifying the height and width of a tile matrix at the given zoom level
      */
     public abstract TileMatrixDimensions dimensions(final int zoomLevel);
 
     /**
-     * TODO
+     * Tile scheme's origin
      *
-     * @return
+     * @return Returns the origin of the tile scheme (where tile (0, 0) is in the tile matrix)
      */
-    public abstract TileOrigin origin();
+    public TileOrigin origin()
+    {
+        return this.origin;
+    }
+
+    /**
+     * @return Lowest (numeric) valid level of zoom for this tile scheme.  Must be 0 or greater, and less than or equal to maximumZoomLevel.
+     */
+    public int getMinimumZoomLevel()
+    {
+        return this.minimumZoomLevel;
+    }
+
+    /**
+     * @return the Highest (numeric) valid level of zoom for this tile scheme  Must be 0 or greater, and greater than or equal to minimumZoomLevel.
+     */
+    public int getMaximumZoomLevel()
+    {
+        return this.maximumZoomLevel;
+    }
 
     protected final TileOrigin origin;
     protected final int        minimumZoomLevel;

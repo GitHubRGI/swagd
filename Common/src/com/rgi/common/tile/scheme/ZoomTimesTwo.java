@@ -23,24 +23,29 @@ import com.rgi.common.tile.TileOrigin;
 public class ZoomTimesTwo extends TileScheme
 {
     /**
-     * TODO
+     * Constructor
      *
      * @param minimumZoomLevel
+     *             Lowest valid level of zoom for this tile scheme.  Must be 0 or greater, and less than or equal to maximumZoomLevel.
      * @param maximumZoomLevel
-     * @param initialHeight
-     * @param initialWidth
+     *             Highest valid level of zoom for this tile scheme  Must be 0 or greater, and greater than or equal to minimumZoomLevel.
+     * @param baseZoomLevelTileMatrixHeight
+     *             The number of tiles along the y axis for the lowest zoom level
+     * @param baseZoomLevelTileMatrixWidth
+     *             The number of tiles along the x axis for the lowest zoom level
      * @param origin
+     *             Specifies where tile (0, 0) is in the tile matrix
      */
     public ZoomTimesTwo(final int        minimumZoomLevel,
                         final int        maximumZoomLevel,
-                        final int        initialHeight,
-                        final int        initialWidth,
+                        final int        baseZoomLevelTileMatrixHeight,
+                        final int        baseZoomLevelTileMatrixWidth,
                         final TileOrigin origin)
     {
         super(minimumZoomLevel,
               maximumZoomLevel,
-              initialHeight,
-              initialWidth,
+              baseZoomLevelTileMatrixHeight,
+              baseZoomLevelTileMatrixWidth,
               origin);
 
         this.zoomLevelDimensions = new TileMatrixDimensions[maximumZoomLevel - minimumZoomLevel];
@@ -48,8 +53,8 @@ public class ZoomTimesTwo extends TileScheme
         for(int zoomLevel = minimumZoomLevel; zoomLevel < maximumZoomLevel; ++zoomLevel)
         {
             final int twoToTheZoomPower = (int)Math.pow(2.0, zoomLevel);
-            this.zoomLevelDimensions[zoomLevel - minimumZoomLevel] = new TileMatrixDimensions(initialHeight * twoToTheZoomPower,
-                                                                                              initialWidth  * twoToTheZoomPower);
+            this.zoomLevelDimensions[zoomLevel - minimumZoomLevel] = new TileMatrixDimensions(baseZoomLevelTileMatrixHeight * twoToTheZoomPower,
+                                                                                              baseZoomLevelTileMatrixWidth  * twoToTheZoomPower);
         }
     }
 
@@ -64,28 +69,6 @@ public class ZoomTimesTwo extends TileScheme
         }
 
         return this.zoomLevelDimensions[zoomLevel - this.minimumZoomLevel];
-    }
-
-    @Override
-    public TileOrigin origin()
-    {
-        return this.origin;
-    }
-
-    /**
-     * @return the minimumZoomLevel
-     */
-    public int getMinimumZoomLevel()
-    {
-        return this.minimumZoomLevel;
-    }
-
-    /**
-     * @return the maximumZoomLevel
-     */
-    public int getMaximumZoomLevel()
-    {
-        return this.maximumZoomLevel;
     }
 
     private final TileMatrixDimensions[] zoomLevelDimensions;
