@@ -1,27 +1,22 @@
 package com.rgi.geopackage;
 
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.rgi.geopackage.GeoPackage.OpenMode;
-import com.rgi.geopackage.extensions.Extension;
 import com.rgi.geopackage.extensions.Scope;
 import com.rgi.geopackage.verification.ConformanceException;
-import com.rgi.geopackage.verification.FailedRequirement;
 
 public class GeoPackageExtensionsAPITest
 {
@@ -29,6 +24,7 @@ public class GeoPackageExtensionsAPITest
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
+
     
    //commented out so we can build
 //    @Test
@@ -69,6 +65,132 @@ public class GeoPackageExtensionsAPITest
 //            this.deleteFile(testFile);
 //        }
 //    }
+    
+    /**
+     * Tests if gpkgExtensions returns the values expected
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+//    @Test
+//    public void getExtension() throws FileAlreadyExistsException,
+//            ClassNotFoundException, FileNotFoundException, SQLException,
+//            ConformanceException
+//    {
+//        File testFile = this.getRandomFile(12);
+//        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+//        {
+//            String tableName = "TableName";
+//            String columnName = "columnName";
+//            String extensionName = "extension_Name";
+//            
+//            Extension expectedExtension = gpkg.extensions().addExtension(tableName, columnName, extensionName, "definition", Scope.ReadWrite);
+//            Extension returnedExtension = gpkg.extensions().getExtension(tableName, columnName, extensionName);
+//            
+//            assertTrue(String.format("Did not return the expected Extension.\nExpected: table_name: %s, column_name: %s, extension_name: %s, definition: %s, Scope: %s."
+//                            + " \nActual: table_name: %s, column_name: %s, extension_name: %s, definition: %s, Scope: %s. ",
+//                                      tableName,
+//                                      columnName,
+//                                      extensionName,
+//                                      expectedExtension.getDefinition(),
+//                                      expectedExtension.getScope(),
+//                                      returnedExtension.getTableName(),
+//                                      returnedExtension.getColumnName(),
+//                                      returnedExtension.getExtensionName(),
+//                                      returnedExtension.getDefinition(),
+//                                      returnedExtension.getScope()),
+//                            returnedExtension.equals(tableName, 
+//                                                     columnName, 
+//                                                     extensionName, 
+//                                                     expectedExtension.getDefinition(), 
+//                                                     Scope.ReadWrite));
+//            
+//            //TODO bug in extensions equals method.  line 104 using .equals for scope and .equals is not overwritten
+//        }
+//        finally
+//        {
+//            deleteFile(testFile);
+//        }
+//    }
+    
+    /**
+     * Tests if the GeoPackage Extensions will throw 
+     * and IllegalArgumentException when giving a null
+     * value for tableName and not to ColumnName (if table
+     * name is null, then so must columnName)
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addExtensionIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+        File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            gpkg.extensions().addExtension(null, "ColumnNameShouldBeNull", "extension_Name", "definition", Scope.ReadWrite);
+            fail("Expected GeoPackageExtensions to throw an IllegalArgumentException when trying to add an extension with a null value for tableName and not columnName.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if the GeoPackage Extensions will throw 
+     * and IllegalArgumentException when giving an
+     * empty string for tableName
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addExtensionIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+        File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            gpkg.extensions().addExtension("", "columnName", "extension_Name", "definition", Scope.ReadWrite);
+            fail("Expected GeoPackageExtensions to throw an IllegalArgumentException when trying to add an extension with a empty string for tableName.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if the GeoPackage Extensions will throw 
+     * and IllegalArgumentException when giving an
+     * empty string for tableName
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addExtensionIllegalArgumentException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+        File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            gpkg.extensions().addExtension(null, "columnName", "extension_Name", "definition", Scope.ReadWrite);
+            fail("Expected GeoPackageExtensions to throw an IllegalArgumentException when trying to add an extension with a empty string for tableName.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
     
     private void deleteFile(File testFile)
     {
