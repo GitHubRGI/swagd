@@ -158,7 +158,7 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
             throw new IllegalArgumentException("Image may not be null");
         }
 
-        if(!coordinate.getCoordinateReferenceSystem().equals(this.tileProfile.getCoordinateReferenceSystem()))
+        if(!coordinate.getCoordinateReferenceSystem().equals(this.crsProfile.getCoordinateReferenceSystem()))
         {
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
@@ -206,7 +206,7 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
     {
         final MatrixDimensions matrixDimensions = this.tileScheme.dimensions(zoomLevel);
 
-        final Dimension2D dimensions = this.tileProfile.getTileDimensions(zoomLevel);
+        final Dimension2D dimensions = this.crsProfile.getTileDimensions(zoomLevel);
 
         return this.geoPackage.tiles()
                               .addTileMatrix(this.tileSet,

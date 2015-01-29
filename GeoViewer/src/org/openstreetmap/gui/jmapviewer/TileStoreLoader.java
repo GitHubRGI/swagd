@@ -26,8 +26,8 @@ import org.openstreetmap.gui.jmapviewer.interfaces.TileLoaderListener;
 
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
-import com.rgi.common.coordinates.referencesystem.profile.TileProfileFactory;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
@@ -44,7 +44,7 @@ public class TileStoreLoader implements TileLoader
     private final TileLoaderListener listener;
     //private TileSource                 tileSource;
     private final TileStoreReader    tileStore;
-    private final TileProfile        tileProfile;
+    private final CrsProfile        crsProfile;
 
     private final int minimumZoomLevel;
     private final int maximumZoomLevel;
@@ -54,7 +54,7 @@ public class TileStoreLoader implements TileLoader
     public TileStoreLoader(final TileStoreReader tileStore, final TileLoaderListener listener) throws TileStoreException
     {
         this.tileStore   = tileStore;
-        this.tileProfile = TileProfileFactory.create(tileStore.getCoordinateReferenceSystem());
+        this.crsProfile = CrsProfileFactory.create(tileStore.getCoordinateReferenceSystem());
         this.listener    = listener;
         //this.tileSource  = new TileSourceShell(tileStore);
 
@@ -136,7 +136,7 @@ public class TileStoreLoader implements TileLoader
 
     private CrsCoordinate toCrsCoordinate(final Tile tile)
     {
-        return this.tileProfile
+        return this.crsProfile
                    .absoluteToCrsCoordinate(new AbsoluteTileCoordinate(tile.getYtile(),
                                                                        tile.getXtile(),
                                                                        tile.getZoom(),

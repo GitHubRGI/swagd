@@ -256,7 +256,7 @@ public class SettingsWindow extends AbstractWindow {
 		} catch (Exception e) {
 			this.tileOriginChoice.setSelectedItem(Setting.TileOrigin.getDefaultValue());
 		}
-		this.outputProfileChoice.setSelectedItem(Profile.valueOf(settings.get(Setting.TileProfile)));
+		this.outputProfileChoice.setSelectedItem(Profile.valueOf(settings.get(Setting.CrsProfile)));
 	}
 
 	public void apply(Settings settings) throws IOException {
@@ -266,6 +266,6 @@ public class SettingsWindow extends AbstractWindow {
 		settings.set(Setting.TileHeight, this.tileHeightSpinner.getValue().toString());
 		settings.set(Setting.TileWidth, this.tileWidthSpinner.getValue().toString());
 		settings.set(Setting.TileOrigin, ((TileOrigin) this.tileOriginChoice.getSelectedItem()).name());
-		settings.set(Setting.TileProfile, ((Profile) this.outputProfileChoice.getSelectedItem()).name());
+		settings.set(Setting.CrsProfile, ((Profile) this.outputProfileChoice.getSelectedItem()).name());
 	}
 }

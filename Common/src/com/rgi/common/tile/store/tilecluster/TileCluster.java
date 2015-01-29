@@ -21,7 +21,7 @@ package com.rgi.common.tile.store.tilecluster;
 import java.io.File;
 import java.nio.file.Path;
 
-import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
 
 /**
@@ -34,7 +34,7 @@ import com.rgi.common.tile.TileOrigin;
  */
 abstract class TileCluster
 {
-    public TileCluster(final Path location, final String setName, final int levels, final int breakPoint, final TileProfile tileProfile)
+    public TileCluster(final Path location, final String setName, final int levels, final int breakPoint, final CrsProfile crsProfile)
     {
         if(location == null)
         {
@@ -60,7 +60,7 @@ abstract class TileCluster
         this.setName     = setName;
         this.zoomLevels  = levels;
         this.breakPoint  = breakPoint;
-        this.tileProfile = tileProfile;
+        this.crsProfile = crsProfile;
     }
 
     protected ClusterAddress getClusterAddress(final int row, final int column, final int zoomLevel)
@@ -153,7 +153,7 @@ abstract class TileCluster
     protected final String      setName;
     protected final int         zoomLevels;
     protected final int         breakPoint;
-    protected final TileProfile tileProfile;
+    protected final CrsProfile crsProfile;
 
     protected static class ClusterAddress
     {

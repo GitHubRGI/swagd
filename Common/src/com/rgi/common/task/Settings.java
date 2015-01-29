@@ -43,7 +43,7 @@ public class Settings {
     FileSelection(null),
     NoDataColor(TRANSPARENT),
     InputSRS(null),
-    TileProfile(Profile.WebMercator);
+    CrsProfile(Profile.WebMercator);
 
     private Object defaultValue = null;
 

@@ -34,7 +34,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.MimeTypeUtility;
@@ -55,7 +55,7 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
      * @param imageOutputFormat
      *             Image format for used for output
      */
-    public TmsWriter(final TileProfile profile,
+    public TmsWriter(final CrsProfile profile,
                      final Path        location,
                      final MimeType    imageOutputFormat)
     {
@@ -74,7 +74,7 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
      * @param imageWriteOptions
      *             Controls details of the image writing process.  If null, a default ImageWriteParam used instead
      */
-    public TmsWriter(final TileProfile     profile,
+    public TmsWriter(final CrsProfile     profile,
                      final Path            location,
                      final MimeType        imageOutputFormat,
                      final ImageWriteParam imageWriteOptions)

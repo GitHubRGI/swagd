@@ -50,8 +50,8 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimension2D;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.Coordinate;
-import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
-import com.rgi.common.coordinates.referencesystem.profile.TileProfileFactory;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.task.Settings;
 import com.rgi.common.task.Settings.Profile;
 import com.rgi.common.task.Settings.Setting;
@@ -69,7 +69,7 @@ public class TileJob implements Runnable {
 	//private String fileName;
 	private Settings settings;
 	private Profile profileSetting;
-	private TileProfile tileProfile;
+	private CrsProfile crsProfile;
 	private SpatialReference inputSRS;
 	private Dataset inputDS;
 	private String inputWKT;
@@ -120,8 +120,8 @@ public class TileJob implements Runnable {
 	}
 
 	private void tile(File inputFile) throws TilingException {
-		profileSetting = Settings.Profile.valueOf(this.settings.get(Setting.TileProfile));
-		tileProfile = TileProfileFactory.create(profileSetting.getAuthority(),
+		profileSetting = Settings.Profile.valueOf(this.settings.get(Setting.CrsProfile));
+		crsProfile = CrsProfileFactory.create(profileSetting.getAuthority(),
 												profileSetting.getID());
 
 		inputDS = null;
@@ -207,7 +207,7 @@ public class TileJob implements Runnable {
 		// built-in function for this, we'll do log10(x)/log10(2). Rather than
 		// calculate log10(2) over and over, we'll do it once and store it here.
 		double log = Math.log(2);
-		BoundingBox worldBounds = tileProfile.getBounds();
+		BoundingBox worldBounds = crsProfile.getBounds();
 		// we'll be doing these calculations once for width and once for height
 		// but we'll start with width
 		double totalWorld = worldBounds.getWidth();
@@ -371,8 +371,8 @@ public class TileJob implements Runnable {
 
 		// srs units (e.g. meters) per pixel = (world size / num tiles) / pixels
 		// per tile
-		double rx = (tileProfile.getBounds().getWidth() / zoomLevelTiles) / TILESIZE;
-		double ry = (tileProfile.getBounds().getHeight() / zoomLevelTiles) / TILESIZE;
+		double rx = (crsProfile.getBounds().getWidth() / zoomLevelTiles) / TILESIZE;
+		double ry = (crsProfile.getBounds().getHeight() / zoomLevelTiles) / TILESIZE;
 
 		// pixels = (pixels * meters per pixel) / meters per pixel
 		// w' = (w * r) / r'
@@ -381,7 +381,7 @@ public class TileJob implements Runnable {
 
 		// TileMatrixSet maxTileSet = new TileMatrixSet(maxMatrix);
 		// Tile upperLeftTile = tileStoreWriter.addTile(upperLeftTileCoordinate);
-		Dimension2D tileBounds = tileProfile.getTileDimensions(maxZoom);
+		Dimension2D tileBounds = crsProfile.getTileDimensions(maxZoom);
 
 		// pixels = (meters - meters) / meters per pixel
 		int offsetX = (int) ((outputGT[0] - tileBounds.getWidth()) / rx);
@@ -401,7 +401,7 @@ public class TileJob implements Runnable {
 							offsetY	- (y * TILESIZE), scaledWidth, scaledHeight, null);
 				try {
 					tileStoreWriter.addTile(
-							tileProfile.absoluteToCrsCoordinate(
+							crsProfile.absoluteToCrsCoordinate(
 									new AbsoluteTileCoordinate(tileY, tileX, maxZoom, origin)), maxZoom, tileImage);
 				} catch (Exception e) {
 					throw new TilingException("Unable to add tile", e);
@@ -424,8 +424,8 @@ public class TileJob implements Runnable {
 			zoomLevelTiles = (int) Math.pow(2, z);
 			// srs units (e.g. meters) per pixel = (world size / num tiles) /
 			// pixels per tile
-			rx = (tileProfile.getBounds().getWidth() / zoomLevelTiles) / TILESIZE;
-			ry = (tileProfile.getBounds().getHeight() / zoomLevelTiles) / TILESIZE;
+			rx = (crsProfile.getBounds().getWidth() / zoomLevelTiles) / TILESIZE;
+			ry = (crsProfile.getBounds().getHeight() / zoomLevelTiles) / TILESIZE;
 
 			// pixels = (pixels * meters per pixel) / meters per pixel
 			// w' = (w * r) / r'
@@ -433,7 +433,7 @@ public class TileJob implements Runnable {
 			scaledHeight = (int) ((outputDS.getRasterYSize() * (-outputGT[5])) / ry);
 
 			// upperLeftTile = maxTileSet.addTile(upperLeftTileCoordinate);
-			tileBounds = tileProfile.getTileDimensions(maxZoom);
+			tileBounds = crsProfile.getTileDimensions(maxZoom);
 			offsetX = (int) ((outputGT[0] - tileBounds.getWidth()) / rx);
 			offsetY = (int) ((tileBounds.getHeight() - outputGT[3]) / ry);
 
@@ -466,7 +466,7 @@ public class TileJob implements Runnable {
 //								Tile upperTile;            //commented out because findbugs says its DLS: Dead store to local variable
 //								try {
 //									upperTile = new Tile(tileCoordinate,
-//														 tileStoreReader.getTile(tileProfile.absoluteToCrsCoordinate(tileCoordinate),
+//														 tileStoreReader.getTile(crsProfile.absoluteToCrsCoordinate(tileCoordinate),
 //																 		   tileCoordinate.getZoomLevel()));
 //								} catch (Exception e) {
 //									throw new TilingException("Problem getting tile", e);
@@ -489,7 +489,7 @@ public class TileJob implements Runnable {
 					}
 					try {
 						tileStoreWriter.addTile(
-								tileProfile.absoluteToCrsCoordinate(
+								crsProfile.absoluteToCrsCoordinate(
 										new AbsoluteTileCoordinate(tileY, tileX, z, origin)), z, tileImage);
 					} catch (Exception e) {
 						throw new TilingException("Problem adding tile", e);
@@ -569,7 +569,7 @@ public class TileJob implements Runnable {
 							z, origin);
 					Tile upperTile;
 					try {
-						upperTile = new Tile(tileCoordinate, this.tileStoreReader.getTile(this.tileProfile.absoluteToCrsCoordinate(tileCoordinate), tileCoordinate.getZoomLevel()));
+						upperTile = new Tile(tileCoordinate, this.tileStoreReader.getTile(this.crsProfile.absoluteToCrsCoordinate(tileCoordinate), tileCoordinate.getZoomLevel()));
 					} catch (Exception e) {
 						throw new TilingException("Unable to get tile", e);
 					}
@@ -589,7 +589,7 @@ public class TileJob implements Runnable {
 		// writeTile(tile);
 		try {
 			final AbsoluteTileCoordinate tileCoordinate = new AbsoluteTileCoordinate(position.getY(), position.getX(), maxZoom, origin);
-		    tileStoreWriter.addTile(tileProfile.absoluteToCrsCoordinate(tileCoordinate), maxZoom, tileImage);
+		    tileStoreWriter.addTile(crsProfile.absoluteToCrsCoordinate(tileCoordinate), maxZoom, tileImage);
 			return new Tile(tileCoordinate, tileImage);
 		} catch (Exception e) {
 			throw new TilingException("Unable to add tile", e);

@@ -20,7 +20,7 @@ package com.rgi.common.tile.store.tms;
 
 import java.nio.file.Path;
 
-import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
 
 /**
@@ -38,7 +38,7 @@ abstract class TmsTileStore
      * @param location
      *            The location of this tile store on-disk.
      */
-    protected TmsTileStore(final TileProfile profile, final Path location)
+    protected TmsTileStore(final CrsProfile profile, final Path location)
     {
         if(profile == null)
         {
@@ -70,7 +70,7 @@ abstract class TmsTileStore
         return newPath;
     }
 
-    protected final TileProfile profile;
+    protected final CrsProfile profile;
     protected final Path        location;
 
     protected static TileOrigin Origin = TileOrigin.LowerLeft;

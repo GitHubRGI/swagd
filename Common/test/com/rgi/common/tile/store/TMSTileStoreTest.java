@@ -38,8 +38,8 @@ import org.junit.rules.TemporaryFolder;
 
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
-import com.rgi.common.coordinates.referencesystem.profile.TileProfileFactory;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.common.tile.store.tms.TmsWriter;
@@ -194,62 +194,62 @@ public class TMSTileStoreTest {
 	public void breakConstructorLocation() {
 		this.tmsDir = this.createTMSFolderMercator(4);
 		@SuppressWarnings("unused")
-        TmsReader reader = new TmsReader(TileProfileFactory.create("EPSG", 3857), null);
+        TmsReader reader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), null);
 	}
 
 	@Test
 	public void verifyMercBoundsCalcLeft() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderMercator(4);
-		TmsReader tmsReader = new TmsReader(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
+		TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
 		assertTrue(tmsReader.getBounds().getMinX().doubleValue() == -20037508.342789244);
 	}
 
 	@Test
 	public void verifyMercBoundsCalcRight() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderMercator(4);
-		TmsReader tmsReader = new TmsReader(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
+		TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
 		assertTrue(tmsReader.getBounds().getMaxX().doubleValue() == 20037508.342789244);
 	}
 
 	@Test
 	public void verifyMercBoundsCalcTop() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderMercator(4);
-		TmsReader tmsReader = new TmsReader(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
+		TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
 		assertTrue(tmsReader.getBounds().getMaxY().doubleValue() == 20037508.342789244);
 	}
 
 	@Test
 	public void verifyMercBoundsCalcBottom() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderMercator(4);
-		TmsReader tmsReader = new TmsReader(TileProfileFactory.create("EPSG", 3857), this.tmsDir);
+		TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
 		assertTrue(tmsReader.getBounds().getMinY().doubleValue() == -20037508.342789244);
 	}
 
 	@Test
 	public void verifyGeodBoundsCalcLeft() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderGeodetic(4);
-		TmsReader tmsReader = new TmsReader(TileProfileFactory.create("EPSG", 4326), this.tmsDir);
+		TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
 		assertTrue(tmsReader.getBounds().getMinX().doubleValue() == -180.0);
 	}
 
 	@Test
 	public void verifyGeodBoundsCalcRight() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderGeodetic(4);
-		TmsReader tmsReader = new TmsReader(TileProfileFactory.create("EPSG", 4326), this.tmsDir);
+		TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
 		assertTrue(tmsReader.getBounds().getMaxX().doubleValue() == 180.0);
 	}
 
 	@Test
 	public void verifyGeodBoundsCalcTop() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderGeodetic(4);
-		TmsReader tmsReader = new TmsReader(TileProfileFactory.create("EPSG", 4326), this.tmsDir);
+		TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
 		assertTrue(tmsReader.getBounds().getMaxY().doubleValue() == 90.0);
 	}
 
 	@Test
 	public void verifyGeodBoundsCalcBottom() throws TileStoreException {
 		this.tmsDir = this.createTMSFolderGeodetic(4);
-		TmsReader tmsReader = new TmsReader(TileProfileFactory.create("EPSG", 4326), this.tmsDir);
+		TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
 		assertTrue(tmsReader.getBounds().getMinY().doubleValue() == -90.0);
 	}
 
@@ -258,14 +258,14 @@ public class TMSTileStoreTest {
 		this.tmsDir = this.createTMSFolderMercator(4);
 
 		final int zoomLevel = 1;
-		final TileProfile tileProfile = TileProfileFactory.create("EPSG", 3857);
+		final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", 3857);
 
-		TmsWriter tmsWriter = new TmsWriter(tileProfile, this.tmsDir, new MimeType("image", "jpeg"));
-		TmsReader tmsReader = new TmsReader(tileProfile, this.tmsDir);
+		TmsWriter tmsWriter = new TmsWriter(crsProfile, this.tmsDir, new MimeType("image", "jpeg"));
+		TmsReader tmsReader = new TmsReader(crsProfile, this.tmsDir);
 
 		final AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(0, 0, zoomLevel, TileOrigin.LowerLeft);
 
-		final CrsCoordinate crsCoordinate = tileProfile.absoluteToCrsCoordinate(tileCoord);
+		final CrsCoordinate crsCoordinate = crsProfile.absoluteToCrsCoordinate(tileCoord);
 
 		final BufferedImage image = createImage();
 
@@ -280,13 +280,13 @@ public class TMSTileStoreTest {
 	public void verifyTileInsertion() throws TileStoreException, MimeTypeParseException {
 		this.tmsDir = this.createTMSFolderMercator(4);
 
-		final TileProfile tileProfile = TileProfileFactory.create("EPSG", 3857);
+		final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", 3857);
 
-		TmsWriter tmsWriter = new TmsWriter(tileProfile, this.tmsDir, new MimeType("image", "jpeg"));
+		TmsWriter tmsWriter = new TmsWriter(crsProfile, this.tmsDir, new MimeType("image", "jpeg"));
 		final Path tilePath = this.tmsDir.resolve("5").resolve("0").resolve("0.png");
 		final BufferedImage img = createImage();
 		final AbsoluteTileCoordinate tileCoord = new AbsoluteTileCoordinate(0, 0, 5, TileOrigin.LowerLeft);
-		tmsWriter.addTile(tileProfile.absoluteToCrsCoordinate(tileCoord), 5, img);
+		tmsWriter.addTile(crsProfile.absoluteToCrsCoordinate(tileCoord), 5, img);
 		assertTrue(tilePath.toFile().exists());
 	}
 

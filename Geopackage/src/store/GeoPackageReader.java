@@ -124,7 +124,7 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
-        return this.tileProfile.getCoordinateReferenceSystem();
+        return this.crsProfile.getCoordinateReferenceSystem();
     }
 
     @Override

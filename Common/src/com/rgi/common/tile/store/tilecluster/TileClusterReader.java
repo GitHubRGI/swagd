@@ -29,7 +29,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.util.ImageUtility;
@@ -48,9 +48,9 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
                              final String      setName,
                              final int         levels,
                              final int         breakPoint,
-                             final TileProfile tileProfile)
+                             final CrsProfile crsProfile)
     {
-        super(location, setName, levels, breakPoint, tileProfile);
+        super(location, setName, levels, breakPoint, crsProfile);
 
         if(!location.toFile().canRead())
         {
@@ -127,13 +127,13 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
             throw new IllegalArgumentException("Coordinate may not be null");
         }
 
-        if(!coordinate.getCoordinateReferenceSystem().equals(this.tileProfile.getCoordinateReferenceSystem()))
+        if(!coordinate.getCoordinateReferenceSystem().equals(this.crsProfile.getCoordinateReferenceSystem()))
         {
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
         // First determine the cluster that will hold the data
-        final AbsoluteTileCoordinate clusterCoordinate = this.tileProfile.crsToAbsoluteTileCoordinate(coordinate,
+        final AbsoluteTileCoordinate clusterCoordinate = this.crsProfile.crsToAbsoluteTileCoordinate(coordinate,
                                                                                                       zoomLevel,
                                                                                                       TileCluster.Origin);
 
@@ -152,7 +152,7 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
-        return this.tileProfile.getCoordinateReferenceSystem();
+        return this.crsProfile.getCoordinateReferenceSystem();
     }
 
     private static final int MagicNumberByteSize = 8; // size of long

@@ -41,7 +41,7 @@ import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 
@@ -59,7 +59,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
      * @param location
      *            The location of this tile store on-disk.
      */
-    public TmsReader(final TileProfile profile, final Path location)
+    public TmsReader(final CrsProfile profile, final Path location)
     {
         super(profile, location);
 
