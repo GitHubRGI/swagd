@@ -50,14 +50,14 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimension2D;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.Coordinate;
+import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.TileProfileFactory;
 import com.rgi.common.task.Settings;
 import com.rgi.common.task.Settings.Profile;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskMonitor;
 import com.rgi.common.tile.Tile;
 import com.rgi.common.tile.TileOrigin;
-import com.rgi.common.tile.profile.TileProfile;
-import com.rgi.common.tile.profile.TileProfileFactory;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 

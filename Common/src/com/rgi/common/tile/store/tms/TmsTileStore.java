@@ -20,8 +20,8 @@ package com.rgi.common.tile.store.tms;
 
 import java.nio.file.Path;
 
+import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
 import com.rgi.common.tile.TileOrigin;
-import com.rgi.common.tile.profile.TileProfile;
 
 /**
  * @author Steven D. Lander

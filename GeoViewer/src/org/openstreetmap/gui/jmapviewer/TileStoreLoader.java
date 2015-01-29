@@ -26,9 +26,9 @@ import org.openstreetmap.gui.jmapviewer.interfaces.TileLoaderListener;
 
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
+import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.TileProfileFactory;
 import com.rgi.common.tile.TileOrigin;
-import com.rgi.common.tile.profile.TileProfile;
-import com.rgi.common.tile.profile.TileProfileFactory;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 

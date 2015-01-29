@@ -4,8 +4,8 @@ package store;
 
 import java.sql.SQLException;
 
-import com.rgi.common.tile.profile.TileProfile;
-import com.rgi.common.tile.profile.TileProfileFactory;
+import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.TileProfileFactory;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.TileSet;

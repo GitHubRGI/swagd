@@ -34,7 +34,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.tile.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.MimeTypeUtility;

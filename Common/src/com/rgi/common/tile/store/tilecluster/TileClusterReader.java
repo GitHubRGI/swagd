@@ -29,7 +29,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.tile.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.util.ImageUtility;

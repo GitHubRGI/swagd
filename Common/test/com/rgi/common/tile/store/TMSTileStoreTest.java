@@ -38,9 +38,9 @@ import org.junit.rules.TemporaryFolder;
 
 import com.rgi.common.coordinates.AbsoluteTileCoordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
+import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.TileProfileFactory;
 import com.rgi.common.tile.TileOrigin;
-import com.rgi.common.tile.profile.TileProfile;
-import com.rgi.common.tile.profile.TileProfileFactory;
 import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.common.tile.store.tms.TmsWriter;
 

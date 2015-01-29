@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 
+import com.rgi.common.coordinates.referencesystem.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.TileProfileFactory;
 import com.rgi.common.task.AbstractTask;
 import com.rgi.common.task.MonitorableTask;
 import com.rgi.common.task.Settings;
@@ -39,8 +41,6 @@ import com.rgi.common.task.Settings.Profile;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
-import com.rgi.common.tile.profile.TileProfile;
-import com.rgi.common.tile.profile.TileProfileFactory;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.tile.store.tms.TmsReader;
