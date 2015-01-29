@@ -36,83 +36,83 @@ import com.rgi.suite.ApplicationContext.Window;
 public class ProgressWindow extends AbstractWindow implements TaskMonitor {
   private JProgressBar progressBar;
 
-	public ProgressWindow(ApplicationContext context) {
-		super(context);
-	}
+    public ProgressWindow(ApplicationContext context) {
+        super(context);
+    }
 
-	@Override
-	public void activate() {
-	  this.progressBar.setIndeterminate(true);
-	  Task task = this.context.getActiveTask();
-	  if (task instanceof MonitorableTask) {
-	    ((MonitorableTask)task).addMonitor(this);
-	  }
-	}
+    @Override
+    public void activate() {
+      this.progressBar.setIndeterminate(true);
+      Task task = this.context.getActiveTask();
+      if (task instanceof MonitorableTask) {
+        ((MonitorableTask)task).addMonitor(this);
+      }
+    }
 
-	@Override
-	protected void buildContentPane() {
-		this.contentPane = new JPanel(new GridBagLayout());
-		this.progressBar = new JProgressBar(0, 100);
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.weightx = 1;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(20,20,20,20);
-		this.contentPane.add(this.progressBar, gbc);
-	}
+    @Override
+    protected void buildContentPane() {
+        this.contentPane = new JPanel(new GridBagLayout());
+        this.progressBar = new JProgressBar(0, 100);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(20,20,20,20);
+        this.contentPane.add(this.progressBar, gbc);
+    }
 
-	@Override
-	protected void buildNavPane() {
-		this.navPane = new JPanel(new GridBagLayout());
-		Properties props = this.context.getProperties();
-		JButton stopButton = new JButton(new PropertiesAction(props, "stop") {
-			/**
-			 * Generated serial
-			 */
-			private static final long serialVersionUID = -1678446487584371523L;
+    @Override
+    protected void buildNavPane() {
+        this.navPane = new JPanel(new GridBagLayout());
+        Properties props = this.context.getProperties();
+        JButton stopButton = new JButton(new PropertiesAction(props, "stop") {
+            /**
+             * Generated serial
+             */
+            private static final long serialVersionUID = -1678446487584371523L;
 
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				Task task = ProgressWindow.this.context.getActiveTask();
-				if (task != null) {
-					// TODO: task.cancel();
-				}
-			}
-		});
-		stopButton.setHideActionText(true);
-		stopButton.setMargin(new Insets(0, 0, 0, 0));
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.anchor = GridBagConstraints.EAST;
-		gbc.weightx = 1.0;
-		gbc.insets = new Insets(10, 10, 10, 10);
-		this.navPane.add(stopButton, gbc);
-	}
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                Task task = ProgressWindow.this.context.getActiveTask();
+                if (task != null) {
+                    // TODO: task.cancel();
+                }
+            }
+        });
+        stopButton.setHideActionText(true);
+        stopButton.setMargin(new Insets(0, 0, 0, 0));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.weightx = 1.0;
+        gbc.insets = new Insets(10, 10, 10, 10);
+        this.navPane.add(stopButton, gbc);
+    }
 
-	@Override
-	public void setMaximum(int max) {
+    @Override
+    public void setMaximum(int max) {
     this.progressBar.setIndeterminate(false);
-	  this.progressBar.setMaximum(max);
-	}
+      this.progressBar.setMaximum(max);
+    }
 
-	@Override
-	public void setProgress(int value) {
-	  System.out.println("Progress set to: "+value);
+    @Override
+    public void setProgress(int value) {
+      System.out.println("Progress set to: "+value);
     this.progressBar.setIndeterminate(false);
     this.progressBar.setValue(value);
-	}
+    }
 
-	@Override
-	public void cancelled() {
-	  // TODO: switch to spinning "waiting" bar
-	  this.progressBar.setIndeterminate(true);
-	}
+    @Override
+    public void cancelled() {
+      // TODO: switch to spinning "waiting" bar
+      this.progressBar.setIndeterminate(true);
+    }
 
-	@Override
-	public void finished() {
-	  this.context.transitionTo(Window.DONE);
-	}
-	@Override
-	public void setError(Exception e) {
-	  this.context.setError(e);
-	  this.context.transitionTo(Window.ERROR);
-	}
+    @Override
+    public void finished() {
+      this.context.transitionTo(Window.DONE);
+    }
+    @Override
+    public void setError(Exception e) {
+      this.context.setError(e);
+      this.context.transitionTo(Window.WINDOWERROR);
+    }
 }

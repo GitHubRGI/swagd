@@ -48,12 +48,12 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
         // TODO lazy precalculation ?
         try
         {
-        	TileMatrixSet tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
-        	if (tileMatrixSet == null)
-        	{
-        		throw new IllegalArgumentException("Tile Matrix Set cannot be null");
-        	}
-        	return tileMatrixSet.getBoundingBox();
+            TileMatrixSet tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
+            if (tileMatrixSet == null)
+            {
+                throw new IllegalArgumentException("Tile Matrix Set cannot be null");
+            }
+            return tileMatrixSet.getBoundingBox();
         }
         catch(final Exception ex)
         {
@@ -124,7 +124,7 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
-        return this.tileProfile.getCoordinateReferenceSystem();
+        return this.crsProfile.getCoordinateReferenceSystem();
     }
 
     @Override

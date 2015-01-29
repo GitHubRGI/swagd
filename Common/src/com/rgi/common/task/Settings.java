@@ -43,7 +43,7 @@ public class Settings {
     FileSelection(null),
     NoDataColor(TRANSPARENT),
     InputSRS(null),
-    TileProfile(Profile.WebMercator);
+    CrsProfile(Profile.WebMercator);
 
     private Object defaultValue = null;
 
@@ -55,12 +55,12 @@ public class Settings {
       return this.defaultValue;
     }
   }
-  
+
   public enum Type {
     JPG,
     PNG;
   }
-  
+
   public enum Profile {
     WebMercator("EPSG",3857),
     WorldMercator("EPSG",3395),
@@ -98,7 +98,7 @@ public class Settings {
       System.err.println("Unable to load settings." + "\n" + bse.getMessage());
     }
   }
-  
+
   public void save() throws Exception {
     try {
       this.prefs.flush();
@@ -128,7 +128,7 @@ public class Settings {
   public void set(Setting setting, String value) {
     this.prefs.put(setting.name(), value);
   }
-  
+
   /**
    *
    * @param setting
@@ -148,9 +148,9 @@ public class Settings {
     if (setting.defaultValue instanceof Color) {
       return (Color)setting.defaultValue;
     }
-	return null;
+    return null;
   }
-  
+
   public void set(Setting setting, Color value) throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     try {
@@ -257,7 +257,7 @@ public class Settings {
    * @return the setting value as an array of files, or null
    */
   public File[] getFiles(Setting setting) {
-    String fileNames = get(setting);
+    String fileNames = this.get(setting);
     if (fileNames != null) {
       String[] paths = fileNames.split(";");
       List<File> files = new ArrayList<>();
@@ -270,7 +270,7 @@ public class Settings {
   }
 
   public void set(Setting setting, File file) {
-    set(setting, file.getPath());
+    this.set(setting, file.getPath());
   }
 
   public void set(Setting setting, File[] files) {
@@ -283,6 +283,6 @@ public class Settings {
     }
       fileNames.append(file.getPath());
     }
-    set(setting, fileNames.toString());
+    this.set(setting, fileNames.toString());
   }
 }

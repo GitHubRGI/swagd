@@ -21,8 +21,10 @@ package com.rgi.common.tile.store.tilecluster;
 import java.io.File;
 import java.nio.file.Path;
 
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
-import com.rgi.common.tile.profile.TileProfile;
+import com.rgi.common.tile.scheme.TileScheme;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 
 /**
  * @author Luke Lambert
@@ -34,7 +36,7 @@ import com.rgi.common.tile.profile.TileProfile;
  */
 abstract class TileCluster
 {
-    public TileCluster(final Path location, final String setName, final int levels, final int breakPoint, final TileProfile tileProfile)
+    public TileCluster(final Path location, final String setName, final int levels, final int breakPoint, final CrsProfile crsProfile)
     {
         if(location == null)
         {
@@ -56,11 +58,13 @@ abstract class TileCluster
             throw new IllegalArgumentException("Break point must be less than zoomLevels");
         }
 
-        this.location    = location;
-        this.setName     = setName;
-        this.zoomLevels  = levels;
-        this.breakPoint  = breakPoint;
-        this.tileProfile = tileProfile;
+        this.location   = location;
+        this.setName    = setName;
+        this.zoomLevels = levels;
+        this.breakPoint = breakPoint;
+        this.crsProfile = crsProfile;
+
+        this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1, TileCluster.Origin);
     }
 
     protected ClusterAddress getClusterAddress(final int row, final int column, final int zoomLevel)
@@ -139,23 +143,7 @@ abstract class TileCluster
         return count;
     }
 
-    private static final int IndexLocationByteSize    = 8;  // size of long
-    private static final int IndexSizeByteSize        = 4;  // size of int
-
-    private static final int IndexTileAddressByteSize = IndexLocationByteSize + IndexSizeByteSize;
-
-    protected static final TileOrigin Origin      = TileOrigin.LowerLeft; // TODO WARNING WARNING, THIS IS JUST A BLIND GUESS
-
-    protected static final long NoDataLong  = -1L;
-    protected static final int  NoDataInt   = -1;
-
-    protected final Path        location;
-    protected final String      setName;
-    protected final int         zoomLevels;
-    protected final int         breakPoint;
-    protected final TileProfile tileProfile;
-
-    protected static class ClusterAddress
+        protected static class ClusterAddress
     {
         final long row;
         final long column;
@@ -170,4 +158,21 @@ abstract class TileCluster
             this.endlevel   = endlevel;
         }
     }
+
+    protected static final TileOrigin Origin = TileOrigin.LowerLeft; // TODO WARNING WARNING, THIS IS JUST A BLIND GUESS
+
+    protected static final long NoDataLong  = -1L;
+    protected static final int  NoDataInt   = -1;
+
+    protected final Path       location;
+    protected final String     setName;
+    protected final int        zoomLevels;
+    protected final int        breakPoint;
+    protected final CrsProfile crsProfile;
+    protected final TileScheme tileScheme;
+
+    private static final int IndexLocationByteSize = 8;  // size of long
+    private static final int IndexSizeByteSize     = 4;  // size of int
+
+    private static final int IndexTileAddressByteSize = IndexLocationByteSize + IndexSizeByteSize;
 }

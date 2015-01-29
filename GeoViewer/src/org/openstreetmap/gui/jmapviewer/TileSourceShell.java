@@ -30,8 +30,8 @@ import com.rgi.common.tile.store.TileStoreReader;
 
 public class TileSourceShell implements TileSource {
 
-	private final TileStoreReader tileStore;
-	private Set<Integer> zooms;
+    private final TileStoreReader tileStore;
+    private Set<Integer> zooms;
 
     public TileSourceShell(final TileStoreReader tileStore) throws TileStoreException
     {
@@ -39,134 +39,134 @@ public class TileSourceShell implements TileSource {
         this.zooms     = tileStore.getZoomLevels();
     }
 
-	@Override
-	public boolean requiresAttribution() {
-		return false;
-	}
+    @Override
+    public boolean requiresAttribution() {
+        return false;
+    }
 
-	@Override
-	public String getAttributionText(final int zoom, final Coordinate topLeft, final Coordinate botRight) {
-		return null;
-	}
+    @Override
+    public String getAttributionText(final int zoom, final Coordinate topLeft, final Coordinate botRight) {
+        return null;
+    }
 
-	@Override
-	public String getAttributionLinkURL() {
-		return null;
-	}
+    @Override
+    public String getAttributionLinkURL() {
+        return null;
+    }
 
-	@Override
-	public Image getAttributionImage() {
-		return null;
-	}
+    @Override
+    public Image getAttributionImage() {
+        return null;
+    }
 
-	@Override
-	public String getAttributionImageURL() {
-		return null;
-	}
+    @Override
+    public String getAttributionImageURL() {
+        return null;
+    }
 
-	@Override
-	public String getTermsOfUseText() {
-		return null;
-	}
+    @Override
+    public String getTermsOfUseText() {
+        return null;
+    }
 
-	@Override
-	public String getTermsOfUseURL() {
-		return null;
-	}
+    @Override
+    public String getTermsOfUseURL() {
+        return null;
+    }
 
-	@Override
-	public int getMaxZoom() {
-		return Collections.max(this.zooms);
-	}
+    @Override
+    public int getMaxZoom() {
+        return Collections.max(this.zooms);
+    }
 
-	@Override
-	public int getMinZoom() {
-		return Collections.min(this.zooms);
-	}
+    @Override
+    public int getMinZoom() {
+        return Collections.min(this.zooms);
+    }
 
-	@Override
-	public TileUpdate getTileUpdate() {
-		return null;
-	}
+    @Override
+    public TileUpdate getTileUpdate() {
+        return null;
+    }
 
-	@Override
-	public String getName() {
-		return this.tileStore.toString();
-	}
+    @Override
+    public String getName() {
+        return this.tileStore.toString();
+    }
 
-	@Override
-	public String getTileUrl(final int zoom, final int tilex, final int tiley) throws IOException {
-		return null;
-	}
+    @Override
+    public String getTileUrl(final int zoom, final int tilex, final int tiley) throws IOException {
+        return null;
+    }
 
-	@Override
-	public String getTileType() {
-		return "png";
-	}
+    @Override
+    public String getTileType() {
+        return "png";
+    }
 
-	@Override
-	public int getTileSize() {
-		return 256;
-	}
+    @Override
+    public int getTileSize() {
+        return 256;
+    }
 
-	@Override
-	public double getDistance(final double la1, final double lo1, final double la2, final double lo2) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public double getDistance(final double la1, final double lo1, final double la2, final double lo2) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 
-	@Override
-	public int LonToX(final double aLongitude, final int aZoomlevel) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public int LonToX(final double aLongitude, final int aZoomlevel) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 
-	@Override
-	public int LatToY(final double aLat, final int aZoomlevel) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public int LatToY(final double aLat, final int aZoomlevel) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 
-	@Override
-	public double XToLon(final int aX, final int aZoomlevel) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public double XToLon(final int aX, final int aZoomlevel) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 
-	@Override
-	public double YToLat(final int aY, final int aZoomlevel) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public double YToLat(final int aY, final int aZoomlevel) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 
-	@Override
-	public double lonToTileX(final double lon, final int zoom) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public double lonToTileX(final double lon, final int zoom) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 
-	@Override
-	public double latToTileY(final double lat, final int zoom) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public double latToTileY(final double lat, final int zoom) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 
-	@Override
-	public double tileXToLon(final int x, final int zoom) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public double tileXToLon(final int x, final int zoom) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 
-	@Override
-	public double tileYToLat(final int y, final int zoom) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public double tileYToLat(final int y, final int zoom) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 
-	@Override
-	public String getId() {
-		// TODO Auto-generated method stub
-		return this.tileStore.toString();
-	}
+    @Override
+    public String getId() {
+        // TODO Auto-generated method stub
+        return this.tileStore.toString();
+    }
 
 }

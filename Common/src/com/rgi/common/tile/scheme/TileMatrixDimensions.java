@@ -16,23 +16,50 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.common.tile;
+package com.rgi.common.tile.scheme;
 
-@SuppressWarnings("serial")
-public class TileException extends Exception
+/**
+ * @author Luke Lambert
+ *
+ */
+public class TileMatrixDimensions
 {
-    public TileException(final String message)
+    /**
+     * @param height
+     * @param width
+     */
+    public TileMatrixDimensions(final int height, final int width)
     {
-        super(message);
+        if(height <= 0)
+        {
+            throw new IllegalArgumentException("Height must be greater than 0");
+        }
+
+        if(width <= 0)
+        {
+            throw new IllegalArgumentException("Height must be greater than 0");
+        }
+
+        this.height = height;
+        this.width  = width;
     }
 
-    public TileException(final Throwable cause)
+    /**
+     * @return the height (number of rows)
+     */
+    public int getHeight()
     {
-        super(cause);
+        return this.height;
     }
 
-    public TileException(final String message, final Throwable cause)
+    /**
+     * @return the width (number of columns)
+     */
+    public int getWidth()
     {
-        super(message, cause);
+        return this.width;
     }
+
+    private final int height;
+    private final int width;
 }

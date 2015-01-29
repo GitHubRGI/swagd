@@ -25,44 +25,44 @@ import java.awt.Graphics;
 import javax.swing.Icon;
 
 public class ColorSwatch implements Icon {
-	private int width = 64;
-	private int height = 16;
-	private Color color = null;
+    private int width = 64;
+    private int height = 16;
+    private Color color = null;
 
-	public void setColor(Color color) {
-		this.color = color;
-	}
+    public void setColor(Color color) {
+        this.color = color;
+    }
 
-	public Color getColor() {
-		return this.color;
-	}
+    public Color getColor() {
+        return this.color;
+    }
 
-	@Override
-	public void paintIcon(Component c, Graphics g, int x, int y) {
-		// TODO Auto-generated method stub
-		g.setColor(Color.white);
-		g.fillRect(0, 0, this.width, this.height);
-		boolean check = false;
-		g.setColor(Color.lightGray);
-		for (int i = 0; i < this.width; i += 5) {
-			for (int j = 0; j < this.height; j += 5) {
-				check = !check;
-				if (check) {
-					g.fillRect(i, j, 5, 5);
-				}
-			}
-		}
-		g.setColor(this.color);
-		g.fillRect(0, 0, this.width, this.height);
-	}
+    @Override
+    public void paintIcon(Component c, Graphics g, int x, int y) {
+        // TODO Auto-generated method stub
+        g.setColor(Color.white);
+        g.fillRect(0, 0, this.width, this.height);
+        boolean check = false;
+        g.setColor(Color.lightGray);
+        for (int i = 0; i < this.width; i += 5) {
+            for (int j = 0; j < this.height; j += 5) {
+                check = !check;
+                if (check) {
+                    g.fillRect(i, j, 5, 5);
+                }
+            }
+        }
+        g.setColor(this.color);
+        g.fillRect(0, 0, this.width, this.height);
+    }
 
-	@Override
-	public int getIconWidth() {
-		return this.width;
-	}
+    @Override
+    public int getIconWidth() {
+        return this.width;
+    }
 
-	@Override
-	public int getIconHeight() {
-		return this.height;
-	}
+    @Override
+    public int getIconHeight() {
+        return this.height;
+    }
 }

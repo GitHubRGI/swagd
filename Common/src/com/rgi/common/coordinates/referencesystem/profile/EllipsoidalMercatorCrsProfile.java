@@ -16,21 +16,21 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.common.tile.profile;
+package com.rgi.common.coordinates.referencesystem.profile;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.CoordinateReferenceSystem;
-import com.rgi.common.Dimension2D;
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
  * @author Luke Lambert
  *
  */
-public class EllipsoidalMercatorTileProfile implements TileProfile
+public class EllipsoidalMercatorCrsProfile implements CrsProfile
 {
     /**
      * Constructor
@@ -38,7 +38,7 @@ public class EllipsoidalMercatorTileProfile implements TileProfile
      * @param pixelHeight Height of tile in pixels
      * @param pixelWidth  Width of tile in pixels
      */
-    public EllipsoidalMercatorTileProfile()
+    public EllipsoidalMercatorCrsProfile()
     {
         this(1.0,
              new CoordinateReferenceSystem("EPSG", 3395));
@@ -49,7 +49,7 @@ public class EllipsoidalMercatorTileProfile implements TileProfile
      *
      * @param earthEquatorialRadiusScaleFactor the scale factor for the equatorial radius the earth
      */
-    public EllipsoidalMercatorTileProfile(final double earthEquatorialRadiusScaleFactor, final CoordinateReferenceSystem coordinateReferenceSystem)
+    public EllipsoidalMercatorCrsProfile(final double earthEquatorialRadiusScaleFactor, final CoordinateReferenceSystem coordinateReferenceSystem)
     {
         this.coordinateReferenceSystem = coordinateReferenceSystem;
 
@@ -62,19 +62,21 @@ public class EllipsoidalMercatorTileProfile implements TileProfile
     }
 
     @Override
-    public AbsoluteTileCoordinate crsToAbsoluteTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel, final TileOrigin origin)
+    public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate        coordinate,
+                                                   final TileMatrixDimensions dimensions,
+                                                   final TileOrigin           tileOrigin)
     {
         if(coordinate == null)
         {
             throw new IllegalArgumentException("Meter coordinate may not be null");
         }
 
-        if(zoomLevel < 0 || zoomLevel > 31)
+        if(dimensions == null)
         {
-            throw new IllegalArgumentException("Zoom level must be in the range [0, 32)");
+            throw new IllegalArgumentException("Tile matrix dimensions may not be null");
         }
 
-        if(origin == null)
+        if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
@@ -88,11 +90,29 @@ public class EllipsoidalMercatorTileProfile implements TileProfile
     }
 
     @Override
-    public CrsCoordinate absoluteToCrsCoordinate(final AbsoluteTileCoordinate absoluteTileCoordinate)
+    public CrsCoordinate tileToCrsCoordinate(final int                  row,
+                                             final int                  column,
+                                             final TileMatrixDimensions dimensions,
+                                             final TileOrigin           tileOrigin)
     {
-        if(absoluteTileCoordinate == null)
+        if(row < 0)
         {
-            throw new IllegalArgumentException("Tile coordinate may not be null");
+            throw new IllegalArgumentException("Row must be at least 0");
+        }
+
+        if(column < 0)
+        {
+            throw new IllegalArgumentException("Column must be at least 0");
+        }
+
+        if(dimensions == null)
+        {
+            throw new IllegalArgumentException("Tile matrix dimensions may not be null");
+        }
+
+        if(tileOrigin == null)
+        {
+            throw new IllegalArgumentException("Origin may not be null");
         }
 
         // TODO
@@ -111,7 +131,7 @@ public class EllipsoidalMercatorTileProfile implements TileProfile
     }
 
     @Override
-    public Dimension2D getTileDimensions(final int zoomLevel)
+    public Dimensions getTileDimensions(final int zoomLevel)
     {
         throw new RuntimeException("Method not implemented");
     }
@@ -122,13 +142,13 @@ public class EllipsoidalMercatorTileProfile implements TileProfile
         return this.coordinateReferenceSystem;
     }
 
-	public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
-	{
-		return new Coordinate<>(metersToLat(coordinate.getY()),
-		                        metersToLon(coordinate.getX()));
-	}
+    public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
+    {
+        return new Coordinate<>(metersToLat(coordinate.getY()),
+                                metersToLon(coordinate.getX()));
+    }
 
-	@Override
+    @Override
     public BoundingBox getBounds()
     {
         final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; // TODO IS THIS RIGHT? Verify!
@@ -139,28 +159,28 @@ public class EllipsoidalMercatorTileProfile implements TileProfile
                                 Math.PI * this.scaledEarthEquatorialRadius);
     }
 
-	@Override
+    @Override
     public Coordinate<Double> toGlobalGeodetic(Coordinate<Double> coordinate)
     {
         return new Coordinate<>(metersToLat(coordinate.getY()),
                                 metersToLon(coordinate.getX()));
     }
 
-	/**
-	 * Converts a meters X coordinate of WGS 84
-	 * Ellipsoid World Mercator EPSG(3395) to its
-	 * corresponding longitude value in degrees.
-	 *
-	 * Formula:
-	 *         Longitude(in radian) = meters/UnscaledEarthEquatorialRadius
-	 *
-	 * @param meters in WGS 3395
-	 * @return longitude in Degrees
-	 */
-	private static double metersToLon(final double meters)
-	{
-	    return Math.toDegrees(meters/UnscaledEarthEquatorialRadius);
-	}
+    /**
+     * Converts a meters X coordinate of WGS 84
+     * Ellipsoid World Mercator EPSG(3395) to its
+     * corresponding longitude value in degrees.
+     *
+     * Formula:
+     *         Longitude(in radian) = meters/UnscaledEarthEquatorialRadius
+     *
+     * @param meters in WGS 3395
+     * @return longitude in Degrees
+     */
+    private static double metersToLon(final double meters)
+    {
+        return Math.toDegrees(meters/UnscaledEarthEquatorialRadius);
+    }
 
     /**
      * Converts a meters Y coordinate to of WGS 84

@@ -31,41 +31,41 @@ import javax.swing.JPanel;
 import com.rgi.suite.ApplicationContext.Window;
 
 public class DoneWindow extends AbstractWindow {
-	public DoneWindow(ApplicationContext context) {
-		super(context);
-	}
+    public DoneWindow(ApplicationContext context) {
+        super(context);
+    }
 
-	@Override
-	protected void buildContentPane() {
-		this.contentPane = new JPanel(new GridBagLayout());
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
+    @Override
+    protected void buildContentPane() {
+        this.contentPane = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
 
-		this.contentPane.add(new JLabel("Finished!"), gbc);
-	}
+        this.contentPane.add(new JLabel("Finished!"), gbc);
+    }
 
-	@Override
-	protected void buildNavPane() {
-		this.navPane = new JPanel(new GridBagLayout());
-		Properties props = this.context.getProperties();
-		JButton okButton = new JButton(new PropertiesAction(props, "done") {
-			/**
-			 * Generated serial
-			 */
-			private static final long serialVersionUID = -455467082471731446L;
+    @Override
+    protected void buildNavPane() {
+        this.navPane = new JPanel(new GridBagLayout());
+        Properties props = this.context.getProperties();
+        JButton okButton = new JButton(new PropertiesAction(props, "done") {
+            /**
+             * Generated serial
+             */
+            private static final long serialVersionUID = -455467082471731446L;
 
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				DoneWindow.this.context.transitionTo(Window.MAIN);
-			}
-		});
-		okButton.setHideActionText(true);
-		okButton.setMargin(new Insets(0, 0, 0, 0));
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.anchor = GridBagConstraints.EAST;
-		gbc.weightx = 1.0;
-		gbc.insets = new Insets(10, 10, 10, 10);
-		this.navPane.add(okButton, gbc);
-	}
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                DoneWindow.this.context.transitionTo(Window.MAIN);
+            }
+        });
+        okButton.setHideActionText(true);
+        okButton.setMargin(new Insets(0, 0, 0, 0));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.weightx = 1.0;
+        gbc.insets = new Insets(10, 10, 10, 10);
+        this.navPane.add(okButton, gbc);
+    }
 }

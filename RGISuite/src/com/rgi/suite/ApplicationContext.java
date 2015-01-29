@@ -38,102 +38,102 @@ import com.rgi.common.task.Settings;
 import com.rgi.common.task.Task;
 
 public class ApplicationContext extends JFrame {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -4996528794673998019L;
-	private Task task;
+    /**
+     *
+     */
+    private static final long serialVersionUID = -4996528794673998019L;
+    private Task task;
 
-	public enum Window {
-		MAIN, FILECHOOSER, PROGRESS, SETTINGS, ERROR, DONE;
-	}
+    public enum Window {
+        MAIN, FILECHOOSER, PROGRESS, SETTINGS, WINDOWERROR, DONE;
+    }
 
-	private Settings settings;
-	private Properties props;
+    private Settings settings;
+    private Properties props;
 
-	private JPanel contentPanel;
-	private JPanel navPanel;
-	private Exception error = null;
+    private JPanel contentPanel;
+    private JPanel navPanel;
+    private Exception error = null;
 
-	private Map<Window, ApplicationWindow> windows = new HashMap<>();
+    private Map<Window, ApplicationWindow> windows = new HashMap<>();
 
-	public ApplicationContext() {
-		this.contentPanel = new JPanel(new CardLayout());
-		this.navPanel = new JPanel(new CardLayout());
+    public ApplicationContext() {
+        this.contentPanel = new JPanel(new CardLayout());
+        this.navPanel = new JPanel(new CardLayout());
 
-		this.props = new Properties();
-		try(InputStream inputStream = this.getClass().getResourceAsStream("geosuite.properties")) {
-			this.props.load(inputStream);
-		} catch (IOException ioe) {
-			JOptionPane.showMessageDialog(null, "RGI Suite", "Unable to load properties", JOptionPane.OK_OPTION);
-			ioe.printStackTrace();
-			throw new RuntimeException(ioe.getMessage());
-		}
+        this.props = new Properties();
+        try(InputStream inputStream = this.getClass().getResourceAsStream("geosuite.properties")) {
+            this.props.load(inputStream);
+        } catch (IOException ioe) {
+            JOptionPane.showMessageDialog(null, "RGI Suite", "Unable to load properties", JOptionPane.OK_OPTION);
+            ioe.printStackTrace();
+            throw new RuntimeException(ioe.getMessage());
+        }
 
-		this.settings = new Settings();
+        this.settings = new Settings();
 
-		Container c = this.getContentPane();
-		c.setLayout(new BorderLayout());
-		c.add(this.contentPanel, BorderLayout.CENTER);
-		c.add(this.navPanel, BorderLayout.SOUTH);
+        Container c = this.getContentPane();
+        c.setLayout(new BorderLayout());
+        c.add(this.contentPanel, BorderLayout.CENTER);
+        c.add(this.navPanel, BorderLayout.SOUTH);
 
-		this.setTitle("RGI Tiling and Geopackaging Suite");
-		this.setSize(640, 480);
-		this.setResizable(false);
-		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		// show the window
-		this.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent event) {
-				int option = JOptionPane.showConfirmDialog(ApplicationContext.this, "Are you sure you want to exit?",
-						"Confirm Exit", JOptionPane.YES_NO_OPTION);
-				if (option == JOptionPane.YES_OPTION) {
-					System.exit(0);
-				}
-			}
-		});
-	}
+        this.setTitle("RGI Tiling and Geopackaging Suite");
+        this.setSize(640, 480);
+        this.setResizable(false);
+        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        // show the window
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent event) {
+                int option = JOptionPane.showConfirmDialog(ApplicationContext.this, "Are you sure you want to exit?",
+                        "Confirm Exit", JOptionPane.YES_NO_OPTION);
+                if (option == JOptionPane.YES_OPTION) {
+                    System.exit(0);
+                }
+            }
+        });
+    }
 
-	public void go() {
-		this.setVisible(true);
-	}
+    public void go() {
+        this.setVisible(true);
+    }
 
-	void addWindow(Window window, ApplicationWindow windowContent) {
-		this.windows.put(window, windowContent);
-		this.contentPanel.add(windowContent.getContentPane(), window.name());
-		this.navPanel.add(windowContent.getNavigationPane(), window.name());
-	}
+    void addWindow(Window window, ApplicationWindow windowContent) {
+        this.windows.put(window, windowContent);
+        this.contentPanel.add(windowContent.getContentPane(), window.name());
+        this.navPanel.add(windowContent.getNavigationPane(), window.name());
+    }
 
-	public Settings getSettings() {
-		return this.settings;
-	}
+    public Settings getSettings() {
+        return this.settings;
+    }
 
-	public Properties getProperties() {
-		return this.props;
-	}
+    public Properties getProperties() {
+        return this.props;
+    }
 
-	public void setError(Exception error) {
-	  this.error = error;
-	}
+    public void setError(Exception error) {
+      this.error = error;
+    }
 
-	public Exception getError() {
-	  return this.error;
-	}
+    public Exception getError() {
+      return this.error;
+    }
 
-	public void transitionTo(Window window) {
-		ApplicationWindow windowContent = this.windows.get(window);
-		if (windowContent != null) {
-			windowContent.activate();
-			((CardLayout) this.contentPanel.getLayout()).show(this.contentPanel, window.name());
-			((CardLayout) this.navPanel.getLayout()).show(this.navPanel, window.name());
-		}
-	}
+    public void transitionTo(Window window) {
+        ApplicationWindow windowContent = this.windows.get(window);
+        if (windowContent != null) {
+            windowContent.activate();
+            ((CardLayout) this.contentPanel.getLayout()).show(this.contentPanel, window.name());
+            ((CardLayout) this.navPanel.getLayout()).show(this.navPanel, window.name());
+        }
+    }
 
-	public void setActiveTask(Task task) {
-		this.task = task;
-	}
+    public void setActiveTask(Task task) {
+        this.task = task;
+    }
 
-	public Task getActiveTask() {
-		return this.task;
-	}
+    public Task getActiveTask() {
+        return this.task;
+    }
 }

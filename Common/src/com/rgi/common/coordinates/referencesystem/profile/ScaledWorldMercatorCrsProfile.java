@@ -16,16 +16,16 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.common.tile.profile;
+package com.rgi.common.coordinates.referencesystem.profile;
 
 /**
  * @author Luke Lambert
  *
  */
-//public class ScaledWorldMercatorTileProfile extends EllipsoidalMercatorTileProfile
+//public class ScaledWorldMercatorCrsProfile extends EllipsoidalMercatorCrsProfile
 //{
 //
-//    public ScaledWorldMercatorTileProfile()
+//    public ScaledWorldMercatorCrsProfile()
 //    {
 //        super(EarthEquatorialRadiusScaleFactor);
 //    }

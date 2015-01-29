@@ -4,13 +4,14 @@ package com.rgi.common;
  * @author Luke Lambert
  *
  */
-public class Dimension2D
+
+public class Dimensions
 {
     /**
      * @param height
      * @param width
      */
-    public Dimension2D(final double height, final double width)
+    public Dimensions(final double height, final double width)
     {
         this.height = height;
         this.width = width;

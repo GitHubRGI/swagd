@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.task.AbstractTask;
 import com.rgi.common.task.MonitorableTask;
 import com.rgi.common.task.Settings;
@@ -39,8 +41,6 @@ import com.rgi.common.task.Settings.Profile;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
-import com.rgi.common.tile.profile.TileProfile;
-import com.rgi.common.tile.profile.TileProfileFactory;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.tile.store.tms.TmsReader;
@@ -100,7 +100,7 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor 
   @Override
     public void execute(Settings opts)
     {
-        Profile profile = Settings.Profile.valueOf(opts.get(Setting.TileProfile));
+        Profile profile = Settings.Profile.valueOf(opts.get(Setting.CrsProfile));
         // split the job up into individual files, process those files one at a time
         File[] files = opts.getFiles(Setting.FileSelection);
         for(File file : files)
@@ -111,12 +111,12 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor 
                 String imageFormat = Settings.Type.valueOf(opts.get(Setting.TileType)).name();
                 Path outputFolder = new File(opts.get(Setting.TileFolder)).toPath();
 
-                final TileProfile tileProfile = TileProfileFactory.create("EPSG", profile.getID());
+                final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", profile.getID());
 
                 //final TileOrigin origin = TileOrigin.valueOf(opts.get(Setting.TileOrigin));
 
-                TileStoreWriter tileWriter = new TmsWriter(tileProfile, outputFolder, new MimeType("image", imageFormat));
-                TileStoreReader tileReader = new TmsReader(tileProfile, outputFolder);
+                TileStoreWriter tileWriter = new TmsWriter(crsProfile, outputFolder, new MimeType("image", imageFormat));
+                TileStoreReader tileReader = new TmsReader(crsProfile, outputFolder);
 
 
                 Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createTileJob(file, tileReader, tileWriter, opts, this))));

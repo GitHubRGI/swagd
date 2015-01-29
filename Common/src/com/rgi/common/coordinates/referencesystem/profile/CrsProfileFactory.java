@@ -16,7 +16,7 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.common.tile.profile;
+package com.rgi.common.coordinates.referencesystem.profile;
 
 import com.rgi.common.CoordinateReferenceSystem;
 
@@ -24,17 +24,17 @@ import com.rgi.common.CoordinateReferenceSystem;
  * @author Luke Lambert
  *
  */
-public class TileProfileFactory
+public class CrsProfileFactory
 {
-    public static TileProfile create(final String crsAuthority,
+    public static CrsProfile create(final String crsAuthority,
                                      final int    crsIdentifier)
     {
-        return TileProfileFactory.create(new CoordinateReferenceSystem(crsAuthority, crsIdentifier));
+        return CrsProfileFactory.create(new CoordinateReferenceSystem(crsAuthority, crsIdentifier));
     }
 
-    public static TileProfile create(final CoordinateReferenceSystem coordinateReferenceSystem)
+    public static CrsProfile create(final CoordinateReferenceSystem coordinateReferenceSystem)
     {
-        // TODO: This switch statement is a stop-gap.  Ideally a TileProfile
+        // TODO: This switch statement is a stop-gap.  Ideally a CrsProfile
         // can be created in a general way via the details of the WTK/proj4
         // string.
         switch(coordinateReferenceSystem.toString())
@@ -42,24 +42,24 @@ public class TileProfileFactory
             case "EPSG:900913":
             case "EPSG:3785":   // deprecated by the EPSG
             case "EPSG:3857":
-            case "OSGEO:41001": return SphericalMercatorTileProfile;
+            case "OSGEO:41001": return SphericalMercatorCrsProfile;
 
 
-            case "EPSG:3395": return EllipsoidalMercatorTileProfile; // AKA Global Mercator
+            case "EPSG:3395": return EllipsoidalMercatorCrsProfile; // AKA Global Mercator
 
-            case "EPSG:4326": return GlobalGeodeticTileProfile;
+            case "EPSG:4326": return GlobalGeodeticCrsProfile;
 
             //case "EPSG:9804": // Mercator (variant A)
             //case "EPSG:9805": // Mercator (variant B)
-            //                  return new ScaledWorldMercatorTileProfile();
+            //                  return new ScaledWorldMercatorCrsProfile();
 
             default: throw new RuntimeException(String.format("Unsupported spatial reference system: %s", coordinateReferenceSystem));
         }
     }
 
-    private static final SphericalMercatorTileProfile   SphericalMercatorTileProfile   = new SphericalMercatorTileProfile();
-    private static final EllipsoidalMercatorTileProfile EllipsoidalMercatorTileProfile = new EllipsoidalMercatorTileProfile();
-    private static final GlobalGeodeticTileProfile      GlobalGeodeticTileProfile      = new GlobalGeodeticTileProfile();
-    //private static final ScaledWorldMercatorTileProfile ScaledWorldMercatorTileProfile = new ScaledWorldMercatorTileProfile();
+    private static final SphericalMercatorCrsProfile   SphericalMercatorCrsProfile   = new SphericalMercatorCrsProfile();
+    private static final EllipsoidalMercatorCrsProfile EllipsoidalMercatorCrsProfile = new EllipsoidalMercatorCrsProfile();
+    private static final GlobalGeodeticCrsProfile      GlobalGeodeticCrsProfile      = new GlobalGeodeticCrsProfile();
+    //private static final ScaledWorldMercatorCrsProfile ScaledWorldMercatorCrsProfile = new ScaledWorldMercatorCrsProfile();
 
 }

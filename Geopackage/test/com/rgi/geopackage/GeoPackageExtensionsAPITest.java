@@ -19,10 +19,10 @@ import com.rgi.geopackage.extensions.Extension;
 import com.rgi.geopackage.extensions.Scope;
 import com.rgi.geopackage.verification.ConformanceException;
 
-public class GeoPackageExtensionsAPITest 
+public class GeoPackageExtensionsAPITest
 {
-	
-	@Rule
+
+    @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
     
@@ -102,5 +102,4 @@ public class GeoPackageExtensionsAPITest
 
         return testFile;
     }
-
 }

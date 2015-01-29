@@ -32,9 +32,9 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
-import com.rgi.common.coordinates.AbsoluteTileCoordinate;
+import com.rgi.common.coordinates.Coordinate;
 import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.tile.profile.TileProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.MimeTypeUtility;
@@ -55,7 +55,7 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
      * @param imageOutputFormat
      *             Image format for used for output
      */
-    public TmsWriter(final TileProfile profile,
+    public TmsWriter(final CrsProfile profile,
                      final Path        location,
                      final MimeType    imageOutputFormat)
     {
@@ -74,7 +74,7 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
      * @param imageWriteOptions
      *             Controls details of the image writing process.  If null, a default ImageWriteParam used instead
      */
-    public TmsWriter(final TileProfile     profile,
+    public TmsWriter(final CrsProfile     profile,
                      final Path            location,
                      final MimeType        imageOutputFormat,
                      final ImageWriteParam imageWriteOptions)
@@ -124,11 +124,11 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
-        final AbsoluteTileCoordinate tmsCoordiante = this.profile.crsToAbsoluteTileCoordinate(coordinate,
-                                                                                              zoomLevel,
-                                                                                              TmsTileStore.Origin);
-        this.addTile(tmsCoordiante.getRow(),
-                     tmsCoordiante.getColumn(),
+        final Coordinate<Integer> tmsCoordiante = this.profile.crsToTileCoordinate(coordinate,
+                                                                                   this.tileScheme.dimensions(zoomLevel),
+                                                                                   TmsTileStore.Origin);
+        this.addTile(tmsCoordiante.getY(),
+                     tmsCoordiante.getX(),
                      zoomLevel,
                      image);
     }

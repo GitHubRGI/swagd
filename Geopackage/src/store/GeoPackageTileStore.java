@@ -4,8 +4,8 @@ package store;
 
 import java.sql.SQLException;
 
-import com.rgi.common.tile.profile.TileProfile;
-import com.rgi.common.tile.profile.TileProfileFactory;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.TileSet;
@@ -35,13 +35,13 @@ abstract class GeoPackageTileStore
         this.tileSet     = tileSet;
         if(srs == null)
         {
-        	throw new IllegalArgumentException("SRS may not be null or empty");
+            throw new IllegalArgumentException("SRS may not be null or empty");
         }
-        this.tileProfile = TileProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId());
+        this.crsProfile = CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId());
     }
 
     protected final GeoPackage  geoPackage;
     protected final TileSet     tileSet;
-    protected final TileProfile tileProfile;
+    protected final CrsProfile crsProfile;
 
 }

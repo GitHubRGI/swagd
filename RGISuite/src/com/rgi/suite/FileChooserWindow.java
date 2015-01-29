@@ -27,80 +27,86 @@ import javax.swing.JPanel;
 
 import com.rgi.common.task.MonitorableTask;
 import com.rgi.common.task.Settings;
+import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.Task;
 import com.rgi.common.task.TaskFactory;
-import com.rgi.common.task.Settings.Setting;
 import com.rgi.suite.ApplicationContext.Window;
 import com.rgi.view.MapViewWindow;
 import com.rgi.view.Viewer;
 
 public class FileChooserWindow extends BaseWindow {
-	private JFileChooser fileChooser;
+    private JFileChooser fileChooser;
 
-	public FileChooserWindow(ApplicationContext context) {
-		super(context);
-	}
-	
-	@Override
-	public void activate() {
-	  Task task = this.context.getActiveTask();
-	  if (task != null) {
-	    TaskFactory factory = task.getFactory();
+    public FileChooserWindow(ApplicationContext context) {
+        super(context);
+    }
+
+    @Override
+    public void activate() {
+      Task task = this.context.getActiveTask();
+      if (task != null) {
+        TaskFactory factory = task.getFactory();
       this.fileChooser.setMultiSelectionEnabled(factory.selectMultiple());
      if (factory.selectFilesOnly())
-	      this.fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-	    else if (factory.selectFoldersOnly())
-	      this.fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-	    else 
-	      this.fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+    {
+        this.fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    }
+    else if (factory.selectFoldersOnly())
+        {
+            this.fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        }
+        else
+        {
+            this.fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        }
       this.fileChooser.setToolTipText(factory.getFilePrompt());
-	  }
-	}
-	
-	@Override
-	protected void buildContentPane() {
-		this.contentPane = new JPanel(new BorderLayout());
-		this.fileChooser = new JFileChooser();
-		this.contentPane.add(this.fileChooser, BorderLayout.CENTER);
-		this.fileChooser.addActionListener(event -> {
-			Task task = this.context.getActiveTask();
-			if (JFileChooser.APPROVE_SELECTION.equals(event.getActionCommand())) {
-				Settings settings = this.context.getSettings();
-				if (this.fileChooser.isMultiSelectionEnabled()) {
-					settings.set(Setting.FileSelection, this.fileChooser.getSelectedFiles());
-				} else {
-					settings.set(Setting.FileSelection, this.fileChooser.getSelectedFile());
-				}
-				// File chosen is set, now do something based on the workflow
-				if (task != null && task instanceof MonitorableTask) {
-					this.context.transitionTo(Window.PROGRESS);
-					task.execute(this.context.getSettings());
-					return;
-				} else if (task != null && task instanceof Viewer) {
-					// Probe the chosen file or files for the type of tile store
-					// Initialize a tile loader object on the file chosen
-					// Create a new JFrame window with a MapViewWindow, pointing
-					// to the appropriate loader
-					String selections = settings.get(Setting.FileSelection);
-					String[] fileSelections = selections.split(";");
-					if (fileSelections.length == 1) {
-						// Single selection
-						File store = new File(fileSelections[0]);
-						try {
-							JFrame frame = new MapViewWindow(store);
-							frame.pack();
-							frame.setVisible(true);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					} else {
-						// Multi-selection
-					}
-				}
-			} else if (JFileChooser.CANCEL_SELECTION.equals(event.getActionCommand())) {
-				this.context.setActiveTask(null);
-			}
-			this.context.transitionTo(Window.MAIN);
-		});
-	}
+      }
+    }
+
+    @Override
+    protected void buildContentPane() {
+        this.contentPane = new JPanel(new BorderLayout());
+        this.fileChooser = new JFileChooser();
+        this.contentPane.add(this.fileChooser, BorderLayout.CENTER);
+        this.fileChooser.addActionListener(event -> {
+            Task task = this.context.getActiveTask();
+            if (JFileChooser.APPROVE_SELECTION.equals(event.getActionCommand())) {
+                Settings settings = this.context.getSettings();
+                if (this.fileChooser.isMultiSelectionEnabled()) {
+                    settings.set(Setting.FileSelection, this.fileChooser.getSelectedFiles());
+                } else {
+                    settings.set(Setting.FileSelection, this.fileChooser.getSelectedFile());
+                }
+                // File chosen is set, now do something based on the workflow
+                if (task != null && task instanceof MonitorableTask) {
+                    this.context.transitionTo(Window.PROGRESS);
+                    task.execute(this.context.getSettings());
+                    return;
+                } else if (task != null && task instanceof Viewer) {
+                    // Probe the chosen file or files for the type of tile store
+                    // Initialize a tile loader object on the file chosen
+                    // Create a new JFrame window with a MapViewWindow, pointing
+                    // to the appropriate loader
+                    String selections = settings.get(Setting.FileSelection);
+                    String[] fileSelections = selections.split(";");
+                    if (fileSelections.length == 1) {
+                        // Single selection
+                        File store = new File(fileSelections[0]);
+                        try {
+                            JFrame frame = new MapViewWindow(store);
+                            frame.pack();
+                            frame.setVisible(true);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        // Multi-selection
+                    }
+                }
+            } else if (JFileChooser.CANCEL_SELECTION.equals(event.getActionCommand())) {
+                this.context.setActiveTask(null);
+            }
+            this.context.transitionTo(Window.MAIN);
+        });
+    }
 }

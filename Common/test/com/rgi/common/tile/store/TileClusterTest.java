@@ -22,11 +22,11 @@ package com.rgi.common.tile.store;
 public class TileClusterTest
 {
     // TODO fix these tests
-//	@Test
-//	public void testClusterCreation() throws TileStoreException {
-//		TileProfile profile = new SphericalMercatorTileProfile(256, 256);
-//		Path homeFolder = FileSystems.getDefault().getPath("/data/clusters/");
-//		TileCluster tc = new TileCluster(profile, TileOrigin.LowerLeft, TileMimeType.PNG, homeFolder);
-//		System.out.println("foo");
-//	}
+//    @Test
+//    public void testClusterCreation() throws TileStoreException {
+//        CrsProfile profile = new SphericalMercatorCrsProfile(256, 256);
+//        Path homeFolder = FileSystems.getDefault().getPath("/data/clusters/");
+//        TileCluster tc = new TileCluster(profile, TileOrigin.LowerLeft, TileMimeType.PNG, homeFolder);
+//        System.out.println("foo");
+//    }
 }

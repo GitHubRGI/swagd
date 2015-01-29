@@ -1,10 +1,27 @@
+/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>,
+ *  or write to the Free Software Foundation, Inc., 59 Temple Place -
+ *  Suite 330, Boston, MA 02111-1307, USA.
+ */
+
 package com.rgi.common.tile.scheme;
 
 import com.rgi.common.tile.TileOrigin;
 
-public class ZoomTimesTwo implements TileScheme
+public class ZoomTimesTwo extends TileScheme
 {
-
     /**
      * TODO
      *
@@ -20,51 +37,24 @@ public class ZoomTimesTwo implements TileScheme
                         final int        initialWidth,
                         final TileOrigin origin)
     {
-        if(initialHeight < 1)
-        {
-            throw new IllegalArgumentException("The initial height must be greater than 0");
-        }
+        super(minimumZoomLevel,
+              maximumZoomLevel,
+              initialHeight,
+              initialWidth,
+              origin);
 
-        if(initialWidth < 1)
-        {
-            throw new IllegalArgumentException("The initial width must be greater than 0");
-        }
-
-        if(origin == null)
-        {
-            throw new IllegalArgumentException("Tile origin may not be null");
-        }
-
-        if(minimumZoomLevel >= maximumZoomLevel)
-        {
-            throw new IllegalArgumentException("Minimum zoom level must be less than or equal to the maximum");
-        }
-
-        if(Integer.MAX_VALUE < (double)initialHeight * (int)Math.pow(2.0, maximumZoomLevel))
-        {
-            throw new IllegalArgumentException("This combination of initial height and maximum zoom level will cause an integer overflow for tile numbering");
-        }
-
-        if(Integer.MAX_VALUE < (double)initialWidth * (int)Math.pow(2.0, maximumZoomLevel))
-        {
-            throw new IllegalArgumentException("This combination of initial width and maximum zoom level will cause an integer overflow for tile numbering");
-        }
-
-        this.zoomLevelDimensions = new MatrixDimensions[maximumZoomLevel - minimumZoomLevel];
+        this.zoomLevelDimensions = new TileMatrixDimensions[maximumZoomLevel - minimumZoomLevel];
 
         for(int zoomLevel = minimumZoomLevel; zoomLevel < maximumZoomLevel; ++zoomLevel)
         {
-            this.zoomLevelDimensions[zoomLevel - minimumZoomLevel] = new MatrixDimensions(initialHeight * (int)Math.pow(2.0, zoomLevel),
-                                                                                          initialWidth  * (int)Math.pow(2.0, zoomLevel));
+            final int twoToTheZoomPower = (int)Math.pow(2.0, zoomLevel);
+            this.zoomLevelDimensions[zoomLevel - minimumZoomLevel] = new TileMatrixDimensions(initialHeight * twoToTheZoomPower,
+                                                                                              initialWidth  * twoToTheZoomPower);
         }
-
-        this.origin           = origin;
-        this.minimumZoomLevel = minimumZoomLevel;
-        this.maximumZoomLevel = maximumZoomLevel;
     }
 
     @Override
-    public MatrixDimensions dimensions(final int zoomLevel)
+    public TileMatrixDimensions dimensions(final int zoomLevel)
     {
         if(zoomLevel < this.minimumZoomLevel || zoomLevel > this.maximumZoomLevel)
         {
@@ -98,9 +88,5 @@ public class ZoomTimesTwo implements TileScheme
         return this.maximumZoomLevel;
     }
 
-    private final TileOrigin origin;
-    private final int        minimumZoomLevel;
-    private final int        maximumZoomLevel;
-
-    private final MatrixDimensions[] zoomLevelDimensions;
+    private final TileMatrixDimensions[] zoomLevelDimensions;
 }

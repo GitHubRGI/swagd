@@ -38,9 +38,9 @@ import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 
 import store.GeoPackageReader;
 
-import com.rgi.common.tile.profile.SphericalMercatorTileProfile;
-import com.rgi.common.tile.profile.TileProfile;
-import com.rgi.common.tile.profile.TileProfileFactory;
+import com.rgi.common.coordinates.referencesystem.profile.SphericalMercatorCrsProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.tms.TmsReader;
@@ -80,7 +80,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         this.map().setTileLoader(this.loader);
 
 
-        final TileProfile profile = TileProfileFactory.create(tileStore.getCoordinateReferenceSystem());
+        final CrsProfile profile = CrsProfileFactory.create(tileStore.getCoordinateReferenceSystem());
 
         try
         {
@@ -111,7 +111,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     {
         if(location.isDirectory()) // TMS or WMTS based directory create a TMS tile store
         {
-            return new TmsReader(new SphericalMercatorTileProfile(), location.toPath());   // TODO: we need a way of selecting the profile/CRS
+            return new TmsReader(new SphericalMercatorCrsProfile(), location.toPath());   // TODO: we need a way of selecting the profile/CRS
         }
 
         if(location.getName().toLowerCase().endsWith(".gpkg"))

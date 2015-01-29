@@ -30,31 +30,31 @@ import javax.swing.JPanel;
 import com.rgi.suite.ApplicationContext.Window;
 
 public abstract class BaseWindow extends AbstractWindow {
-	protected BaseWindow(ApplicationContext context) {
-		super(context);
-	}
+    protected BaseWindow(ApplicationContext context) {
+        super(context);
+    }
 
-	@Override
-	protected void buildNavPane() {
-		this.navPane = new JPanel(new GridBagLayout());
-		Properties props = this.context.getProperties();
-		JButton settingsButton = new JButton(new PropertiesAction(props, "pref") {
-			/**
-			 * Generated serial
-			 */
-			private static final long serialVersionUID = 5258278444574348376L;
+    @Override
+    protected void buildNavPane() {
+        this.navPane = new JPanel(new GridBagLayout());
+        Properties props = this.context.getProperties();
+        JButton settingsButton = new JButton(new PropertiesAction(props, "pref") {
+            /**
+             * Generated serial
+             */
+            private static final long serialVersionUID = 5258278444574348376L;
 
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				BaseWindow.this.context.transitionTo(Window.SETTINGS);
-			}
-		});
-		settingsButton.setHideActionText(true);
-		settingsButton.setMargin(new Insets(0, 0, 0, 0));
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.anchor = GridBagConstraints.EAST;
-		gbc.weightx = 1.0;
-		gbc.insets = new Insets(10, 10, 10, 10);
-		this.navPane.add(settingsButton, gbc);
-	}
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                BaseWindow.this.context.transitionTo(Window.SETTINGS);
+            }
+        });
+        settingsButton.setHideActionText(true);
+        settingsButton.setMargin(new Insets(0, 0, 0, 0));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.weightx = 1.0;
+        gbc.insets = new Insets(10, 10, 10, 10);
+        this.navPane.add(settingsButton, gbc);
+    }
 }
