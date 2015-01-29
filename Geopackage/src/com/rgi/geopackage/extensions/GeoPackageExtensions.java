@@ -116,8 +116,8 @@ public class GeoPackageExtensions
         try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(extensionQuerySql))
         {
             preparedStatement.setString(1, tableName);
-            preparedStatement.setString(1, columnName);
-            preparedStatement.setString(1, extensionName);
+            preparedStatement.setString(2, columnName);
+            preparedStatement.setString(3, extensionName);
 
             try(ResultSet result = preparedStatement.executeQuery())
             {
