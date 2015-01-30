@@ -18,7 +18,6 @@
 
 package com.rgi.geopackage;
 
-
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -141,9 +140,96 @@ public class GeoPackageExtensionsAPITest
 //    }
     
     
+    @Test
+    public void hasExtension() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+        File testFile = this.getRandomFile(12);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            String extensionName = "something_extension";
+
+            Extension expectedExtension = gpkg.extensions().addExtension(null, null, extensionName, "definition", Scope.ReadWrite); //this works fine
+
+            Extension returnedExtension = gpkg.extensions().getExtension(null, null, extensionName); //this does not
+
+
+
+            assertTrue(String.format("The GeoPackageExtensions did not return the extension expected. Expected: %s.\nActual: %s.",
+                                     String.format("TableName: %s, Column Name: %s, extension name: %s definition: %s, scope: %s",
+                                                    expectedExtension.getTableName(),
+                                                    expectedExtension.getColumnName(),
+                                                    expectedExtension.getExtensionName(),
+                                                    expectedExtension.getDefinition(),
+                                                    expectedExtension.getScope().toString()),
+                                     String.format("TableName: %s, Column Name: %s, extension name: %s definition: %s, scope: %s",
+                                                    returnedExtension.getTableName(),
+                                                    returnedExtension.getColumnName(),
+                                                    returnedExtension.getExtensionName(),
+                                                    returnedExtension.getDefinition(),
+                                                    expectedExtension.getScope().toString())),
+                       returnedExtension.equals(expectedExtension.getTableName(),
+                                                expectedExtension.getTableName(),
+                                                expectedExtension.getExtensionName(),
+                                                expectedExtension.getDefinition(),
+                                                Scope.ReadWrite));
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
 
     /**
-     * Tests if the GeoPackage Extensions will throw 
+     * Tests if gpkgExtensions returns the values expected
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void getExtension() throws FileAlreadyExistsException,
+            ClassNotFoundException, FileNotFoundException, SQLException,
+            ConformanceException
+    {
+        File testFile = this.getRandomFile(12);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            String tableName = "TableName";
+            String columnName = "columnName";
+            String extensionName = "extension_Name";
+
+            Extension expectedExtension = gpkg.extensions().addExtension(tableName, columnName, extensionName, "definition", Scope.ReadWrite);
+            Extension returnedExtension = gpkg.extensions().getExtension(tableName, columnName, extensionName);
+
+            assertTrue(String.format("Did not return the expected Extension.\nExpected: table_name: %s, column_name: %s, extension_name: %s, definition: %s, Scope: %s."
+                            + " \nActual: table_name: %s, column_name: %s, extension_name: %s, definition: %s, Scope: %s. ",
+                                      tableName,
+                                      columnName,
+                                      extensionName,
+                                      expectedExtension.getDefinition(),
+                                      expectedExtension.getScope(),
+                                      returnedExtension.getTableName(),
+                                      returnedExtension.getColumnName(),
+                                      returnedExtension.getExtensionName(),
+                                      returnedExtension.getDefinition(),
+                                      returnedExtension.getScope()),
+                            returnedExtension.equals(tableName,
+                                                     columnName,
+                                                     extensionName,
+                                                     expectedExtension.getDefinition(),
+                                                     Scope.ReadWrite));
+
+            //TODO bug in extensions equals method.  line 104 using .equals for scope and .equals is not overwritten
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests if the GeoPackage Extensions will throw
      * and IllegalArgumentException when giving a null
      * value for tableName and not to ColumnName (if table
      * name is null, then so must columnName)
@@ -167,9 +253,9 @@ public class GeoPackageExtensionsAPITest
             deleteFile(testFile);
         }
     }
-    
+
     /**
-     * Tests if the GeoPackage Extensions will throw 
+     * Tests if the GeoPackage Extensions will throw
      * and IllegalArgumentException when giving an
      * empty string for tableName
      * @throws FileAlreadyExistsException
@@ -192,9 +278,9 @@ public class GeoPackageExtensionsAPITest
             deleteFile(testFile);
         }
     }
-    
+
     /**
-     * Tests if the GeoPackage Extensions will throw 
+     * Tests if the GeoPackage Extensions will throw
      * and IllegalArgumentException when giving an
      * empty string for tableName
      * @throws FileAlreadyExistsException

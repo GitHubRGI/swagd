@@ -23,14 +23,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import utility.DatabaseUtility;
+import utility.SelectBuilder;
+
 import com.rgi.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.DatabaseUtility;
 import com.rgi.geopackage.verification.FailedRequirement;
 
 /**
@@ -105,21 +109,20 @@ public class GeoPackageExtensions
             return null;
         }
 
-        final String extensionQuerySql = String.format("SELECT %s, %s, %s, %s, %s FROM %s WHERE table_name = ? AND column_name = ? AND extension_name = ?;",
-                                                       "table_name",
-                                                       "column_name",
-                                                       "extension_name",
-                                                       "definition",
-                                                       "scope",
-                                                       GeoPackageExtensions.ExtensionsTableName);
-
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(extensionQuerySql))
+        // tableName, columnName, extensionName can all be null which is why
+        // we need to use the SelectBuilder rather a simpler prepared statement
+        try(final SelectBuilder selectStatement = new SelectBuilder(this.databaseConnection,
+                                                                    GeoPackageExtensions.ExtensionsTableName,
+                                                                    Arrays.asList("table_name",
+                                                                                  "column_name",
+                                                                                  "extension_name",
+                                                                                  "definition",
+                                                                                  "scope"),
+                                                                    Arrays.asList(new AbstractMap.SimpleImmutableEntry<>("table_name",     tableName),
+                                                                                  new AbstractMap.SimpleImmutableEntry<>("column_name",    columnName),
+                                                                                  new AbstractMap.SimpleImmutableEntry<>("extension_name", extensionName))))
         {
-            preparedStatement.setString(1, tableName);
-            preparedStatement.setString(2, columnName);
-            preparedStatement.setString(3, extensionName);
-
-            try(ResultSet result = preparedStatement.executeQuery())
+            try(ResultSet result = selectStatement.executeQuery())
             {
                 if(result.isBeforeFirst())
                 {

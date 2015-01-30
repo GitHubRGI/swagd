@@ -39,7 +39,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import com.rgi.geopackage.DatabaseUtility;
+import utility.DatabaseUtility;
+
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.ColumnDefinition;
 import com.rgi.geopackage.verification.ForeignKeyDefinition;

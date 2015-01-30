@@ -16,7 +16,7 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.geopackage;
+package utility;
 
 import java.io.File;
 import java.io.FileNotFoundException;

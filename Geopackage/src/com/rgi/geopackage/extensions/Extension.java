@@ -84,6 +84,13 @@ public class Extension
             throw new IllegalArgumentException("Extension name must be a value of the form <author>_<extension_name> where <author> indicates the person or organization that developed and maintains the extension. The valid character set for <author> SHALL be [a-zA-Z0-9]. The valid character set for <extension_name> SHALL be [a-zA-Z0-9_]");   // Requirement 82
         }
 
+        if(definition == null || definition.isEmpty())
+        {
+            throw new IllegalArgumentException("Definition may not be null or empty");
+        }
+
+        Scope.fromText(scope);  // Check that this conforms to a valid Scope valid
+
         this.tableName     = tableName;
         this.columnName    = columnName;
         this.extensionName = extensionName;
@@ -101,7 +108,7 @@ public class Extension
                Extension.equals(this.columnName,    inColumnName)    &&
                Extension.equals(this.extensionName, inExtensionName) &&
                Extension.equals(this.definition,    inDefinition)    &&
-               Extension.equals(this.scope,         inScope);
+               Extension.equals(this.scope,         inScope.toString());
     }
 
     /**

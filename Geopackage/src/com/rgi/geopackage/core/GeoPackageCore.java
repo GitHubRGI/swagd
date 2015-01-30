@@ -29,8 +29,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import utility.DatabaseUtility;
+
 import com.rgi.common.BoundingBox;
-import com.rgi.geopackage.DatabaseUtility;
 import com.rgi.geopackage.verification.FailedRequirement;
 
 /**

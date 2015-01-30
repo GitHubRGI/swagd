@@ -56,7 +56,7 @@ public enum Scope
             case "read-write": return ReadWrite;
             case "write-only": return WriteOnly;
 
-            default: throw new IllegalArgumentException("Text must either be \"read-write\" or \"write-only\".");
+            default: throw new IllegalArgumentException("Scope must either be \"read-write\" or \"write-only\".");
         }
     }
 
