@@ -310,11 +310,13 @@ public class TilesVerifier extends Verifier
                                                                            + "tile_width, "
                                                                            + "matrix_width, and "
                                                                            + "matrix_height, "
-                                                                + "the following pixel values are invalid.",
+                                                                + "the following pixel values are invalid.\n%s",
+                                                                tableName,
                                                                 invalidPixelValues.stream()
-                                                                                  .map(tileData -> String.format("Invalid pixel_x_size: %f, Invalid pixel_y_size: %f",
+                                                                                  .map(tileData -> String.format("Invalid pixel_x_size: %f, Invalid pixel_y_size: %f at zoom_level %d",
                                                                                                                  tileData.pixelXSize,
-                                                                                                                 tileData.pixelYSize))
+                                                                                                                 tileData.pixelYSize,
+                                                                                                                 tileData.zoomLevel))
                                                                                   .collect(Collectors.joining("\n"))),
                                                   invalidPixelValues.isEmpty());
                             }
