@@ -36,7 +36,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.rgi.geopackage.DatabaseUtility;
+import utility.DatabaseUtility;
 
 /**
  * @author Jenifer Cochran

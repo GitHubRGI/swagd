@@ -46,9 +46,10 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
+import utility.DatabaseUtility;
+
 import com.rgi.common.BoundingBox;
 import com.rgi.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.DatabaseUtility;
 import com.rgi.geopackage.verification.Assert;
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.ColumnDefinition;

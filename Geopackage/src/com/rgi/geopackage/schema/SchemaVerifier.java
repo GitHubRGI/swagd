@@ -32,8 +32,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import utility.DatabaseUtility;
+
 import com.rgi.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.DatabaseUtility;
 import com.rgi.geopackage.verification.Assert;
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.ColumnDefinition;

@@ -30,8 +30,9 @@ import java.util.stream.Collectors;
 
 import javax.activation.MimeType;
 
+import utility.DatabaseUtility;
+
 import com.rgi.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.DatabaseUtility;
 import com.rgi.geopackage.core.Content;
 import com.rgi.geopackage.verification.FailedRequirement;
 
