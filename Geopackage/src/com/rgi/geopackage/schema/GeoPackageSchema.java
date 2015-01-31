@@ -23,6 +23,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -31,6 +33,7 @@ import java.util.stream.Collectors;
 import javax.activation.MimeType;
 
 import utility.DatabaseUtility;
+import utility.SelectBuilder;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.core.Content;
@@ -304,6 +307,11 @@ public class GeoPackageSchema
             throw new IllegalArgumentException("Content table may not be null");
         }
 
+        if(columnName == null || columnName.isEmpty())
+        {
+            throw new IllegalArgumentException("Column name may not be null or empty");
+        }
+
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageSchema.DataColumnsTableName))
         {
             return null;
@@ -359,46 +367,47 @@ public class GeoPackageSchema
                                                         final Type    constraintType,
                                                         final String  value) throws SQLException
     {
+        if(constraintName == null || constraintName.isEmpty())
+        {
+            throw new IllegalArgumentException("Constraint name may not be null or empty");
+        }
+
+        if(constraintType == null)
+        {
+            throw new IllegalArgumentException("Constraint type may not be null");
+        }
+
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageSchema.DataColumnConstraintsTableName))
         {
             return null;
         }
 
-        final String dataColumnConstraintQuerySql = String.format("SELECT %s, %s, %s, %s, %s FROM %s WHERE %s = ? AND %s = ? AND %s = ? LIMIT 1;",
-                                                                  "min",
-                                                                  "minIsInclusive",
-                                                                  "max",
-                                                                  "maxIsInclusive",
-                                                                  "description",
-                                                                  GeoPackageSchema.DataColumnConstraintsTableName,
-                                                                  "constraint_name",
-                                                                  "constraint_type",
-                                                                  "value");
-
-
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(dataColumnConstraintQuerySql))
+        try(final SelectBuilder selectStatement = new SelectBuilder(this.databaseConnection,
+                                                                    GeoPackageSchema.DataColumnConstraintsTableName,
+                                                                    Arrays.asList("min",
+                                                                                  "minIsInclusive",
+                                                                                  "max",
+                                                                                  "maxIsInclusive",
+                                                                                  "description"),
+                                                                    Arrays.asList(new AbstractMap.SimpleImmutableEntry<>("constraint_name", constraintName),
+                                                                                  new AbstractMap.SimpleImmutableEntry<>("constraint_type", constraintType),
+                                                                                  new AbstractMap.SimpleImmutableEntry<>("value",           value)));
+            final ResultSet result = selectStatement.executeQuery())
         {
-            preparedStatement.setString(1, constraintName);
-            preparedStatement.setString(2, constraintType.toString());
-            preparedStatement.setString(3, value);
-
-            try(ResultSet result = preparedStatement.executeQuery())
+            if(result.isBeforeFirst())
             {
-                if(result.isBeforeFirst())
-                {
-                    return new DataColumnConstraint(constraintName,
-                                                    constraintType.toString(),
-                                                    value,
-                                                    (Number) result.getObject(1),  // minimum
-                                                    (Boolean)result.getObject(2),  // minimum is inclusive
-                                                    (Number) result.getObject(3),  // maximum
-                                                    (Boolean)result.getObject(4),  // maximum is inclusive
-                                                             result.getString(5)); // description
-                }
+                return new DataColumnConstraint(constraintName,
+                                                constraintType.toString(),
+                                                value,
+                                                (Number) result.getObject(1),  // minimum
+                                                (Boolean)result.getObject(2),  // minimum is inclusive
+                                                (Number) result.getObject(3),  // maximum
+                                                (Boolean)result.getObject(4),  // maximum is inclusive
+                                                         result.getString(5)); // description
             }
-
-            return null;
         }
+
+        return null;
     }
 
     /**

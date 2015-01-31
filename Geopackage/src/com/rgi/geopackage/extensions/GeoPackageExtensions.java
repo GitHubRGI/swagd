@@ -120,18 +120,16 @@ public class GeoPackageExtensions
                                                                                   "scope"),
                                                                     Arrays.asList(new AbstractMap.SimpleImmutableEntry<>("table_name",     tableName),
                                                                                   new AbstractMap.SimpleImmutableEntry<>("column_name",    columnName),
-                                                                                  new AbstractMap.SimpleImmutableEntry<>("extension_name", extensionName))))
+                                                                                  new AbstractMap.SimpleImmutableEntry<>("extension_name", extensionName)));
+            final ResultSet result = selectStatement.executeQuery())
         {
-            try(ResultSet result = selectStatement.executeQuery())
+            if(result.isBeforeFirst())
             {
-                if(result.isBeforeFirst())
-                {
-                    return new Extension(result.getString(1),
-                                         result.getString(2),
-                                         result.getString(3),
-                                         result.getString(4),
-                                         result.getString(5));
-                }
+                return new Extension(result.getString(1),
+                                     result.getString(2),
+                                     result.getString(3),
+                                     result.getString(4),
+                                     result.getString(5));
             }
         }
 

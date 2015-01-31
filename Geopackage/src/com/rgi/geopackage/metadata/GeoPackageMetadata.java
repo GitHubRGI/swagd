@@ -25,6 +25,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 import javax.activation.MimeType;
 
 import utility.DatabaseUtility;
+import utility.SelectBuilder;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.verification.FailedRequirement;
@@ -54,7 +57,7 @@ public class GeoPackageMetadata
      * Metadata requirements this GeoPackage failed to meet
      *
      * @return The metadata GeoPackage requirements this GeoPackage fails to conform to
-     * @throws SQLException 
+     * @throws SQLException
      */
     public Collection<FailedRequirement> getFailedRequirements() throws SQLException
     {
@@ -325,7 +328,7 @@ public class GeoPackageMetadata
             return null;
         }
 
-        final String metadataQuerySql = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1;",
+        final String metadataQuerySql = String.format("SELECT %s, %s, %s, %s FROM %s WHERE %s = ? LIMIT 1;",
                                                       "md_scope",
                                                       "md_standard_uri",
                                                       "mime_type",
@@ -344,7 +347,7 @@ public class GeoPackageMetadata
                 {
                     return new Metadata(identifier,
                                         result.getString(1),  // scope
-                                        result.getString(2),  // uri
+                                        result.getString(2),  // URI
                                         result.getString(3),  // mime type
                                         result.getString(4)); // metadata
                 }
@@ -377,8 +380,8 @@ public class GeoPackageMetadata
                                                                "md_parent_id",
                                                                GeoPackageMetadata.MetadataReferenceTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(metadataReferenceQuerySql);
-            ResultSet         results           = preparedStatement.executeQuery())
+        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(metadataReferenceQuerySql);
+            final ResultSet         results           = preparedStatement.executeQuery())
         {
             return ResultSetStream.getStream(results)
                                   .map(resultSet -> { try
@@ -562,40 +565,30 @@ public class GeoPackageMetadata
             return null;
         }
 
-        final String metadataReferenceQuerySql = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ? AND %s = ? AND %s = ? AND %s = ? AND %s = ? LIMIT 1;",
-                                                               "timestamp",
-                                                               GeoPackageMetadata.MetadataReferenceTableName,
-                                                               "reference_scope",
-                                                               "table_name",
-                                                               "column_name",
-                                                               "row_id_value",
-                                                               "md_file_id",
-                                                               "md_parent_id");
+        try(final SelectBuilder selectStatement = new SelectBuilder(this.databaseConnection,
+                                                                    GeoPackageMetadata.MetadataReferenceTableName,
+                                                                    Arrays.asList("timestamp"),
+                                                                    Arrays.asList(new AbstractMap.SimpleImmutableEntry<>("reference_scope", referenceScope),
+                                                                                  new AbstractMap.SimpleImmutableEntry<>("table_name",      tableName),
+                                                                                  new AbstractMap.SimpleImmutableEntry<>("column_name",     columnName),
+                                                                                  new AbstractMap.SimpleImmutableEntry<>("row_id_value",    rowIdentifier),
+                                                                                  new AbstractMap.SimpleImmutableEntry<>("md_file_id",      fileIdentifier),
+                                                                                  new AbstractMap.SimpleImmutableEntry<>("md_parent_id",    parentIdentifier)));
+             final ResultSet result = selectStatement.executeQuery())
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(metadataReferenceQuerySql))
         {
-            preparedStatement.setString(1, referenceScope);
-            preparedStatement.setString(2, tableName);
-            preparedStatement.setString(3, columnName);
-            preparedStatement.setObject(4, rowIdentifier);
-            preparedStatement.setInt   (5, fileIdentifier);
-            preparedStatement.setObject(6, parentIdentifier);
-
-            try(ResultSet result = preparedStatement.executeQuery())
+            if(result.isBeforeFirst())
             {
-                if(result.isBeforeFirst())
-                {
-                    return new MetadataReference(referenceScope,
-                                                 tableName,
-                                                 columnName,
-                                                 rowIdentifier,
-                                                 result.getString(1),   // timestamp
-                                                 fileIdentifier,
-                                                 parentIdentifier);
-                }
-
-                return null;
+                return new MetadataReference(referenceScope,
+                                             tableName,
+                                             columnName,
+                                             rowIdentifier,
+                                             result.getString(1),   // timestamp
+                                             fileIdentifier,
+                                             parentIdentifier);
             }
+
+            return null;
         }
     }
 

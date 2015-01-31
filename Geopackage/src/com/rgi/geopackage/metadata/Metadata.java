@@ -105,7 +105,7 @@ public class Metadata
         return this.metadata;
     }
 
-    private final int   identifier;
+    private final int    identifier;
     private final String scope;
     private final String standardUri;
     private final String mimeType;

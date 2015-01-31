@@ -33,7 +33,7 @@ public class MetadataReference
      * Constructor
      *
      * @param referenceScope
-     *             Lowercase metadata reference scope; one of ‘geopackage’, ‘table’,‘column’, ’row’, ’row/col’
+     *             Lowercase metadata reference scope; one of 'geopackage', 'table', 'column', 'row', 'row/col'
      * @param tableName
      *             Name of the table to which this metadata reference applies, or NULL for referenceScope of 'geopackage'
      * @param columnName
@@ -119,7 +119,7 @@ public class MetadataReference
     {
         return this.parentIdentifier;
     }
-    private final String   referenceScope;
+    private final String  referenceScope;
     private final String  tableName;
     private final String  columnName;
     private final Integer rowIdentifier;
