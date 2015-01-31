@@ -19,6 +19,9 @@
 package com.rgi.common.tile.scheme;
 
 /**
+ * Encapsulation of the dimensions of a tile matrix.  A tile matrix is a
+ * rectangular set of tiles for a particular zoom level of a tile set.
+ *
  * @author Luke Lambert
  *
  */

@@ -108,11 +108,10 @@ public class SphericalMercatorCrsProfile implements CrsProfile
     }
 
     @Override
-    public Dimensions getTileDimensions(final int zoomLevel)
+    public Dimensions getTileDimensions(final TileMatrixDimensions dimensions)
     {
-        final double dimension = EarthEquatorialCircumfrence / Math.pow(2.0, zoomLevel); // TODO this is an incorrect zoom*2 assumption
-
-        return new Dimensions(dimension, dimension);
+        return new Dimensions(EarthEquatorialCircumfrence / dimensions.getHeight(),
+                              EarthEquatorialCircumfrence / dimensions.getWidth());
     }
 
     @Override

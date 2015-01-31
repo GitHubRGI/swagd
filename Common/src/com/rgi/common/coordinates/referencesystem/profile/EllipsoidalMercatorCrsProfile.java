@@ -131,7 +131,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     }
 
     @Override
-    public Dimensions getTileDimensions(final int zoomLevel)
+    public Dimensions getTileDimensions(final TileMatrixDimensions dimensions)
     {
         throw new RuntimeException("Method not implemented");
     }

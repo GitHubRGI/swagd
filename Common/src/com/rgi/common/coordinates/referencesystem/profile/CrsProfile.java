@@ -41,8 +41,10 @@ public interface CrsProfile
     /**
      * Determines what tile the coordinate lies in
      *
-     * @param coordinate Coordinate in the same unit as this tile profile
+     * @param coordinate
+     *             Coordinate in the same unit as this tile profile
      * @param dimensions
+     *             Height and width of the tile matrix
      * @return Returns the tile that the coordinate corresponds to
      */
     public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate        coordinate,
@@ -53,9 +55,13 @@ public interface CrsProfile
      * Determines the profile unit coordinate for the specified tile
      *
      * @param row
+     *             Vertical portion of the tile's coordinate
      * @param column
+     *             Horizontal portion of the tile's coordinate
      * @param dimensions
+     *             Height and width of the tile matrix
      * @param tileOrigin
+     *             Specifies where tile (0, 0) is in the tile matrix
      * @return Returns the coordinate that the tile corresponds to
      */
     public CrsCoordinate tileToCrsCoordinate(final int                  row,
@@ -64,20 +70,21 @@ public interface CrsProfile
                                              final TileOrigin           tileOrigin);
 
     /**
-     * TODO
+     * Calculates the dimensions of a tile in CRS units
      *
-     * @param zoomLevel
-     * @return
+     * @param dimensions
+     *             Height and width of the tile matrix
+     * @return Returns the dimensions of a single tile in CRS units
      */
-    public Dimensions getTileDimensions(final int zoomLevel);   // TODO change this to: final TileMatrixDimensions tileMatrixDimensions
+    public Dimensions getTileDimensions(final TileMatrixDimensions dimensions);
 
     /**
-     * @return TODO
+     * @return Returns the coordinate reference system implemented by this CrsProfile
      */
     public CoordinateReferenceSystem getCoordinateReferenceSystem();
 
     /**
-     * TODO
+     * Transform a coordinate from the CRS of the CrsProfile implementation to Global Geodetic (EPSG 4326)
      *
      * This is *temporary* because we don't have a good coordinate transformation mechanism
      *

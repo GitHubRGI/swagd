@@ -95,10 +95,10 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
     }
 
     @Override
-    public Dimensions getTileDimensions(final int zoomLevel)
+    public Dimensions getTileDimensions(final TileMatrixDimensions dimensions)
     {
-        final double height = GlobalGeodeticCrsProfile.Bounds.getHeight() / Math.pow(2.0, zoomLevel);
-        final double width  = GlobalGeodeticCrsProfile.Bounds.getWidth()  / Math.pow(2.0, zoomLevel);
+        final double height = GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions.getHeight();
+        final double width  = GlobalGeodeticCrsProfile.Bounds.getWidth()  / dimensions.getWidth();
 
         return new Dimensions(height, width);
     }
