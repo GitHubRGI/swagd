@@ -316,6 +316,23 @@ public class GeoPackageTiles
             return tileMatrix;
         }
 
+        final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
+
+        if(tileMatrixSet == null)
+        {
+            throw new IllegalArgumentException("Cannot add a tile matrix to a tile set with no tile matrix set.");  // TODO do we need to expose addTileMatrixSet() to help avoid ever getting here? a tile matrix set is created automatically by this API on tile set creation, and the verifier insures that there's one for every tile set.
+        }
+
+        if(matrixHeight * tileHeight * pixelYSize != tileMatrixSet.getBoundingBox().getHeight())    // TODO instead of testing for equality, test with an EPSILON tolerance ?
+        {
+            throw new IllegalArgumentException("The geographic height of the tile matrix [matrix height * tile height (pixels) * pixel y size (srs units per pixel)] differs from the minimum bounds for this tile set specified by the tile matrix set");
+        }
+
+        if(matrixWidth * tileWidth * pixelXSize != tileMatrixSet.getBoundingBox().getWidth())    // TODO instead of testing for equality, test with an EPSILON tolerance ?
+        {
+            throw new IllegalArgumentException("The geographic width of the tile matrix [matrix width * tile width (pixels) * pixel x size (srs units per pixel)] differs from the minimum bounds for this tile set specified by the tile matrix set");
+        }
+
         try
         {
             final String insertTileMatrix = String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
