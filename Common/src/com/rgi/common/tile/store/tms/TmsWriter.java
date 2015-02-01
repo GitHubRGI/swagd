@@ -32,9 +32,9 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
-import com.rgi.common.coordinates.Coordinate;
-import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.Coordinate;
+import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.MimeTypeUtility;

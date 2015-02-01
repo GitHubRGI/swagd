@@ -20,7 +20,7 @@ package com.rgi.common.tile.store.tms;
 
 import java.nio.file.Path;
 
-import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;

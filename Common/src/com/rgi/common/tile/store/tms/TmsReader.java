@@ -37,10 +37,10 @@ import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.CoordinateReferenceSystem;
-import com.rgi.common.coordinates.Coordinate;
-import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.Coordinate;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 

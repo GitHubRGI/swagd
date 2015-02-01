@@ -32,9 +32,9 @@ import java.util.Set;
 import utility.DatabaseUtility;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.CoordinateReferenceSystem;
-import com.rgi.common.coordinates.Coordinate;
-import com.rgi.common.coordinates.CrsCoordinate;
+import com.rgi.common.coordinate.Coordinate;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;

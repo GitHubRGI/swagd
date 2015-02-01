@@ -18,7 +18,7 @@
 
 package com.rgi.common;
 
-import com.rgi.common.coordinates.Coordinate;
+import com.rgi.common.coordinate.Coordinate;
 
 /**
  *

@@ -48,10 +48,10 @@ import org.gdal.osr.osr;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
-import com.rgi.common.coordinates.Coordinate;
-import com.rgi.common.coordinates.CrsCoordinate;
-import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
-import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.coordinate.Coordinate;
+import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.task.Settings;
 import com.rgi.common.task.Settings.Profile;
 import com.rgi.common.task.Settings.Setting;

@@ -36,9 +36,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.rgi.common.coordinates.Coordinate;
-import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
-import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.coordinate.Coordinate;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.common.tile.store.tms.TmsWriter;
 

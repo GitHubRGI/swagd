@@ -24,8 +24,8 @@ import java.sql.SQLException;
 import java.util.Set;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.CoordinateReferenceSystem;
-import com.rgi.common.coordinates.CrsCoordinate;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.util.ImageUtility;

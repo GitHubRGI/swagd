@@ -32,7 +32,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
 import com.rgi.common.Dimensions;
-import com.rgi.common.coordinates.CrsCoordinate;
+import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;

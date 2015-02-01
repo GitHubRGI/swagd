@@ -23,7 +23,7 @@ import java.util.Set;
 
 import javax.activation.MimeType;
 
-import com.rgi.common.coordinates.CrsCoordinate;
+import com.rgi.common.coordinate.CrsCoordinate;
 
 /**
  * @author Luke Lambert

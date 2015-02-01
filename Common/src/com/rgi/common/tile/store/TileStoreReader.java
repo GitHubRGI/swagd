@@ -22,8 +22,8 @@ import java.awt.image.BufferedImage;
 import java.util.Set;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.CoordinateReferenceSystem;
-import com.rgi.common.coordinates.CrsCoordinate;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.common.coordinate.CrsCoordinate;
 
 /**
  * @author Luke Lambert

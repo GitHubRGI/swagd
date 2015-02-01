@@ -18,7 +18,7 @@
 
 package com.rgi.geopackage.tiles;
 
-import com.rgi.common.coordinates.Coordinate;
+import com.rgi.common.coordinate.Coordinate;
 
 /**
  * Tile coordinate specific to a tile set in a GeoPackage.  Unlike absolute

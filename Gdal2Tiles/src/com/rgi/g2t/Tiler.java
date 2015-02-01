@@ -32,8 +32,8 @@ import java.util.concurrent.TimeUnit;
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 
-import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
-import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.task.AbstractTask;
 import com.rgi.common.task.MonitorableTask;
 import com.rgi.common.task.Settings;

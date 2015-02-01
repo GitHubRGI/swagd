@@ -1,6 +1,6 @@
 package com.rgi.common;
 
-import com.rgi.common.coordinates.Coordinate;
+import com.rgi.common.coordinate.Coordinate;
 
 /**
  * An immutable object representing the minimum and maximum x and y bounds of
