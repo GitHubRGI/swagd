@@ -42,16 +42,6 @@ import com.rgi.common.tile.store.TileStoreReader;
  */
 public class TileStoreLoader implements TileLoader
 {
-    private final TileLoaderListener listener;
-    //private TileSource                 tileSource;
-    private final TileStoreReader    tileStore;
-    private final CrsProfile        crsProfile;
-
-    private final int minimumZoomLevel;
-    private final int maximumZoomLevel;
-
-    private static final BufferedImage TransparentTile = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
-
     public TileStoreLoader(final TileStoreReader tileStore, final TileLoaderListener listener) throws TileStoreException
     {
         this.tileStore   = tileStore;
@@ -147,4 +137,13 @@ public class TileStoreLoader implements TileLoader
     public final static TileOrigin origin     = TileOrigin.UpperLeft;                                   // Tile origin for JMapViewer
     public final static TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1, TileStoreLoader.origin);  // Tile scheme for JMapViewer: http://wiki.openstreetmap.org/wiki/Slippy_Map
 
+    private final TileLoaderListener listener;
+    //private TileSource                 tileSource;
+    private final TileStoreReader    tileStore;
+    private final CrsProfile        crsProfile;
+
+    private final int minimumZoomLevel;
+    private final int maximumZoomLevel;
+
+    private static final BufferedImage TransparentTile = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
 }
