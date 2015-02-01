@@ -386,7 +386,7 @@ public class TileJob implements Runnable {
 
         // TileMatrixSet maxTileSet = new TileMatrixSet(maxMatrix);
         // Tile upperLeftTile = tileStoreWriter.addTile(upperLeftTileCoordinate);
-        Dimensions tileBounds = crsProfile.getTileDimensions(maxZoom);
+        Dimensions tileBounds = crsProfile.getTileDimensions(this.tileScheme.dimensions(maxZoom));
 
         // pixels = (meters - meters) / meters per pixel
         int offsetX = (int) ((outputGT[0] - tileBounds.getWidth()) / rx);
@@ -444,7 +444,7 @@ public class TileJob implements Runnable {
             scaledHeight = (int) ((outputDS.getRasterYSize() * (-outputGT[5])) / ry);
 
             // upperLeftTile = maxTileSet.addTile(upperLeftTileCoordinate);
-            tileBounds = crsProfile.getTileDimensions(maxZoom);
+            tileBounds = crsProfile.getTileDimensions(this.tileScheme.dimensions(maxZoom));
             offsetX = (int) ((outputGT[0] - tileBounds.getWidth()) / rx);
             offsetY = (int) ((tileBounds.getHeight() - outputGT[3]) / ry);
 

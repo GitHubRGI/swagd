@@ -206,7 +206,7 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
     {
         final TileMatrixDimensions tileMatrixDimensions = this.tileScheme.dimensions(zoomLevel);
 
-        final Dimensions dimensions = this.crsProfile.getTileDimensions(zoomLevel);
+        final Dimensions dimensions = this.crsProfile.getTileDimensions(this.tileScheme.dimensions(zoomLevel));
 
         return this.geoPackage.tiles()
                               .addTileMatrix(this.tileSet,
