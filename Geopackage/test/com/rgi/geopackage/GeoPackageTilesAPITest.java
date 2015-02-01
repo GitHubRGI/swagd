@@ -174,40 +174,6 @@ public class GeoPackageTilesAPITest
         }
     }
 
-    /**
-     * Tests if the GeoPackage will throw an IllegalArgumentException when
-     * given a tilesetentry with a null value for the boundingbox
-     * @throws Exception
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void addTileSetWithNullBoundingBoxParameters() throws Exception
-    {
-        final File testFile = this.getRandomFile(3);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
-        {
-            gpkg.tiles()
-                .addTileSet("tableName",
-                            "ident",
-                            "desc",
-                            new BoundingBox(0.0, 0.0, null, null),
-                            gpkg.core().getSpatialReferenceSystem(4326));
-
-
-            Assert.fail("The GeoPackage should have thrown an IllegalArgumentException when trying to add null values to the bounding box for the "
-                    + " Tile Matrix Set table.");
-        }
-        finally
-        {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
-        }
-    }
-
    /**
      * Tests if the Geopackage will throw an IllegalArgumentException
      * If it gives tries to create a TileSet with a null SRS value

@@ -3,7 +3,8 @@ package com.rgi.common;
 import com.rgi.common.coordinates.Coordinate;
 
 /**
- * An immutable object representing the min and max x and y bounds of an area.
+ * An immutable object representing the minimum and maximum x and y bounds of
+ * an area.
  *
  * @author Luke Lambert
  */
@@ -21,17 +22,17 @@ public class BoundingBox
      * @param maxX
      *            Maximum X
      */
-    public BoundingBox(final Double minY,
-                       final Double minX,
-                       final Double maxY,
-                       final Double maxX)
+    public BoundingBox(final double minY,
+                       final double minX,
+                       final double maxY,
+                       final double maxX)
     {
-        if(minY != null && maxY != null && minY.doubleValue() > maxY.doubleValue())
+        if(minY > maxY)
         {
             throw new IllegalArgumentException("Min y cannot be greater than max y");
         }
 
-        if(minX != null && maxX != null && minX.doubleValue() > maxX.doubleValue())
+        if(minX > maxX)
         {
             throw new IllegalArgumentException("Min x cannot be greater than max x");
         }
@@ -62,33 +63,19 @@ public class BoundingBox
 
         final BoundingBox other = (BoundingBox)object;
 
-        return BoundingBox.equals(this.minY, other.minY) &&
-               BoundingBox.equals(this.minX, other.minX) &&
-               BoundingBox.equals(this.maxY, other.maxY) &&
-               BoundingBox.equals(this.maxX, other.maxX);
-    }
-
-    public boolean containsNull()
-    {
-        return this.getMinY() == null ||
-               this.getMinX() == null ||
-               this.getMaxY() == null ||
-               this.getMaxX() == null;
-    }
-
-    private static boolean equals(final Double first, final Double second)
-    {
-        return first == null ? second == null
-                             : first.equals(second);
+        return this.minY == other.minY &&
+               this.minX == other.minX &&
+               this.maxY == other.maxY &&
+               this.maxX == other.maxX;
     }
 
     @Override
     public int hashCode()
     {
-        return (this.minY == null ? 0 : this.minY.hashCode()) ^
-               (this.minX == null ? 0 : this.minX.hashCode()) ^
-               (this.maxY == null ? 0 : this.maxY.hashCode()) ^
-               (this.maxX == null ? 0 : this.maxX.hashCode());
+        return Double.valueOf(this.minY).hashCode() ^
+               Double.valueOf(this.minX).hashCode() ^
+               Double.valueOf(this.maxY).hashCode() ^
+               Double.valueOf(this.maxX).hashCode();
     }
 
     public double getHeight()
@@ -110,7 +97,7 @@ public class BoundingBox
     /**
      * @return the minY
      */
-    public Double getMinY()
+    public double getMinY()
     {
         return this.minY;
     }
@@ -118,7 +105,7 @@ public class BoundingBox
     /**
      * @return the minX
      */
-    public Double getMinX()
+    public double getMinX()
     {
         return this.minX;
     }
@@ -126,7 +113,7 @@ public class BoundingBox
     /**
      * @return the maxY
      */
-    public Double getMaxY()
+    public double getMaxY()
     {
         return this.maxY;
     }
@@ -134,7 +121,7 @@ public class BoundingBox
     /**
      * @return the maxX
      */
-    public Double getMaxX()
+    public double getMaxX()
     {
         return this.maxX;
     }
@@ -153,6 +140,26 @@ public class BoundingBox
     public Coordinate<Double> getMax()
     {
         return new Coordinate<>(this.maxY, this.maxX);
+    }
+
+    public Coordinate<Double> getTopLeft()
+    {
+        return new Coordinate<>(this.maxY, this.minX);
+    }
+
+    public Coordinate<Double> getTopRight()
+    {
+        return this.getMax();
+    }
+
+    public Coordinate<Double> getBottomLeft()
+    {
+        return this.getMin();
+    }
+
+    public Coordinate<Double> getBottomRight()
+    {
+        return new Coordinate<>(this.minY, this.maxX);
     }
 
     /**
@@ -178,8 +185,8 @@ public class BoundingBox
                point.getX() <= this.maxX;
     }
 
-    final private Double minY;
-    final private Double minX;
-    final private Double maxY;
-    final private Double maxX;
+    final private double minY;
+    final private double minX;
+    final private double maxY;
+    final private double maxX;
 }

@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.Content;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
@@ -322,8 +321,8 @@ public class GeoPackageCoreAPITest
             final SpatialReferenceSystem  srs         = gpkg.core().getSpatialReferenceSystem(4326);
 
              //try to add the same content twice
-            gpkg.core().addContent(tableName, "dataType",  "identifier",  "description", new BoundingBox(null,null,null,null), srs);
-            gpkg.core().addContent(tableName, "dataType2", "identifier2", "description", new BoundingBox(null,null,null,null), srs);
+            gpkg.core().addContent(tableName, "dataType",  "identifier",  "description", new BoundingBox(0.0, 0.0, 0.0, 0.0), srs);
+            gpkg.core().addContent(tableName, "dataType2", "identifier2", "description", new BoundingBox(0.0, 0.0, 0.0, 0.0), srs);
 
             fail("Expected GeoPackage Core to throw an IllegalArgumentException when trying to add content with the same tablename but differing other fields");
 
@@ -1297,7 +1296,7 @@ public class GeoPackageCoreAPITest
                 }
             }
         }
-                
+
     }
 
     /**
@@ -1515,7 +1514,7 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
+
 
     /**
      * This Tests the Contents equal method and
@@ -1538,7 +1537,7 @@ public class GeoPackageCoreAPITest
             final String dataType  = "tiles";
             final String identifier = "identifier";
             final String description = "description";
-            final BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+            final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 0.0, 0.0);
             final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
 
             final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
@@ -1585,7 +1584,7 @@ public class GeoPackageCoreAPITest
             final String dataType  = "tiles";
             final String identifier = "identifier";
             final String description = "description";
-            final BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+            final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 0.0, 0.0);
             final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
 
             final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
@@ -1632,7 +1631,7 @@ public class GeoPackageCoreAPITest
             final String dataType  = "tiles";
             final String identifier = "identifier";
             final String description = "description";
-            final BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+            final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 0.0, 0.0);
             final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
 
             final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
@@ -1678,7 +1677,7 @@ public class GeoPackageCoreAPITest
             final String dataType  = "tiles";
             final String identifier = "identifier";
             final String description = "description";
-            final BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+            final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 0.0, 0.0);
             final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
 
             final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
@@ -1726,7 +1725,7 @@ public class GeoPackageCoreAPITest
             final String dataType  = "tiles";
             final String identifier = null;
             final String description = null;
-            final BoundingBox boundingBox = new BoundingBox(null, null, null, null);
+            final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 0.0, 0.0);
             final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
 
             final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);

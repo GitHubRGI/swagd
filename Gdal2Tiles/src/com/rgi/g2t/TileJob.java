@@ -568,10 +568,8 @@ public class TileJob implements Runnable {
         double inDY = worldBounds.getHeight();
         double outDX = tileSet.getWidth();
         double outDY = tileSet.getHeight();
-        int outputX = (int) (((input.getX().doubleValue() - worldBounds
-                .getMinX().doubleValue()) / inDX) * outDX) + tileSet.getWest();
-        int outputY = (int) (((input.getY().doubleValue() - worldBounds
-                .getMinY().doubleValue()) / inDY) * outDY) + tileSet.getSouth();
+        int outputX = (int)(((input.getX().doubleValue() - worldBounds.getMinX()) / inDX) * outDX) + tileSet.getWest();
+        int outputY = (int)(((input.getY().doubleValue() - worldBounds.getMinY()) / inDY) * outDY) + tileSet.getSouth();
 
         return new Coordinate<>(outputX, outputY);
     }

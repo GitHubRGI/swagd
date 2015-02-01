@@ -38,9 +38,9 @@ import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 
 import store.GeoPackageReader;
 
-import com.rgi.common.coordinates.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.coordinates.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.tms.TmsReader;

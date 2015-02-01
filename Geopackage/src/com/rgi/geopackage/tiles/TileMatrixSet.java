@@ -47,11 +47,6 @@ public class TileMatrixSet
             throw new IllegalArgumentException("Bounding box cannot be null");
         }
 
-        if(boundingBox.containsNull())
-        {
-            throw new IllegalArgumentException("No component of the bounding box may be null");
-        }
-
         this.tableName              = tableName;
         this.spatialReferenceSystem = spatialReferenceSystem;
         this.boundingBox            = boundingBox;

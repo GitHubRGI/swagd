@@ -704,11 +704,6 @@ public class GeoPackageTiles
             throw new IllegalArgumentException("Bounding box cannot be null");
         }
 
-        if(boundingBox.containsNull())
-        {
-            throw new IllegalArgumentException("No component of the bounding box may be null");
-        }
-
         final String insertTileMatrixSetSql = String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?)",
                                                             GeoPackageTiles.MatrixSetTableName,
                                                             "table_name",
@@ -722,10 +717,10 @@ public class GeoPackageTiles
         {
             preparedStatement.setString(1, tableName);
             preparedStatement.setInt   (2, spatialReferenceSystem.getIdentifier());
-            preparedStatement.setDouble(3, boundingBox.getMinX().doubleValue());
-            preparedStatement.setDouble(4, boundingBox.getMinY().doubleValue());
-            preparedStatement.setDouble(5, boundingBox.getMaxX().doubleValue());
-            preparedStatement.setDouble(6, boundingBox.getMaxY().doubleValue());
+            preparedStatement.setDouble(3, boundingBox.getMinX());
+            preparedStatement.setDouble(4, boundingBox.getMinY());
+            preparedStatement.setDouble(5, boundingBox.getMaxX());
+            preparedStatement.setDouble(6, boundingBox.getMaxY());
 
             preparedStatement.executeUpdate();
         }
@@ -881,7 +876,7 @@ public class GeoPackageTiles
             return null;    // The requested SRS coordinate is outside the bounds of our data
         }
 
-        final Coordinate<Double> topLeft = new Coordinate<>(tileSetBounds.getMaxY(), tileSetBounds.getMinX());
+        final Coordinate<Double> topLeft = tileSetBounds.getTopLeft();
 
         final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
         final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();
