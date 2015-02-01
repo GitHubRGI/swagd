@@ -20,20 +20,27 @@ package com.rgi.common.tile.store;
 
 import static org.junit.Assert.assertTrue;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Random;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.imageio.ImageIO;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.rgi.common.coordinates.Coordinate;
+import com.rgi.common.coordinates.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinates.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.store.tms.TmsReader;
+import com.rgi.common.tile.store.tms.TmsWriter;
 
 /**
  * @author Steven D. Lander
@@ -47,8 +54,6 @@ public class TMSTileStoreTest {
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
-//    private TmsReader tmsReader;
-//    private TmsWriter tmsWriter;
     private Path tmsDir;
 
     private String getRanString(final int length) {
@@ -244,86 +249,86 @@ public class TMSTileStoreTest {
         assertTrue(tmsReader.getBounds().getMinY() == -90.0);
     }
 
-//    @Test
-//    public void verifyTileRetrieval() throws TileStoreException, MimeTypeParseException
-//    {
-//        this.tmsDir = this.createTMSFolderMercator(4);
-//
-//        final int zoomLevel = 1;
-//        final Coordinate<Integer> coordinate = new Coordinate<>(0, 0);
-//        final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", 3857);
-//
-//        TmsWriter tmsWriter = new TmsWriter(crsProfile, this.tmsDir, new MimeType("image", "jpeg"));
-//        TmsReader tmsReader = new TmsReader(crsProfile, this.tmsDir);
-//
-//        final BufferedImage image = createImage();
-//
-//        tmsWriter.addTile(coordinate.getY(),
-//                          coordinate.getX(),
-//                          zoomLevel,
-//                          image);
-//
-//        final BufferedImage tileImage = tmsReader.getTile(coordinate.getY(),
-//                                                          coordinate.getX(),
-//                                                          zoomLevel);
-//
-//        assertTrue(bufferedImagesEqual(image, tileImage));
-//    }
+    @Test
+    public void verifyTileRetrieval() throws TileStoreException, MimeTypeParseException
+    {
+        this.tmsDir = this.createTMSFolderMercator(4);
 
-//    @Test
-//    public void verifyTileInsertion() throws TileStoreException, MimeTypeParseException
-//    {
-//        this.tmsDir = this.createTMSFolderMercator(4);
-//
-//        final int zoomLevel = 5;
-//        final Coordinate<Integer> coordinate = new Coordinate<>(0, 0);
-//
-//        TmsWriter tmsWriter = new TmsWriter(CrsProfileFactory.create("EPSG", 3857),
-//                                            this.tmsDir,
-//                                            new MimeType("image", "jpeg"));
-//
-//        final Path tilePath = this.tmsDir
-//                                  .resolve(Integer.toString(zoomLevel))
-//                                  .resolve(Integer.toString(coordinate.getX()))
-//                                  .resolve(Integer.toString(coordinate.getX()) + ".png");
-//
-//        final BufferedImage img = createImage();
-//
-//        tmsWriter.addTile(coordinate.getY(),
-//                          coordinate.getX(),
-//                          zoomLevel,
-//                          img);
-//
-//        assertTrue(tilePath.toFile().exists());
-//    }
+        final int zoomLevel = 1;
+        final Coordinate<Integer> coordinate = new Coordinate<>(0, 0);
+        final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", 3857);
 
-//    private static BufferedImage createImage()
-//    {
-//        final BufferedImage img = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
-//        final Graphics2D graphics = img.createGraphics();
-//        graphics.setPaint(new Color(255, 0, 0));
-//        graphics.fillRect(0, 0, 256, 256);
-//        return img;
-//    }
-//
-//    private static boolean bufferedImagesEqual(final BufferedImage img1, final BufferedImage img2)
-//    {
-//        if(img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight())
-//        {
-//            return false;
-//        }
-//
-//        for(int x = 0; x < img1.getWidth(); x++)
-//        {
-//            for(int y = 0; y < img1.getHeight(); y++)
-//            {
-//                if(img1.getRGB(x, y) != img2.getRGB(x, y))
-//                {
-//                    return false;
-//                }
-//            }
-//        }
-//
-//        return true;
-//    }
+        TmsWriter tmsWriter = new TmsWriter(crsProfile, this.tmsDir, new MimeType("image", "png"));
+        TmsReader tmsReader = new TmsReader(crsProfile, this.tmsDir);
+
+        final BufferedImage image = createImage();
+
+        tmsWriter.addTile(coordinate.getY(),
+                          coordinate.getX(),
+                          zoomLevel,
+                          image);
+
+        final BufferedImage tileImage = tmsReader.getTile(coordinate.getY(),
+                                                          coordinate.getX(),
+                                                          zoomLevel);
+
+        assertTrue(bufferedImagesEqual(image, tileImage));
+    }
+
+    @Test
+    public void verifyTileInsertion() throws TileStoreException, MimeTypeParseException
+    {
+        this.tmsDir = this.createTMSFolderMercator(4);
+
+        final int zoomLevel = 5;
+        final Coordinate<Integer> coordinate = new Coordinate<>(0, 0);
+
+        TmsWriter tmsWriter = new TmsWriter(CrsProfileFactory.create("EPSG", 3857),
+                                            this.tmsDir,
+                                            new MimeType("image", "png"));
+
+        final Path tilePath = this.tmsDir
+                                  .resolve(Integer.toString(zoomLevel))
+                                  .resolve(Integer.toString(coordinate.getX()))
+                                  .resolve(Integer.toString(coordinate.getX()) + ".png");
+
+        final BufferedImage img = createImage();
+
+        tmsWriter.addTile(coordinate.getY(),
+                          coordinate.getX(),
+                          zoomLevel,
+                          img);
+
+        assertTrue(tilePath.toFile().exists());
+    }
+
+    private static BufferedImage createImage()
+    {
+        final BufferedImage img = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
+        final Graphics2D graphics = img.createGraphics();
+        graphics.setPaint(new Color(255, 0, 0));
+        graphics.fillRect(0, 0, 256, 256);
+        return img;
+    }
+
+    private static boolean bufferedImagesEqual(final BufferedImage img1, final BufferedImage img2)
+    {
+        if(img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight())
+        {
+            return false;
+        }
+
+        for(int x = 0; x < img1.getWidth(); x++)
+        {
+            for(int y = 0; y < img1.getHeight(); y++)
+            {
+                if(img1.getRGB(x, y) != img2.getRGB(x, y))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }
