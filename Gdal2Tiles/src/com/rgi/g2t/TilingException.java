@@ -16,35 +16,35 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-
 package com.rgi.g2t;
 
 @SuppressWarnings("serial")
-public class TilingException extends Exception {
+public class TilingException extends Exception
+{
 
-  public TilingException() {
-    super();
-    // TODO Auto-generated constructor stub
-  }
+    public TilingException()
+    {
+        super();
+    }
 
-  public TilingException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
-    super(arg0, arg1, arg2, arg3);
-    // TODO Auto-generated constructor stub
-  }
+    public TilingException(String arg0, Throwable arg1, boolean arg2, boolean arg3)
+    {
+        super(arg0, arg1, arg2, arg3);
+    }
 
-  public TilingException(String arg0, Throwable arg1) {
-    super(arg0, arg1);
-    // TODO Auto-generated constructor stub
-  }
+    public TilingException(String arg0, Throwable arg1)
+    {
+        super(arg0, arg1);
+    }
 
-  public TilingException(String arg0) {
-    super(arg0);
-    // TODO Auto-generated constructor stub
-  }
+    public TilingException(String arg0)
+    {
+        super(arg0);
+    }
 
-  public TilingException(Throwable arg0) {
-    super(arg0);
-    // TODO Auto-generated constructor stub
-  }
+    public TilingException(Throwable arg0)
+    {
+        super(arg0);
+    }
 
 }
