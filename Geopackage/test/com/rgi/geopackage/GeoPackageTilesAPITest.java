@@ -85,10 +85,23 @@ public class GeoPackageTilesAPITest
                                        .addTileSet("pyramid",
                                                    "title",
                                                    "tiles",
-                                                   new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                                                   new BoundingBox(0.0, 0.0, 60.0, 50.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
 
-            gpkg.tiles().addTileMatrix(tileSet, 0, 2, 2, 2, 2, 2, 2);
+
+           int matrixHeight = 2;
+           int matrixWidth = 4;
+           int tileHeight = 512;
+           int tileWidth = 256;
+           
+            gpkg.tiles().addTileMatrix(tileSet, 
+                                       0,  
+                                       matrixWidth, 
+                                       matrixHeight, 
+                                       tileWidth,
+                                       tileHeight, 
+                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
         }
 
         final String query = "SELECT table_name FROM gpkg_tile_matrix_set WHERE table_name = 'pyramid';";
@@ -269,25 +282,48 @@ public class GeoPackageTilesAPITest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final TileSet tileSet = gpkg.tiles()
-                                        .addTileSet("tileSetName",
+                                        .addTileSet("tileSetONE",
                                                     "title",
                                                     "tiles",
-                                                    new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                                                    new BoundingBox(0.0, 0.0, 60.0, 60.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
-            gpkg.tiles().addTileMatrix(tileSet, 0, 2, 2, 2, 2, 2, 2);
+            int matrixHeight = 2;
+            int matrixWidth = 2;
+            int tileHeight = 256;
+            int tileWidth = 256;
+            
+            
+            gpkg.tiles().addTileMatrix(tileSet, 
+                                       0, 
+                                       matrixWidth, 
+                                       matrixHeight, 
+                                       tileWidth,
+                                       tileHeight, 
+                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
             //open a file with tiles inside and add more tiles
             try(GeoPackage gpkgWithTiles = new GeoPackage(testFile, OpenMode.Open))
             {
                 final TileSet tileSetEntry2 = gpkgWithTiles.tiles()
-                                                           .addTileSet("newTileSet",
+                                                           .addTileSet("newTileSetTWO",
                                                                        "title2",
                                                                        "tiles",
-                                                                       new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                                                                       new BoundingBox(0.0, 0.0, 50.0, 70.0),
                                                                        gpkgWithTiles.core().getSpatialReferenceSystem(4326));
-
-                gpkgWithTiles.tiles().addTileMatrix(tileSetEntry2, 0, 2, 2, 2, 2, 2, 2);
+                
+                double pixelXSize =  (tileSetEntry2.getBoundingBox().getWidth()/matrixWidth)/tileWidth;
+                double pixelYSize =  (tileSetEntry2.getBoundingBox().getHeight()/matrixHeight)/tileHeight;
+                
+                gpkgWithTiles.tiles().addTileMatrix(tileSetEntry2, 
+                                                    0, 
+                                                    matrixWidth, 
+                                                    matrixHeight, 
+                                                    tileWidth,
+                                                    tileHeight, 
+                                                    pixelXSize,
+                                                    pixelYSize);
             }
         }
         //make sure the information was added to contents table and tile matrix set table
@@ -306,7 +342,7 @@ public class GeoPackageTilesAPITest
             {
                 final String tilesTableName = tileTableNames.getString("table_name");
                 Assert.assertTrue("The tiles table names did not match what was being added to the GeoPackage",
-                            tilesTableName.equals("newTileSet") || tilesTableName.equals("tileSetName"));
+                            tilesTableName.equals("newTileSetTWO") || tilesTableName.equals("tileSetONE"));
             }
         }
         finally
@@ -383,7 +419,7 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tileSetName",
                                                     "tiles",
                                                     "desc",
-                                                    new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                                                    new BoundingBox(0.0, 0.0, 70.0, 70.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
 
@@ -391,9 +427,33 @@ public class GeoPackageTilesAPITest
 
             tileSetContnentEntries.add(tileSet);
             tileSetContnentEntries.add(tileSet);
-
-            gpkg.tiles().addTileMatrix(tileSet, 0, 2, 2, 2, 2, 2, 2);
-            gpkg.tiles().addTileMatrix(tileSet, 1, 2, 2, 2, 2, 2, 2);
+            
+            int matrixHeight = 2;
+            int matrixWidth = 2;
+            int tileHeight = 256;
+            int tileWidth = 256;
+            
+            gpkg.tiles().addTileMatrix(tileSet,
+                                       0, 
+                                       matrixWidth, 
+                                       matrixHeight, 
+                                       tileWidth, 
+                                       tileHeight, 
+                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+            int matrixHeight2 = 4;
+            int matrixWidth2 = 4;
+            int tileHeight2 = 256;
+            int tileWidth2 = 256;
+            
+            gpkg.tiles().addTileMatrix(tileSet, 
+                                       1,  
+                                       matrixWidth2, 
+                                       matrixHeight2, 
+                                       tileWidth2, 
+                                       tileHeight2, 
+                                       (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
+                                       (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
 
             for(final TileSet gpkgEntry : gpkg.tiles().getTileSets())
             {
@@ -734,14 +794,14 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tileSetName",
                                                     "tiles",
                                                     "desc",
-                                                    new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                                                    new BoundingBox(0.0, 0.0, 50.0, 90.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             final TileSet tileSet2 = gpkg.tiles()
                                          .addTileSet("SecondTileSet",
                                                      "ident",
                                                      "descrip",
-                                                     new BoundingBox(1.0,1.0,1.0,1.0),
+                                                     new BoundingBox(1.0,1.0,111.0,122.0),
                                                      gpkg.core().getSpatialReferenceSystem(4326));
 
             final ArrayList<TileSet> tileSetContnentEntries = new ArrayList<>();
@@ -749,8 +809,33 @@ public class GeoPackageTilesAPITest
             tileSetContnentEntries.add(tileSet);
             tileSetContnentEntries.add(tileSet2);
 
-            gpkg.tiles().addTileMatrix(tileSet,  0, 2, 2, 2, 2, 2, 2);
-            gpkg.tiles().addTileMatrix(tileSet2, 1, 2, 2, 2, 2, 2, 2);
+            int matrixHeight = 2;
+            int matrixWidth = 2;
+            int tileHeight = 256;
+            int tileWidth = 256;
+                    
+
+            gpkg.tiles().addTileMatrix(tileSet,  
+                                       0, 
+                                       matrixWidth, 
+                                       matrixHeight, 
+                                       tileWidth,
+                                       tileHeight, 
+                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+            
+
+            int matrixHeight2 = 4;
+            int matrixWidth2 = 4;
+            
+            gpkg.tiles().addTileMatrix(tileSet2, 
+                                       1,
+                                       matrixWidth2, 
+                                       matrixHeight2, 
+                                       tileWidth,
+                                       tileHeight, 
+                                       (tileSet2.getBoundingBox().getWidth()/matrixWidth2)/tileWidth,
+                                       (tileSet2.getBoundingBox().getHeight()/matrixHeight2)/tileHeight);
 
             final Collection<TileSet> tileSetsFromGpkg = gpkg.tiles().getTileSets();
 
@@ -1268,10 +1353,24 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tileSetName",
                                                     "title",
                                                     "tiles",
-                                                    new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                                                    new BoundingBox(0.0, 0.0, 50.0, 20.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
+            
+            int matrixHeight = 2;
+            int matrixWidth = 2;
+            int tileHeight = 256;
+            int tileWidth = 256;
+                    
 
-            final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 2, 2, 2, 2, 2, 2, 2);
+            final TileMatrix tileMatrix =  gpkg.tiles().addTileMatrix(tileSet,  
+                                                                      2, 
+                                                                      matrixWidth, 
+                                                                      matrixHeight, 
+                                                                      tileWidth,
+                                                                      tileHeight, 
+                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+
             gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 0, 2), new byte[] {1, 2, 3, 4});
         }
 
@@ -1319,8 +1418,22 @@ public class GeoPackageTilesAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            final TileSet    tileSet   = gpkg.tiles().addTileSet("tableName", "ident", "description", new BoundingBox(1.1,1.1,1.1,1.1), gpkg.core().getSpatialReferenceSystem(4326));
-            final TileMatrix matrixSet = gpkg.tiles().addTileMatrix(tileSet, 1, 2, 2, 5, 5, 256, 256);
+            final TileSet    tileSet   = gpkg.tiles().addTileSet("tableName", "ident", "description", new BoundingBox(1.1,1.1,100.1,100.1), gpkg.core().getSpatialReferenceSystem(4326));
+            
+            int matrixHeight = 2;
+            int matrixWidth = 2;
+            int tileHeight = 256;
+            int tileWidth = 256;
+            
+                    
+            final TileMatrix matrixSet = gpkg.tiles().addTileMatrix(tileSet, 
+                                                                    1, 
+                                                                    matrixWidth, 
+                                                                    matrixHeight, 
+                                                                    tileWidth,
+                                                                    tileHeight, 
+                                                                    (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                                                    (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
             //tile data
             final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 1, 1);
             final byte[] imageData = new byte[]{1, 2, 3, 4};
@@ -1534,7 +1647,7 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tileSetName",
                                                     "title",
                                                     "tiles",
-                                                    new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                                                    new BoundingBox(0.0, 0.0, 80.0, 90.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             //Tile coords
@@ -1542,8 +1655,34 @@ public class GeoPackageTilesAPITest
             final RelativeTileCoordinate coord2 = new RelativeTileCoordinate(0, 8, 8);
 
             //add tile to gpkg
-            final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet, 4, 10, 10, 1, 1, 1.0, 1.0);
-            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet, 8, 10, 10, 1, 1, 1.0, 1.0);
+            
+            int matrixHeight = 2;
+            int matrixWidth = 4;
+            int tileHeight = 512;
+            int tileWidth = 256;
+            
+            final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet, 
+                                                                      4, 
+                                                                      matrixWidth, 
+                                                                      matrixHeight, 
+                                                                      tileWidth,
+                                                                      tileHeight, 
+                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+
+            int matrixHeight2 = 4;
+            int matrixWidth2 = 8;
+            int tileHeight2 = 512;
+            int tileWidth2 = 256;
+            
+            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet, 
+                                                                      8, 
+                                                                      matrixWidth2, 
+                                                                      matrixHeight2, 
+                                                                      tileWidth2,
+                                                                      tileHeight2, 
+                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
+                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
 
             gpkg.tiles().addTile(tileSet, tileMatrix1, coord1, originalTile1);
             gpkg.tiles().addTile(tileSet, tileMatrix2, coord2, originalTile2);
@@ -1623,11 +1762,23 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tileSetName",
                                                     "title",
                                                     "tiles",
-                                                    new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                                                    new BoundingBox(0.0, 0.0, 50.0, 80.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
-            final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 3, 4, 5, 6, 7);
-
+            int matrixHeight = 2;
+            int matrixWidth = 3;
+            int tileHeight = 512;
+            int tileWidth = 256;
+                    
+            final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 
+                                                                     0, 
+                                                                     matrixWidth, 
+                                                                     matrixHeight, 
+                                                                     tileWidth,
+                                                                     tileHeight, 
+                                                                     (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                                                     (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                                                    
             //Tile coords
             final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(2, 1, 0);
             final byte[] imageData = new byte[]{1,2,3,4};
@@ -1673,11 +1824,23 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tileSetName",
                                                     null,
                                                     null,
-                                                    new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                                                    new BoundingBox(0.0, 0.0, 80.0, 80.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
+            int matrixWidth = 3;
+            int matrixHeight = 6;
+            int tileWidth = 256;
+            int tileHeight = 256;
             // add tile to gpkg
-            gpkg.tiles().addTileMatrix(tileSet, 2, 2, 2, 2, 2, 2, 2);
+            gpkg.tiles().addTileMatrix(tileSet, 
+                                       2, 
+                                       matrixWidth, 
+                                       matrixHeight, 
+                                       tileWidth,
+                                       tileHeight, 
+                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+            
             Assert.assertTrue("GeoPackage should have returned null for a missing tile.",
                        gpkg.tiles().getTile(tileSet, new RelativeTileCoordinate(0, 0, 0)) == null);
         }
@@ -1848,17 +2011,37 @@ public class GeoPackageTilesAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            final TileSet tileEntry = gpkg.tiles()
+            final TileSet tileSet = gpkg.tiles()
                                           .addTileSet("tableName",
                                                       "ident",
                                                       "desc",
-                                                      new BoundingBox(5.0,5.0,5.0,5.0),
+                                                      new BoundingBox(5.0,5.0,50.0,50.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
            // Add tile matrices that represent zoom levels 0 and 12
-           gpkg.tiles().addTileMatrix(tileEntry, 0, 10, 10, 1, 1, 1.0, 1.0);
-           gpkg.tiles().addTileMatrix(tileEntry, 12, 5, 5, 6, 6, 7, 7);
+            int matrixHeight = 2;
+            int matrixWidth = 2;
+            int tileHeight = 256;
+            int tileWidth = 256;
+            
+           gpkg.tiles().addTileMatrix(tileSet, 
+                                      0, 
+                                      matrixWidth, 
+                                      matrixHeight, 
+                                      tileWidth, 
+                                      tileHeight, 
+                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+           
+           gpkg.tiles().addTileMatrix(tileSet, 
+                                      12, 
+                                      matrixWidth, 
+                                      matrixHeight, 
+                                      tileWidth, 
+                                      tileHeight, 
+                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
-           final Set<Integer> zooms  = gpkg.tiles().getTileZoomLevels(tileEntry);
+           final Set<Integer> zooms  = gpkg.tiles().getTileZoomLevels(tileSet);
 
            final ArrayList<Integer> expectedZooms = new ArrayList<>();
 
@@ -1960,11 +2143,34 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tableName",
                                                     "ident",
                                                     "desc",
-                                                    new BoundingBox(0.0,0.0,0.0,0.0),
+                                                    new BoundingBox(0.0,0.0,50.0,80.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
             //create two TileMatrices to represent the tiles
-            final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet, 1, 10, 10, 1, 1, 1.0, 1.0);
-            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet, 0, 10, 10, 1, 1, 1.0, 1.0);
+            int matrixHeight = 2;
+            int matrixWidth = 2;
+            int tileHeight = 256;
+            int tileWidth = 256;
+                    
+            final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet, 
+                                                                    1, 
+                                                                    matrixWidth, 
+                                                                    matrixHeight, 
+                                                                    tileWidth,
+                                                                    tileHeight, 
+                                                                    (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                                                    (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+            
+            int matrixHeight2 = 4;
+            int matrixWidth2 = 4;
+            
+            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet, 
+                                                                      0, 
+                                                                      matrixWidth2, 
+                                                                      matrixHeight2, 
+                                                                      tileWidth,
+                                                                      tileHeight, 
+                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth,
+                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight);
             //add two tiles
             gpkg.tiles().addTile(tileSet, tileMatrix2, new RelativeTileCoordinate(0, 0, 0), new byte[] {1, 2, 3, 4});
             gpkg.tiles().addTile(tileSet, tileMatrix1, new RelativeTileCoordinate(0, 0, 1), new byte[] {1, 2, 3, 4});
@@ -2034,9 +2240,35 @@ public class GeoPackageTilesAPITest
         final File testFile = this.getRandomFile(5);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            final TileSet    tileSet     = gpkg.tiles().addTileSet("tables", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
-            final TileMatrix tileMatrix  = gpkg.tiles().addTileMatrix(tileSet, 0, 3, 3, 4, 4, 5, 5);
-            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet, 3, 2, 2, 3, 3, 4, 4);
+            final TileSet    tileSet     = gpkg.tiles().addTileSet("tables", "identifier", "description", new BoundingBox(0.0,0.0,80.0,80.0), gpkg.core().getSpatialReferenceSystem(-1));
+            
+            int matrixHeight = 2;
+            int matrixWidth = 4;
+            int tileHeight = 512;
+            int tileWidth = 256;
+            
+            final TileMatrix tileMatrix  = gpkg.tiles().addTileMatrix(tileSet, 
+                                                                     0, 
+                                                                     matrixWidth, 
+                                                                     matrixHeight, 
+                                                                     tileWidth,
+                                                                     tileHeight, 
+                                                                     (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                                                     (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+            
+            int matrixHeight2 = 4;
+            int matrixWidth2 = 8;
+            int tileHeight2 = 512;
+            int tileWidth2 = 256;
+            
+            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet, 
+                                                                      3, 
+                                                                      matrixWidth2, 
+                                                                      matrixHeight2, 
+                                                                      tileWidth2,
+                                                                      tileHeight2, 
+                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
+                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
 
             gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 0, 0), GeoPackageTilesAPITest.createImageBytes());
             gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 0), GeoPackageTilesAPITest.createImageBytes());
@@ -2353,19 +2585,38 @@ public class GeoPackageTilesAPITest
         final File testFile = this.getRandomFile(13);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            final TileSet tileSet = gpkg.tiles().addTileSet("name", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
-
-            final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 3, 4, 5, 6, 7);
-            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 3, 4, 5, 6, 7);
+            final TileSet tileSet = gpkg.tiles().addTileSet("name", "identifier", "description", new BoundingBox(0.0,0.0,90.0,90.0), gpkg.core().getSpatialReferenceSystem(-1));
+            int matrixHeight = 2;
+            int matrixWidth = 2;
+            int tileHeight = 256;
+            int tileWidth = 256;
+            
+            final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet,
+                                                                      0,
+                                                                      matrixWidth, 
+                                                                      matrixHeight, 
+                                                                      tileWidth,
+                                                                      tileHeight, 
+                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+            
+            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet, 
+                                                                      0, 
+                                                                      matrixWidth, 
+                                                                      matrixHeight, 
+                                                                      tileWidth,
+                                                                      tileHeight, 
+                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
            Assert.assertTrue("Expected the GeoPackage to return the existing Tile Matrix.",tileMatrix1.equals(tileMatrix2.getTableName(),
-                                                                                                       tileMatrix2.getZoomLevel(),
-                                                                                                       tileMatrix2.getMatrixWidth(),
-                                                                                                       tileMatrix2.getMatrixHeight(),
-                                                                                                       tileMatrix2.getTileWidth(),
-                                                                                                       tileMatrix2.getTileHeight(),
-                                                                                                       tileMatrix2.getPixelXSize(),
-                                                                                                       tileMatrix2.getPixelYSize()));
+                                                                                                              tileMatrix2.getZoomLevel(),
+                                                                                                              tileMatrix2.getMatrixWidth(),
+                                                                                                              tileMatrix2.getMatrixHeight(),
+                                                                                                              tileMatrix2.getTileWidth(),
+                                                                                                              tileMatrix2.getTileHeight(),
+                                                                                                              tileMatrix2.getPixelXSize(),
+                                                                                                              tileMatrix2.getPixelYSize()));
         }
         finally
         {
@@ -2463,14 +2714,40 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tileSetName",
                                                     "title",
                                                     "tiles",
-                                                    new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                                                    new BoundingBox(0.0, 0.0, 80.0, 80.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
-            gpkg.tiles().addTileMatrix(tileSet, 1, 1, 1, 1, 1, 1, 1);
+            int matrixWidth = 4;
+            int matrixHeight = 8;
+            int tileWidth = 256;
+            int tileHeight = 512;
+                    
+            gpkg.tiles().addTileMatrix(tileSet, 
+                                       1,  
+                                       matrixWidth, 
+                                       matrixHeight, 
+                                       tileWidth,
+                                       tileHeight, 
+                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
         }
         //test if information added is accurate
-        final String query = "SELECT table_name FROM gpkg_tile_matrix "
-                             + "WHERE zoom_level = matrix_height = matrix_width = tile_width = tile_height = pixel_x_size = pixel_y_size = 1;";
+        int matrixWidth = 4;
+        int matrixHeight = 8;
+        int tileWidth = 256;
+        int tileHeight = 512;
+        
+        final String query = String.format("SELECT table_name FROM gpkg_tile_matrix "
+                                           + "WHERE zoom_level    = %d AND "
+                                           + "      matrix_height = %d AND "
+                                           + "       matrix_width = %d AND "
+                                           + "        tile_height = %d AND "
+                                           + "         tile_width = %d;",
+                                           1,
+                                           matrixHeight,
+                                           matrixWidth,
+                                           tileHeight,
+                                           tileWidth);
 
         try(Connection con      = this.getConnection(testFile.getAbsolutePath());
             Statement stmt      = con.createStatement();
@@ -2541,21 +2818,46 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tableName",
                                                     "identifier",
                                                     "description",
-                                                    new BoundingBox(0.0,0.0,0.0,0.0),
+                                                    new BoundingBox(0.0,0.0,100.0,100.0),
                                                     gpkg.core().getSpatialReferenceSystem(-1));
-
-            gpkg.tiles().addTileMatrix(tileSet, 1, 3, 5, 7, 9, 25, 27);
-            final TileMatrix tileMatrix         = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 4, 6, 8, 256, 512);
+            int matrixHeight = 2;
+            int matrixWidth = 6;
+            int tileHeight = 512;
+            int tileWidth = 256;
+            
+            gpkg.tiles().addTileMatrix(tileSet, 
+                                       1, 
+                                       matrixWidth, 
+                                       matrixHeight, 
+                                       tileWidth, 
+                                       tileHeight, 
+                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+            
+            int matrixHeight2 = 1;
+            int matrixWidth2 = 3;
+            int tileHeight2 = 512;
+            int tileWidth2 = 256;
+            
+            final TileMatrix tileMatrix         = gpkg.tiles().addTileMatrix(tileSet,
+                                                                             0,
+                                                                             matrixWidth2, 
+                                                                             matrixHeight2, 
+                                                                             tileWidth2, 
+                                                                             tileHeight2, 
+                                                                             (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
+                                                                             (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
+            
             final TileMatrix returnedTileMatrix = gpkg.tiles().getTileMatrix(tileSet, 0);
 
             Assert.assertTrue("GeoPackage did not return the TileMatrix expected", tileMatrix.getMatrixHeight() ==      returnedTileMatrix.getMatrixHeight() &&
-                                                                            tileMatrix.getMatrixWidth()  ==      returnedTileMatrix.getMatrixWidth()  &&
-                                                                            tileMatrix.getPixelXSize()   ==      returnedTileMatrix.getPixelXSize()   &&
-                                                                            tileMatrix.getPixelYSize()   ==      returnedTileMatrix.getPixelYSize()   &&
-                                                                            tileMatrix.getTableName()    .equals(returnedTileMatrix.getTableName())   &&
-                                                                            tileMatrix.getTileHeight()   ==      returnedTileMatrix.getTileHeight()   &&
-                                                                            tileMatrix.getTileWidth()    ==      returnedTileMatrix.getTileWidth()    &&
-                                                                            tileMatrix.getZoomLevel()    ==      returnedTileMatrix.getZoomLevel());
+                                                                                   tileMatrix.getMatrixWidth()  ==      returnedTileMatrix.getMatrixWidth()  &&
+                                                                                   tileMatrix.getPixelXSize()   ==      returnedTileMatrix.getPixelXSize()   &&
+                                                                                   tileMatrix.getPixelYSize()   ==      returnedTileMatrix.getPixelYSize()   &&
+                                                                                   tileMatrix.getTableName()    .equals(returnedTileMatrix.getTableName())   &&
+                                                                                   tileMatrix.getTileHeight()   ==      returnedTileMatrix.getTileHeight()   &&
+                                                                                   tileMatrix.getTileWidth()    ==      returnedTileMatrix.getTileWidth()    &&
+                                                                                   tileMatrix.getZoomLevel()    ==      returnedTileMatrix.getZoomLevel());
         }
         finally
         {
