@@ -136,9 +136,7 @@ public class TileJob implements Runnable
 
     private void tile() throws TilingException
     {
-        final Dataset inputDataset = getDataset(this.file);
-
-        this.outputDataset = getTransformedDataset(inputDataset,
+        this.outputDataset = getTransformedDataset(getDataset(this.file),
                                                    this.crsProfile.getCoordinateReferenceSystem().getIdentifier(),
                                                    gdalconstConstants.GRA_Bilinear);
 
