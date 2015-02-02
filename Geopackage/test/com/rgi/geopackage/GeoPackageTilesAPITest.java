@@ -2766,6 +2766,100 @@ public class GeoPackageTilesAPITest
             }
         }
      }
+    /**
+     * Tests if GeoPackage Tiles will throw
+     * an IllegalArgumentException when 
+     * the pixelXSize is not correctly
+     * calculated
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addTileMatrixIllegalBounds() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+        File testFile = this.getRandomFile(7);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            TileSet tileSet = gpkg.tiles()
+                                  .addTileSet("tableName", 
+                                              "identifier",
+                                              "description", 
+                                              new BoundingBox(0.0,0.0,90.0,180.0), 
+                                              gpkg.core().getSpatialReferenceSystem(4326));
+            int zoomLevel = 5;
+            int matrixWidth = 10;
+            int matrixHeight = 11;
+            int tileWidth = 256;
+            int tileHeight = 512;
+            double pixelXSize = 500.23123;//invalid pixelx size
+            double pixelYSize = tileSet.getBoundingBox().getHeight()/matrixHeight/tileHeight;
+            gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
+            
+            fail("Expected GeopackageTiles to throw an IllegalArgtumentException when pixelXSize != boundingBoxHeight/matrixHeight/tileHeight.");
+        }
+        finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Tests if GeoPackage Tiles will throw
+     * an IllegalArgumentException when 
+     * the pixelYSize is not correctly
+     * calculated
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addTileMatrixIllegalBounds2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+        File testFile = this.getRandomFile(7);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            TileSet tileSet = gpkg.tiles()
+                                  .addTileSet("tableName", 
+                                              "identifier",
+                                              "description", 
+                                              new BoundingBox(0.0,0.0,90.0,180.0), 
+                                              gpkg.core().getSpatialReferenceSystem(4326));
+            int zoomLevel = 5;
+            int matrixWidth = 10;
+            int matrixHeight = 11;
+            int tileWidth = 256;
+            int tileHeight = 512;
+            double pixelXSize = tileSet.getBoundingBox().getWidth()/matrixWidth/tileWidth;
+            double pixelYSize = 500.23123;//invalid pixel y size
+            gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
+            
+            fail("Expected GeopackageTiles to throw an IllegalArgtumentException when pixelXSize != boundingBoxWidth/matrixWidth/tileWidth.");
+        }
+        finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+                
+    }
 
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException
