@@ -1,7 +1,7 @@
 SWAGD : Software to Aggregate Geospatial Data
 ===============
 
-A Java-based application for tiling geospatial images into tiles, packaging those tiles, and viewing them on a map.
+A Java-based application for converting geospatial images into tiles, packaging those tiles, and viewing them on a map.
 
 [![Build Status](https://travis-ci.org/GitHubRGI/swagd.svg?branch=master)](https://travis-ci.org/GitHubRGI/swagd)
 [![Coverage Status](https://coveralls.io/repos/GitHubRGI/swagd/badge.svg?branch=master)](https://coveralls.io/r/GitHubRGI/swagd?branch=master)
