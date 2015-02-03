@@ -214,7 +214,7 @@ public class GeoPackageMetadata
         final Integer parentIdInteger = parentIdentifier == null ? null
                                                                  : parentIdentifier.getIdentifier();
 
-        final MetadataReference existingMetadataReference = this.getMetadataReference(referenceScope.toString(),
+        final MetadataReference existingMetadataReference = this.getMetadataReference(referenceScope.getText(),
                                                                                       tableName,
                                                                                       columnName,
                                                                                       rowIdentifier,
@@ -250,13 +250,14 @@ public class GeoPackageMetadata
                 preparedStatement.executeUpdate();
             }
 
-            final MetadataReference metadataReference = this.getMetadataReference(referenceScope.toString(),
+            this.databaseConnection.commit();
+            
+            final MetadataReference metadataReference = this.getMetadataReference(referenceScope.getText(),
                                                                                   tableName,
                                                                                   columnName,
                                                                                   rowIdentifier,
                                                                                   fileIdentifier.getIdentifier(),
                                                                                   parentIdInteger);
-            this.databaseConnection.commit();
 
             return metadataReference;
         }
@@ -560,7 +561,7 @@ public class GeoPackageMetadata
                                                    final int     fileIdentifier,
                                                    final Integer parentIdentifier) throws SQLException
     {
-        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageMetadata.MetadataTableName))
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageMetadata.MetadataReferenceTableName))
         {
             return null;
         }
