@@ -137,7 +137,7 @@ public class TileJob implements Runnable
     {
         this.outputDataset = getTransformedDataset(getDataset(this.file),
                                                    this.crsProfile.getCoordinateReferenceSystem().getIdentifier(),
-                                                   gdalconstConstants.GRA_Bilinear);
+                                                   gdalconstConstants.GRA_Bilinear);            // TODO: get user preference resample quality
 
         final GeoTransformation outputGeoTransform = new GeoTransformation(this.outputDataset.GetGeoTransform());
 
@@ -288,7 +288,7 @@ public class TileJob implements Runnable
                     }
                     else
                     {
-                        // generate tile using next highest zoom level's tiles.
+                        // Generate tile using next highest zoom level's tiles.
                         final BufferedImage preScaled = new BufferedImage(2 * TILESIZE,
                                                                           2 * TILESIZE,
                                                                           BufferedImage.TYPE_INT_ARGB);
@@ -429,7 +429,6 @@ public class TileJob implements Runnable
             return inputDataset;
         }
 
-        // TODO: get user preference resample quality
         final Dataset outputDataset = gdal.AutoCreateWarpedVRT(inputDataset,
                                                                inputWkt,
                                                                outputSrs.ExportToWkt(),
