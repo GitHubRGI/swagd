@@ -149,7 +149,7 @@ public class GeoPackageExtensions
             return Collections.emptyList();
         }
 
-        final String extensionQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s",
+        final String extensionQuerySql = String.format("SELECT %s, %s, %s, %s, %s FROM %s",
                                                        "table_name",
                                                        "column_name",
                                                        "extension_name",
