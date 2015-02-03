@@ -58,6 +58,7 @@ import com.rgi.common.task.TaskMonitor;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
+import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 
@@ -163,6 +164,7 @@ public class TileJob implements Runnable
         final boolean direct = false;
 
         // generate base tile set
+        final BufferedImage source = convert(this.outputDataset);
         TileSet matrixBounds = new TileSet(maxZoom, this.tileScheme.origin());
 
         Coordinate<Integer> upperLeftTileCoordinate  = transform(worldBounds, imageUpperLeft,  matrixBounds);
@@ -184,11 +186,9 @@ public class TileJob implements Runnable
 
         Dimensions tileBounds = this.crsProfile.getTileDimensions(this.tileScheme.dimensions(maxZoom));
 
-        final BufferedImage source = convert(this.outputDataset);
-
         // pixels = (meters - meters) / meters per pixel
-        int offsetX = (int)((outputGeoTransform.getTopLeft().getX() - tileBounds.getWidth()) / rx);
         int offsetY = (int)((tileBounds.getHeight() - outputGeoTransform.getTopLeft().getY()) / ry);
+        int offsetX = (int)((outputGeoTransform.getTopLeft().getX() - tileBounds.getWidth())  / rx);
 
         for(int x = 0; x < numTilesWidth; ++x)
         {
@@ -196,13 +196,13 @@ public class TileJob implements Runnable
 
             for(int y = 0; y < numTilesHeight; ++y)
             {
-                final int tileY  = upperLeftTileCoordinate.getY() + (y * this.tileScheme.origin().getDeltaY());
+                final int tileY = upperLeftTileCoordinate.getY() + (y * this.tileScheme.origin().getDeltaY());
 
                 final BufferedImage tileImage = new BufferedImage(TILESIZE,
                                                                   TILESIZE,
                                                                   BufferedImage.TYPE_INT_ARGB);
 
-                final Graphics2D    graphic   = tileImage.createGraphics();
+                final Graphics2D graphic = tileImage.createGraphics();
 
                 graphic.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                                          RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -226,16 +226,15 @@ public class TileJob implements Runnable
                                                  maxZoom,
                                                  tileImage);
                 }
-                catch(final Exception e)
+                catch(final TileStoreException ex)
                 {
-                    throw new TilingException("Unable to add tile", e);
+                    throw new TilingException("Unable to add tile", ex);
                 }
             }
         }
 
         for(int z = maxZoom - 1; z >= minZoom; --z)
         {
-            // TileMatrix matrix = new TileMatrix(profile, z, origin);
             matrixBounds = new TileSet(z, this.tileScheme.origin());
 
             upperLeftTileCoordinate  = transform(worldBounds, imageUpperLeft,  matrixBounds);
@@ -245,22 +244,22 @@ public class TileJob implements Runnable
             numTilesHeight = Math.abs(lowerRightTileCoordinate.getY() - upperLeftTileCoordinate.getY()) + 1;
 
             zoomLevelTiles = (int)Math.pow(2, z);
+
             // srs units (e.g. meters) per pixel = (world size / num tiles) / pixels per tile
             rx = (this.crsProfile.getBounds().getWidth()  / zoomLevelTiles) / TILESIZE;
             ry = (this.crsProfile.getBounds().getHeight() / zoomLevelTiles) / TILESIZE;
 
             // pixels = (pixels * meters per pixel) / meters per pixel
             // w' = (w * r) / r'
-            scaledWidth  = (int)((this.outputDataset.getRasterXSize() * outputGeoTransform.getPixelDimensions().getWidth())  / rx);
             scaledHeight = (int)((this.outputDataset.getRasterYSize() * outputGeoTransform.getPixelDimensions().getHeight()) / ry);
+            scaledWidth  = (int)((this.outputDataset.getRasterXSize() * outputGeoTransform.getPixelDimensions().getWidth())  / rx);
 
-            // upperLeftTile = maxTileSet.addTile(upperLeftTileCoordinate);
             tileBounds = this.crsProfile.getTileDimensions(this.tileScheme.dimensions(maxZoom));
 
+            // pixels = (meters - meters) / meters per pixel
             offsetX = (int)((outputGeoTransform.getTopLeft().getX() - tileBounds.getWidth())  / rx);
             offsetY = (int)((tileBounds.getHeight() - outputGeoTransform.getTopLeft().getY()) / ry);
 
-            // TileMatrixSet tileSet = new TileMatrixSet(matrix);
             for(int x = 0; x < numTilesWidth; ++x)
             {
                 final int tileX = upperLeftTileCoordinate.getX() + (x * this.tileScheme.origin().getDeltaX());
@@ -274,7 +273,9 @@ public class TileJob implements Runnable
                                                                       BufferedImage.TYPE_INT_ARGB);
 
                     final Graphics2D graphic = tileImage.createGraphics();
-                    graphic.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+                    graphic.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                                             RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
                     if(direct)
                     {
@@ -288,7 +289,10 @@ public class TileJob implements Runnable
                     else
                     {
                         // generate tile using next highest zoom level's tiles.
-                        final BufferedImage preScaled = new BufferedImage(2 * TILESIZE, 2 * TILESIZE, BufferedImage.TYPE_INT_ARGB);
+                        final BufferedImage preScaled = new BufferedImage(2 * TILESIZE,
+                                                                          2 * TILESIZE,
+                                                                          BufferedImage.TYPE_INT_ARGB);
+
                         final Graphics2D g_scaled = preScaled.createGraphics();
 
                         for(int zx = 0; zx < 2; ++zx)
@@ -335,16 +339,27 @@ public class TileJob implements Runnable
 
                             }
                         }
-                        graphic.drawImage(preScaled, 0, 0, TILESIZE, TILESIZE, null);
+
+                        graphic.drawImage(preScaled,
+                                          0,
+                                          0,
+                                          TILESIZE,
+                                          TILESIZE,
+                                          null);
                     }
 
                     try
                     {
-                        this.tileStoreWriter.addTile(this.crsProfile.tileToCrsCoordinate(tileY, tileX, this.tileScheme.dimensions(z), this.tileScheme.origin()), z, tileImage);
+                        this.tileStoreWriter.addTile(this.crsProfile.tileToCrsCoordinate(tileY,
+                                                                                         tileX,
+                                                                                         this.tileScheme.dimensions(z),
+                                                                                         this.tileScheme.origin()),
+                                                     z,
+                                                     tileImage);
                     }
-                    catch(final Exception e)
+                    catch(final TileStoreException ex)
                     {
-                        throw new TilingException("Problem adding tile", e);
+                        throw new TilingException("Unable to add adding tile", ex);
                     }
                 }
             }
@@ -598,20 +613,20 @@ public class TileJob implements Runnable
         final int outputX = (int)(((input.getX().doubleValue() - worldBounds.getMinX()) / inDX) * outDX) + tileSet.getWest();
         final int outputY = (int)(((input.getY().doubleValue() - worldBounds.getMinY()) / inDY) * outDY) + tileSet.getSouth();
 
-        return new Coordinate<>(outputX, outputY);
+        return new Coordinate<>(outputY, outputX);
     }
 
-    public static BufferedImage convert(final Dataset poDataset)
+    public static BufferedImage convert(final Dataset dataset)
     {
         Band poBand = null;
 
-        final int          bandCount = poDataset.getRasterCount();
+        final int          bandCount = dataset.getRasterCount();
         final ByteBuffer[] bands     = new ByteBuffer[bandCount];
         final int[]        banks     = new int[bandCount];
         final int[]        offsets   = new int[bandCount];
 
-        final int xsize = poDataset.getRasterXSize();
-        final int ysize = poDataset.getRasterYSize();
+        final int xsize = dataset.getRasterXSize();
+        final int ysize = dataset.getRasterYSize();
         final int pixels = xsize * ysize;
         int buf_type = 0;
         int buf_size = 0;
@@ -619,7 +634,7 @@ public class TileJob implements Runnable
         for(int band = 0; band < bandCount; band++)
         {
             // Bands are not 0-base indexed, so we must add 1
-            poBand = poDataset.GetRasterBand(band + 1);
+            poBand = dataset.GetRasterBand(band + 1);
 
             buf_type = poBand.getDataType();
             buf_size = pixels * gdal.GetDataTypeSize(buf_type) / 8;
@@ -630,12 +645,20 @@ public class TileJob implements Runnable
             int returnVal = 0;
             try
             {
-                returnVal = poBand.ReadRaster_Direct(0, 0, poBand.getXSize(), poBand.getYSize(), xsize, ysize, buf_type, data);
+                returnVal = poBand.ReadRaster_Direct(0,
+                                                     0,
+                                                     poBand.getXSize(),
+                                                     poBand.getYSize(),
+                                                     xsize,
+                                                     ysize,
+                                                     buf_type,
+                                                     data);
             }
             catch(final Exception ex)
             {
                 throw new IllegalArgumentException("Could not read raster data.", ex);
             }
+
             if(returnVal == gdalconstConstants.CE_None)
             {
                 bands[band] = data;
@@ -653,9 +676,10 @@ public class TileJob implements Runnable
             throw new RuntimeException("The GDAL dataset returned null for a raster band");
         }
 
-        DataBuffer imgBuffer = null;
+        DataBuffer  imgBuffer   = null;
         SampleModel sampleModel = null;
-        int data_type = 0, buffer_type = 0;
+        int         data_type   = 0;
+        int         buffer_type = 0;
 
         if(buf_type == gdalconstConstants.GDT_Byte)
         {
@@ -665,10 +689,10 @@ public class TileJob implements Runnable
                 bytes[i] = new byte[pixels];
                 bands[i].get(bytes[i]);
             }
-            imgBuffer = new DataBufferByte(bytes, pixels);
+            imgBuffer   = new DataBufferByte(bytes, pixels);
             buffer_type = DataBuffer.TYPE_BYTE;
             sampleModel = new BandedSampleModel(buffer_type, xsize, ysize, xsize, banks, offsets);
-            data_type = (poBand.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) ? BufferedImage.TYPE_BYTE_INDEXED : BufferedImage.TYPE_BYTE_GRAY;
+            data_type   = (poBand.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) ? BufferedImage.TYPE_BYTE_INDEXED : BufferedImage.TYPE_BYTE_GRAY;
         }
         else if(buf_type == gdalconstConstants.GDT_Int16)
         {
@@ -678,10 +702,10 @@ public class TileJob implements Runnable
                 shorts[i] = new short[pixels];
                 bands[i].asShortBuffer().get(shorts[i]);
             }
-            imgBuffer = new DataBufferShort(shorts, pixels);
+            imgBuffer   = new DataBufferShort(shorts, pixels);
             buffer_type = DataBuffer.TYPE_USHORT;
             sampleModel = new BandedSampleModel(buffer_type, xsize, ysize, xsize, banks, offsets);
-            data_type = BufferedImage.TYPE_USHORT_GRAY;
+            data_type   = BufferedImage.TYPE_USHORT_GRAY;
         }
         else if(buf_type == gdalconstConstants.GDT_Int32)
         {
@@ -691,38 +715,35 @@ public class TileJob implements Runnable
                 ints[i] = new int[pixels];
                 bands[i].asIntBuffer().get(ints[i]);
             }
-            imgBuffer = new DataBufferInt(ints, pixels);
+            imgBuffer   = new DataBufferInt(ints, pixels);
             buffer_type = DataBuffer.TYPE_INT;
             sampleModel = new BandedSampleModel(buffer_type, xsize, ysize, xsize, banks, offsets);
-            data_type = BufferedImage.TYPE_CUSTOM;
+            data_type   = BufferedImage.TYPE_CUSTOM;
         }
 
         final WritableRaster raster = Raster.createWritableRaster(sampleModel, imgBuffer, null);
         BufferedImage img = null;
-        ColorModel cm = null;
 
         if(poBand.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex)
         {
-            data_type = BufferedImage.TYPE_BYTE_INDEXED;
-            cm = poBand.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(buf_type));
-            img = new BufferedImage(cm, raster, false, null);
+            // data_type = BufferedImage.TYPE_BYTE_INDEXED; // This assignment never had an effect
+            img = new BufferedImage(poBand.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(buf_type)),
+                                    raster,
+                                    false,
+                                    null);
         }
         else
         {
             System.out.println("band count: " + bandCount);
-            ColorSpace cs = null;
             if(bandCount > 2)
             {
-                cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
-                if(bandCount == 4)
-                {
-                    cm = new ComponentColorModel(cs, true, false, Transparency.TRANSLUCENT, buffer_type);
-                }
-                else
-                {
-                    cm = new ComponentColorModel(cs, false, false, Transparency.OPAQUE, buffer_type);
-                }
-                img = new BufferedImage(cm, raster, true, null);
+                final ColorModel colorModel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+                                                                bandCount == 4,
+                                                                false,
+                                                                bandCount == 4 ? Transparency.TRANSLUCENT : Transparency.OPAQUE,
+                                                                buffer_type);
+
+                img = new BufferedImage(colorModel, raster, true, null);
             }
             else
             {
@@ -733,7 +754,7 @@ public class TileJob implements Runnable
         return img;
     }
 
-    public static double log2(final double value)
+    private static double log2(final double value)
     {
         final double log2 = Math.log(2);
 
