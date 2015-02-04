@@ -336,7 +336,6 @@ public class TileJob implements Runnable
                                 {
                                     throw new TilingException("Problem getting tile", e);
                                 }
-
                             }
                         }
 

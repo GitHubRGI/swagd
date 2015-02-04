@@ -46,80 +46,93 @@ import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.common.tile.store.tms.TmsWriter;
 
-public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor {
-  ExecutorService executor = Executors.newSingleThreadExecutor();
-  private int jobTotal = 0;
-  private int jobCount = 0;
-  private int completed = 0;
+public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor
+{
+    ExecutorService executor  = Executors.newSingleThreadExecutor();
+    private int     jobTotal  = 0;
+    private int     jobCount  = 0;
+    private int     completed = 0;
 
-  public Tiler(TaskFactory factory) {
-    super(factory);
-  }
-
-  private Set<TaskMonitor> monitors = new HashSet<>();
-
-  @Override
-  public void addMonitor(TaskMonitor monitor) {
-    this.monitors.add(monitor);
-  }
-
-  @Override
-  public void requestCancel() {
-    this.executor.shutdownNow();
-    try {
-      this.executor.awaitTermination(60, TimeUnit.SECONDS);
-    } catch (InterruptedException ie) {
-      this.fireCancelled();
-    }
-  }
-
-  private void fireProgressUpdate() {
-    for (TaskMonitor monitor : this.monitors) {
-      monitor.setProgress(this.completed);
-    }
-  }
-
-  private void fireCancelled() {
-    for (TaskMonitor monitor : this.monitors) {
-      monitor.cancelled();
-    }
-  }
-
-  private void fireError(Exception e) {
-    for (TaskMonitor monitor : this.monitors) {
-      monitor.setError(e);
-    }
-  }
-
-  private void fireFinished() {
-    for (TaskMonitor monitor : this.monitors) {
-      monitor.finished();
-    }
-  }
-
-  @Override
-    public void execute(Settings opts)
+    public Tiler(final TaskFactory factory)
     {
-        Profile profile = Settings.Profile.valueOf(opts.get(Setting.CrsProfile));
-        // split the job up into individual files, process those files one at a time
-        File[] files = opts.getFiles(Setting.FileSelection);
-        for(File file : files)
-        {
+        super(factory);
+    }
 
+    private final Set<TaskMonitor> monitors = new HashSet<>();
+
+    @Override
+    public void addMonitor(final TaskMonitor monitor)
+    {
+        this.monitors.add(monitor);
+    }
+
+    @Override
+    public void requestCancel()
+    {
+        this.executor.shutdownNow();
+        try
+        {
+            this.executor.awaitTermination(60, TimeUnit.SECONDS);
+        }
+        catch(final InterruptedException ie)
+        {
+            this.fireCancelled();
+        }
+    }
+
+    private void fireProgressUpdate()
+    {
+        for(final TaskMonitor monitor : this.monitors)
+        {
+            monitor.setProgress(this.completed);
+        }
+    }
+
+    private void fireCancelled()
+    {
+        for(final TaskMonitor monitor : this.monitors)
+        {
+            monitor.cancelled();
+        }
+    }
+
+    private void fireError(final Exception e)
+    {
+        for(final TaskMonitor monitor : this.monitors)
+        {
+            monitor.setError(e);
+        }
+    }
+
+    private void fireFinished()
+    {
+        for(final TaskMonitor monitor : this.monitors)
+        {
+            monitor.finished();
+        }
+    }
+
+    @Override
+    public void execute(final Settings opts)
+    {
+        final Profile profile = Settings.Profile.valueOf(opts.get(Setting.CrsProfile));
+        // split the job up into individual files, process those files one at a time
+        final File[] files = opts.getFiles(Setting.FileSelection);
+        for(final File file : files)
+        {
             try
             {
-                String imageFormat = Settings.Type.valueOf(opts.get(Setting.TileType)).name();
-                Path outputFolder = new File(opts.get(Setting.TileFolder)).toPath();
+                final String imageFormat = Settings.Type.valueOf(opts.get(Setting.TileType)).name();
+                final Path outputFolder = new File(opts.get(Setting.TileFolder)).toPath();
 
                 final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", profile.getID());
 
                 //final TileOrigin origin = TileOrigin.valueOf(opts.get(Setting.TileOrigin));
 
-                TileStoreWriter tileWriter = new TmsWriter(crsProfile, outputFolder, new MimeType("image", imageFormat));
-                TileStoreReader tileReader = new TmsReader(crsProfile, outputFolder);
+                final TileStoreWriter tileWriter = new TmsWriter(crsProfile, outputFolder, new MimeType("image", imageFormat));
+                final TileStoreReader tileReader = new TmsReader(crsProfile, outputFolder);
 
-
-                Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createTileJob(file, tileReader, tileWriter, opts, this))));
+                final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createTileJob(file, tileReader, tileWriter, opts, this))));
                 jobWaiter.setDaemon(true);
                 jobWaiter.start();
             }
@@ -130,75 +143,102 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor 
         }
     }
 
-  private static Runnable createTileJob(File file, TileStoreReader tileStoreReader, TileStoreWriter tileStoreWriter, Settings opts, TaskMonitor monitor) {
-    return new TileJob(file, tileStoreReader, tileStoreWriter, opts, monitor);
-    //    return new FakeTileJob(file, opts, monitor);
-  }
+    private static Runnable createTileJob(final File            file,
+                                          final TileStoreReader tileStoreReader,
+                                          final TileStoreWriter tileStoreWriter,
+                                          final Settings        opts,
+                                          final TaskMonitor     monitor)
+    {
+        return new TileJob(file,
+                           tileStoreReader,
+                           tileStoreWriter,
+                           opts,
+                           monitor);
+    }
 
-  private class JobWaiter implements Runnable {
-    private Future<?> job;
+    private class JobWaiter implements Runnable
+    {
+        private final Future<?> job;
 
-    public JobWaiter(Future<?> job) {
-      ++Tiler.this.jobTotal;
-      this.job = job;
+        public JobWaiter(final Future<?> job)
+        {
+            ++Tiler.this.jobTotal;
+            this.job = job;
+        }
+
+        @Override
+        public void run()
+        {
+            try
+            {
+                this.job.get();
+            }
+            catch(final InterruptedException ie)
+            {
+                // unlikely, but we still need to handle it
+                System.err.println("Tiling job was interrupted.");
+                ie.printStackTrace();
+                Tiler.this.fireError(ie);
+            }
+            catch(final ExecutionException ee)
+            {
+                System.err.println("Tiling job failed with exception: " + ee.getMessage());
+                ee.printStackTrace();
+                Tiler.this.fireError(ee);
+            }
+            catch(final CancellationException ce)
+            {
+                System.err.println("Tiling job was cancelled.");
+                ce.printStackTrace();
+                Tiler.this.fireError(ce);
+            }
+        }
     }
 
     @Override
-    public void run() {
-      try {
-        this.job.get();
-      } catch (InterruptedException ie) {
-        // unlikely, but we still need to handle it
-        System.err.println("Tiling job was interrupted.");
-        ie.printStackTrace();
-        Tiler.this.fireError(ie);
-      } catch (ExecutionException ee) {
-        System.err.println("Tiling job failed with exception: "+ee.getMessage());
-        ee.printStackTrace();
-        Tiler.this.fireError(ee);
-      } catch (CancellationException ce) {
-        System.err.println("Tiling job was cancelled.");
-        ce.printStackTrace();
-        Tiler.this.fireError(ce);
-      }
+    public void setMaximum(final int max)
+    {
+        // updates the progress bar to exit indeterminate mode
+        for(final TaskMonitor monitor : this.monitors)
+        {
+            monitor.setMaximum(100);
+        }
     }
-  }
 
-  @Override
-  public void setMaximum(int max) {
-    // updates the progress bar to exit indeterminate mode
-    for (TaskMonitor monitor : this.monitors) {
-      monitor.setMaximum(100);
+    @Override
+    public void setProgress(final int value)
+    {
+
+        System.out.println("progress updated: " + value);
+        // when called by a tilejob, reports a number from 0-100.
+        final double perJob = 100.0 / this.jobTotal;
+        this.completed = (int)((this.jobCount * perJob) + ((value / 100.0) * perJob));
+        this.fireProgressUpdate();
     }
-  }
 
-  @Override
-  public void setProgress(int value) {
-
-    System.out.println("progress updated: "+value);
-    // when called by a tilejob, reports a number from 0-100.
-    double perJob = 100.0 / this.jobTotal;
-    this.completed = (int)((this.jobCount * perJob) + ((value / 100.0) * perJob));
-    this.fireProgressUpdate();
-  }
-
-  @Override
-  public void cancelled() {
-    // not used
-  }
-
-  @Override
-  public void finished() {
-    ++this.jobCount;
-    if (this.jobCount == this.jobTotal) {
-      this.fireFinished();
-    } else {
-      this.setProgress(0);
+    @Override
+    public void cancelled()
+    {
+        // not used
     }
-  }
 
-  @Override
-  public void setError(Exception e) {
-    // this shouldn't be used
-  }
+    @Override
+    public void finished()
+    {
+        ++this.jobCount;
+        if(this.jobCount == this.jobTotal)
+        {
+            this.fireFinished();
+        }
+        else
+        {
+            this.setProgress(0);
+        }
+    }
+
+    @Override
+    public void setError(final Exception e)
+    {
+        // this shouldn't be used
+    }
 }
