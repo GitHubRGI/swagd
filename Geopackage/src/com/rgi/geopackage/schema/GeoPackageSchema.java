@@ -95,12 +95,12 @@ public class GeoPackageSchema
             throw new IllegalArgumentException("Table may not be null");
         }
 
-        if(columnName == null)
+        if(columnName == null || columnName.isEmpty())
         {
-            throw new IllegalArgumentException("Column name may not be null");
+            throw new IllegalArgumentException("Column name may not be null or empty");
         }
 
-        // TODO check to make sure the column belongs to the table
+        // TODO check to make sure the table exists and that the column belongs to that table
 
         final DataColumn existingDataColumn = this.getDataColumn(table, columnName);
 
