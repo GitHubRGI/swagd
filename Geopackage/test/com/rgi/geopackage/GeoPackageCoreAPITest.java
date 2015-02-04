@@ -26,7 +26,10 @@ import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Random;
 
 import org.junit.Rule;
@@ -1531,9 +1534,10 @@ public class GeoPackageCoreAPITest
     public void equalsContent() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
     {
         final File testFile = this.getRandomFile(18);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final String tableName = "tableName";
+        
+        try(GeoPackage gpkg = createGeoPackage(tableName, "columnName", testFile))
         {
-            final String tableName = "tableName";
             final String dataType  = "tiles";
             final String identifier = "identifier";
             final String description = "description";
@@ -1578,14 +1582,18 @@ public class GeoPackageCoreAPITest
     public void equalsContent2() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
     {
         final File testFile = this.getRandomFile(18);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final String tableName = "tableName";
+        
+        
+        try(GeoPackage gpkg = createGeoPackage(tableName, "columnName", testFile))
         {
-            final String tableName = "tableName";
             final String dataType  = "tiles";
             final String identifier = "identifier";
             final String description = "description";
             final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 0.0, 0.0);
             final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+            
+            
 
             final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
 
@@ -1625,9 +1633,10 @@ public class GeoPackageCoreAPITest
     public void equalsContent3() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
     {
         final File testFile = this.getRandomFile(18);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final String tableName = "tableName";
+        
+        try(GeoPackage gpkg = createGeoPackage(tableName, "columnName", testFile))
         {
-            final String tableName = "tableName";
             final String dataType  = "tiles";
             final String identifier = "identifier";
             final String description = "description";
@@ -1671,9 +1680,10 @@ public class GeoPackageCoreAPITest
     public void equalsContent4() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
     {
         final File testFile = this.getRandomFile(18);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final String tableName = "tableName";
+        
+        try(GeoPackage gpkg = createGeoPackage(tableName, "columnName", testFile))
         {
-            final String tableName = "tableName";
             final String dataType  = "tiles";
             final String identifier = "identifier";
             final String description = "description";
@@ -1719,9 +1729,10 @@ public class GeoPackageCoreAPITest
     public void equalsContent5() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
     {
         final File testFile = this.getRandomFile(18);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final String tableName = "tableName";
+        
+        try(GeoPackage gpkg = createGeoPackage(tableName, "columnName", testFile))
         {
-            final String tableName = "tableName";
             final String dataType  = "tiles";
             final String identifier = null;
             final String description = null;
@@ -1748,6 +1759,39 @@ public class GeoPackageCoreAPITest
                 }
             }
         }
+    }
+    
+    private GeoPackage createGeoPackage(String tableName, String columnName, File testFile) throws ClassNotFoundException, SQLException, FileAlreadyExistsException, FileNotFoundException, ConformanceException
+    {
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            gpkg.close();
+            createTable(tableName, columnName, testFile);
+            
+            return new GeoPackage(testFile, false, OpenMode.Open);
+        }
+    }
+    
+    private void createTable(String tableName, String columnName, File testFile) throws ClassNotFoundException, SQLException
+    {
+        String createTable = String.format("CREATE TABLE %s ( %s TEXT," +
+                                                             "other_column INTEGER NOT NULL," +
+                                                             "more_columns INTEGER NOT NULL," +
+                                                             "last_Column TEXT NOT NULL)", 
+                                            tableName, 
+                                            columnName);
+        try(Connection con = getConnection(testFile);
+            Statement stmt = con.createStatement();)
+        {
+            stmt.execute(createTable);
+        }
+    }
+    
+    private static Connection getConnection(File testFile) throws ClassNotFoundException, SQLException
+    {
+        Class.forName("org.sqlite.JDBC");   // Register the driver
+
+        return DriverManager.getConnection("jdbc:sqlite:" + testFile.getPath()); // Initialize the database connection
     }
 
     private String getRanString(final int length)

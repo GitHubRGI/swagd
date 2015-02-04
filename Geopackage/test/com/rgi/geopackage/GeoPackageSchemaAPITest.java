@@ -25,7 +25,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -64,8 +67,10 @@ public class GeoPackageSchemaAPITest
     public void addDataColumn() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
     {
         File testFile = this.getRandomFile(5);
+        String   columnName     = "columnName";
+        String   tableName      = "tableName";
         
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = createGeoPackage(tableName, columnName, testFile))
         {
             Content table = gpkg.core().addContent("tableName", 
                                                    "tiles", 
@@ -74,7 +79,7 @@ public class GeoPackageSchemaAPITest
                                                    new BoundingBox(0.0,0.0,90.0,180.0), 
                                                    gpkg.core().getSpatialReferenceSystem(4326));
             
-            String   columnName     = "columnName";
+            
             String   name           = "name";
             String   title          = "title";
             String   description    = "description";
@@ -190,7 +195,7 @@ public class GeoPackageSchemaAPITest
     {
         File testFile = this.getRandomFile(12);
         
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = createGeoPackage("tableName", "columnName", testFile))
         {
             Content table = gpkg.core().addContent("tableName", 
                                                    "tiles", 
@@ -327,21 +332,23 @@ public class GeoPackageSchemaAPITest
     {
         File testFile = this.getRandomFile(10);
         
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        String tableName = "tableName";
+        String columnName = "columnName";
+        
+        try(GeoPackage gpkg = createGeoPackage(tableName, columnName, testFile))
         {
             Collection<DataColumn> shouldBeEmpty = gpkg.schema().getDataColumns();
             
             assertTrue("Returned a non empty collection when there were no DataColumn entries in the geopackage with getDataColumn method.",
                        shouldBeEmpty.isEmpty());
             
-            Content table = gpkg.core().addContent("tableName", 
+            Content table = gpkg.core().addContent(tableName, 
                                                    "tiles", 
                                                    "identifier", 
                                                    "description", 
                                                    new BoundingBox(0.0,0.0,90.0,180.0), 
                                                    gpkg.core().getSpatialReferenceSystem(4326));
             
-            String   columnName     = "columnName";
             String   name           = "name";
             String   title          = "title";
             String   description    = "description";
@@ -350,7 +357,7 @@ public class GeoPackageSchemaAPITest
             
             DataColumn column = gpkg.schema().addDataColumn(table, columnName, name, title, description, mimeType, constraintName);
             
-            String   columnName2     = "columnName2";
+            String   columnName2     = "last_column";
             String   name2           = "name2";
             String   title2          = "title2";
             String   description2    = "description2";
@@ -504,6 +511,39 @@ public class GeoPackageSchemaAPITest
         {
             deleteFile(testFile);
         }
+    }
+    
+    private GeoPackage createGeoPackage(String tableName, String columnName, File testFile) throws ClassNotFoundException, SQLException, FileAlreadyExistsException, FileNotFoundException, ConformanceException
+    {
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            gpkg.close();
+            createTable(tableName, columnName, testFile);
+            
+            return new GeoPackage(testFile, false, OpenMode.Open);
+        }
+    }
+    
+    private void createTable(String tableName, String columnName, File testFile) throws ClassNotFoundException, SQLException
+    {
+        String createTable = String.format("CREATE TABLE %s ( %s TEXT," +
+                                                             "other_column INTEGER NOT NULL," +
+                                                             "more_columns INTEGER NOT NULL," +
+                                                             "last_Column TEXT NOT NULL)", 
+                                            tableName, 
+                                            columnName);
+        try(Connection con = getConnection(testFile);
+            Statement stmt = con.createStatement();)
+        {
+            stmt.execute(createTable);
+        }
+    }
+    
+    private static Connection getConnection(File testFile) throws ClassNotFoundException, SQLException
+    {
+        Class.forName("org.sqlite.JDBC");   // Register the driver
+
+        return DriverManager.getConnection("jdbc:sqlite:" + testFile.getPath()); // Initialize the database connection
     }
     
     private boolean dataColumnConstraintsEqual(DataColumnConstraint expected, DataColumnConstraint returned) 
