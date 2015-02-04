@@ -18,17 +18,19 @@
 
 package com.rgi.common.tile;
 
+import com.rgi.common.coordinate.Coordinate;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
+
 /**
  * @author Luke Lambert
- * @author Duff Means
  *
  */
 public enum TileOrigin
 {
-    UpperLeft(1, 1),
-    LowerLeft(1, -1),
-    UpperRight(-1, 1),
-    LowerRight(-1, -1);
+    UpperLeft (1, 0),
+    LowerLeft (0, 0),
+    UpperRight(1, 1),
+    LowerRight(0, 1);
 
     TileOrigin(final int horizontal, final int vertical)
     {
@@ -39,13 +41,57 @@ public enum TileOrigin
     private final int horizontal;
     private final int vertical;
 
-    public int getDeltaX()
+    public Coordinate<Integer> transform(final TileOrigin toOrigin, final Coordinate<Integer> tileCoordinate, final TileMatrixDimensions matrixDimensions)
     {
-        return this.horizontal;
+        if(toOrigin == null)
+        {
+            throw new IllegalArgumentException("Requested tile origin may not be null");
+        }
+
+        if(tileCoordinate == null)
+        {
+            throw new IllegalArgumentException("Tile coordinate may not be null");
+        }
+
+        if(matrixDimensions == null)
+        {
+            throw new IllegalArgumentException("Tile matrix dimensions may not be null");
+        }
+
+        return new Coordinate<>(this.transformVertical  (toOrigin, tileCoordinate.getY().intValue(), matrixDimensions.getHeight()),
+                                this.transformHorizontal(toOrigin, tileCoordinate.getX().intValue(), matrixDimensions.getWidth()));
     }
 
-    public int getDeltaY()
+    public Coordinate<Integer> transform(final TileOrigin toOrigin, final int tileY, final int tileX, final TileMatrixDimensions matrixDimensions)
     {
-        return this.vertical;
+        if(toOrigin == null)
+        {
+            throw new IllegalArgumentException("Requested tile origin may not be null");
+        }
+
+        if(matrixDimensions == null)
+        {
+            throw new IllegalArgumentException("Tile matrix dimensions may not be null");
+        }
+
+        return new Coordinate<>(this.transformVertical  (toOrigin, tileY, matrixDimensions.getHeight()),
+                                this.transformHorizontal(toOrigin, tileX, matrixDimensions.getWidth()));
+    }
+
+    public int transformHorizontal(final TileOrigin toOrigin, final int tileX, final int tileMatrixWidth)
+    {
+        return transform(this.horizontal, toOrigin.horizontal, tileX, tileMatrixWidth);
+    }
+
+    public int transformVertical(final TileOrigin toOrigin, final int tileY, final int tileMatrixHeight)
+    {
+        return transform(this.vertical, toOrigin.vertical, tileY, tileMatrixHeight);
+    }
+
+    private static int transform(final int fromDirection, final int toDirection, final int tileCoordinate, final int tileMatrixDimension)
+    {
+        final int maxTileCoordinate = tileMatrixDimension - 1;
+
+        return tileCoordinate + (fromDirection ^ toDirection) * (maxTileCoordinate - 2*tileCoordinate);
     }
 }
