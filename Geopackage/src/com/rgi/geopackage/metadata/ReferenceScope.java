@@ -49,6 +49,11 @@ public enum ReferenceScope
 
     public static ReferenceScope fromText(final String text)
     {
+        if(text == null)
+        {
+            throw new IllegalArgumentException("Text may not be null");
+        }
+
         switch(text.toLowerCase())
         {
             case "geopackage": return ReferenceScope.GeoPackage;

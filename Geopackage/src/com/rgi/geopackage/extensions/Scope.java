@@ -51,7 +51,12 @@ public enum Scope
 
     public static Scope fromText(final String text)
     {
-        switch(text)
+        if(text == null)
+        {
+            throw new IllegalArgumentException("Text may not be null");
+        }
+
+        switch(text.toLowerCase())
         {
             case "read-write": return ReadWrite;
             case "write-only": return WriteOnly;
