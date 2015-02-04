@@ -131,7 +131,7 @@ public class GeoPackageSchema
                 preparedStatement.setString(4, title);
                 preparedStatement.setString(5, description);
                 preparedStatement.setObject(6, mimeType.toString());
-                preparedStatement.setObject(6, constraintName);
+                preparedStatement.setObject(7, constraintName);
 
                 preparedStatement.executeUpdate();
             }
@@ -266,7 +266,7 @@ public class GeoPackageSchema
                 preparedStatement.setBoolean(5, minimumIsInclusive);
                 preparedStatement.setObject (6, maximum);
                 preparedStatement.setBoolean(7, maximumIsInclusive);
-                preparedStatement.setObject (6, description);
+                preparedStatement.setObject (8, description);
 
                 preparedStatement.executeUpdate();
             }
@@ -331,7 +331,7 @@ public class GeoPackageSchema
         try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(dataColumnQuerySql))
         {
             preparedStatement.setString(1, table.getTableName());
-            preparedStatement.setString(1, columnName);
+            preparedStatement.setString(2, columnName);
 
             try(ResultSet result = preparedStatement.executeQuery())
             {
