@@ -399,11 +399,11 @@ public class GeoPackageSchema
                 return new DataColumnConstraint(constraintName,
                                                 constraintType.toString(),
                                                 value,
-                                                (Number) result.getObject(1),  // minimum
-                                                (Boolean)result.getObject(2),  // minimum is inclusive
-                                                (Number) result.getObject(3),  // maximum
-                                                (Boolean)result.getObject(4),  // maximum is inclusive
-                                                         result.getString(5)); // description
+                                                (Number)  result.getObject(1),   // minimum
+                                                          result.getBoolean(2),  // minimum is inclusive
+                                                (Number)  result.getObject(3),   // maximum
+                                                          result.getBoolean(4),  // maximum is inclusive
+                                                          result.getString(5));  // description
             }
         }
 

@@ -40,6 +40,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.Content;
 import com.rgi.geopackage.schema.DataColumn;
+import com.rgi.geopackage.schema.DataColumnConstraint;
 import com.rgi.geopackage.schema.Type;
 import com.rgi.geopackage.verification.ConformanceException;
 
@@ -372,63 +373,64 @@ public class GeoPackageSchemaAPITest
         }
     }
     
-//    /**
-//     * Tests if geopackage addDataColumnConstraint
-//     * returns the expected values
-//     * @throws FileAlreadyExistsException
-//     * @throws ClassNotFoundException
-//     * @throws FileNotFoundException
-//     * @throws SQLException
-//     * @throws ConformanceException
-//     */
-//    @Test
-//    public void addDataColumnConstraint() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
-//    {
-//        File testFile = this.getRandomFile(11);
-//        
-//        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
-//        {
-//            
-//            String  constraintName      = "constraint_name";
-//            Type    constraintType      = Type.Range;
-//            String  value               = null;
-//            Number  minimum             = 0;
-//            Boolean minimumIsInclusive  = true;
-//            Number  maximum             = 20;
-//            Boolean maximumIsInclusive  = false;
-//            String  description         = "description";
-//            
-//            DataColumnConstraint constraint = gpkg.schema().addDataColumnConstraint(constraintName, 
-//                                                                                    constraintType, 
-//                                                                                    value, 
-//                                                                                    minimum, 
-//                                                                                    minimumIsInclusive, 
-//                                                                                    maximum, 
-//                                                                                    maximumIsInclusive, 
-//                                                                                    description);
-//            gpkg.schema().addDataColumnConstraint(constraintName, 
-//                                                  constraintType, 
-//                                                  value, 
-//                                                  minimum, 
-//                                                  minimumIsInclusive, 
-//                                                  maximum, 
-//                                                  maximumIsInclusive, 
-//                                                  description);
-//            
-//            assertTrue("The Returned datacolumnconstraint using addDataColumnConstraint does not return the expected values",
-//                       constraint.getConstraintName().equals(constraintName)            &&
-//                       constraint.getConstraintType().equals(constraintType.toString()) &&
-//                       constraint.getValue() == null                                    &&
-//                       constraint.getMinimum().equals(minimum)                          &&
-//                       constraint.getMinimumIsInclusive().equals(minimumIsInclusive)    &&
-//                       constraint.getMaximum().equals(maximum)                          &&
-//                       constraint.getMaximumIsInclusive().equals(maximumIsInclusive));
-//        }
-//        finally
-//        {
-//            deleteFile(testFile);
-//        }
-//    }//TODO bug in get DataColumnConstraints
+    /**
+     * Tests if geopackage addDataColumnConstraint
+     * returns the expected values
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void addDataColumnConstraint() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+        File testFile = this.getRandomFile(11);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            
+            String  constraintName      = "constraint_name";
+            Type    constraintType      = Type.Range;
+            String  value               = null;
+            Number  minimum             = 0;
+            Boolean minimumIsInclusive  = true;
+            Number  maximum             = 20;
+            Boolean maximumIsInclusive  = false;
+            String  description         = "description";
+            
+            DataColumnConstraint constraint = gpkg.schema().addDataColumnConstraint(constraintName, 
+                                                                                    constraintType, 
+                                                                                    value, 
+                                                                                    minimum, 
+                                                                                    minimumIsInclusive, 
+                                                                                    maximum, 
+                                                                                    maximumIsInclusive, 
+                                                                                    description);
+            gpkg.schema().addDataColumnConstraint(constraintName, 
+                                                  constraintType, 
+                                                  value, 
+                                                  minimum, 
+                                                  minimumIsInclusive, 
+                                                  maximum, 
+                                                  maximumIsInclusive, 
+                                                  description);
+            
+            assertTrue("The Returned datacolumnconstraint using addDataColumnConstraint does not return the expected values",
+                       constraint.getConstraintName().equals(constraintName)            &&
+                       constraint.getConstraintType().equals(constraintType.toString()) &&
+                       constraint.getValue() == null                                    &&
+                       constraint.getMinimum().equals(minimum)                          &&
+                       constraint.getMinimumIsInclusive().equals(minimumIsInclusive)    &&
+                       constraint.getMaximum().equals(maximum)                          &&
+                       constraint.getMaximumIsInclusive().equals(maximumIsInclusive));
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
     
     /**
      * Tests if Geopackage schema will
@@ -466,27 +468,72 @@ public class GeoPackageSchemaAPITest
         }
     }
     
-//    private boolean dataColumnConstraintsEqual(DataColumnConstraint expected, DataColumnConstraint returned) //TODO can't use until bug is fixed
-//    {
-//        return expected.getConstraintName()    .equals(returned.getConstraintName())    &&
-//               expected.getConstraintType()    .equals(returned.getConstraintType())    &&
-//               expected.getValue()             .equals(returned.getValue())             &&
-//               expected.getMinimum()           .equals(returned.getMinimum())           &&
-//               expected.getMaximumIsInclusive().equals(returned.getMaximumIsInclusive())&&
-//               expected.getMaximum()           .equals(returned.getMaximum())           &&
-//               expected.getMaximumIsInclusive().equals(returned.getMaximumIsInclusive())&&
-//               expected.getDescription()       .equals(returned.getDescription());
-//    }
+    @Test
+    public void getDataColumnConstraint() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    {
+        File testFile = this.getRandomFile(11);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            
+            String  constraintName      = "constraint_name";
+            Type    constraintType      = Type.Range;
+            String  value               = null;
+            Number  minimum             = 0;
+            Boolean minimumIsInclusive  = false;
+            Number  maximum             = 20;
+            Boolean maximumIsInclusive  = true;
+            String  description         = "description";
+            
+            DataColumnConstraint constraintExpected = gpkg.schema().addDataColumnConstraint(constraintName, 
+                                                                                            constraintType, 
+                                                                                            value, 
+                                                                                            minimum, 
+                                                                                            minimumIsInclusive, 
+                                                                                            maximum, 
+                                                                                            maximumIsInclusive, 
+                                                                                            description);
+            
+            DataColumnConstraint constraintReturned = gpkg.schema().getDataColumnConstraint(constraintName, constraintType, value);
+            
+            assertTrue("The data Column Constraint returned isn't the same as expected.",
+                       dataColumnConstraintsEqual(constraintExpected, constraintReturned));
+            
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    private boolean dataColumnConstraintsEqual(DataColumnConstraint expected, DataColumnConstraint returned) 
+    {
+        return isEqual(expected.getConstraintName(),     returned.getConstraintName())    &&
+               isEqual(expected.getConstraintType(),     returned.getConstraintType())    &&
+               isEqual(expected.getValue(),              returned.getValue())             &&
+               isEqual(expected.getMinimum(),            returned.getMinimum())           &&
+               isEqual(expected.getMaximumIsInclusive(), returned.getMaximumIsInclusive())&&
+               isEqual(expected.getMaximum(),            returned.getMaximum())           &&
+               isEqual(expected.getMaximumIsInclusive(), returned.getMaximumIsInclusive())&&
+               isEqual(expected.getDescription(),        returned.getDescription());
+    }
 
     private boolean dataColumnsEqual(DataColumn expected, DataColumn returned)
     {
-        return expected.getColumnName()    .equals(returned.getColumnName())  &&
-               expected.getTableName()     .equals(returned.getTableName())   &&
-               expected.getName()          .equals(returned.getName())        &&
-               expected.getTitle()         .equals(returned.getTitle())       &&
-               expected.getDescription()   .equals(returned.getDescription()) &&
-               expected.getMimeType()      .equals(returned.getMimeType())    &&
-               expected.getConstraintName().equals(returned.getConstraintName());
+        return isEqual(expected.getColumnName(),     returned.getColumnName())  &&
+               isEqual(expected.getTableName(),      returned.getTableName())   &&
+               isEqual(expected.getName(),           returned.getName())        &&
+               isEqual(expected.getTitle(),          returned.getTitle())       &&
+               isEqual(expected.getDescription(),    returned.getDescription()) &&
+               isEqual(expected.getMimeType(),       returned.getMimeType())    &&
+               isEqual(expected.getConstraintName(), returned.getConstraintName());
+    }
+    
+
+    private static <T> boolean isEqual(final T first, final T second)
+    {
+        return first == null ? second == null
+                             : first.equals(second);
     }
     private static void deleteFile(File testFile)
     {
