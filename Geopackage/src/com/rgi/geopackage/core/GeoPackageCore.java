@@ -280,6 +280,11 @@ public class GeoPackageCore
             throw new IllegalArgumentException("The tile set's name may not start with the reserved prefix 'gpkg_'");
         }
 
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, tableName))
+        {
+           throw new IllegalArgumentException("Content entry references a table that does not exist");
+        }
+
         if(dataType == null || dataType.isEmpty())
         {
             throw new IllegalArgumentException("Data type cannot be null, or empty.");
@@ -296,7 +301,7 @@ public class GeoPackageCore
         {
             if(!existingContent.equals(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem.getIdentifier()))
             {
-                throw new IllegalArgumentException("A content with this table name or identifier already exists but with different properties");
+                throw new IllegalArgumentException("A content entry with this table name or identifier already exists but with different properties");
             }
 
             return existingContent;
