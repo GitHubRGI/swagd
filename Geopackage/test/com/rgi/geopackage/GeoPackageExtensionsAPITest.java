@@ -630,8 +630,6 @@ public class GeoPackageExtensionsAPITest
                                      hasExstensionShouldBeTrue, 
                                      hasExtensionShouldBeFalse),
                        hasExtensionShouldBeFalse == false  && hasExstensionShouldBeTrue == true);
-            
-                    
         }
         finally
         {
@@ -700,9 +698,9 @@ public class GeoPackageExtensionsAPITest
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
            Collection<Extension> shouldBeNull = gpkg.extensions().getExtensions();
-           assertTrue("Expected GeoPackage Extensions to return null when there are no extensions "
+           assertTrue("Expected GeoPackage Extensions to return an empty collection when there are no extensions "
                        + "or extensions table in this geopackage when using the method getExtensions.",
-                      shouldBeNull == null);
+                      shouldBeNull.isEmpty());
         }
         finally
         {
@@ -816,6 +814,13 @@ public class GeoPackageExtensionsAPITest
        {
            deleteFile(testFile);
        }
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void scopeFromTextIllegalArgumentException()
+    {
+        Scope.fromText("doesn't match anything");
+        fail("Expected GeoPackage Extensions Scope class to throw an IllegalArgumentException since the text does not match either of the cases.");
     }
 
     private static void createExtensionsTable(File testFile) throws SQLException, ClassNotFoundException
