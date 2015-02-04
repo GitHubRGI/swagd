@@ -329,7 +329,7 @@ public class GeoPackageSchemaAPITest
         
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            Collection<DataColumn> shouldBeEmpty = gpkg.schema().getDataColumn();
+            Collection<DataColumn> shouldBeEmpty = gpkg.schema().getDataColumns();
             
             assertTrue("Returned a non empty collection when there were no DataColumn entries in the geopackage with getDataColumn method.",
                        shouldBeEmpty.isEmpty());
@@ -361,7 +361,7 @@ public class GeoPackageSchemaAPITest
             
             List<DataColumn> columnsExpected = Arrays.asList(column, column2);
             
-            Collection<DataColumn> columnsReturned = gpkg.schema().getDataColumn();
+            Collection<DataColumn> columnsReturned = gpkg.schema().getDataColumns();
             
             assertTrue("GeoPackage Schema did not returned the expected DataColumn entries from the geopackage when using getDataColumn() method",
                        columnsReturned.size() == 2 &&

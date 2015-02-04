@@ -416,7 +416,7 @@ public class GeoPackageSchema
      * @return Returns a collection of {@link DataColumn} objects that represents all of the entries in the GeoPackage data columns table
      * @throws SQLException
      */
-    public Collection<DataColumn> getDataColumn() throws SQLException
+    public Collection<DataColumn> getDataColumns() throws SQLException
     {
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageSchema.DataColumnsTableName))
         {
@@ -464,7 +464,7 @@ public class GeoPackageSchema
      * @return Returns a collection of {@link DataColumnConstraint} objects that represents all of the entries in the GeoPackage data column constraints table
      * @throws SQLException
      */
-    public Collection<DataColumnConstraint> getDataColumnConstraint() throws SQLException
+    public Collection<DataColumnConstraint> getDataColumnConstraints() throws SQLException
     {
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageSchema.DataColumnConstraintsTableName))
         {
