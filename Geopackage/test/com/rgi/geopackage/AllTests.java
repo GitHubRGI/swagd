@@ -27,7 +27,8 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({GeoPackageTilesAPITest.class,  GeoPackageCoreAPITest.class,       DatabaseUtilityTest.class,
-               GeopackageTileStoreTest.class, GeoPackageExtensionsAPITest.class, GeoPackageMetadataAPITest.class})
+               GeopackageTileStoreTest.class, GeoPackageExtensionsAPITest.class, GeoPackageMetadataAPITest.class,
+               GeoPackageSchemaAPITest.class})
 public class AllTests
 {
     // This will run all the tests created

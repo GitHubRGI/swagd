@@ -815,6 +815,13 @@ public class GeoPackageExtensionsAPITest
            deleteFile(testFile);
        }
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void scopeFromTextIllegalArgumentException()
+    {
+        Scope.fromText("doesn't match anything");
+        fail("Expected GeoPackage Extensions Scope class to throw an IllegalArgumentException since the text does not match either of the cases.");
+    }
 
     private static void createExtensionsTable(File testFile) throws SQLException, ClassNotFoundException
     {
