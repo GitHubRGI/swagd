@@ -58,9 +58,18 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
         }
 
         // TODO tile origin transform from TileOrigin.LowerLeft?
+        final Coordinate<Double> topLeft = Bounds.getTopLeft();
+        
+        final double tileHeightInSrs = Bounds.getHeight() / dimensions.getHeight();
+        final double tileWidthInSrs  = Bounds.getWidth()  / dimensions.getWidth();
 
-        return new Coordinate<>((int)((coordinate.getY() + Bounds.getHeight()/2.0) / Bounds.getHeight() * dimensions.getHeight()),
-                                (int)((coordinate.getX() + Bounds.getWidth() /2.0) / Bounds.getWidth()  * dimensions.getWidth()));
+        final double normalizedSrsTileCoordinateY = topLeft.getY() - coordinate.getY();
+        final double normalizedSrsTileCoordinateX = coordinate.getX() - topLeft.getX();
+
+        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);  // TODO this will return max matrix height + 1 at the far right edge of the SRS
+        final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
+        
+        return new Coordinate<>(tileY, tileX);
     }
 
     @Override

@@ -52,16 +52,29 @@ public class SphericalMercatorCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Origin may not be null");
         }
 
-        final double tileWidth  = EarthEquatorialCircumfrence / dimensions.getHeight();
-        final double tileHeight = EarthEquatorialCircumfrence / dimensions.getWidth();
-
-        double   verticalOriginShift =  tileOrigin.getDeltaY() * (EarthEquatorialCircumfrence / 2.0);
-        double horizontalOriginShift = -tileOrigin.getDeltaX() * (EarthEquatorialCircumfrence / 2.0);
+//        final double tileWidth  = EarthEquatorialCircumfrence / dimensions.getHeight();
+//        final double tileHeight = EarthEquatorialCircumfrence / dimensions.getWidth();
+//
+//        double   verticalOriginShift =  tileOrigin.getDeltaY() * (EarthEquatorialCircumfrence / 2.0);
+//        double horizontalOriginShift = -tileOrigin.getDeltaX() * (EarthEquatorialCircumfrence / 2.0);
 
         // TODO tile origin transform from TileOrigin.LowerLeft?
+        
+        final Coordinate<Double> topLeft = Bounds.getTopLeft();
+        
+        final double tileHeightInSrs = Bounds.getHeight() / dimensions.getHeight();
+        final double tileWidthInSrs  = Bounds.getWidth()  / dimensions.getWidth();
 
-        return new Coordinate<>((int)((coordinate.getY() -   verticalOriginShift) * tileHeight),
-                                (int)((coordinate.getX() - horizontalOriginShift) * tileWidth));
+        final double normalizedSrsTileCoordinateY = topLeft.getY() - coordinate.getY();
+        final double normalizedSrsTileCoordinateX = coordinate.getX() - topLeft.getX();
+
+        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);  // TODO this will return max matrix height + 1 at the far right edge of the SRS
+        final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
+        
+        return new Coordinate<>(tileY, tileX);
+
+//        return new Coordinate<>((int)((coordinate.getY() -   verticalOriginShift) * tileHeight),
+//                                (int)((coordinate.getX() - horizontalOriginShift) * tileWidth));
     }
 
     @Override
@@ -131,16 +144,18 @@ public class SphericalMercatorCrsProfile implements CrsProfile
     @Override
     public BoundingBox getBounds()
     {
-        return new BoundingBox(-Math.PI * EarthEquatorialRadius,
-                               -Math.PI * EarthEquatorialRadius,
-                                Math.PI * EarthEquatorialRadius,
-                                Math.PI * EarthEquatorialRadius);
+        return Bounds;
     }
 
     /**
      * Datum's spheroid's semi-major axis (radius of earth) in meters
      */
     public static final double EarthEquatorialRadius = 6378137.0;
+    
+    public static final BoundingBox Bounds = new BoundingBox(-Math.PI * EarthEquatorialRadius,
+                                                             -Math.PI * EarthEquatorialRadius,
+                                                              Math.PI * EarthEquatorialRadius,
+                                                              Math.PI * EarthEquatorialRadius);
 
     /**
      * Earth's equatorial circumference (based on the datum's spheroid's semi-major axis, radius) in meters
@@ -148,4 +163,5 @@ public class SphericalMercatorCrsProfile implements CrsProfile
     public static final double EarthEquatorialCircumfrence = 2.0 * Math.PI * EarthEquatorialRadius;
 
     private final static CoordinateReferenceSystem CoordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
+    
 }
