@@ -109,8 +109,8 @@ public class GeoPackageExtensions
             return null;
         }
 
-        // tableName, columnName, extensionName can all be null which is why
-        // we need to use the SelectBuilder rather a simpler prepared statement
+        // tableName, and columnName can be null which is why we need to use
+        // the SelectBuilder rather a simpler prepared statement
         try(final SelectBuilder selectStatement = new SelectBuilder(this.databaseConnection,
                                                                     GeoPackageExtensions.ExtensionsTableName,
                                                                     Arrays.asList("table_name",
@@ -227,6 +227,11 @@ public class GeoPackageExtensions
         if(!extensionName.matches(Extension.ExtensionNameRegularExpression))
         {
             throw new IllegalArgumentException("Extension name must be a value of the form <author>_<extension_name> where <author> indicates the person or organization that developed and maintains the extension. The valid character set for <author> SHALL be [a-zA-Z0-9]. The valid character set for <extension_name> SHALL be [a-zA-Z0-9_]");   // Requirement 82
+        }
+
+        if(scope == null)
+        {
+            throw new IllegalArgumentException("Scope may not be null");
         }
 
         final Extension existingExtension = this.getExtension(tableName, columnName, extensionName);
