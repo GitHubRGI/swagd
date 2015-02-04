@@ -58,7 +58,7 @@ public enum Scope
     NonGeographicDataset("nonGeographicDataset", "007", "Information applies to non-geographic data"),
     DimensionGroup      ("dimensionGroup",       "008", "Information applies to a dimension group");
 
-    Scope(final String name, final String code, final String description)
+    private Scope(final String name, final String code, final String description)
     {
         this.name        = name;
         this.code        = code;
