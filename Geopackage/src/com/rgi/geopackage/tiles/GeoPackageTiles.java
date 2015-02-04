@@ -148,8 +148,8 @@ public class GeoPackageTiles
                                  spatialReferenceSystem);
 
             this.addTileMatrixSetNoCommit(tableName,
-                                  boundingBox,
-                                  spatialReferenceSystem); // Add tile matrix set metadata
+                                          boundingBox,
+                                          spatialReferenceSystem); // Add tile matrix set metadata
 
             this.databaseConnection.commit();
 
