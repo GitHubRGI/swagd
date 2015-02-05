@@ -164,7 +164,7 @@ public class TileJob implements Runnable
         final boolean direct = false;
 
         // generate base tile set
-        final BufferedImage source = convert(this.outputDataset);
+        final BufferedImage source = this.convert(this.outputDataset);
         TileSet matrixBounds = new TileSet(maxZoom, this.tileScheme.origin());
 
         Coordinate<Integer> upperLeftTileCoordinate  = transform(worldBounds, imageUpperLeft,  matrixBounds);
@@ -614,141 +614,88 @@ public class TileJob implements Runnable
         return new Coordinate<>(outputY, outputX);
     }
 
-    public static BufferedImage convert(final Dataset dataset)
+    public BufferedImage convert(final Dataset dataset) throws TilingException
     {
-        Band poBand = null;
+        Band band = null;
 
         final int          bandCount = dataset.getRasterCount();
         final ByteBuffer[] bands     = new ByteBuffer[bandCount];
-        final int[]        banks     = new int[bandCount];
-        final int[]        offsets   = new int[bandCount];
+        final int[]        banks     = new int       [bandCount];
+        final int[]        offsets   = new int       [bandCount];
 
         final int xsize = dataset.getRasterXSize();
         final int ysize = dataset.getRasterYSize();
         final int pixels = xsize * ysize;
-        int buf_type = 0;
-        int buf_size = 0;
 
-        for(int band = 0; band < bandCount; band++)
+        int bandBufferType = 0;
+
+        for(int bandIndex = 0; bandIndex < bandCount; ++bandIndex)
         {
             // Bands are not 0-base indexed, so we must add 1
-            poBand = dataset.GetRasterBand(band + 1);
+            band = dataset.GetRasterBand(bandIndex + 1);
 
-            buf_type = poBand.getDataType();
-            buf_size = pixels * gdal.GetDataTypeSize(buf_type) / 8;
+            bandBufferType = band.getDataType();
+            final int bandBufferSize = pixels * gdal.GetDataTypeSize(bandBufferType) / 8;
 
-            final ByteBuffer data = ByteBuffer.allocateDirect(buf_size);
+            final ByteBuffer data = ByteBuffer.allocateDirect(bandBufferSize);
             data.order(ByteOrder.nativeOrder());
 
-            int returnVal = 0;
-            try
+            if(band.ReadRaster_Direct(0,
+                                      0,
+                                      band.getXSize(),
+                                      band.getYSize(),
+                                      xsize,
+                                      ysize,
+                                      bandBufferType,
+                                      data) != gdalconstConstants.CE_None)
             {
-                returnVal = poBand.ReadRaster_Direct(0,
-                                                     0,
-                                                     poBand.getXSize(),
-                                                     poBand.getYSize(),
-                                                     xsize,
-                                                     ysize,
-                                                     buf_type,
-                                                     data);
-            }
-            catch(final Exception ex)
-            {
-                throw new IllegalArgumentException("Could not read raster data.", ex);
+                throw new TilingException(String.format("Reading a raster band of the image failed: <%d> %s",
+                                                        gdal.GetLastErrorNo(),
+                                                        gdal.GetLastErrorMsg()));
             }
 
-            if(returnVal == gdalconstConstants.CE_None)
-            {
-                bands[band] = data;
-            }
-            else
-            {
-                throw new IllegalArgumentException("No data read!");
-            }
-            banks[band] = band;
-            offsets[band] = 0;
+            bands  [bandIndex] = data;
+            banks  [bandIndex] = bandIndex;
+            offsets[bandIndex] = 0;
         }
 
-        if(poBand == null)
+        if(band == null)
         {
             throw new RuntimeException("The GDAL dataset returned null for a raster band");
         }
 
-        DataBuffer  imgBuffer   = null;
-        SampleModel sampleModel = null;
-        int         data_type   = 0;
-        int         buffer_type = 0;
+        final ImageProperties imageProperties = this.getImageProperties(band, bandCount, pixels, bands);
+        final SampleModel     sampleModel     = new BandedSampleModel(imageProperties.bufferType, xsize, ysize, xsize, banks, offsets);
+        final WritableRaster  raster          = Raster.createWritableRaster(sampleModel, imageProperties.imageBuffer, null);
 
-        if(buf_type == gdalconstConstants.GDT_Byte)
-        {
-            final byte[][] bytes = new byte[bandCount][];
-            for(int i = 0; i < bandCount; i++)
-            {
-                bytes[i] = new byte[pixels];
-                bands[i].get(bytes[i]);
-            }
-            imgBuffer   = new DataBufferByte(bytes, pixels);
-            buffer_type = DataBuffer.TYPE_BYTE;
-            sampleModel = new BandedSampleModel(buffer_type, xsize, ysize, xsize, banks, offsets);
-            data_type   = (poBand.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) ? BufferedImage.TYPE_BYTE_INDEXED : BufferedImage.TYPE_BYTE_GRAY;
-        }
-        else if(buf_type == gdalconstConstants.GDT_Int16)
-        {
-            final short[][] shorts = new short[bandCount][];
-            for(int i = 0; i < bandCount; i++)
-            {
-                shorts[i] = new short[pixels];
-                bands[i].asShortBuffer().get(shorts[i]);
-            }
-            imgBuffer   = new DataBufferShort(shorts, pixels);
-            buffer_type = DataBuffer.TYPE_USHORT;
-            sampleModel = new BandedSampleModel(buffer_type, xsize, ysize, xsize, banks, offsets);
-            data_type   = BufferedImage.TYPE_USHORT_GRAY;
-        }
-        else if(buf_type == gdalconstConstants.GDT_Int32)
-        {
-            final int[][] ints = new int[bandCount][];
-            for(int i = 0; i < bandCount; i++)
-            {
-                ints[i] = new int[pixels];
-                bands[i].asIntBuffer().get(ints[i]);
-            }
-            imgBuffer   = new DataBufferInt(ints, pixels);
-            buffer_type = DataBuffer.TYPE_INT;
-            sampleModel = new BandedSampleModel(buffer_type, xsize, ysize, xsize, banks, offsets);
-            data_type   = BufferedImage.TYPE_CUSTOM;
-        }
-
-        final WritableRaster raster = Raster.createWritableRaster(sampleModel, imgBuffer, null);
         BufferedImage img = null;
 
-        if(poBand.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex)
+        if(band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex)
         {
-            // data_type = BufferedImage.TYPE_BYTE_INDEXED; // This assignment never had an effect
-            img = new BufferedImage(poBand.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(buf_type)),
+            img = new BufferedImage(band.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(bandBufferType)),
                                     raster,
                                     false,
                                     null);
         }
         else
         {
-            System.out.println("band count: " + bandCount);
             if(bandCount > 2)
             {
                 final ColorModel colorModel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
-                                                                bandCount == 4,
-                                                                false,
-                                                                bandCount == 4 ? Transparency.TRANSLUCENT : Transparency.OPAQUE,
-                                                                buffer_type);
+                                                                      bandCount == 4,
+                                                                      false,
+                                                                      bandCount == 4 ? Transparency.TRANSLUCENT : Transparency.OPAQUE,
+                                                                      imageProperties.bufferType);
 
                 img = new BufferedImage(colorModel, raster, true, null);
             }
             else
             {
-                img = new BufferedImage(xsize, ysize, data_type);
+                img = new BufferedImage(xsize, ysize, imageProperties.dataType);
                 img.setData(raster);
             }
         }
+
         return img;
     }
 
@@ -757,5 +704,65 @@ public class TileJob implements Runnable
         final double log2 = Math.log(2);
 
         return Math.log10(value) / log2;
+    }
+
+    private ImageProperties getImageProperties(final Band band, final int bandCount, final int pixels, final ByteBuffer[] bands) throws TilingException
+    {
+        final ImageProperties imageProperties = this.new ImageProperties();
+
+        final int bandBufferType = band.getDataType();
+
+        if(bandBufferType == gdalconstConstants.GDT_Byte)
+        {
+            final byte[][] bytes = new byte[bandCount][];
+            for(int i = 0; i < bandCount; i++)
+            {
+                bytes[i] = new byte[pixels];
+                bands[i].get(bytes[i]);
+            }
+
+            imageProperties.imageBuffer = new DataBufferByte(bytes, pixels);
+            imageProperties.bufferType  = DataBuffer.TYPE_BYTE;
+            imageProperties.dataType    = (band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) ? BufferedImage.TYPE_BYTE_INDEXED
+                                                                                                                       : BufferedImage.TYPE_BYTE_GRAY;
+        }
+        else if(bandBufferType == gdalconstConstants.GDT_Int16)
+        {
+            final short[][] shorts = new short[bandCount][];
+            for(int i = 0; i < bandCount; i++)
+            {
+                shorts[i] = new short[pixels];
+                bands[i].asShortBuffer().get(shorts[i]);
+            }
+            imageProperties.imageBuffer = new DataBufferShort(shorts, pixels);
+            imageProperties.bufferType  = DataBuffer.TYPE_USHORT;
+            imageProperties.dataType    = BufferedImage.TYPE_USHORT_GRAY;
+        }
+        else if(bandBufferType == gdalconstConstants.GDT_Int32)
+        {
+            final int[][] ints = new int[bandCount][];
+            for(int i = 0; i < bandCount; i++)
+            {
+                ints[i] = new int[pixels];
+                bands[i].asIntBuffer().get(ints[i]);
+            }
+
+            imageProperties.imageBuffer = new DataBufferInt(ints, pixels);
+            imageProperties.bufferType  = DataBuffer.TYPE_INT;
+            imageProperties.dataType    = BufferedImage.TYPE_CUSTOM;
+        }
+        else
+        {
+            throw new TilingException("Unhandled image band data type");
+        }
+
+        return imageProperties;
+    }
+
+    private class ImageProperties
+    {
+        DataBuffer imageBuffer;
+        int        dataType;
+        int        bufferType;
     }
 }
