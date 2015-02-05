@@ -99,13 +99,6 @@ public class SphericalMercatorCrsProfile implements CrsProfile
 
         final double originShift = (EarthEquatorialCircumfrence / 2.0);
 
-//        final int maxTileOrdinate = dimensions.getHeight() - 1;
-//        final int maxTileAbscissa = dimensions.getWidth()  - 1;
-
-//        // If the the origin is the same along an axis the xor value will be 0 which cancels out the final (delta) term.
-//        final int tileY =   row  + (tileOrigin.getDeltaY() ==  1 ? maxTileOrdinate - 2*   row : 0);
-//        final int tileX = column + (tileOrigin.getDeltaX() == -1 ? maxTileAbscissa - 2*column : 0);
-
         final Coordinate<Integer> tileCoordinate = TileOrigin.LowerLeft.transform(tileOrigin,
                                                                                   row,
                                                                                   column,

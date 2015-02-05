@@ -32,7 +32,7 @@ public enum TileOrigin
     UpperRight(1, 1),
     LowerRight(0, 1);
 
-    TileOrigin(final int horizontal, final int vertical)
+    TileOrigin(final int vertical, final int horizontal)
     {
         this.horizontal = horizontal;
         this.vertical   = vertical;
@@ -60,6 +60,22 @@ public enum TileOrigin
 
         return new Coordinate<>(this.transformVertical  (toOrigin, tileCoordinate.getY().intValue(), matrixDimensions.getHeight()),
                                 this.transformHorizontal(toOrigin, tileCoordinate.getX().intValue(), matrixDimensions.getWidth()));
+    }
+
+    /**
+     * @return the horizontal
+     */
+    public int getHorizontal()
+    {
+        return this.horizontal;
+    }
+
+    /**
+     * @return the vertical
+     */
+    public int getVertical()
+    {
+        return this.vertical;
     }
 
     public Coordinate<Integer> transform(final TileOrigin toOrigin, final int tileY, final int tileX, final TileMatrixDimensions matrixDimensions)
