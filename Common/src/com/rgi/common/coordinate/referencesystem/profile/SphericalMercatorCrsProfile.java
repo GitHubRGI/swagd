@@ -51,7 +51,7 @@ public class SphericalMercatorCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
-        
+
         if(!coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
         {
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
@@ -101,18 +101,17 @@ public class SphericalMercatorCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Origin may not be null");
         }
 
-        final double tileHeight = EarthEquatorialCircumfrence / dimensions.getHeight();
-        final double tileWidth  = EarthEquatorialCircumfrence / dimensions.getWidth();
+        final Dimensions tileCrsDimensions = this.getTileDimensions(dimensions);
 
         final double originShift = (EarthEquatorialCircumfrence / 2.0);
 
-        final Coordinate<Integer> tileCoordinate = TileOrigin.LowerLeft.transform(tileOrigin,
-                                                                                  row,
-                                                                                  column,
-                                                                                  dimensions);
+        final Coordinate<Integer> tileCoordinate = tileOrigin.transform(TileOrigin.LowerLeft,
+                                                                        row,
+                                                                        column,
+                                                                        dimensions);
 
-        return new CrsCoordinate((tileCoordinate.getY() * tileHeight) - originShift,
-                                 (tileCoordinate.getX() * tileWidth)  - originShift,
+        return new CrsCoordinate((tileCoordinate.getY() * tileCrsDimensions.getHeight()) - originShift,
+                                 (tileCoordinate.getX() * tileCrsDimensions.getWidth())  - originShift,
                                  this.getCoordinateReferenceSystem());
     }
 
