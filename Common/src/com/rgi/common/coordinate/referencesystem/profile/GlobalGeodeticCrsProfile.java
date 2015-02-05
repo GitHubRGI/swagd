@@ -63,15 +63,14 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
         }
 
         final Coordinate<Double> tileCorner = Utility.tileCorner(Bounds, tileOrigin);
-
-        final double tileHeightInSrs = Bounds.getHeight() / dimensions.getHeight();
-        final double tileWidthInSrs  = Bounds.getWidth()  / dimensions.getWidth();
-
+        
+        final Dimensions tileDimensions = this.getTileDimensions(dimensions);
+        
         final double normalizedSrsTileCoordinateY = Math.abs(coordinate.getY() - tileCorner.getY());
         final double normalizedSrsTileCoordinateX = Math.abs(coordinate.getX() - tileCorner.getX());
 
-        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);
-        final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
+        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileDimensions.getHeight());
+        final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileDimensions.getWidth());
 
         return new Coordinate<>(tileY, tileX);
     }
