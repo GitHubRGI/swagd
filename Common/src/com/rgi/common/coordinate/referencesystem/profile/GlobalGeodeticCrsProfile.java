@@ -100,10 +100,25 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
+        
+        final Dimensions tileCrsDimensions = this.getTileDimensions(dimensions);
+        
+        
+        
+        final Coordinate<Integer> tileCoordinate = tileOrigin.transform(TileOrigin.LowerLeft,
+                                                                        row,
+                                                                        column,
+                                                                        dimensions);
+        final double originShiftY = (Bounds.getHeight() / 2.0);
+        final double originShiftX = (Bounds.getWidth() / 2.0);
 
-        return new CrsCoordinate((   row * Bounds.getHeight() / dimensions.getHeight()) - Bounds.getHeight() / 2.0,
-                                 (column * Bounds.getWidth()  / dimensions.getHeight()) - Bounds.getWidth()  / 2.0,
-                                 this.getCoordinateReferenceSystem());
+        return new CrsCoordinate(((tileCoordinate.getY() + 0.5) * tileCrsDimensions.getHeight()) - originShiftY,  //adding 0.5 to row and column
+                                 ((tileCoordinate.getX() + 0.5) * tileCrsDimensions.getWidth())  - originShiftX,  //makes the crsCoordinate be the 
+                                 this.getCoordinateReferenceSystem());                                            //be the value at the center of the tile
+                                                                                                                  //the reason to get the middle CrsCoordinate 
+                                                                                                                  //so that transfering between tileOrigins isn't
+                                                                                                                  //affected because putting it in a tile origin of 
+                                                                                                                  //lowerleft that was originally upperRight  (if you did a round) would grab the wrong tile
     }
 
     @Override
