@@ -35,6 +35,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.coordinate.referencesystem.profile.Utility;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
@@ -871,20 +872,20 @@ public class GeoPackageTiles
         final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
         final BoundingBox   tileSetBounds = tileMatrixSet.getBoundingBox();
 
-        if(!tileSetBounds.contains(crsCoordinate))
+        if(!Utility.contains(tileSetBounds, crsCoordinate, GeoPackageTiles.Origin))
         {
             return null;    // The requested SRS coordinate is outside the bounds of our data
         }
 
-        final Coordinate<Double> topLeft = tileSetBounds.getTopLeft();
+        final Coordinate<Double> tileCorner = Utility.tileCorner(tileSetBounds, GeoPackageTiles.Origin);
 
         final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
         final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();
 
-        final double normalizedSrsTileCoordinateY = topLeft.getY() - crsCoordinate.getY();
-        final double normalizedSrsTileCoordinateX = crsCoordinate.getX() - topLeft.getX();
+        final double normalizedSrsTileCoordinateY = Math.abs(crsCoordinate.getY() - tileCorner.getY());
+        final double normalizedSrsTileCoordinateX = Math.abs(crsCoordinate.getX() - tileCorner.getX());
 
-        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);  // TODO this will return max matrix height + 1 at the far right edge of the SRS
+        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);
         final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
 
         return new RelativeTileCoordinate(tileY,

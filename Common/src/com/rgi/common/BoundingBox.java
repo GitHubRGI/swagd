@@ -163,7 +163,7 @@ public class BoundingBox
     }
 
     /**
-     * Tests if a point is on the boundary of, wholly within the bounding box. <br>
+     * Tests if a point is on the boundary of, or wholly within the bounding box. <br>
      * <br>
      * This method uses Java's default comparison operators ('<=' and '>=') and
      * therefore may be intolerant to the issues of rounding and other vagaries
