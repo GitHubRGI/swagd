@@ -41,6 +41,17 @@ public class Coordinate<T extends Number>
         this.x = x;
     }
 
+    public Coordinate(final Coordinate<T> other)
+    {
+        if(other == null)
+        {
+            throw new IllegalArgumentException("Coordinate may not be null");
+        }
+
+        this.y = other.getY();
+        this.x = other.getX();
+    }
+
     @Override
     public String toString()
     {

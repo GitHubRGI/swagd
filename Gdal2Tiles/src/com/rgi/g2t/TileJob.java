@@ -21,29 +21,16 @@ package com.rgi.g2t;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
-import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferInt;
-import java.awt.image.DataBufferShort;
-import java.awt.image.Raster;
-import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
 import java.io.File;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
-import org.gdal.gdal.Band;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.gdal.osr.SpatialReference;
 import org.gdal.osr.osr;
+
+import utility.GdalUtility;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
@@ -145,30 +132,25 @@ public class TileJob implements Runnable
                                                                         this.outputDataset.getRasterXSize());
 
         // Image georeference points
-        final Coordinate<Double> imageUpperLeft  = outputGeoTransform.getTopLeft();
-        final Coordinate<Double> imageLowerRight = outputGeoTransform.getBottomRight(this.outputDataset.getRasterYSize(),
-                                                                                     this.outputDataset.getRasterXSize());
+        final CrsCoordinate imageUpperLeft  = new CrsCoordinate(outputGeoTransform.getTopLeft(), this.crsProfile.getCoordinateReferenceSystem());
+        final CrsCoordinate imageLowerRight = new CrsCoordinate(outputGeoTransform.getBottomRight(this.outputDataset.getRasterYSize(),
+                                                                                                  this.outputDataset.getRasterXSize()),
+                                                                this.crsProfile.getCoordinateReferenceSystem());
 
-        final BoundingBox worldBounds = this.crsProfile.getBounds();
+        final int maxZoom = getMaxZoom(this.crsProfile.getBounds(), outputGeoTransform.getPixelDimensions());
 
-        final int maxZoom = getMaxZoom(worldBounds, outputGeoTransform.getPixelDimensions());
-
-        final int minZoom = this.getMinZoom(worldBounds,
-                                            outputGeoTransform,
+        final int minZoom = this.getMinZoom(outputGeoTransform,
                                             outputDatasetRasterDimensions,
                                             imageUpperLeft,
                                             imageLowerRight);
 
 
 
-        final boolean direct = false;
-
         // generate base tile set
-        final BufferedImage source = this.convert(this.outputDataset);
-        TileSet matrixBounds = new TileSet(maxZoom, this.tileScheme.origin());
+        final BufferedImage source = GdalUtility.convert(this.outputDataset);
 
-        Coordinate<Integer> upperLeftTileCoordinate  = transform(worldBounds, imageUpperLeft,  matrixBounds);
-        Coordinate<Integer> lowerRightTileCoordinate = transform(worldBounds, imageLowerRight, matrixBounds);
+        Coordinate<Integer> upperLeftTileCoordinate  = this.crsToTileCoordinate(imageUpperLeft,  maxZoom);
+        Coordinate<Integer> lowerRightTileCoordinate = this.crsToTileCoordinate(imageLowerRight, maxZoom);
 
         int numTilesWidth  = Math.abs(lowerRightTileCoordinate.getX() - upperLeftTileCoordinate.getX()) + 1;
         int numTilesHeight = Math.abs(lowerRightTileCoordinate.getY() - upperLeftTileCoordinate.getY()) + 1;
@@ -222,7 +204,7 @@ public class TileJob implements Runnable
                     this.tileStoreWriter.addTile(this.crsProfile.tileToCrsCoordinate(tileY,
                                                                                      tileX,
                                                                                      this.tileScheme.dimensions(maxZoom),
-                                                                                     this.tileScheme.origin()),
+                                                                                     this.tileScheme.getOrigin()),
                                                  maxZoom,
                                                  tileImage);
                 }
@@ -235,10 +217,8 @@ public class TileJob implements Runnable
 
         for(int z = maxZoom - 1; z >= minZoom; --z)
         {
-            matrixBounds = new TileSet(z, this.tileScheme.origin());
-
-            upperLeftTileCoordinate  = transform(worldBounds, imageUpperLeft,  matrixBounds);
-            lowerRightTileCoordinate = transform(worldBounds, imageLowerRight, matrixBounds);
+            upperLeftTileCoordinate  = this.crsToTileCoordinate(imageUpperLeft,  z);
+            lowerRightTileCoordinate = this.crsToTileCoordinate(imageLowerRight, z);
 
             numTilesWidth  = Math.abs(lowerRightTileCoordinate.getX() - upperLeftTileCoordinate.getX()) + 1;
             numTilesHeight = Math.abs(lowerRightTileCoordinate.getY() - upperLeftTileCoordinate.getY()) + 1;
@@ -277,82 +257,70 @@ public class TileJob implements Runnable
                     graphic.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                                              RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-                    if(direct)
-                    {
-                        graphic.drawImage(source,
-                                          offsetX - (x * TILESIZE),
-                                          offsetY - (y * TILESIZE),
-                                          scaledWidth,
-                                          scaledHeight,
-                                          null);
-                    }
-                    else
-                    {
-                        // Generate tile using next highest zoom level's tiles.
-                        final BufferedImage preScaled = new BufferedImage(2 * TILESIZE,
-                                                                          2 * TILESIZE,
-                                                                          BufferedImage.TYPE_INT_ARGB);
+                    // Generate tile using next highest zoom level's tiles.
+                    final BufferedImage preScaled = new BufferedImage(2 * TILESIZE,
+                                                                      2 * TILESIZE,
+                                                                      BufferedImage.TYPE_INT_ARGB);
 
-                        final Graphics2D g_scaled = preScaled.createGraphics();
+                    final Graphics2D g_scaled = preScaled.createGraphics();
 
-                        for(int zx = 0; zx < 2; ++zx)
+                    for(int zx = 0; zx < 2; ++zx)
+                    {
+                        for(int zy = 0; zy < 2; ++zy)
                         {
-                            for(int zy = 0; zy < 2; ++zy)
+                            // The coordinate of the tile that we need to stitch into our new tile is
+                            // double our current coordinate, plus the appropriate offset based on the
+                            // iterator and origin.
+                            final int absTileX = 0;//(2 * tileX) + f(zx, this.tileScheme.origin().getDeltaX()); // TODO
+                            final int absTileY = 0;//(2 * tileY) + f(zy, this.tileScheme.origin().getDeltaY()); // TODO
+
+                            try
                             {
-                                // The coordinate of the tile that we need to stitch into our new tile is
-                                // double our current coordinate, plus the appropriate offset based on the
-                                // iterator and origin.
-                                final int absTileX = 0;//(2 * tileX) + f(zx, this.tileScheme.origin().getDeltaX()); // TODO
-                                final int absTileY = 0;//(2 * tileY) + f(zy, this.tileScheme.origin().getDeltaY()); // TODO
+                                final CrsCoordinate crsCoordinate = this.crsProfile.tileToCrsCoordinate(absTileY,
+                                                                                                        absTileX,
+                                                                                                        this.tileScheme.dimensions(z),
+                                                                                                        this.tileScheme.getOrigin());
 
-                                try
+                                final BufferedImage upperTile = this.tileStoreReader.getTile(crsCoordinate, z);
+
+                                if(upperTile == null)
                                 {
-                                    final CrsCoordinate crsCoordinate = this.crsProfile.tileToCrsCoordinate(absTileY,
-                                                                                                            absTileX,
-                                                                                                            this.tileScheme.dimensions(z),
-                                                                                                            this.tileScheme.origin());
-
-                                    final BufferedImage upperTile = this.tileStoreReader.getTile(crsCoordinate, z);
-
-                                    if(upperTile == null)
-                                    {
-                                        g_scaled.setColor(this.noDataColor);
-                                        g_scaled.fillRect(zx * TILESIZE,
-                                                          zy * TILESIZE,
-                                                          TILESIZE,
-                                                          TILESIZE);
-                                    }
-                                    else
-                                    {
-                                        g_scaled.drawImage(upperTile,
-                                                           zx * TILESIZE,
-                                                           zy * TILESIZE,
-                                                           TILESIZE,
-                                                           TILESIZE,
-                                                           null);
-                                    }
+                                    g_scaled.setColor(this.noDataColor);
+                                    g_scaled.fillRect(zx * TILESIZE,
+                                                      zy * TILESIZE,
+                                                      TILESIZE,
+                                                      TILESIZE);
                                 }
-                                catch(final Exception e)
+                                else
                                 {
-                                    throw new TilingException("Problem getting tile", e);
+                                    g_scaled.drawImage(upperTile,
+                                                       zx * TILESIZE,
+                                                       zy * TILESIZE,
+                                                       TILESIZE,
+                                                       TILESIZE,
+                                                       null);
                                 }
                             }
+                            catch(final Exception e)
+                            {
+                                throw new TilingException("Problem getting tile", e);
+                            }
                         }
-
-                        graphic.drawImage(preScaled,
-                                          0,
-                                          0,
-                                          TILESIZE,
-                                          TILESIZE,
-                                          null);
                     }
+
+                    graphic.drawImage(preScaled,
+                                      0,
+                                      0,
+                                      TILESIZE,
+                                      TILESIZE,
+                                      null);
 
                     try
                     {
                         this.tileStoreWriter.addTile(this.crsProfile.tileToCrsCoordinate(tileY,
                                                                                          tileX,
                                                                                          this.tileScheme.dimensions(z),
-                                                                                         this.tileScheme.origin()),
+                                                                                         this.tileScheme.getOrigin()),
                                                      z,
                                                      tileImage);
                     }
@@ -506,12 +474,13 @@ public class TileJob implements Runnable
                                                              : zoomCeiling;
     }
 
-    private int getMinZoom(final BoundingBox        world,
-                           final GeoTransformation  geoTransformation,
-                           final Dimensions         rasterDimensions,
-                           final Coordinate<Double> imageUpperLeft,
-                           final Coordinate<Double> imageLowerRight)
+    private int getMinZoom(final GeoTransformation geoTransformation,
+                           final Dimensions        rasterDimensions,
+                           final CrsCoordinate     imageUpperLeft,
+                           final CrsCoordinate     imageLowerRight)
     {
+        final BoundingBox worldBounds = this.crsProfile.getBounds();
+
         // Next, find the zoom level where the entire image fits one tile.
         // similar to the above calculation for closest zoom level, but
         // this time instead of choosing between ceiling and floor
@@ -524,8 +493,8 @@ public class TileJob implements Runnable
         // and the calculation reduces to:
         // z = log2( Size of the World / Size of the Image )
         // again, do it once for width and once for height
-        int minZoom = Math.min((int)Math.floor(log2(world.getWidth()  / (geoTransformation.getPixelDimensions().getWidth()  * rasterDimensions.getWidth()))),
-                               (int)Math.floor(log2(world.getHeight() / (geoTransformation.getPixelDimensions().getHeight() * rasterDimensions.getHeight()))));
+        int minZoom = Math.min((int)Math.floor(log2(worldBounds.getWidth()  / (geoTransformation.getPixelDimensions().getWidth()  * rasterDimensions.getWidth()))),
+                               (int)Math.floor(log2(worldBounds.getHeight() / (geoTransformation.getPixelDimensions().getHeight() * rasterDimensions.getHeight()))));
 
         // We know our minimum zoom is of sufficient resolution that our source
         // image will fit entirely within the tile size, but it  might not be
@@ -536,10 +505,8 @@ public class TileJob implements Runnable
         // but just in case, we'll put it in a loop.
         while(minZoom > 0)
         {
-            final TileSet matrixBounds = new TileSet(minZoom, this.tileScheme.origin()); // Calculate the tile set parameters for the zoom level
-
-            final Coordinate<Integer> minZoomUpperLeftTileCoordinate  = transform(world, imageUpperLeft,  matrixBounds); // Determine into which tile in the tile set the upper left  corner of our source image will fall
-            final Coordinate<Integer> minZoomLowerRightTileCoordinate = transform(world, imageLowerRight, matrixBounds); // Determine into which tile in the tile set the lower right corner of our source image will fall
+            final Coordinate<Integer> minZoomUpperLeftTileCoordinate  = this.crsToTileCoordinate(imageUpperLeft,  minZoom);
+            final Coordinate<Integer> minZoomLowerRightTileCoordinate = this.crsToTileCoordinate(imageLowerRight, minZoom);
 
             // Calculate the number of tiles these coordinates span.
             // We take the absolute value so we don't have to care about
@@ -601,102 +568,96 @@ public class TileJob implements Runnable
                              : 1;
     }
 
-    // TODO This can be done via tile store/scheme/profile
-    public static <T extends Number> Coordinate<Integer> transform(final BoundingBox worldBounds, final Coordinate<T> input, final TileSet tileSet)
+//    public BufferedImage convert(final Dataset dataset) throws TilingException
+//    {
+//        Band band = null;
+//
+//        final int          bandCount = dataset.getRasterCount();
+//        final ByteBuffer[] bands     = new ByteBuffer[bandCount];
+//        final int[]        banks     = new int       [bandCount];
+//        final int[]        offsets   = new int       [bandCount];
+//
+//        final int xsize = dataset.getRasterXSize();
+//        final int ysize = dataset.getRasterYSize();
+//        final int pixels = xsize * ysize;
+//
+//        int bandBufferType = 0;
+//
+//        for(int bandIndex = 0; bandIndex < bandCount; ++bandIndex)
+//        {
+//            // Bands are not 0-base indexed, so we must add 1
+//            band = dataset.GetRasterBand(bandIndex + 1);
+//
+//            bandBufferType = band.getDataType();
+//            final int bandBufferSize = pixels * (gdal.GetDataTypeSize(bandBufferType) / 8);
+//
+//            final ByteBuffer data = ByteBuffer.allocateDirect(bandBufferSize);
+//            data.order(ByteOrder.nativeOrder());
+//
+//            if(band.ReadRaster_Direct(0,
+//                                      0,
+//                                      band.getXSize(),
+//                                      band.getYSize(),
+//                                      xsize,
+//                                      ysize,
+//                                      bandBufferType,
+//                                      data) != gdalconstConstants.CE_None)
+//            {
+//                throw new TilingException(String.format("Reading a raster band of the image failed: <%d> %s",
+//                                                        gdal.GetLastErrorNo(),
+//                                                        gdal.GetLastErrorMsg()));
+//            }
+//
+//            bands  [bandIndex] = data;
+//            banks  [bandIndex] = bandIndex;
+//            offsets[bandIndex] = 0;
+//        }
+//
+//        if(band == null)
+//        {
+//            throw new RuntimeException("The GDAL dataset returned null for a raster band");
+//        }
+//
+//        final ImageProperties imageProperties = this.getImageProperties(band, bandCount, pixels, bands);
+//        final SampleModel     sampleModel     = new BandedSampleModel(imageProperties.bufferType, xsize, ysize, xsize, banks, offsets);
+//        final WritableRaster  raster          = Raster.createWritableRaster(sampleModel, imageProperties.imageBuffer, null);
+//
+//        BufferedImage img = null;
+//
+//        if(band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex)
+//        {
+//            img = new BufferedImage(band.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(bandBufferType)),
+//                                    raster,
+//                                    false,
+//                                    null);
+//        }
+//        else
+//        {
+//            if(bandCount > 2)
+//            {
+//                final ColorModel colorModel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+//                                                                      bandCount == 4,
+//                                                                      false,
+//                                                                      bandCount == 4 ? Transparency.TRANSLUCENT : Transparency.OPAQUE,
+//                                                                      imageProperties.bufferType);
+//
+//                img = new BufferedImage(colorModel, raster, true, null);
+//            }
+//            else
+//            {
+//                img = new BufferedImage(xsize, ysize, imageProperties.dataType);
+//                img.setData(raster);
+//            }
+//        }
+//
+//        return img;
+//    }
+
+    private Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate crsCoordinate, final int zoomLevel)
     {
-        final double inDX = worldBounds.getWidth();
-        final double inDY = worldBounds.getHeight();
-        final double outDX = tileSet.getWidth();
-        final double outDY = tileSet.getHeight();
-        final int outputX = (int)(((input.getX().doubleValue() - worldBounds.getMinX()) / inDX) * outDX) + tileSet.getWest();
-        final int outputY = (int)(((input.getY().doubleValue() - worldBounds.getMinY()) / inDY) * outDY) + tileSet.getSouth();
-
-        return new Coordinate<>(outputY, outputX);
-    }
-
-    public BufferedImage convert(final Dataset dataset) throws TilingException
-    {
-        Band band = null;
-
-        final int          bandCount = dataset.getRasterCount();
-        final ByteBuffer[] bands     = new ByteBuffer[bandCount];
-        final int[]        banks     = new int       [bandCount];
-        final int[]        offsets   = new int       [bandCount];
-
-        final int xsize = dataset.getRasterXSize();
-        final int ysize = dataset.getRasterYSize();
-        final int pixels = xsize * ysize;
-
-        int bandBufferType = 0;
-
-        for(int bandIndex = 0; bandIndex < bandCount; ++bandIndex)
-        {
-            // Bands are not 0-base indexed, so we must add 1
-            band = dataset.GetRasterBand(bandIndex + 1);
-
-            bandBufferType = band.getDataType();
-            final int bandBufferSize = pixels * (gdal.GetDataTypeSize(bandBufferType) / 8);
-
-            final ByteBuffer data = ByteBuffer.allocateDirect(bandBufferSize);
-            data.order(ByteOrder.nativeOrder());
-
-            if(band.ReadRaster_Direct(0,
-                                      0,
-                                      band.getXSize(),
-                                      band.getYSize(),
-                                      xsize,
-                                      ysize,
-                                      bandBufferType,
-                                      data) != gdalconstConstants.CE_None)
-            {
-                throw new TilingException(String.format("Reading a raster band of the image failed: <%d> %s",
-                                                        gdal.GetLastErrorNo(),
-                                                        gdal.GetLastErrorMsg()));
-            }
-
-            bands  [bandIndex] = data;
-            banks  [bandIndex] = bandIndex;
-            offsets[bandIndex] = 0;
-        }
-
-        if(band == null)
-        {
-            throw new RuntimeException("The GDAL dataset returned null for a raster band");
-        }
-
-        final ImageProperties imageProperties = this.getImageProperties(band, bandCount, pixels, bands);
-        final SampleModel     sampleModel     = new BandedSampleModel(imageProperties.bufferType, xsize, ysize, xsize, banks, offsets);
-        final WritableRaster  raster          = Raster.createWritableRaster(sampleModel, imageProperties.imageBuffer, null);
-
-        BufferedImage img = null;
-
-        if(band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex)
-        {
-            img = new BufferedImage(band.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(bandBufferType)),
-                                    raster,
-                                    false,
-                                    null);
-        }
-        else
-        {
-            if(bandCount > 2)
-            {
-                final ColorModel colorModel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
-                                                                      bandCount == 4,
-                                                                      false,
-                                                                      bandCount == 4 ? Transparency.TRANSLUCENT : Transparency.OPAQUE,
-                                                                      imageProperties.bufferType);
-
-                img = new BufferedImage(colorModel, raster, true, null);
-            }
-            else
-            {
-                img = new BufferedImage(xsize, ysize, imageProperties.dataType);
-                img.setData(raster);
-            }
-        }
-
-        return img;
+        return this.crsProfile.crsToTileCoordinate(crsCoordinate,
+                                                   this.tileScheme.dimensions(zoomLevel),
+                                                   this.tileScheme.getOrigin());
     }
 
     private static double log2(final double value)
@@ -706,63 +667,63 @@ public class TileJob implements Runnable
         return Math.log10(value) / log2;
     }
 
-    private ImageProperties getImageProperties(final Band band, final int bandCount, final int pixels, final ByteBuffer[] bands) throws TilingException
-    {
-        final ImageProperties imageProperties = this.new ImageProperties();
-
-        final int bandBufferType = band.getDataType();
-
-        if(bandBufferType == gdalconstConstants.GDT_Byte)
-        {
-            final byte[][] bytes = new byte[bandCount][];
-            for(int i = 0; i < bandCount; i++)
-            {
-                bytes[i] = new byte[pixels];
-                bands[i].get(bytes[i]);
-            }
-
-            imageProperties.imageBuffer = new DataBufferByte(bytes, pixels);
-            imageProperties.bufferType  = DataBuffer.TYPE_BYTE;
-            imageProperties.dataType    = (band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) ? BufferedImage.TYPE_BYTE_INDEXED
-                                                                                                                       : BufferedImage.TYPE_BYTE_GRAY;
-        }
-        else if(bandBufferType == gdalconstConstants.GDT_Int16)
-        {
-            final short[][] shorts = new short[bandCount][];
-            for(int i = 0; i < bandCount; i++)
-            {
-                shorts[i] = new short[pixels];
-                bands[i].asShortBuffer().get(shorts[i]);
-            }
-            imageProperties.imageBuffer = new DataBufferShort(shorts, pixels);
-            imageProperties.bufferType  = DataBuffer.TYPE_USHORT;
-            imageProperties.dataType    = BufferedImage.TYPE_USHORT_GRAY;
-        }
-        else if(bandBufferType == gdalconstConstants.GDT_Int32)
-        {
-            final int[][] ints = new int[bandCount][];
-            for(int i = 0; i < bandCount; i++)
-            {
-                ints[i] = new int[pixels];
-                bands[i].asIntBuffer().get(ints[i]);
-            }
-
-            imageProperties.imageBuffer = new DataBufferInt(ints, pixels);
-            imageProperties.bufferType  = DataBuffer.TYPE_INT;
-            imageProperties.dataType    = BufferedImage.TYPE_CUSTOM;
-        }
-        else
-        {
-            throw new TilingException("Unhandled image band data type");
-        }
-
-        return imageProperties;
-    }
-
-    private class ImageProperties
-    {
-        DataBuffer imageBuffer;
-        int        dataType;
-        int        bufferType;
-    }
+//    private ImageProperties getImageProperties(final Band band, final int bandCount, final int pixels, final ByteBuffer[] bands) throws TilingException
+//    {
+//        final ImageProperties imageProperties = this.new ImageProperties();
+//
+//        final int bandBufferType = band.getDataType();
+//
+//        if(bandBufferType == gdalconstConstants.GDT_Byte)
+//        {
+//            final byte[][] bytes = new byte[bandCount][];
+//            for(int i = 0; i < bandCount; i++)
+//            {
+//                bytes[i] = new byte[pixels];
+//                bands[i].get(bytes[i]);
+//            }
+//
+//            imageProperties.imageBuffer = new DataBufferByte(bytes, pixels);
+//            imageProperties.bufferType  = DataBuffer.TYPE_BYTE;
+//            imageProperties.dataType    = (band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) ? BufferedImage.TYPE_BYTE_INDEXED
+//                                                                                                                       : BufferedImage.TYPE_BYTE_GRAY;
+//        }
+//        else if(bandBufferType == gdalconstConstants.GDT_Int16)
+//        {
+//            final short[][] shorts = new short[bandCount][];
+//            for(int i = 0; i < bandCount; i++)
+//            {
+//                shorts[i] = new short[pixels];
+//                bands[i].asShortBuffer().get(shorts[i]);
+//            }
+//            imageProperties.imageBuffer = new DataBufferShort(shorts, pixels);
+//            imageProperties.bufferType  = DataBuffer.TYPE_USHORT;
+//            imageProperties.dataType    = BufferedImage.TYPE_USHORT_GRAY;
+//        }
+//        else if(bandBufferType == gdalconstConstants.GDT_Int32)
+//        {
+//            final int[][] ints = new int[bandCount][];
+//            for(int i = 0; i < bandCount; i++)
+//            {
+//                ints[i] = new int[pixels];
+//                bands[i].asIntBuffer().get(ints[i]);
+//            }
+//
+//            imageProperties.imageBuffer = new DataBufferInt(ints, pixels);
+//            imageProperties.bufferType  = DataBuffer.TYPE_INT;
+//            imageProperties.dataType    = BufferedImage.TYPE_CUSTOM;
+//        }
+//        else
+//        {
+//            throw new TilingException("Unhandled image band data type");
+//        }
+//
+//        return imageProperties;
+//    }
+//
+//    private class ImageProperties
+//    {
+//        DataBuffer imageBuffer;
+//        int        dataType;
+//        int        bufferType;
+//    }
 }

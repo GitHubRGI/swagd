@@ -32,12 +32,18 @@ public class CrsCoordinate extends Coordinate<Double>
 
     public CrsCoordinate(final double y, final double x, final CoordinateReferenceSystem coordinateReferenceSystem)
     {
-        super(y, x);
+        this(new Coordinate<>(y, x), coordinateReferenceSystem);
+    }
+
+    public CrsCoordinate(final Coordinate<Double> coordinate, final CoordinateReferenceSystem coordinateReferenceSystem)
+    {
+        super(coordinate);
 
         if(coordinateReferenceSystem == null)
         {
             throw new IllegalArgumentException("Coordinate Reference System may not be null");
         }
+
         this.coordinateReferenceSystem = coordinateReferenceSystem;
     }
 
