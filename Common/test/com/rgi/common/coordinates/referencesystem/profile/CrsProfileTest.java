@@ -18,6 +18,7 @@
 
 package com.rgi.common.coordinates.referencesystem.profile;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -876,6 +877,27 @@ public class CrsProfileTest
                   newCoordinate.getX() == 0 && newCoordinate.getY() == 4);
     }
     
+    @Test
+    public void globalGeodeticCrsProfileRoundAndRound()
+    {
+        GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
+        TileMatrixDimensions     dimensions    = new TileMatrixDimensions(13, 20);
+        TileOrigin origin = TileOrigin.UpperLeft;
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(3,7);
+        
+        CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
+        Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        
+        assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
+                                    + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)", 
+                                   originalTileCoordinate.getX(),
+                                   originalTileCoordinate.getY(),
+                                   returnedTileCoordinate.getX(),
+                                   returnedTileCoordinate.getY(),
+                                   returnedCrsCoordiante.getX(),
+                                   returnedCrsCoordiante.getY()), originalTileCoordinate, returnedTileCoordinate);
+    }
+    
     /**
      * Tests if a crs to tile coordinate with an upperleft origin
      *  returns the correct coordinates
@@ -895,4 +917,14 @@ public class CrsProfileTest
                                  newCoordinate.getY()),
                   newCoordinate.getX() == 2 && newCoordinate.getY() == 1);
     }
+    
+//    private CrsCoordinate tileToCrsCoordinate(Coordinate coordinate, TileMatrixDimensions dimensions, TileOrigin origin)
+//    {
+//        Coordinate corner = Utility.boundsCorner(GlobalGeodeticCrsProfile.Bounds, origin);
+//        CrsCoordinate crsCoord = new CrsCoordinate((double)corner.getY() - ((double)coordinate.getY()* (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
+//                                                   (double)corner.getX() - ((double)coordinate.getX()*  (GlobalGeodeticCrsProfile.Bounds.getWidth()  / dimensions.getWidth()))
+//                                                           ,null);
+//        return null;
+//    }
+    
 }
