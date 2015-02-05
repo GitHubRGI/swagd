@@ -50,12 +50,12 @@ import com.rgi.geopackage.verification.ConformanceException;
 public class GeoPackageSchemaAPITest
 {
     private final Random randomGenerator = new Random();
-    
+
     /**
      * Tests if GeoPackage Schema will return
      * the expected values for the DataColumn
      * entry added to the GeoPackage
-     * 
+     *
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
      * @throws FileNotFoundException
@@ -66,29 +66,29 @@ public class GeoPackageSchemaAPITest
     @Test
     public void addDataColumn() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
     {
-        File testFile = this.getRandomFile(5);
-        String   columnName     = "columnName";
-        String   tableName      = "tableName";
-        
+        final File testFile = this.getRandomFile(5);
+        final String   columnName     = "columnName";
+        final String   tableName      = "tableName";
+
         try(GeoPackage gpkg = createGeoPackage(tableName, columnName, testFile))
         {
-            Content table = gpkg.core().addContent("tableName", 
-                                                   "tiles", 
-                                                   "identifier", 
-                                                   "description", 
-                                                   new BoundingBox(0.0,0.0,90.0,180.0), 
+            final Content table = gpkg.core().addContent("tableName",
+                                                   "tiles",
+                                                   "identifier",
+                                                   "description",
+                                                   new BoundingBox(0.0,0.0,90.0,180.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
-            
-            
-            String   name           = "name";
-            String   title          = "title";
-            String   description    = "description";
-            MimeType mimeType       = new MimeType("image/png");
-            String   constraintName = "constraint_name";
-            
-            DataColumn dataColumnReturned = gpkg.schema().addDataColumn(table, columnName, name, title, description, mimeType, constraintName);
+
+
+            final String   name           = "name";
+            final String   title          = "title";
+            final String   description    = "description";
+            final MimeType mimeType       = new MimeType("image/png");
+            final String   constraintName = "constraint_name";
+
+            final DataColumn dataColumnReturned = gpkg.schema().addDataColumn(table, columnName, name, title, description, mimeType, constraintName);
             gpkg.schema().addDataColumn(table, columnName, name, title, description, mimeType, constraintName);//bug in getting data column
-            
+
             assertTrue("GeoPackage Schema did not return the DataColumn expected.(using addDataColumn)",
                        dataColumnReturned.getColumnName()    .equals(columnName)             &&
                        dataColumnReturned.getName()          .equals(name)                   &&
@@ -96,15 +96,15 @@ public class GeoPackageSchemaAPITest
                        dataColumnReturned.getDescription()   .equals(description)            &&
                        dataColumnReturned.getMimeType()      .equals(mimeType.toString())    &&
                        dataColumnReturned.getConstraintName().equals(constraintName));
-            
-            
+
+
         }
         finally
         {
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if GeoPackage Schema throws
      * an IllegalArgumentException when adding
@@ -119,18 +119,18 @@ public class GeoPackageSchemaAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addDataColumnIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
     {
-        File testFile = this.getRandomFile(12);
-        
+        final File testFile = this.getRandomFile(12);
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            
-            String   columnName     = "columnName";
-            String   name           = "name";
-            String   title          = "title";
-            String   description    = "description";
-            MimeType mimeType       = new MimeType("image/png");
-            String   constraintName = "constraint_name";
-            
+
+            final String   columnName     = "columnName";
+            final String   name           = "name";
+            final String   title          = "title";
+            final String   description    = "description";
+            final MimeType mimeType       = new MimeType("image/png");
+            final String   constraintName = "constraint_name";
+
             gpkg.schema().addDataColumn(null, columnName, name, title, description, mimeType, constraintName);
             fail("Expected GeoPackage to throw an IllegalArgumentException when trying to add a datacolumn and tableName is null.");
         }
@@ -139,7 +139,7 @@ public class GeoPackageSchemaAPITest
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if GeoPackage Schema throws
      * an IllegalArgumentException when adding
@@ -154,22 +154,22 @@ public class GeoPackageSchemaAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addDataColumnIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
     {
-        File testFile = this.getRandomFile(12);
-        
+        final File testFile = this.getRandomFile(12);
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            Content table = gpkg.core().addContent("tableName", 
-                                                   "tiles", 
-                                                   "identifier", 
-                                                   "description", 
-                                                   new BoundingBox(0.0,0.0,90.0,180.0), 
+            final Content table = gpkg.core().addContent("tableName",
+                                                   "tiles",
+                                                   "identifier",
+                                                   "description",
+                                                   new BoundingBox(0.0,0.0,90.0,180.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
-            String   name           = "name";
-            String   title          = "title";
-            String   description    = "description";
-            MimeType mimeType       = new MimeType("image/png");
-            String   constraintName = "constraint_name";
-            
+            final String   name           = "name";
+            final String   title          = "title";
+            final String   description    = "description";
+            final MimeType mimeType       = new MimeType("image/png");
+            final String   constraintName = "constraint_name";
+
             gpkg.schema().addDataColumn(table, null, name, title, description, mimeType, constraintName);
             fail("Expected GeoPackage to throw an IllegalArgumentException when trying to add a datacolumn and columnName is null.");
         }
@@ -178,7 +178,7 @@ public class GeoPackageSchemaAPITest
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if getDataColumn method in
      * geopackage schema returns
@@ -193,39 +193,39 @@ public class GeoPackageSchemaAPITest
     @Test
     public void getDataColumn() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
     {
-        File testFile = this.getRandomFile(12);
-        
+        final File testFile = this.getRandomFile(12);
+
         try(GeoPackage gpkg = createGeoPackage("tableName", "columnName", testFile))
         {
-            Content table = gpkg.core().addContent("tableName", 
-                                                   "tiles", 
-                                                   "identifier", 
-                                                   "description", 
-                                                   new BoundingBox(0.0,0.0,90.0,180.0), 
+            final Content table = gpkg.core().addContent("tableName",
+                                                   "tiles",
+                                                   "identifier",
+                                                   "description",
+                                                   new BoundingBox(0.0,0.0,90.0,180.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
-            
-            String   columnName     = "columnName";
-            String   name           = "name";
-            String   title          = "title";
-            String   description    = "description";
-            MimeType mimeType       = new MimeType("image/png");
-            String   constraintName = "constraint_name";
-            
-            DataColumn columnExpected = gpkg.schema().addDataColumn(table, columnName, name, title, description, mimeType, constraintName);
-            
-            DataColumn columnReturned = gpkg.schema().getDataColumn(table, columnName);
-            DataColumn shouldBeNull   = gpkg.schema().getDataColumn(table, "ColumnThatdoesn'tExist");
+
+            final String   columnName     = "columnName";
+            final String   name           = "name";
+            final String   title          = "title";
+            final String   description    = "description";
+            final MimeType mimeType       = new MimeType("image/png");
+            final String   constraintName = "constraint_name";
+
+            final DataColumn columnExpected = gpkg.schema().addDataColumn(table, columnName, name, title, description, mimeType, constraintName);
+
+            final DataColumn columnReturned = gpkg.schema().getDataColumn(table, columnName);
+            final DataColumn shouldBeNull   = gpkg.schema().getDataColumn(table, "ColumnThatdoesn'tExist");
             assertTrue("The GeoPackage schema did not return the expected values when using the getDataColumn method",
                        dataColumnsEqual(columnExpected, columnReturned) &&
                        shouldBeNull == null);
-            
+
         }
         finally
         {
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if geopackage schema
      * will throw an IllegalArgumentException when
@@ -240,8 +240,8 @@ public class GeoPackageSchemaAPITest
     @Test(expected = IllegalArgumentException.class)
     public void getDataColumnIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-        File testFile = this.getRandomFile(14);
-        
+        final File testFile = this.getRandomFile(14);
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
            gpkg.schema().getDataColumn(null,"columnName");
@@ -252,7 +252,7 @@ public class GeoPackageSchemaAPITest
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if GeoPackage Schema will throw an Illegal
      * argumentException when trying to get a data Column
@@ -266,17 +266,17 @@ public class GeoPackageSchemaAPITest
     @Test(expected = IllegalArgumentException.class)
     public void getDataColumnIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-        File testFile = this.getRandomFile(12);
-        
+        final File testFile = this.getRandomFile(12);
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            Content table = gpkg.core().addContent("tableName", 
-                                                   "tiles", 
-                                                   "identifier", 
-                                                   "description", 
-                                                   new BoundingBox(0.0,0.0,90.0,180.0), 
+            final Content table = gpkg.core().addContent("tableName",
+                                                   "tiles",
+                                                   "identifier",
+                                                   "description",
+                                                   new BoundingBox(0.0,0.0,90.0,180.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
-            
+
             gpkg.schema().getDataColumn(table, null);
         }
         finally
@@ -284,7 +284,7 @@ public class GeoPackageSchemaAPITest
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if GeoPackage Schema will throw an Illegal
      * argumentException when trying to get a data Column
@@ -298,17 +298,17 @@ public class GeoPackageSchemaAPITest
     @Test(expected = IllegalArgumentException.class)
     public void getDataColumnIllegalArgumentException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-        File testFile = this.getRandomFile(12);
-        
+        final File testFile = this.getRandomFile(12);
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            Content table = gpkg.core().addContent("tableName", 
-                                                   "tiles", 
-                                                   "identifier", 
-                                                   "description", 
-                                                   new BoundingBox(0.0,0.0,90.0,180.0), 
+            final Content table = gpkg.core().addContent("tableName",
+                                                   "tiles",
+                                                   "identifier",
+                                                   "description",
+                                                   new BoundingBox(0.0,0.0,90.0,180.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
-            
+
             gpkg.schema().getDataColumn(table, "");
         }
         finally
@@ -316,9 +316,9 @@ public class GeoPackageSchemaAPITest
             deleteFile(testFile);
         }
     }
-    
+
     /**
-     * Tests if geopackage schema returns the 
+     * Tests if geopackage schema returns the
      * data column entries expected
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -330,46 +330,46 @@ public class GeoPackageSchemaAPITest
     @Test
     public void getDataColumnCollection() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
     {
-        File testFile = this.getRandomFile(10);
-        
-        String tableName = "tableName";
-        String columnName = "columnName";
-        
+        final File testFile = this.getRandomFile(10);
+
+        final String tableName = "tableName";
+        final String columnName = "columnName";
+
         try(GeoPackage gpkg = createGeoPackage(tableName, columnName, testFile))
         {
-            Collection<DataColumn> shouldBeEmpty = gpkg.schema().getDataColumns();
-            
+            final Collection<DataColumn> shouldBeEmpty = gpkg.schema().getDataColumns();
+
             assertTrue("Returned a non empty collection when there were no DataColumn entries in the geopackage with getDataColumn method.",
                        shouldBeEmpty.isEmpty());
-            
-            Content table = gpkg.core().addContent(tableName, 
-                                                   "tiles", 
-                                                   "identifier", 
-                                                   "description", 
-                                                   new BoundingBox(0.0,0.0,90.0,180.0), 
+
+            final Content table = gpkg.core().addContent(tableName,
+                                                   "tiles",
+                                                   "identifier",
+                                                   "description",
+                                                   new BoundingBox(0.0,0.0,90.0,180.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
-            
-            String   name           = "name";
-            String   title          = "title";
-            String   description    = "description";
-            MimeType mimeType       = new MimeType("image/png");
-            String   constraintName = "constraint_name";
-            
-            DataColumn column = gpkg.schema().addDataColumn(table, columnName, name, title, description, mimeType, constraintName);
-            
-            String   columnName2     = "last_column";
-            String   name2           = "name2";
-            String   title2          = "title2";
-            String   description2    = "description2";
-            MimeType mimeType2       = new MimeType("image/jpeg");
-            String   constraintName2 = "constraint_name2";
-            
-            DataColumn column2 = gpkg.schema().addDataColumn(table, columnName2, name2, title2, description2, mimeType2, constraintName2);
-            
-            List<DataColumn> columnsExpected = Arrays.asList(column, column2);
-            
-            Collection<DataColumn> columnsReturned = gpkg.schema().getDataColumns();
-            
+
+            final String   name           = "name";
+            final String   title          = "title";
+            final String   description    = "description";
+            final MimeType mimeType       = new MimeType("image/png");
+            final String   constraintName = "constraint_name";
+
+            final DataColumn column = gpkg.schema().addDataColumn(table, columnName, name, title, description, mimeType, constraintName);
+
+            final String   columnName2     = "last_column";
+            final String   name2           = "name2";
+            final String   title2          = "title2";
+            final String   description2    = "description2";
+            final MimeType mimeType2       = new MimeType("image/jpeg");
+            final String   constraintName2 = "constraint_name2";
+
+            final DataColumn column2 = gpkg.schema().addDataColumn(table, columnName2, name2, title2, description2, mimeType2, constraintName2);
+
+            final List<DataColumn> columnsExpected = Arrays.asList(column, column2);
+
+            final Collection<DataColumn> columnsReturned = gpkg.schema().getDataColumns();
+
             assertTrue("GeoPackage Schema did not returned the expected DataColumn entries from the geopackage when using getDataColumn() method",
                        columnsReturned.size() == 2 &&
                        columnsReturned.stream().allMatch(returned-> columnsExpected.stream().anyMatch(expected -> dataColumnsEqual(expected, returned))));
@@ -379,7 +379,7 @@ public class GeoPackageSchemaAPITest
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if geopackage addDataColumnConstraint
      * returns the expected values
@@ -392,37 +392,37 @@ public class GeoPackageSchemaAPITest
     @Test
     public void addDataColumnConstraint() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-        File testFile = this.getRandomFile(11);
-        
+        final File testFile = this.getRandomFile(11);
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            
-            String  constraintName      = "constraint_name";
-            Type    constraintType      = Type.Range;
-            String  value               = null;
-            Number  minimum             = 0;
-            Boolean minimumIsInclusive  = true;
-            Number  maximum             = 20;
-            Boolean maximumIsInclusive  = false;
-            String  description         = "description";
-            
-            DataColumnConstraint constraint = gpkg.schema().addDataColumnConstraint(constraintName, 
-                                                                                    constraintType, 
-                                                                                    value, 
-                                                                                    minimum, 
-                                                                                    minimumIsInclusive, 
-                                                                                    maximum, 
-                                                                                    maximumIsInclusive, 
+
+            final String  constraintName      = "constraint_name";
+            final Type    constraintType      = Type.Range;
+            final String  value               = null;
+            final Number  minimum             = 0;
+            final Boolean minimumIsInclusive  = true;
+            final Number  maximum             = 20;
+            final Boolean maximumIsInclusive  = false;
+            final String  description         = "description";
+
+            final DataColumnConstraint constraint = gpkg.schema().addDataColumnConstraint(constraintName,
+                                                                                    constraintType,
+                                                                                    value,
+                                                                                    minimum,
+                                                                                    minimumIsInclusive,
+                                                                                    maximum,
+                                                                                    maximumIsInclusive,
                                                                                     description);
-            gpkg.schema().addDataColumnConstraint(constraintName, 
-                                                  constraintType, 
-                                                  value, 
-                                                  minimum, 
-                                                  minimumIsInclusive, 
-                                                  maximum, 
-                                                  maximumIsInclusive, 
+            gpkg.schema().addDataColumnConstraint(constraintName,
+                                                  constraintType,
+                                                  value,
+                                                  minimum,
+                                                  minimumIsInclusive,
+                                                  maximum,
+                                                  maximumIsInclusive,
                                                   description);
-            
+
             assertTrue("The Returned datacolumnconstraint using addDataColumnConstraint does not return the expected values",
                        constraint.getConstraintName().equals(constraintName)            &&
                        constraint.getConstraintType().equals(constraintType.toString()) &&
@@ -437,12 +437,12 @@ public class GeoPackageSchemaAPITest
             deleteFile(testFile);
         }
     }
-    
-    
+
+
     /**
      * Tests if Geopackage schema will
      * throw an IllegalArgumentException when
-     * trying to add a dataColumnConstraint with a 
+     * trying to add a dataColumnConstraint with a
      * null value for constraintName
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -453,84 +453,84 @@ public class GeoPackageSchemaAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addDataColumnConstraintIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-        File testFile = this.getRandomFile(13);
+        final File testFile = this.getRandomFile(13);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            String  constraintName      = null;
-            Type    constraintType      = Type.Range;
-            String  value               = null;
-            Number  minimum             = 0;
-            Boolean minimumIsInclusive  = true;
-            Number  maximum             = 20;
-            Boolean maximumIsInclusive  = false;
-            String  description         = "description";
-            
+            final String  constraintName      = null;
+            final Type    constraintType      = Type.Range;
+            final String  value               = null;
+            final Number  minimum             = 0;
+            final Boolean minimumIsInclusive  = true;
+            final Number  maximum             = 20;
+            final Boolean maximumIsInclusive  = false;
+            final String  description         = "description";
+
             gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a null value for constraint name");
-            
+
         }
         finally
         {
             deleteFile(testFile);
         }
     }
-    
+
     @Test
     public void getDataColumnConstraint() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-        File testFile = this.getRandomFile(11);
-        
+        final File testFile = this.getRandomFile(11);
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            
-            String  constraintName      = "constraint_name";
-            Type    constraintType      = Type.Range;
-            String  value               = null;
-            Number  minimum             = 0;
-            Boolean minimumIsInclusive  = false;
-            Number  maximum             = 20;
-            Boolean maximumIsInclusive  = true;
-            String  description         = "description";
-            
-            DataColumnConstraint constraintExpected = gpkg.schema().addDataColumnConstraint(constraintName, 
-                                                                                            constraintType, 
-                                                                                            value, 
-                                                                                            minimum, 
-                                                                                            minimumIsInclusive, 
-                                                                                            maximum, 
-                                                                                            maximumIsInclusive, 
+
+            final String  constraintName      = "constraint_name";
+            final Type    constraintType      = Type.Range;
+            final String  value               = null;
+            final Number  minimum             = 0;
+            final Boolean minimumIsInclusive  = false;
+            final Number  maximum             = 20;
+            final Boolean maximumIsInclusive  = true;
+            final String  description         = "description";
+
+            final DataColumnConstraint constraintExpected = gpkg.schema().addDataColumnConstraint(constraintName,
+                                                                                            constraintType,
+                                                                                            value,
+                                                                                            minimum,
+                                                                                            minimumIsInclusive,
+                                                                                            maximum,
+                                                                                            maximumIsInclusive,
                                                                                             description);
-            
-            DataColumnConstraint constraintReturned = gpkg.schema().getDataColumnConstraint(constraintName, constraintType, value);
-            
+
+            final DataColumnConstraint constraintReturned = gpkg.schema().getDataColumnConstraint(constraintName, constraintType, value);
+
             assertTrue("The data Column Constraint returned isn't the same as expected.",
                        dataColumnConstraintsEqual(constraintExpected, constraintReturned));
-            
+
         }
         finally
         {
             deleteFile(testFile);
         }
     }
-    
-    private GeoPackage createGeoPackage(String tableName, String columnName, File testFile) throws ClassNotFoundException, SQLException, FileAlreadyExistsException, FileNotFoundException, ConformanceException
+
+    private static GeoPackage createGeoPackage(final String tableName, final String columnName, final File testFile) throws ClassNotFoundException, SQLException, FileAlreadyExistsException, FileNotFoundException, ConformanceException
     {
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
             gpkg.close();
             createTable(tableName, columnName, testFile);
-            
+
             return new GeoPackage(testFile, false, OpenMode.Open);
         }
     }
-    
-    private void createTable(String tableName, String columnName, File testFile) throws ClassNotFoundException, SQLException
+
+    private static void createTable(final String tableName, final String columnName, final File testFile) throws ClassNotFoundException, SQLException
     {
-        String createTable = String.format("CREATE TABLE %s ( %s TEXT," +
+        final String createTable = String.format("CREATE TABLE %s ( %s TEXT," +
                                                              "other_column INTEGER NOT NULL," +
                                                              "more_columns INTEGER NOT NULL," +
-                                                             "last_Column TEXT NOT NULL)", 
-                                            tableName, 
+                                                             "last_Column TEXT NOT NULL)",
+                                            tableName,
                                             columnName);
         try(Connection con = getConnection(testFile);
             Statement stmt = con.createStatement();)
@@ -538,15 +538,15 @@ public class GeoPackageSchemaAPITest
             stmt.execute(createTable);
         }
     }
-    
-    private static Connection getConnection(File testFile) throws ClassNotFoundException, SQLException
+
+    private static Connection getConnection(final File testFile) throws ClassNotFoundException, SQLException
     {
         Class.forName("org.sqlite.JDBC");   // Register the driver
 
         return DriverManager.getConnection("jdbc:sqlite:" + testFile.getPath()); // Initialize the database connection
     }
-    
-    private boolean dataColumnConstraintsEqual(DataColumnConstraint expected, DataColumnConstraint returned) 
+
+    private static boolean dataColumnConstraintsEqual(final DataColumnConstraint expected, final DataColumnConstraint returned)
     {
         return isEqual(expected.getConstraintName(),     returned.getConstraintName())    &&
                isEqual(expected.getConstraintType(),     returned.getConstraintType())    &&
@@ -558,7 +558,7 @@ public class GeoPackageSchemaAPITest
                isEqual(expected.getDescription(),        returned.getDescription());
     }
 
-    private boolean dataColumnsEqual(DataColumn expected, DataColumn returned)
+    private static boolean dataColumnsEqual(final DataColumn expected, final DataColumn returned)
     {
         return isEqual(expected.getColumnName(),     returned.getColumnName())  &&
                isEqual(expected.getTableName(),      returned.getTableName())   &&
@@ -568,14 +568,14 @@ public class GeoPackageSchemaAPITest
                isEqual(expected.getMimeType(),       returned.getMimeType())    &&
                isEqual(expected.getConstraintName(), returned.getConstraintName());
     }
-    
+
 
     private static <T> boolean isEqual(final T first, final T second)
     {
         return first == null ? second == null
                              : first.equals(second);
     }
-    private static void deleteFile(File testFile)
+    private static void deleteFile(final File testFile)
     {
         if (testFile.exists())
         {
