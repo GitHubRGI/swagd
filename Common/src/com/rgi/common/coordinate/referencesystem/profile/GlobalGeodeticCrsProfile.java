@@ -62,7 +62,7 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Coordinate is outside the bounds of this coordinate reference system");
         }
 
-        final Coordinate<Double> tileCorner = Utility.tileCorner(Bounds, tileOrigin);
+        final Coordinate<Double> tileCorner = Utility.boundsCorner(Bounds, tileOrigin);
         
         final Dimensions tileDimensions = this.getTileDimensions(dimensions);
         

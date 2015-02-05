@@ -104,7 +104,7 @@ public abstract class TileScheme
      *
      * @return Returns the origin of the tile scheme (where tile (0, 0) is in the tile matrix)
      */
-    public TileOrigin origin()
+    public TileOrigin getOrigin()
     {
         return this.origin;
     }

@@ -877,13 +877,13 @@ public class GeoPackageTiles
             return null;    // The requested SRS coordinate is outside the bounds of our data
         }
 
-        final Coordinate<Double> tileCorner = Utility.tileCorner(tileSetBounds, GeoPackageTiles.Origin);
+        final Coordinate<Double> boundsCorner = Utility.boundsCorner(tileSetBounds, GeoPackageTiles.Origin);
 
         final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
         final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();
 
-        final double normalizedSrsTileCoordinateY = Math.abs(crsCoordinate.getY() - tileCorner.getY());
-        final double normalizedSrsTileCoordinateX = Math.abs(crsCoordinate.getX() - tileCorner.getX());
+        final double normalizedSrsTileCoordinateY = Math.abs(crsCoordinate.getY() - boundsCorner.getY());
+        final double normalizedSrsTileCoordinateX = Math.abs(crsCoordinate.getX() - boundsCorner.getX());
 
         final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);
         final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);

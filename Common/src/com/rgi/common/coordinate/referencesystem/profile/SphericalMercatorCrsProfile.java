@@ -57,12 +57,12 @@ public class SphericalMercatorCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Coordinate is outside the bounds of this coordinate reference system");
         }
 
-        final Coordinate<Double> tileCorner = Utility.tileCorner(Bounds, tileOrigin);
+        final Coordinate<Double> boundsCorner = Utility.boundsCorner(Bounds, tileOrigin);
 
         final Dimensions tileDimensions = this.getTileDimensions(dimensions);
 
-        final double normalizedSrsTileCoordinateY = Math.abs(coordinate.getY() - tileCorner.getY());
-        final double normalizedSrsTileCoordinateX = Math.abs(coordinate.getX() - tileCorner.getX());
+        final double normalizedSrsTileCoordinateY = Math.abs(coordinate.getY() - boundsCorner.getY());
+        final double normalizedSrsTileCoordinateX = Math.abs(coordinate.getX() - boundsCorner.getX());
 
         final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileDimensions.getHeight());
         final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileDimensions.getWidth());

@@ -65,7 +65,7 @@ public class Utility
         return !onFarEdge && bounds.contains(coordinate);
     }
 
-    public static Coordinate<Double> tileCorner(final BoundingBox bounds, final TileOrigin origin)
+    public static Coordinate<Double> boundsCorner(final BoundingBox bounds, final TileOrigin origin)
     {
         if(bounds == null)
         {
