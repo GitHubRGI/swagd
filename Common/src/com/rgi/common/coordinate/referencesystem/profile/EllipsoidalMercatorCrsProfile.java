@@ -57,8 +57,13 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         this.scaledEarthEquatorialRadius      = UnscaledEarthEquatorialRadius * earthEquatorialRadiusScaleFactor;
         this.earthEquatorialCircumfrence      = 2.0 * Math.PI * this.scaledEarthEquatorialRadius;
 
-        //final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; //IS THIS RIGHT? Verify!
+        final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; // TODO IS THIS RIGHT? Verify!
         //final double earthPolarCircumfrence = 2.0 * Math.PI * scaledEarthPolarRadius;
+
+        this.bounds = new BoundingBox(-Math.PI * scaledEarthPolarRadius,
+                                      -Math.PI * this.scaledEarthEquatorialRadius,
+                                       Math.PI * scaledEarthPolarRadius,
+                                       Math.PI * this.scaledEarthEquatorialRadius);
     }
 
     @Override
@@ -84,6 +89,11 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         if(!coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
         {
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
+        }
+
+        if(!Utility.contains(this.bounds, coordinate, tileOrigin))
+        {
+            throw new IllegalArgumentException("Coordinate is outside the bounds of this coordinate reference system");
         }
 
         throw new RuntimeException("Method not implemented");
@@ -151,16 +161,11 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     @Override
     public BoundingBox getBounds()
     {
-        final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; // TODO IS THIS RIGHT? Verify!
-
-        return new BoundingBox(-Math.PI * scaledEarthPolarRadius,
-                               -Math.PI * this.scaledEarthEquatorialRadius,
-                                Math.PI * scaledEarthPolarRadius,
-                                Math.PI * this.scaledEarthEquatorialRadius);
+        return this.bounds;
     }
 
     @Override
-    public Coordinate<Double> toGlobalGeodetic(Coordinate<Double> coordinate)
+    public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate)
     {
         return new Coordinate<>(metersToLat(coordinate.getY()),
                                 metersToLon(coordinate.getX()));
@@ -331,4 +336,6 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     private final double earthEquatorialCircumfrence;
 
     private final CoordinateReferenceSystem coordinateReferenceSystem;
+
+    private final BoundingBox bounds;
 }

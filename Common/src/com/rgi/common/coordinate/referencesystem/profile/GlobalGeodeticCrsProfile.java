@@ -57,18 +57,22 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
         }
 
-        // TODO tile origin transform from TileOrigin.LowerLeft?
-        final Coordinate<Double> topLeft = Bounds.getTopLeft();
-        
+        if(!Utility.contains(Bounds, coordinate, tileOrigin))
+        {
+            throw new IllegalArgumentException("Coordinate is outside the bounds of this coordinate reference system");
+        }
+
+        final Coordinate<Double> tileCorner = Utility.tileCorner(Bounds, tileOrigin);
+
         final double tileHeightInSrs = Bounds.getHeight() / dimensions.getHeight();
         final double tileWidthInSrs  = Bounds.getWidth()  / dimensions.getWidth();
 
-        final double normalizedSrsTileCoordinateY = topLeft.getY() - coordinate.getY();
-        final double normalizedSrsTileCoordinateX = coordinate.getX() - topLeft.getX();
+        final double normalizedSrsTileCoordinateY = Math.abs(coordinate.getY() - tileCorner.getY());
+        final double normalizedSrsTileCoordinateX = Math.abs(coordinate.getX() - tileCorner.getX());
 
-        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);  // TODO this will return max matrix height + 1 at the far right edge of the SRS
+        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);
         final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
-        
+
         return new Coordinate<>(tileY, tileX);
     }
 
@@ -130,7 +134,7 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
     }
 
     @Override
-    public Coordinate<Double> toGlobalGeodetic(Coordinate<Double> coordinate)
+    public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate)
     {
         return coordinate;
     }
