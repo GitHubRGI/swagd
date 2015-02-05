@@ -4032,10 +4032,10 @@ public class GeoPackageTilesAPITest
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
-                                                      "identifier",
-                                                      "description",
-                                                      new BoundingBox(0.0, 0.0, 50.0, 30.0),
-                                                      gpkg.core().getSpatialReferenceSystem(4326));
+                                                            "identifier",
+                                                            "description",
+                                                            new BoundingBox(0.0, 0.0, 50.0, 30.0),
+                                                            gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
             final int pixelXSize = 256;
