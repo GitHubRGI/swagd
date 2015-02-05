@@ -635,7 +635,7 @@ public class TileJob implements Runnable
             band = dataset.GetRasterBand(bandIndex + 1);
 
             bandBufferType = band.getDataType();
-            final int bandBufferSize = pixels * gdal.GetDataTypeSize(bandBufferType) / 8;
+            final int bandBufferSize = pixels * (gdal.GetDataTypeSize(bandBufferType) / 8);
 
             final ByteBuffer data = ByteBuffer.allocateDirect(bandBufferSize);
             data.order(ByteOrder.nativeOrder());
