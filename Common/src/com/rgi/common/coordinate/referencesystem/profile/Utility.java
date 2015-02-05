@@ -56,15 +56,19 @@ public class Utility
         {
             case LowerLeft:  onFarEdge = coordinate.getY() >= bounds.getMaxY() ||
                                          coordinate.getX() >= bounds.getMaxX();
+                             break;
 
             case LowerRight: onFarEdge = coordinate.getY() >= bounds.getMaxY() ||
                                          coordinate.getX() <= bounds.getMinX();
+                             break;
 
             case UpperLeft:  onFarEdge = coordinate.getY() <= bounds.getMinY() ||
                                          coordinate.getX() >= bounds.getMaxX();
+                             break;
 
             case UpperRight: onFarEdge = coordinate.getY() <= bounds.getMinY() ||
                                          coordinate.getX() <= bounds.getMinX();
+                             break;
 
             default: break; // This can't be reached.  All enumeration cases are present in the switch.
         }
