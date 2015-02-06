@@ -4,6 +4,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.stream.Collectors;
+
 import org.junit.Test;
 
 import com.rgi.common.coordinate.Coordinate;
@@ -14,6 +21,20 @@ import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 public class SphericalMercatorCrsProfileTest
 {
+    public class LatLongMetersYMetersX
+    {
+       private double latitude;
+       private double longitude;
+       private double metersX;
+       private double metersY;
+       
+       @Override
+       public String toString()
+       {
+        return String.format("Latitude: %f, Longitude: %f, MetersX: %f, MetersY: %f", this.latitude, this.longitude, this.metersX, this.metersY);
+           
+       }
+    }
     /**
      * Tests if spherical mercator throws an IllegalArgumentException
      * when passing a null value to crsToTileCoordinate
@@ -127,12 +148,70 @@ public class SphericalMercatorCrsProfileTest
     }
     
     /**
+     * @throws FileNotFoundException 
      * 
      */
     @Test
-    public void toGlobalGeodetic()
+    public void toGlobalGeodetic() throws FileNotFoundException
     {
-        
+        File coordinatePointsFile = new File("SphericalMercatorCoordinatePoints.csv");
+        try(Scanner scanner = new Scanner(coordinatePointsFile))
+        {
+            scanner.useDelimiter("\n");
+            
+            ArrayList<LatLongMetersYMetersX> coordinatesList = readValuesFromFile(scanner);
+            
+            for(LatLongMetersYMetersX coordinate: coordinatesList)
+            {
+                verifyCoordinateConversion(coordinate);
+            }
+            
+            List<LatLongMetersYMetersX> inccorrectCoordinates =  coordinatesList.stream()
+                                                                                .filter(coordinate -> !verifyCoordinateConversion(coordinate))
+                                                                                .collect(Collectors.toList());
+            assertTrue(String.format("Number of incorrect coordinates: %d out of 100\n"
+                                       + "Following coordinates did not convert correctly.\n%s.",
+                                     inccorrectCoordinates.size(),
+                                     coordinatesList.stream()
+                                                    .filter(coordinate -> !verifyCoordinateConversion(coordinate))
+                                                    .map(coordinate -> coordinate.toString())
+                                                    .collect(Collectors.joining("\n"))),
+                       coordinatesList.stream().allMatch(coordinate -> verifyCoordinateConversion(coordinate)));
+        }
+    }
+    
+    private boolean verifyCoordinateConversion(LatLongMetersYMetersX coordinate)
+    {
+        CrsCoordinate               metersCoordinate   = new CrsCoordinate(coordinate.metersY, coordinate.metersX, "epsg", 3857);
+        SphericalMercatorCrsProfile sphericalCrs       = new SphericalMercatorCrsProfile();
+        Coordinate<Double>          coordinateReturned = sphericalCrs.toGlobalGeodetic(metersCoordinate);
+        Coordinate<Double>          coordinateExpected = new Coordinate<Double>(coordinate.latitude, coordinate.longitude);
+        return isEqual(coordinateExpected, coordinateReturned);
+    }
+    
+    private boolean isEqual(Coordinate<Double> coordinateExpected, Coordinate<Double> coordinateReturned)
+    {
+        boolean xEqual = Math.abs(coordinateExpected.getX() - coordinateReturned.getX()) <= 0.0000001;
+        boolean yEqual = Math.abs(coordinateExpected.getY() - coordinateReturned.getY()) <= 0.0000001;
+        return xEqual && yEqual;
+    }
+
+    private ArrayList<LatLongMetersYMetersX> readValuesFromFile(Scanner scanner)
+    {
+        ArrayList<LatLongMetersYMetersX> coordinatesList = new ArrayList<LatLongMetersYMetersX>();
+        while(scanner.hasNext())
+        {
+            String line = scanner.next();
+            String[] values = line.split(",", 4);
+            
+            LatLongMetersYMetersX coordinate = new LatLongMetersYMetersX();
+            coordinate.latitude  = Double.parseDouble(values[0]);
+            coordinate.longitude = Double.parseDouble(values[1]);
+            coordinate.metersY   = Double.parseDouble(values[2]);
+            coordinate.metersX   = Double.parseDouble(values[3]);
+            coordinatesList.add(coordinate);
+        }
+        return coordinatesList;
     }
 
     /**
@@ -866,12 +945,6 @@ public class SphericalMercatorCrsProfileTest
                                  newCoordinate.getX(), 
                                  newCoordinate.getY()),
                   newCoordinate.getX() == 2 && newCoordinate.getY() == 1);
-    }
-    
-    @Test
-    public void MIDDLE()
-    {
-        
     }
     
     /**
