@@ -22,7 +22,6 @@ import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
@@ -75,9 +74,10 @@ public class GdalUtility
         final int[]        banks   = new int       [bandCount];
         final int[]        offsets = new int       [bandCount];
 
-        final int xsize  = dataset.getRasterXSize();
-        final int ysize  = dataset.getRasterYSize();
-        final int pixels = xsize * ysize;
+        final int xsize = dataset.getRasterXSize();
+        final int ysize = dataset.getRasterYSize();
+
+        final int pixelCount = xsize * ysize;
 
         int bandDataType = 0;
         Band band = null;
@@ -87,7 +87,7 @@ public class GdalUtility
             band = dataset.GetRasterBand(bandIndex + 1);   // Bands are not 0-base indexed, so we must add 1
 
             bandDataType = band.getDataType();
-            final int bufferSize = pixels * (gdal.GetDataTypeSize(bandDataType) / 8);
+            final int bufferSize = pixelCount * (gdal.GetDataTypeSize(bandDataType) / 8);
 
             final ByteBuffer data = ByteBuffer.allocateDirect(bufferSize);
             data.order(ByteOrder.nativeOrder());
@@ -108,78 +108,118 @@ public class GdalUtility
             throw new RuntimeException("Raster contained no bands");
         }
 
-        DataBuffer  dataBuffer = null;
-        SampleModel sampleModel = null;
-        int bufferedImageDataType = 0;
-        int dataBufferType = 0;
+        final DataBuffer  dataBuffer     = getDataBuffer(bandDataType, bandCount, pixelCount, bands);
+        final int         dataBufferType = getDataBufferType(bandDataType);
+        final SampleModel sampleModel    = new BandedSampleModel(dataBufferType, xsize, ysize, xsize, banks, offsets);
 
+        final WritableRaster raster = Raster.createWritableRaster(sampleModel, dataBuffer, null);
+
+        if(band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex)
+        {
+            //bufferedImageDataType = BufferedImage.TYPE_BYTE_INDEXED; // This assignment had no effect
+            return new BufferedImage(band.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(bandDataType)),
+                                     raster,
+                                     false,
+                                     null);
+        }
+
+        if(bandCount > 2)
+        {
+            return new BufferedImage(new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+                                                             bandCount == 4,
+                                                             false,
+                                                             bandCount == 4 ? Transparency.TRANSLUCENT : Transparency.OPAQUE,
+                                                             dataBufferType),
+                                     raster,
+                                     true,
+                                     null);
+        }
+
+        final int bufferedImageDataType = getBufferedImageDataType(band, bandDataType);
+
+        final BufferedImage bufferedImage = new BufferedImage(xsize, ysize, bufferedImageDataType);
+        bufferedImage.setData(raster);
+        return bufferedImage;
+    }
+
+    private static DataBuffer getDataBuffer(final int bandDataType, final int bandCount, final int pixelCount, final ByteBuffer[] bands)
+    {
         if(bandDataType == gdalconstConstants.GDT_Byte)
         {
             final byte[][] bytes = new byte[bandCount][];
             for(int i = 0; i < bandCount; i++)
             {
-                bytes[i] = new byte[pixels];
+                bytes[i] = new byte[pixelCount];
                 bands[i].get(bytes[i]);
             }
-            dataBuffer = new DataBufferByte(bytes, pixels);
-            dataBufferType = DataBuffer.TYPE_BYTE;
-            sampleModel = new BandedSampleModel(dataBufferType, xsize, ysize, xsize, banks, offsets);
-            bufferedImageDataType = (band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) ? BufferedImage.TYPE_BYTE_INDEXED : BufferedImage.TYPE_BYTE_GRAY;
+
+            return new DataBufferByte(bytes, pixelCount);
         }
         else if(bandDataType == gdalconstConstants.GDT_Int16)
         {
             final short[][] shorts = new short[bandCount][];
             for(int i = 0; i < bandCount; i++)
             {
-                shorts[i] = new short[pixels];
+                shorts[i] = new short[pixelCount];
                 bands[i].asShortBuffer().get(shorts[i]);
             }
-            dataBuffer = new DataBufferShort(shorts, pixels);
-            dataBufferType = DataBuffer.TYPE_USHORT;
-            sampleModel = new BandedSampleModel(dataBufferType, xsize, ysize, xsize, banks, offsets);
-            bufferedImageDataType = BufferedImage.TYPE_USHORT_GRAY;
+
+            return new DataBufferShort(shorts, pixelCount);
         }
         else if(bandDataType == gdalconstConstants.GDT_Int32)
         {
             final int[][] ints = new int[bandCount][];
             for(int i = 0; i < bandCount; i++)
             {
-                ints[i] = new int[pixels];
+                ints[i] = new int[pixelCount];
                 bands[i].asIntBuffer().get(ints[i]);
             }
-            dataBuffer = new DataBufferInt(ints, pixels);
-            dataBufferType = DataBuffer.TYPE_INT;
-            sampleModel = new BandedSampleModel(dataBufferType, xsize, ysize, xsize, banks, offsets);
-            bufferedImageDataType = BufferedImage.TYPE_CUSTOM;
-        }
 
-        final WritableRaster raster = Raster.createWritableRaster(sampleModel, dataBuffer, null);
-        BufferedImage img = null;
-        ColorModel cm = null;
-
-        if(band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex)
-        {
-            bufferedImageDataType = BufferedImage.TYPE_BYTE_INDEXED;
-            cm = band.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(bandDataType));
-            img = new BufferedImage(cm, raster, false, null);
+            return new DataBufferInt(ints, pixelCount);
         }
         else
         {
-            if(bandCount > 2)
-            {
-                cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
-                                                                    bandCount == 4,
-                                                                    false,
-                                                                    bandCount == 4 ? Transparency.TRANSLUCENT : Transparency.OPAQUE,
-                                                                    dataBufferType);
-                img = new BufferedImage(cm, raster, true, null);
-            }
-            else
-            {
-                img = new BufferedImage(xsize, ysize, bufferedImageDataType);
-                img.setData(raster);
-            }
+            throw new IllegalArgumentException("Unsupported band data type");
         }
-        return img;
+    }
+
+    private static int getDataBufferType(final int bandDataType)
+    {
+        if(bandDataType == gdalconstConstants.GDT_Byte)
+        {
+            return DataBuffer.TYPE_BYTE;
+        }
+        else if(bandDataType == gdalconstConstants.GDT_Int16)
+        {
+            return DataBuffer.TYPE_USHORT;
+        }
+        else if(bandDataType == gdalconstConstants.GDT_Int32)
+        {
+            return DataBuffer.TYPE_INT;
+        }
+        else
+        {
+            throw new IllegalArgumentException("Unsupported band data type");
+        }
+    }
+
+    private static int getBufferedImageDataType(final Band band, final int bandDataType)
+    {
+        if(bandDataType == gdalconstConstants.GDT_Byte)
+        {
+            return (band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) ? BufferedImage.TYPE_BYTE_INDEXED : BufferedImage.TYPE_BYTE_GRAY;
+        }
+        else if(bandDataType == gdalconstConstants.GDT_Int16)
+        {
+            return BufferedImage.TYPE_USHORT_GRAY;
+        }
+        else if(bandDataType == gdalconstConstants.GDT_Int32)
+        {
+            return BufferedImage.TYPE_CUSTOM;
+        }
+        else
+        {
+            throw new IllegalArgumentException("Unsupported band data type");
+        }
     }
 }

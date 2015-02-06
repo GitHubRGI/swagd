@@ -21,6 +21,10 @@ package utility;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class GdalError
 {
     public GdalError()
