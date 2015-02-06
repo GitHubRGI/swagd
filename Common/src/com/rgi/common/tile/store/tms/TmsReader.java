@@ -41,6 +41,8 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 
@@ -182,15 +184,21 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     private void calculateBounds() throws TileStoreException
     {
         final int minimumZoom = TmsReader.getTmsRange(this.location.toFile()).minimum; // Get the minimum zoom level
+        
+//TODO: Luke, Look over the changes I made to this logic and see if you agree
+//        final Path pathToMinimumZoom = tmsPath(this.location, minimumZoom);
 
-        final Path pathToMinimumZoom = tmsPath(this.location, minimumZoom);
+//        final Range xRange = TmsReader.getTmsRange(pathToMinimumZoom.toFile());
+//        final Range yRange = TmsReader.getTmsRange(tmsPath(pathToMinimumZoom, xRange.maximum).toFile());
 
-        final Range xRange = TmsReader.getTmsRange(pathToMinimumZoom.toFile());
-        final Range yRange = TmsReader.getTmsRange(tmsPath(pathToMinimumZoom, xRange.maximum).toFile());
-
-        // TODO attention: Lander, this logic needs to be double checked
-        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(yRange.minimum,     xRange.minimum,     this.tileScheme.dimensions(minimumZoom), TmsTileStore.Origin);
-        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(yRange.maximum + 1, xRange.maximum + 1, this.tileScheme.dimensions(minimumZoom), TmsTileStore.Origin);
+//        // TODO attention: Lander, this logic needs to be double checked
+//        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(yRange.minimum,     xRange.minimum,     this.tileScheme.dimensions(minimumZoom), TmsTileStore.Origin);
+//        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(yRange.maximum + 1, xRange.maximum + 1, this.tileScheme.dimensions(minimumZoom), TmsTileStore.Origin);
+        
+        TileMatrixDimensions dimensions = this.tileScheme.dimensions(minimumZoom);
+        
+        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(0,                          0,                         dimensions, TileOrigin.LowerLeft);
+        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(dimensions.getHeight() - 1, dimensions.getWidth() - 1, dimensions, TileOrigin.UpperRight);
 
         this.bounds = new BoundingBox(lowerLeftCorner.getY(),
                                       lowerLeftCorner.getX(),
