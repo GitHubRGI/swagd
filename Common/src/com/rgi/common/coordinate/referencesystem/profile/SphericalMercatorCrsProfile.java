@@ -81,19 +81,16 @@ public class SphericalMercatorCrsProfile implements CrsProfile
                                              final TileMatrixDimensions dimensions,
                                              final TileOrigin           tileOrigin)
     {
-        if(row < 0)
-        {
-            throw new IllegalArgumentException("Row must be at least 0");
-        }
-
-        if(column < 0)
-        {
-            throw new IllegalArgumentException("Column must be at least 0");
-        }
-
         if(dimensions == null)
         {
             throw new IllegalArgumentException("Tile matrix dimensions may not be null");
+        }
+        
+        if(!dimensions.verifyRowAndColumnWithinDimensions(row, column))
+        {
+            throw new IllegalArgumentException("The row and column are not within the Tile Matrix Dimensions. " +
+                                               "Row must be between(inclusive) 0 and matrix height - 1 and "    +
+                                               "Column must be between(inclusive) 0 and matrix width - 1.");
         }
 
         if(tileOrigin == null)

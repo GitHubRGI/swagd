@@ -62,6 +62,15 @@ public class TileMatrixDimensions
     {
         return this.width;
     }
+    
+    /**
+     * @return Returns true if the row and column are within the Tile Matrix Dimensions
+     */
+    public boolean verifyRowAndColumnWithinDimensions(int row, int column)
+    {
+        return (row    >= 0 && row    <= (this.height-1)) &&
+               (column >= 0 && column <= (this.width-1));
+    }
 
     private final int height;
     private final int width;
