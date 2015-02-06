@@ -76,6 +76,64 @@ public class SphericalMercatorCrsProfileTest
         
         fail("Expected Spherical Mercator to throw an IllegalArgumentException when passing a coordinate outside the bounds to crsToTileCoordinate");
     }
+    
+    
+    /**
+     * Tests if Spherical Mercator tileToCrsCoordinate will throw
+     * an illegal argument exception when the row value is negative
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void tileToCrsCoordinateIllegalArgumentException()
+    {
+        SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
+        sphericalCrs.tileToCrsCoordinate(-5, 8, new TileMatrixDimensions(100,100), TileOrigin.LowerLeft);
+        fail("Expected Spherical Mercator CrsProfile to throw an IllegalArgumentException when row is negative in tileToCrsCoordinate.");
+    }
+    
+    /**
+    * Tests if Spherical Mercator tileToCrsCoordinate will throw
+    * an illegal argument exception when the column value is negative
+    */
+   @Test(expected = IllegalArgumentException.class)
+   public void tileToCrsCoordinateIllegalArgumentException2()
+   {
+       SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
+       sphericalCrs.tileToCrsCoordinate(5, -8, new TileMatrixDimensions(100,100), TileOrigin.LowerLeft);
+       fail("Expected Spherical Mercator CrsProfile to throw an IllegalArgumentException when column is negative in tileToCrsCoordinate.");
+   }
+   
+   /**
+     * Tests if Spherical Mercator tileToCrsCoordinate will throw
+     * an illegal argument exception when the tile matrix dimensions is null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void tileToCrsCoordinateIllegalArgumentException3()
+    {
+        SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
+        sphericalCrs.tileToCrsCoordinate(5, 8, null, TileOrigin.LowerLeft);
+        fail("Expected Spherical Mercator CrsProfile to throw an IllegalArgumentException when the tile matrix dimensions is null in tileToCrsCoordinate.");
+    }
+    
+    /**
+     * Tests if Spherical Mercator tileToCrsCoordinate will throw
+     * an illegal argument exception when the tileOrigin is null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void tileToCrsCoordinateIllegalArgumentException4()
+    {
+        SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
+        sphericalCrs.tileToCrsCoordinate(5, 8, new TileMatrixDimensions(100,100), null);
+        fail("Expected Spherical Mercator CrsProfile to throw an IllegalArgumentException when the tile Origin is null in tileToCrsCoordinate.");
+    }
+    
+    /**
+     * 
+     */
+    @Test
+    public void toGlobalGeodetic()
+    {
+        
+    }
 
     /**
      * Tests if a crs to tile coordinate with an upperleft origin
@@ -849,9 +907,9 @@ public class SphericalMercatorCrsProfileTest
     public void tileCoordinateToCrsBackToTileCoordinate2()
     {
         SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
-        TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
+        TileMatrixDimensions     dimensions    = new TileMatrixDimensions(60, 73);
         TileOrigin origin = TileOrigin.UpperRight;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(15,9);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(50,9); //15, 9
         
         CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -904,9 +962,9 @@ public class SphericalMercatorCrsProfileTest
     public void tileCoordinateToCrsBackToTileCoordinate4()
     {
         SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
-        TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
+        TileMatrixDimensions     dimensions    = new TileMatrixDimensions(80, 73);
         TileOrigin origin = TileOrigin.LowerRight;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(98,32);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(79,32);
         
         CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);

@@ -80,12 +80,12 @@ public enum TileOrigin
 
     public int transformHorizontal(final TileOrigin toOrigin, final int tileX, final int tileMatrixWidth)
     {
-        return transform(this.horizontal, toOrigin.horizontal, tileX, tileMatrixWidth);
+        return transform(this.getHorizontal(), toOrigin.getHorizontal(), tileX, tileMatrixWidth);
     }
 
     public int transformVertical(final TileOrigin toOrigin, final int tileY, final int tileMatrixHeight)
     {
-        return transform(this.vertical, toOrigin.vertical, tileY, tileMatrixHeight);
+        return transform(this.getVertical(), toOrigin.getVertical(), tileY, tileMatrixHeight);
     }
 
     private static int transform(final int fromDirection, final int toDirection, final int tileCoordinate, final int tileMatrixDimension)
@@ -93,5 +93,15 @@ public enum TileOrigin
         final int maxTileCoordinate = tileMatrixDimension - 1;
 
         return tileCoordinate + (fromDirection ^ toDirection) * (maxTileCoordinate - 2*tileCoordinate);
+    }
+
+    public int getVertical()
+    {
+        return vertical;
+    }
+
+    public int getHorizontal()
+    {
+        return horizontal;
     }
 }

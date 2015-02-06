@@ -965,7 +965,7 @@ public class GlobalGeodeticCrsProfileTest
     public void globalGeodeticCrsProfileTileCoordinateToCrsBackToTileCoordinate2()
     {
         GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
-        TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
+        TileMatrixDimensions     dimensions    = new TileMatrixDimensions(20, 11);
         TileOrigin origin = TileOrigin.UpperRight;
         Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(15,9);
         
@@ -1051,6 +1051,114 @@ public class GlobalGeodeticCrsProfileTest
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
         TileOrigin origin = TileOrigin.UpperRight;
         Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(0,0);
+        
+        CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
+        Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        
+        assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
+                                    + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)", 
+                                   originalTileCoordinate.getX(),
+                                   originalTileCoordinate.getY(),
+                                   returnedTileCoordinate.getX(),
+                                   returnedTileCoordinate.getY(),
+                                   returnedCrsCoordiante.getX(),
+                                   returnedCrsCoordiante.getY()), 
+                    originalTileCoordinate, 
+                    returnedTileCoordinate);
+    }
+    
+    /**
+     * Tests if the transformation from tile to crs back to tile can work if given
+     * a corner tile
+     */
+    @Test
+    public void globalGeodeticCrsProfileTileCoordinateToCrsBackToTileCoordinateEdgeCase2()
+    {
+        GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
+        TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
+        TileOrigin origin = TileOrigin.UpperRight;
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(102,72);
+        
+        CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
+        Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        
+        assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
+                                    + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)", 
+                                   originalTileCoordinate.getX(),
+                                   originalTileCoordinate.getY(),
+                                   returnedTileCoordinate.getX(),
+                                   returnedTileCoordinate.getY(),
+                                   returnedCrsCoordiante.getX(),
+                                   returnedCrsCoordiante.getY()), 
+                    originalTileCoordinate, 
+                    returnedTileCoordinate);
+    }
+    
+    /**
+     * Tests if the transformation from tile to crs back to tile can work if given
+     * a corner tile
+     */
+    @Test
+    public void globalGeodeticCrsProfileTileCoordinateToCrsBackToTileCoordinateCenter()
+    {
+        GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
+        TileMatrixDimensions     dimensions    = new TileMatrixDimensions(10, 10);
+        TileOrigin origin = TileOrigin.UpperRight;
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(5,5);
+        
+        CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
+        Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        
+        assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
+                                    + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)", 
+                                   originalTileCoordinate.getX(),
+                                   originalTileCoordinate.getY(),
+                                   returnedTileCoordinate.getX(),
+                                   returnedTileCoordinate.getY(),
+                                   returnedCrsCoordiante.getX(),
+                                   returnedCrsCoordiante.getY()), 
+                    originalTileCoordinate, 
+                    returnedTileCoordinate);
+    }
+    
+    /**
+     * Tests if the transformation from tile to crs back to tile can work if given
+     * a corner tile
+     */
+    @Test
+    public void globalGeodeticCrsProfileTileCoordinateToCrsBackToTileCoordinateEdgeCase3()
+    {
+        GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
+        TileMatrixDimensions     dimensions    = new TileMatrixDimensions(10, 10);
+        TileOrigin origin = TileOrigin.UpperRight;
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(6,5);
+        
+        CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
+        Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        
+        assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
+                                    + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)", 
+                                   originalTileCoordinate.getX(),
+                                   originalTileCoordinate.getY(),
+                                   returnedTileCoordinate.getX(),
+                                   returnedTileCoordinate.getY(),
+                                   returnedCrsCoordiante.getX(),
+                                   returnedCrsCoordiante.getY()), 
+                    originalTileCoordinate, 
+                    returnedTileCoordinate);
+    }
+    
+    /**
+     * Tests if the transformation from tile to crs back to tile can work if given
+     * a corner tile
+     */
+    @Test
+    public void globalGeodeticCrsProfileTileCoordinateToCrsBackToTileCoordinateEdgeCase4()
+    {
+        GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
+        TileMatrixDimensions     dimensions    = new TileMatrixDimensions(10, 10);
+        TileOrigin origin = TileOrigin.UpperRight;
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(5,6);
         
         CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);

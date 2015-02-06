@@ -100,7 +100,7 @@ public class SphericalMercatorCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
-
+        
         final Dimensions tileCrsDimensions = this.getTileDimensions(dimensions);
 
         final double originShift = (EarthEquatorialCircumfrence / 2.0);
@@ -110,8 +110,8 @@ public class SphericalMercatorCrsProfile implements CrsProfile
                                                                         column,
                                                                         dimensions);
 
-        return new CrsCoordinate(((tileCoordinate.getY() + 0.5) * tileCrsDimensions.getHeight()) - originShift,
-                                 ((tileCoordinate.getX() + 0.5) * tileCrsDimensions.getWidth())  - originShift,
+        return new CrsCoordinate(((tileCoordinate.getY() + tileOrigin.getVertical())   * tileCrsDimensions.getHeight()) - originShift,
+                                 ((tileCoordinate.getX() + tileOrigin.getHorizontal()) * tileCrsDimensions.getWidth())  - originShift,
                                  this.getCoordinateReferenceSystem());
     }
 

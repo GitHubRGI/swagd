@@ -112,8 +112,8 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
         final double originShiftY = (Bounds.getHeight() / 2.0);
         final double originShiftX = (Bounds.getWidth() / 2.0);
 
-        return new CrsCoordinate(((tileCoordinate.getY() + 0.5) * tileCrsDimensions.getHeight()) - originShiftY,  //adding 0.5 to row and column
-                                 ((tileCoordinate.getX() + 0.5) * tileCrsDimensions.getWidth())  - originShiftX,  //makes the crsCoordinate be the 
+        return new CrsCoordinate(((tileCoordinate.getY() + tileOrigin.getVertical())   * tileCrsDimensions.getHeight()) - originShiftY,  //adding 0.5 to row and column
+                                 ((tileCoordinate.getX() + tileOrigin.getHorizontal()) * tileCrsDimensions.getWidth())  - originShiftX,  //makes the crsCoordinate be the 
                                  this.getCoordinateReferenceSystem());                                            //be the value at the center of the tile
                                                                                                                   //the reason to get the middle CrsCoordinate 
                                                                                                                   //so that transfering between tileOrigins isn't
