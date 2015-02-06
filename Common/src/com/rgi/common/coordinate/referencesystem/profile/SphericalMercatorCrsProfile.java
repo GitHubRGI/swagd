@@ -110,8 +110,8 @@ public class SphericalMercatorCrsProfile implements CrsProfile
                                                                         column,
                                                                         dimensions);
 
-        return new CrsCoordinate((tileCoordinate.getY() * tileCrsDimensions.getHeight()) - originShift,
-                                 (tileCoordinate.getX() * tileCrsDimensions.getWidth())  - originShift,
+        return new CrsCoordinate(((tileCoordinate.getY() + 0.5) * tileCrsDimensions.getHeight()) - originShift,
+                                 ((tileCoordinate.getX() + 0.5) * tileCrsDimensions.getWidth())  - originShift,
                                  this.getCoordinateReferenceSystem());
     }
 
