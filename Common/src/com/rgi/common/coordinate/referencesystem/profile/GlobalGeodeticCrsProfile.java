@@ -63,9 +63,9 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
         }
 
         final Coordinate<Double> tileCorner = Utility.boundsCorner(Bounds, tileOrigin);
-        
+
         final Dimensions tileDimensions = this.getTileDimensions(dimensions);
-        
+
         final double normalizedSrsTileCoordinateY = Math.abs(coordinate.getY() - tileCorner.getY());
         final double normalizedSrsTileCoordinateX = Math.abs(coordinate.getX() - tileCorner.getX());
 
@@ -85,37 +85,29 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Tile matrix dimensions may not be null");
         }
-        
-        if(!dimensions.verifyRowAndColumnWithinDimensions(row, column))
+
+        if(!dimensions.contains(row, column))
         {
-            throw new IllegalArgumentException("The row and column are not within the Tile Matrix Dimensions. " +
-                                               "Row must be between(inclusive) 0 and matrix height - 1 and "    +
-                                               "Column must be between(inclusive) 0 and matrix width - 1.");
+            throw new IllegalArgumentException("The row and column must be within the tile matrix dimensions");
         }
 
         if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
-        
+
         final Dimensions tileCrsDimensions = this.getTileDimensions(dimensions);
-        
-        
-        
+
         final Coordinate<Integer> tileCoordinate = tileOrigin.transform(TileOrigin.LowerLeft,
                                                                         row,
                                                                         column,
                                                                         dimensions);
-        final double originShiftY = (Bounds.getHeight() / 2.0);
-        final double originShiftX = (Bounds.getWidth() / 2.0);
+        final double originShiftY = Bounds.getHeight() / 2.0;
+        final double originShiftX = Bounds.getWidth()  / 2.0;
 
-        return new CrsCoordinate(((tileCoordinate.getY() + tileOrigin.getVertical())   * tileCrsDimensions.getHeight()) - originShiftY,  //adding 0.5 to row and column
-                                 ((tileCoordinate.getX() + tileOrigin.getHorizontal()) * tileCrsDimensions.getWidth())  - originShiftX,  //makes the crsCoordinate be the 
-                                 this.getCoordinateReferenceSystem());                                            //be the value at the center of the tile
-                                                                                                                  //the reason to get the middle CrsCoordinate 
-                                                                                                                  //so that transfering between tileOrigins isn't
-                                                                                                                  //affected because putting it in a tile origin of 
-                                                                                                                  //lowerleft that was originally upperRight  (if you did a round) would grab the wrong tile
+        return new CrsCoordinate(((tileCoordinate.getY() + tileOrigin.getVertical())   * tileCrsDimensions.getHeight()) - originShiftY,
+                                 ((tileCoordinate.getX() + tileOrigin.getHorizontal()) * tileCrsDimensions.getWidth())  - originShiftX,
+                                 this.getCoordinateReferenceSystem());
     }
 
     @Override
