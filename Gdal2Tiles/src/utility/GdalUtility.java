@@ -32,6 +32,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.stream.IntStream;
 
 import org.gdal.gdal.Band;
 import org.gdal.gdal.Dataset;
@@ -70,58 +71,45 @@ public class GdalUtility
             throw new RuntimeException("Raster contained no bands");
         }
 
-        final ByteBuffer[] bands   = new ByteBuffer[bandCount];
-        final int[]        banks   = new int       [bandCount];
-        final int[]        offsets = new int       [bandCount];
+        final int rasterWidth  = dataset.getRasterXSize();
+        final int rasterHeight = dataset.getRasterYSize();
 
-        final int xsize = dataset.getRasterXSize();
-        final int ysize = dataset.getRasterYSize();
+        final int pixelCount = rasterWidth * rasterHeight;
 
-        final int pixelCount = xsize * ysize;
+        final Band band = dataset.GetRasterBand(1);   // Bands are not 1-base indexed
 
-        int bandDataType = 0;
-        Band band = null;
+        final int bandDataType = band.getDataType();
 
-        for(int bandIndex = 0; bandIndex < bandCount; bandIndex++)
+        final int bufferSize = pixelCount * (gdal.GetDataTypeSize(bandDataType) / 8);
+
+        if(bandCount == 1)
         {
-            band = dataset.GetRasterBand(bandIndex + 1);   // Bands are not 0-base indexed, so we must add 1
-
-            bandDataType = band.getDataType();
-            final int bufferSize = pixelCount * (gdal.GetDataTypeSize(bandDataType) / 8);
-
-            final ByteBuffer data = ByteBuffer.allocateDirect(bufferSize);
-            data.order(ByteOrder.nativeOrder());
-
-            if(band.ReadRaster_Direct(0, 0, band.getXSize(), band.getYSize(), xsize, ysize, bandDataType, data) != gdalconstConstants.CE_None)
+            if(band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex)
             {
-                throw new RuntimeException("Could not read raster: " + GdalError.lastError());
+                final DataBuffer  dataBuffer     = getDataBuffer(band.getDataType(), 1, pixelCount, new ByteBuffer[]{getByteBuffer(band, bufferSize, rasterWidth, rasterHeight)});
+                final int         dataBufferType = getDataBufferType(bandDataType);
+                final SampleModel sampleModel    = new BandedSampleModel(dataBufferType, rasterWidth, rasterHeight, bandCount);
+
+                final WritableRaster raster = Raster.createWritableRaster(sampleModel, dataBuffer, null);
+
+                //bufferedImageDataType = BufferedImage.TYPE_BYTE_INDEXED; // This assignment had no effect
+                return new BufferedImage(band.GetRasterColorTable()
+                                             .getIndexColorModel(gdal.GetDataTypeSize(bandDataType)),
+                                         raster,
+                                         false,
+                                         null);
             }
-
-            bands[bandIndex] = data;
-
-            banks[bandIndex] = bandIndex;
-            offsets[bandIndex] = 0;
         }
 
-        if(band == null)
-        {
-            throw new RuntimeException("Raster contained no bands");
-        }
+        final ByteBuffer[] bands = IntStream.range(0, bandCount)
+                                            .mapToObj(bandIndex -> getByteBuffer(dataset.GetRasterBand(bandIndex + 1), bufferSize, rasterWidth, rasterHeight))
+                                            .toArray(ByteBuffer[]::new);
 
         final DataBuffer  dataBuffer     = getDataBuffer(bandDataType, bandCount, pixelCount, bands);
         final int         dataBufferType = getDataBufferType(bandDataType);
-        final SampleModel sampleModel    = new BandedSampleModel(dataBufferType, xsize, ysize, xsize, banks, offsets);
+        final SampleModel sampleModel    = new BandedSampleModel(dataBufferType, rasterWidth, rasterHeight, bandCount);
 
         final WritableRaster raster = Raster.createWritableRaster(sampleModel, dataBuffer, null);
-
-        if(band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex)
-        {
-            //bufferedImageDataType = BufferedImage.TYPE_BYTE_INDEXED; // This assignment had no effect
-            return new BufferedImage(band.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(bandDataType)),
-                                     raster,
-                                     false,
-                                     null);
-        }
 
         if(bandCount > 2)
         {
@@ -135,11 +123,39 @@ public class GdalUtility
                                      null);
         }
 
-        final int bufferedImageDataType = getBufferedImageDataType(band, bandDataType);
 
-        final BufferedImage bufferedImage = new BufferedImage(xsize, ysize, bufferedImageDataType);
+        final BufferedImage bufferedImage = new BufferedImage(rasterWidth, rasterHeight, getBufferedImageDataType(bandDataType));
         bufferedImage.setData(raster);
+
         return bufferedImage;
+    }
+
+    /**
+     * @param band
+     * @param bandDataType
+     * @param bufferSize
+     * @param rasterWidth
+     * @param rasterHeight
+     * @return
+     */
+    private static ByteBuffer getByteBuffer(final Band band, final int bufferSize, final int rasterWidth, final int rasterHeight)
+    {
+        final ByteBuffer data = ByteBuffer.allocateDirect(bufferSize);
+        data.order(ByteOrder.nativeOrder());
+
+        if(band.ReadRaster_Direct(0,
+                                  0,
+                                  band.getXSize(),
+                                  band.getYSize(),
+                                  rasterWidth,
+                                  rasterHeight,
+                                  band.getDataType(),
+                                  data) != gdalconstConstants.CE_None)
+        {
+            throw new RuntimeException("Could not read raster: " + GdalError.lastError());
+        }
+
+        return data;
     }
 
     private static DataBuffer getDataBuffer(final int bandDataType, final int bandCount, final int pixelCount, final ByteBuffer[] bands)
@@ -203,11 +219,11 @@ public class GdalUtility
         }
     }
 
-    private static int getBufferedImageDataType(final Band band, final int bandDataType)
+    private static int getBufferedImageDataType(final int bandDataType)
     {
         if(bandDataType == gdalconstConstants.GDT_Byte)
         {
-            return (band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) ? BufferedImage.TYPE_BYTE_INDEXED : BufferedImage.TYPE_BYTE_GRAY;
+            return BufferedImage.TYPE_BYTE_GRAY;
         }
         else if(bandDataType == gdalconstConstants.GDT_Int16)
         {
