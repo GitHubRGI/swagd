@@ -111,7 +111,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     }
 
     @Override
-    public BufferedImage getTile(int row, int column, int zoomLevel) throws TileStoreException
+    public BufferedImage getTile(final int row, final int column, final int zoomLevel) throws TileStoreException
     {
         final Optional<File> tileFile = this.getTiles(row, column, zoomLevel).findFirst();    // TODO prioritize list based on file type suitability (prefer transparency, etc)
 
@@ -184,21 +184,19 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     private void calculateBounds() throws TileStoreException
     {
         final int minimumZoom = TmsReader.getTmsRange(this.location.toFile()).minimum; // Get the minimum zoom level
-        
-//TODO: Luke, Look over the changes I made to this logic and see if you agree
-//        final Path pathToMinimumZoom = tmsPath(this.location, minimumZoom);
 
-//        final Range xRange = TmsReader.getTmsRange(pathToMinimumZoom.toFile());
-//        final Range yRange = TmsReader.getTmsRange(tmsPath(pathToMinimumZoom, xRange.maximum).toFile());
+        final Path pathToMinimumZoom = tmsPath(this.location, minimumZoom);
 
-//        // TODO attention: Lander, this logic needs to be double checked
-//        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(yRange.minimum,     xRange.minimum,     this.tileScheme.dimensions(minimumZoom), TmsTileStore.Origin);
-//        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(yRange.maximum + 1, xRange.maximum + 1, this.tileScheme.dimensions(minimumZoom), TmsTileStore.Origin);
-        
-        TileMatrixDimensions dimensions = this.tileScheme.dimensions(minimumZoom);
-        
-        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(0,                          0,                         dimensions, TileOrigin.LowerLeft);
-        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(dimensions.getHeight() - 1, dimensions.getWidth() - 1, dimensions, TileOrigin.UpperRight);
+        final Range xRange = TmsReader.getTmsRange(pathToMinimumZoom.toFile());
+        final Range yRange = TmsReader.getTmsRange(tmsPath(pathToMinimumZoom, xRange.maximum).toFile());
+
+        final TileMatrixDimensions dimensions = this.tileScheme.dimensions(minimumZoom);
+
+        final Coordinate<Integer> transformedMinTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.LowerLeft,  new Coordinate<>(yRange.minimum, xRange.minimum), dimensions);
+        final Coordinate<Integer> transformedMaxTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.UpperRight, new Coordinate<>(yRange.maximum, xRange.maximum), dimensions);
+
+        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(transformedMinTileCoordinate.getY(), transformedMinTileCoordinate.getX(), dimensions, TileOrigin.LowerLeft);
+        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(transformedMaxTileCoordinate.getY(), transformedMaxTileCoordinate.getX(), dimensions, TileOrigin.UpperRight);
 
         this.bounds = new BoundingBox(lowerLeftCorner.getY(),
                                       lowerLeftCorner.getX(),
@@ -317,7 +315,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         return minmax;
     }
 
-    private Stream<File> getTiles(int row, int column, int zoomLevel)
+    private Stream<File> getTiles(final int row, final int column, final int zoomLevel)
     {
         final File[] files = tmsPath(this.location,
                                      zoomLevel,

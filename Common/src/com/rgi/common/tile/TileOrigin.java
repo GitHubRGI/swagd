@@ -38,8 +38,15 @@ public enum TileOrigin
         this.vertical   = vertical;
     }
 
-    private final int horizontal;
-    private final int vertical;
+    public int getVertical()
+    {
+        return this.vertical;
+    }
+
+    public int getHorizontal()
+    {
+        return this.horizontal;
+    }
 
     public Coordinate<Integer> transform(final TileOrigin toOrigin, final Coordinate<Integer> tileCoordinate, final TileMatrixDimensions matrixDimensions)
     {
@@ -95,13 +102,6 @@ public enum TileOrigin
         return tileCoordinate + (fromDirection ^ toDirection) * (maxTileCoordinate - 2*tileCoordinate);
     }
 
-    public int getVertical()
-    {
-        return vertical;
-    }
-
-    public int getHorizontal()
-    {
-        return horizontal;
-    }
+    private final int horizontal;
+    private final int vertical;
 }
