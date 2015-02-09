@@ -260,7 +260,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     }
 
     /**
-     * Datum's (WGS 84) spheroid's semi-major axis (raidus of earth) in meters
+     * Datum's (WGS 84) spheroid's semi-major axis (radius of earth) in meters
      */
     public static final double UnscaledEarthEquatorialRadius = 6378137.0;
 
@@ -277,9 +277,9 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     /**
      * Earth's (unscaled) polar radius.
      *
-     * The datum's (WGS 84) spheroid is specified by the equitorial radius (a)
+     * The datum's (WGS 84) spheroid is specified by the equatorial radius (a)
      * and the inverse flattening (1/f).  The polar radius (b) is derived by
-     * the relation of the equitorial radius to the inverse flattening:
+     * the relation of the equatorial radius to the inverse flattening:
      * <pre>
      *     a - b
      * f = -----
