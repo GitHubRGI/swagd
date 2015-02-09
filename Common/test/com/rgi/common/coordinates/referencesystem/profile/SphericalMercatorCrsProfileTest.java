@@ -166,8 +166,9 @@ public class SphericalMercatorCrsProfileTest
     }
     
     /**
-     * @throws FileNotFoundException 
-     * 
+     * Tests 100 points the NGA uses to verify if the conversion from the crsProfile to global
+     * geodetic passes edge cases, flipped x and y values, and other various parts of the world
+     * to ensure that the formula used is correct.
      */
     @Test
     public void toGlobalGeodetic() throws FileNotFoundException
@@ -178,11 +179,6 @@ public class SphericalMercatorCrsProfileTest
             scanner.useDelimiter("\n");
             
             ArrayList<LatLongMetersYMetersX> coordinatesList = readValuesFromFile(scanner);
-            
-            for(LatLongMetersYMetersX coordinate: coordinatesList)
-            {
-                verifyCoordinateConversion(coordinate);
-            }
             
             List<LatLongMetersYMetersX> inccorrectCoordinates =  coordinatesList.stream()
                                                                                 .filter(coordinate -> !verifyCoordinateConversion(coordinate))
