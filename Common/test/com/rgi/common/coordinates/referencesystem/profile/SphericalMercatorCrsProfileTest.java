@@ -209,8 +209,8 @@ public class SphericalMercatorCrsProfileTest
     
     private boolean isEqual(Coordinate<Double> coordinateExpected, Coordinate<Double> coordinateReturned)
     {
-        boolean xEqual = Math.abs(coordinateExpected.getX() - coordinateReturned.getX()) <= 0.0000001;
-        boolean yEqual = Math.abs(coordinateExpected.getY() - coordinateReturned.getY()) <= 0.0000001;
+        boolean xEqual = Math.abs(coordinateExpected.getX() - coordinateReturned.getX()) < Epsilon;
+        boolean yEqual = Math.abs(coordinateExpected.getY() - coordinateReturned.getY()) < Epsilon;
         return xEqual && yEqual;
     }
 
@@ -1099,5 +1099,7 @@ public class SphericalMercatorCrsProfileTest
                     originalTileCoordinate, 
                     returnedTileCoordinate);
     }
+    
+    private static final double Epsilon = 0.0000001;
     
 }
