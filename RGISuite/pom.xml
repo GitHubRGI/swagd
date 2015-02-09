@@ -81,31 +81,11 @@
           <exclude>**/*.java</exclude>
         </excludes>
       </resource>
+      <resource>
+          <directory>src/res</directory>
+      </resource>
     </resources>
     <plugins>
-        <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>${resources.plugin.version}</version>
-            <executions>
-                <execution>
-                    <id>copy-resources</id>
-                    <phase>validate</phase>
-                    <goals>
-                        <goal>copy-resources</goal>
-                    </goals>
-                    <configuration>
-                        <outputDirectory>${basedir}/target/classes/com/rgi/suite/res</outputDirectory>
-                        <includeEmptyDirs>true</includeEmptyDirs>
-                        <resources>
-                            <resource>
-                                <directory>${basedir}/res</directory>
-                                <filtering>false</filtering>
-                            </resource>
-                        </resources>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
       <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
           <executions>

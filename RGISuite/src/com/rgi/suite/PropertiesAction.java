@@ -53,7 +53,7 @@ public abstract class PropertiesAction extends AbstractAction {
   private void setIcon(Properties p, String property, String key) {
     String value = p.getProperty(property);
     if (value != null) {
-      putValue(key, new ImageIcon(value));
+    	putValue(key, new ImageIcon(getClass().getResource("/" + value)));
     }
   }
 }
