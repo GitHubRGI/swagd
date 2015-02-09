@@ -125,9 +125,12 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor
                 final String imageFormat = Settings.Type.valueOf(opts.get(Setting.TileType)).name();
                 final Path outputFolder = new File(opts.get(Setting.TileFolder)).toPath();
 
-                final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", profile.getID());
+                if(!outputFolder.toFile().exists())
+                {
+                    outputFolder.toFile().mkdir();
+                }
 
-                //final TileOrigin origin = TileOrigin.valueOf(opts.get(Setting.TileOrigin));
+                final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", profile.getID());
 
                 final TileStoreWriter tileWriter = new TmsWriter(crsProfile, outputFolder, new MimeType("image", imageFormat));
                 final TileStoreReader tileReader = new TmsReader(crsProfile, outputFolder);

@@ -30,6 +30,7 @@ import org.gdal.gdalconst.gdalconstConstants;
 import org.gdal.osr.SpatialReference;
 import org.gdal.osr.osr;
 
+import utility.GdalError;
 import utility.GdalUtility;
 
 import com.rgi.common.BoundingBox;
@@ -63,12 +64,6 @@ public class TileJob implements Runnable
     private final CrsProfile crsProfile;
     private final TileScheme tileScheme;
     private final Color      noDataColor;
-
-    private Dataset          outputDataset;
-
-
-    //private double[] inputGT;
-    //private double[] outputGT;
 
     //private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     //private List<Future<?>> tasks = new ArrayList<>();
@@ -122,19 +117,19 @@ public class TileJob implements Runnable
 
     private void tile() throws TilingException
     {
-        this.outputDataset = getTransformedDataset(getDataset(this.file),
-                                                   this.crsProfile.getCoordinateReferenceSystem().getIdentifier(),
-                                                   gdalconstConstants.GRA_Bilinear);            // TODO: get user preference resample quality
+        final Dataset outputDataset = getTransformedDataset(getDataset(this.file),
+                                                            this.crsProfile.getCoordinateReferenceSystem().getIdentifier(),
+                                                            gdalconstConstants.GRA_Bilinear);            // TODO: get user preference resample quality
 
-        final GeoTransformation outputGeoTransform = new GeoTransformation(this.outputDataset.GetGeoTransform());
+        final GeoTransformation outputGeoTransform = new GeoTransformation(outputDataset.GetGeoTransform());
 
-        final Dimensions outputDatasetRasterDimensions = new Dimensions(this.outputDataset.getRasterYSize(),
-                                                                        this.outputDataset.getRasterXSize());
+        final Dimensions outputDatasetRasterDimensions = new Dimensions(outputDataset.getRasterYSize(),
+                                                                        outputDataset.getRasterXSize());
 
         // Image georeference points
         final CrsCoordinate imageUpperLeft  = new CrsCoordinate(outputGeoTransform.getTopLeft(), this.crsProfile.getCoordinateReferenceSystem());
-        final CrsCoordinate imageLowerRight = new CrsCoordinate(outputGeoTransform.getBottomRight(this.outputDataset.getRasterYSize(),
-                                                                                                  this.outputDataset.getRasterXSize()),
+        final CrsCoordinate imageLowerRight = new CrsCoordinate(outputGeoTransform.getBottomRight(outputDataset.getRasterYSize(),
+                                                                                                  outputDataset.getRasterXSize()),
                                                                 this.crsProfile.getCoordinateReferenceSystem());
 
         final int maxZoom = getMaxZoom(this.crsProfile.getBounds(), outputGeoTransform.getPixelDimensions());
@@ -147,7 +142,7 @@ public class TileJob implements Runnable
 
 
         // generate base tile set
-        final BufferedImage source = GdalUtility.convert(this.outputDataset);
+        final BufferedImage source = GdalUtility.convert(outputDataset);
 
         Coordinate<Integer> upperLeftTileCoordinate  = this.crsToTileCoordinate(imageUpperLeft,  maxZoom);
         Coordinate<Integer> lowerRightTileCoordinate = this.crsToTileCoordinate(imageLowerRight, maxZoom);
@@ -163,8 +158,8 @@ public class TileJob implements Runnable
 
         // pixels = (pixels * meters per pixel) / meters per pixel
         // w' = (w * r) / r'
-        int scaledHeight = (int)((this.outputDataset.getRasterYSize() * outputGeoTransform.getPixelDimensions().getHeight()) / ry);
-        int scaledWidth  = (int)((this.outputDataset.getRasterXSize() * outputGeoTransform.getPixelDimensions().getWidth())  / rx);
+        int scaledHeight = (int)((outputDataset.getRasterYSize() * outputGeoTransform.getPixelDimensions().getHeight()) / ry);
+        int scaledWidth  = (int)((outputDataset.getRasterXSize() * outputGeoTransform.getPixelDimensions().getWidth())  / rx);
 
         Dimensions tileBounds = this.crsProfile.getTileDimensions(this.tileScheme.dimensions(maxZoom));
 
@@ -215,7 +210,7 @@ public class TileJob implements Runnable
             }
         }
 
-        for(int z = maxZoom - 1; z >= minZoom; --z)
+        for(int z = maxZoom; z >= minZoom; --z)
         {
             upperLeftTileCoordinate  = this.crsToTileCoordinate(imageUpperLeft,  z);
             lowerRightTileCoordinate = this.crsToTileCoordinate(imageLowerRight, z);
@@ -231,14 +226,14 @@ public class TileJob implements Runnable
 
             // pixels = (pixels * meters per pixel) / meters per pixel
             // w' = (w * r) / r'
-            scaledHeight = (int)((this.outputDataset.getRasterYSize() * outputGeoTransform.getPixelDimensions().getHeight()) / ry);
-            scaledWidth  = (int)((this.outputDataset.getRasterXSize() * outputGeoTransform.getPixelDimensions().getWidth())  / rx);
+            scaledHeight = (int)((outputDataset.getRasterYSize() * outputGeoTransform.getPixelDimensions().getHeight()) / ry);
+            scaledWidth  = (int)((outputDataset.getRasterXSize() * outputGeoTransform.getPixelDimensions().getWidth())  / rx);
 
             tileBounds = this.crsProfile.getTileDimensions(this.tileScheme.dimensions(maxZoom));
 
             // pixels = (meters - meters) / meters per pixel
-            offsetX = (int)((outputGeoTransform.getTopLeft().getX() - tileBounds.getWidth())  / rx);
             offsetY = (int)((tileBounds.getHeight() - outputGeoTransform.getTopLeft().getY()) / ry);
+            offsetX = (int)((outputGeoTransform.getTopLeft().getX() - tileBounds.getWidth())  / rx);
 
             for(int x = 0; x < numTilesWidth; ++x)
             {
@@ -326,7 +321,7 @@ public class TileJob implements Runnable
                     }
                     catch(final TileStoreException ex)
                     {
-                        throw new TilingException("Unable to add adding tile", ex);
+                        throw new TilingException("Unable to add tile", ex);
                     }
                 }
             }
@@ -340,9 +335,7 @@ public class TileJob implements Runnable
 
         if(dataset == null)
         {
-            throw new TilingException(String.format("GDALOpen failed: <%d> %s",
-                                                    gdal.GetLastErrorNo(),
-                                                    gdal.GetLastErrorMsg()));
+            throw new TilingException(String.format("GDALOpen failed: %s", GdalError.lastError()));
         }
 
         return dataset;
@@ -402,9 +395,8 @@ public class TileJob implements Runnable
                                                                resampleAlgorithm);
         if(outputDataset == null)
         {
-            throw new TilingException(String.format("Failed to create a reprojected data set: AutoCreateWarpedVRT returned null: <%d> %s",
-                                                   gdal.GetLastErrorNo(),
-                                                   gdal.GetLastErrorMsg()));
+            throw new TilingException(String.format("Failed to create a reprojected data set: AutoCreateWarpedVRT returned null:  %s",
+                                                    GdalError.lastError()));
         }
 
         return outputDataset;

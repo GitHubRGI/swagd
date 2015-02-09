@@ -31,7 +31,6 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.stream.IntStream;
 
 import org.gdal.gdal.Band;
@@ -80,13 +79,13 @@ public class GdalUtility
 
         final int bandDataType = band.getDataType();
 
-        final int bufferSize = pixelCount * (gdal.GetDataTypeSize(bandDataType) / 8);
-
         if(bandCount == 1)
         {
             if(band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex)
             {
-                final DataBuffer  dataBuffer     = getDataBuffer(band.getDataType(), 1, pixelCount, new ByteBuffer[]{getByteBuffer(band, bufferSize, rasterWidth, rasterHeight)});
+                final ByteBuffer byteBuffer = band.ReadRaster_Direct(0, 0, band.getXSize(), band.getYSize(), band.getDataType());
+
+                final DataBuffer  dataBuffer     = getDataBuffer(band.getDataType(), bandCount, pixelCount, new ByteBuffer[]{ byteBuffer });
                 final int         dataBufferType = getDataBufferType(bandDataType);
                 final SampleModel sampleModel    = new BandedSampleModel(dataBufferType, rasterWidth, rasterHeight, bandCount);
 
@@ -102,7 +101,9 @@ public class GdalUtility
         }
 
         final ByteBuffer[] bands = IntStream.range(0, bandCount)
-                                            .mapToObj(bandIndex -> getByteBuffer(dataset.GetRasterBand(bandIndex + 1), bufferSize, rasterWidth, rasterHeight))
+                                            .mapToObj(bandIndex -> { final Band currentBand = dataset.GetRasterBand(bandIndex + 1);
+                                                                     return currentBand.ReadRaster_Direct(0, 0, currentBand.getXSize(), currentBand.getYSize(), currentBand.getDataType());
+                                                                   })
                                             .toArray(ByteBuffer[]::new);
 
         final DataBuffer  dataBuffer     = getDataBuffer(bandDataType, bandCount, pixelCount, bands);
@@ -128,34 +129,6 @@ public class GdalUtility
         bufferedImage.setData(raster);
 
         return bufferedImage;
-    }
-
-    /**
-     * @param band
-     * @param bandDataType
-     * @param bufferSize
-     * @param rasterWidth
-     * @param rasterHeight
-     * @return
-     */
-    private static ByteBuffer getByteBuffer(final Band band, final int bufferSize, final int rasterWidth, final int rasterHeight)
-    {
-        final ByteBuffer data = ByteBuffer.allocateDirect(bufferSize);
-        data.order(ByteOrder.nativeOrder());
-
-        if(band.ReadRaster_Direct(0,
-                                  0,
-                                  band.getXSize(),
-                                  band.getYSize(),
-                                  rasterWidth,
-                                  rasterHeight,
-                                  band.getDataType(),
-                                  data) != gdalconstConstants.CE_None)
-        {
-            throw new RuntimeException("Could not read raster: " + GdalError.lastError());
-        }
-
-        return data;
     }
 
     private static DataBuffer getDataBuffer(final int bandDataType, final int bandCount, final int pixelCount, final ByteBuffer[] bands)
