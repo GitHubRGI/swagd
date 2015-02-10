@@ -140,7 +140,7 @@ public class TileStoreLoader implements TileLoader
     private final TileLoaderListener listener;
     //private TileSource                 tileSource;
     private final TileStoreReader    tileStore;
-    private final CrsProfile        crsProfile;
+    private final CrsProfile         crsProfile;
 
     private final int minimumZoomLevel;
     private final int maximumZoomLevel;
