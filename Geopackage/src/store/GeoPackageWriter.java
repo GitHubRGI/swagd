@@ -86,16 +86,6 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
     {
         super(geoPackage, tileSet);
         
-        if(geoPackage == null)
-        {
-            throw new IllegalArgumentException("GeoPackage may not be null");
-        }
-        
-        if(tileSet == null)
-        {
-            throw new IllegalArgumentException("TileSet may not be null.");
-        }
-        
         if(imageOutputFormat == null)
         {
             throw new IllegalArgumentException("Image output format may not be null");

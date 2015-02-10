@@ -32,12 +32,16 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import store.GeoPackageReader;
+import store.GeoPackageWriter;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
@@ -111,8 +115,7 @@ public class GeopackageTileStoreTest
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
             TileSet tileSet = gpkg.tiles().addTileSet("tablename", "identifier", "description", new BoundingBox(0.0,0.0,10.0,10.0), gpkg.core().getSpatialReferenceSystem(4326));
-            @SuppressWarnings("unused")
-            GeoPackageReader reader = new GeoPackageReader(null, tileSet);
+            new GeoPackageReader(null, tileSet);
             fail("Expected GeoPackage Reader to throw an IllegalArguementException when passing a null value for GeoPackage");
         }
         finally
@@ -646,8 +649,362 @@ public class GeopackageTileStoreTest
             }
         }
     }
+    
+    /**
+     * Tests if GeoPackage Writer will be able to add a tile to
+     * an exisiting GeoPackage
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws MimeTypeParseException
+     * @throws IOException
+     * @throws TileStoreException
+     */
+    @Test 
+    public void geopackageWriterAddTile() throws ClassNotFoundException, SQLException, ConformanceException, MimeTypeParseException, IOException, TileStoreException
+    {
+        File testFile = this.getRandomFile(6);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
+            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
 
+            int matrixHeight = 2;
+            int matrixWidth = 4;
+            int tileHeight = 512;
+            int tileWidth = 256;
+            
+           TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 
+                                                              0,  
+                                                              matrixWidth, 
+                                                              matrixHeight, 
+                                                              tileWidth,
+                                                              tileHeight, 
+                                                              (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                                              (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+            
+            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0,0,0), createImageBytes("JPEG"));
+            MimeType mimeType = new MimeType("image/jpeg");
+            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
+            
+            RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0,1,0);
+            gpkgWriter.addTile(coordinate.getRow(), coordinate.getColumn(), coordinate.getZoomLevel(), new BufferedImage(256, 256, BufferedImage.TYPE_BYTE_GRAY));
+            
+            Tile tile = gpkg.tiles().getTile(tileSet, coordinate);
+            
+            assertTrue("GeoPackageWriter was unable to add a tile to a GeoPackage",tile != null);
+           
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    //TODO fix bug with zooms times two.  Case where it fails: IF a Geopackage does not have any tiles in it (just tile set) then wants to add a tile, the zoomLevelDimensions
+    //field variable is null in the ZoomTimesTwo class.  Therefore when trying to add a matrixSet there is an arrayIndexOutOfBoundsException(which I find strange)
+    //I can explain better in person but this is a bug needed to be fixed when adding a single tile a zoomLevel 0.
+//    /**
+//     * Tests if geopackage writer can write tiles to
+//     * a geopackage
+//     * @throws FileAlreadyExistsException
+//     * @throws ClassNotFoundException
+//     * @throws FileNotFoundException
+//     * @throws SQLException
+//     * @throws ConformanceException
+//     * @throws MimeTypeParseException
+//     * @throws TileStoreException
+//     */
+//    @Test
+//    public void geoPackageWriterAddTile2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
+//    {
+//        File testFile = this.getRandomFile(6);
+//        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+//        {
+//            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
+//            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
+//
+//            MimeType mimeType = new MimeType("image/jpeg");
+//            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
+//            
+//            CrsCoordinate crsCoordinate = new CrsCoordinate(50.0,30.0,"epsg", 4326);
+//            int zoomLevel = 0;
+//            
+//            gpkgWriter.addTile(crsCoordinate, zoomLevel, new BufferedImage(256, 256, BufferedImage.TYPE_BYTE_GRAY));
+//            
+//            Tile tile = gpkg.tiles().getTile(tileSet, crsCoordinate, zoomLevel);
+//            
+//            assertTrue("GeoPackageWriter did not write a tile correctly",tile != null);
+//        }
+//        finally
+//        {
+//            deleteFile(testFile);
+//        }
+//    }
+    
+    /**
+     * Tests if GeoPackageWriter will throw an Illegal argumentException when
+     * adding a tile with a null value for buffered image
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws MimeTypeParseException
+     * @throws TileStoreException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addTileIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
+    {
+        File testFile = this.getRandomFile(6);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
+            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
 
+            MimeType mimeType = new MimeType("image/jpeg");
+            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
+            
+            RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0,1,0);
+            gpkgWriter.addTile(coordinate.getRow(), coordinate.getColumn(), coordinate.getZoomLevel(), null);
+            fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter image.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if GeoPackageWriter will throw an Illegal argumentException when
+     * adding a tile with a null value for buffered image
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws MimeTypeParseException
+     * @throws TileStoreException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addTileIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
+    {
+        File testFile = this.getRandomFile(6);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
+            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
+
+            MimeType mimeType = new MimeType("image/jpeg");
+            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
+            
+            gpkgWriter.addTile(new CrsCoordinate(20.0,30.0, "epsg", 4326), 0, null);
+            fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter image.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if GeoPackageWriter will throw an Illegal argumentException when
+     * adding a tile with a null value for crsCoordinate
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws MimeTypeParseException
+     * @throws TileStoreException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addTileIllegalArgumentException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
+    {
+        File testFile = this.getRandomFile(6);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
+            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
+
+            MimeType mimeType = new MimeType("image/jpeg");
+            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
+            
+            gpkgWriter.addTile(null, 0, new BufferedImage(256,256, BufferedImage.TYPE_INT_ARGB));
+            fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter crsCoordinate.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if GeoPackageWriter will throw an Illegal argumentException when
+     * adding a tile with a null value for buffered image
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws MimeTypeParseException
+     * @throws TileStoreException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addTileIllegalArgumentException4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
+    {
+        File testFile = this.getRandomFile(6);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
+            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
+
+            MimeType mimeType = new MimeType("image/jpeg");
+            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
+            
+            gpkgWriter.addTile(new CrsCoordinate(20.0, 30.0, "epsg", 3395), 0, new BufferedImage(256,256, BufferedImage.TYPE_INT_ARGB));
+            fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user adds a tile that is a different crs coordinate reference system than the profile.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    /**
+     * Tests if GeoPackageWriter throws an IllegalArgumentException
+     * when trying to create a GeoPackageWriter with a tileSet parameter 
+     * value of null
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws MimeTypeParseException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void geoPackageWriterIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
+    {
+        File testFile = this.getRandomFile(8);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            new GeoPackageWriter(gpkg, null, new MimeType("image/png"));
+            fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter tileSet.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+
+    /**
+     * Tests if GeoPackageWriter throws an IllegalArgumentException
+     * when trying to create a GeoPackageWriter with a geopackage parameter 
+     * value of null
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws MimeTypeParseException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void geoPackageWriterIllegalArgumentException2() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException, MimeTypeParseException
+    {
+        File testFile = this.getRandomFile(8);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0,0.0,90.0,90.0), gpkg.core().getSpatialReferenceSystem(4326));
+            new GeoPackageWriter(null, tileSet, new MimeType("image/png"));
+            
+            fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter GeoPackage.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if GeoPackageWriter throws an IllegalArgumentException
+     * when trying to create a GeoPackageWriter with a imageOutputFormat parameter 
+     * value of null
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws MimeTypeParseException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void geoPackageWriterIllegalArgumentException3() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException, MimeTypeParseException
+    {
+        File testFile = this.getRandomFile(8);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0,0.0,90.0,90.0), gpkg.core().getSpatialReferenceSystem(4326));
+            new GeoPackageWriter(gpkg, tileSet, null);
+            
+            fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter imageOutputFormat.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+
+    /**
+     * Tests if GeoPackageWriter throws an IllegalArgumentException
+     * when trying to create a GeoPackageWriter with an unsupported output
+     * image format
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws MimeTypeParseException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void geoPackageWriterIllegalArgumentException4() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException, MimeTypeParseException
+    {
+        File testFile = this.getRandomFile(8);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0,0.0,90.0,90.0), gpkg.core().getSpatialReferenceSystem(4326));
+            new GeoPackageWriter(gpkg, tileSet, new MimeType("text/xml"));
+            
+            fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in an unsupported image output format.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    
+    
+    private static byte[] createImageBytes(String imageType) throws IOException
+    {
+        return ImageUtility.bufferedImageToBytes(new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB), imageType);
+    }
+
+    private static void deleteFile(final File testFile)
+    {
+        if (testFile.exists())
+        {
+            if (!testFile.delete())
+            {
+                throw new RuntimeException(String.format(
+                        "Unable to delete testFile. testFile: %s", testFile));
+            }
+        }
+    }
+    
     private String getRanString(final int length)
     {
         final String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
