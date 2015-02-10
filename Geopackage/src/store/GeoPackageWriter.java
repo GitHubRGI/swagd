@@ -91,7 +91,7 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
             throw new IllegalArgumentException("Image output format may not be null");
         }
 
-        if(!GeoPackageWriter.SupportedImageFormats.contains(imageOutputFormat))
+        if(!MimeTypeUtility.contains(GeoPackageWriter.SupportedImageFormats, imageOutputFormat))
         {
             throw new IllegalArgumentException(String.format("Image output type '%s' is inappropriate for this tile store. Valid formats are: %s",
                                                              imageOutputFormat.toString(),

@@ -47,4 +47,9 @@ public class MimeTypeUtility
         }
         return imageFormats;
     }
+    
+    public static boolean contains(Set<MimeType> supportedMimeTypes, MimeType mimeType)
+    {
+        return supportedMimeTypes.stream().anyMatch(allowedImageOutputFormat-> allowedImageOutputFormat.match(mimeType));
+    }
 }
