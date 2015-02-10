@@ -30,6 +30,10 @@ import javax.activation.MimeTypeParseException;
  */
 public class MimeTypeUtility
 {
+    /**
+     * @param types the mimeTypes wanting to add to the set
+     * @return a set of MimeType objects
+     */
     public static Set<MimeType> createMimeTypeSet(final String... types)
     {
         Set<MimeType> imageFormats = new HashSet<>();
@@ -48,6 +52,11 @@ public class MimeTypeUtility
         return imageFormats;
     }
     
+    /**
+     * @param supportedMimeTypes the supported MimeTypes that are allowed
+     * @param mimeType the mimeType tested
+     * @return true if the mimeType is supported in the Set; otherwise false;
+     */
     public static boolean contains(Set<MimeType> supportedMimeTypes, MimeType mimeType)
     {
         return supportedMimeTypes.stream().anyMatch(allowedImageOutputFormat-> allowedImageOutputFormat.match(mimeType));

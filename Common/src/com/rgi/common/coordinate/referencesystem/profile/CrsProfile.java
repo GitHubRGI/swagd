@@ -45,6 +45,8 @@ public interface CrsProfile
      *             Coordinate in the same unit as this tile profile
      * @param dimensions
      *             Height and width of the tile matrix
+     * @param tileOrigin 
+     *             Specifies where tile (0, 0) is in the tile matrix
      * @return Returns the tile that the coordinate corresponds to
      */
     public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate        coordinate,

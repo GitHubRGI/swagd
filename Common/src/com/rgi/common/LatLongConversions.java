@@ -55,8 +55,8 @@ public class LatLongConversions
     /**
      * Converting meters of WGS 84 Ellipsoid World Mercator
      * EPSG(3395) to latitude and longitude
-     * @param metersX
-     * @param metersY
+     * @param metersX x value in meters of WGS 84 Ellipsoid World Mercator
+     * @param metersY y value in meters of WGS 84 Ellipsoid World Mercator
      * @return MeterCoordinate
      */
     public static Coordinate<Double> metersToLatLong(final double metersX, final double metersY)

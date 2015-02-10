@@ -55,6 +55,7 @@ public interface TileStoreReader
      * Return the byte size of this tile store.
      *
      * @return The approximate size of this tile store in bytes.
+     * @throws TileStoreException 
      */
     public long getByteSize() throws TileStoreException;
 

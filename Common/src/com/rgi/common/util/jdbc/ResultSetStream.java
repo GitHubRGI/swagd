@@ -30,11 +30,20 @@ import java.util.stream.StreamSupport;
  */
 public class ResultSetStream
 {
+    /**
+     * @param resultSet a Result Set
+     * @return a stream of result sets
+     */
     public static Stream<ResultSet> getStream(final ResultSet resultSet)
     {
         return ResultSetStream.getStream(resultSet, rs -> rs);
     }
 
+    /**
+     * @param resultSet
+     * @param mappingFunction
+     * @return
+     */
     public static <T> Stream<T> getStream(final ResultSet resultSet, final Function<ResultSet, T> mappingFunction)
     {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new ResultSetIterator<>(resultSet, mappingFunction),

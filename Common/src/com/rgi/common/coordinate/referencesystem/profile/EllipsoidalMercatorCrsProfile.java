@@ -34,9 +34,6 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
 {
     /**
      * Constructor
-     *
-     * @param pixelHeight Height of tile in pixels
-     * @param pixelWidth  Width of tile in pixels
      */
     public EllipsoidalMercatorCrsProfile()
     {
@@ -48,6 +45,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      * Constructor
      *
      * @param earthEquatorialRadiusScaleFactor the scale factor for the equatorial radius the earth
+     * @param coordinateReferenceSystem The Coordinate Reference System
      */
     public EllipsoidalMercatorCrsProfile(final double earthEquatorialRadiusScaleFactor, final CoordinateReferenceSystem coordinateReferenceSystem)
     {
@@ -147,6 +145,10 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         return this.coordinateReferenceSystem;
     }
 
+    /**
+     * @param coordinate coordinate in meters of Ellipsoidal Mercator
+     * @return coordinate in Global Geodetic 
+     */
     public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
     {
         return new Coordinate<>(metersToLat(coordinate.getY()),

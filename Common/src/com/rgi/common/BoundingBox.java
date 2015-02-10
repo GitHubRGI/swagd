@@ -78,16 +78,25 @@ public class BoundingBox
                Double.valueOf(this.maxX).hashCode();
     }
 
+    /**
+     * @return the height of the bounding box
+     */
     public double getHeight()
     {
         return this.getMaxY() - this.getMinY();
     }
 
+    /**
+     * @return the width of the bounding box
+     */
     public double getWidth()
     {
         return this.getMaxX() - this.getMinX();
     }
 
+    /**
+     * @return the center coordinate of the bounding box
+     */
     public Coordinate<Double> getCenter()
     {
         return new Coordinate<>((this.getMaxY() + this.getMinY()) / 2.0,
@@ -142,21 +151,33 @@ public class BoundingBox
         return new Coordinate<>(this.maxY, this.maxX);
     }
 
+    /**
+     * @return the coordinate of the top left corner of the bounding box
+     */
     public Coordinate<Double> getTopLeft()
     {
         return new Coordinate<>(this.maxY, this.minX);
     }
-
+    
+    /**
+     * @return the coordinate of the top right corner of the bounding box
+     */
     public Coordinate<Double> getTopRight()
     {
         return this.getMax();
     }
 
+    /**
+     * @return the coordinate of the bottom left corner of the bounding box
+     */
     public Coordinate<Double> getBottomLeft()
     {
         return this.getMin();
     }
-
+    
+    /**
+     * @return the coordinate of the bottom right corner of the bounding box
+     */
     public Coordinate<Double> getBottomRight()
     {
         return new Coordinate<>(this.minY, this.maxX);

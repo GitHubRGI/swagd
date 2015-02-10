@@ -142,6 +142,9 @@ public class SphericalMercatorCrsProfile implements CrsProfile
      */
     public static final double EarthEquatorialRadius = 6378137.0;
 
+    /**
+     * The Bounding Box of Spherical Mercator Coordinate Reference System Profile
+     */
     public static final BoundingBox Bounds = new BoundingBox(-Math.PI * EarthEquatorialRadius,
                                                              -Math.PI * EarthEquatorialRadius,
                                                               Math.PI * EarthEquatorialRadius,

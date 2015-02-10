@@ -20,6 +20,10 @@ package com.rgi.common.tile.scheme;
 
 import com.rgi.common.tile.TileOrigin;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class ZoomTimesTwo extends TileScheme
 {
     /**

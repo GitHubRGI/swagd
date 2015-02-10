@@ -8,8 +8,8 @@ package com.rgi.common;
 public class Dimensions
 {
     /**
-     * @param height
-     * @param width
+     * @param height the height
+     * @param width the width
      */
     public Dimensions(final double height, final double width)
     {

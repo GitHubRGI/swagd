@@ -25,6 +25,10 @@ package com.rgi.common.coordinate;
  */
 public class Coordinate<T extends Number>
 {
+    /**
+     * @param y y value
+     * @param x x value
+     */
     public Coordinate(final T y, final T x)
     {
         if(y == null)
@@ -41,6 +45,9 @@ public class Coordinate<T extends Number>
         this.x = x;
     }
 
+    /**
+     * @param other coordinate
+     */
     public Coordinate(final Coordinate<T> other)
     {
         if(other == null)

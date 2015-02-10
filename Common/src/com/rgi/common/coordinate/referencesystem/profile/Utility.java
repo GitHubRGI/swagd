@@ -32,6 +32,12 @@ import com.rgi.common.tile.TileOrigin;
  */
 public class Utility
 {
+    /**
+     * @param bounds the bounding box of the coordinates
+     * @param coordinate the coordinate being tested if within the bounding box
+     * @param origin the origin the tiles are numbered
+     * @return true if the coordinate is within the bounding box; otherwise returns false;
+     */
     public static boolean contains(final BoundingBox bounds, final Coordinate<Double> coordinate, final TileOrigin origin)
     {
         if(bounds == null)
@@ -65,6 +71,11 @@ public class Utility
         return !onFarEdge && bounds.contains(coordinate);
     }
 
+    /**
+     * @param bounds the bounding box of the information
+     * @param origin the origin of the tiles
+     * @return the coordinate of the bounding box corner based on the Tile Origin (example: TileOrigin.LowerLeft returns LowerLeft corner of bounding box)
+     */
     public static Coordinate<Double> boundsCorner(final BoundingBox bounds, final TileOrigin origin)
     {
         if(bounds == null)

@@ -29,8 +29,19 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class ImageUtility
 {
+    /**
+     * @param bufferedImage the image wanting to convert to bytes[]
+     * @param imageWriter 
+     * @param imageWriteParameter
+     * @return the image in bytes
+     * @throws IOException throws if an I/O exception occurs 
+     */
     public static byte[] bufferedImageToBytes(final BufferedImage bufferedImage, final ImageWriter imageWriter, final ImageWriteParam imageWriteParameter) throws IOException
     {
         if(bufferedImage == null)
@@ -61,6 +72,12 @@ public class ImageUtility
         }
     }
 
+    /**
+     * @param bufferedImage the image wanted in bytes
+     * @param outputFormat the format of the image returned
+     * @return the image in bytes
+     * @throws IOException throws if an I/O exception occurs 
+     */
     public static byte[] bufferedImageToBytes(final BufferedImage bufferedImage, final String outputFormat) throws IOException
     {
         if(bufferedImage == null)
@@ -84,6 +101,11 @@ public class ImageUtility
         }
     }
 
+    /**
+     * @param imageData the image in bytes[] needing to be converted to a buffered image
+     * @return a buffered image
+     * @throws IOException throws if an I/O exception occurs 
+     */
     public static BufferedImage bytesToBufferedImage(final byte[] imageData) throws IOException
     {
         if(imageData == null)

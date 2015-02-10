@@ -125,6 +125,10 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
         return GlobalGeodeticCrsProfile.CoordinateReferenceSystem;
     }
 
+    /**
+     * @param coordinate coordinate in current Coordinate Reference System
+     * @return coordinate in Global Geodetic
+     */
     public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
     {
         return coordinate;

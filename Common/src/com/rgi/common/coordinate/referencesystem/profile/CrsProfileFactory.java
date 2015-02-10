@@ -26,12 +26,21 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
  */
 public class CrsProfileFactory
 {
+    /**
+     * @param crsAuthority the Coordinate Reference System authority name (typically "EPSG")
+     * @param crsIdentifier the version number of the authority
+     * @return a CrsProfile object
+     */
     public static CrsProfile create(final String crsAuthority,
                                      final int    crsIdentifier)
     {
         return CrsProfileFactory.create(new CoordinateReferenceSystem(crsAuthority, crsIdentifier));
     }
 
+    /**
+     * @param coordinateReferenceSystem the Coordinate Reference System
+     * @return a CrsProfile object
+     */
     public static CrsProfile create(final CoordinateReferenceSystem coordinateReferenceSystem)
     {
         // TODO: This switch statement is a stop-gap.  Ideally a CrsProfile
