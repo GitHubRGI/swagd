@@ -71,7 +71,7 @@ public abstract class TileScheme
             throw new IllegalArgumentException("Tile origin may not be null");
         }
 
-        if(minimumZoomLevel >= maximumZoomLevel)
+        if(minimumZoomLevel > maximumZoomLevel)
         {
             throw new IllegalArgumentException("Minimum zoom level must be less than or equal to the maximum");
         }
