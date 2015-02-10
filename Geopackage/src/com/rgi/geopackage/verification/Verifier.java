@@ -188,7 +188,7 @@ public class Verifier
             {
                 final ColumnDefinition columnDefinition = columns.get(column.getKey());
                 Assert.assertTrue(String.format("Required column: %s.%s is missing", tableName, column.getKey()),
-                           columnDefinition != null);
+                                  columnDefinition != null);
 
                 if(columnDefinition != null)
                 {
