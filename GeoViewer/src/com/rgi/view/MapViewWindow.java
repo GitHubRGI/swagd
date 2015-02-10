@@ -20,6 +20,7 @@ package com.rgi.view;
 
 import java.awt.BorderLayout;
 import java.awt.Frame;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -31,6 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import org.openstreetmap.gui.jmapviewer.Coordinate;
+import org.openstreetmap.gui.jmapviewer.DefaultMapController;
 import org.openstreetmap.gui.jmapviewer.JMapViewerTree;
 import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
 import org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent;
@@ -65,7 +67,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         this.addWindowListener(new WindowAdapter()
                               {
                                   @Override
-                                  public void windowClosing(WindowEvent windowEvent)
+                                  public void windowClosing(final WindowEvent windowEvent)
                                   {
                                       MapViewWindow.this.cleanUpResources();
                                   }
@@ -75,6 +77,9 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         this.setLayout(new BorderLayout());
         this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         this.setExtendedState(Frame.MAXIMIZED_BOTH);
+
+        new DefaultMapController(this.treeMap.getViewer()).setMovementMouseButton(MouseEvent.BUTTON1);
+
         final JPanel panel = new JPanel();
         this.add(panel, BorderLayout.NORTH);
 
@@ -121,7 +126,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
             {
                 this.resource.close();
             }
-            catch(Exception ex)
+            catch(final Exception ex)
             {
                 ex.printStackTrace();
             }
