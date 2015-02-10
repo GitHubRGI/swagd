@@ -577,7 +577,6 @@ public class SchemaVerifier extends Verifier
                                                           {
                                                               dataColumnConstraints.maxIsInclusive = null;
                                                           }
-                                                          //dataColumnConstraints.description    = resultSet.getString("description"); //TODO does this column exist??
 
                                                           return dataColumnConstraints;
                                                       }
@@ -656,7 +655,7 @@ public class SchemaVerifier extends Verifier
         dataColumnConstraintsColumns.put("minIsInclusive",    new ColumnDefinition("BOOLEAN", false, false, false, null));
         dataColumnConstraintsColumns.put("max",               new ColumnDefinition("NUMERIC", false, false, false, null));
         dataColumnConstraintsColumns.put("maxIsInclusive",    new ColumnDefinition("BOOLEAN", false, false, false, null));
-      //  dataColumnConstraintsColumns.put("description",       new ColumnDefinition("TEXT",    false, false, false, null));//TODO check with daisey
+        dataColumnConstraintsColumns.put("description",       new ColumnDefinition("TEXT",    false, false, false, null));
 
         DataColumnConstraintsTableDefinition = new TableDefinition(GeoPackageSchema.DataColumnConstraintsTableName,
                                                                    dataColumnConstraintsColumns,
