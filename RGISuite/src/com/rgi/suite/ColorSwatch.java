@@ -39,7 +39,6 @@ public class ColorSwatch implements Icon {
 
     @Override
     public void paintIcon(Component c, Graphics g, int x, int y) {
-        // TODO Auto-generated method stub
         g.setColor(Color.white);
         g.fillRect(0, 0, this.width, this.height);
         boolean check = false;
