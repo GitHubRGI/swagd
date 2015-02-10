@@ -117,6 +117,15 @@ public class Content
         return this.spatialReferenceSystemIdentifier;
     }
 
+    /**
+     * @param inTableName table name
+     * @param inDataType data type 
+     * @param inIdentifier the identifier
+     * @param inDescription the description
+     * @param inBoundingBox the bounding box
+     * @param inSpatialReferenceSystemIdentifier the spatial reference system identifier
+     * @return returns true if the Content fields match the table name, data type, identifier, description, bounding box, and the spatial reference system identifier; otherwise returns false;
+     */
     public boolean equals(final String      inTableName,
                           final String      inDataType,
                           final String      inIdentifier,

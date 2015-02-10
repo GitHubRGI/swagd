@@ -258,7 +258,7 @@ public class GeoPackage implements AutoCloseable
     /**
      * Closes the connection to the underlying SQLite database file
      *
-     * @throws SQLException
+     * @throws SQLException throws if SQLException occurs
      */
     @Override
     public void close() throws SQLException
@@ -275,6 +275,7 @@ public class GeoPackage implements AutoCloseable
      * Requirements this GeoPackage failed to meet
      *
      * @return the GeoPackage requirements this GeoPackage fails to conform to
+     * @throws SQLException throws if SQLException occurs
      */
     public Collection<FailedRequirement> getFailedRequirements() throws SQLException
     {
@@ -293,6 +294,7 @@ public class GeoPackage implements AutoCloseable
      *             does not. In this state, the reported failures of GeoPackage
      *             subsystems may only be of minimal value.
      * @return the GeoPackage requirements this GeoPackage fails to conform to
+     * @throws SQLException throws if SQLException occurs
      */
     public Collection<FailedRequirement> getFailedRequirements(final boolean continueAfterCoreErrors) throws SQLException
     {
@@ -316,7 +318,8 @@ public class GeoPackage implements AutoCloseable
     /**
      * Verifies that the GeoPackage meets the core requirements of the GeoPackage specification
      *
-     * @throws ConformanceException
+     * @throws ConformanceException throws if the GeoPackage fails to meet the necessary requirements
+     * @throws SQLException throws if SQLException occurs
      */
     public void verify() throws ConformanceException, SQLException
     {
@@ -405,10 +408,23 @@ public class GeoPackage implements AutoCloseable
         return this.metadata;
     }
 
+    /**
+     * @author Luke Lambert
+     *
+     */
     public enum OpenMode
     {
+        /**
+         * Open or Create a GeoPackage
+         */
         OpenOrCreate,
+        /**
+         * Open an Existing GeoPackage
+         */
         Open,
+        /**
+         * Create a GeoPackage
+         */
         Create
     }
 

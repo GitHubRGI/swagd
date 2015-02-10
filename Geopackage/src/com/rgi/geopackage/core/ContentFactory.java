@@ -27,6 +27,16 @@ import com.rgi.common.BoundingBox;
  */
 public interface ContentFactory<T extends Content>
 {
+    /**
+     * @param tableName the table name
+     * @param dataType the data type
+     * @param identifier the identifier
+     * @param description the description
+     * @param lastChange  the time of the last change
+     * @param boundingBox the bounding box
+     * @param spatialReferenceSystemIdentifier the spatial reference system version number (otherwise known as identifier)
+     * @return a Content object with the following parameters
+     */
     public T create(final String      tableName,
                     final String      dataType,
                     final String      identifier,

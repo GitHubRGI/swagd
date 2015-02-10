@@ -27,6 +27,10 @@ import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.verification.FailedRequirement;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class GeoPackageFeatures
 {
     /**
@@ -63,10 +67,11 @@ public class GeoPackageFeatures
 
     /**
      * Gets all entries in the GeoPackage's contents table with the "features" data_type that also match the supplied spatial reference system
+     * @param core the GeoPackage core object
      *
      * @param matchingSpatialReferenceSystem Spatial reference system that returned {@link FeatureSet}s much refer to
      * @return Returns a collection of {@link FeatureSet}s
-     * @throws SQLException
+     * @throws SQLException throws if an SQLException occurs
      */
     public static Collection<FeatureSet> getFeatureSets(final GeoPackageCore core, final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
     {

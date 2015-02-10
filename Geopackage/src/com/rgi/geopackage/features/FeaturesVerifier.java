@@ -22,8 +22,16 @@ import java.sql.Connection;
 
 import com.rgi.geopackage.verification.Verifier;
 
+/**
+ * @author Jenifer Cochran
+ * @author Luke Lambert
+ *
+ */
 public class FeaturesVerifier extends Verifier
 {
+    /**
+     * @param sqliteConnection the connection to the file
+     */
     public FeaturesVerifier(final Connection sqliteConnection)
     {
         super(sqliteConnection);

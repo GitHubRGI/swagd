@@ -114,6 +114,14 @@ public class SpatialReferenceSystem
                this.definition.hashCode();
     }
 
+    /**
+     * @param inName Spatial Reference System name
+     * @param inIdentifier Spatial Reference System identifier
+     * @param inOrganization Spatial Reference System organization
+     * @param inOrganizationSrsId Spatial Reference System Identifier
+     * @param inDefinition Spatial Reference System definition
+     * @return returns true if the Spatial Reference System equals the parameter values; otherwise returns false;
+     */
     public boolean equals(final String inName,
                           final int    inIdentifier,
                           final String inOrganization,

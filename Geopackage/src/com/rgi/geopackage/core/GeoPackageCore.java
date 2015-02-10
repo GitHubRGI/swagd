@@ -45,7 +45,7 @@ public class GeoPackageCore
      *
      * @param databaseConnection
      *             The open connection to the database that contains a GeoPackage
-     * @throws SQLException
+     * @throws SQLException throws if an SQLException occurs
      */
     public GeoPackageCore(final Connection databaseConnection) throws SQLException
     {
@@ -59,7 +59,7 @@ public class GeoPackageCore
      *             The open connection to the database that contains a GeoPackage
      * @param createDefaults
      *             If true, GeoPackageCore will create the default tables and entries required by all standard
-     * @throws SQLException
+     * @throws SQLException throws if an SQLException occurs
      */
     public GeoPackageCore(final Connection databaseConnection, final boolean createDefaults) throws SQLException
     {
@@ -73,6 +73,7 @@ public class GeoPackageCore
 
     /**
      * Requirements this GeoPackage failed to meet
+     * @param file the GeoPackage database file
      *
      * @return the Core GeoPackage requirements this GeoPackage fails to conform to
      */
@@ -87,7 +88,7 @@ public class GeoPackageCore
      * @param content
      *             Specifies the content table whose rows will be counted
      * @return Number of rows in the table referenced by the content parameter
-     * @throws SQLException
+     * @throws SQLException throws if an SQLException occurs
      */
     public long getRowCount(final Content content) throws SQLException
     {
@@ -120,7 +121,8 @@ public class GeoPackageCore
      *             Well-known Text (WKT) representation of the spatial reference system
      * @param description
      *             Human readable description of this spatial reference system
-     * @throws SQLException
+     * @return  a Spatial Reference System with the following parameters
+     * @throws SQLException throws if an SQLException occurs
      */
     public SpatialReferenceSystem addSpatialReferenceSystem(final String name,
                                                             final int    identifier,
@@ -158,7 +160,7 @@ public class GeoPackageCore
      * @param organizationSrsId
      *             Numeric identifier of the Spatial Reference System assigned by the organization
      * @return Returns the unique spatial reference system (SRS), or null
-     * @throws SQLException
+     * @throws SQLException throws if an SQLException occurs
      */
     public SpatialReferenceSystem getSpatialReferenceSystem(final String organization, final int organizationSrsId) throws SQLException
     {
@@ -200,7 +202,7 @@ public class GeoPackageCore
      * @param identifier
      *             Unique identifier for each Spatial Reference System within a GeoPackage
      * @return Returns the unique spatial reference system (SRS), or null
-     * @throws SQLException
+     * @throws SQLException throws if an SQLException occurs
      */
     public SpatialReferenceSystem getSpatialReferenceSystem(final int identifier) throws SQLException
     {
@@ -250,13 +252,12 @@ public class GeoPackageCore
      *             A human-readable identifier (e.g. short name) for the tableName content
      * @param description
      *             A human-readable description for the tableName content
-     * @param lastChange
-     *             Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
      * @param boundingBox
      *             Bounding box for all content in tableName
      * @param spatialReferenceSystem
      *             Spatial Reference System (SRS)
-     * @throws SQLException
+     * @return  a Content Object with the following parameter values
+     * @throws SQLException throws if an SQLException occurs
      */
     public Content addContent(final String                 tableName,
                               final String                 dataType,
@@ -350,7 +351,7 @@ public class GeoPackageCore
      * @param matchingSpatialReferenceSystem
      *            Results must reference this spatial reference system.  Results are unfiltered if this parameter is null
      * @return Returns a Collection {@link Content}s of the type indicated by the {@link ContentFactory}
-     * @throws SQLException
+     * @throws SQLException throws if an SQLException occurs
      */
     public <T extends Content> Collection<T> getContent(final String                 dataType,
                                                         final ContentFactory<T>      contentFactory,
@@ -423,7 +424,7 @@ public class GeoPackageCore
      * @param contentFactory
      *             Mechanism used to create the correct subtype of Content
      * @return Returns a {@link Content} of the type indicated by the {@link ContentFactory}
-     * @throws SQLException
+     * @throws SQLException throws if an SQLException occurs
      */
     public <T extends Content> T getContent(final String tableName, final ContentFactory<T> contentFactory) throws SQLException
     {
@@ -675,8 +676,17 @@ public class GeoPackageCore
 
     private final Connection databaseConnection;
 
+    /**
+     * The Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
+     */
     public final static SimpleDateFormat DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
+    /**
+     * The name of the GeoPackage Spatial Reference System Table "gpkg_spatial_ref_sys"
+     */
     public final static String SpatialRefSysTableName = "gpkg_spatial_ref_sys";
+    /**
+     * The name of the GeoPackage Contents Table "gpkg_contents"
+     */
     public final static String ContentsTableName      = "gpkg_contents";
 }

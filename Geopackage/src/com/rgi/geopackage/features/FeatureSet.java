@@ -60,5 +60,8 @@ public class FeatureSet extends Content
               spatialReferenceSystemIdentifier);
     }
 
+    /**
+     * The data type "features"
+     */
     public final static String FeatureContentType = "features";
 }
