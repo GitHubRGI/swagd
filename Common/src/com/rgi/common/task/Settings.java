@@ -26,263 +26,299 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import com.rgi.common.util.BinUtil;
-
-public class Settings {
-  public enum Setting {
-    TileHeight(Integer.valueOf(TILESIZE)),
-    TileWidth(Integer.valueOf(TILESIZE)),
-    TileOrigin(com.rgi.common.tile.TileOrigin.LowerLeft),
-    TileType(Type.PNG),
-    Quality(Integer.valueOf(70)),
-    TileFolder(System.getProperty("user.home")),
-    FileSelection(null),
-    NoDataColor(TRANSPARENT),
-    InputSRS(null),
-    CrsProfile(Profile.WebMercator);
-
-    private Object defaultValue = null;
-
-    private Setting(Object defaultValue) {
-      this.defaultValue = defaultValue;
-    }
-
-    public Object getDefaultValue() {
-      return this.defaultValue;
-    }
-  }
-
-  public enum Type {
-    JPG,
-    PNG;
-  }
-
-  public enum Profile {
-    WebMercator("EPSG",3857),
-    WorldMercator("EPSG",3395),
-    ScaledWorldMercator("+proj=merc +datum=WGS84 +k_0=0.803798909747978",9004),
-    SphericalMercator("EPSG",900913),
-    Geodetic("EPSG",4326),
-    Raster(null,0);
-
-    private String auth;
-    private int id;
-
-    Profile(String auth, int id) {
-      this.auth = auth;
-      this.id = id;
-    }
-
-    public String getAuthority() {
-      return this.auth;
-    }
-
-    public int getID() {
-      return this.id;
-    }
-  }
-
-  private static final int TILESIZE = 256;
-  public static final Color TRANSPARENT = new Color(0,0,0,0);
-
-  private Preferences prefs = Preferences.userNodeForPackage(Settings.class);
-
-  public Settings() {
-    try {
-      this.prefs.sync();
-    } catch (BackingStoreException bse) {
-      System.err.println("Unable to load settings." + "\n" + bse.getMessage());
-    }
-  }
-
-  public void save() throws Exception {
-    try {
-      this.prefs.flush();
-    } catch (BackingStoreException bse) {
-      System.err.println("Unable to save settings.");
-      throw bse;
-    }
-  }
-
-  /**
-   *
-   * @param setting
-   * @return the setting value, or null
-   */
-  public String get(Setting setting) {
-    if (setting.defaultValue instanceof String)
+public class Settings
+{
+    public enum Setting
     {
-        return this.prefs.get(setting.name(), (String)setting.defaultValue);
+        TileHeight   (Integer.valueOf(TILESIZE)),
+        TileWidth    (Integer.valueOf(TILESIZE)),
+        TileOrigin   (com.rgi.common.tile.TileOrigin.LowerLeft),
+        TileType     (Type.PNG),
+        Quality      (70),
+        TileFolder   (System.getProperty("user.home")),
+        FileSelection(null),
+        NoDataColor  (TRANSPARENT),
+        InputSRS     (null),
+        CrsProfile   (Profile.WebMercator);
+
+        private Object defaultValue = null;
+
+        private Setting(final Object defaultValue)
+        {
+            this.defaultValue = defaultValue;
+        }
+
+        public Object getDefaultValue()
+        {
+            return this.defaultValue;
+        }
     }
-    else if (setting.defaultValue != null)
+
+    public enum Type
     {
-        return this.prefs.get(setting.name(), setting.defaultValue.toString());
+        JPG, PNG;
     }
-    return this.prefs.get(setting.name(), null);
-  }
 
-  public void set(Setting setting, String value) {
-    this.prefs.put(setting.name(), value);
-  }
-
-  /**
-   *
-   * @param setting
-   * @return the setting value, or -1 if the value is not present
-   * @throws NumberFormatException if the value is present but is not an int
-   */
-  public Color getColor(Setting setting) {
-    String colorStr = this.prefs.get(setting.name(), null);
-    if (colorStr != null) {
-      try {
-        ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(BinUtil.decode(colorStr)));
-        return (Color)in.readObject();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-    if (setting.defaultValue instanceof Color) {
-      return (Color)setting.defaultValue;
-    }
-    return null;
-  }
-
-  public void set(Setting setting, Color value) throws IOException {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    try {
-      new ObjectOutputStream(out).writeObject(value);
-    } catch (Exception ioe) {
-      ioe.printStackTrace();
-    }
-    this.prefs.put(setting.name(), BinUtil.encode(out.toByteArray()));
-  }
-
-  /**
-   *
-   * @param setting
-   * @return the setting value, or -1 if the value is not present
-   * @throws NumberFormatException if the value is present but is not an int
-   */
-  public int getInt(Setting setting) {
-    if (setting.defaultValue instanceof Integer)
+    public enum Profile
     {
-        return this.prefs.getInt(setting.name(), (Integer)setting.defaultValue);
+        WebMercator        ("EPSG", 3857),
+        WorldMercator      ("EPSG", 3395),
+        ScaledWorldMercator("+proj=merc +datum=WGS84 +k_0=0.803798909747978", 9004),
+        SphericalMercator  ("EPSG", 3857),
+        Geodetic           ("EPSG", 4326),
+        Raster             (null, 0);
+
+        private String auth;
+        private int    id;
+
+        Profile(final String auth, final int id)
+        {
+            this.auth = auth;
+            this.id = id;
+        }
+
+        public String getAuthority()
+        {
+            return this.auth;
+        }
+
+        public int getID()
+        {
+            return this.id;
+        }
     }
-    String value = this.prefs.get(setting.name(), null);
-    if (value != null)
+
+    private static final int  TILESIZE    = 256;
+    public static final Color TRANSPARENT = new Color(0, 0, 0, 0);
+
+    private final Preferences       prefs       = Preferences.userNodeForPackage(Settings.class);
+
+    public Settings()
     {
-        return Integer.parseInt(value);
+        try
+        {
+            this.prefs.sync();
+        }
+        catch(final BackingStoreException bse)
+        {
+            System.err.println("Unable to load settings." + "\n" + bse.getMessage());
+        }
     }
-    return -1;
-  }
 
-  public void set(Setting setting, int value) {
-    this.prefs.putInt(setting.name(), value);
-  }
-
-  /**
-   *
-   * @param setting
-   * @return the setting value, or -1 if the value is not present
-   * @throws NumberFormatException if the value is present but is not a long
-   */
-  public long getLong(Setting setting) {
-    if (setting.defaultValue instanceof Long)
+    public void save() throws Exception
     {
-        return this.prefs.getLong(setting.name(), (Long)setting.defaultValue);
+        try
+        {
+            this.prefs.flush();
+        }
+        catch(final BackingStoreException bse)
+        {
+            System.err.println("Unable to save settings.");
+            throw bse;
+        }
     }
-    String value = this.prefs.get(setting.name(), null);
-    if (value != null)
+
+    /**
+     *
+     * @param setting
+     * @return the setting value, or null
+     */
+    public String get(final Setting setting)
     {
-        return Long.parseLong(value);
+        if(setting.defaultValue instanceof String)
+        {
+            return this.prefs.get(setting.name(), (String)setting.defaultValue);
+        }
+        else if(setting.defaultValue != null)
+        {
+            return this.prefs.get(setting.name(), setting.defaultValue.toString());
+        }
+        return this.prefs.get(setting.name(), null);
     }
-    return -1;
-  }
 
-  public void set(Setting setting, long value) {
-    this.prefs.putLong(setting.name(), value);
-  }
-
-  /**
-   *
-   * @param setting
-   * @return the setting value as a float, or NaN
-   */
-  public double getFloat(Setting setting) {
-    if (setting.defaultValue instanceof Float)
+    public void set(final Setting setting, final String value)
     {
-        return this.prefs.getFloat(setting.name(), (Float)setting.defaultValue);
+        this.prefs.put(setting.name(), value);
     }
-    String value = this.prefs.get(setting.name(), null);
-    if (value != null)
+
+    public Color getColor(final Setting setting)
     {
-        return Float.parseFloat(value);
+        final String colorStr = this.prefs.get(setting.name(), null);
+        if(colorStr != null)
+        {
+            final byte [] data = Base64.getDecoder().decode(colorStr);
+            try(ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
+                ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream))
+            {
+                return (Color)objectInputStream.readObject();
+            }
+            catch(final ClassNotFoundException | IOException ex)
+            {
+                return (Color)setting.defaultValue;
+            }
+        }
+
+        if(setting.defaultValue instanceof Color)
+        {
+            return (Color)setting.defaultValue;
+        }
+
+        return null;
     }
-    return Float.NaN;
-  }
 
-  public void set(Setting setting, float value) {
-    this.prefs.putFloat(setting.name(), value);
-  }
-
-  /**
-   *
-   * @param setting
-   * @return the setting value as a double, or NaN
-   */
-  public double getDouble(Setting setting) {
-    if (setting.defaultValue instanceof Double)
+    public void set(final Setting setting, final Color value) throws IOException
     {
-        return this.prefs.getDouble(setting.name(), (Double)setting.defaultValue);
+        try(ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream))
+        {
+            objectOutputStream.writeObject(value);
+            this.prefs.put(setting.name(), new String(Base64.getEncoder().encode(byteArrayOutputStream.toByteArray())));
+        }
     }
-    String value = this.prefs.get(setting.name(), null);
-    if (value != null)
+
+    /**
+     *
+     * @param setting
+     * @return the setting value, or -1 if the value is not present
+     * @throws NumberFormatException
+     *             if the value is present but is not an int
+     */
+    public int getInt(final Setting setting)
     {
-        return Double.parseDouble(value);
+        if(setting.defaultValue instanceof Integer)
+        {
+            return this.prefs.getInt(setting.name(), (Integer)setting.defaultValue);
+        }
+        final String value = this.prefs.get(setting.name(), null);
+        if(value != null)
+        {
+            return Integer.parseInt(value);
+        }
+        return -1;
     }
-    return Double.NaN;
-  }
 
-  public void set(Setting setting, double value) {
-    this.prefs.putDouble(setting.name(), value);
-  }
-
-  /**
-   *
-   * @param setting
-   * @return the setting value as an array of files, or null
-   */
-  public File[] getFiles(Setting setting) {
-    String fileNames = this.get(setting);
-    if (fileNames != null) {
-      String[] paths = fileNames.split(";");
-      List<File> files = new ArrayList<>();
-      for (String path : paths) {
-        files.add(new File(path));
-      }
-      return files.toArray(new File[files.size()]);
-    }
-    return null;
-  }
-
-  public void set(Setting setting, File file) {
-    this.set(setting, file.getPath());
-  }
-
-  public void set(Setting setting, File[] files) {
-    boolean first = true;
-    StringBuffer fileNames = new StringBuffer();
-    for (File file : files) {
-      if (!first)
+    public void set(final Setting setting, final int value)
     {
-        fileNames.append(";");
+        this.prefs.putInt(setting.name(), value);
     }
-      fileNames.append(file.getPath());
+
+    /**
+     *
+     * @param setting
+     * @return the setting value, or -1 if the value is not present
+     * @throws NumberFormatException
+     *             if the value is present but is not a long
+     */
+    public long getLong(final Setting setting)
+    {
+        if(setting.defaultValue instanceof Long)
+        {
+            return this.prefs.getLong(setting.name(), (Long)setting.defaultValue);
+        }
+        final String value = this.prefs.get(setting.name(), null);
+        if(value != null)
+        {
+            return Long.parseLong(value);
+        }
+        return -1;
     }
-    this.set(setting, fileNames.toString());
-  }
+
+    public void set(final Setting setting, final long value)
+    {
+        this.prefs.putLong(setting.name(), value);
+    }
+
+    /**
+     *
+     * @param setting
+     * @return the setting value as a float, or NaN
+     */
+    public double getFloat(final Setting setting)
+    {
+        if(setting.defaultValue instanceof Float)
+        {
+            return this.prefs.getFloat(setting.name(), (Float)setting.defaultValue);
+        }
+        final String value = this.prefs.get(setting.name(), null);
+        if(value != null)
+        {
+            return Float.parseFloat(value);
+        }
+        return Float.NaN;
+    }
+
+    public void set(final Setting setting, final float value)
+    {
+        this.prefs.putFloat(setting.name(), value);
+    }
+
+    /**
+     *
+     * @param setting
+     * @return the setting value as a double, or NaN
+     */
+    public double getDouble(final Setting setting)
+    {
+        if(setting.defaultValue instanceof Double)
+        {
+            return this.prefs.getDouble(setting.name(), (Double)setting.defaultValue);
+        }
+        final String value = this.prefs.get(setting.name(), null);
+        if(value != null)
+        {
+            return Double.parseDouble(value);
+        }
+        return Double.NaN;
+    }
+
+    public void set(final Setting setting, final double value)
+    {
+        this.prefs.putDouble(setting.name(), value);
+    }
+
+    /**
+     *
+     * @param setting
+     * @return the setting value as an array of files, or null
+     */
+    public File[] getFiles(final Setting setting)
+    {
+        final String fileNames = this.get(setting);
+        if(fileNames != null)
+        {
+            final String[] paths = fileNames.split(";");
+            final List<File> files = new ArrayList<>();
+            for(final String path : paths)
+            {
+                files.add(new File(path));
+            }
+            return files.toArray(new File[files.size()]);
+        }
+        return null;
+    }
+
+    public void set(final Setting setting, final File file)
+    {
+        this.set(setting, file.getPath());
+    }
+
+    public void set(final Setting setting, final File[] files)
+    {
+        final boolean first = true;
+        final StringBuffer fileNames = new StringBuffer();
+        for(final File file : files)
+        {
+            if(!first)
+            {
+                fileNames.append(";");
+            }
+            fileNames.append(file.getPath());
+        }
+        this.set(setting, fileNames.toString());
+    }
 }

@@ -37,34 +37,43 @@ import javax.swing.WindowConstants;
 import com.rgi.common.task.Settings;
 import com.rgi.common.task.Task;
 
-public class ApplicationContext extends JFrame {
-    /**
-     *
-     */
-    private static final long serialVersionUID = -4996528794673998019L;
-    private Task task;
+public class ApplicationContext extends JFrame
+{
 
-    public enum Window {
-        MAIN, FILECHOOSER, PROGRESS, SETTINGS, WINDOWERROR, DONE;
+    private static final long serialVersionUID = -4996528794673998019L;
+    private Task              task;
+
+    public enum Window
+    {
+        MAIN,
+        FILECHOOSER,
+        PROGRESS,
+        SETTINGS,
+        WINDOWERROR,
+        DONE;
     }
 
-    private Settings settings;
+    private Settings   settings;
     private Properties props;
 
-    private JPanel contentPanel;
-    private JPanel navPanel;
-    private Exception error = null;
+    private JPanel     contentPanel;
+    private JPanel     navPanel;
+    private Exception  error;
 
     private Map<Window, ApplicationWindow> windows = new HashMap<>();
 
-    public ApplicationContext() {
+    public ApplicationContext()
+    {
         this.contentPanel = new JPanel(new CardLayout());
         this.navPanel = new JPanel(new CardLayout());
 
         this.props = new Properties();
-        try(InputStream inputStream = this.getClass().getResourceAsStream("geosuite.properties")) {
+        try(InputStream inputStream = this.getClass().getResourceAsStream("geosuite.properties"))
+        {
             this.props.load(inputStream);
-        } catch (IOException ioe) {
+        }
+        catch(IOException ioe)
+        {
             JOptionPane.showMessageDialog(null, "RGI Suite", "Unable to load properties", JOptionPane.OK_OPTION);
             ioe.printStackTrace();
             throw new RuntimeException(ioe.getMessage());
@@ -82,58 +91,71 @@ public class ApplicationContext extends JFrame {
         this.setResizable(false);
         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         // show the window
-        this.addWindowListener(new WindowAdapter() {
+        this.addWindowListener(new WindowAdapter()
+        {
             @Override
-            public void windowClosing(WindowEvent event) {
-                int option = JOptionPane.showConfirmDialog(ApplicationContext.this, "Are you sure you want to exit?",
-                        "Confirm Exit", JOptionPane.YES_NO_OPTION);
-                if (option == JOptionPane.YES_OPTION) {
+            public void windowClosing(WindowEvent event)
+            {
+                int option = JOptionPane.showConfirmDialog(ApplicationContext.this, "Are you sure you want to exit?", "Confirm Exit", JOptionPane.YES_NO_OPTION);
+                if(option == JOptionPane.YES_OPTION)
+                {
                     System.exit(0);
                 }
             }
         });
     }
 
-    public void go() {
+    public void go()
+    {
         this.setVisible(true);
     }
 
-    void addWindow(Window window, ApplicationWindow windowContent) {
+    void addWindow(Window window, ApplicationWindow windowContent)
+    {
         this.windows.put(window, windowContent);
-        this.contentPanel.add(windowContent.getContentPane(), window.name());
-        this.navPanel.add(windowContent.getNavigationPane(), window.name());
+
+        this.contentPanel.add(windowContent.getContentPane(),    window.name());
+        this.navPanel    .add(windowContent.getNavigationPane(), window.name());
     }
 
-    public Settings getSettings() {
+    public Settings getSettings()
+    {
         return this.settings;
     }
 
-    public Properties getProperties() {
+    public Properties getProperties()
+    {
         return this.props;
     }
 
-    public void setError(Exception error) {
-      this.error = error;
+    public void setError(Exception error)
+    {
+        this.error = error;
     }
 
-    public Exception getError() {
-      return this.error;
+    public Exception getError()
+    {
+        return this.error;
     }
 
-    public void transitionTo(Window window) {
+    public void transitionTo(Window window)
+    {
         ApplicationWindow windowContent = this.windows.get(window);
-        if (windowContent != null) {
+        if(windowContent != null)
+        {
             windowContent.activate();
-            ((CardLayout) this.contentPanel.getLayout()).show(this.contentPanel, window.name());
-            ((CardLayout) this.navPanel.getLayout()).show(this.navPanel, window.name());
+            ((CardLayout)this.contentPanel.getLayout()).show(this.contentPanel, window.name());
+            ((CardLayout)this.navPanel    .getLayout()).show(this.navPanel,     window.name());
         }
     }
 
-    public void setActiveTask(Task task) {
+    public void setActiveTask(Task task)
+    {
         this.task = task;
     }
 
-    public Task getActiveTask() {
+    public Task getActiveTask()
+    {
         return this.task;
     }
 }

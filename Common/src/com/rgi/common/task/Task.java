@@ -18,10 +18,11 @@
 
 package com.rgi.common.task;
 
-import com.rgi.common.task.Settings;
 
-public interface Task {
-  public void execute(Settings opts);
-  public TaskFactory getFactory();
+public interface Task
+{
+    public void execute(Settings opts);
+
+    public TaskFactory getFactory();
 
 }

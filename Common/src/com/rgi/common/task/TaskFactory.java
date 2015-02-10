@@ -18,11 +18,17 @@
 
 package com.rgi.common.task;
 
-public interface TaskFactory {
-  public Task createTask();
-  public String getFilePrompt();
-  public boolean selectInput();
-  public boolean selectMultiple();
-  public boolean selectFilesOnly();
-  public boolean selectFoldersOnly();
+public interface TaskFactory
+{
+    public Task createTask();
+
+    public String getFilePrompt();
+
+    public boolean selectInput();
+
+    public boolean selectMultiple();
+
+    public boolean selectFilesOnly();
+
+    public boolean selectFoldersOnly();
 }

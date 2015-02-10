@@ -23,6 +23,9 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
@@ -142,15 +145,15 @@ public class TileJob implements Runnable
 
         final BufferedImage source = GdalUtility.convert(outputDataset);
 
-        for(int z = maxZoom; z >= minZoom; --z)
+        for(int zoomLevel = maxZoom; zoomLevel >= minZoom; --zoomLevel)
         {
-            final Coordinate<Integer> upperLeftTileCoordinate  = this.crsToTileCoordinate(imageUpperLeft,  z);
-            final Coordinate<Integer> lowerRightTileCoordinate = this.crsToTileCoordinate(imageLowerRight, z);
+            final TileMatrixDimensions tileMatrixDimensions = this.tileScheme.dimensions(zoomLevel);
+
+            final Coordinate<Integer> upperLeftTileCoordinate  = this.crsProfile.crsToTileCoordinate(imageUpperLeft,  tileMatrixDimensions, this.tileScheme.getOrigin());
+            final Coordinate<Integer> lowerRightTileCoordinate = this.crsProfile.crsToTileCoordinate(imageLowerRight, tileMatrixDimensions, this.tileScheme.getOrigin());
 
             final int numTilesWidth  = Math.abs(lowerRightTileCoordinate.getX() - upperLeftTileCoordinate.getX()) + 1;
             final int numTilesHeight = Math.abs(lowerRightTileCoordinate.getY() - upperLeftTileCoordinate.getY()) + 1;
-
-            final TileMatrixDimensions tileMatrixDimensions = this.tileScheme.dimensions(z);
 
             // CRS units (e.g. meters) per pixel = (world size / num tiles) / pixels per tile
             final double ry = (this.crsProfile.getBounds().getHeight() / tileMatrixDimensions.getHeight()) / TILESIZE;
@@ -175,7 +178,7 @@ public class TileJob implements Runnable
                     graphic.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                                              RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-                    if(z == maxZoom)
+                    if(zoomLevel == maxZoom)
                     {
                         // pixels = (pixels * meters per pixel) / meters per pixel
                         // w' = (w * r) / r'
@@ -183,8 +186,8 @@ public class TileJob implements Runnable
                         final int scaledWidth  = (int)((outputDataset.getRasterXSize() * outputGeoTransform.getPixelDimensions().getWidth())  / rx);
 
                         // pixels = (meters - meters) / meters per pixel
-                        final int offsetY = (int)((tileBounds.getHeight() - outputGeoTransform.getTopLeft().getY()) / ry);
-                        final int offsetX = (int)((outputGeoTransform.getTopLeft().getX() - tileBounds.getWidth())  / rx);
+                        final int offsetY = (int)((outputGeoTransform.getTopLeft().getY() - tileBounds.getHeight()) / ry);
+                        final int offsetX = (int)((tileBounds.getWidth() - outputGeoTransform.getTopLeft().getX())  / rx);
 
                         // generate base tile set
                         graphic.setColor(this.noDataColor);
@@ -196,6 +199,17 @@ public class TileJob implements Runnable
                                           scaledWidth,
                                           scaledHeight,
                                           null);
+
+                        try
+                        {
+                            ImageIO.write(tileImage, "png", new File("c:/users/corp/desktop/bar.png"));
+                            return;
+                        }
+                        catch(final IOException ex)
+                        {
+                            // TODO Auto-generated catch block
+                            ex.printStackTrace();
+                        }
                     }
                     else
                     {
@@ -220,10 +234,10 @@ public class TileJob implements Runnable
                                 {
                                     final CrsCoordinate crsCoordinate = this.crsProfile.tileToCrsCoordinate(absTileY,
                                                                                                             absTileX,
-                                                                                                            this.tileScheme.dimensions(z),
+                                                                                                            this.tileScheme.dimensions(zoomLevel),
                                                                                                             this.tileScheme.getOrigin());
 
-                                    final BufferedImage upperTile = this.tileStoreReader.getTile(crsCoordinate, z);
+                                    final BufferedImage upperTile = this.tileStoreReader.getTile(crsCoordinate, zoomLevel);
 
                                     if(upperTile == null)
                                     {
@@ -262,9 +276,9 @@ public class TileJob implements Runnable
                     {
                         this.tileStoreWriter.addTile(this.crsProfile.tileToCrsCoordinate(tileY,
                                                                                          tileX,
-                                                                                         this.tileScheme.dimensions(z),
+                                                                                         this.tileScheme.dimensions(zoomLevel),
                                                                                          this.tileScheme.getOrigin()),
-                                                     z,
+                                                     zoomLevel,
                                                      tileImage);
                     }
                     catch(final TileStoreException ex)
@@ -445,8 +459,10 @@ public class TileJob implements Runnable
         // but just in case, we'll put it in a loop.
         while(minZoom > 0)
         {
-            final Coordinate<Integer> minZoomUpperLeftTileCoordinate  = this.crsToTileCoordinate(imageUpperLeft,  minZoom);
-            final Coordinate<Integer> minZoomLowerRightTileCoordinate = this.crsToTileCoordinate(imageLowerRight, minZoom);
+            final TileMatrixDimensions tileMatrixDimensions = this.tileScheme.dimensions(minZoom);
+
+            final Coordinate<Integer> minZoomUpperLeftTileCoordinate  = this.crsProfile.crsToTileCoordinate(imageUpperLeft,  tileMatrixDimensions, this.tileScheme.getOrigin());
+            final Coordinate<Integer> minZoomLowerRightTileCoordinate = this.crsProfile.crsToTileCoordinate(imageLowerRight, tileMatrixDimensions, this.tileScheme.getOrigin());
 
             // Calculate the number of tiles these coordinates span.
             // We take the absolute value so we don't have to care about
@@ -506,13 +522,6 @@ public class TileJob implements Runnable
         return d > 0 ? z
                      : z > 0 ? 0
                              : 1;
-    }
-
-    private Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate crsCoordinate, final int zoomLevel)
-    {
-        return this.crsProfile.crsToTileCoordinate(crsCoordinate,
-                                                   this.tileScheme.dimensions(zoomLevel),
-                                                   this.tileScheme.getOrigin());
     }
 
     private static double log2(final double value)

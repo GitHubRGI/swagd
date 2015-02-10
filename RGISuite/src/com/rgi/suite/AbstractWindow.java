@@ -20,33 +20,38 @@ package com.rgi.suite;
 
 import javax.swing.JPanel;
 
-public abstract class AbstractWindow implements ApplicationWindow {
-  protected ApplicationContext context;
-  protected JPanel contentPane;
-  protected JPanel navPane;
-  
-  protected AbstractWindow(ApplicationContext context) {
-    this.context = context;
-    buildContentPane();
-    buildNavPane();
-  }
-  
-  protected abstract void buildContentPane();
-  
-  protected abstract void buildNavPane();
-  
-  @Override
-  public void activate() {
-    // do nothing
-  }
+public abstract class AbstractWindow implements ApplicationWindow
+{
+    protected ApplicationContext context;
+    protected JPanel             contentPane;
+    protected JPanel             navPane;
 
-  @Override
-  public JPanel getContentPane() {
-    return this.contentPane;
-  }
+    protected AbstractWindow(ApplicationContext context)
+    {
+        this.context = context;
+        this.buildContentPane();
+        this.buildNavPane();
+    }
 
-  @Override
-  public JPanel getNavigationPane() {
-    return this.navPane;
-  }
+    protected abstract void buildContentPane();
+
+    protected abstract void buildNavPane();
+
+    @Override
+    public void activate()
+    {
+        // do nothing
+    }
+
+    @Override
+    public JPanel getContentPane()
+    {
+        return this.contentPane;
+    }
+
+    @Override
+    public JPanel getNavigationPane()
+    {
+        return this.navPane;
+    }
 }
