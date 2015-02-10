@@ -85,7 +85,17 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
                             final ImageWriteParam imageWriteOptions) throws SQLException
     {
         super(geoPackage, tileSet);
-
+        
+        if(geoPackage == null)
+        {
+            throw new IllegalArgumentException("GeoPackage may not be null");
+        }
+        
+        if(tileSet == null)
+        {
+            throw new IllegalArgumentException("TileSet may not be null.");
+        }
+        
         if(imageOutputFormat == null)
         {
             throw new IllegalArgumentException("Image output format may not be null");
@@ -113,7 +123,7 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
         this.imageWriteOptions = imageWriteOptions != null ? imageWriteOptions
                                                            : this.imageWriter.getDefaultWriteParam();
 
-        this.tileScheme = new ZoomTimesTwo(-1, -2, 1, 1, GeoPackageTiles.Origin);   // TODO fix me
+        this.tileScheme = new ZoomTimesTwo(0, 0, 1, 1, GeoPackageTiles.Origin);   // TODO fix me
 
         this.tileMatricies = geoPackage.tiles()
                                        .getTileMatrices(tileSet)
