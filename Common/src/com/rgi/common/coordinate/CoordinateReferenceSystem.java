@@ -25,8 +25,8 @@ package com.rgi.common.coordinate;
 public class CoordinateReferenceSystem
 {
     /**
-     * @param authority
-     * @param identifier
+     * @param authority the Coordinate Reference System authority name (typically "EPSG")
+     * @param identifier the version number of the authority
      */
     public CoordinateReferenceSystem(final String authority, final int identifier)
     {

@@ -36,7 +36,7 @@ public interface TileStoreReader
      *
      * @return a simple bounding box in the default unit of measure of the tile
      *         profile of this tile store
-     * @throws A
+     * @throws TileStoreException
      *             TileStoreException in the event of a specific error.
      */
     public BoundingBox getBounds() throws TileStoreException;

@@ -32,9 +32,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Random;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import utility.DatabaseUtility;
 
@@ -45,14 +43,12 @@ import utility.DatabaseUtility;
 @SuppressWarnings("static-method")
 public class DatabaseUtilityTest
 {
-    @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
 
     /**
      * Tests if the DatabaseUtility will return the expected application Id.
-     * @throws SQLException
-     * @throws Exception
+     * @throws SQLException throws if an SQLException occurs
+     * @throws Exception can throw an SecurityException when accessing the file and other various Exceptions
      */
     @Test
     public void getApplicationID() throws SQLException, Exception
@@ -73,6 +69,11 @@ public class DatabaseUtilityTest
         }
     }
 
+    /**
+     * Tests if the application Id can be set correctly through the DatabaseUtility
+     * @throws SQLException throws if an SQLException occurs
+     * @throws Exception throws if cannot access file
+     */
     @Test
     public void setApplicationID() throws SQLException, Exception
     {

@@ -101,9 +101,8 @@ public class CoreVerifier extends Verifier
      * SHALL contain "SQLite format 3" in ASCII
      * </blockquote>
      *
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws IOException
-     * @throws AssertionError
+     * @throws IOException throws if an I/O error occurs when reading the file header
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 1,
                  text = "A GeoPackage SHALL be a SQLite database file using version 3 of the SQLite file format. The first 16 bytes of a GeoPackage SHALL contain \"SQLite format 3\" in ASCII.",
@@ -128,8 +127,7 @@ public class CoreVerifier extends Verifier
      * in the application id field of the SQLite database header
      * to indicate a GeoPackage version 1.0 file.
      * </blockquote>
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws IOException
+     * @throws AssertionError throws if it fails to meet the specified requirement; 
      */
     @Requirement(number = 2,
                  text = "A GeoPackage SHALL contain 0x47503130 ('GP10' in ASCII) in the application id field of the SQLite database header to indicate a GeoPackage version 1.0 file.",
@@ -172,8 +170,7 @@ public class CoreVerifier extends Verifier
      * <blockquote>
      * A GeoPackage SHALL have the file extension name ".gpkg".
      * </blockquote>
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws AssertionError
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 3,
                  text = "A GeoPackage SHALL have the file extension name '.gpkg'",
@@ -194,7 +191,6 @@ public class CoreVerifier extends Verifier
      * A GeoPackage SHALL only contain data elements, SQL constructs and GeoPackage extensions with the "gpkg" author name specified in this encoding standard.
      * </blockquote>
      *
-     * @return Returns true, this test is checked by other tests in GeoPackage CoreVerifier and TilesVerifier
      */
     @Requirement(number = 4,
                  text = "A GeoPackage SHALL only contain data elements, SQL constructs and GeoPackage extensions with the \"gpkg\" author name specified in this encoding standard.",
@@ -215,9 +211,8 @@ public class CoreVerifier extends Verifier
      * <blockquote>
      * The columns of tables in a GeoPackage SHALL only be declared using one of the data types specified in table <a href="http://www.geopackage.org/spec/#table_column_data_types">GeoPackage Data Types</a>.
      * </blockquote>
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws if an SQLException occurs
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 5,
                  text = "The columns of tables in a GeoPackage SHALL only be declared using one of the data types specified in table GeoPackage Data Types.",
@@ -260,9 +255,8 @@ public class CoreVerifier extends Verifier
      * The SQLite PRAGMA integrity_check SQL command SHALL return "ok" for a GeoPackage file.
      * </blockquote>
      *
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws if SQLException occurs
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 6,
                  text = "The SQLite PRAGMA integrity_check SQL command SHALL return \"ok\" for a GeoPackage file.",
@@ -285,9 +279,8 @@ public class CoreVerifier extends Verifier
      * <blockquote>
      * The SQLite PRAGMA foreign_key_check SQL with no parameter value SHALL return an empty result set indicating no invalid foreign key values for a GeoPackage file.
      * </blockquote>
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws if SQLException occurs
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 7,
                  text = "The SQLite PRAGMA foreign_key_check SQL with no parameter value SHALL return an empty result set indicating no invalid foreign key values for a GeoPackage file.",
@@ -309,9 +302,7 @@ public class CoreVerifier extends Verifier
      * <blockquote>
      * A GeoPackage SQLite Configuration SHALL provide SQL access to GeoPackage contents via software APIs.
      * </blockquote>
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 8,
                  text = " A GeoPackage SQLite Configuration SHALL provide SQL access to GeoPackage contents via software APIs.",
@@ -340,9 +331,8 @@ public class CoreVerifier extends Verifier
      * run time options specified in table <a href="http://www.geopackage.org/spec/#every_gpkg_sqlite_config_table">
      * Every GeoPackage SQLite Configuration</a>.
      * </blockquote>
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws if SQLException occurs
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 9,
                  text = "Every GeoPackage SQLite Configuration SHALL have the SQLite library compile and run time options specified in table http://www.geopackage.org/spec/#every_gpkg_sqlite_config_table.",
@@ -367,9 +357,8 @@ public class CoreVerifier extends Verifier
      * Table <a href="http://www.geopackage.org/spec/#gpkg_spatial_ref_sys_cols">Spatial Ref Sys Table Definition</a> and Table
      * <a href="http://www.geopackage.org/spec/#gpkg_spatial_ref_sys_sql">gpkg_spatial_ref_sys Table Definition SQL</a>.
      * </blockquote>
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws if SQLException occurs
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 10,
                  text = "A GeoPackage SHALL include a gpkg_spatial_ref_sys table per clause 1.1.2.1.1 Table Definition, Table Spatial Ref Sys Table Definition and Table gpkg_spatial_ref_sys Table Definition SQL.",
@@ -397,9 +386,8 @@ public class CoreVerifier extends Verifier
      * of -1, and definition "undefined" for undefined Cartesian coordinate reference systems, and a record with an <code>srs_id</code> of 0, an organization of "NONE", an <code>organization_coordsys_id</code> of 0,
      * and definition "undefined" for undefined geographic coordinate reference systems.
      * </blockquote>
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws if SQLException occurs
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 11,
                  text = "The gpkg_spatial_ref_sys table in a GeoPackage SHALL contain a record for organization EPSG or epsg" +
@@ -448,9 +436,8 @@ public class CoreVerifier extends Verifier
      * <blockquote>
      * The <code>gpkg_spatial_ref_sys</code> table in a GeoPackage SHALL contain records to define all spatial reference systems used by features and tiles in a GeoPackage.
      * </blockquote>
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws if SQLException occurs
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 12,
                  text = "The gpkg_spatial_ref_sys table in a GeoPackage SHALL contain records to define all spatial reference systems used by features and tiles in a GeoPackage.",
@@ -487,9 +474,8 @@ public class CoreVerifier extends Verifier
      *  <a href="http://www.geopackage.org/spec/#gpkg_contents_cols">Contents Table or View Definition</a>
      *  and <a href="http://www.geopackage.org/spec/#gpkg_contents_sql">gpkg_contents Table Definition SQL</a>.
      * </blockquote>
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws if SQLException occurs
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number   = 13,
                  text     = "A GeoPackage file SHALL include a gpkg_contents table per table Contents Table or View Definition and gpkg_contents Table Definition SQL.",
@@ -513,9 +499,8 @@ public class CoreVerifier extends Verifier
      * The <code>table_name</code> column value in a <code>gpkg_contents</code> table row SHALL contain the name of a SQLite table or view.
      * </blockquote>
      *
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws if an SQLException occurs;
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 14,
                  text = "The table_name column value in a gpkg_contents table row SHALL contain the name of a SQLite table or view.",
@@ -553,9 +538,8 @@ public class CoreVerifier extends Verifier
      * format containing a complete date plus UTC hours, minutes, seconds and a decimal fraction of a second,
      * with a 'Z' ('zulu') suffix indicating UTC.
      * </blockquote>
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws if an SQLException occurs;
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number   = 15,
                  text     = "Values of the gpkg_contents table last_change column SHALL be in ISO 8601 "
@@ -607,9 +591,8 @@ public class CoreVerifier extends Verifier
      * Values of the <code>gpkg_contents</code> table <code>srs_id</code> column SHALL reference values in the <code>gpkg_spatial_ref_sys</code> table <code>srs_id</code> column.
      * </blockquote>
      *
-     * @return Returns true if it meets the specified requirement; otherwise false;
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws if an SQLException occurs;
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 16,
                  text = "Values of the gpkg_contents table srs_id column SHALL reference values in the gpkg_spatial_ref_sys table srs_id column.",

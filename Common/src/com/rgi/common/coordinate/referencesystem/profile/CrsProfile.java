@@ -88,8 +88,8 @@ public interface CrsProfile
      *
      * This is *temporary* because we don't have a good coordinate transformation mechanism
      *
-     * @param coordinate
-     * @return
+     * @param coordinate coordinate in current CrsProfile
+     * @return a coordinate in GlobalGeodetic
      */
     public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate);
 }
