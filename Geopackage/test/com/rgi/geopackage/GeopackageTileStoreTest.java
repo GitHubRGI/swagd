@@ -704,43 +704,43 @@ public class GeopackageTileStoreTest
     //TODO fix bug with zooms times two.  Case where it fails: IF a Geopackage does not have any tiles in it (just tile set) then wants to add a tile, the zoomLevelDimensions
     //field variable is null in the ZoomTimesTwo class.  Therefore when trying to add a matrixSet there is an arrayIndexOutOfBoundsException(which I find strange)
     //I can explain better in person but this is a bug needed to be fixed when adding a single tile a zoomLevel 0.
-//    /**
-//     * Tests if geopackage writer can write tiles to
-//     * a geopackage
-//     * @throws FileAlreadyExistsException
-//     * @throws ClassNotFoundException
-//     * @throws FileNotFoundException
-//     * @throws SQLException
-//     * @throws ConformanceException
-//     * @throws MimeTypeParseException
-//     * @throws TileStoreException
-//     */
-//    @Test
-//    public void geoPackageWriterAddTile2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
-//    {
-//        File testFile = this.getRandomFile(6);
-//        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
-//        {
-//            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
-//            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
-//
-//            MimeType mimeType = new MimeType("image/jpeg");
-//            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
-//            
-//            CrsCoordinate crsCoordinate = new CrsCoordinate(50.0,30.0,"epsg", 4326);
-//            int zoomLevel = 0;
-//            
-//            gpkgWriter.addTile(crsCoordinate, zoomLevel, new BufferedImage(256, 256, BufferedImage.TYPE_BYTE_GRAY));
-//            
-//            Tile tile = gpkg.tiles().getTile(tileSet, crsCoordinate, zoomLevel);
-//            
-//            assertTrue("GeoPackageWriter did not write a tile correctly",tile != null);
-//        }
-//        finally
-//        {
-//            deleteFile(testFile);
-//        }
-//    }
+    /**
+     * Tests if geopackage writer can write tiles to
+     * a geopackage
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws MimeTypeParseException
+     * @throws TileStoreException
+     */
+    @Test
+    public void geoPackageWriterAddTile2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
+    {
+        File testFile = this.getRandomFile(6);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
+            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
+
+            MimeType mimeType = new MimeType("image/jpeg");
+            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
+            
+            CrsCoordinate crsCoordinate = new CrsCoordinate(50.0,30.0,"epsg", 4326);
+            int zoomLevel = 0;
+            
+            gpkgWriter.addTile(crsCoordinate, zoomLevel, new BufferedImage(256, 256, BufferedImage.TYPE_BYTE_GRAY));
+            
+            Tile tile = gpkg.tiles().getTile(tileSet, crsCoordinate, zoomLevel);
+            
+            assertTrue("GeoPackageWriter did not write a tile correctly",tile != null);
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
     
     /**
      * Tests if GeoPackageWriter will throw an Illegal argumentException when
