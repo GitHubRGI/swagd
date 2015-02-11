@@ -54,7 +54,7 @@ public class ZoomTimesTwo extends TileScheme
 
         this.zoomLevelDimensions = new TileMatrixDimensions[maximumZoomLevel - minimumZoomLevel + 1];
 
-        for(int zoomLevel = minimumZoomLevel; zoomLevel < maximumZoomLevel; ++zoomLevel)
+        for(int zoomLevel = minimumZoomLevel; zoomLevel <= maximumZoomLevel; ++zoomLevel)
         {
             final int twoToTheZoomPower = (int)Math.pow(2.0, zoomLevel);
             this.zoomLevelDimensions[zoomLevel - minimumZoomLevel] = new TileMatrixDimensions(baseZoomLevelTileMatrixHeight * twoToTheZoomPower,
