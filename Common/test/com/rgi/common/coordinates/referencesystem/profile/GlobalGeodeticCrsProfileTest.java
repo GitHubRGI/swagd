@@ -30,6 +30,7 @@ import com.rgi.common.coordinate.referencesystem.profile.GlobalGeodeticCrsProfil
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
+@SuppressWarnings("static-method")
 public class GlobalGeodeticCrsProfileTest
 {
     /**
@@ -132,10 +133,11 @@ public class GlobalGeodeticCrsProfileTest
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException when the tile Origin is null in tileToCrsCoordinate.");
     }
     
+   
     @Test
     public void toGlobalGeodetic()
     {
-        Coordinate<Double> expectedCoordinate = new Coordinate<Double>(85.5, -100.0);
+        Coordinate<Double> expectedCoordinate = new Coordinate<>(85.5, -100.0);
         
         Coordinate<Double> returnedCoordinate = (new GlobalGeodeticCrsProfile()).toGlobalGeodetic(expectedCoordinate);
         assertEquals("The method toGlobalGeodetic did not return the expected coordinate.",expectedCoordinate, returnedCoordinate);
@@ -942,7 +944,7 @@ public class GlobalGeodeticCrsProfileTest
         GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(13, 20);
         TileOrigin origin = TileOrigin.UpperLeft;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(3,7);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(3,7);
         
         CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -967,7 +969,7 @@ public class GlobalGeodeticCrsProfileTest
         GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(20, 11);
         TileOrigin origin = TileOrigin.UpperRight;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(15,9);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(15,9);
         
         CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -993,7 +995,7 @@ public class GlobalGeodeticCrsProfileTest
         GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
         TileOrigin origin = TileOrigin.LowerLeft;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(24,67);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(24,67);
         
         CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -1022,7 +1024,7 @@ public class GlobalGeodeticCrsProfileTest
         GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
         TileOrigin origin = TileOrigin.LowerRight;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(98,32);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(98,32);
         
         CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -1050,7 +1052,7 @@ public class GlobalGeodeticCrsProfileTest
         GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
         TileOrigin origin = TileOrigin.UpperRight;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(0,0);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(0,0);
         
         CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -1077,7 +1079,7 @@ public class GlobalGeodeticCrsProfileTest
         GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
         TileOrigin origin = TileOrigin.UpperRight;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(102,72);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(102,72);
         
         CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -1104,7 +1106,7 @@ public class GlobalGeodeticCrsProfileTest
         GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(10, 10);
         TileOrigin origin = TileOrigin.UpperRight;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(5,5);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(5,5);
         
         CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -1131,7 +1133,7 @@ public class GlobalGeodeticCrsProfileTest
         GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(10, 10);
         TileOrigin origin = TileOrigin.UpperRight;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(6,5);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(6,5);
         
         CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -1158,7 +1160,7 @@ public class GlobalGeodeticCrsProfileTest
         GlobalGeodeticCrsProfile globalCrs     = new GlobalGeodeticCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(10, 10);
         TileOrigin origin = TileOrigin.UpperRight;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(5,6);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(5,6);
         
         CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);

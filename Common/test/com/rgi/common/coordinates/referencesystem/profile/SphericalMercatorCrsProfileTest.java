@@ -36,7 +36,7 @@ import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
-
+@SuppressWarnings("static-method")
 public class SphericalMercatorCrsProfileTest
 {
     public class LatLongMetersYMetersX
@@ -194,16 +194,16 @@ public class SphericalMercatorCrsProfileTest
         }
     }
     
-    private boolean verifyCoordinateConversion(LatLongMetersYMetersX coordinate)
+    private static boolean verifyCoordinateConversion(LatLongMetersYMetersX coordinate)
     {
         CrsCoordinate               metersCoordinate   = new CrsCoordinate(coordinate.metersY, coordinate.metersX, "epsg", 3857);
         SphericalMercatorCrsProfile sphericalCrs       = new SphericalMercatorCrsProfile();
         Coordinate<Double>          coordinateReturned = sphericalCrs.toGlobalGeodetic(metersCoordinate);
-        Coordinate<Double>          coordinateExpected = new Coordinate<Double>(coordinate.latitude, coordinate.longitude);
+        Coordinate<Double>          coordinateExpected = new Coordinate<>(coordinate.latitude, coordinate.longitude);
         return isEqual(coordinateExpected, coordinateReturned);
     }
     
-    private boolean isEqual(Coordinate<Double> coordinateExpected, Coordinate<Double> coordinateReturned)
+    private static boolean isEqual(Coordinate<Double> coordinateExpected, Coordinate<Double> coordinateReturned)
     {
         boolean xEqual = Math.abs(coordinateExpected.getX() - coordinateReturned.getX()) < Epsilon;
         boolean yEqual = Math.abs(coordinateExpected.getY() - coordinateReturned.getY()) < Epsilon;
@@ -212,7 +212,7 @@ public class SphericalMercatorCrsProfileTest
 
     private ArrayList<LatLongMetersYMetersX> readValuesFromFile(Scanner scanner)
     {
-        ArrayList<LatLongMetersYMetersX> coordinatesList = new ArrayList<LatLongMetersYMetersX>();
+        ArrayList<LatLongMetersYMetersX> coordinatesList = new ArrayList<>();
         while(scanner.hasNext())
         {
             String line = scanner.next();
@@ -971,7 +971,7 @@ public class SphericalMercatorCrsProfileTest
         SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(13, 20);
         TileOrigin origin = TileOrigin.UpperLeft;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(3,7);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(3,7);
         
         CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -996,7 +996,7 @@ public class SphericalMercatorCrsProfileTest
         SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(60, 73);
         TileOrigin origin = TileOrigin.UpperRight;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(50,9); //15, 9
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(50,9); //15, 9
         
         CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -1022,7 +1022,7 @@ public class SphericalMercatorCrsProfileTest
         SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
         TileOrigin origin = TileOrigin.LowerLeft;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(24,67);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(24,67);
         
         CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -1051,7 +1051,7 @@ public class SphericalMercatorCrsProfileTest
         SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(80, 73);
         TileOrigin origin = TileOrigin.LowerRight;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(79,32);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(79,32);
         
         CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
@@ -1079,7 +1079,7 @@ public class SphericalMercatorCrsProfileTest
         SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
         TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
         TileOrigin origin = TileOrigin.UpperRight;
-        Coordinate<Integer>  originalTileCoordinate = new Coordinate<Integer>(0,0);
+        Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(0,0);
         
         CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
         Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
