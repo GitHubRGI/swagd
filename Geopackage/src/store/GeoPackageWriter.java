@@ -31,7 +31,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
-import com.rgi.common.Dimensions;
+import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
@@ -85,7 +85,7 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
                             final ImageWriteParam imageWriteOptions) throws SQLException
     {
         super(geoPackage, tileSet);
-        
+
         if(imageOutputFormat == null)
         {
             throw new IllegalArgumentException("Image output format may not be null");
@@ -202,21 +202,21 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
         return tileMatrix;
     }
 
-    private TileMatrix addTileMatrix(final int zoomLevel, final int pixelHeight, final int pixelWidth) throws SQLException
+    private TileMatrix addTileMatrix(final int zoomLevel, final int tilePixelHeight, final int tilePixelWidth) throws SQLException
     {
         final TileMatrixDimensions tileMatrixDimensions = this.tileScheme.dimensions(zoomLevel);
 
-        final Dimensions dimensions = this.crsProfile.getTileDimensions(this.tileScheme.dimensions(zoomLevel));
+        final BoundingBox tileSetBounds = this.tileSet.getBoundingBox();
 
         return this.geoPackage.tiles()
                               .addTileMatrix(this.tileSet,
                                              zoomLevel,
                                              tileMatrixDimensions.getWidth(),
                                              tileMatrixDimensions.getHeight(),
-                                             pixelHeight,
-                                             pixelWidth,
-                                             dimensions.getWidth()  / pixelWidth,
-                                             dimensions.getHeight() / pixelHeight);
+                                             tilePixelHeight,
+                                             tilePixelWidth,
+                                             tileSetBounds.getWidth()  / tileMatrixDimensions.getWidth()  / tilePixelWidth,
+                                             tileSetBounds.getHeight() / tileMatrixDimensions.getHeight() / tilePixelHeight);
     }
 
     private final Map<Integer, TileMatrix> tileMatricies;
