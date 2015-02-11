@@ -81,16 +81,16 @@ public class EllipsoidalMercatorCrsProfileTest
         }
     }
     
-    private boolean verifyCoordinateConversion(LatLongMetersYMetersX coordinate)
+    private static boolean verifyCoordinateConversion(LatLongMetersYMetersX coordinate)
     {
         CrsCoordinate                 metersCoordinate   = new CrsCoordinate(coordinate.metersY, coordinate.metersX, "epsg", 3857);
         EllipsoidalMercatorCrsProfile ellipsoidalCrs     = new EllipsoidalMercatorCrsProfile();
         Coordinate<Double>            coordinateReturned = ellipsoidalCrs.toGlobalGeodetic(metersCoordinate);
-        Coordinate<Double>            coordinateExpected = new Coordinate<Double>(coordinate.latitude, coordinate.longitude);
+        Coordinate<Double>            coordinateExpected = new Coordinate<>(coordinate.latitude, coordinate.longitude);
         return isEqual(coordinateExpected, coordinateReturned);
     }
     
-    private boolean isEqual(Coordinate<Double> coordinateExpected, Coordinate<Double> coordinateReturned)
+    private static boolean isEqual(Coordinate<Double> coordinateExpected, Coordinate<Double> coordinateReturned)
     {
         boolean xEqual = Math.abs(coordinateExpected.getX() - coordinateReturned.getX()) < Epsilon;
         boolean yEqual = Math.abs(coordinateExpected.getY() - coordinateReturned.getY()) < Epsilon;
@@ -99,7 +99,7 @@ public class EllipsoidalMercatorCrsProfileTest
 
     private ArrayList<LatLongMetersYMetersX> readValuesFromFile(Scanner scanner)
     {
-        ArrayList<LatLongMetersYMetersX> coordinatesList = new ArrayList<LatLongMetersYMetersX>();
+        ArrayList<LatLongMetersYMetersX> coordinatesList = new ArrayList<>();
         while(scanner.hasNext())
         {
             String line = scanner.next();

@@ -107,6 +107,7 @@ public class GeopackageTileStoreTest
      * @throws SQLException
      * @throws ConformanceException
      */
+    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void geopackageReaderIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
@@ -881,6 +882,7 @@ public class GeopackageTileStoreTest
      * @throws ConformanceException
      * @throws MimeTypeParseException
      */
+    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void geoPackageWriterIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
     {
@@ -909,6 +911,7 @@ public class GeopackageTileStoreTest
      * @throws ConformanceException
      * @throws MimeTypeParseException
      */
+    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void geoPackageWriterIllegalArgumentException2() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException, MimeTypeParseException
     {
@@ -938,8 +941,9 @@ public class GeopackageTileStoreTest
      * @throws ConformanceException
      * @throws MimeTypeParseException
      */
+    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterIllegalArgumentException3() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException, MimeTypeParseException
+    public void geoPackageWriterIllegalArgumentException3() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
     {
         File testFile = this.getRandomFile(8);
         
@@ -968,6 +972,7 @@ public class GeopackageTileStoreTest
      * @throws ConformanceException
      * @throws MimeTypeParseException
      */
+    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void geoPackageWriterIllegalArgumentException4() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException, MimeTypeParseException
     {
