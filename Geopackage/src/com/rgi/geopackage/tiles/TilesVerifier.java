@@ -245,10 +245,10 @@ public class TilesVerifier extends Verifier
                      ResultSet pixelInfo = stmt.executeQuery(query1))
                 {
 
-                    List<TileData> tileDataSet = ResultSetStream.getStream(pixelInfo)
+                    final List<TileData> tileDataSet = ResultSetStream.getStream(pixelInfo)
                                                                 .map(resultSet -> { try
                                                                                     {
-                                                                                       TileData tileData = new TileData();
+                                                                                       final TileData tileData = new TileData();
                                                                                        tileData.pixelXSize   = resultSet.getDouble("pixel_x_size");
                                                                                        tileData.pixelYSize   = resultSet.getDouble("pixel_y_size");
                                                                                        tileData.zoomLevel    = resultSet.getInt("zoom_level");
@@ -259,7 +259,7 @@ public class TilesVerifier extends Verifier
 
                                                                                        return tileData;
                                                                                     }
-                                                                                    catch(SQLException ex)
+                                                                                    catch(final SQLException ex)
                                                                                     {
                                                                                         return null;
                                                                                     }
@@ -270,8 +270,8 @@ public class TilesVerifier extends Verifier
 
                     for(int index = 0; index < tileDataSet.size()-1; ++index)
                     {
-                        TileData current = tileDataSet.get(index);
-                        TileData next    = tileDataSet.get(index + 1);
+                        final TileData current = tileDataSet.get(index);
+                        final TileData next    = tileDataSet.get(index + 1);
 
                         if(current.zoomLevel == next.zoomLevel - 1)
                         {
@@ -288,21 +288,21 @@ public class TilesVerifier extends Verifier
                     //in the tile matrix set
                     if(this.hasTileMatrixSetTable)
                     {
-                        String query2 =String.format("SELECT min_x, min_y, max_x, max_y FROM %s WHERE table_name = '%s'", GeoPackageTiles.MatrixSetTableName, tableName);
+                        final String query2 =String.format("SELECT min_x, min_y, max_x, max_y FROM %s WHERE table_name = '%s'", GeoPackageTiles.MatrixSetTableName, tableName);
 
                         try(Statement stmt2         = this.getSqliteConnection().createStatement();
                             ResultSet boundingBoxRS = stmt2.executeQuery(query2))
                         {
                             if(boundingBoxRS.next())
                             {
-                                double minX = boundingBoxRS.getDouble("min_x");
-                                double minY = boundingBoxRS.getDouble("min_y");
-                                double maxX = boundingBoxRS.getDouble("max_x");
-                                double maxY = boundingBoxRS.getDouble("max_y");
+                                final double minX = boundingBoxRS.getDouble("min_x");
+                                final double minY = boundingBoxRS.getDouble("min_y");
+                                final double maxX = boundingBoxRS.getDouble("max_x");
+                                final double maxY = boundingBoxRS.getDouble("max_y");
 
-                                BoundingBox boundingBox = new BoundingBox(minY, minX, maxY, maxX);
+                                final BoundingBox boundingBox = new BoundingBox(minY, minX, maxY, maxX);
 
-                                List<TileData> invalidPixelValues = tileDataSet.stream()
+                                final List<TileData> invalidPixelValues = tileDataSet.stream()
                                                                                .filter(tileData -> !validPixelValues(tileData, boundingBox))
                                                                                .collect(Collectors.toList());
 
@@ -1367,7 +1367,7 @@ public class TilesVerifier extends Verifier
         }
     }
 
-    private static boolean validPixelValues(TileData tileData, BoundingBox boundingBox)
+    private static boolean validPixelValues(final TileData tileData, final BoundingBox boundingBox)
     {
 
         return isEqual(tileData.pixelXSize, (boundingBox.getWidth()/tileData.matrixWidth)/tileData.tileWidth) &&
@@ -1423,10 +1423,7 @@ public class TilesVerifier extends Verifier
                            .anyMatch(imageReader -> {  try
                                                        {
                                                            image.mark();
-                                                           final boolean canDecode = imageReader.getOriginatingProvider().canDecodeInput(image);
-
-
-                                                           return canDecode;
+                                                           return imageReader.getOriginatingProvider().canDecodeInput(image);
                                                        }
                                                        catch(final Exception ex)
                                                        {

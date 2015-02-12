@@ -27,7 +27,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import utility.DatabaseUtility;
 
@@ -37,6 +39,7 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.Utility;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.verification.FailedRequirement;
@@ -324,12 +327,12 @@ public class GeoPackageTiles
             throw new IllegalArgumentException("Cannot add a tile matrix to a tile set with no tile matrix set.");  // TODO do we need to expose addTileMatrixSet() to help avoid ever getting here? a tile matrix set is created automatically by this API on tile set creation, and the verifier insures that there's one for every tile set.
         }
 
-        if(Math.abs(matrixHeight * tileHeight * pixelYSize - tileMatrixSet.getBoundingBox().getHeight()) > 0.01)    // TODO instead of testing for equality, test with an EPSILON tolerance ?
+        if(matrixHeight * tileHeight * pixelYSize != tileMatrixSet.getBoundingBox().getHeight())    // TODO instead of testing for equality, test with an EPSILON tolerance ?
         {
             throw new IllegalArgumentException("The geographic height of the tile matrix [matrix height * tile height (pixels) * pixel y size (srs units per pixel)] differs from the minimum bounds for this tile set specified by the tile matrix set");
         }
 
-        if(Math.abs(matrixWidth * tileWidth * pixelXSize - tileMatrixSet.getBoundingBox().getWidth()) > 0.01)    // TODO instead of testing for equality, test with an EPSILON tolerance ?
+        if(matrixWidth * tileWidth * pixelXSize != tileMatrixSet.getBoundingBox().getWidth())    // TODO instead of testing for equality, test with an EPSILON tolerance ?
         {
             throw new IllegalArgumentException("The geographic width of the tile matrix [matrix width * tile width (pixels) * pixel x size (srs units per pixel)] differs from the minimum bounds for this tile set specified by the tile matrix set");
         }
@@ -535,6 +538,45 @@ public class GeoPackageTiles
 //                        tile.getColumn(),
 //                        imageData);
 //    }
+
+    /**
+     * Gets tile coordinates for every tile in a tile set. A tile set need not
+     * have an entry for every possible position in its respective tile
+     * matrices.
+     *
+     * @param tileSet
+     *             Handle to the tile set that the requested tiles should belong
+     * @return Returns a {@link Stream} of {@link RelativeTileCoordinate}s representing every tile that the specific tile set contains.
+     * @throws SQLException
+     */
+    public Stream<RelativeTileCoordinate> getTiles(final TileSet tileSet) throws SQLException
+    {
+        if(tileSet == null)
+        {
+            throw new IllegalArgumentException("Tile set cannot be null");
+        }
+
+        final String tileQuery = String.format("SELECT %s, %s, %s FROM %s;",
+                                               "zoom_level",
+                                               "tile_column",
+                                               "tile_row",
+                                               tileSet.getTableName());
+
+        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
+        {
+            return ResultSetStream.getStream(preparedStatement.executeQuery(),
+                                             resultSet -> { try
+                                                            {
+                                                                return new RelativeTileCoordinate(resultSet.getInt(3), resultSet.getInt(2), resultSet.getInt(1));
+                                                            }
+                                                            catch(final Exception ex)
+                                                            {
+                                                                return null;
+                                                            }
+                                                          })
+                                  .filter(Objects::nonNull);
+        }
+    }
 
     /**
      * Gets a tile
@@ -874,19 +916,6 @@ public class GeoPackageTiles
 
         if(!Utility.contains(tileSetBounds, crsCoordinate, GeoPackageTiles.Origin))
         {
-            final double x = crsCoordinate.getX();
-            final double y = crsCoordinate.getY();
-
-            final double eps = 0.01;
-
-            if(Math.abs(x - tileSetBounds.getMinX()) < eps ||
-               Math.abs(x - tileSetBounds.getMaxX()) < eps ||
-               Math.abs(y - tileSetBounds.getMinY()) < eps ||
-               Math.abs(y - tileSetBounds.getMaxY()) < eps)
-            {
-                return null;
-            }
-
             return null;    // The requested SRS coordinate is outside the bounds of our data
         }
 
