@@ -48,6 +48,6 @@ public class ResultSetStream
     {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new ResultSetIterator<>(resultSet, mappingFunction),
                                                                         0), // No particular spliterator characteristics can be relied on (http://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html#characteristics--)
-                            false);
+                                    false);
     }
 }

@@ -19,7 +19,6 @@
 package com.rgi.common.coordinate.referencesystem.profile;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
@@ -134,12 +133,6 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     }
 
     @Override
-    public Dimensions getTileDimensions(final TileMatrixDimensions dimensions)
-    {
-        throw new RuntimeException("Method not implemented");
-    }
-
-    @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
         return this.coordinateReferenceSystem;
@@ -147,7 +140,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
 
     /**
      * @param coordinate coordinate in meters of Ellipsoidal Mercator
-     * @return coordinate in Global Geodetic 
+     * @return coordinate in Global Geodetic
      */
     public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
     {

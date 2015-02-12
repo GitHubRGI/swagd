@@ -110,12 +110,12 @@ public class SphericalMercatorCrsProfile implements CrsProfile
                                  this.getCoordinateReferenceSystem());
     }
 
-    @Override
-    public Dimensions getTileDimensions(final TileMatrixDimensions dimensions)
-    {
-        return new Dimensions(EarthEquatorialCircumfrence / dimensions.getHeight(),
-                              EarthEquatorialCircumfrence / dimensions.getWidth());
-    }
+//    @Override
+//    public Dimensions getTileDimensions(final TileMatrixDimensions dimensions)
+//    {
+//        return new Dimensions(EarthEquatorialCircumfrence / dimensions.getHeight(),
+//                              EarthEquatorialCircumfrence / dimensions.getWidth());
+//    }
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()

@@ -159,7 +159,7 @@ public class TileJob implements Runnable
             final double ry = (this.crsProfile.getBounds().getHeight() / tileMatrixDimensions.getHeight()) / TILESIZE;
             final double rx = (this.crsProfile.getBounds().getWidth()  / tileMatrixDimensions.getWidth())  / TILESIZE;
 
-            final Dimensions tileBounds = this.crsProfile.getTileDimensions(tileMatrixDimensions);
+            final Dimensions tileBounds = new Dimensions(-1, -1);// TOODOOOOOOOOOOOOO this.crsProfile.getTileDimensions(tileMatrixDimensions);
 
             for(int x = 0; x < numTilesWidth; ++x)
             {

@@ -110,14 +110,14 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
                                  this.getCoordinateReferenceSystem());
     }
 
-    @Override
-    public Dimensions getTileDimensions(final TileMatrixDimensions dimensions)
-    {
-        final double height = GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions.getHeight();
-        final double width  = GlobalGeodeticCrsProfile.Bounds.getWidth()  / dimensions.getWidth();
-
-        return new Dimensions(height, width);
-    }
+//    @Override
+//    public Dimensions getTileDimensions(final TileMatrixDimensions dimensions)
+//    {
+//        final double height = GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions.getHeight();
+//        final double width  = GlobalGeodeticCrsProfile.Bounds.getWidth()  / dimensions.getWidth();
+//
+//        return new Dimensions(height, width);
+//    }
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()

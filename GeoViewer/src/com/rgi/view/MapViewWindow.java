@@ -35,9 +35,9 @@ import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.DefaultMapController;
 import org.openstreetmap.gui.jmapviewer.JMapViewerTree;
 import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
+import org.openstreetmap.gui.jmapviewer.TileStoreTileSource;
 import org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent;
 import org.openstreetmap.gui.jmapviewer.interfaces.JMapViewerEventListener;
-import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 
 import store.GeoPackageReader;
 
@@ -85,9 +85,9 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
         final TileStoreReader tileStore = this.pickTileStore(location);
 
-        this.loader = new TileStoreLoader(tileStore, this.treeMap.getViewer());
+        this.treeMap.getViewer().setTileSource(new TileStoreTileSource(tileStore));
 
-        this.treeMap.getViewer().setTileLoader(this.loader);
+        this.treeMap.getViewer().setTileLoader(new TileStoreLoader(tileStore, this.treeMap.getViewer()));
 
 
         final CrsProfile profile = CrsProfileFactory.create(tileStore.getCoordinateReferenceSystem());
@@ -170,8 +170,8 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     }
 
     private static final long serialVersionUID = 1337L;
-    private final JMapViewerTree    treeMap;
-    private final TileLoader        loader;
+
+    private final JMapViewerTree treeMap;
 
     private AutoCloseable resource;
 }

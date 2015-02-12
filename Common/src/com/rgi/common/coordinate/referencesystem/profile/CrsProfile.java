@@ -19,7 +19,6 @@
 package com.rgi.common.coordinate.referencesystem.profile;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
@@ -45,7 +44,7 @@ public interface CrsProfile
      *             Coordinate in the same unit as this tile profile
      * @param dimensions
      *             Height and width of the tile matrix
-     * @param tileOrigin 
+     * @param tileOrigin
      *             Specifies where tile (0, 0) is in the tile matrix
      * @return Returns the tile that the coordinate corresponds to
      */
@@ -70,15 +69,6 @@ public interface CrsProfile
                                              final int                  column,
                                              final TileMatrixDimensions dimensions,
                                              final TileOrigin           tileOrigin);
-
-    /**
-     * Calculates the dimensions of a tile in CRS units
-     *
-     * @param dimensions
-     *             Height and width of the tile matrix
-     * @return Returns the dimensions of a single tile in CRS units
-     */
-    public Dimensions getTileDimensions(final TileMatrixDimensions dimensions);
 
     /**
      * @return Returns the coordinate reference system implemented by this CrsProfile

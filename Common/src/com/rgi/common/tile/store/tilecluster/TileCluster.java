@@ -106,8 +106,9 @@ abstract class TileCluster
 
     protected File getClusterFile(final ClusterAddress clusterAddress)
     {
-        return new File(String.format("%s/%s-%d-%d-%d.cluster",
+        return new File(String.format("%s%c%s-%d-%d-%d.cluster",
                                       this.location,
+                                      File.separatorChar,
                                       this.setName,
                                       clusterAddress.startlevel,
                                       clusterAddress.row,
@@ -130,6 +131,14 @@ abstract class TileCluster
         return indexPosition * IndexTileAddressByteSize; // multiply index position times byte size of a tile address
     }
 
+    public String getName()
+    {
+        return String.format("%s%c%s",
+                             this.location,
+                             File.separatorChar,
+                             this.setName);
+    }
+
     // TODO convert this into a normal equation ::math::
     protected static int getCumulativeTileCount(final int finalZoomLevel)
     {
@@ -143,7 +152,7 @@ abstract class TileCluster
         return count;
     }
 
-        protected static class ClusterAddress
+    protected static class ClusterAddress
     {
         final long row;
         final long column;
@@ -161,8 +170,8 @@ abstract class TileCluster
 
     protected static final TileOrigin Origin = TileOrigin.LowerLeft; // TODO WARNING WARNING, THIS IS JUST A BLIND GUESS
 
-    protected static final long NoDataLong  = -1L;
-    protected static final int  NoDataInt   = -1;
+    protected static final long NoDataLong = -1L;
+    protected static final int  NoDataInt  = -1;
 
     protected final Path       location;
     protected final String     setName;
