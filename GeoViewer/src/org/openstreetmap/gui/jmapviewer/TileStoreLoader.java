@@ -44,10 +44,9 @@ public class TileStoreLoader implements TileLoader
 {
     public TileStoreLoader(final TileStoreReader tileStore, final TileLoaderListener listener) throws TileStoreException
     {
-        this.tileStore   = tileStore;
+        this.tileStore  = tileStore;
         this.crsProfile = CrsProfileFactory.create(tileStore.getCoordinateReferenceSystem());
-        this.listener    = listener;
-        //this.tileSource  = new TileSourceShell(tileStore);
+        this.listener   = listener;
 
         this.minimumZoomLevel = tileStore.getZoomLevels().stream().min(Integer::compare).orElse(-1);
         this.maximumZoomLevel = tileStore.getZoomLevels().stream().max(Integer::compare).orElse(-1);
@@ -138,7 +137,6 @@ public class TileStoreLoader implements TileLoader
     public final static TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1, TileStoreLoader.origin);  // Tile scheme for JMapViewer: http://wiki.openstreetmap.org/wiki/Slippy_Map
 
     private final TileLoaderListener listener;
-    //private TileSource                 tileSource;
     private final TileStoreReader    tileStore;
     private final CrsProfile         crsProfile;
 

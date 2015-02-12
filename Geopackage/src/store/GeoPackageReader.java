@@ -22,10 +22,12 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.util.ImageUtility;
@@ -48,7 +50,7 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
         // TODO lazy precalculation ?
         try
         {
-            TileMatrixSet tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
+            final TileMatrixSet tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
             if (tileMatrixSet == null)
             {
                 throw new IllegalArgumentException("Tile Matrix Set cannot be null");
@@ -139,6 +141,18 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
         {
             throw new TileStoreException(ex);
         }
+    }
+
+    @Override
+    public Stream<TileHandle> stream()
+    {
+
+    }
+
+    @Override
+    public String getImageType()
+    {
+        return null;
     }
 
     private static BufferedImage getImage(final Tile tile) throws TileStoreException

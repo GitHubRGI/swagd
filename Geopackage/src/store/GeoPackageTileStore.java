@@ -40,8 +40,15 @@ abstract class GeoPackageTileStore
         this.crsProfile = CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId());
     }
 
-    protected final GeoPackage  geoPackage;
-    protected final TileSet     tileSet;
+    public String getName()
+    {
+        return String.format("%s-%s",
+                             this.geoPackage.getFile().getName(),
+                             this.tileSet.getIdentifier());
+    }
+
+    protected final GeoPackage geoPackage;
+    protected final TileSet    tileSet;
     protected final CrsProfile crsProfile;
 
 }

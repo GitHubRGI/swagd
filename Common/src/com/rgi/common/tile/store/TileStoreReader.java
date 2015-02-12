@@ -20,8 +20,10 @@ package com.rgi.common.tile.store;
 
 import java.awt.image.BufferedImage;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 
@@ -55,7 +57,7 @@ public interface TileStoreReader
      * Return the byte size of this tile store.
      *
      * @return The approximate size of this tile store in bytes.
-     * @throws TileStoreException 
+     * @throws TileStoreException
      */
     public long getByteSize() throws TileStoreException;
 
@@ -99,7 +101,39 @@ public interface TileStoreReader
     public Set<Integer> getZoomLevels() throws TileStoreException;
 
     /**
+     * Gets a stream of every tile in the tile store.  Tile stores need not
+     * contain the maximum number of tiles (rows * columns, per zoom level) so
+     * missing entries will not be represented by this stream.
+     *
+     * @return Returns a {@link Stream} of {@link TileHandle}s
+     */
+    public Stream<TileHandle> stream();
+
+    /**
      * @return returns the tile store's coordinate reference system
      */
     public CoordinateReferenceSystem getCoordinateReferenceSystem();
+
+    /**
+     * @return returns a human readable identifier for this tile store
+     */
+    public String getName();
+
+    /**
+     * @return Returns the best guess for the image type (MimeType subtype).
+     * Tile stores need not necessarily contain a single image type, so the
+     * store's implementation will return what it considers the most suitable.
+     * This  function may return null if there are no tiles in the store, or if
+     * there is an error.
+     */
+    public String getImageType();
+
+    /**
+     * @return Returns the best guess for the pixel dimensions of the tile
+     * store's images. Tile stores may contain images of differing sizes, so
+     * the store's implementation will return what it considers the most
+     * suitable. This function may return null if there are no tiles in the
+     * store, or if there is an error.
+     */
+    public Dimensions getImageDimensions();
 }

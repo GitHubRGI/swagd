@@ -54,7 +54,7 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
                              final String          setName,
                              final int             levels,
                              final int             breakPoint,
-                             final CrsProfile     crsProfile,
+                             final CrsProfile      crsProfile,
                              final MimeType        imageOutputFormat,
                              final ImageWriteParam imageWriteOptions)
     {

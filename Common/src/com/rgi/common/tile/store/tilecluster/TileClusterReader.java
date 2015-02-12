@@ -24,12 +24,15 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.util.ImageUtility;
@@ -44,10 +47,10 @@ import com.rgi.common.util.ImageUtility;
  */
 public class TileClusterReader extends TileCluster implements TileStoreReader
 {
-    public TileClusterReader(final Path        location,
-                             final String      setName,
-                             final int         levels,
-                             final int         breakPoint,
+    public TileClusterReader(final Path       location,
+                             final String     setName,
+                             final int        levels,
+                             final int        breakPoint,
                              final CrsProfile crsProfile)
     {
         super(location, setName, levels, breakPoint, crsProfile);
@@ -150,9 +153,30 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
     }
 
     @Override
+    public Stream<TileHandle> stream()
+    {
+        // TODO
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
         return this.crsProfile.getCoordinateReferenceSystem();
+    }
+
+    @Override
+    public String getImageType()
+    {
+        // TODO
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public Dimensions getImageDimensions()
+    {
+        // TODO
+        throw new RuntimeException("Not implemented");
     }
 
     private static final int MagicNumberByteSize = 8; // size of long
