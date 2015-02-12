@@ -74,7 +74,7 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
      * @param imageWriteOptions
      *             Controls details of the image writing process.  If null, a default ImageWriteParam used instead
      */
-    public TmsWriter(final CrsProfile     profile,
+    public TmsWriter(final CrsProfile      profile,
                      final Path            location,
                      final MimeType        imageOutputFormat,
                      final ImageWriteParam imageWriteOptions)
@@ -125,6 +125,7 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
         }
 
         final Coordinate<Integer> tmsCoordiante = this.profile.crsToTileCoordinate(coordinate,
+                                                                                   this.profile.getBounds(),    // TMS uses absolute tiling, which covers the whole globe
                                                                                    this.tileScheme.dimensions(zoomLevel),
                                                                                    TmsTileStore.Origin);
         this.addTile(tmsCoordiante.getY(),
@@ -134,7 +135,7 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
     }
 
     @Override
-    public void addTile(int row, int column, int zoomLevel, BufferedImage image) throws TileStoreException
+    public void addTile(final int row, final int column, final int zoomLevel, final BufferedImage image) throws TileStoreException
     {
         if(image == null)
         {
@@ -151,7 +152,7 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
             // Image will not write unless the directories exist leading to it.
             if(!tilePath.getParent().toFile().exists())
             {
-                boolean directoryFound = (new File(tilePath.getParent().toString())).mkdirs();
+                final boolean directoryFound = (new File(tilePath.getParent().toString())).mkdirs();
 
                 if(!directoryFound)
                 {

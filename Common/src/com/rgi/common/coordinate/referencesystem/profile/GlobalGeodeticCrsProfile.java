@@ -19,7 +19,6 @@
 package com.rgi.common.coordinate.referencesystem.profile;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
@@ -34,12 +33,18 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
 {
     @Override
     public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate        coordinate,
+                                                   final BoundingBox          bounds,
                                                    final TileMatrixDimensions dimensions,
                                                    final TileOrigin           tileOrigin)
     {
         if(coordinate == null)
         {
             throw new IllegalArgumentException("Meter coordinate may not be null");
+        }
+
+        if(bounds == null)
+        {
+            throw new IllegalArgumentException("Bounds may not be null");
         }
 
         if(dimensions == null)
@@ -64,13 +69,14 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
 
         final Coordinate<Double> tileCorner = Utility.boundsCorner(Bounds, tileOrigin);
 
-        final Dimensions tileDimensions = this.getTileDimensions(dimensions);
+        final double tileCrsHeight = bounds.getHeight() / dimensions.getHeight();
+        final double tileCrsWidth  = bounds.getWidth()  / dimensions.getWidth();
 
         final double normalizedSrsTileCoordinateY = Math.abs(coordinate.getY() - tileCorner.getY());
         final double normalizedSrsTileCoordinateX = Math.abs(coordinate.getX() - tileCorner.getX());
 
-        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileDimensions.getHeight());
-        final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileDimensions.getWidth());
+        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileCrsHeight);
+        final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileCrsWidth);
 
         return new Coordinate<>(tileY, tileX);
     }
@@ -78,9 +84,15 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
     @Override
     public CrsCoordinate tileToCrsCoordinate(final int                  row,
                                              final int                  column,
+                                             final BoundingBox          bounds,
                                              final TileMatrixDimensions dimensions,
                                              final TileOrigin           tileOrigin)
     {
+        if(bounds == null)
+        {
+            throw new IllegalArgumentException("Bounds may not be null");
+        }
+
         if(dimensions == null)
         {
             throw new IllegalArgumentException("Tile matrix dimensions may not be null");
@@ -96,7 +108,8 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Origin may not be null");
         }
 
-        final Dimensions tileCrsDimensions = this.getTileDimensions(dimensions);
+        final double tileCrsHeight = bounds.getHeight() / dimensions.getHeight();
+        final double tileCrsWidth  = bounds.getWidth()  / dimensions.getWidth();
 
         final Coordinate<Integer> tileCoordinate = tileOrigin.transform(TileOrigin.LowerLeft,
                                                                         row,
@@ -105,19 +118,10 @@ public class GlobalGeodeticCrsProfile implements CrsProfile
         final double originShiftY = Bounds.getHeight() / 2.0;
         final double originShiftX = Bounds.getWidth()  / 2.0;
 
-        return new CrsCoordinate(((tileCoordinate.getY() + tileOrigin.getVertical())   * tileCrsDimensions.getHeight()) - originShiftY,
-                                 ((tileCoordinate.getX() + tileOrigin.getHorizontal()) * tileCrsDimensions.getWidth())  - originShiftX,
+        return new CrsCoordinate(((tileCoordinate.getY() + tileOrigin.getVertical())   * tileCrsHeight) - originShiftY,
+                                 ((tileCoordinate.getX() + tileOrigin.getHorizontal()) * tileCrsWidth)  - originShiftX,
                                  this.getCoordinateReferenceSystem());
     }
-
-//    @Override
-//    public Dimensions getTileDimensions(final TileMatrixDimensions dimensions)
-//    {
-//        final double height = GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions.getHeight();
-//        final double width  = GlobalGeodeticCrsProfile.Bounds.getWidth()  / dimensions.getWidth();
-//
-//        return new Dimensions(height, width);
-//    }
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()

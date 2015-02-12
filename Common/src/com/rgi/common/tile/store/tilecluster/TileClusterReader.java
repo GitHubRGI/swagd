@@ -26,7 +26,6 @@ import java.nio.file.Path;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
@@ -59,13 +58,6 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
         {
             throw new IllegalArgumentException("Specified location cannot be read from");
         }
-    }
-
-    @Override
-    public BoundingBox getBounds()
-    {
-        // TODO
-        throw new RuntimeException("Not implemented");
     }
 
     @Override
@@ -137,6 +129,7 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
 
         // First determine the cluster that will hold the data
         final Coordinate<Integer> clusterCoordinate = this.crsProfile.crsToTileCoordinate(coordinate,
+                                                                                          this.getBounds(),
                                                                                           this.tileScheme.dimensions(zoomLevel),
                                                                                           TileCluster.Origin);
 

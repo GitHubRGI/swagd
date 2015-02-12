@@ -150,6 +150,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         }
 
         final Coordinate<Integer> tmsCoordiante = this.profile.crsToTileCoordinate(coordinate,
+                                                                                   this.profile.getBounds(),    // TMS uses absolute tiling, which covers the whole globe
                                                                                    this.tileScheme.dimensions(zoomLevel),
                                                                                    TmsTileStore.Origin);
 
@@ -309,8 +310,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         final Coordinate<Integer> transformedMinTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.LowerLeft,  new Coordinate<>(yRange.minimum, xRange.minimum), dimensions);
         final Coordinate<Integer> transformedMaxTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.UpperRight, new Coordinate<>(yRange.maximum, xRange.maximum), dimensions);
 
-        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(transformedMinTileCoordinate.getY(), transformedMinTileCoordinate.getX(), dimensions, TileOrigin.LowerLeft);
-        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(transformedMaxTileCoordinate.getY(), transformedMaxTileCoordinate.getX(), dimensions, TileOrigin.UpperRight);
+        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(transformedMinTileCoordinate.getY(), transformedMinTileCoordinate.getX(), this.profile.getBounds(), dimensions, TileOrigin.LowerLeft);    // TMS uses absolute tiling, which covers the whole globe
+        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(transformedMaxTileCoordinate.getY(), transformedMaxTileCoordinate.getX(), this.profile.getBounds(), dimensions, TileOrigin.UpperRight);   // TMS uses absolute tiling, which covers the whole globe
 
         this.bounds = new BoundingBox(lowerLeftCorner.getY(),
                                       lowerLeftCorner.getX(),
@@ -434,8 +435,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                @Override
                                public BoundingBox getBounds() throws TileStoreException
                                {
-                                   final Coordinate<Double> lowerLeft  = TmsReader.this.profile.tileToCrsCoordinate(row,   column,   this.matrix, TmsTileStore.Origin);
-                                   final Coordinate<Double> upperRight = TmsReader.this.profile.tileToCrsCoordinate(row+1, column+1, this.matrix, TmsTileStore.Origin);
+                                   final Coordinate<Double> lowerLeft  = TmsReader.this.profile.tileToCrsCoordinate(row,   column,   TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
+                                   final Coordinate<Double> upperRight = TmsReader.this.profile.tileToCrsCoordinate(row+1, column+1, TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
 
                                    return new BoundingBox(lowerLeft.getY(),
                                                           lowerLeft.getX(),

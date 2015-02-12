@@ -32,7 +32,7 @@ public class CrsProfileFactory
      * @return a CrsProfile object
      */
     public static CrsProfile create(final String crsAuthority,
-                                     final int    crsIdentifier)
+                                    final int    crsIdentifier)
     {
         return CrsProfileFactory.create(new CoordinateReferenceSystem(crsAuthority, crsIdentifier));
     }

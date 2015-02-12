@@ -42,6 +42,8 @@ public interface CrsProfile
      *
      * @param coordinate
      *             Coordinate in the same unit as this tile profile
+     * @param bounds
+     *             The area, in CRS units, that represents the valid area for tiling numbering
      * @param dimensions
      *             Height and width of the tile matrix
      * @param tileOrigin
@@ -49,6 +51,7 @@ public interface CrsProfile
      * @return Returns the tile that the coordinate corresponds to
      */
     public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate        coordinate,
+                                                   final BoundingBox          bounds,
                                                    final TileMatrixDimensions dimensions,
                                                    final TileOrigin           tileOrigin);
 
@@ -59,6 +62,8 @@ public interface CrsProfile
      *             Vertical portion of the tile's coordinate
      * @param column
      *             Horizontal portion of the tile's coordinate
+     * @param bounds
+     *             The area, in CRS units, that represents the valid area for tiling numbering
      * @param dimensions
      *             Height and width of the tile matrix
      * @param tileOrigin
@@ -67,6 +72,7 @@ public interface CrsProfile
      */
     public CrsCoordinate tileToCrsCoordinate(final int                  row,
                                              final int                  column,
+                                             final BoundingBox          bounds,
                                              final TileMatrixDimensions dimensions,
                                              final TileOrigin           tileOrigin);
 
