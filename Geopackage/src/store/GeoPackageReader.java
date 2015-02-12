@@ -54,6 +54,8 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
     {
         super(geoPackage, tileSet);
 
+        this.tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
+
         this.tileMatricies = geoPackage.tiles()
                                        .getTileMatrices(tileSet)
                                        .stream()
@@ -64,20 +66,7 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
     @Override
     public BoundingBox getBounds() throws TileStoreException
     {
-        // TODO lazy precalculation ?
-        try
-        {
-            final TileMatrixSet tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
-            if (tileMatrixSet == null)
-            {
-                throw new IllegalArgumentException("Tile Matrix Set cannot be null");
-            }
-            return tileMatrixSet.getBoundingBox();
-        }
-        catch(final Exception ex)
-        {
-            throw new TileStoreException(ex);
-        }
+        return this.tileMatrixSet.getBoundingBox();
     }
 
     @Override
@@ -285,8 +274,8 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
                     @Override
                     public BoundingBox getBounds() throws TileStoreException
                     {
-                        final Coordinate<Double> upperLeft  = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(row,   column,   matrix, GeoPackageTiles.Origin);
-                        final Coordinate<Double> lowerRight = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(row+1, column+1, matrix, GeoPackageTiles.Origin);
+                        final Coordinate<Double> upperLeft  = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(row,   column,   this.getBounds(), matrix, GeoPackageTiles.Origin);
+                        final Coordinate<Double> lowerRight = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(row+1, column+1, this.getBounds(), matrix, GeoPackageTiles.Origin);
 
                         return new BoundingBox(lowerRight.getY(),
                                                upperLeft.getX(),
@@ -303,4 +292,5 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
     }
 
     private final Map<Integer, TileMatrix> tileMatricies;
+    private final TileMatrixSet tileMatrixSet;
 }

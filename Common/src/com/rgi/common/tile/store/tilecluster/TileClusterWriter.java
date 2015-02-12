@@ -151,6 +151,7 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
         }
 
         final Coordinate<Integer> clusterCoordinate = this.crsProfile.crsToTileCoordinate(coordinate,
+                                                                                          this.getBounds(),
                                                                                           this.tileScheme.dimensions(zoomLevel),
                                                                                           TileCluster.Origin);
         this.addTile(clusterCoordinate.getY(),

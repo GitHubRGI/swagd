@@ -57,20 +57,26 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; // TODO IS THIS RIGHT? Verify!
         //final double earthPolarCircumfrence = 2.0 * Math.PI * scaledEarthPolarRadius;
 
-        this.bounds = new BoundingBox(-Math.PI * scaledEarthPolarRadius,
-                                      -Math.PI * this.scaledEarthEquatorialRadius,
-                                       Math.PI * scaledEarthPolarRadius,
-                                       Math.PI * this.scaledEarthEquatorialRadius);
+        this.crsBounds = new BoundingBox(-Math.PI * scaledEarthPolarRadius,
+                                         -Math.PI * this.scaledEarthEquatorialRadius,
+                                          Math.PI * scaledEarthPolarRadius,
+                                          Math.PI * this.scaledEarthEquatorialRadius);
     }
 
     @Override
     public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate        coordinate,
+                                                   final BoundingBox          bounds,
                                                    final TileMatrixDimensions dimensions,
                                                    final TileOrigin           tileOrigin)
     {
         if(coordinate == null)
         {
             throw new IllegalArgumentException("Meter coordinate may not be null");
+        }
+
+        if(bounds == null)
+        {
+            throw new IllegalArgumentException("Bounds may not be null");
         }
 
         if(dimensions == null)
@@ -88,9 +94,9 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
         }
 
-        if(!Utility.contains(this.bounds, coordinate, tileOrigin))
+        if(!Utility.contains(this.crsBounds, coordinate, tileOrigin))
         {
-            throw new IllegalArgumentException("Coordinate is outside the bounds of this coordinate reference system");
+            throw new IllegalArgumentException("Coordinate is outside the crsBounds of this coordinate reference system");
         }
 
         throw new RuntimeException("Method not implemented");
@@ -99,9 +105,15 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     @Override
     public CrsCoordinate tileToCrsCoordinate(final int                  row,
                                              final int                  column,
+                                             final BoundingBox          bounds,
                                              final TileMatrixDimensions dimensions,
                                              final TileOrigin           tileOrigin)
     {
+        if(bounds == null)
+        {
+            throw new IllegalArgumentException("Bounds may not be null");
+        }
+
         if(dimensions == null)
         {
             throw new IllegalArgumentException("Tile matrix dimensions may not be null");
@@ -151,7 +163,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     @Override
     public BoundingBox getBounds()
     {
-        return this.bounds;
+        return this.crsBounds;
     }
 
     @Override
@@ -327,5 +339,5 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
 
     private final CoordinateReferenceSystem coordinateReferenceSystem;
 
-    private final BoundingBox bounds;
+    private final BoundingBox crsBounds;
 }
