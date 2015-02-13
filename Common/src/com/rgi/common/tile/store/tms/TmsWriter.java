@@ -56,8 +56,8 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
      *             Image format for used for output
      */
     public TmsWriter(final CrsProfile profile,
-                     final Path        location,
-                     final MimeType    imageOutputFormat)
+                     final Path       location,
+                     final MimeType   imageOutputFormat)
     {
         this(profile, location, imageOutputFormat, null);
     }
