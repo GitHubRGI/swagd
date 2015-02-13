@@ -27,9 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -37,7 +34,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.activation.MimeType;
@@ -185,7 +181,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         }
         catch(final IOException ex)
         {
-            // Do nothing and fall through to return an empty string
+            // Do nothing and fall through to return an empty stream
         }
 
         return Stream.empty();
@@ -323,64 +319,6 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                       upperRightCorner.getX());
     }
     
-    private Set<Coordinate<Integer>> getZoomTileCoordinates(int zoom) throws TileStoreException
-    {
-    	//
-    	final Path pathToZoom = tmsPath(this.location, zoom);
-    	final Range xRange = TmsReader.getTmsRange(pathToZoom.toFile());
-    	Set<Integer> xValues = IntStream.rangeClosed(xRange.minimum, xRange.maximum).boxed().collect(Collectors.toSet());
-    	Set<Coordinate<Integer>> coordinatesForZoom = new HashSet<Coordinate<Integer>>();
-    	xValues.stream().map(xValue -> 
-    	{
-    		
-    		try
-    		{
-    			final Path pathToX = tmsPath(this.location, xValue);
-    			final Range yRange = TmsReader.getTmsRange(pathToX.toFile());
-    			Set<Integer> yValues = IntStream.rangeClosed(yRange.minimum, yRange.maximum).boxed().collect(Collectors.toSet());
-    			yValues.stream().map(yValue ->
-    			{
-    				coordinatesForZoom.add(new Coordinate<Integer>(yValue, xValue));
-    				return null;
-    			});
-    		}
-    		catch(Exception xException)
-    		{
-    			xException.printStackTrace();
-    		}
-    		return null;
-    	}).collect(Collectors.toSet());
-    	return coordinatesForZoom;
-    }
-    
-    /**
-     * @return
-     */
-    public Map<Integer, Set<Coordinate<Integer>>> getAllTileCoordinates()
-    {
-    	Map<Integer, Set<Coordinate<Integer>>> resultSet = new HashMap<Integer, Set<Coordinate<Integer>>>();
-    	try
-    	{
-            Set<Integer> zooms = this.getZoomLevels();
-            zooms.stream().forEach(zValue -> 
-            {
-            	try
-            	{
-            		resultSet.put(zValue, this.getZoomTileCoordinates(zValue));
-            	}
-            	catch (Exception e)
-            	{
-            		e.printStackTrace();
-            	}
-            });
-    	}
-    	catch(Exception e)
-    	{
-    		e.printStackTrace();
-    	}
-    	return resultSet;
-    }
-
     /**
      * Counts the number of files of a certain type in an input folder.
      *
