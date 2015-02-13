@@ -237,7 +237,7 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void crsProfileUpperLeftCrsToTileCoordinate()
     {
-        final CrsCoordinate         coordinate = new CrsCoordinate(0.0, (SphericalMercatorCrsProfile.EarthEquatorialCircumfrence/2.0)-1.0,"epsg", 3857);
+        final CrsCoordinate         coordinate = new CrsCoordinate(0.0, (SphericalMercatorCrsProfile.EarthEquatorialCircumfrence/2.0)-1.0, "epsg", 3857);
         final TileMatrixDimensions  dimensions = new TileMatrixDimensions(2,3);
         final TileOrigin            tileOrigin = TileOrigin.UpperLeft;
 
