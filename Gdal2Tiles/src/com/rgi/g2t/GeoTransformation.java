@@ -1,5 +1,8 @@
 package com.rgi.g2t;
 
+import org.gdal.gdal.Dataset;
+
+import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.Coordinate;
 
@@ -74,8 +77,16 @@ public class GeoTransformation
 
     public Coordinate<Double> getBottomRight(final double rasterHeight, final double rasterWidth)
     {
-        return new Coordinate<>(this.affineTransform[0] + this.affineTransform[1] * rasterWidth,
-                                this.affineTransform[3] + this.affineTransform[5] * rasterHeight);
+        return new Coordinate<>(this.affineTransform[3] + this.affineTransform[5] * rasterHeight,
+                                this.affineTransform[0] + this.affineTransform[1] * rasterWidth);
+    }
+
+    public BoundingBox getBounds(final Dataset dataset)
+    {
+        return new BoundingBox(this.affineTransform[0],
+                               this.affineTransform[3] + this.affineTransform[5] * dataset.getRasterYSize(),
+                               this.affineTransform[3],
+                               this.affineTransform[0] + this.affineTransform[1] * dataset.getRasterXSize());
     }
 
     public static final GeoTransformation Identity = new GeoTransformation(new double[] {0.0, 1.0, 0.0, 0.0, 0.0, 1.0});

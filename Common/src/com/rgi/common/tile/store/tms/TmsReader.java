@@ -34,19 +34,25 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.imageio.ImageIO;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
+import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 
@@ -148,6 +154,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         }
 
         final Coordinate<Integer> tmsCoordiante = this.profile.crsToTileCoordinate(coordinate,
+                                                                                   this.profile.getBounds(),    // TMS uses absolute tiling, which covers the whole globe
                                                                                    this.tileScheme.dimensions(zoomLevel),
                                                                                    TmsTileStore.Origin);
 
@@ -168,9 +175,117 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     }
 
     @Override
+    public Stream<TileHandle> stream()
+    {
+        try
+        {
+            return Files.walk(TmsReader.this.location)
+                        .map(path -> this.getTileHandle(path))
+                        .filter(Objects::nonNull);
+        }
+        catch(final IOException ex)
+        {
+            // Do nothing and fall through to return an empty string
+        }
+
+        return Stream.empty();
+    }
+
+    @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
         return this.profile.getCoordinateReferenceSystem();
+    }
+
+    @Override
+    public String getImageType()
+    {
+        try
+        {
+            return Files.walk(TmsReader.this.location)
+                        .map(path -> { final File file = path.toFile();
+
+                                       final String absolutePath = file.getAbsolutePath();
+
+                                       if(TmsFilePattern.matcher(absolutePath).matches())
+                                       {
+                                           try
+                                           {
+                                               final MimeType mimeType = new MimeType(Files.probeContentType(path));
+
+                                               if(mimeType.getPrimaryType().toLowerCase().equals("image"))
+                                               {
+                                                  return mimeType.getSubType();
+                                              }
+                                           }
+                                           catch(final MimeTypeParseException | IOException ex)
+                                           {
+                                               // Do nothing. Fall through and return null
+                                           }
+                                       }
+                                       return null;
+                                     })
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .orElse(null);
+        }
+        catch(final IOException ex)
+        {
+            // Do nothing and fall through to return null
+        }
+
+        return null;
+    }
+
+    @Override
+    public Dimensions getImageDimensions()
+    {
+        try
+        {
+            return Files.walk(TmsReader.this.location)
+                        .map(path -> { final File file = path.toFile();
+
+                                       final String absolutePath = file.getAbsolutePath();
+
+                                       final Matcher tmsFileMatch = TmsFilePattern.matcher(absolutePath);
+
+                                       if(tmsFileMatch.matches())
+                                       {
+                                           try
+                                           {
+                                               final MimeType mimeType = new MimeType(Files.probeContentType(path));
+
+                                               if(mimeType.getPrimaryType().toLowerCase().equals("image"))
+                                               {
+                                                   final int zoomLevel = Integer.parseInt(tmsFileMatch.group(0));
+                                                   final int column    = Integer.parseInt(tmsFileMatch.group(1));
+                                                   final int row       = Integer.parseInt(tmsFileMatch.group(2));
+
+                                                   final BufferedImage image = TmsReader.this.getTile(row, column, zoomLevel);
+
+                                                   if(image != null)
+                                                   {
+                                                       return new Dimensions(image.getHeight(), image.getWidth());
+                                                   }
+                                              }
+                                           }
+                                           catch(final MimeTypeParseException | IOException | TileStoreException ex)
+                                           {
+                                               // Do nothing. Fall through and return null
+                                           }
+                                       }
+                                       return null;
+                                     })
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .orElse(null);
+        }
+        catch(final IOException ex)
+        {
+            // Do nothing and fall through to return null
+        }
+
+        return null;
     }
 
     private static class Range
@@ -187,7 +302,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
 
     private void calculateBounds() throws TileStoreException
     {
-        final int minimumZoom = TmsReader.getTmsRange(this.location.toFile()).minimum; // Get the minimum zoom level
+        final int minimumZoom = TmsReader.getTmsRange(this.location.toFile()).minimum;
 
         final Path pathToMinimumZoom = tmsPath(this.location, minimumZoom);
 
@@ -199,8 +314,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         final Coordinate<Integer> transformedMinTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.LowerLeft,  new Coordinate<>(yRange.minimum, xRange.minimum), dimensions);
         final Coordinate<Integer> transformedMaxTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.UpperRight, new Coordinate<>(yRange.maximum, xRange.maximum), dimensions);
 
-        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(transformedMinTileCoordinate.getY(), transformedMinTileCoordinate.getX(), dimensions, TileOrigin.LowerLeft);
-        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(transformedMaxTileCoordinate.getY(), transformedMaxTileCoordinate.getX(), dimensions, TileOrigin.UpperRight);
+        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(transformedMinTileCoordinate.getY(), transformedMinTileCoordinate.getX(), this.profile.getBounds(), dimensions, TileOrigin.LowerLeft);    // TMS uses absolute tiling, which covers the whole globe
+        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(transformedMaxTileCoordinate.getY(), transformedMaxTileCoordinate.getX(), this.profile.getBounds(), dimensions, TileOrigin.UpperRight);   // TMS uses absolute tiling, which covers the whole globe
 
         this.bounds = new BoundingBox(lowerLeftCorner.getY(),
                                       lowerLeftCorner.getX(),
@@ -329,6 +444,91 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                 .collect(Collectors.toSet());
     }
 
+    private TileHandle getTileHandle(final Path path)
+    {
+        final File file = path.toFile();
+
+        final String absolutePath = file.getAbsolutePath();
+
+        final Matcher tmsFileMatch = TmsFilePattern.matcher(absolutePath);
+
+        if(tmsFileMatch.matches())
+        {
+            try
+            {
+                final MimeType mimeType = new MimeType(Files.probeContentType(path));
+
+                if(mimeType.getPrimaryType().toLowerCase().equals("image"))
+                {
+                    final int zoomLevel = Integer.parseInt(tmsFileMatch.group(0));
+                    final int column    = Integer.parseInt(tmsFileMatch.group(1));
+                    final int row       = Integer.parseInt(tmsFileMatch.group(2));
+
+                    return new TileHandle()
+                           {
+                               private final boolean gotImage = false;
+                               private BufferedImage image;
+                               private final TileMatrixDimensions matrix = TmsReader.this.tileScheme.dimensions(zoomLevel);
+
+                               @Override
+                               public int getZoomLevel()
+                               {
+                                   return zoomLevel;
+                               }
+
+                               @Override
+                               public int getColumn()
+                               {
+                                   return column;
+                               }
+
+                               @Override
+                               public int getRow()
+                               {
+                                   return row;
+                               }
+
+                               @Override
+                               public TileMatrixDimensions getMatrix() throws TileStoreException
+                               {
+                                   return this.matrix;
+                               }
+
+                               @Override
+                               public BoundingBox getBounds() throws TileStoreException
+                               {
+                                   final Coordinate<Double> lowerLeft  = TmsReader.this.profile.tileToCrsCoordinate(row,   column,   TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
+                                   final Coordinate<Double> upperRight = TmsReader.this.profile.tileToCrsCoordinate(row+1, column+1, TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
+
+                                   return new BoundingBox(lowerLeft.getY(),
+                                                          lowerLeft.getX(),
+                                                          upperRight.getY(),
+                                                          upperRight.getX());
+                               }
+
+                               @Override
+                               public BufferedImage getImage() throws TileStoreException
+                               {
+                                   if(!this.gotImage)
+                                   {
+                                       this.image = TmsReader.this.getTile(row, column, zoomLevel);
+                                   }
+
+                                   return this.image;
+                               }
+                           };
+
+                }
+            }
+            catch(final MimeTypeParseException | IOException ex)
+            {
+                // Do nothing.  Fall through to return null.
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Gets the integer representation of the file of a certain type (lowest or
      * highest).
@@ -396,7 +596,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         try
         {
             final String mimeType = Files.probeContentType(file.toPath());
-            return mimeType != null && mimeType.startsWith("image/");
+            return mimeType != null && mimeType.toLowerCase().startsWith("image/");
         }
         catch(final IOException ex)
         {
@@ -413,4 +613,6 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     private BoundingBox  bounds     = null;
     private long         tileCount  = -1;
     private long         storeSize  = -1;
+
+    private static Pattern TmsFilePattern = Pattern.compile(".*([0-9]+)/([0-9]+)/([0-9]+)\\.[^/]*$");
 }

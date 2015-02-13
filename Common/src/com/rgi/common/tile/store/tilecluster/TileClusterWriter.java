@@ -54,7 +54,7 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
                              final String          setName,
                              final int             levels,
                              final int             breakPoint,
-                             final CrsProfile     crsProfile,
+                             final CrsProfile      crsProfile,
                              final MimeType        imageOutputFormat,
                              final ImageWriteParam imageWriteOptions)
     {
@@ -151,6 +151,7 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
         }
 
         final Coordinate<Integer> clusterCoordinate = this.crsProfile.crsToTileCoordinate(coordinate,
+                                                                                          this.getBounds(),
                                                                                           this.tileScheme.dimensions(zoomLevel),
                                                                                           TileCluster.Origin);
         this.addTile(clusterCoordinate.getY(),

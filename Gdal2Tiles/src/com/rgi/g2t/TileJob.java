@@ -131,17 +131,18 @@ public class TileJob implements Runnable
                                                                         outputDataset.getRasterXSize());
 
         // Image georeference points
-        final CrsCoordinate imageUpperLeft  = new CrsCoordinate(outputGeoTransform.getTopLeft(), this.crsProfile.getCoordinateReferenceSystem());
-        final CrsCoordinate imageLowerRight = new CrsCoordinate(outputGeoTransform.getBottomRight(outputDataset.getRasterYSize(),
-                                                                                                  outputDataset.getRasterXSize()),
-                                                                this.crsProfile.getCoordinateReferenceSystem());
+        //final CrsCoordinate imageUpperLeft  = new CrsCoordinate(outputGeoTransform.getTopLeft(), this.crsProfile.getCoordinateReferenceSystem());
+        //final CrsCoordinate imageLowerRight = new CrsCoordinate(outputGeoTransform.getBottomRight(outputDataset.getRasterYSize(),
+        //                                                                                          outputDataset.getRasterXSize()),
+        //                                                        this.crsProfile.getCoordinateReferenceSystem());
+
+        final BoundingBox imageCrsBounds = outputGeoTransform.getBounds(outputDataset);
 
         final int maxZoom = this.getMaxZoom(this.crsProfile.getBounds(), outputGeoTransform.getPixelDimensions());
 
         final int minZoom = this.getMinZoom(outputGeoTransform,
                                             outputDatasetRasterDimensions,
-                                            imageUpperLeft,
-                                            imageLowerRight);
+                                            imageCrsBounds);
 
         final BufferedImage source = GdalUtility.convert(outputDataset);
 
@@ -149,8 +150,8 @@ public class TileJob implements Runnable
         {
             final TileMatrixDimensions tileMatrixDimensions = this.tileScheme.dimensions(zoomLevel);
 
-            final Coordinate<Integer> upperLeftTileCoordinate  = this.crsProfile.crsToTileCoordinate(imageUpperLeft,  tileMatrixDimensions, this.tileScheme.getOrigin());
-            final Coordinate<Integer> lowerRightTileCoordinate = this.crsProfile.crsToTileCoordinate(imageLowerRight, tileMatrixDimensions, this.tileScheme.getOrigin());
+            final Coordinate<Integer> upperLeftTileCoordinate  = this.crsToTileCoordinate(imageCrsBounds.getTopLeft(),     this.crsProfile.getBounds(), tileMatrixDimensions); // TODO should I be using world bounds here?
+            final Coordinate<Integer> lowerRightTileCoordinate = this.crsToTileCoordinate(imageCrsBounds.getBottomRight(), this.crsProfile.getBounds(), tileMatrixDimensions); // TODO should I be using world bounds here?
 
             final int numTilesWidth  = Math.abs(lowerRightTileCoordinate.getX() - upperLeftTileCoordinate.getX()) + 1;
             final int numTilesHeight = Math.abs(lowerRightTileCoordinate.getY() - upperLeftTileCoordinate.getY()) + 1;
@@ -159,7 +160,7 @@ public class TileJob implements Runnable
             final double ry = (this.crsProfile.getBounds().getHeight() / tileMatrixDimensions.getHeight()) / TILESIZE;
             final double rx = (this.crsProfile.getBounds().getWidth()  / tileMatrixDimensions.getWidth())  / TILESIZE;
 
-            final Dimensions tileBounds = this.crsProfile.getTileDimensions(tileMatrixDimensions);
+            final Dimensions tileBounds = new Dimensions(-1, -1);// TOODOOOOOOOOOOOOO this.crsProfile.getTileDimensions(tileMatrixDimensions);
 
             for(int x = 0; x < numTilesWidth; ++x)
             {
@@ -234,6 +235,7 @@ public class TileJob implements Runnable
                                 {
                                     final CrsCoordinate crsCoordinate = this.crsProfile.tileToCrsCoordinate(absTileY,
                                                                                                             absTileX,
+                                                                                                            imageCrsBounds,
                                                                                                             this.tileScheme.dimensions(zoomLevel),
                                                                                                             this.tileScheme.getOrigin());
 
@@ -274,10 +276,7 @@ public class TileJob implements Runnable
 
                     try
                     {
-                        this.tileStoreWriter.addTile(this.crsProfile.tileToCrsCoordinate(tileY,
-                                                                                         tileX,
-                                                                                         this.tileScheme.dimensions(zoomLevel),
-                                                                                         this.tileScheme.getOrigin()),
+                        this.tileStoreWriter.addTile(this.tileToCrsCoordinate(tileY, tileX, imageCrsBounds, zoomLevel),
                                                      zoomLevel,
                                                      tileImage);
                     }
@@ -430,8 +429,7 @@ public class TileJob implements Runnable
 
     private int getMinZoom(final GeoTransformation geoTransformation,
                            final Dimensions        rasterDimensions,
-                           final CrsCoordinate     imageUpperLeft,
-                           final CrsCoordinate     imageLowerRight)
+                           final BoundingBox       imageCrsBounds)
     {
         final BoundingBox worldBounds = this.crsProfile.getBounds();
 
@@ -461,8 +459,8 @@ public class TileJob implements Runnable
         {
             final TileMatrixDimensions tileMatrixDimensions = this.tileScheme.dimensions(minZoom);
 
-            final Coordinate<Integer> minZoomUpperLeftTileCoordinate  = this.crsProfile.crsToTileCoordinate(imageUpperLeft,  tileMatrixDimensions, this.tileScheme.getOrigin());
-            final Coordinate<Integer> minZoomLowerRightTileCoordinate = this.crsProfile.crsToTileCoordinate(imageLowerRight, tileMatrixDimensions, this.tileScheme.getOrigin());
+            final Coordinate<Integer> minZoomUpperLeftTileCoordinate  = this.crsToTileCoordinate(imageCrsBounds.getTopLeft(),     this.crsProfile.getBounds(), tileMatrixDimensions); // TODO should I be using world bounds here?
+            final Coordinate<Integer> minZoomLowerRightTileCoordinate = this.crsToTileCoordinate(imageCrsBounds.getBottomRight(), this.crsProfile.getBounds(), tileMatrixDimensions); // TODO should I be using world bounds here?
 
             // Calculate the number of tiles these coordinates span.
             // We take the absolute value so we don't have to care about
@@ -529,5 +527,22 @@ public class TileJob implements Runnable
         final double log2 = Math.log(2);
 
         return Math.log10(value) / log2;
+    }
+
+    private Coordinate<Integer> crsToTileCoordinate(final Coordinate<Double> coordinate, final BoundingBox bounds, final TileMatrixDimensions matrix)
+    {
+        return this.crsProfile.crsToTileCoordinate(new CrsCoordinate(coordinate, this.crsProfile.getCoordinateReferenceSystem()),
+                                                   bounds,
+                                                   matrix,
+                                                   this.tileScheme.getOrigin());
+    }
+
+    private CrsCoordinate tileToCrsCoordinate(final int tileY, final int tileX, final BoundingBox imageCrsBounds, final int zoomLevel)
+    {
+        return this.crsProfile.tileToCrsCoordinate(tileY,
+                                                   tileX,
+                                                   imageCrsBounds,  // TODO should we be using image bounds, or global ?
+                                                   this.tileScheme.dimensions(zoomLevel),
+                                                   this.tileScheme.getOrigin());
     }
 }

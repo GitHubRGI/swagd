@@ -19,7 +19,6 @@
 package com.rgi.common.coordinate.referencesystem.profile;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
@@ -43,13 +42,16 @@ public interface CrsProfile
      *
      * @param coordinate
      *             Coordinate in the same unit as this tile profile
+     * @param bounds
+     *             The area, in CRS units, that represents the valid area for tiling numbering
      * @param dimensions
      *             Height and width of the tile matrix
-     * @param tileOrigin 
+     * @param tileOrigin
      *             Specifies where tile (0, 0) is in the tile matrix
      * @return Returns the tile that the coordinate corresponds to
      */
     public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate        coordinate,
+                                                   final BoundingBox          bounds,
                                                    final TileMatrixDimensions dimensions,
                                                    final TileOrigin           tileOrigin);
 
@@ -60,6 +62,8 @@ public interface CrsProfile
      *             Vertical portion of the tile's coordinate
      * @param column
      *             Horizontal portion of the tile's coordinate
+     * @param bounds
+     *             The area, in CRS units, that represents the valid area for tiling numbering
      * @param dimensions
      *             Height and width of the tile matrix
      * @param tileOrigin
@@ -68,17 +72,9 @@ public interface CrsProfile
      */
     public CrsCoordinate tileToCrsCoordinate(final int                  row,
                                              final int                  column,
+                                             final BoundingBox          bounds,
                                              final TileMatrixDimensions dimensions,
                                              final TileOrigin           tileOrigin);
-
-    /**
-     * Calculates the dimensions of a tile in CRS units
-     *
-     * @param dimensions
-     *             Height and width of the tile matrix
-     * @return Returns the dimensions of a single tile in CRS units
-     */
-    public Dimensions getTileDimensions(final TileMatrixDimensions dimensions);
 
     /**
      * @return Returns the coordinate reference system implemented by this CrsProfile

@@ -74,6 +74,11 @@ abstract class TmsTileStore
         return newPath;
     }
 
+    public String getName()
+    {
+        return this.location.toFile().getName();
+    }
+
     protected final CrsProfile profile;
     protected final Path       location;
     protected final TileScheme tileScheme;

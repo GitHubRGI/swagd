@@ -27,7 +27,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import utility.DatabaseUtility;
 
@@ -37,6 +39,7 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.Utility;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.verification.FailedRequirement;
@@ -535,6 +538,45 @@ public class GeoPackageTiles
 //                        tile.getColumn(),
 //                        imageData);
 //    }
+
+    /**
+     * Gets tile coordinates for every tile in a tile set. A tile set need not
+     * have an entry for every possible position in its respective tile
+     * matrices.
+     *
+     * @param tileSet
+     *             Handle to the tile set that the requested tiles should belong
+     * @return Returns a {@link Stream} of {@link RelativeTileCoordinate}s representing every tile that the specific tile set contains.
+     * @throws SQLException
+     */
+    public Stream<RelativeTileCoordinate> getTiles(final TileSet tileSet) throws SQLException
+    {
+        if(tileSet == null)
+        {
+            throw new IllegalArgumentException("Tile set cannot be null");
+        }
+
+        final String tileQuery = String.format("SELECT %s, %s, %s FROM %s;",
+                                               "zoom_level",
+                                               "tile_column",
+                                               "tile_row",
+                                               tileSet.getTableName());
+
+        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
+        {
+            return ResultSetStream.getStream(preparedStatement.executeQuery(),
+                                             resultSet -> { try
+                                                            {
+                                                                return new RelativeTileCoordinate(resultSet.getInt(3), resultSet.getInt(2), resultSet.getInt(1));
+                                                            }
+                                                            catch(final Exception ex)
+                                                            {
+                                                                return null;
+                                                            }
+                                                          })
+                                  .filter(Objects::nonNull);
+        }
+    }
 
     /**
      * Gets a tile
