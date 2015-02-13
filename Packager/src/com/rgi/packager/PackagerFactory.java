@@ -49,11 +49,11 @@ public class PackagerFactory implements TaskFactory {
 
   @Override
   public boolean selectFilesOnly() {
-    return true;
+    return false;
   }
   
   @Override
   public boolean selectFoldersOnly() {
-    return false;
+    return true;
   }
 }
