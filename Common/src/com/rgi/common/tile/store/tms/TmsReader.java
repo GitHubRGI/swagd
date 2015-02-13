@@ -552,5 +552,5 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     private long         tileCount  = -1;
     private long         storeSize  = -1;
 
-    private static Pattern TmsFilePattern = Pattern.compile(String.format(".*([0-9]+)%1$c([0-9]+)%1$c([0-9]+)\\.[^%1$c]*$", File.separatorChar));
+    private static Pattern TmsFilePattern = Pattern.compile(".*([0-9]+)/([0-9]+)/([0-9]+)\\.[^/]*$");
 }
