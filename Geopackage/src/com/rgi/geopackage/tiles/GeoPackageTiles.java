@@ -74,7 +74,7 @@ public class GeoPackageTiles
      * Creates a user defined tiles table, and adds a corresponding entry to the content table
      *
      * @param tableName
-     *             The name of the tiles, feature, or extension specific content table
+     *             The name of the tiles table. The table name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers, and may not begin with the prefix "gpkg_"
      * @param identifier
      *             A human-readable identifier (e.g. short name) for the tableName content
      * @param description
@@ -99,11 +99,14 @@ public class GeoPackageTiles
             throw new IllegalArgumentException("Tile set name may not be null");
         }
 
-        // TODO check that a table with the same name doesn't exist
-
         if(!tableName.matches("^[_a-zA-Z]\\w*"))
         {
-            throw new IllegalArgumentException("The tile set's name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
+            throw new IllegalArgumentException("The tile set's table name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
+        }
+
+        if(DatabaseUtility.tableOrViewExists(this.databaseConnection, tableName))
+        {
+            throw new IllegalArgumentException("A table already exists with this tile set's table name");
         }
 
         if(tableName.startsWith("gpkg_"))

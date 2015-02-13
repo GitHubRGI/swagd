@@ -19,7 +19,10 @@
 package store;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -32,59 +35,88 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
-import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.ImageUtility;
 import com.rgi.common.util.MimeTypeUtility;
 import com.rgi.geopackage.GeoPackage;
-import com.rgi.geopackage.tiles.GeoPackageTiles;
+import com.rgi.geopackage.GeoPackage.OpenMode;
+import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.RelativeTileCoordinate;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileSet;
+import com.rgi.geopackage.verification.ConformanceException;
 
-public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWriter
+public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
 {
     /**
-     * Constructor
-     *
-     * @param geoPackage
-     *             Tile container
-     * @param tileSet
-     *             Specific set that tiles will associated with
-     * @param imageOutputFormat
-     *             Image format for used for output
-     * @throws SQLException
-     */
-    public GeoPackageWriter(final GeoPackage geoPackage,
-                            final TileSet    tileSet,
-                            final MimeType   imageOutputFormat) throws SQLException
-    {
-        this(geoPackage, tileSet, imageOutputFormat, null);
-    }
-
-    /**
-     * Constructor
-     *
-     * @param geoPackage
-     *             Tile container
-     * @param tileSet
-     *             Specific set that tiles will associated with
+     * @param geoPackageFile
+     *             Handle to a new or existing GeoPackage file
+     * @param tileSetTableName
+     *             Name for the new tile set's table in the GeoPackage database
+     * @param tileSetIdentifier
+     *             A human-readable identifier (e.g. short name) for the tile set
+     * @param tileSetDescription
+     *             A human-readable description of the tile set
+     * @param boundingBox
+     *             Minimum bounds of the tile set, in spatial reference system units
+     * @param coordinateReferenceSystem
+     *             Coordinate reference system of the tile set
+     * @param crsName
+     *             Name of the coordinate reference system
+     * @param crsWktDefinition
+     *             Well-known Text (WKT) representation of the coordinate reference system
+     * @param crsDescription
+     *             Human readable description of the coordinate reference system
+     * @param tileScheme
+     *             Contains the mechanism to calculate the relationship between the tile matrix dimensions at valid zoom levels
      * @param imageOutputFormat
      *             Image format for used for output
      * @param imageWriteOptions
      *             Controls details of the image writing process.  If null, a default ImageWriteParam used instead
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
      * @throws SQLException
+     * @throws ConformanceException
      */
-    public GeoPackageWriter(final GeoPackage      geoPackage,
-                            final TileSet         tileSet,
-                            final MimeType        imageOutputFormat,
-                            final ImageWriteParam imageWriteOptions) throws SQLException
+    public GeoPackageWriter(final File                      geoPackageFile,
+                            final String                    tileSetTableName,
+                            final String                    tileSetIdentifier,
+                            final String                    tileSetDescription,
+                            final BoundingBox               tileSetBounds,
+                            final CoordinateReferenceSystem coordinateReferenceSystem,
+                            final String                    crsName,
+                            final String                    crsWktDefinition,
+                            final String                    crsDescription,
+                            final TileScheme                tileScheme,
+                            final MimeType                  imageOutputFormat,
+                            final ImageWriteParam           imageWriteOptions) throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-        super(geoPackage, tileSet);
+        this.geoPackage = new GeoPackage(geoPackageFile, OpenMode.OpenOrCreate);
+
+        final SpatialReferenceSystem spatialReferenceSystem = this.geoPackage.core()
+                                                                             .addSpatialReferenceSystem(crsName,
+                                                                                                        coordinateReferenceSystem.getIdentifier(),
+                                                                                                        coordinateReferenceSystem.getAuthority(),
+                                                                                                        coordinateReferenceSystem.getIdentifier(),
+                                                                                                        crsWktDefinition,
+                                                                                                        crsDescription);
+        this.tileSet = this.geoPackage.tiles()
+                                      .addTileSet(tileSetTableName,
+                                                  tileSetIdentifier,
+                                                  tileSetDescription,
+                                                  tileSetBounds,
+                                                  spatialReferenceSystem);
+
+        this.crsProfile = CrsProfileFactory.create(spatialReferenceSystem.getOrganization(),
+                                                   spatialReferenceSystem.getOrganizationSrsId());
 
         if(imageOutputFormat == null)
         {
@@ -113,13 +145,22 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
         this.imageWriteOptions = imageWriteOptions != null ? imageWriteOptions
                                                            : this.imageWriter.getDefaultWriteParam();
 
-        this.tileScheme = new ZoomTimesTwo(0, 0, 1, 1, GeoPackageTiles.Origin);   // TODO fix me
+        this.tileScheme = tileScheme;
 
-        this.tileMatricies = geoPackage.tiles()
-                                       .getTileMatrices(tileSet)
+        // TODO verify the origin is correct
+        //new ZoomTimesTwo(0, 0, 1, 1, GeoPackageTiles.Origin);   // TODO fix me
+
+        this.tileMatricies = this.geoPackage.tiles()
+                                       .getTileMatrices(this.tileSet)
                                        .stream()
                                        .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
                                                                  tileMatrix -> tileMatrix));
+    }
+
+    @Override
+    public void close() throws Exception
+    {
+        this.geoPackage.close();
     }
 
     @Override
@@ -219,6 +260,9 @@ public class GeoPackageWriter extends GeoPackageTileStore implements TileStoreWr
                                              tileSetBounds.getHeight() / tileMatrixDimensions.getHeight() / tilePixelHeight);
     }
 
+    private final GeoPackage               geoPackage;
+    private final TileSet                  tileSet;
+    private final CrsProfile               crsProfile;
     private final Map<Integer, TileMatrix> tileMatricies;
     private final ImageWriter              imageWriter;
     private final ImageWriteParam          imageWriteOptions;

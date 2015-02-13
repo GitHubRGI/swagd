@@ -35,12 +35,15 @@ import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage;
+import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
 import com.rgi.geopackage.tiles.RelativeTileCoordinate;
 import com.rgi.geopackage.tiles.Tile;
@@ -48,11 +51,29 @@ import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileMatrixSet;
 import com.rgi.geopackage.tiles.TileSet;
 
-public class GeoPackageReader extends GeoPackageTileStore implements TileStoreReader
+public class GeoPackageReader implements TileStoreReader
 {
     public GeoPackageReader(final GeoPackage geoPackage, final TileSet tileSet) throws SQLException
     {
-        super(geoPackage, tileSet);
+        if(geoPackage == null)
+        {
+            throw new IllegalArgumentException("GeoPackage may not be null");
+        }
+
+        if(tileSet == null)
+        {
+            throw new IllegalArgumentException("Tile set may not be null or empty");
+        }
+
+        final SpatialReferenceSystem srs = geoPackage.core().getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
+
+        this.geoPackage  = geoPackage;
+        this.tileSet     = tileSet;
+        if(srs == null)
+        {
+            throw new IllegalArgumentException("SRS may not be null or empty");
+        }
+        this.crsProfile = CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId());
 
         this.tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
 
@@ -223,6 +244,14 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
         }
     }
 
+    @Override
+    public String getName()
+    {
+        return String.format("%s-%s",
+                             this.geoPackage.getFile().getName(),
+                             this.tileSet.getIdentifier());
+    }
+
     private static BufferedImage getImage(final Tile tile) throws TileStoreException
     {
         if(tile == null)
@@ -290,6 +319,10 @@ public class GeoPackageReader extends GeoPackageTileStore implements TileStoreRe
                     }
                };
     }
+
+    protected final GeoPackage geoPackage;
+    protected final TileSet    tileSet;
+    protected final CrsProfile crsProfile;
 
     private final Map<Integer, TileMatrix> tileMatricies;
     private final TileMatrixSet tileMatrixSet;
