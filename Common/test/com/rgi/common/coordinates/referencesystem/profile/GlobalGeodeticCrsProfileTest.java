@@ -151,16 +151,16 @@ public class GlobalGeodeticCrsProfileTest
     public void globalGeodeticCrsProfileLowerLeftCrsToTileCoordinate()
     {
         final CrsCoordinate        coordinate = new CrsCoordinate(50.0,
-                                                            150.0,
-                                                            "epsg",
-                                                            4326);//upper right tile
+                                                                  150.0,
+                                                                  "epsg",
+                                                                  4326);//upper right tile
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(3, 5);
         final TileOrigin           tileOrigin = TileOrigin.LowerLeft;
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 4 y: 2",
                                  newCoordinate.getX(),
@@ -186,7 +186,7 @@ public class GlobalGeodeticCrsProfileTest
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(7, 9);
         final TileOrigin           tileOrigin = TileOrigin.LowerLeft;
 
-        globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         fail("Expected Global Geodetic Crs Profile to throw an IllegalArgumentException since the crsCoordinate lies out of the bounds.");
     }
@@ -208,7 +208,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException based on the fact that the crsCoordinate is beyond the bounds.");
     }
@@ -230,7 +230,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 0",
                                  newCoordinate.getX(),
@@ -256,7 +256,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException based on the fact that the crsCoordinate is beyond the bounds.");
     }
@@ -279,7 +279,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 4 y: 5",
                                  newCoordinate.getX(),
@@ -306,7 +306,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 2 y: 3",
                                  newCoordinate.getX(),
@@ -332,7 +332,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 7 y: 5",
                                  newCoordinate.getX(),
@@ -360,7 +360,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 8 y: 1",
                                  newCoordinate.getX(),
@@ -385,7 +385,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException based on the fact that the crsCoordinate is beyond the bounds.");
     }
@@ -407,7 +407,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 0",
                                  newCoordinate.getX(),
@@ -433,7 +433,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException based on the fact that the crsCoordinate is beyond the bounds.");
     }
@@ -456,7 +456,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException based on the fact that the crsCoordinate is beyond the bounds.");
     }
@@ -479,7 +479,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 7 y: 5",
                                  newCoordinate.getX(),
@@ -506,7 +506,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 7 y: 5",
                                  newCoordinate.getX(),
@@ -532,7 +532,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 7 y: 5",
                                  newCoordinate.getX(),
@@ -557,7 +557,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 1 y: 6",
                                  newCoordinate.getX(),
@@ -582,7 +582,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 0",
                                  newCoordinate.getX(),
@@ -608,7 +608,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException based on the fact that the crsCoordinate is beyond the bounds.");
     }
@@ -631,7 +631,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException based on the fact that the crsCoordinate is beyond the bounds.");
     }
@@ -654,7 +654,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException based on the fact that the crsCoordinate is beyond the bounds.");
     }
@@ -677,7 +677,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 8 y: 2",
                                  newCoordinate.getX(),
@@ -704,7 +704,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 1 y: 5",
                                  newCoordinate.getX(),
@@ -730,7 +730,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 7 y: 5",
                                  newCoordinate.getX(),
@@ -755,7 +755,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 1 y: 0",
                                  newCoordinate.getX(),
@@ -781,7 +781,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException based on the fact that the crsCoordinate is beyond the bounds.");
     }
@@ -804,7 +804,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException based on the fact that the crsCoordinate is beyond the bounds.");
     }
@@ -825,7 +825,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException based on the fact that the crsCoordinate is beyond the bounds.");
     }
@@ -848,7 +848,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 0",
                                  newCoordinate.getX(),
@@ -874,7 +874,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 1 y: 2",
                                  newCoordinate.getX(),
@@ -901,7 +901,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 3 y: 4",
                                  newCoordinate.getX(),
@@ -927,7 +927,7 @@ public class GlobalGeodeticCrsProfileTest
 
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
-        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, dimensions, tileOrigin);
+        final Coordinate<Integer> newCoordinate = globalCrs.crsToTileCoordinate(coordinate, globalCrs.getBounds(), dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 4",
                                  newCoordinate.getX(),
@@ -947,8 +947,8 @@ public class GlobalGeodeticCrsProfileTest
         final TileOrigin origin = TileOrigin.UpperLeft;
         final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(3,7);
 
-        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
-        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), globalCrs.getBounds(), dimensions, origin);
+        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, globalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
                                     + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
@@ -972,8 +972,8 @@ public class GlobalGeodeticCrsProfileTest
         final TileOrigin origin = TileOrigin.UpperRight;
         final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(15,9);
 
-        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
-        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), globalCrs.getBounds(), dimensions, origin);
+        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, globalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
                                     + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
@@ -998,8 +998,8 @@ public class GlobalGeodeticCrsProfileTest
         final TileOrigin origin = TileOrigin.LowerLeft;
         final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(24,67);
 
-        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
-        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), globalCrs.getBounds(), dimensions, origin);
+        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, globalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
                                     + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
@@ -1027,8 +1027,8 @@ public class GlobalGeodeticCrsProfileTest
         final TileOrigin origin = TileOrigin.LowerRight;
         final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(98,32);
 
-        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
-        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), globalCrs.getBounds(), dimensions, origin);
+        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, globalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
                                     + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
@@ -1055,8 +1055,8 @@ public class GlobalGeodeticCrsProfileTest
         final TileOrigin origin = TileOrigin.UpperRight;
         final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(0,0);
 
-        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
-        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), globalCrs.getBounds(), dimensions, origin);
+        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, globalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
                                     + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
@@ -1082,8 +1082,8 @@ public class GlobalGeodeticCrsProfileTest
         final TileOrigin origin = TileOrigin.UpperRight;
         final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(102,72);
 
-        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
-        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), globalCrs.getBounds(), dimensions, origin);
+        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, globalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
                                     + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
@@ -1109,8 +1109,8 @@ public class GlobalGeodeticCrsProfileTest
         final TileOrigin origin = TileOrigin.UpperRight;
         final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(5,5);
 
-        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
-        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), globalCrs.getBounds(), dimensions, origin);
+        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, globalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
                                     + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
@@ -1136,8 +1136,8 @@ public class GlobalGeodeticCrsProfileTest
         final TileOrigin origin = TileOrigin.UpperRight;
         final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(6,5);
 
-        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
-        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), globalCrs.getBounds(), dimensions, origin);
+        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, globalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
                                     + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
@@ -1163,8 +1163,8 @@ public class GlobalGeodeticCrsProfileTest
         final TileOrigin origin = TileOrigin.UpperRight;
         final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(5,6);
 
-        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), dimensions, origin);
-        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = globalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), globalCrs.getBounds(), dimensions, origin);
+        final Coordinate<Integer> returnedTileCoordinate = globalCrs.crsToTileCoordinate(returnedCrsCoordiante, globalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
                                     + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
