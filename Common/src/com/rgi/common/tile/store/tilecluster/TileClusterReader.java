@@ -31,6 +31,7 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
@@ -170,6 +171,13 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
     {
         // TODO
         throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public TileScheme getTimeScheme()
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     private static final int MagicNumberByteSize = 8; // size of long

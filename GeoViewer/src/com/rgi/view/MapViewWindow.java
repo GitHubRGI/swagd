@@ -134,7 +134,6 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         }
     }
 
-
     private TileStoreReader pickTileStore(final File location)
     {
         this.cleanUpResources();
@@ -148,16 +147,20 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         {
             try
             {
-                final GeoPackage gpkg = new GeoPackage(location, OpenMode.Open);
-
-                this.resource = gpkg;
-
-                final Collection<TileSet> tileSets = gpkg.tiles().getTileSets();
-
-                if(tileSets.size() > 0)
+                try(final GeoPackage gpkg = new GeoPackage(location, OpenMode.Open))
                 {
-                    final TileSet set = tileSets.iterator().next(); // TODO this just picks the first one
-                    return new GeoPackageReader(gpkg, set);
+                    final Collection<TileSet> tileSets = gpkg.tiles().getTileSets();
+
+                    if(tileSets.size() > 0)
+                    {
+                        final String tableName = tileSets.iterator().next().getTableName(); // TODO this just picks the first one
+
+                        final GeoPackageReader reader = new GeoPackageReader(location, tableName);
+
+                        this.resource = reader;
+
+                        return reader;
+                    }
                 }
             }
             catch(final Exception e)

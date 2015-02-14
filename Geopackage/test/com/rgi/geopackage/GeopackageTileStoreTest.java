@@ -46,6 +46,8 @@ import store.GeoPackageWriter;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage.OpenMode;
@@ -77,12 +79,10 @@ public class GeopackageTileStoreTest
     @Test(expected = IllegalArgumentException.class)
     public void geopackageReaderIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-        File testFile = this.getRandomFile(9);
+        final File testFile = this.getRandomFile(9);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackageReader reader = new GeoPackageReader(testFile, null))
         {
-            @SuppressWarnings("unused")
-            GeoPackageReader reader = new GeoPackageReader(gpkg, null);
             fail("Expected GeoPackage Reader to throw an IllegalArguementException when passing a null value for tileSet");
         }
         finally
@@ -107,16 +107,13 @@ public class GeopackageTileStoreTest
      * @throws SQLException
      * @throws ConformanceException
      */
-    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void geopackageReaderIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-        File testFile = this.getRandomFile(9);
+        final File testFile = this.getRandomFile(9);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackageReader reader = new GeoPackageReader(null, "tablename"))
         {
-            TileSet tileSet = gpkg.tiles().addTileSet("tablename", "identifier", "description", new BoundingBox(0.0,0.0,10.0,10.0), gpkg.core().getSpatialReferenceSystem(4326));
-            new GeoPackageReader(null, tileSet);
             fail("Expected GeoPackage Reader to throw an IllegalArguementException when passing a null value for GeoPackage");
         }
         finally
@@ -145,15 +142,21 @@ public class GeopackageTileStoreTest
     @Test
     public void geopackageReaderGetBounds() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException, TileStoreException
     {
-        File testFile = this.getRandomFile(8);
+        final File testFile = this.getRandomFile(8);
+
+        final String tableName = "tablename";
+
+        final BoundingBox bBoxGiven  = new BoundingBox(0.0,0.0,180.0,180.0);
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            BoundingBox      bBoxGiven  = new BoundingBox(0.0,0.0,180.0,180.0);
-            TileSet          tileSet    = gpkg.tiles().addTileSet("TableName", "identifier", "description", bBoxGiven, gpkg.core().getSpatialReferenceSystem(4326));
-            GeoPackageReader gpkgReader = new GeoPackageReader(gpkg, tileSet);
+            gpkg.tiles().addTileSet(tableName, "identifier", "description", bBoxGiven, gpkg.core().getSpatialReferenceSystem(4326));
 
-            BoundingBox bBoxReturned = gpkgReader.getBounds();
-            Assert.assertTrue("The bounding box returned from GeoPackageReader was not the same that was given.", bBoxGiven.equals(bBoxReturned));
+            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+            {
+                final BoundingBox bBoxReturned = gpkgReader.getBounds();
+                Assert.assertTrue("The bounding box returned from GeoPackageReader was not the same that was given.", bBoxGiven.equals(bBoxReturned));
+            }
         }
         finally
         {
@@ -180,31 +183,37 @@ public class GeopackageTileStoreTest
     @Test
     public void geopackageReaderCountTiles() throws ClassNotFoundException, SQLException, ConformanceException, TileStoreException, IOException
     {
-        File testFile = this.getRandomFile(8);
+        final File testFile = this.getRandomFile(8);
+
+        final String tableName = "tablename";
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            BoundingBox      bBox  = new BoundingBox(0.0,0.0,180.0,180.0);
-            TileSet          tileSet    = gpkg.tiles().addTileSet("TableName", "identifier", "description", bBox, gpkg.core().getSpatialReferenceSystem(4326));
+            final BoundingBox bBox    = new BoundingBox(0.0,0.0,180.0,180.0);
+            final TileSet     tileSet = gpkg.tiles().addTileSet(tableName, "identifier", "description", bBox, gpkg.core().getSpatialReferenceSystem(4326));
 
-            int zoomLevel = 2;
-            int matrixWidth = 3;
-            int matrixHeight = 3;
-            int tileWidth = 256;
-            int tileHeight = 256;
-            double pixelXSize = bBox.getWidth()/matrixWidth/tileWidth;
-            double pixelYSize = bBox.getHeight()/matrixHeight/tileHeight;
+            final int zoomLevel = 2;
+            final int matrixWidth = 3;
+            final int matrixHeight = 3;
+            final int tileWidth = 256;
+            final int tileHeight = 256;
+            final double pixelXSize = bBox.getWidth()/matrixWidth/tileWidth;
+            final double pixelYSize = bBox.getHeight()/matrixHeight/tileHeight;
 
-            TileMatrix             tileMatrix = gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
-            RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
+            final TileMatrix             tileMatrix = gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
+            final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
             //add tiles
             gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
             gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), new byte[]{0,1,2,3});
-            GeoPackageReader      gpkgReader    = new GeoPackageReader(gpkg, tileSet);
-            long                  numberOfTiles = gpkgReader.countTiles();
 
-            Assert.assertTrue(String.format("Expected the GeoPackage Reader countTiles to return a value of 2 but instead returned %d",
-                                            numberOfTiles),
-                             numberOfTiles == 2);
+            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+            {
+                final long numberOfTiles = gpkgReader.countTiles();
+
+                Assert.assertTrue(String.format("Expected the GeoPackage Reader countTiles to return a value of 2 but instead returned %d",
+                                                numberOfTiles),
+                                 numberOfTiles == 2);
+            }
         }
         finally
         {
@@ -232,20 +241,26 @@ public class GeopackageTileStoreTest
     @Test
     public void getByteSize() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, TileStoreException
     {
-        File testFile = this.getRandomFile(8);
+        final File testFile = this.getRandomFile(8);
+
+        final String tableName = "tablename";
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            BoundingBox      bBoxGiven  = new BoundingBox(0.0,0.0,180.0,180.0);
-            TileSet          tileSet    = gpkg.tiles().addTileSet("TableName", "identifier", "description", bBoxGiven, gpkg.core().getSpatialReferenceSystem(4326));
-            GeoPackageReader gpkgReader = new GeoPackageReader(gpkg, tileSet);
+            final BoundingBox bBoxGiven = new BoundingBox(0.0,0.0,180.0,180.0);
 
-            long byteSizeReturned = gpkgReader.getByteSize();
-            long byteSizeExpected = testFile.getTotalSpace();
+            gpkg.tiles().addTileSet(tableName, "identifier", "description", bBoxGiven, gpkg.core().getSpatialReferenceSystem(4326));
 
-            Assert.assertTrue(String.format("The GeoPackage Reader did not return the expected value. \nExpected: %d Actual: %d",
-                                            byteSizeReturned,
-                                            byteSizeExpected),
-                              byteSizeReturned ==  byteSizeExpected);
+            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+            {
+                final long byteSizeReturned = gpkgReader.getByteSize();
+                final long byteSizeExpected = testFile.getTotalSpace();
+
+                Assert.assertTrue(String.format("The GeoPackage Reader did not return the expected value. \nExpected: %d Actual: %d",
+                                                byteSizeReturned,
+                                                byteSizeExpected),
+                                  byteSizeReturned ==  byteSizeExpected);
+            }
         }
         finally
         {
@@ -272,34 +287,38 @@ public class GeopackageTileStoreTest
     @Test
     public void getTile() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
     {
+        final File testFile = this.getRandomFile(8);
 
-        File testFile = this.getRandomFile(8);
+        final String tableName = "tablename";
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            BoundingBox      bBox  = new BoundingBox(0.0, 0.0, 180.0, 180.0);
-            TileSet          tileSet    = gpkg.tiles().addTileSet("TableName", "identifier", "description", bBox, gpkg.core().getSpatialReferenceSystem(4326));
+            final BoundingBox bBox    = new BoundingBox(0.0, 0.0, 180.0, 180.0);
+            final TileSet     tileSet = gpkg.tiles().addTileSet(tableName, "identifier", "description", bBox, gpkg.core().getSpatialReferenceSystem(4326));
 
-            int zoomLevel = 2;
-            int matrixWidth = 3;
-            int matrixHeight = 3;
-            int tileWidth = 256;
-            int tileHeight = 256;
-            double pixelXSize = bBox.getWidth()/matrixWidth/tileWidth;
-            double pixelYSize = bBox.getHeight()/matrixHeight/tileHeight;
+            final int zoomLevel = 2;
+            final int matrixWidth = 3;
+            final int matrixHeight = 3;
+            final int tileWidth = 256;
+            final int tileHeight = 256;
+            final double pixelXSize = bBox.getWidth()/matrixWidth/tileWidth;
+            final double pixelYSize = bBox.getHeight()/matrixHeight/tileHeight;
 
-            TileMatrix             tileMatrix = gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
-            RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
-            //add tiles
-            Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
-                                gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), new byte[]{0,1,2,3});
-            GeoPackageReader      gpkgReader    = new GeoPackageReader(gpkg, tileSet);
+            final TileMatrix             tileMatrix = gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
+            final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
 
-            BufferedImage         returnedImage = gpkgReader.getTile(coordinate.getRow(), coordinate.getColumn(), coordinate.getZoomLevel());
+            final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
 
-            Assert.assertArrayEquals("The tile image data returned from getTile in GeoPackage reader wasn't the same as the one given.",
-                                     tileExpected.getImageData(),
-                                     ImageUtility.bufferedImageToBytes(returnedImage, "PNG"));
+            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), new byte[]{0,1,2,3});
 
+            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+            {
+                final BufferedImage returnedImage = gpkgReader.getTile(coordinate.getRow(), coordinate.getColumn(), coordinate.getZoomLevel());
+
+                Assert.assertArrayEquals("The tile image data returned from getTile in GeoPackage reader wasn't the same as the one given.",
+                                         tileExpected.getImageData(),
+                                         ImageUtility.bufferedImageToBytes(returnedImage, "PNG"));
+            }
         }
         finally
         {
@@ -325,35 +344,39 @@ public class GeopackageTileStoreTest
     @Test
     public void getTile2WithCrsCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
     {
+        final File testFile = this.getRandomFile(8);
 
-        File testFile = this.getRandomFile(8);
+        final String tableName = "tablename";
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            BoundingBox      bBox  = new BoundingBox(0.0, 0.0, 180.0, 180.0);
-            TileSet          tileSet    = gpkg.tiles().addTileSet("TableName", "identifier", "description", bBox, gpkg.core().getSpatialReferenceSystem(4326));
+            final BoundingBox bBox    = new BoundingBox(0.0, 0.0, 180.0, 180.0);
+            final TileSet     tileSet = gpkg.tiles().addTileSet(tableName, "identifier", "description", bBox, gpkg.core().getSpatialReferenceSystem(4326));
 
-            int zoomLevel = 2;
-            int matrixWidth = 3;
-            int matrixHeight = 3;
-            int tileWidth = 256;
-            int tileHeight = 256;
-            double pixelXSize = bBox.getWidth()/matrixWidth/tileWidth;
-            double pixelYSize = bBox.getHeight()/matrixHeight/tileHeight;
+            final int zoomLevel = 2;
+            final int matrixWidth = 3;
+            final int matrixHeight = 3;
+            final int tileWidth = 256;
+            final int tileHeight = 256;
+            final double pixelXSize = bBox.getWidth()/matrixWidth/tileWidth;
+            final double pixelYSize = bBox.getHeight()/matrixHeight/tileHeight;
 
-            TileMatrix             tileMatrix = gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
-            RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
+            final TileMatrix             tileMatrix = gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
+            final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
             //add tiles
-            Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
-                                gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
+            final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
 
-            GeoPackageReader gpkgReader        = new GeoPackageReader(gpkg, tileSet);
-            CrsCoordinate    crsTileCoordinate = new CrsCoordinate(130.0, 60.0, "epsg", 4326);
-            BufferedImage    returnedImage     = gpkgReader.getTile(crsTileCoordinate, zoomLevel);
+            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
 
-            Assert.assertArrayEquals("The tile image data returned from getTile in GeoPackage reader wasn't the same as the one given.",
-                                     tileExpected.getImageData(),
-                                     ImageUtility.bufferedImageToBytes(returnedImage, "PNG"));
+            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+            {
+                final CrsCoordinate crsTileCoordinate = new CrsCoordinate(130.0, 60.0, "epsg", 4326);
+                final BufferedImage returnedImage     = gpkgReader.getTile(crsTileCoordinate, zoomLevel);
 
+                Assert.assertArrayEquals("The tile image data returned from getTile in GeoPackage reader wasn't the same as the one given.",
+                                         tileExpected.getImageData(),
+                                         ImageUtility.bufferedImageToBytes(returnedImage, "PNG"));
+            }
         }
         finally
         {
@@ -379,34 +402,38 @@ public class GeopackageTileStoreTest
     @Test
     public void getTile3CrsCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
     {
-        File testFile = this.getRandomFile(8);
+        final File testFile = this.getRandomFile(8);
+
+        final String tableName = "tablename";
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            BoundingBox      bBox  = new BoundingBox(0.0, 0.0, 180.0, 180.0);
-            TileSet          tileSet    = gpkg.tiles().addTileSet("TableName", "identifier", "description", bBox, gpkg.core().getSpatialReferenceSystem(4326));
+            final BoundingBox bBox    = new BoundingBox(0.0, 0.0, 180.0, 180.0);
+            final TileSet     tileSet = gpkg.tiles().addTileSet(tableName, "identifier", "description", bBox, gpkg.core().getSpatialReferenceSystem(4326));
 
-            int zoomLevel = 2;
-            int matrixWidth = 3;
-            int matrixHeight = 3;
-            int tileWidth = 256;
-            int tileHeight = 256;
-            double pixelXSize = bBox.getWidth()/matrixWidth/tileWidth;
-            double pixelYSize = bBox.getHeight()/matrixHeight/tileHeight;
+            final int zoomLevel = 2;
+            final int matrixWidth = 3;
+            final int matrixHeight = 3;
+            final int tileWidth = 256;
+            final int tileHeight = 256;
+            final double pixelXSize = bBox.getWidth()/matrixWidth/tileWidth;
+            final double pixelYSize = bBox.getHeight()/matrixHeight/tileHeight;
 
-            TileMatrix             tileMatrix = gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
-            RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
+            final TileMatrix             tileMatrix = gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
+            final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
             //add tiles
-                                     gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
-            Tile tileExpected =      gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(2, 0, 2), createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
+            gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
+            final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(2, 0, 2), createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
 
-            GeoPackageReader gpkgReader        = new GeoPackageReader(gpkg, tileSet);
-            CrsCoordinate    crsTileCoordinate = new CrsCoordinate(60.0, 59.0, "epsg", 4326);
-            BufferedImage    returnedImage     = gpkgReader.getTile(crsTileCoordinate, zoomLevel);
+            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+            {
+                final CrsCoordinate    crsTileCoordinate = new CrsCoordinate(60.0, 59.0, "epsg", 4326);
+                final BufferedImage    returnedImage     = gpkgReader.getTile(crsTileCoordinate, zoomLevel);
 
-            Assert.assertArrayEquals("The tile image data returned from getTile in GeoPackage reader wasn't the same as the one given.",
-                                     tileExpected.getImageData(),
-                                     ImageUtility.bufferedImageToBytes(returnedImage, "PNG"));
-
+                Assert.assertArrayEquals("The tile image data returned from getTile in GeoPackage reader wasn't the same as the one given.",
+                                         tileExpected.getImageData(),
+                                         ImageUtility.bufferedImageToBytes(returnedImage, "PNG"));
+            }
         }
         finally
         {
@@ -434,18 +461,23 @@ public class GeopackageTileStoreTest
     @Test(expected = IllegalArgumentException.class)
     public void getTileIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, TileStoreException
     {
-        File testFile = this.getRandomFile(12);
+        final File testFile = this.getRandomFile(12);
+
+        final String tableName = "tablename";
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            TileSet tileSet = gpkg.tiles().addTileSet("tabelName",
-                                                      "identifier",
-                                                      "description",
-                                                      new BoundingBox(0.0,0.0,30.0,60.0),
-                                                      gpkg.core().getSpatialReferenceSystem(4326));
+            gpkg.tiles().addTileSet("tabelName",
+                                    "identifier",
+                                    "description",
+                                    new BoundingBox(0.0,0.0,30.0,60.0),
+                                    gpkg.core().getSpatialReferenceSystem(4326));
 
-            GeoPackageReader gpkgReader = new GeoPackageReader(gpkg, tileSet);
-            gpkgReader.getTile(null, 2);
-            fail("Expected GeoPackageReader to throw an IllegalArgumentException when passing a null value to coordinate in getTile method");
+            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+            {
+                gpkgReader.getTile(null, 2);
+                fail("Expected GeoPackageReader to throw an IllegalArgumentException when passing a null value to coordinate in getTile method");
+            }
         }
         finally
         {
@@ -474,19 +506,24 @@ public class GeopackageTileStoreTest
     @Test(expected = IllegalArgumentException.class)
     public void getTileIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, TileStoreException
     {
-        File testFile = this.getRandomFile(12);
+        final File testFile = this.getRandomFile(12);
+
+        final String tableName = "tablename";
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            TileSet tileSet = gpkg.tiles().addTileSet("tabelName",
-                                                      "identifier",
-                                                      "description",
-                                                      new BoundingBox(0.0,0.0,30.0,60.0),
-                                                      gpkg.core().addSpatialReferenceSystem("Srs Name", 3857, "EPSG", 3857, "definition", "description"));
+            gpkg.tiles().addTileSet("tabelName",
+                                    "identifier",
+                                    "description",
+                                    new BoundingBox(0.0,0.0,30.0,60.0),
+                                    gpkg.core().addSpatialReferenceSystem("Srs Name", 3857, "EPSG", 3857, "definition", "description"));
 
-            GeoPackageReader gpkgReader = new GeoPackageReader(gpkg, tileSet);
-            CrsCoordinate crsCoord = new CrsCoordinate(2, 0, "EPSG", 3395);
-            gpkgReader.getTile(crsCoord, 2);
-            fail("Expected GeoPackageReader to throw an IllegalArgumentException when passing a null value to coordinate in getTile method");
+            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+            {
+                final CrsCoordinate crsCoord = new CrsCoordinate(2, 0, "EPSG", 3395);
+                gpkgReader.getTile(crsCoord, 2);
+                fail("Expected GeoPackageReader to throw an IllegalArgumentException when passing a null value to coordinate in getTile method");
+            }
         }
         finally
         {
@@ -514,22 +551,25 @@ public class GeopackageTileStoreTest
     @Test
     public void getTileThatDoesntExist() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, TileStoreException
     {
-        File testFile = this.getRandomFile(9);
+        final File testFile = this.getRandomFile(9);
+
+        final String tableName = "tablename";
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            TileSet tileSet = gpkg.tiles().addTileSet("tabelName",
-                                                      "identifier",
-                                                      "description",
-                                                      new BoundingBox(0.0,0.0,30.0,60.0),
-                                                      gpkg.core().addSpatialReferenceSystem("Srs Name", 3857, "EPSG", 3857, "definition", "description"));
+            gpkg.tiles().addTileSet("tabelName",
+                                    "identifier",
+                                    "description",
+                                    new BoundingBox(0.0,0.0,30.0,60.0),
+                                    gpkg.core().addSpatialReferenceSystem("Srs Name", 3857, "EPSG", 3857, "definition", "description"));
 
-            GeoPackageReader gpkgReader = new GeoPackageReader(gpkg, tileSet);
+            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+            {
+                final CrsCoordinate coordinate = new CrsCoordinate(2, 0, "EPSG", 3857);
+                final BufferedImage imageReturned = gpkgReader.getTile(coordinate, 4);
 
-            CrsCoordinate coordinate = new CrsCoordinate(2, 0, "EPSG", 3857);
-            BufferedImage imageReturned = gpkgReader.getTile(coordinate, 4);
-
-            assertTrue("Asked for a tile that didn't exist in the gpkg and didn't return a null value for the buffer image",imageReturned == null);
-
+                assertTrue("Asked for a tile that didn't exist in the gpkg and didn't return a null value for the buffer image", imageReturned == null);
+            }
         }
         finally
         {
@@ -555,22 +595,30 @@ public class GeopackageTileStoreTest
     @Test
     public void getCoordinateReferenceSystem() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
-        File testFile = this.getRandomFile(7);
+        final File testFile = this.getRandomFile(7);
+
+        final String tableName = "tablename";
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            SpatialReferenceSystem spatialReferenceSystem = gpkg.core().addSpatialReferenceSystem("WebMercator", 3857, "epsg", 3857, "definition", "description");
-            TileSet                tileSet                = gpkg.tiles().addTileSet("tabelName", "identifier", "description", new BoundingBox(0.0,0.0,30.0,60.0), spatialReferenceSystem);
-            GeoPackageReader       gpkgReader             = new GeoPackageReader(gpkg, tileSet);
+            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().addSpatialReferenceSystem("WebMercator", 3857, "epsg", 3857, "definition", "description");
 
-            CoordinateReferenceSystem coordinateReferenceSystemReturned = gpkgReader.getCoordinateReferenceSystem();
+            gpkg.tiles().addTileSet("tabelName", "identifier", "description", new BoundingBox(0.0,0.0,30.0,60.0), spatialReferenceSystem);
 
-            Assert.assertTrue(String.format("The coordinate reference system returned is not what was expected. Actual authority: %s Actual Identifer: %d\nExpected authority: %s Expected Identifier: %d.",
-                                            coordinateReferenceSystemReturned.getAuthority(),
-                                            coordinateReferenceSystemReturned.getIdentifier(),
-                                            spatialReferenceSystem.getOrganization(),
-                                            spatialReferenceSystem.getIdentifier()),
-                              coordinateReferenceSystemReturned.getAuthority().equalsIgnoreCase(spatialReferenceSystem.getOrganization()) &&
-                              coordinateReferenceSystemReturned.getIdentifier() ==              spatialReferenceSystem.getIdentifier());
+            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+            {
+                final CoordinateReferenceSystem coordinateReferenceSystemReturned = gpkgReader.getCoordinateReferenceSystem();
+
+                Assert.assertTrue(String.format("The coordinate reference system returned is not what was expected. Actual authority: %s Actual Identifer: %d\nExpected authority: %s Expected Identifier: %d.",
+                                                coordinateReferenceSystemReturned.getAuthority(),
+                                                coordinateReferenceSystemReturned.getIdentifier(),
+                                                spatialReferenceSystem.getOrganization(),
+                                                spatialReferenceSystem.getIdentifier()),
+                                  coordinateReferenceSystemReturned.getAuthority().equalsIgnoreCase(spatialReferenceSystem.getOrganization()) &&
+                                  coordinateReferenceSystemReturned.getIdentifier() ==              spatialReferenceSystem.getIdentifier());
+            }
+
+
         }
         finally
         {
@@ -597,47 +645,53 @@ public class GeopackageTileStoreTest
     @Test
     public void getZoomLevels() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, TileStoreException
     {
-        File testFile = this.getRandomFile(10);
+        final File testFile = this.getRandomFile(10);
+
+        final String tableName = "tablename";
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            BoundingBox bBox =  new BoundingBox(0.0,0.0,30.0,60.0);
-            TileSet tileSet = gpkg.tiles()
+            final BoundingBox bBox =  new BoundingBox(0.0,0.0,30.0,60.0);
+            final TileSet tileSet = gpkg.tiles()
                                   .addTileSet("tabelName",
                                               "identifier",
                                               "description",
                                               bBox,
                                               gpkg.core().getSpatialReferenceSystem(4326));
-            TileSet tileSet2 = gpkg.tiles()
+            final TileSet tileSet2 = gpkg.tiles()
                                    .addTileSet("tabelName2",
                                                "identifier2",
                                                "description2",
                                                bBox,
                                                gpkg.core().getSpatialReferenceSystem(-1));
-            Set<Integer> zoomLevelsExpected = new HashSet<>();
+            final Set<Integer> zoomLevelsExpected = new HashSet<>();
             zoomLevelsExpected.add(2);
             zoomLevelsExpected.add(5);
             zoomLevelsExpected.add(9);
             zoomLevelsExpected.add(20);
 
-            int matrixWidth = 2;
-            int matrixHeight = 2;
-            int tileWidth = 256;
-            int tileHeight = 256;
-            double pixelXSize = bBox.getWidth()/matrixWidth/tileWidth;
-            double pixelYSize = bBox.getHeight()/matrixHeight/tileHeight;
+            final int matrixWidth = 2;
+            final int matrixHeight = 2;
+            final int tileWidth = 256;
+            final int tileHeight = 256;
+            final double pixelXSize = bBox.getWidth()/matrixWidth/tileWidth;
+            final double pixelYSize = bBox.getHeight()/matrixHeight/tileHeight;
 
             gpkg.tiles().addTileMatrix(tileSet, 2, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
             gpkg.tiles().addTileMatrix(tileSet, 20, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
             gpkg.tiles().addTileMatrix(tileSet, 9, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
             gpkg.tiles().addTileMatrix(tileSet, 5, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
             gpkg.tiles().addTileMatrix(tileSet2, 7, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);//this one is not included in zooms
-            GeoPackageReader gpkgReader = new GeoPackageReader(gpkg, tileSet);                                                //because it is a different tileset
-            Set<Integer> zoomLevelsReturned = gpkgReader.getZoomLevels();
 
-            Assert.assertTrue(String.format("The GeoPackage Reader did not return all of the zoom levels expected. Expected Zooms: %s. Actual Zooms: %s",
-                                            zoomLevelsExpected.stream().map(integer -> integer.toString()).collect(Collectors.joining(", ")),
-                                            zoomLevelsReturned.stream().map(integer -> integer.toString()).collect(Collectors.joining(", "))),
-                              zoomLevelsReturned.containsAll(zoomLevelsExpected));
+            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))                                                //because it is a different tileset
+            {
+                final Set<Integer> zoomLevelsReturned = gpkgReader.getZoomLevels();
+
+                Assert.assertTrue(String.format("The GeoPackage Reader did not return all of the zoom levels expected. Expected Zooms: %s. Actual Zooms: %s",
+                                                zoomLevelsExpected.stream().map(integer -> integer.toString()).collect(Collectors.joining(", ")),
+                                                zoomLevelsReturned.stream().map(integer -> integer.toString()).collect(Collectors.joining(", "))),
+                                  zoomLevelsReturned.containsAll(zoomLevelsExpected));
+            }
         }
         finally
         {
@@ -650,10 +704,10 @@ public class GeopackageTileStoreTest
             }
         }
     }
-    
+
     /**
      * Tests if GeoPackage Writer will be able to add a tile to
-     * an exisiting GeoPackage
+     * an existing GeoPackage
      * @throws ClassNotFoundException
      * @throws SQLException
      * @throws ConformanceException
@@ -661,88 +715,42 @@ public class GeopackageTileStoreTest
      * @throws IOException
      * @throws TileStoreException
      */
-    @Test 
-    public void geopackageWriterAddTile() throws ClassNotFoundException, SQLException, ConformanceException, MimeTypeParseException, IOException, TileStoreException
-    {
-        File testFile = this.getRandomFile(6);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
-        {
-            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
-            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
-
-            int matrixHeight = 2;
-            int matrixWidth = 4;
-            int tileHeight = 512;
-            int tileWidth = 256;
-            
-           TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 
-                                                              0,  
-                                                              matrixWidth, 
-                                                              matrixHeight, 
-                                                              tileWidth,
-                                                              tileHeight, 
-                                                              (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                                              (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
-            
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0,0,0), createImageBytes("JPEG"));
-            MimeType mimeType = new MimeType("image/jpeg");
-            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
-            
-            RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0,1,0);
-            gpkgWriter.addTile(coordinate.getRow(), coordinate.getColumn(), coordinate.getZoomLevel(), new BufferedImage(256, 256, BufferedImage.TYPE_BYTE_GRAY));
-            
-            Tile tile = gpkg.tiles().getTile(tileSet, coordinate);
-            
-            assertTrue("GeoPackageWriter was unable to add a tile to a GeoPackage",tile != null);
-           
-        }
-        finally
-        {
-            deleteFile(testFile);
-        }
-    }
-    
-    //TODO fix bug with zooms times two.  Case where it fails: IF a Geopackage does not have any tiles in it (just tile set) then wants to add a tile, the zoomLevelDimensions
-    //field variable is null in the ZoomTimesTwo class.  Therefore when trying to add a matrixSet there is an arrayIndexOutOfBoundsException(which I find strange)
-    //I can explain better in person but this is a bug needed to be fixed when adding a single tile a zoomLevel 0.
-    /**
-     * Tests if geopackage writer can write tiles to
-     * a geopackage
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws MimeTypeParseException
-     * @throws TileStoreException
-     */
     @Test
-    public void geoPackageWriterAddTile2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
+    public void geopackageWriterAddTile() throws Exception
     {
-        File testFile = this.getRandomFile(6);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
-        {
-            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
-            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
+        final File testFile = this.getRandomFile(6);
 
-            MimeType mimeType = new MimeType("image/jpeg");
-            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
-            
-            CrsCoordinate crsCoordinate = new CrsCoordinate(50.0,30.0,"epsg", 4326);
-            int zoomLevel = 0;
-            
-            gpkgWriter.addTile(crsCoordinate, zoomLevel, new BufferedImage(256, 256, BufferedImage.TYPE_BYTE_GRAY));
-            
-            Tile tile = gpkg.tiles().getTile(tileSet, crsCoordinate, zoomLevel);
-            
-            assertTrue("GeoPackageWriter did not write a tile correctly",tile != null);
+        final String tableName = "tableName";
+
+        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
+                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               tableName,
+                                                               "identifier",
+                                                               "description",
+                                                               new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new ZoomTimesTwo(0, 0, 2, 4),
+                                                               new MimeType("image/jpeg"),
+                                                               null);
+            GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+        {
+            final int row       = 0;
+            final int column    = 1;
+            final int zoomLevel = 0;
+
+            final BufferedImage bufferedImage = new BufferedImage(256, 256, BufferedImage.TYPE_BYTE_GRAY);
+
+            gpkgWriter.addTile(row, column, zoomLevel, bufferedImage);
+
+            final BufferedImage tile = gpkgReader.getTile(row, column, zoomLevel);
+
+            assertTrue("GeoPackageWriter was unable to add a tile to a GeoPackage", tile != null);
         }
         finally
         {
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if GeoPackageWriter will throw an Illegal argumentException when
      * adding a tile with a null value for buffered image
@@ -757,17 +765,19 @@ public class GeopackageTileStoreTest
     @Test(expected = IllegalArgumentException.class)
     public void addTileIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
     {
-        File testFile = this.getRandomFile(6);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
-        {
-            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
-            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
+        final File testFile = this.getRandomFile(6);
 
-            MimeType mimeType = new MimeType("image/jpeg");
-            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
-            
-            RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0,1,0);
-            gpkgWriter.addTile(coordinate.getRow(), coordinate.getColumn(), coordinate.getZoomLevel(), null);
+        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
+                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               "foo",
+                                                               "identifier",
+                                                               "description",
+                                                               new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new ZoomTimesTwo(0, 0, 2, 4),
+                                                               new MimeType("image/jpeg"),
+                                                               null))
+        {
+            gpkgWriter.addTile(0, 0, 0, null);
             fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter image.");
         }
         finally
@@ -775,7 +785,7 @@ public class GeopackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if GeoPackageWriter will throw an Illegal argumentException when
      * adding a tile with a null value for buffered image
@@ -790,15 +800,18 @@ public class GeopackageTileStoreTest
     @Test(expected = IllegalArgumentException.class)
     public void addTileIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
     {
-        File testFile = this.getRandomFile(6);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
-        {
-            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
-            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
+        final File testFile = this.getRandomFile(6);
 
-            MimeType mimeType = new MimeType("image/jpeg");
-            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
-            
+        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
+                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               "foo",
+                                                               "identifier",
+                                                               "description",
+                                                               new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new ZoomTimesTwo(0, 0, 2, 4),
+                                                               new MimeType("image/jpeg"),
+                                                               null))
+        {
             gpkgWriter.addTile(new CrsCoordinate(20.0,30.0, "epsg", 4326), 0, null);
             fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter image.");
         }
@@ -807,7 +820,7 @@ public class GeopackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if GeoPackageWriter will throw an Illegal argumentException when
      * adding a tile with a null value for crsCoordinate
@@ -822,15 +835,19 @@ public class GeopackageTileStoreTest
     @Test(expected = IllegalArgumentException.class)
     public void addTileIllegalArgumentException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
     {
-        File testFile = this.getRandomFile(6);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
-        {
-            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
-            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
+        final File testFile = this.getRandomFile(6);
 
-            MimeType mimeType = new MimeType("image/jpeg");
-            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
-            
+        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
+                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               "foo",
+                                                               "identifier",
+                                                               "description",
+                                                               new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new ZoomTimesTwo(0, 0, 2, 4),
+                                                               new MimeType("image/jpeg"),
+                                                               null))
+        {
+
             gpkgWriter.addTile(null, 0, new BufferedImage(256,256, BufferedImage.TYPE_INT_ARGB));
             fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter crsCoordinate.");
         }
@@ -839,7 +856,7 @@ public class GeopackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if GeoPackageWriter will throw an Illegal argumentException when
      * adding a tile with a null value for buffered image
@@ -854,15 +871,19 @@ public class GeopackageTileStoreTest
     @Test(expected = IllegalArgumentException.class)
     public void addTileIllegalArgumentException4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
     {
-        File testFile = this.getRandomFile(6);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
-        {
-            BoundingBox boundingBox = new BoundingBox(0.0,0.0,90.0,90.0);
-            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", boundingBox, gpkg.core().getSpatialReferenceSystem(4326));
+        final File testFile = this.getRandomFile(6);
 
-            MimeType mimeType = new MimeType("image/jpeg");
-            GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkg, tileSet, mimeType);
-            
+        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
+                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               "foo",
+                                                               "identifier",
+                                                               "description",
+                                                               new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new ZoomTimesTwo(0, 0, 2, 4),
+                                                               new MimeType("image/jpeg"),
+                                                               null))
+        {
+
             gpkgWriter.addTile(new CrsCoordinate(20.0, 30.0, "epsg", 3395), 0, new BufferedImage(256,256, BufferedImage.TYPE_INT_ARGB));
             fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user adds a tile that is a different crs coordinate reference system than the profile.");
         }
@@ -873,7 +894,7 @@ public class GeopackageTileStoreTest
     }
     /**
      * Tests if GeoPackageWriter throws an IllegalArgumentException
-     * when trying to create a GeoPackageWriter with a tileSet parameter 
+     * when trying to create a GeoPackageWriter with a tileSet parameter
      * value of null
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -882,27 +903,33 @@ public class GeopackageTileStoreTest
      * @throws ConformanceException
      * @throws MimeTypeParseException
      */
-    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void geoPackageWriterIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
     {
-        File testFile = this.getRandomFile(8);
-        
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = this.getRandomFile(8);
+
+        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
+                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               null,
+                                                               "identifier",
+                                                               "description",
+                                                               new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new ZoomTimesTwo(0, 0, 2, 4),
+                                                               new MimeType("image/jpeg"),
+                                                               null))
         {
-            new GeoPackageWriter(gpkg, null, new MimeType("image/png"));
-            fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter tileSet.");
+            fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter tile set table name.");
         }
         finally
         {
             deleteFile(testFile);
         }
     }
-    
+
 
     /**
      * Tests if GeoPackageWriter throws an IllegalArgumentException
-     * when trying to create a GeoPackageWriter with a geopackage parameter 
+     * when trying to create a GeoPackageWriter with a geopackage parameter
      * value of null
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -911,28 +938,32 @@ public class GeopackageTileStoreTest
      * @throws ConformanceException
      * @throws MimeTypeParseException
      */
-    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void geoPackageWriterIllegalArgumentException2() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException, MimeTypeParseException
     {
-        File testFile = this.getRandomFile(8);
-        
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = this.getRandomFile(8);
+
+        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(null,
+                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               "foo",
+                                                               "identifier",
+                                                               "description",
+                                                               new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new ZoomTimesTwo(0, 0, 2, 4),
+                                                               new MimeType("image/jpeg"),
+                                                               null))
         {
-            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0,0.0,90.0,90.0), gpkg.core().getSpatialReferenceSystem(4326));
-            new GeoPackageWriter(null, tileSet, new MimeType("image/png"));
-            
-            fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter GeoPackage.");
+            fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter geo package file.");
         }
         finally
         {
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if GeoPackageWriter throws an IllegalArgumentException
-     * when trying to create a GeoPackageWriter with a imageOutputFormat parameter 
+     * when trying to create a GeoPackageWriter with a imageOutputFormat parameter
      * value of null
      * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
@@ -941,17 +972,21 @@ public class GeopackageTileStoreTest
      * @throws ConformanceException
      * @throws MimeTypeParseException
      */
-    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void geoPackageWriterIllegalArgumentException3() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
     {
-        File testFile = this.getRandomFile(8);
-        
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = this.getRandomFile(8);
+
+        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
+                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               "foo",
+                                                               "identifier",
+                                                               "description",
+                                                               new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new ZoomTimesTwo(0, 0, 2, 4),
+                                                               null,
+                                                               null))
         {
-            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0,0.0,90.0,90.0), gpkg.core().getSpatialReferenceSystem(4326));
-            new GeoPackageWriter(gpkg, tileSet, null);
-            
             fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter imageOutputFormat.");
         }
         finally
@@ -959,7 +994,7 @@ public class GeopackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    
+
 
     /**
      * Tests if GeoPackageWriter throws an IllegalArgumentException
@@ -972,17 +1007,21 @@ public class GeopackageTileStoreTest
      * @throws ConformanceException
      * @throws MimeTypeParseException
      */
-    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void geoPackageWriterIllegalArgumentException4() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException, MimeTypeParseException
     {
-        File testFile = this.getRandomFile(8);
-        
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = this.getRandomFile(8);
+
+        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
+                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               "foo",
+                                                               "identifier",
+                                                               "description",
+                                                               new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new ZoomTimesTwo(0, 0, 2, 4),
+                                                               new MimeType("text/xml"),
+                                                               null))
         {
-            TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0,0.0,90.0,90.0), gpkg.core().getSpatialReferenceSystem(4326));
-            new GeoPackageWriter(gpkg, tileSet, new MimeType("text/xml"));
-            
             fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in an unsupported image output format.");
         }
         finally
@@ -990,13 +1029,11 @@ public class GeopackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    
-    
-    
-    private static byte[] createImageBytes(String imageType) throws IOException
-    {
-        return ImageUtility.bufferedImageToBytes(new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB), imageType);
-    }
+
+//    private static byte[] createImageBytes(final String imageType) throws IOException
+//    {
+//        return ImageUtility.bufferedImageToBytes(new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB), imageType);
+//    }
 
     private static void deleteFile(final File testFile)
     {
@@ -1009,7 +1046,7 @@ public class GeopackageTileStoreTest
             }
         }
     }
-    
+
     private String getRanString(final int length)
     {
         final String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -1033,7 +1070,7 @@ public class GeopackageTileStoreTest
 
         return testFile;
     }
-    private static byte[] createImageBytes(int bufferedImageType) throws IOException
+    private static byte[] createImageBytes(final int bufferedImageType) throws IOException
     {
         return ImageUtility.bufferedImageToBytes(new BufferedImage(256, 256, bufferedImageType), "PNG");
     }

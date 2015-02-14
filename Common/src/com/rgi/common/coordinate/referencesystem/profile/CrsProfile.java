@@ -82,6 +82,21 @@ public interface CrsProfile
     public CoordinateReferenceSystem getCoordinateReferenceSystem();
 
     /**
+     * @return
+     */
+    public String getName();
+
+    /**
+     * @return
+     */
+    public String getWellKnownText();
+
+    /**
+     * @return
+     */
+    public String getDescription();
+
+    /**
      * Transform a coordinate from the CRS of the CrsProfile implementation to Global Geodetic (EPSG 4326)
      *
      * This is *temporary* because we don't have a good coordinate transformation mechanism

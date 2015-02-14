@@ -104,11 +104,6 @@ public class GeoPackageTiles
             throw new IllegalArgumentException("The tile set's table name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
         }
 
-        if(DatabaseUtility.tableOrViewExists(this.databaseConnection, tableName))
-        {
-            throw new IllegalArgumentException("A table already exists with this tile set's table name");
-        }
-
         if(tableName.startsWith("gpkg_"))
         {
             throw new IllegalArgumentException("The tile set's name may not start with the reserved prefix 'gpkg_'");
@@ -134,6 +129,11 @@ public class GeoPackageTiles
             }
 
             throw new IllegalArgumentException("An entry in the content table already exists with this table name, but has different values for its other fields");
+        }
+
+        if(DatabaseUtility.tableOrViewExists(this.databaseConnection, tableName))
+        {
+            throw new IllegalArgumentException("A table already exists with this tile set's table name");
         }
 
         try

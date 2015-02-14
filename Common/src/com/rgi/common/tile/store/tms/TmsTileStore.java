@@ -60,7 +60,7 @@ abstract class TmsTileStore
         this.profile  = profile;
         this.location = location;
 
-        this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1, TmsTileStore.Origin);
+        this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
     }
 
     protected static Path tmsPath(final Path path, final int... tmsSubDirectories)
@@ -77,6 +77,18 @@ abstract class TmsTileStore
     public String getName()
     {
         return this.location.toFile().getName();
+    }
+
+
+    @SuppressWarnings("static-method") // Function must be seen as an override in child implementations that implement TileStoreReader/TileStoreWriter
+    public TileOrigin getTileOrigin()
+    {
+        return Origin;
+    }
+
+    public TileScheme getTimeScheme()
+    {
+        return this.tileScheme;
     }
 
     protected final CrsProfile profile;

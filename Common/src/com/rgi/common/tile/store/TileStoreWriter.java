@@ -24,6 +24,7 @@ import java.util.Set;
 import javax.activation.MimeType;
 
 import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.tile.TileOrigin;
 
 /**
  * @author Luke Lambert
@@ -70,4 +71,9 @@ public interface TileStoreWriter
      * @return A set of {@link MimeType}s that this type of tile store writer supports
      */
     public Set<MimeType> getSupportedImageFormats();
+
+    /**
+     * @return Returns the tile origin
+     */
+    public TileOrigin getTileOrigin();
 }
