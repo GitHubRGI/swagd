@@ -18,13 +18,12 @@
 
 package com.rgi.common.tile.scheme;
 
-import com.rgi.common.tile.TileOrigin;
 
 /**
  * @author Luke Lambert
  *
  */
-public class ZoomTimesTwo extends TileScheme
+public class ZoomTimesTwo implements TileScheme
 {
     /**
      * Constructor
@@ -37,20 +36,49 @@ public class ZoomTimesTwo extends TileScheme
      *             The number of tiles along the y axis for the lowest zoom level
      * @param baseZoomLevelTileMatrixWidth
      *             The number of tiles along the x axis for the lowest zoom level
-     * @param origin
-     *             Specifies where tile (0, 0) is in the tile matrix
      */
-    public ZoomTimesTwo(final int        minimumZoomLevel,
-                        final int        maximumZoomLevel,
-                        final int        baseZoomLevelTileMatrixHeight,
-                        final int        baseZoomLevelTileMatrixWidth,
-                        final TileOrigin origin)
+    public ZoomTimesTwo(final int minimumZoomLevel,
+                        final int maximumZoomLevel,
+                        final int baseZoomLevelTileMatrixHeight,
+                        final int baseZoomLevelTileMatrixWidth)
     {
-        super(minimumZoomLevel,
-              maximumZoomLevel,
-              baseZoomLevelTileMatrixHeight,
-              baseZoomLevelTileMatrixWidth,
-              origin);
+        if(minimumZoomLevel < 0)
+        {
+            throw new IllegalArgumentException("Minimum zoom level must be at least 0");
+        }
+
+        if(maximumZoomLevel < 0)
+        {
+            throw new IllegalArgumentException("Maximum zoom level must be at least 0");
+        }
+
+        if(baseZoomLevelTileMatrixHeight < 1)
+        {
+            throw new IllegalArgumentException("The initial height must be greater than 0");
+        }
+
+        if(baseZoomLevelTileMatrixWidth < 1)
+        {
+            throw new IllegalArgumentException("The initial width must be greater than 0");
+        }
+
+        if(minimumZoomLevel > maximumZoomLevel)
+        {
+            throw new IllegalArgumentException("Minimum zoom level must be less than or equal to the maximum");
+        }
+
+        if(Integer.MAX_VALUE < baseZoomLevelTileMatrixHeight * Math.pow(2.0, maximumZoomLevel) - 1)
+        {
+            throw new IllegalArgumentException("This combination of initial height and maximum zoom level will cause an integer overflow for tile numbering");
+        }
+
+        if(Integer.MAX_VALUE < baseZoomLevelTileMatrixWidth * Math.pow(2.0, maximumZoomLevel) - 1)
+        {
+            throw new IllegalArgumentException("This combination of initial width and maximum zoom level will cause an integer overflow for tile numbering");
+        }
+
+        this.minimumZoomLevel = minimumZoomLevel;
+        this.maximumZoomLevel = maximumZoomLevel;
 
         this.zoomLevelDimensions = new TileMatrixDimensions[maximumZoomLevel - minimumZoomLevel + 1];
 
@@ -76,4 +104,7 @@ public class ZoomTimesTwo extends TileScheme
     }
 
     private final TileMatrixDimensions[] zoomLevelDimensions;
+
+    protected final int minimumZoomLevel;
+    protected final int maximumZoomLevel;
 }

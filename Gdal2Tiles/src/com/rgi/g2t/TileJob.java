@@ -46,7 +46,6 @@ import com.rgi.common.task.Settings;
 import com.rgi.common.task.Settings.Profile;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskMonitor;
-import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
@@ -62,7 +61,6 @@ import com.rgi.common.tile.store.TileStoreWriter;
 public class TileJob implements Runnable
 {
     private static final int TILESIZE = 256;
-    //private static final String TILEEXT = "png";
 
     private final File       file;
     private final CrsProfile crsProfile;
@@ -91,7 +89,7 @@ public class TileJob implements Runnable
         this.tileStoreWriter = tileStoreWriter;
         this.monitor         = monitor;
 
-        this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1, TileOrigin.valueOf(settings.get(Setting.TileOrigin)));
+        this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
 
         this.noDataColor = settings.getColor(Setting.NoDataColor);
 
@@ -233,11 +231,10 @@ public class TileJob implements Runnable
 
                                 try
                                 {
-                                    final CrsCoordinate crsCoordinate = this.crsProfile.tileToCrsCoordinate(absTileY,
-                                                                                                            absTileX,
-                                                                                                            imageCrsBounds,
-                                                                                                            this.tileScheme.dimensions(zoomLevel),
-                                                                                                            this.tileScheme.getOrigin());
+                                    final CrsCoordinate crsCoordinate = this.tileToCrsCoordinate(absTileY,
+                                                                                                 absTileX,
+                                                                                                 imageCrsBounds,
+                                                                                                 zoomLevel);
 
                                     final BufferedImage upperTile = this.tileStoreReader.getTile(crsCoordinate, zoomLevel);
 
@@ -534,7 +531,7 @@ public class TileJob implements Runnable
         return this.crsProfile.crsToTileCoordinate(new CrsCoordinate(coordinate, this.crsProfile.getCoordinateReferenceSystem()),
                                                    bounds,
                                                    matrix,
-                                                   this.tileScheme.getOrigin());
+                                                   this.tileStoreWriter.getTileOrigin());
     }
 
     private CrsCoordinate tileToCrsCoordinate(final int tileY, final int tileX, final BoundingBox imageCrsBounds, final int zoomLevel)
@@ -543,6 +540,6 @@ public class TileJob implements Runnable
                                                    tileX,
                                                    imageCrsBounds,  // TODO should we be using image bounds, or global ?
                                                    this.tileScheme.dimensions(zoomLevel),
-                                                   this.tileScheme.getOrigin());
+                                                   this.tileStoreWriter.getTileOrigin());
     }
 }
