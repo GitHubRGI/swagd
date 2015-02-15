@@ -92,66 +92,74 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
     {
         this.geoPackage = new GeoPackage(geoPackageFile, OpenMode.OpenOrCreate);
 
-        if(crsProfile == null)
-        {
-            throw new IllegalArgumentException("Coordinate reference system profile cannot be null");
-        }
-
-        this.crsProfile = crsProfile;
-
-        final SpatialReferenceSystem spatialReferenceSystem = this.geoPackage.core()
-                                                                             .addSpatialReferenceSystem(this.crsProfile.getName(),
-                                                                                                        this.crsProfile.getCoordinateReferenceSystem().getIdentifier(),
-                                                                                                        this.crsProfile.getCoordinateReferenceSystem().getAuthority(),
-                                                                                                        this.crsProfile.getCoordinateReferenceSystem().getIdentifier(),
-                                                                                                        this.crsProfile.getWellKnownText(),
-                                                                                                        this.crsProfile.getDescription());
-        this.tileSet = this.geoPackage.tiles()
-                                      .addTileSet(tileSetTableName,
-                                                  tileSetIdentifier,
-                                                  tileSetDescription,
-                                                  tileSetBounds,
-                                                  spatialReferenceSystem);
-
-
-
-        if(imageOutputFormat == null)
-        {
-            throw new IllegalArgumentException("Image output format may not be null");
-        }
-
-        if(!MimeTypeUtility.contains(GeoPackageWriter.SupportedImageFormats, imageOutputFormat))
-        {
-            throw new IllegalArgumentException(String.format("Image output type '%s' is inappropriate for this tile store. Valid formats are: %s",
-                                                             imageOutputFormat.toString(),
-                                                             GeoPackageWriter.SupportedImageFormats
-                                                                             .stream()
-                                                                             .map(mimeType -> mimeType.toString())
-                                                                             .collect(Collectors.joining(", ", "'", "'"))));
-        }
-
         try
         {
-            this.imageWriter = ImageIO.getImageWritersByMIMEType(imageOutputFormat.toString()).next();
+            if(crsProfile == null)
+            {
+                throw new IllegalArgumentException("Coordinate reference system profile cannot be null");
+            }
+
+            this.crsProfile = crsProfile;
+
+            final SpatialReferenceSystem spatialReferenceSystem = this.geoPackage.core()
+                                                                                 .addSpatialReferenceSystem(this.crsProfile.getName(),
+                                                                                                            this.crsProfile.getCoordinateReferenceSystem().getIdentifier(),
+                                                                                                            this.crsProfile.getCoordinateReferenceSystem().getAuthority(),
+                                                                                                            this.crsProfile.getCoordinateReferenceSystem().getIdentifier(),
+                                                                                                            this.crsProfile.getWellKnownText(),
+                                                                                                            this.crsProfile.getDescription());
+            this.tileSet = this.geoPackage.tiles()
+                                          .addTileSet(tileSetTableName,
+                                                      tileSetIdentifier,
+                                                      tileSetDescription,
+                                                      tileSetBounds,
+                                                      spatialReferenceSystem);
+
+
+
+            if(imageOutputFormat == null)
+            {
+                throw new IllegalArgumentException("Image output format may not be null");
+            }
+
+            if(!MimeTypeUtility.contains(GeoPackageWriter.SupportedImageFormats, imageOutputFormat))
+            {
+                throw new IllegalArgumentException(String.format("Image output type '%s' is inappropriate for this tile store. Valid formats are: %s",
+                                                                 imageOutputFormat.toString(),
+                                                                 GeoPackageWriter.SupportedImageFormats
+                                                                                 .stream()
+                                                                                 .map(mimeType -> mimeType.toString())
+                                                                                 .collect(Collectors.joining(", ", "'", "'"))));
+            }
+
+            try
+            {
+                this.imageWriter = ImageIO.getImageWritersByMIMEType(imageOutputFormat.toString()).next();
+            }
+            catch(final NoSuchElementException ex)
+            {
+                throw new IllegalArgumentException(String.format("Mime type '%s' is not a supported for image writing by your Java environment", imageOutputFormat.toString()));
+            }
+
+            this.imageWriteOptions = imageWriteOptions != null ? imageWriteOptions
+                                                               : this.imageWriter.getDefaultWriteParam();
+
+            this.tileScheme = tileScheme;
+
+            // TODO verify the origin is correct
+            //new ZoomTimesTwo(0, 0, 1, 1, GeoPackageTiles.Origin);   // TODO fix me
+
+            this.tileMatricies = this.geoPackage.tiles()
+                                           .getTileMatrices(this.tileSet)
+                                           .stream()
+                                           .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
+                                                                     tileMatrix -> tileMatrix));
         }
-        catch(final NoSuchElementException ex)
+        catch(final IllegalArgumentException | SQLException ex)
         {
-            throw new IllegalArgumentException(String.format("Mime type '%s' is not a supported for image writing by your Java environment", imageOutputFormat.toString()));
+            this.geoPackage.close();
+            throw ex;
         }
-
-        this.imageWriteOptions = imageWriteOptions != null ? imageWriteOptions
-                                                           : this.imageWriter.getDefaultWriteParam();
-
-        this.tileScheme = tileScheme;
-
-        // TODO verify the origin is correct
-        //new ZoomTimesTwo(0, 0, 1, 1, GeoPackageTiles.Origin);   // TODO fix me
-
-        this.tileMatricies = this.geoPackage.tiles()
-                                       .getTileMatrices(this.tileSet)
-                                       .stream()
-                                       .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
-                                                                 tileMatrix -> tileMatrix));
     }
 
     @Override

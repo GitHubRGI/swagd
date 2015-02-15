@@ -74,6 +74,11 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
         this.geoPackage = new GeoPackage(geoPackageFile, OpenMode.Open);
         this.tileSet    = this.geoPackage.tiles().getTileSet(tileSetTableName);
 
+        if(this.tileSet == null)
+        {
+            throw new IllegalArgumentException("Table name does not specify a valid GeoPackage tile set");
+        }
+
         final SpatialReferenceSystem srs = this.geoPackage.core().getSpatialReferenceSystem(this.tileSet.getSpatialReferenceSystemIdentifier());
 
         if(srs == null)

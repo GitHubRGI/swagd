@@ -47,6 +47,8 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
+import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.util.ImageUtility;
@@ -59,6 +61,10 @@ import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
 
 
+/**
+ * @author Jenifer Cochran
+ *
+ */
 public class GeopackageTileStoreTest
 {
     @Rule
@@ -467,7 +473,7 @@ public class GeopackageTileStoreTest
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.tiles().addTileSet("tabelName",
+            gpkg.tiles().addTileSet(tableName,
                                     "identifier",
                                     "description",
                                     new BoundingBox(0.0,0.0,30.0,60.0),
@@ -512,7 +518,7 @@ public class GeopackageTileStoreTest
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.tiles().addTileSet("tabelName",
+            gpkg.tiles().addTileSet(tableName,
                                     "identifier",
                                     "description",
                                     new BoundingBox(0.0,0.0,30.0,60.0),
@@ -557,7 +563,7 @@ public class GeopackageTileStoreTest
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.tiles().addTileSet("tabelName",
+            gpkg.tiles().addTileSet(tableName,
                                     "identifier",
                                     "description",
                                     new BoundingBox(0.0,0.0,30.0,60.0),
@@ -603,7 +609,7 @@ public class GeopackageTileStoreTest
         {
             final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().addSpatialReferenceSystem("WebMercator", 3857, "epsg", 3857, "definition", "description");
 
-            gpkg.tiles().addTileSet("tabelName", "identifier", "description", new BoundingBox(0.0,0.0,30.0,60.0), spatialReferenceSystem);
+            gpkg.tiles().addTileSet(tableName, "identifier", "description", new BoundingBox(0.0,0.0,30.0,60.0), spatialReferenceSystem);
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
@@ -617,8 +623,6 @@ public class GeopackageTileStoreTest
                                   coordinateReferenceSystemReturned.getAuthority().equalsIgnoreCase(spatialReferenceSystem.getOrganization()) &&
                                   coordinateReferenceSystemReturned.getIdentifier() ==              spatialReferenceSystem.getIdentifier());
             }
-
-
         }
         finally
         {
@@ -653,37 +657,42 @@ public class GeopackageTileStoreTest
         {
             final BoundingBox bBox =  new BoundingBox(0.0,0.0,30.0,60.0);
             final TileSet tileSet = gpkg.tiles()
-                                  .addTileSet("tabelName",
-                                              "identifier",
-                                              "description",
-                                              bBox,
-                                              gpkg.core().getSpatialReferenceSystem(4326));
+                                        .addTileSet(tableName,
+                                                    "identifier",
+                                                    "description",
+                                                    bBox,
+                                                    gpkg.core().getSpatialReferenceSystem(4326));
             final TileSet tileSet2 = gpkg.tiles()
-                                   .addTileSet("tabelName2",
-                                               "identifier2",
-                                               "description2",
-                                               bBox,
-                                               gpkg.core().getSpatialReferenceSystem(-1));
+                                         .addTileSet("tabelName2",
+                                                     "identifier2",
+                                                     "description2",
+                                                     bBox,
+                                                     gpkg.core().getSpatialReferenceSystem(-1));
+
             final Set<Integer> zoomLevelsExpected = new HashSet<>();
             zoomLevelsExpected.add(2);
             zoomLevelsExpected.add(5);
             zoomLevelsExpected.add(9);
             zoomLevelsExpected.add(20);
 
-            final int matrixWidth = 2;
-            final int matrixHeight = 2;
             final int tileWidth = 256;
             final int tileHeight = 256;
-            final double pixelXSize = bBox.getWidth()/matrixWidth/tileWidth;
-            final double pixelYSize = bBox.getHeight()/matrixHeight/tileHeight;
 
-            gpkg.tiles().addTileMatrix(tileSet, 2, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
-            gpkg.tiles().addTileMatrix(tileSet, 20, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
-            gpkg.tiles().addTileMatrix(tileSet, 9, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
-            gpkg.tiles().addTileMatrix(tileSet, 5, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
-            gpkg.tiles().addTileMatrix(tileSet2, 7, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);//this one is not included in zooms
+            final TileScheme tileScheme = new ZoomTimesTwo(2, 20, 1, 1);
 
-            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))                                                //because it is a different tileset
+            for(final int zoomLevel : zoomLevelsExpected)
+            {
+                final TileMatrixDimensions dimensions = tileScheme.dimensions(zoomLevel);
+
+                final double pixelXSize = bBox.getWidth()  / dimensions.getWidth()  / tileWidth;
+                final double pixelYSize = bBox.getHeight() / dimensions.getHeight() / tileHeight;
+
+                gpkg.tiles().addTileMatrix(tileSet, zoomLevel, dimensions.getWidth(), dimensions.getHeight(), tileWidth, tileHeight, pixelXSize, pixelYSize);
+            }
+
+            gpkg.tiles().addTileMatrix(tileSet2,  7, 2, 2, tileWidth, tileHeight, bBox.getWidth() / 2 / tileWidth, bBox.getHeight() / 2 / tileHeight); //this one is not included in zooms because it is a different tileset
+
+            try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
                 final Set<Integer> zoomLevelsReturned = gpkgReader.getZoomLevels();
 
@@ -722,6 +731,10 @@ public class GeopackageTileStoreTest
 
         final String tableName = "tableName";
 
+        final int row       = 0;
+        final int column    = 1;
+        final int zoomLevel = 0;
+
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
                                                                CrsProfileFactory.create("EPSG", 4326),
                                                                tableName,
@@ -730,17 +743,17 @@ public class GeopackageTileStoreTest
                                                                new BoundingBox(0.0,0.0,90.0,90.0),
                                                                new ZoomTimesTwo(0, 0, 2, 4),
                                                                new MimeType("image/jpeg"),
-                                                               null);
-            GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+                                                               null))
         {
-            final int row       = 0;
-            final int column    = 1;
-            final int zoomLevel = 0;
+
 
             final BufferedImage bufferedImage = new BufferedImage(256, 256, BufferedImage.TYPE_BYTE_GRAY);
 
             gpkgWriter.addTile(row, column, zoomLevel, bufferedImage);
+        }
 
+        try(GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
+        {
             final BufferedImage tile = gpkgReader.getTile(row, column, zoomLevel);
 
             assertTrue("GeoPackageWriter was unable to add a tile to a GeoPackage", tile != null);
