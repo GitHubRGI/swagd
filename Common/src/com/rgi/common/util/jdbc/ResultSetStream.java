@@ -40,9 +40,9 @@ public class ResultSetStream
     }
 
     /**
-     * @param resultSet
-     * @param mappingFunction
-     * @return
+     * @param resultSet The Result Set of your SQL query
+     * @param mappingFunction the mapping function you wish to perform on each record in the result set
+     * @return a stream of Objects from a Result Set
      */
     public static <T> Stream<T> getStream(final ResultSet resultSet, final Function<ResultSet, T> mappingFunction)
     {

@@ -33,8 +33,16 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsProfile;
 
+/**
+ * @author Jenifer Cochran
+ *
+ */
 public class EllipsoidalMercatorCrsProfileTest
 {
+    /**
+     * @author Jenifer Cochran
+     *
+     */
     public class LatLongMetersYMetersX
     {
        private double latitude;
@@ -54,7 +62,7 @@ public class EllipsoidalMercatorCrsProfileTest
      * Tests 100 points the NGA uses to verify if the conversion from the crsProfile to global
      * geodetic passes edge cases, flipped x and y values, and other various parts of the world
      * to ensure that the formula used is correct.
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException throws if the File object cannot find the file
      * 
      */
     @Test

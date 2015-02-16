@@ -106,5 +106,11 @@ public interface CrsProfile
      */
     public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate);
     
+    /**
+     * The number of decimal places to achieve the required precision
+     * 
+     * @return returns the number of decimal places that a BoundingBox should be round to
+     *  in order to achieve the required precision for this Profile
+     */
     public int requiredPercision();
 }

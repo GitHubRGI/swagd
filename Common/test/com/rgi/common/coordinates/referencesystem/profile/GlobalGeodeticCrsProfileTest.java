@@ -31,6 +31,10 @@ import com.rgi.common.coordinate.referencesystem.profile.GlobalGeodeticCrsProfil
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
+/**
+ * @author Jenifer Cochran
+ *
+ */
 @SuppressWarnings("static-method")
 public class GlobalGeodeticCrsProfileTest
 {
@@ -135,6 +139,9 @@ public class GlobalGeodeticCrsProfileTest
     }
 
 
+    /**
+     * Tests if the values is returned when using the method to global geodetic
+     */
     @Test
     public void toGlobalGeodetic()
     {
