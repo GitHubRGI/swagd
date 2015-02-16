@@ -23,10 +23,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.function.IntFunction;
-
-import javax.imageio.ImageIO;
 
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
@@ -152,11 +149,10 @@ public class TileJob implements Runnable
 
             for(int x = 0; x < numTilesWidth; ++x)
             {
-                final int tileX = 0;//upperLeftTileCoordinate.getX() + (x * this.tileScheme.origin().getDeltaX()); // TODO
-
                 for(int y = 0; y < numTilesHeight; ++y)
                 {
-                    final int tileY = 0;//upperLeftTileCoordinate.getY() + (y * this.tileScheme.origin().getDeltaY());// TODO
+                    final int tileX = 0;//upperLeftTileCoordinate.getX() + (x * this.tileScheme.origin().getDeltaX()); // TODO
+                    final int tileY = 0;//upperLeftTileCoordinate.getY() + (y * this.tileScheme.origin().getDeltaY()); // TODO
 
                     final BufferedImage tileImage = new BufferedImage(TILESIZE,
                                                                       TILESIZE,
@@ -197,16 +193,16 @@ public class TileJob implements Runnable
                                           scaledHeight,
                                           null);
 
-                        try
-                        {
-                            ImageIO.write(tileImage, "png", new File("c:/users/corp/desktop/bar.png"));
-                            return;
-                        }
-                        catch(final IOException ex)
-                        {
-                            // TODO Auto-generated catch block
-                            ex.printStackTrace();
-                        }
+//                        try
+//                        {
+//                            ImageIO.write(tileImage, "png", new File("c:/users/corp/desktop/bar.png"));
+//                            return;
+//                        }
+//                        catch(final IOException ex)
+//                        {
+//                            // TODO Auto-generated catch block
+//                            ex.printStackTrace();
+//                        }
                     }
                     else
                     {
@@ -224,6 +220,7 @@ public class TileJob implements Runnable
                                 // The coordinate of the tile that we need to stitch into our new tile is
                                 // double our current coordinate, plus the appropriate offset based on the
                                 // iterator and origin.
+
                                 final int absTileX = 0;//(2 * tileX) + f(zx, this.tileScheme.origin().getDeltaX()); // TODO
                                 final int absTileY = 0;//(2 * tileY) + f(zy, this.tileScheme.origin().getDeltaY()); // TODO
 
