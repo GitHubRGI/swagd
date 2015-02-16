@@ -65,14 +65,28 @@ abstract class TileCluster
         this.breakPoint = breakPoint;
         this.crsProfile = crsProfile;
 
-        this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1, TileCluster.Origin);
+        this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
     }
 
-    @SuppressWarnings("static-method")
+    @SuppressWarnings("static-method")  // Needs to be used as an override in child classes that implement TileStoreReader/TileStoreWriter
     public BoundingBox getBounds()
     {
         // TODO
         throw new RuntimeException("Not implemented");
+    }
+
+        public String getName()
+    {
+        return String.format("%s%c%s",
+                             this.location,
+                             File.separatorChar,
+                             this.setName);
+    }
+
+    @SuppressWarnings("static-method")  // Needs to be used as an override in child classes that implement TileStoreReader/TileStoreWriter
+    public TileOrigin getTileOrigin()
+    {
+        return TileCluster.Origin;
     }
 
     protected ClusterAddress getClusterAddress(final int row, final int column, final int zoomLevel)
@@ -137,14 +151,6 @@ abstract class TileCluster
         final long indexPosition = TileCluster.getCumulativeTileCount(localZoomLevel - 1) + localRow * columnsAtLocallevel + localColumn;
 
         return indexPosition * IndexTileAddressByteSize; // multiply index position times byte size of a tile address
-    }
-
-    public String getName()
-    {
-        return String.format("%s%c%s",
-                             this.location,
-                             File.separatorChar,
-                             this.setName);
     }
 
     // TODO convert this into a normal equation ::math::

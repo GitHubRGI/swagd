@@ -48,6 +48,7 @@ import com.rgi.common.LatLongConversions;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.coordinate.referencesystem.profile.GlobalGeodeticCrsProfile;
 import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
@@ -4066,6 +4067,55 @@ public class GeoPackageTilesAPITest
                 }
             }
         }
+    }
+    
+    @Test
+    public void crsToRelativeTileCoordianteEdgeCase7() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    {
+        int zoomLevel = 0;
+        CrsCoordinate        coordinate = new CrsCoordinate((GlobalGeodeticCrsProfile.Bounds.getMaxY()-(6*(GlobalGeodeticCrsProfile.Bounds.getHeight())) / 9),
+                (GlobalGeodeticCrsProfile.Bounds.getMinX()+(2*(GlobalGeodeticCrsProfile.Bounds.getWidth()))  / 8), 
+                "epsg", 
+                4326);
+        final File testFile = this.getRandomFile(8);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
+                                                            "identifier",
+                                                            "description",
+                                                            GlobalGeodeticCrsProfile.Bounds,
+                                                            gpkg.core().getSpatialReferenceSystem(4326));
+            final int matrixWidth = 8;
+            final int matrixHeight = 9;
+            final int pixelXSize = 256;
+            final int pixelYSize = 256;
+
+            gpkg.tiles().addTileMatrix(tileSet,
+                                       zoomLevel,
+                                       matrixWidth,
+                                       matrixHeight,
+                                       pixelXSize,
+                                       pixelYSize,
+                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
+                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+
+            final RelativeTileCoordinate relativeCoord  = gpkg.tiles().crsToRelativeTileCoordinate(tileSet, coordinate, zoomLevel);
+
+            Assert.assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
+                                       + "\nExpected Row: 6, Expected Column: 2. \nActual Row: %d, Actual Column: %d", relativeCoord.getRow(), relativeCoord.getColumn()),
+                       relativeCoord.getRow() == 6 && relativeCoord.getColumn() == 2);
+        }
+        finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
+        
     }
 
     /**

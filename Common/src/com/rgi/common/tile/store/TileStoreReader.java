@@ -26,6 +26,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.tile.scheme.TileScheme;
 
 /**
  * @author Luke Lambert
@@ -136,4 +137,9 @@ public interface TileStoreReader
      * store, or if there is an error.
      */
     public Dimensions getImageDimensions();
+
+    /**
+     * @return the Tile Scheme which can calculate the number of tiles at a particular zoom level
+     */
+    public TileScheme getTimeScheme();
 }

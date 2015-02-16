@@ -34,8 +34,7 @@ import javax.swing.WindowConstants;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.DefaultMapController;
 import org.openstreetmap.gui.jmapviewer.JMapViewerTree;
-//import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
-//import org.openstreetmap.gui.jmapviewer.TileStoreTileSource;
+import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
 import org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent;
 import org.openstreetmap.gui.jmapviewer.interfaces.JMapViewerEventListener;
 
@@ -85,10 +84,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
         final TileStoreReader tileStore = this.pickTileStore(location);
 
-        //this.treeMap.getViewer().setTileSource(new TileStoreTileSource(tileStore));
-
-        //this.treeMap.getViewer().setTileLoader(new TileStoreLoader(tileStore, this.treeMap.getViewer()));
-
+        //this.treeMap.getViewer().setTileSource(new TileStoreTileSource(tileStore)); // TODO - investigate which method is causing the viewer to not work
 
         final CrsProfile profile = CrsProfileFactory.create(tileStore.getCoordinateReferenceSystem());
 
@@ -134,7 +130,6 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         }
     }
 
-
     private TileStoreReader pickTileStore(final File location)
     {
         this.cleanUpResources();
@@ -148,16 +143,20 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         {
             try
             {
-                final GeoPackage gpkg = new GeoPackage(location, OpenMode.Open);
-
-                this.resource = gpkg;
-
-                final Collection<TileSet> tileSets = gpkg.tiles().getTileSets();
-
-                if(tileSets.size() > 0)
+                try(final GeoPackage gpkg = new GeoPackage(location, OpenMode.Open))
                 {
-                    final TileSet set = tileSets.iterator().next(); // TODO this just picks the first one
-                    return new GeoPackageReader(gpkg, set);
+                    final Collection<TileSet> tileSets = gpkg.tiles().getTileSets();
+
+                    if(tileSets.size() > 0)
+                    {
+                        final String tableName = tileSets.iterator().next().getTableName(); // TODO this just picks the first one
+
+                        final GeoPackageReader reader = new GeoPackageReader(location, tableName);
+
+                        this.resource = reader;
+
+                        return reader;
+                    }
                 }
             }
             catch(final Exception e)
