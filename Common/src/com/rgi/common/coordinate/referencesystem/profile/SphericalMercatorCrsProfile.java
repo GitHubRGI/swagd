@@ -85,4 +85,10 @@ public class SphericalMercatorCrsProfile extends ProportionalCrsProfile
     public static final double EarthEquatorialCircumfrence = 2.0 * Math.PI * EarthEquatorialRadius;
 
     private final static CoordinateReferenceSystem CoordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
+
+    @Override
+    public int requiredPercision()
+    {
+        return 2;
+    }
 }

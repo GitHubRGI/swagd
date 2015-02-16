@@ -105,4 +105,6 @@ public interface CrsProfile
      * @return a coordinate in GlobalGeodetic
      */
     public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate);
+    
+    public int requiredPercision();
 }
