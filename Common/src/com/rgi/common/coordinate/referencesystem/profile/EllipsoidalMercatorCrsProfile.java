@@ -358,4 +358,10 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     private final CoordinateReferenceSystem coordinateReferenceSystem;
 
     private final BoundingBox crsBounds;
+
+    @Override
+    public int requiredPercision()
+    {
+        return 2;
+    }
 }
