@@ -82,17 +82,17 @@ public interface CrsProfile
     public CoordinateReferenceSystem getCoordinateReferenceSystem();
 
     /**
-     * @return
+     * @return Returns the name of the Coordinate Reference System (ex: "Web Mercator")
      */
     public String getName();
 
     /**
-     * @return
+     * @return Returns the Well Known text defined by OGC for this Spatial Reference System
      */
     public String getWellKnownText();
 
     /**
-     * @return
+     * @return a human readable description for the Spatial Reference System
      */
     public String getDescription();
 
