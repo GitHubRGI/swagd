@@ -398,9 +398,9 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
 
                 if(mimeType.getPrimaryType().toLowerCase().equals("image"))
                 {
-                    final int zoomLevel = Integer.parseInt(tmsFileMatch.group(0));
-                    final int column    = Integer.parseInt(tmsFileMatch.group(1));
-                    final int row       = Integer.parseInt(tmsFileMatch.group(2));
+                    final int zoomLevel = Integer.parseInt(tmsFileMatch.group(1));
+                    final int column    = Integer.parseInt(tmsFileMatch.group(2));
+                    final int row       = Integer.parseInt(tmsFileMatch.group(3));
 
                     return new TileHandle()
                            {
@@ -552,5 +552,5 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     private long         tileCount  = -1;
     private long         storeSize  = -1;
 
-    private static Pattern TmsFilePattern = Pattern.compile(".*([0-9]+)/([0-9]+)/([0-9]+)\\.[^/]*$");
+    private static Pattern TmsFilePattern = Pattern.compile("[^0-9]*([0-9]+)/([0-9]+)/([0-9]+)\\.[^/]*$");
 }
