@@ -64,7 +64,7 @@ public class Packager extends AbstractTask implements MonitorableTask {
                         {
                             final CrsCoordinate coordinate = smcp.tileToCrsCoordinate(tileHandle.getRow(),
                                                                                       tileHandle.getColumn(),
-                                                                                      tileHandle.getBounds(),
+                                                                                      smcp.getBounds(),
                                                                                       tileHandle.getMatrix(),
                                                                                       reader.getTileOrigin());
 

@@ -917,7 +917,7 @@ public class GeoPackageTiles
         }
         final CrsProfile    crsProfile    = CrsProfileFactory.create(crs);
         final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
-        final BoundingBox   tileSetBounds = truncateBounds(tileMatrixSet.getBoundingBox(), crsProfile);
+        final BoundingBox   tileSetBounds = roundBounds(tileMatrixSet.getBoundingBox(), crsProfile);
         
         if(!Utility.contains(tileSetBounds, crsCoordinate, GeoPackageTiles.Origin))
         {
@@ -1026,7 +1026,7 @@ public class GeoPackageTiles
      * @param crs
      * @return
      */
-    private static BoundingBox truncateBounds(BoundingBox bounds, CrsProfile crs)
+    private static BoundingBox roundBounds(BoundingBox bounds, CrsProfile crs)
     {
         int percision = crs.requiredPercision();
         return new BoundingBox(roundPercision(bounds.getMinY(), percision),
