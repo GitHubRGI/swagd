@@ -24,6 +24,7 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.function.IntFunction;
 
 import javax.imageio.ImageIO;
 
@@ -108,6 +109,7 @@ public class TileJob implements Runnable
         try
         {
             this.tile();
+            gdal.GDALDestroyDriverManager();
             System.out.println("Done.");
         }
         catch(final TilingException ex)
@@ -119,30 +121,24 @@ public class TileJob implements Runnable
 
     private void tile() throws TilingException
     {
-        final Dataset outputDataset = getTransformedDataset(getDataset(this.file),
+        final Dataset dataset = getTransformedDataset(getDataset(this.file),
                                                             this.crsProfile.getCoordinateReferenceSystem().getIdentifier(),
                                                             gdalconstConstants.GRA_Bilinear);            // TODO: get user preference resample quality
 
-        final GeoTransformation outputGeoTransform = new GeoTransformation(outputDataset.GetGeoTransform());
+        final GeoTransformation geoTransform = new GeoTransformation(dataset.GetGeoTransform());
 
-        final Dimensions outputDatasetRasterDimensions = new Dimensions(outputDataset.getRasterYSize(),
-                                                                        outputDataset.getRasterXSize());
+        final Dimensions outputDatasetRasterDimensions = new Dimensions(dataset.getRasterYSize(),
+                                                                        dataset.getRasterXSize());
 
-        // Image georeference points
-        //final CrsCoordinate imageUpperLeft  = new CrsCoordinate(outputGeoTransform.getTopLeft(), this.crsProfile.getCoordinateReferenceSystem());
-        //final CrsCoordinate imageLowerRight = new CrsCoordinate(outputGeoTransform.getBottomRight(outputDataset.getRasterYSize(),
-        //                                                                                          outputDataset.getRasterXSize()),
-        //                                                        this.crsProfile.getCoordinateReferenceSystem());
+        final BoundingBox imageCrsBounds = geoTransform.getBounds(dataset);
 
-        final BoundingBox imageCrsBounds = outputGeoTransform.getBounds(outputDataset);
+        final int maxZoom = this.getMaxZoom(this.crsProfile.getBounds(), geoTransform.getPixelDimensions());
 
-        final int maxZoom = this.getMaxZoom(this.crsProfile.getBounds(), outputGeoTransform.getPixelDimensions());
-
-        final int minZoom = this.getMinZoom(outputGeoTransform,
+        final int minZoom = this.getMinZoom(geoTransform,
                                             outputDatasetRasterDimensions,
                                             imageCrsBounds);
 
-        final BufferedImage source = GdalUtility.convert(outputDataset);
+        final BufferedImage source = GdalUtility.convert(dataset);
 
         for(int zoomLevel = maxZoom; zoomLevel >= minZoom; --zoomLevel)
         {
@@ -154,7 +150,7 @@ public class TileJob implements Runnable
             final int numTilesWidth  = Math.abs(lowerRightTileCoordinate.getX() - upperLeftTileCoordinate.getX()) + 1;
             final int numTilesHeight = Math.abs(lowerRightTileCoordinate.getY() - upperLeftTileCoordinate.getY()) + 1;
 
-            // CRS units (e.g. meters) per pixel = (world size / num tiles) / pixels per tile
+            // CRS units (e.g. meters) per pixel = (world size / num tiles) / pixels per tileS
             final double ry = (this.crsProfile.getBounds().getHeight() / tileMatrixDimensions.getHeight()) / TILESIZE;
             final double rx = (this.crsProfile.getBounds().getWidth()  / tileMatrixDimensions.getWidth())  / TILESIZE;
 
@@ -181,12 +177,12 @@ public class TileJob implements Runnable
                     {
                         // pixels = (pixels * meters per pixel) / meters per pixel
                         // w' = (w * r) / r'
-                        final int scaledHeight = (int)((outputDataset.getRasterYSize() * outputGeoTransform.getPixelDimensions().getHeight()) / ry);
-                        final int scaledWidth  = (int)((outputDataset.getRasterXSize() * outputGeoTransform.getPixelDimensions().getWidth())  / rx);
+                        final int scaledHeight = (int)((dataset.getRasterYSize() * geoTransform.getPixelDimensions().getHeight()) / ry);
+                        final int scaledWidth  = (int)((dataset.getRasterXSize() * geoTransform.getPixelDimensions().getWidth())  / rx);
 
                         // pixels = (meters - meters) / meters per pixel
-                        final int offsetY = (int)((outputGeoTransform.getTopLeft().getY() - tileBounds.getHeight()) / ry);
-                        final int offsetX = (int)((tileBounds.getWidth() - outputGeoTransform.getTopLeft().getX())  / rx);
+                        final int offsetY = (int)((geoTransform.getTopLeft().getY() - tileBounds.getHeight()) / ry);
+                        final int offsetX = (int)((tileBounds.getWidth() - geoTransform.getTopLeft().getX())  / rx);
 
                         // generate base tile set
                         graphic.setColor(this.noDataColor);
@@ -284,6 +280,8 @@ public class TileJob implements Runnable
                 }
             }
         }
+
+        dataset.delete();
     }
 
     private static Dataset getDataset(final File file) throws TilingException
@@ -371,25 +369,30 @@ public class TileJob implements Runnable
         return wellKnownText;
     }
 
-    private int getMaxZoom(final BoundingBox world, final Dimensions transformPixelDimensions)
+    private int getMaxZoom(final BoundingBox world, final Dimensions pixelDimensions)
     {
-        final int yMaxZoom = getMaxZoom(world.getHeight(), transformPixelDimensions.getHeight());
-        final int xMaxZoom = getMaxZoom(world.getWidth(),  transformPixelDimensions.getWidth());
+        final int yMaxZoom = getMaxZoom(world.getHeight(), pixelDimensions.getHeight(), (zoomLevel -> TileJob.this.tileScheme.dimensions(zoomLevel).getHeight()));
+        final int xMaxZoom = getMaxZoom(world.getWidth(),  pixelDimensions.getWidth(),  (zoomLevel -> TileJob.this.tileScheme.dimensions(zoomLevel).getWidth()));
+
+        if(yMaxZoom == xMaxZoom)
+        {
+            return yMaxZoom;
+        }
 
         final double zoomYResolution     = world.getHeight() / (this.tileScheme.dimensions(yMaxZoom).getHeight() * TILESIZE);
         final double zoomXloorResolution = world.getWidth()  / (this.tileScheme.dimensions(xMaxZoom).getWidth()  * TILESIZE);
 
         // crsDistance / (Math.pow(2, zoomFloor)   * TILESIZE) is the resolution for that zoom level
-        return Math.abs(transformPixelDimensions.getHeight() - zoomYResolution) <
-               Math.abs(transformPixelDimensions.getWidth()  - zoomXloorResolution) ? yMaxZoom
-                                                                                    : xMaxZoom;
+        return Math.abs(pixelDimensions.getHeight() - zoomYResolution) <
+               Math.abs(pixelDimensions.getWidth()  - zoomXloorResolution) ? yMaxZoom
+                                                                           : xMaxZoom;
     }
 
     /**
      * @param crsDistance
      *             Height or width of the world's bounding box in CRS units
      */
-    private static int getMaxZoom(final double crsDistance, final double pixelDistance)
+    private static int getMaxZoom(final double crsDistance, final double pixelDistance, final IntFunction<Integer> tileCount)
     {
         // The resolution in CRS units per pixel of the reprojected source image
         // probably won't perfectly match the resolution of one of our zoom levels,
@@ -415,13 +418,13 @@ public class TileJob implements Runnable
         final int zoomCeiling = (int)Math.ceil (fractionalZoom);
         final int zoomFloor   = (int)Math.floor(fractionalZoom);
 
-        final double zoomCeilingResolution = crsDistance / (Math.pow(2, zoomCeiling) * TILESIZE);
-        final double zoomFloorResolution   = crsDistance / (Math.pow(2, zoomFloor)   * TILESIZE);
+        final double zoomCeilingResolution = crsDistance / (tileCount.apply(zoomCeiling) * TILESIZE);
+        final double zoomFloorResolution   = crsDistance / (tileCount.apply(zoomFloor)   * TILESIZE);
 
         // crsDistance / (Math.pow(2, zoomFloor)   * TILESIZE) is the resolution for that zoom level
-        return Math.abs(pixelDistance - zoomCeilingResolution) <
-               Math.abs(pixelDistance - zoomFloorResolution) ? zoomFloor
-                                                             : zoomCeiling;
+        return Math.abs(pixelDistance - zoomFloorResolution) <
+               Math.abs(pixelDistance - zoomCeilingResolution) ? zoomFloor
+                                                               : zoomCeiling;
     }
 
     private int getMinZoom(final GeoTransformation geoTransformation,
@@ -534,11 +537,11 @@ public class TileJob implements Runnable
                                                    this.tileStoreWriter.getTileOrigin());
     }
 
-    private CrsCoordinate tileToCrsCoordinate(final int tileY, final int tileX, final BoundingBox imageCrsBounds, final int zoomLevel)
+    private CrsCoordinate tileToCrsCoordinate(final int tileY, final int tileX, final BoundingBox bounds, final int zoomLevel)
     {
         return this.crsProfile.tileToCrsCoordinate(tileY,
                                                    tileX,
-                                                   imageCrsBounds,  // TODO should we be using image bounds, or global ?
+                                                   bounds,
                                                    this.tileScheme.dimensions(zoomLevel),
                                                    this.tileStoreWriter.getTileOrigin());
     }
