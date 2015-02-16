@@ -20,12 +20,10 @@ package org.openstreetmap.gui.jmapviewer;
 
 import java.awt.image.BufferedImage;
 
-import org.openstreetmap.gui.jmapviewer.Tile;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileJob;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoaderListener;
 
-import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
@@ -52,8 +50,6 @@ public class TileStoreLoader implements TileLoader
 
         this.minimumZoomLevel = tileStore.getZoomLevels().stream().min(Integer::compare).orElse(-1);
         this.maximumZoomLevel = tileStore.getZoomLevels().stream().max(Integer::compare).orElse(-1);
-
-        this.dataBounds = this.tileStore.getBounds();
     }
 
     @Override
@@ -133,7 +129,7 @@ public class TileStoreLoader implements TileLoader
         return this.crsProfile
                    .tileToCrsCoordinate(tile.getYtile(),
                                         tile.getXtile(),
-                                        this.dataBounds,
+                                        this.crsProfile.getBounds(),
                                         tileScheme.dimensions(tile.getZoom()),
                                         origin);
     }
@@ -147,8 +143,6 @@ public class TileStoreLoader implements TileLoader
 
     private final int minimumZoomLevel;
     private final int maximumZoomLevel;
-
-    private final BoundingBox dataBounds;
 
     private static final BufferedImage TransparentTile = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
 }
