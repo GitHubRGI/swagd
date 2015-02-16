@@ -51,6 +51,9 @@ import com.rgi.common.tile.store.tms.TmsWriter;
  */
 public class TMSTileStoreTest {
 
+    /**
+     * The folder that the files will be saved to
+     */
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
@@ -179,6 +182,9 @@ public class TMSTileStoreTest {
     }
 
 
+    /**
+     * Tests if the TMS reader will throw when giving a null parameter
+     */
     @Test(expected = IllegalArgumentException.class)
     public void breakConstructorProfile() {
         this.tmsDir = this.createTMSFolderMercator(4);
@@ -186,6 +192,9 @@ public class TMSTileStoreTest {
         TmsReader reader = new TmsReader(null, this.tmsDir);
     }
 
+    /**
+     * Tests if the TMS reader will throw when giving a null parameter
+     */
     @Test(expected = IllegalArgumentException.class)
     public void breakConstructorLocation() {
         this.tmsDir = this.createTMSFolderMercator(4);
@@ -193,6 +202,10 @@ public class TMSTileStoreTest {
         TmsReader reader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), null);
     }
 
+    /**
+     * Tests if the tmsReader will return the correct minimum X value of a bounding box from a tmsFolder
+     * @throws TileStoreException throws if a tileStoreException occurs
+     */
     @Test
     public void verifyMercBoundsCalcLeft() throws TileStoreException {
         this.tmsDir = this.createTMSFolderMercator(4);
@@ -200,34 +213,53 @@ public class TMSTileStoreTest {
         assertTrue(tmsReader.getBounds().getMinX() == -20037508.342789244);
     }
 
+    /**
+     * Tests if the tmsReader will return the correct maximum X value of a bounding box from a tmsFolder
+     * @throws TileStoreException throws if a tileStoreException occurs
+     */
     @Test
     public void verifyMercBoundsCalcRight() throws TileStoreException {
         this.tmsDir = this.createTMSFolderMercator(4);
         TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMaxX() == 20037508.342789244);
     }
-
+    
+    /**
+     * Tests if the tmsReader will return the correct maximum Y value of a bounding box from a tmsFolder
+     * @throws TileStoreException throws if a tileStoreException occurs
+     */
     @Test
     public void verifyMercBoundsCalcTop() throws TileStoreException {
         this.tmsDir = this.createTMSFolderMercator(4);
         TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMaxY() == 20037508.342789244);
     }
-
+    
+    /**
+     * Tests if the tmsReader will return the correct minimum Y value of a bounding box from a tmsFolder
+     * @throws TileStoreException throws if a tileStoreException occurs
+     */
     @Test
     public void verifyMercBoundsCalcBottom() throws TileStoreException {
         this.tmsDir = this.createTMSFolderMercator(4);
         TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMinY() == -20037508.342789244);
     }
-
+    
+    /**
+     * Tests if the tmsReader will return the correct minimum X value of a bounding box from a tmsFolder
+     * @throws TileStoreException throws if a tileStoreException occurs
+     */
     @Test
     public void verifyGeodBoundsCalcLeft() throws TileStoreException {
         this.tmsDir = this.createTMSFolderGeodetic(4);
         TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMinX() == -180.0);
     }
-
+    /**
+     * Tests if the tmsReader will return the correct maximum X value of a bounding box from a tmsFolder
+     * @throws TileStoreException throws if a tileStoreException occurs
+     */
     @Test
     public void verifyGeodBoundsCalcRight() throws TileStoreException {
         this.tmsDir = this.createTMSFolderGeodetic(4);
@@ -235,13 +267,20 @@ public class TMSTileStoreTest {
         assertTrue(tmsReader.getBounds().getMaxX() == 180.0);
     }
 
+    /**
+     * Tests if the tmsReader will return the correct maximum Y value of a bounding box from a tmsFolder
+     * @throws TileStoreException throws if a tileStoreException occurs
+     */
     @Test
     public void verifyGeodBoundsCalcTop() throws TileStoreException {
         this.tmsDir = this.createTMSFolderGeodetic(4);
         TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMaxY() == 90.0);
     }
-
+    /**
+     * Tests if the tmsReader will return the correct minimum Y value of a bounding box from a tmsFolder
+     * @throws TileStoreException throws if a tileStoreException occurs
+     */
     @Test
     public void verifyGeodBoundsCalcBottom() throws TileStoreException {
         this.tmsDir = this.createTMSFolderGeodetic(4);
@@ -249,6 +288,11 @@ public class TMSTileStoreTest {
         assertTrue(tmsReader.getBounds().getMinY() == -90.0);
     }
 
+    /**
+     * Tests if the tms reader returns the expected tile
+     * @throws TileStoreException throws if a tileStoreException occurs
+     * @throws MimeTypeParseException throws if the MimeType cannot be detected
+     */
     @Test
     public void verifyTileRetrieval() throws TileStoreException, MimeTypeParseException
     {
@@ -275,6 +319,11 @@ public class TMSTileStoreTest {
         assertTrue(bufferedImagesEqual(image, tileImage));
     }
 
+    /**
+     * 
+     * @throws TileStoreException
+     * @throws MimeTypeParseException
+     */
     @Test
     public void verifyTileInsertion() throws TileStoreException, MimeTypeParseException
     {

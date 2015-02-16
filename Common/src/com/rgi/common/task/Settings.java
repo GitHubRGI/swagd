@@ -31,19 +31,57 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+/**
+ * @author Duff Means
+ *
+ */
 public class Settings
 {
+    /**
+     * @author Duff Means
+     *
+     */
     public enum Setting
     {
+        /**
+         * The height of a tile in pixels
+         */
         TileHeight   (Integer.valueOf(TILESIZE)),
+        /**
+         * The width of a tile in pixels
+         */
         TileWidth    (Integer.valueOf(TILESIZE)),
+        /**
+         * The origin of the tile (ex: LowerLeft, UpperRight)
+         */
         TileOrigin   (com.rgi.common.tile.TileOrigin.LowerLeft),
+        /**
+         * Image type of the tiles (ex: Type.JPEG, Type.PNG)
+         */
         TileType     (Type.PNG),
+        /**
+         * 
+         */
         Quality      (70),
+        /**
+         * The folder where the tiles should be outputed to
+         */
         TileFolder   (System.getProperty("user.home")),
+        /**
+         * The file selected by the user
+         */
         FileSelection(null),
+        /**
+         * 
+         */
         NoDataColor  (TRANSPARENT),
+        /**
+         * The Spatial Reference System the user indicates the input images are in
+         */
         InputSRS     (null),
+        /**
+         * The Coordinate Reference System Profile Setting for the output tiles
+         */
         CrsProfile   (Profile.WebMercator);
 
         private Object defaultValue = null;
@@ -53,24 +91,68 @@ public class Settings
             this.defaultValue = defaultValue;
         }
 
+        /**
+         * 
+         * @return the default value 
+         */
         public Object getDefaultValue()
         {
             return this.defaultValue;
         }
     }
 
+    /**
+     * @author Duff Means
+     *
+     */
     public enum Type
     {
-        JPG, PNG;
+        /**
+         * The image type jpeg
+         */
+        JPG, 
+        /**
+         * The image type PNG
+         */
+        PNG;
     }
 
+    /**
+     * The Coordinate Reference System Profile containing
+     * the authority and version
+     * @author Duff Means
+     *
+     */
     public enum Profile
     {
+        /**
+         *  Web Mercator (also known as Spherical Mercator) projection
+         *  used in many popular web mapping applications (Google/Bing/OpenStreetMap/etc).
+         *  Sometimes know nas EPSG:900913
+         */
         WebMercator        ("EPSG", 3857),
+        /**
+         * World Mercator (also known as Ellipsoidal Mercator) projection to 
+         * include the spheroid's flattening of the Earth in the calculation
+         */
         WorldMercator      ("EPSG", 3395),
+        /**
+         * 
+         */
         ScaledWorldMercator("+proj=merc +datum=WGS84 +k_0=0.803798909747978", 9004),
+        /**
+         *  Spherical Mercator (also known as Web Mercator) projection
+         *  used in many popular web mapping applications (Google/Bing/OpenStreetMap/etc).
+         *  Sometimes know nas EPSG:900913
+         */
         SphericalMercator  ("EPSG", 3857),
+        /**
+         * World Geodetic System 1984 projection
+         */
         Geodetic           ("EPSG", 4326),
+        /**
+         * 
+         */
         Raster             (null, 0);
 
         private String auth;
@@ -82,11 +164,20 @@ public class Settings
             this.id = id;
         }
 
+        /**
+         * Returns the authority of the Coordinate Reference System
+         * @return authority the Coordinate Reference System authority name (typically "EPSG")
+         */
         public String getAuthority()
         {
             return this.auth;
         }
 
+        /**
+         * Returns the version number of the Coordinate Reference System
+         * 
+         * @return identifier the version number of the authority
+         */
         public int getID()
         {
             return this.id;
@@ -94,10 +185,16 @@ public class Settings
     }
 
     private static final int  TILESIZE    = 256;
+    /**
+     * 
+     */
     public static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 
     private final Preferences       prefs       = Preferences.userNodeForPackage(Settings.class);
 
+    /**
+     * 
+     */
     public Settings()
     {
         try
@@ -110,6 +207,14 @@ public class Settings
         }
     }
 
+    /**
+     * Saves the user's settings
+     * 
+     * @throws Exception
+     *             an Exception is thrown when settings cannot be saved. If this
+     *             saving operation cannot be completed due to a failure in the
+     *             backing store, or inability to communicate with it.
+     */
     public void save() throws Exception
     {
         try
@@ -124,8 +229,10 @@ public class Settings
     }
 
     /**
-     *
+     * Returns the settings of the user's preferences
+     * 
      * @param setting
+     *            the settings the user inputed
      * @return the setting value, or null
      */
     public String get(final Setting setting)
@@ -141,11 +248,23 @@ public class Settings
         return this.prefs.get(setting.name(), null);
     }
 
+    /**
+     * Places the setting and it's value in into the Object Preferences
+     * 
+     * @param setting
+     *            the type of setting (Ex:TileHeight)
+     * @param value
+     *            the value of the setting chosen
+     */
     public void set(final Setting setting, final String value)
     {
         this.prefs.put(setting.name(), value);
     }
 
+    /**
+     * @param 
+     * @return
+     */
     public Color getColor(final Setting setting)
     {
         final String colorStr = this.prefs.get(setting.name(), null);
@@ -171,6 +290,11 @@ public class Settings
         return null;
     }
 
+    /**
+     * @param setting
+     * @param value
+     * @throws IOException
+     */
     public void set(final Setting setting, final Color value) throws IOException
     {
         try(ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

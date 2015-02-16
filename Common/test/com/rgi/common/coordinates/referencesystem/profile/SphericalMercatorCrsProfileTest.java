@@ -37,9 +37,17 @@ import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
+/**
+ * @author Jenifer Cochran
+ *
+ */
 @SuppressWarnings("static-method")
 public class SphericalMercatorCrsProfileTest
 {
+    /**
+     * @author Jenifer Cochran
+     *
+     */
     public class LatLongMetersYMetersX
     {
        private double latitude;
@@ -171,6 +179,7 @@ public class SphericalMercatorCrsProfileTest
      * Tests 100 points the NGA uses to verify if the conversion from the crsProfile to global
      * geodetic passes edge cases, flipped x and y values, and other various parts of the world
      * to ensure that the formula used is correct.
+     * @throws FileNotFoundException throws if the File object cannot find specified file
      */
     @Test
     public void toGlobalGeodetic() throws FileNotFoundException
