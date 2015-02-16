@@ -318,7 +318,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                       upperRightCorner.getY(),
                                       upperRightCorner.getX());
     }
-    
+
     /**
      * Counts the number of files of a certain type in an input folder.
      *
@@ -386,7 +386,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     {
         final File file = path.toFile();
 
-        final String absolutePath = file.getAbsolutePath();
+        final String absolutePath = file.getAbsolutePath().replace('\\', '/');
 
         final Matcher tmsFileMatch = TmsFilePattern.matcher(absolutePath);
 
