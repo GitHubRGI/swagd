@@ -79,11 +79,11 @@ public class TileJob implements Runnable
     //private double workTotal = 0;
     //private int workUnits = 0;
 
-    public TileJob(final File file,
+    public TileJob(final File            file,
                    final TileStoreReader tileStoreReader,
                    final TileStoreWriter tileStoreWriter,
-                   final Settings settings,
-                   final TaskMonitor monitor)
+                   final Settings        settings,
+                   final TaskMonitor     monitor)
     {
         this.file            = file;
         this.tileStoreReader = tileStoreReader;
@@ -144,17 +144,11 @@ public class TileJob implements Runnable
         {
             final TileMatrixDimensions tileMatrixDimensions = this.tileScheme.dimensions(zoomLevel);
 
-            final Coordinate<Integer> upperLeftTileCoordinate  = this.crsToTileCoordinate(imageCrsBounds.getTopLeft(),     this.crsProfile.getBounds(), tileMatrixDimensions); // TODO should I be using world bounds here?
-            final Coordinate<Integer> lowerRightTileCoordinate = this.crsToTileCoordinate(imageCrsBounds.getBottomRight(), this.crsProfile.getBounds(), tileMatrixDimensions); // TODO should I be using world bounds here?
+            final Coordinate<Integer> upperLeftTileCoordinate  = this.crsToTileCoordinate(imageCrsBounds.getTopLeft(),     this.crsProfile.getBounds(), tileMatrixDimensions);
+            final Coordinate<Integer> lowerRightTileCoordinate = this.crsToTileCoordinate(imageCrsBounds.getBottomRight(), this.crsProfile.getBounds(), tileMatrixDimensions);
 
             final int numTilesWidth  = Math.abs(lowerRightTileCoordinate.getX() - upperLeftTileCoordinate.getX()) + 1;
             final int numTilesHeight = Math.abs(lowerRightTileCoordinate.getY() - upperLeftTileCoordinate.getY()) + 1;
-
-            // CRS units (e.g. meters) per pixel = (world size / num tiles) / pixels per tileS
-            final double ry = (this.crsProfile.getBounds().getHeight() / tileMatrixDimensions.getHeight()) / TILESIZE;
-            final double rx = (this.crsProfile.getBounds().getWidth()  / tileMatrixDimensions.getWidth())  / TILESIZE;
-
-            final Dimensions tileBounds = new Dimensions(-1, -1);// TOODOOOOOOOOOOOOO this.crsProfile.getTileDimensions(tileMatrixDimensions);
 
             for(int x = 0; x < numTilesWidth; ++x)
             {
@@ -175,14 +169,22 @@ public class TileJob implements Runnable
 
                     if(zoomLevel == maxZoom)
                     {
+                        // CRS units (e.g. meters) per pixel = (world size / num tiles) / pixels per tileS
+                        final double ry = (this.crsProfile.getBounds().getHeight() / tileMatrixDimensions.getHeight()) / TILESIZE;
+                        final double rx = (this.crsProfile.getBounds().getWidth()  / tileMatrixDimensions.getWidth())  / TILESIZE;
+
+                        final double tileWidth  = this.crsProfile.getBounds().getHeight() / tileMatrixDimensions.getHeight();
+                        final double tileHeight = this.crsProfile.getBounds().getWidth()  / tileMatrixDimensions.getWidth();
+
+
                         // pixels = (pixels * meters per pixel) / meters per pixel
                         // w' = (w * r) / r'
                         final int scaledHeight = (int)((dataset.getRasterYSize() * geoTransform.getPixelDimensions().getHeight()) / ry);
                         final int scaledWidth  = (int)((dataset.getRasterXSize() * geoTransform.getPixelDimensions().getWidth())  / rx);
 
                         // pixels = (meters - meters) / meters per pixel
-                        final int offsetY = (int)((geoTransform.getTopLeft().getY() - tileBounds.getHeight()) / ry);
-                        final int offsetX = (int)((tileBounds.getWidth() - geoTransform.getTopLeft().getX())  / rx);
+                        final int offsetY = (int)((geoTransform.getTopLeft().getY() - tileHeight) / ry);
+                        final int offsetX = (int)((tileWidth - geoTransform.getTopLeft().getX())  / rx);
 
                         // generate base tile set
                         graphic.setColor(this.noDataColor);

@@ -26,8 +26,6 @@ hs_err_pid*
 bin/
 tmp/
 org/
-Gdal2Tiles/org/
-GeoViewer/org/
 *.tmp
 *.bak
 *.swp
