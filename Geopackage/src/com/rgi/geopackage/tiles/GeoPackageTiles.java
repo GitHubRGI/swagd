@@ -1029,20 +1029,21 @@ public class GeoPackageTiles
     private static BoundingBox roundBounds(BoundingBox bounds, CrsProfile crs)
     {
         int percision = crs.requiredPercision();
-        return new BoundingBox(roundPercision(bounds.getMinY(), percision),
-                               roundPercision(bounds.getMinX(), percision),
-                               roundPercision(bounds.getMaxY(), percision),
-                               roundPercision(bounds.getMaxX(), percision));
+        return new BoundingBox(truncatePercision(bounds.getMinY(), percision),
+                               truncatePercision(bounds.getMinX(), percision),
+                               truncatePercision(bounds.getMaxY(), percision),
+                               truncatePercision(bounds.getMaxX(), percision));
     }
     /**
      * Rounds the number to level of precision need for the appropriate level of accuracy
      * @param number
      * @return the number rounded to the level of precision number of decimal places
      */
-    private static double roundPercision(double number, int percision)
+    private static double truncatePercision(double number, int percision)
     {
         double multiplyBy = Math.pow(10, percision);
-        return Math.round(number*multiplyBy)/multiplyBy;
+        
+        return ((int)(number*multiplyBy))/multiplyBy;
     }
     
 
