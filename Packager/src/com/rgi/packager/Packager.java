@@ -24,6 +24,7 @@ import javax.activation.MimeType;
 
 import store.GeoPackageWriter;
 
+import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.task.AbstractTask;
 import com.rgi.common.task.MonitorableTask;
@@ -61,7 +62,13 @@ public class Packager extends AbstractTask implements MonitorableTask {
 				    reader.stream().forEach(tileHandle -> {
                         try
                         {
-                            gpkgWriter.addTile(smcp.tileToCrsCoordinate(tileHandle.getRow(), tileHandle.getColumn(), tileHandle.getBounds(), tileHandle.getMatrix(), reader.getTileOrigin()), tileHandle.getZoomLevel(), tileHandle.getImage());
+                            final CrsCoordinate coordinate = smcp.tileToCrsCoordinate(tileHandle.getRow(),
+                                                                                      tileHandle.getColumn(),
+                                                                                      tileHandle.getBounds(),
+                                                                                      tileHandle.getMatrix(),
+                                                                                      reader.getTileOrigin());
+
+                            gpkgWriter.addTile(coordinate, tileHandle.getZoomLevel(), tileHandle.getImage());
 
                         }
                         catch(final Exception e)
@@ -69,6 +76,7 @@ public class Packager extends AbstractTask implements MonitorableTask {
                             e.printStackTrace();
                         }
                     });
+				    System.out.println("Done.");
 				}
 			} catch (final Exception e)
 			{
