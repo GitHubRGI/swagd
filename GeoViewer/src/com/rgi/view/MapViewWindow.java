@@ -84,7 +84,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
         final TileStoreReader tileStore = this.pickTileStore(location);
 
-        //this.treeMap.getViewer().setTileSource(new TileStoreTileSource(tileStore));
+        //this.treeMap.getViewer().setTileSource(new TileStoreTileSource(tileStore)); // TODO - investigate which method is causing the viewer to not work
 
         this.treeMap.getViewer().setTileLoader(new TileStoreLoader(tileStore, this.treeMap.getViewer()));
 

@@ -123,7 +123,7 @@ public class TileStoreTileSource implements TileSource
     @Override
     public int getTileSize()
     {
-        return 256;
+        return (int)this.tileStore.getImageDimensions().getWidth();
     }
 
     @Override
