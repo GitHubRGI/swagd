@@ -38,7 +38,7 @@ public class GeoTransformation
         this.topLeft = new Coordinate<>(this.affineTransform[3],
                                         this.affineTransform[0]);
 
-        this.pixelDimensions = new Dimensions(-this.affineTransform[5],  // Height is stored as a negative number...);
+        this.pixelDimensions = new Dimensions(-this.affineTransform[5],  // Height is stored as a negative number...
                                                this.affineTransform[1]);
     }
 
@@ -83,8 +83,8 @@ public class GeoTransformation
 
     public BoundingBox getBounds(final Dataset dataset)
     {
-        return new BoundingBox(this.affineTransform[0],
-                               this.affineTransform[3] + this.affineTransform[5] * dataset.getRasterYSize(),
+        return new BoundingBox(this.affineTransform[3] + this.affineTransform[5] * dataset.getRasterYSize(),
+                               this.affineTransform[0],
                                this.affineTransform[3],
                                this.affineTransform[0] + this.affineTransform[1] * dataset.getRasterXSize());
     }
