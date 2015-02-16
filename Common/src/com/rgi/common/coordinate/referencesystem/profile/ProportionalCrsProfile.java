@@ -24,6 +24,10 @@ import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
+/**
+ * Calculates profile information for coordinate reference systems that are proportional.
+ * 
+ */
 public abstract class ProportionalCrsProfile implements CrsProfile
 {
     @Override
