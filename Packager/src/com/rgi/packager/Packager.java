@@ -20,12 +20,18 @@ package com.rgi.packager;
 
 import java.io.File;
 
+import store.GeoPackageWriter;
+
+import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.task.AbstractTask;
 import com.rgi.common.task.MonitorableTask;
 import com.rgi.common.task.Settings;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
+import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileScheme;
+import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 
@@ -39,14 +45,20 @@ public class Packager extends AbstractTask implements MonitorableTask {
 		File[] files = opts.getFiles(Setting.FileSelection);
 		File gpkgFile = new File("foo.gpkg");
 		if (files.length == 1) {
-			try (GeoPackage gpkg = new GeoPackage(gpkgFile, OpenMode.Create))
+			try
 			{
 				// Get the stream of tile handles from the TmsReader
+				SphericalMercatorCrsProfile smcp = new SphericalMercatorCrsProfile();
+				TmsReader reader = new TmsReader(smcp, files[0].toPath());
 				// Write them all to the geopackage
+				Integer minZoom = reader.getZoomLevels().stream().min(Integer::compare).get();
+				Integer maxZoom = reader.getZoomLevels().stream().max(Integer::compare).get();
+				//TileScheme ts = new TileScheme(minZoom, maxZoom, tileMatrixHeight, tileMatrixWidth, TileOrigin.UpperLeft);
+				//GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile, "footiles", "1", "shitty tiles", reader.getBounds(), smcp, "mercator",	"2.0", "undefined", tileScheme, imageOutputFormat, imageWriteOptions)
+				
 			} catch (Exception e)
 			{
 				e.printStackTrace();
-				gpkgFile.delete();
 			}
 		} else {
 			// i dunno
