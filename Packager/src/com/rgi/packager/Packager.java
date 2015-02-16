@@ -31,44 +31,46 @@ import com.rgi.common.task.Settings;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
-import com.rgi.common.tile.TileOrigin;
-import com.rgi.common.tile.scheme.TileScheme;
-import com.rgi.common.tile.scheme.ZoomTimesTwo;
-import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.tms.TmsReader;
-import com.rgi.geopackage.GeoPackage;
-import com.rgi.geopackage.GeoPackage.OpenMode;
 
 public class Packager extends AbstractTask implements MonitorableTask {
-	public Packager(TaskFactory factory) {
+	public Packager(final TaskFactory factory) {
 		super(factory);
 	}
 
 	@Override
-	public void execute(Settings opts) {
-		File[] files = opts.getFiles(Setting.FileSelection);
-		File gpkgFile = new File("foo.gpkg");
+	public void execute(final Settings opts) {
+		final File[] files = opts.getFiles(Setting.FileSelection);
+		final File gpkgFile = new File("foo.gpkg");
 		if (files.length == 1) {
 			try
 			{
-				// Get the stream of tile handles from the TmsReader
-				SphericalMercatorCrsProfile smcp = new SphericalMercatorCrsProfile();
-				TmsReader reader = new TmsReader(smcp, files[0].toPath());
-				// Write them all to the geopackage
-				GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile, smcp, "footiles", "1", "test tiles", reader.getBounds(), reader.getTimeScheme(), new MimeType("image/png"), null);
-				reader.stream().forEach(tileHandle -> {
-					try
-					{
-                        gpkgWriter.addTile(smcp.tileToCrsCoordinate(tileHandle.getRow(), tileHandle.getColumn(), tileHandle.getBounds(), tileHandle.getMatrix(), reader.getTileOrigin()), tileHandle.getZoomLevel(), tileHandle.getImage());
+				final SphericalMercatorCrsProfile smcp = new SphericalMercatorCrsProfile();
+				final TmsReader reader = new TmsReader(smcp, files[0].toPath());
 
-					}
-					catch(Exception e)
-					{
-						e.printStackTrace();
-					}
-				});
-				
-			} catch (Exception e)
+				try(final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
+                                                                             smcp.getCoordinateReferenceSystem(),
+                                                                             "footiles",
+                                                                             "1",
+                                                                             "test tiles",
+                                                                             reader.getBounds(),
+                                                                             reader.getTimeScheme(),
+                                                                             new MimeType("image/png"),
+                                                                             null))
+				{
+				    reader.stream().forEach(tileHandle -> {
+                        try
+                        {
+                            gpkgWriter.addTile(smcp.tileToCrsCoordinate(tileHandle.getRow(), tileHandle.getColumn(), tileHandle.getBounds(), tileHandle.getMatrix(), reader.getTileOrigin()), tileHandle.getZoomLevel(), tileHandle.getImage());
+
+                        }
+                        catch(final Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+                    });
+				}
+			} catch (final Exception e)
 			{
 				e.printStackTrace();
 			}
@@ -78,7 +80,7 @@ public class Packager extends AbstractTask implements MonitorableTask {
 	}
 
 	@Override
-	public void addMonitor(TaskMonitor monitor) {
+	public void addMonitor(final TaskMonitor monitor) {
 		// TODO Auto-generated method stub
 
 	}

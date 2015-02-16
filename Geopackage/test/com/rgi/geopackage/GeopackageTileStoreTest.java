@@ -46,7 +46,6 @@ import store.GeoPackageWriter;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
@@ -736,7 +735,7 @@ public class GeopackageTileStoreTest
         final int zoomLevel = 0;
 
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
-                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               new CoordinateReferenceSystem("EPSG", 4326),
                                                                tableName,
                                                                "identifier",
                                                                "description",
@@ -781,7 +780,7 @@ public class GeopackageTileStoreTest
         final File testFile = this.getRandomFile(6);
 
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
-                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               new CoordinateReferenceSystem("EPSG", 4326),
                                                                "foo",
                                                                "identifier",
                                                                "description",
@@ -816,7 +815,7 @@ public class GeopackageTileStoreTest
         final File testFile = this.getRandomFile(6);
 
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
-                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               new CoordinateReferenceSystem("EPSG", 4326),
                                                                "foo",
                                                                "identifier",
                                                                "description",
@@ -851,7 +850,7 @@ public class GeopackageTileStoreTest
         final File testFile = this.getRandomFile(6);
 
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
-                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               new CoordinateReferenceSystem("EPSG", 4326),
                                                                "foo",
                                                                "identifier",
                                                                "description",
@@ -887,7 +886,7 @@ public class GeopackageTileStoreTest
         final File testFile = this.getRandomFile(6);
 
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
-                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               new CoordinateReferenceSystem("EPSG", 4326),
                                                                "foo",
                                                                "identifier",
                                                                "description",
@@ -922,7 +921,7 @@ public class GeopackageTileStoreTest
         final File testFile = this.getRandomFile(8);
 
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
-                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               new CoordinateReferenceSystem("EPSG", 4326),
                                                                null,
                                                                "identifier",
                                                                "description",
@@ -957,7 +956,7 @@ public class GeopackageTileStoreTest
         final File testFile = this.getRandomFile(8);
 
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(null,
-                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               new CoordinateReferenceSystem("EPSG", 4326),
                                                                "foo",
                                                                "identifier",
                                                                "description",
@@ -991,7 +990,7 @@ public class GeopackageTileStoreTest
         final File testFile = this.getRandomFile(8);
 
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
-                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               new CoordinateReferenceSystem("EPSG", 4326),
                                                                "foo",
                                                                "identifier",
                                                                "description",
@@ -1026,7 +1025,7 @@ public class GeopackageTileStoreTest
         final File testFile = this.getRandomFile(8);
 
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
-                                                               CrsProfileFactory.create("EPSG", 4326),
+                                                               new CoordinateReferenceSystem("EPSG", 4326),
                                                                "foo",
                                                                "identifier",
                                                                "description",
