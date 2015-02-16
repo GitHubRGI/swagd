@@ -20,6 +20,7 @@ package org.openstreetmap.gui.jmapviewer;
 
 import java.awt.image.BufferedImage;
 
+import org.openstreetmap.gui.jmapviewer.Tile;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileJob;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoaderListener;
