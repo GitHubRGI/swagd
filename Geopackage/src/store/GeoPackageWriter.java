@@ -35,8 +35,10 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
@@ -58,8 +60,8 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
     /**
      * @param geoPackageFile
      *             Handle to a new or existing GeoPackage file
-     * @param crsProfile
-     *             Coordinate reference system metadata
+     * @param coordinateReferenceSystem
+     *             Coordinate reference system
      * @param tileSetTableName
      *             Name for the new tile set's table in the GeoPackage database
      * @param tileSetIdentifier
@@ -80,26 +82,26 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
      * @throws SQLException
      * @throws ConformanceException
      */
-    public GeoPackageWriter(final File            geoPackageFile,
-                            final CrsProfile      crsProfile,
-                            final String          tileSetTableName,
-                            final String          tileSetIdentifier,
-                            final String          tileSetDescription,
-                            final BoundingBox     tileSetBounds,
-                            final TileScheme      tileScheme,
-                            final MimeType        imageOutputFormat,
-                            final ImageWriteParam imageWriteOptions) throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public GeoPackageWriter(final File                      geoPackageFile,
+                            final CoordinateReferenceSystem coordinateReferenceSystem,
+                            final String                    tileSetTableName,
+                            final String                    tileSetIdentifier,
+                            final String                    tileSetDescription,
+                            final BoundingBox               tileSetBounds,
+                            final TileScheme                tileScheme,
+                            final MimeType                  imageOutputFormat,
+                            final ImageWriteParam           imageWriteOptions) throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
     {
         this.geoPackage = new GeoPackage(geoPackageFile, OpenMode.OpenOrCreate);
 
         try
         {
-            if(crsProfile == null)
+            if(coordinateReferenceSystem == null)
             {
-                throw new IllegalArgumentException("Coordinate reference system profile cannot be null");
+                throw new IllegalArgumentException("Coordinate reference system cannot be null");
             }
 
-            this.crsProfile = crsProfile;
+            this.crsProfile = CrsProfileFactory.create(coordinateReferenceSystem);
 
             final SpatialReferenceSystem spatialReferenceSystem = this.geoPackage.core()
                                                                                  .addSpatialReferenceSystem(this.crsProfile.getName(),
