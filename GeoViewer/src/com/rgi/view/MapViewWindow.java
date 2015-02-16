@@ -34,7 +34,8 @@ import javax.swing.WindowConstants;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.DefaultMapController;
 import org.openstreetmap.gui.jmapviewer.JMapViewerTree;
-import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
+//import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
+//import org.openstreetmap.gui.jmapviewer.TileStoreTileSource;
 import org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent;
 import org.openstreetmap.gui.jmapviewer.interfaces.JMapViewerEventListener;
 
@@ -84,9 +85,13 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
         final TileStoreReader tileStore = this.pickTileStore(location);
 
+<<<<<<< HEAD
         //this.treeMap.getViewer().setTileSource(new TileStoreTileSource(tileStore)); // TODO - investigate which method is causing the viewer to not work
+=======
+        //this.treeMap.getViewer().setTileSource(new TileStoreTileSource(tileStore));
+>>>>>>> commenting out packaging code temporarily
 
-        this.treeMap.getViewer().setTileLoader(new TileStoreLoader(tileStore, this.treeMap.getViewer()));
+        //this.treeMap.getViewer().setTileLoader(new TileStoreLoader(tileStore, this.treeMap.getViewer()));
 
 
         final CrsProfile profile = CrsProfileFactory.create(tileStore.getCoordinateReferenceSystem());
