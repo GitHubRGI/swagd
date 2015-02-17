@@ -24,6 +24,12 @@ package com.rgi.geopackage.verification;
  */
 public enum Severity
 {
+    /**
+     * A minor violation of the GeoPackage Standards (http://www.geopackage.org/spec/)
+     */
     Warning,
+    /**
+     * A major violation of the GeoPackage Standards (http://www.geopackage.org/spec/)
+     */
     Error
 }

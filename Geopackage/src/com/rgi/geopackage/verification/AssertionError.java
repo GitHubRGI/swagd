@@ -25,16 +25,25 @@ package com.rgi.geopackage.verification;
 @SuppressWarnings("serial")
 public class AssertionError extends Exception
 {
+    /**
+     * Assertion Error Constructor
+     */
     public AssertionError()
     {
 
     }
 
+    /**
+     * @param message the message that is displayed if this type of exception occurs
+     */
     public AssertionError(final String message)
     {
         super(message);
     }
 
+    /**
+     * @param exception the message that is displayed if this type of exception occurs
+     */
     public AssertionError(final Exception exception)
     {
         super(exception);

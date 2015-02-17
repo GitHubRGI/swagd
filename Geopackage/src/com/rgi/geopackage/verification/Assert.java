@@ -27,6 +27,12 @@ import java.util.Arrays;
  */
 public class Assert
 {
+    /**
+     * @param message The error message that is displayed when the arrays do not equal
+     * @param expecteds The expected values of the array
+     * @param actuals the actual values of the array
+     * @throws AssertionError throws when the arrays are not equal
+     */
     public static void assertArrayEquals(final String message, final byte[] expecteds, final byte[] actuals) throws AssertionError
     {
         if(Arrays.equals(expecteds, actuals) == false)
@@ -35,11 +41,20 @@ public class Assert
         }
     }
 
+    /**
+     * @param condition a relational expression that returns true or false
+     * @throws AssertionError throws when the condition is false
+     */
     static public void assertTrue(final boolean condition) throws AssertionError
     {
         Assert.assertTrue(null, condition);
     }
 
+    /**
+     * @param message the message that is displayed when the Assertion Error is thrown
+     * @param condition the relational expression that returns true or false
+     * @throws AssertionError throws when the condition is false
+     */
     static public void assertTrue(final String message, final boolean condition) throws AssertionError
     {
         if(condition == false)
@@ -48,6 +63,10 @@ public class Assert
         }
     }
 
+    /**
+     * @param message the message that is displayed when the Assertion Error is thrown
+     * @throws AssertionError always is thrown
+     */
     static public void fail(final String message) throws AssertionError
     {
         if(message == null)

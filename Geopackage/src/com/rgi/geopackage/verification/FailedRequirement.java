@@ -24,6 +24,10 @@ package com.rgi.geopackage.verification;
  */
 public class FailedRequirement
 {
+    /**
+     * @param reason the message with why a certain GeoPackage failed a specific requirement
+     * @param requirement the requirement that the GeoPackage failed
+     */
     public FailedRequirement(final String reason, final Requirement requirement)
     {
         this.reason      = reason;

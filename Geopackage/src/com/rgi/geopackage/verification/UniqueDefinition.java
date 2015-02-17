@@ -23,26 +23,44 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class UniqueDefinition
 {
+    /**
+     * @param columnNames
+     *            the names of the columns that have the SQLite property of Unique
+     */
     public UniqueDefinition(final String... columnNames)
     {
         this(Arrays.asList(columnNames));
     }
 
+    /**
+     * @param columnNames
+     *            the names of the columns that have the SQLite property of
+     *            Unique
+     */
     public UniqueDefinition(final Collection<String> columnNames)
     {
         this.columnNames = new HashSet<>(columnNames);
     }
 
     /**
-     * @return the columnNames
+     * @return the columnNames the names of the columns that have the SQLite
+     *         property of Unique
      */
     public Set<String> getColumnNames()
     {
         return this.columnNames;
     }
 
+    /**
+     * @param columnName the name of the column
+     * @return true if the column name given is in the set of this.columnNames; otherwise returns false.
+     */
     public boolean equals(final String columnName)
     {
         return this.columnNames.size() == 1 &&

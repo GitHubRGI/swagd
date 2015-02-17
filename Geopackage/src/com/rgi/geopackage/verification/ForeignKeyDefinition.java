@@ -18,12 +18,16 @@
 
 package com.rgi.geopackage.verification;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class ForeignKeyDefinition
 {
     /**
-     * @param referenceTableName
-     * @param fromColumnName
-     * @param toColumnName
+     * @param referenceTableName the table name with the foreign key constraint 
+     * @param fromColumnName the name of the column that the link between two tables is from 
+     * @param toColumnName the name of the column that the link between two tables is to
      */
     public ForeignKeyDefinition(final String referenceTableName, final String fromColumnName, final String toColumnName)
     {

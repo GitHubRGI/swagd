@@ -34,7 +34,10 @@ public class TableDefinition
      * TODO
      *
      * @param name
+     *            the name of the table
      * @param columns
+     *            the names of the columns that pertain to the table name along
+     *            with the Column Definition for each column
      */
     public TableDefinition(final String                        name,
                            final Map<String, ColumnDefinition> columns)
@@ -46,8 +49,12 @@ public class TableDefinition
      * TODO
      *
      * @param name
+     *            the name of the table
      * @param columns
+     *            the names of the columns that pertain to the table name along
+     *            with the Column Definition for each column
      * @param foreignKeys
+     *            the set of Foreign Key Constraints to the table
      */
     public TableDefinition(final String                        name,
                            final Map<String, ColumnDefinition> columns,
@@ -61,9 +68,15 @@ public class TableDefinition
      * TODO
      *
      * @param name
+     *            the name of the table
      * @param columns
+     *            the names of the columns that pertain to the table name along
+     *            with the Column Definition for each column
      * @param foreignKeys
+     *            the set of Foreign Key Constraints to the table
      * @param groupUniques
+     *            the set of columns that must be unique (not necessarily unique
+     *            individually, but unique as a set)
      */
     public TableDefinition(final String                        name,
                            final Map<String, ColumnDefinition> columns,
