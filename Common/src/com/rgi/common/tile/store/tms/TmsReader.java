@@ -241,7 +241,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
             return Files.walk(TmsReader.this.location)
                         .map(path -> { final File file = path.toFile();
 
-                                       final String absolutePath = file.getAbsolutePath().replace('\\', '/');
+                                       final String absolutePath = file.getAbsolutePath();
 
                                        final Matcher tmsFileMatch = TmsFilePattern.matcher(absolutePath);
 
@@ -386,7 +386,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     {
         final File file = path.toFile();
 
-        final String absolutePath = file.getAbsolutePath().replace('\\', '/');
+        final String absolutePath = file.getAbsolutePath();
 
         final Matcher tmsFileMatch = TmsFilePattern.matcher(absolutePath);
 
@@ -562,5 +562,5 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     private long         tileCount  = -1;
     private long         storeSize  = -1;
 
-    private static Pattern TmsFilePattern = Pattern.compile("[^0-9]*([0-9]+)/([0-9]+)/([0-9]+)\\.[^/]*$");
+    private static Pattern TmsFilePattern = Pattern.compile("[^0-9]*([0-9]+)[\\\\/]([0-9]+)[\\\\/]([0-9]+)\\.[^\\\\/]*$");
 }
