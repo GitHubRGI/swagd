@@ -36,11 +36,17 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 public class ImageUtility
 {
     /**
-     * @param bufferedImage the image wanting to convert to bytes[]
-     * @param imageWriter 
+     * @param bufferedImage
+     *            the image wanting to convert to bytes[]
+     * @param imageWriter
+     *            Writes out images in the context of the Java Image I/O
+     *            framework
      * @param imageWriteParameter
+     *            controls aspects (transparency, compression, etc) of the image
+     *            output process
      * @return the image in bytes
-     * @throws IOException throws if an I/O exception occurs 
+     * @throws IOException
+     *             throws if an I/O exception occurs
      */
     public static byte[] bufferedImageToBytes(final BufferedImage bufferedImage, final ImageWriter imageWriter, final ImageWriteParam imageWriteParameter) throws IOException
     {
@@ -52,11 +58,6 @@ public class ImageUtility
         if(imageWriter == null)
         {
             throw new IllegalArgumentException("Image writer may not be null");
-        }
-
-        if(imageWriteParameter == null)
-        {
-            throw new IllegalArgumentException("Image write parameter may not be null");
         }
 
         try(final ByteArrayOutputStream        outputStream     = new ByteArrayOutputStream();
