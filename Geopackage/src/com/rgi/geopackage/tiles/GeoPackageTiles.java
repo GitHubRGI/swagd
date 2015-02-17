@@ -899,9 +899,10 @@ public class GeoPackageTiles
      * Gets the tile matrices associated with a tile set
      *
      * @param tileSet
-     *             A handle to a set of tiles
-     * @return Returns every tile matrix associated with a tile set in ascending order by zoom level
-    * @throws SQLException
+     *            A handle to a set of tiles
+     * @return Returns every tile matrix associated with a tile set in ascending
+     *         order by zoom level
+     * @throws SQLException
      *             SQLException thrown by automatic close() invocation on
      *             preparedStatement or when an SQLException occurs retrieving
      *             information from the database

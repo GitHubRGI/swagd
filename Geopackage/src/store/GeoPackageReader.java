@@ -55,8 +55,31 @@ import com.rgi.geopackage.tiles.TileMatrixSet;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class GeoPackageReader implements AutoCloseable, TileStoreReader
 {
+    /**
+     * @param geoPackageFile
+     *            Handle to a new or existing GeoPackage file
+     * @param tileSetTableName
+     *            Name for the new tile set's table in the GeoPackage database
+     * @throws ClassNotFoundException
+     *             when the SQLite JDBC driver cannot be found
+     * @throws ConformanceException
+     *             when the verifyConformance parameter is true, and if there
+     *             are any conformance violations with the severity
+     *             Severity.Error
+     * @throws IOException
+     *             when openMode is set to OpenMode.Create, and the file already
+     *             exists, openMode is set to OpenMode.Open, and the file does
+     *             not exist, or if there is a file read error
+     * @throws SQLException
+     *             in various cases where interaction with the JDBC connection
+     *             fails
+     */
     public GeoPackageReader(final File geoPackageFile, final String tileSetTableName) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         if(geoPackageFile == null)

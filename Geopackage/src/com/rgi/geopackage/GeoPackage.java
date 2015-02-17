@@ -126,29 +126,37 @@ public class GeoPackage implements AutoCloseable
 
     /**
      * @param file
-     *          Location on disk that represents where an existing GeoPackage will opened and/or created
+     *            Location on disk that represents where an existing GeoPackage
+     *            will opened and/or created
      * @param verifyConformance
-     *          Indicates whether {@link #verify()} should be called
-     *          automatically.  If verifyConformance is true and
-     *          {@link #verify()} is called automatically, it will throw if
-     *          there are any conformance violations with the severity
-     *          {@link Severity#Error}.  Throwing from this method means that
-     *          it won't be possible to instantiate a GeoPackage object based
-     *          on an SQLite "GeoPackage" file with severe errors.
+     *            Indicates whether {@link #verify()} should be called
+     *            automatically. If verifyConformance is true and
+     *            {@link #verify()} is called automatically, it will throw if
+     *            there are any conformance violations with the severity
+     *            {@link Severity#Error}. Throwing from this method means that
+     *            it won't be possible to instantiate a GeoPackage object based
+     *            on an SQLite "GeoPackage" file with severe errors.
      * @param openMode
-     *          Controls the file creation/opening behavior
+     *            Controls the file creation/opening behavior
      * @throws ClassNotFoundException
-     *          when the SQLite JDBC driver cannot be found
+     *             when the SQLite JDBC driver cannot be found
      * @throws ConformanceException
-     *          when the verifyConformance parameter is true, and if
-     *          there are any conformance violations with the severity
-     *          {@link Severity#Error}
+     *             when the verifyConformance parameter is true, and if there
+     *             are any conformance violations with the severity
+     *             {@link Severity#Error}
+     * @throws IOException
+     *             when openMode is set to OpenMode.Create, and the file already
+     *             exists, openMode is set to OpenMode.Open, and the file does
+     *             not exist, or if there is a file read error
      * @throws FileAlreadyExistsException
-     *          when openMode is set to OpenMode.Create, and the file already exists
+     *             when openMode is set to OpenMode.Create, and the file already
+     *             exists
      * @throws FileNotFoundException
-     *          when openMode is set to OpenMode.Open, and the file does not exist
+     *             when openMode is set to OpenMode.Open, and the file does not
+     *             exist
      * @throws SQLException
-     *          in various cases where interaction with the JDBC connection fails
+     *             in various cases where interaction with the JDBC connection
+     *             fails
      */
     public GeoPackage(final File file, final boolean verifyConformance, final OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
@@ -242,7 +250,6 @@ public class GeoPackage implements AutoCloseable
      * The version of the SQLite database associated with this GeoPackage
      *
      * @return the sqliteVersion
-     * @throws IOException if the database file backing this GeoPackage cannot be opened or read from
      */
     public String getSqliteVersion()
     {
