@@ -918,14 +918,14 @@ public class GeoPackageTiles
         final CrsProfile    crsProfile    = CrsProfileFactory.create(crs);
         final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
         final BoundingBox   tileSetBounds = truncateBounds(tileMatrixSet.getBoundingBox(), crsProfile);
-        
+
         if(!Utility.contains(tileSetBounds, crsCoordinate, GeoPackageTiles.Origin))
         {
             return null;    // The requested SRS coordinate is outside the bounds of our data
         }
 
         final Coordinate<Double> boundsCorner = Utility.boundsCorner(tileSetBounds, GeoPackageTiles.Origin);
-        
+
 
         final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
         final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();
@@ -1019,6 +1019,7 @@ public class GeoPackageTiles
                " tile_data   BLOB    NOT NULL,                  -- Of an image MIME type specified in clauses Tile Encoding PNG, Tile Encoding JPEG, Tile Encoding WEBP\n" +
                " UNIQUE (zoom_level, tile_column, tile_row));";
     }
+
     /**
      * Truncates the bounds to the appropriate level of accuracy
      * (2 decimal places for meters, 7 decimal places for degrees)
@@ -1026,26 +1027,26 @@ public class GeoPackageTiles
      * @param crs
      * @return
      */
-    private static BoundingBox truncateBounds(BoundingBox bounds, CrsProfile crs)
+    private static BoundingBox truncateBounds(final BoundingBox bounds, final CrsProfile crs)
     {
-        int percision = crs.requiredPercision();
+        final int percision = crs.requiredPercision();
         return new BoundingBox(truncatePercision(bounds.getMinY(), percision),
                                truncatePercision(bounds.getMinX(), percision),
                                truncatePercision(bounds.getMaxY(), percision),
                                truncatePercision(bounds.getMaxX(), percision));
     }
+
     /**
      * Rounds the number to level of precision need for the appropriate level of accuracy
      * @param number
      * @return the number rounded to the level of precision number of decimal places
      */
-    private static double truncatePercision(double number, int percision)
+    private static double truncatePercision(final double number, final int percision)
     {
-        double multiplyBy = Math.pow(10, percision);
-        
+        final double multiplyBy = Math.pow(10, percision);
+
         return ((int)(number*multiplyBy))/multiplyBy;
     }
-    
 
     private final GeoPackageCore core;
     private final Connection     databaseConnection;

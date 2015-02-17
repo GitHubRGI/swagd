@@ -329,6 +329,12 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                     }
 
                     @Override
+                    public CrsCoordinate getCrsCoordinate() throws TileStoreException
+                    {
+                        return GeoPackageReader.this.crsProfile.tileToCrsCoordinate(row, column, this.getBounds(), matrix, GeoPackageTiles.Origin);
+                    }
+
+                    @Override
                     public BoundingBox getBounds() throws TileStoreException
                     {
                         final Coordinate<Double> upperLeft  = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(row,   column,   this.getBounds(), matrix, GeoPackageTiles.Origin);
@@ -345,6 +351,8 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                     {
                         return GeoPackageReader.this.getTile(row, column, zoomLevel);
                     }
+
+
                };
     }
 
