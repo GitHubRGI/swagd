@@ -278,7 +278,7 @@ public class GeoPackage implements AutoCloseable
         if(this.databaseConnection            != null &&
            this.databaseConnection.isClosed() == false)
         {
-            this.databaseConnection.rollback(); // When Connection.close() is called, pending transactions are either automatically committed or rolled back depending on implementaiton defined behavior.  Make the call explicitly to avoid relying on implementaiton defined behavior.
+            this.databaseConnection.rollback(); // When Connection.close() is called, pending transactions are either automatically committed or rolled back depending on implementation defined behavior.  Make the call explicitly to avoid relying on implementation defined behavior.
             this.databaseConnection.close();
         }
     }
