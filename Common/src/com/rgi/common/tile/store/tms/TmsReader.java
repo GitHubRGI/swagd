@@ -253,9 +253,9 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
 
                                                if(mimeType.getPrimaryType().toLowerCase().equals("image"))
                                                {
-                                                   final int zoomLevel = Integer.parseInt(tmsFileMatch.group(0));
-                                                   final int column    = Integer.parseInt(tmsFileMatch.group(1));
-                                                   final int row       = Integer.parseInt(tmsFileMatch.group(2));
+                                                   final int zoomLevel = Integer.parseInt(tmsFileMatch.group(1));
+                                                   final int column    = Integer.parseInt(tmsFileMatch.group(2));
+                                                   final int row       = Integer.parseInt(tmsFileMatch.group(3));
 
                                                    final BufferedImage image = TmsReader.this.getTile(row, column, zoomLevel);
 
