@@ -60,14 +60,14 @@ public class GeoPackage implements AutoCloseable
      *          when the verifyConformance parameter is true, and if
      *          there are any conformance violations with the severity
      *          {@link Severity#Error}
-     * @throws FileAlreadyExistsException
-     *          when openMode is set to OpenMode.Create, and the file already exists
-     * @throws FileNotFoundException
-     *          when openMode is set to OpenMode.Open, and the file does not exist
+     * @throws IOException
+     *          when openMode is set to OpenMode.Create, and the file already
+     *          exists, openMode is set to OpenMode.Open, and the file does not
+     *          exist, or if there is a file read error
      * @throws SQLException
      *          in various cases where interaction with the JDBC connection fails
      */
-    public GeoPackage(final File file) throws ClassNotFoundException, SQLException, ConformanceException, FileAlreadyExistsException, FileNotFoundException
+    public GeoPackage(final File file) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         this(file, true, OpenMode.OpenOrCreate);
     }
@@ -89,14 +89,14 @@ public class GeoPackage implements AutoCloseable
      *          when the verifyConformance parameter is true, and if
      *          there are any conformance violations with the severity
      *          {@link Severity#Error}
-     * @throws FileAlreadyExistsException
-     *          when openMode is set to OpenMode.Create, and the file already exists
-     * @throws FileNotFoundException
-     *          when openMode is set to OpenMode.Open, and the file does not exist
+     * @throws IOException
+     *          when openMode is set to OpenMode.Create, and the file already
+     *          exists, openMode is set to OpenMode.Open, and the file does not
+     *          exist, or if there is a file read error
      * @throws SQLException
      *          in various cases where interaction with the JDBC connection fails
      */
-    public GeoPackage(final File file, final boolean verifyConformance) throws ClassNotFoundException, SQLException, ConformanceException, FileAlreadyExistsException, FileNotFoundException
+    public GeoPackage(final File file, final boolean verifyConformance) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         this(file, verifyConformance, OpenMode.OpenOrCreate);
     }
@@ -112,14 +112,14 @@ public class GeoPackage implements AutoCloseable
      *          when the verifyConformance parameter is true, and if
      *          there are any conformance violations with the severity
      *          {@link Severity#Error}
-     * @throws FileAlreadyExistsException
-     *          when openMode is set to OpenMode.Create, and the file already exists
-     * @throws FileNotFoundException
-     *          when openMode is set to OpenMode.Open, and the file does not exist
+     * @throws IOException
+     *          when openMode is set to OpenMode.Create, and the file already
+     *          exists, openMode is set to OpenMode.Open, and the file does not
+     *          exist, or if there is a file read error
      * @throws SQLException
      *          in various cases where interaction with the JDBC connection fails
      */
-    public GeoPackage(final File file, final OpenMode openMode) throws ClassNotFoundException, SQLException, ConformanceException, FileAlreadyExistsException, FileNotFoundException
+    public GeoPackage(final File file, final OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         this(file, true, openMode);
     }
@@ -150,7 +150,7 @@ public class GeoPackage implements AutoCloseable
      * @throws SQLException
      *          in various cases where interaction with the JDBC connection fails
      */
-    public GeoPackage(final File file, final boolean verifyConformance, final OpenMode openMode) throws ClassNotFoundException, ConformanceException, FileAlreadyExistsException, FileNotFoundException, SQLException
+    public GeoPackage(final File file, final boolean verifyConformance, final OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         if(file == null)
         {
@@ -201,8 +201,17 @@ public class GeoPackage implements AutoCloseable
             {
                 this.verify();
             }
+
+            try
+            {
+                this.sqliteVersion = DatabaseUtility.getSqliteVersion(this.file);
+            }
+            catch(final Exception ex)
+            {
+                throw new IOException("Unable to read SQLite version: " + ex.getMessage());
+            }
         }
-        catch(final SQLException | ConformanceException ex)
+        catch(final SQLException | ConformanceException | IOException ex)
         {
             if(this.databaseConnection != null && this.databaseConnection.isClosed() == false)
             {
@@ -235,12 +244,8 @@ public class GeoPackage implements AutoCloseable
      * @return the sqliteVersion
      * @throws IOException if the database file backing this GeoPackage cannot be opened or read from
      */
-    public String getSqliteVersion() throws IOException
+    public String getSqliteVersion()
     {
-        if(this.sqliteVersion == null)
-        {
-            this.sqliteVersion = DatabaseUtility.getSqliteVersion(this.file);
-        }
         return this.sqliteVersion;
     }
 
@@ -430,15 +435,13 @@ public class GeoPackage implements AutoCloseable
 
     private final File                 file;
     private final Connection           databaseConnection;
+    private final String               sqliteVersion;
     private final GeoPackageCore       core;
     private final GeoPackageFeatures   features;
     private final GeoPackageTiles      tiles;
     private final GeoPackageSchema     schema;
     private final GeoPackageMetadata   metadata;
     private final GeoPackageExtensions extensions;
-
-
-    private String sqliteVersion;
 
     private final static byte[] GeoPackageSqliteApplicationId = new byte[] {'G', 'P', '1', '0' };
 }

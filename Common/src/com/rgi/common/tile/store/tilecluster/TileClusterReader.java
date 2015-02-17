@@ -174,7 +174,7 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
     }
 
     @Override
-    public TileScheme getTimeScheme()
+    public TileScheme getTileScheme()
     {
         // TODO Auto-generated method stub
         return null;

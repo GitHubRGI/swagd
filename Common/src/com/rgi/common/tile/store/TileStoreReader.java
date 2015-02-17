@@ -141,5 +141,5 @@ public interface TileStoreReader
     /**
      * @return the Tile Scheme which can calculate the number of tiles at a particular zoom level
      */
-    public TileScheme getTimeScheme();
+    public TileScheme getTileScheme();
 }

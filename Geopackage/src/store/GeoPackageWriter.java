@@ -20,9 +20,7 @@ package store;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -83,14 +81,12 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
      * @param imageWriteOptions
      *            Controls details of the image writing process. If null, a
      *            default ImageWriteParam used instead
-     * @throws FileAlreadyExistsException
-     *             when openMode is set to OpenMode.Create, and the file already
-     *             exists
      * @throws ClassNotFoundException
      *             when the SQLite JDBC driver cannot be found
-     * @throws FileNotFoundException
-     *             when openMode is set to OpenMode.Open, and the file does not
-     *             exist
+     * @throws IOException
+     *             when openMode is set to OpenMode.Create, and the file already
+     *             exists, openMode is set to OpenMode.Open, and the file does
+     *             not exist, or if there is a file read error
      * @throws SQLException
      *             in various cases where interaction with the JDBC connection
      *             fails
@@ -108,7 +104,7 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
                             final BoundingBox               tileSetBounds,
                             final TileScheme                tileScheme,
                             final MimeType                  imageOutputFormat,
-                            final ImageWriteParam           imageWriteOptions) throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+                            final ImageWriteParam           imageWriteOptions) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         this.geoPackage = new GeoPackage(geoPackageFile, OpenMode.OpenOrCreate);
 

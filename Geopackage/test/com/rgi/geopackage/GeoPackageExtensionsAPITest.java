@@ -22,9 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -66,7 +64,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test
-    public void getExtensionWithNullParameters() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getExtensionWithNullParameters() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -113,7 +111,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test
-    public void getExtension2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getExtension2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -161,7 +159,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test
-    public void getExtensionUsingExtensionGetters() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getExtensionUsingExtensionGetters() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -208,9 +206,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test
-    public void getExtension() throws FileAlreadyExistsException,
-            ClassNotFoundException, FileNotFoundException, SQLException,
-            ConformanceException
+    public void getExtension() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -258,7 +254,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addExtensionIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addExtensionIllegalArgumentException() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(13);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -283,7 +279,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addExtensionIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addExtensionIllegalArgumentException2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(13);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -308,7 +304,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addExtensionIllegalArgumentException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addExtensionIllegalArgumentException3() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(13);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -333,7 +329,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addExtensionIllegalARgumentException4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addExtensionIllegalARgumentException4() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(14);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -358,7 +354,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addExtensionIllegalArgumentException5() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addExtensionIllegalArgumentException5() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(17);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -383,7 +379,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addExtensionIllegalArgumentException6() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addExtensionIllegalArgumentException6() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -408,7 +404,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addExtensionIllegalArgumentException7() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addExtensionIllegalArgumentException7() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(8);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -433,7 +429,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addExtensionIllegalArgumentException8() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addExtensionIllegalArgumentException8() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(9);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -457,7 +453,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test
-    public void addExtensionWithoutNullParameters() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addExtensionWithoutNullParameters() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -536,7 +532,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test
-    public void addExistingExtension() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addExistingExtension() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -578,7 +574,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addExtensionWithSameUniqueValuesButDifferentOtherValues() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addExtensionWithSameUniqueValuesButDifferentOtherValues() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -615,7 +611,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test
-    public void hasExtension() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void hasExtension() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(14);
 
@@ -648,7 +644,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test
-    public void getExtensions() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getExtensions() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -692,7 +688,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test
-    public void getExtensionsWithNoExtensions() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getExtensionsWithNoExtensions() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -719,7 +715,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test
-    public void testEqualsExtension() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void testEqualsExtension() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
        final File testFile = this.getRandomFile(9);
 
@@ -755,7 +751,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test
-    public void testEqualsExtension2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void testEqualsExtension2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
        final File testFile = this.getRandomFile(9);
 
@@ -791,7 +787,7 @@ public class GeoPackageExtensionsAPITest
      * @throws ConformanceException
      */
     @Test
-    public void testEqualsExtension3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void testEqualsExtension3() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
        final File testFile = this.getRandomFile(9);
 
