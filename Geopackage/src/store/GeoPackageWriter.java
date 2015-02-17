@@ -96,7 +96,7 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
      *             when the verifyConformance parameter is true, and if there
      *             are any conformance violations with the severity
      *             Severity.Error
-     * 
+     *
      */
     public GeoPackageWriter(final File                      geoPackageFile,
                             final CoordinateReferenceSystem coordinateReferenceSystem,
@@ -163,9 +163,6 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
                                                                : this.imageWriter.getDefaultWriteParam();
 
             this.tileScheme = tileScheme;
-
-            // TODO verify the origin is correct
-            //new ZoomTimesTwo(0, 0, 1, 1, GeoPackageTiles.Origin);   // TODO fix me
 
             this.tileMatricies = this.geoPackage.tiles()
                                            .getTileMatrices(this.tileSet)
