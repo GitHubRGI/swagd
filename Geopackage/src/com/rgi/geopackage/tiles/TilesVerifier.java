@@ -80,12 +80,12 @@ public class TilesVerifier extends Verifier
 
         public String columnInvalidToString()
         {
-            return String.format("Tile id: %4d, invalid tile_column: %2d, matrix_width: %2d.", this.tileID, this.tileColumn, this.matrixWidth);
+            return String.format("      Tile id: %d, column: %2d (max: %d)", this.tileID, this.tileColumn, this.matrixWidth-1);
         }
 
         public String rowInvalidToString()
         {
-            return String.format("Tile id: %4d, invalid tile_row: %2d, matrix_height: %2d.", this.tileID, this.tileRow, this.matrixHeight);
+            return String.format("      Tile id: %d, row: %2d (max: %d)", this.tileID, this.tileRow, this.matrixHeight-1);
         }
 
         @Override
@@ -1263,19 +1263,17 @@ public class TilesVerifier extends Verifier
                                                                                                          })
                                                                                      .filter(Objects::nonNull)
                                                                                      .collect(Collectors.groupingBy(tileData -> tileData.zoomLevel));
-                    Assert.assertTrue(String.format("The following tiles have incorrect tile_column values for the table: %s.\n\n%s",
+                    Assert.assertTrue(String.format("  The following tiles in table '%s' have incorrect tile column values: %s",
                                                     pyramidName,
                                                     incorrectColumnSet.entrySet()
                                                                       .stream()
-                                                                      .map(tileData -> String.format("\nFor the zoom_level: %d\n%s",
+                                                                      .map(tileData -> String.format("\n    Zoom level %d:\n%s",
                                                                                                        tileData.getKey(),
                                                                                                        tileData.getValue()
                                                                                                                .stream()
                                                                                                                .sorted()
                                                                                                                .map(tileInfo ->tileInfo.columnInvalidToString())
-                                                                                                               .collect(Collectors.joining("\n"))
-                                                                                                      )
-                                                                           )
+                                                                                                               .collect(Collectors.joining("\n"))))
                                                                       .collect(Collectors.joining("\n"))),
                                      incorrectColumnSet.isEmpty());
 
@@ -1355,19 +1353,17 @@ public class TilesVerifier extends Verifier
                                                                                             .filter(Objects::nonNull)
                                                                                             .collect(Collectors.groupingBy(tileData -> tileData.zoomLevel));
 
-                    Assert.assertTrue(String.format("The following tiles have incorrect tile_column values for the table: %s.\n\n%s",
+                    Assert.assertTrue(String.format("  The following tiles in table '%s' have incorrect tile row values: %s",
                                                      pyramidName,
                                                      incorrectTileRowSet.entrySet()
                                                                          .stream()
-                                                                         .map(tileData ->
-                                                                                     String.format("\nFor the zoom_level: %d\n%s",
+                                                                         .map(tileData -> String.format("\n    Zoom level %d:\n%s",
                                                                                                    tileData.getKey(),
                                                                                                    tileData.getValue().stream()
                                                                                                                       .sorted()
                                                                                                                       .map(tileInfo -> tileInfo.rowInvalidToString())
-                                                                                                                      .collect(Collectors.joining("\n"))
-                                                                                                   )
-                                                                         ).collect(Collectors.joining("\n"))),
+                                                                                                                      .collect(Collectors.joining("\n"))))
+                                                                         .collect(Collectors.joining("\n"))),
                                     incorrectTileRowSet.isEmpty());
 
                 }
