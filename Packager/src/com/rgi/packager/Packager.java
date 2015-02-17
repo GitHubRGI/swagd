@@ -60,7 +60,7 @@ public class Packager extends AbstractTask implements MonitorableTask {
                                                                          "1",
                                                                          "test tiles",
                                                                          reader.getBounds(),
-                                                                         reader.getTimeScheme(),
+                                                                         reader.getTileScheme(),
                                                                          new MimeType("image/png"),
                                                                          null))
 			{
