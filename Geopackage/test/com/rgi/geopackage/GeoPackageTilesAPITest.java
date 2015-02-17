@@ -22,9 +22,7 @@ import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -90,17 +88,17 @@ public class GeoPackageTilesAPITest
                                                    gpkg.core().getSpatialReferenceSystem(4326));
 
 
-           int matrixHeight = 2;
-           int matrixWidth = 4;
-           int tileHeight = 512;
-           int tileWidth = 256;
-           
-            gpkg.tiles().addTileMatrix(tileSet, 
-                                       0,  
-                                       matrixWidth, 
-                                       matrixHeight, 
+           final int matrixHeight = 2;
+           final int matrixWidth = 4;
+           final int tileHeight = 512;
+           final int tileWidth = 256;
+
+            gpkg.tiles().addTileMatrix(tileSet,
+                                       0,
+                                       matrixWidth,
+                                       matrixHeight,
                                        tileWidth,
-                                       tileHeight, 
+                                       tileHeight,
                                        (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
         }
@@ -289,18 +287,18 @@ public class GeoPackageTilesAPITest
                                                     new BoundingBox(0.0, 0.0, 60.0, 60.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
-            int matrixHeight = 2;
-            int matrixWidth = 2;
-            int tileHeight = 256;
-            int tileWidth = 256;
-            
-            
-            gpkg.tiles().addTileMatrix(tileSet, 
-                                       0, 
-                                       matrixWidth, 
-                                       matrixHeight, 
+            final int matrixHeight = 2;
+            final int matrixWidth = 2;
+            final int tileHeight = 256;
+            final int tileWidth = 256;
+
+
+            gpkg.tiles().addTileMatrix(tileSet,
+                                       0,
+                                       matrixWidth,
+                                       matrixHeight,
                                        tileWidth,
-                                       tileHeight, 
+                                       tileHeight,
                                        (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
@@ -313,16 +311,16 @@ public class GeoPackageTilesAPITest
                                                                        "tiles",
                                                                        new BoundingBox(0.0, 0.0, 50.0, 70.0),
                                                                        gpkgWithTiles.core().getSpatialReferenceSystem(4326));
-                
-                double pixelXSize =  (tileSetEntry2.getBoundingBox().getWidth()/matrixWidth)/tileWidth;
-                double pixelYSize =  (tileSetEntry2.getBoundingBox().getHeight()/matrixHeight)/tileHeight;
-                
-                gpkgWithTiles.tiles().addTileMatrix(tileSetEntry2, 
-                                                    0, 
-                                                    matrixWidth, 
-                                                    matrixHeight, 
+
+                final double pixelXSize =  (tileSetEntry2.getBoundingBox().getWidth()/matrixWidth)/tileWidth;
+                final double pixelYSize =  (tileSetEntry2.getBoundingBox().getHeight()/matrixHeight)/tileHeight;
+
+                gpkgWithTiles.tiles().addTileMatrix(tileSetEntry2,
+                                                    0,
+                                                    matrixWidth,
+                                                    matrixHeight,
                                                     tileWidth,
-                                                    tileHeight, 
+                                                    tileHeight,
                                                     pixelXSize,
                                                     pixelYSize);
             }
@@ -428,31 +426,31 @@ public class GeoPackageTilesAPITest
 
             tileSetContnentEntries.add(tileSet);
             tileSetContnentEntries.add(tileSet);
-            
-            int matrixHeight = 2;
-            int matrixWidth = 2;
-            int tileHeight = 256;
-            int tileWidth = 256;
-            
+
+            final int matrixHeight = 2;
+            final int matrixWidth = 2;
+            final int tileHeight = 256;
+            final int tileWidth = 256;
+
             gpkg.tiles().addTileMatrix(tileSet,
-                                       0, 
-                                       matrixWidth, 
-                                       matrixHeight, 
-                                       tileWidth, 
-                                       tileHeight, 
+                                       0,
+                                       matrixWidth,
+                                       matrixHeight,
+                                       tileWidth,
+                                       tileHeight,
                                        (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
-            int matrixHeight2 = 4;
-            int matrixWidth2 = 4;
-            int tileHeight2 = 256;
-            int tileWidth2 = 256;
-            
-            gpkg.tiles().addTileMatrix(tileSet, 
-                                       1,  
-                                       matrixWidth2, 
-                                       matrixHeight2, 
-                                       tileWidth2, 
-                                       tileHeight2, 
+            final int matrixHeight2 = 4;
+            final int matrixWidth2 = 4;
+            final int tileHeight2 = 256;
+            final int tileWidth2 = 256;
+
+            gpkg.tiles().addTileMatrix(tileSet,
+                                       1,
+                                       matrixWidth2,
+                                       matrixHeight2,
+                                       tileWidth2,
+                                       tileHeight2,
                                        (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
 
@@ -493,7 +491,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void addSameTileSetTwice() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addSameTileSetTwice() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -549,7 +547,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileSetBadTableName() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, ConformanceException, FileNotFoundException
+    public void addTileSetBadTableName() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
 
@@ -587,7 +585,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileSetBadSRS() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, ConformanceException, FileNotFoundException
+    public void addTileSetBadSRS() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
 
@@ -624,7 +622,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileSetBadBoundingBox() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, ConformanceException, FileNotFoundException
+    public void addTileSetBadBoundingBox() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
 
@@ -694,9 +692,9 @@ public class GeoPackageTilesAPITest
       * @throws ConformanceException
       */
      @Test(expected = IllegalArgumentException.class)
-     public void addTileIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+     public void addTileIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException
      {
-         File testFile = this.getRandomFile(18);
+         final File testFile = this.getRandomFile(18);
 
          try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
          {
@@ -726,9 +724,9 @@ public class GeoPackageTilesAPITest
       * @throws ConformanceException
       */
      @Test(expected = IllegalArgumentException.class)
-     public void addTileIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+     public void addTileIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
      {
-         File testFile = this.getRandomFile(18);
+         final File testFile = this.getRandomFile(18);
 
          try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
          {
@@ -758,9 +756,9 @@ public class GeoPackageTilesAPITest
       * @throws ConformanceException
       */
      @Test(expected = IllegalArgumentException.class)
-     public void addTileIllegalArgumentException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+     public void addTileIllegalArgumentException3() throws SQLException, ClassNotFoundException, ConformanceException, IOException
      {
-         File testFile = this.getRandomFile(18);
+         final File testFile = this.getRandomFile(18);
 
          try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
          {
@@ -810,31 +808,31 @@ public class GeoPackageTilesAPITest
             tileSetContnentEntries.add(tileSet);
             tileSetContnentEntries.add(tileSet2);
 
-            int matrixHeight = 2;
-            int matrixWidth = 2;
-            int tileHeight = 256;
-            int tileWidth = 256;
-                    
+            final int matrixHeight = 2;
+            final int matrixWidth = 2;
+            final int tileHeight = 256;
+            final int tileWidth = 256;
 
-            gpkg.tiles().addTileMatrix(tileSet,  
-                                       0, 
-                                       matrixWidth, 
-                                       matrixHeight, 
+
+            gpkg.tiles().addTileMatrix(tileSet,
+                                       0,
+                                       matrixWidth,
+                                       matrixHeight,
                                        tileWidth,
-                                       tileHeight, 
+                                       tileHeight,
                                        (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
-            
 
-            int matrixHeight2 = 4;
-            int matrixWidth2 = 4;
-            
-            gpkg.tiles().addTileMatrix(tileSet2, 
+
+            final int matrixHeight2 = 4;
+            final int matrixWidth2 = 4;
+
+            gpkg.tiles().addTileMatrix(tileSet2,
                                        1,
-                                       matrixWidth2, 
-                                       matrixHeight2, 
+                                       matrixWidth2,
+                                       matrixHeight2,
                                        tileWidth,
-                                       tileHeight, 
+                                       tileHeight,
                                        (tileSet2.getBoundingBox().getWidth()/matrixWidth2)/tileWidth,
                                        (tileSet2.getBoundingBox().getHeight()/matrixHeight2)/tileHeight);
 
@@ -904,7 +902,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test
-    public void getTileSetVerifyReturnNull() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void getTileSetVerifyReturnNull()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(4);
 
@@ -936,7 +934,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test
-    public void getTileSetVerifyReturnCorrectTileSet() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void getTileSetVerifyReturnCorrectTileSet()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
 
@@ -1184,10 +1182,10 @@ public class GeoPackageTilesAPITest
                             new BoundingBox(1.0, 1.0, 1.0, 1.0),
                             gpkg.core().getSpatialReferenceSystem(4326));
 
-            Assert.fail("The GeoPackage was expected to throw an SQLException due to no default tables inside the file.");
+            Assert.fail("The GeoPackage was expected to throw an IOException due to the file being empty.");
 
         }
-        catch(final SQLException ex)
+        catch(final IOException ex)
         {
             final String query = "SELECT table_name FROM gpkg_contents WHERE table_name = 'diff_tile_set';";
 
@@ -1356,19 +1354,19 @@ public class GeoPackageTilesAPITest
                                                     "tiles",
                                                     new BoundingBox(0.0, 0.0, 50.0, 20.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
-            
-            int matrixHeight = 2;
-            int matrixWidth = 2;
-            int tileHeight = 256;
-            int tileWidth = 256;
-                    
 
-            final TileMatrix tileMatrix =  gpkg.tiles().addTileMatrix(tileSet,  
-                                                                      2, 
-                                                                      matrixWidth, 
-                                                                      matrixHeight, 
+            final int matrixHeight = 2;
+            final int matrixWidth = 2;
+            final int tileHeight = 256;
+            final int tileWidth = 256;
+
+
+            final TileMatrix tileMatrix =  gpkg.tiles().addTileMatrix(tileSet,
+                                                                      2,
+                                                                      matrixWidth,
+                                                                      matrixHeight,
                                                                       tileWidth,
-                                                                      tileHeight, 
+                                                                      tileHeight,
                                                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
@@ -1413,26 +1411,26 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = SQLException.class)
-    public void addDuplicateTiles() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, IllegalArgumentException, FileNotFoundException
+    public void addDuplicateTiles()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final TileSet    tileSet   = gpkg.tiles().addTileSet("tableName", "ident", "description", new BoundingBox(1.1,1.1,100.1,100.1), gpkg.core().getSpatialReferenceSystem(4326));
-            
-            int matrixHeight = 2;
-            int matrixWidth = 2;
-            int tileHeight = 256;
-            int tileWidth = 256;
-            
-                    
-            final TileMatrix matrixSet = gpkg.tiles().addTileMatrix(tileSet, 
-                                                                    1, 
-                                                                    matrixWidth, 
-                                                                    matrixHeight, 
+
+            final int matrixHeight = 2;
+            final int matrixWidth = 2;
+            final int tileHeight = 256;
+            final int tileWidth = 256;
+
+
+            final TileMatrix matrixSet = gpkg.tiles().addTileMatrix(tileSet,
+                                                                    1,
+                                                                    matrixWidth,
+                                                                    matrixHeight,
                                                                     tileWidth,
-                                                                    tileHeight, 
+                                                                    tileHeight,
                                                                     (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                                                     (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
             //tile data
@@ -1467,7 +1465,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addBadTile() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addBadTile()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
 
@@ -1511,7 +1509,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addBadTile2() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addBadTile2()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
 
@@ -1554,7 +1552,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addBadTile3() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addBadTile3()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
       //create tiles and file
         final File testFile = this.getRandomFile(6);
@@ -1596,7 +1594,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addBadTile4() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addBadTile4()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
 
@@ -1656,32 +1654,32 @@ public class GeoPackageTilesAPITest
             final RelativeTileCoordinate coord2 = new RelativeTileCoordinate(0, 8, 8);
 
             //add tile to gpkg
-            
-            int matrixHeight = 2;
-            int matrixWidth = 4;
-            int tileHeight = 512;
-            int tileWidth = 256;
-            
-            final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet, 
-                                                                      4, 
-                                                                      matrixWidth, 
-                                                                      matrixHeight, 
+
+            final int matrixHeight = 2;
+            final int matrixWidth = 4;
+            final int tileHeight = 512;
+            final int tileWidth = 256;
+
+            final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet,
+                                                                      4,
+                                                                      matrixWidth,
+                                                                      matrixHeight,
                                                                       tileWidth,
-                                                                      tileHeight, 
+                                                                      tileHeight,
                                                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
-            int matrixHeight2 = 4;
-            int matrixWidth2 = 8;
-            int tileHeight2 = 512;
-            int tileWidth2 = 256;
-            
-            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet, 
-                                                                      8, 
-                                                                      matrixWidth2, 
-                                                                      matrixHeight2, 
+            final int matrixHeight2 = 4;
+            final int matrixWidth2 = 8;
+            final int tileHeight2 = 512;
+            final int tileWidth2 = 256;
+
+            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet,
+                                                                      8,
+                                                                      matrixWidth2,
+                                                                      matrixHeight2,
                                                                       tileWidth2,
-                                                                      tileHeight2, 
+                                                                      tileHeight2,
                                                                       (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
                                                                       (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
 
@@ -1766,20 +1764,20 @@ public class GeoPackageTilesAPITest
                                                     new BoundingBox(0.0, 0.0, 50.0, 80.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
-            int matrixHeight = 2;
-            int matrixWidth = 3;
-            int tileHeight = 512;
-            int tileWidth = 256;
-                    
-            final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 
-                                                                     0, 
-                                                                     matrixWidth, 
-                                                                     matrixHeight, 
+            final int matrixHeight = 2;
+            final int matrixWidth = 3;
+            final int tileHeight = 512;
+            final int tileWidth = 256;
+
+            final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet,
+                                                                     0,
+                                                                     matrixWidth,
+                                                                     matrixHeight,
                                                                      tileWidth,
-                                                                     tileHeight, 
+                                                                     tileHeight,
                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
-                                                                    
+
             //Tile coords
             final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(2, 1, 0);
             final byte[] imageData = new byte[]{1,2,3,4};
@@ -1828,20 +1826,20 @@ public class GeoPackageTilesAPITest
                                                     new BoundingBox(0.0, 0.0, 80.0, 80.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
-            int matrixWidth = 3;
-            int matrixHeight = 6;
-            int tileWidth = 256;
-            int tileHeight = 256;
+            final int matrixWidth = 3;
+            final int matrixHeight = 6;
+            final int tileWidth = 256;
+            final int tileHeight = 256;
             // add tile to gpkg
-            gpkg.tiles().addTileMatrix(tileSet, 
-                                       2, 
-                                       matrixWidth, 
-                                       matrixHeight, 
+            gpkg.tiles().addTileMatrix(tileSet,
+                                       2,
+                                       matrixWidth,
+                                       matrixHeight,
                                        tileWidth,
-                                       tileHeight, 
+                                       tileHeight,
                                        (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
-            
+
             Assert.assertTrue("GeoPackage should have returned null for a missing tile.",
                        gpkg.tiles().getTile(tileSet, new RelativeTileCoordinate(0, 0, 0)) == null);
         }
@@ -2019,26 +2017,26 @@ public class GeoPackageTilesAPITest
                                                       new BoundingBox(5.0,5.0,50.0,50.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
            // Add tile matrices that represent zoom levels 0 and 12
-            int matrixHeight = 2;
-            int matrixWidth = 2;
-            int tileHeight = 256;
-            int tileWidth = 256;
-            
-           gpkg.tiles().addTileMatrix(tileSet, 
-                                      0, 
-                                      matrixWidth, 
-                                      matrixHeight, 
-                                      tileWidth, 
-                                      tileHeight, 
+            final int matrixHeight = 2;
+            final int matrixWidth = 2;
+            final int tileHeight = 256;
+            final int tileWidth = 256;
+
+           gpkg.tiles().addTileMatrix(tileSet,
+                                      0,
+                                      matrixWidth,
+                                      matrixHeight,
+                                      tileWidth,
+                                      tileHeight,
                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
-           
-           gpkg.tiles().addTileMatrix(tileSet, 
-                                      12, 
-                                      matrixWidth, 
-                                      matrixHeight, 
-                                      tileWidth, 
-                                      tileHeight, 
+
+           gpkg.tiles().addTileMatrix(tileSet,
+                                      12,
+                                      matrixWidth,
+                                      matrixHeight,
+                                      tileWidth,
+                                      tileHeight,
                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
@@ -2079,7 +2077,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void getZoomLevelsNullTileSetContentEntry() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void getZoomLevelsNullTileSetContentEntry()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -2147,29 +2145,29 @@ public class GeoPackageTilesAPITest
                                                     new BoundingBox(0.0,0.0,50.0,80.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
             //create two TileMatrices to represent the tiles
-            int matrixHeight = 2;
-            int matrixWidth = 2;
-            int tileHeight = 256;
-            int tileWidth = 256;
-                    
-            final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet, 
-                                                                    1, 
-                                                                    matrixWidth, 
-                                                                    matrixHeight, 
+            final int matrixHeight = 2;
+            final int matrixWidth = 2;
+            final int tileHeight = 256;
+            final int tileWidth = 256;
+
+            final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet,
+                                                                    1,
+                                                                    matrixWidth,
+                                                                    matrixHeight,
                                                                     tileWidth,
-                                                                    tileHeight, 
+                                                                    tileHeight,
                                                                     (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                                                     (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
-            
-            int matrixHeight2 = 4;
-            int matrixWidth2 = 4;
-            
-            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet, 
-                                                                      0, 
-                                                                      matrixWidth2, 
-                                                                      matrixHeight2, 
+
+            final int matrixHeight2 = 4;
+            final int matrixWidth2 = 4;
+
+            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet,
+                                                                      0,
+                                                                      matrixWidth2,
+                                                                      matrixHeight2,
                                                                       tileWidth,
-                                                                      tileHeight, 
+                                                                      tileHeight,
                                                                       (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth,
                                                                       (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight);
             //add two tiles
@@ -2204,7 +2202,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void getTileMatrixSetEntryNullTileSetContentEntry() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void getTileMatrixSetEntryNullTileSetContentEntry()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -2242,32 +2240,32 @@ public class GeoPackageTilesAPITest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final TileSet    tileSet     = gpkg.tiles().addTileSet("tables", "identifier", "description", new BoundingBox(0.0,0.0,80.0,80.0), gpkg.core().getSpatialReferenceSystem(-1));
-            
-            int matrixHeight = 2;
-            int matrixWidth = 4;
-            int tileHeight = 512;
-            int tileWidth = 256;
-            
-            final TileMatrix tileMatrix  = gpkg.tiles().addTileMatrix(tileSet, 
-                                                                     0, 
-                                                                     matrixWidth, 
-                                                                     matrixHeight, 
+
+            final int matrixHeight = 2;
+            final int matrixWidth = 4;
+            final int tileHeight = 512;
+            final int tileWidth = 256;
+
+            final TileMatrix tileMatrix  = gpkg.tiles().addTileMatrix(tileSet,
+                                                                     0,
+                                                                     matrixWidth,
+                                                                     matrixHeight,
                                                                      tileWidth,
-                                                                     tileHeight, 
+                                                                     tileHeight,
                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
-            
-            int matrixHeight2 = 4;
-            int matrixWidth2 = 8;
-            int tileHeight2 = 512;
-            int tileWidth2 = 256;
-            
-            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet, 
-                                                                      3, 
-                                                                      matrixWidth2, 
-                                                                      matrixHeight2, 
+
+            final int matrixHeight2 = 4;
+            final int matrixWidth2 = 8;
+            final int tileHeight2 = 512;
+            final int tileWidth2 = 256;
+
+            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet,
+                                                                      3,
+                                                                      matrixWidth2,
+                                                                      matrixHeight2,
                                                                       tileWidth2,
-                                                                      tileHeight2, 
+                                                                      tileHeight2,
                                                                       (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
                                                                       (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
 
@@ -2315,7 +2313,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test
-    public void getTileMatricesNonExistant() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, ConformanceException, FileNotFoundException
+    public void getTileMatricesNonExistant() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2351,7 +2349,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileMatricesIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addTileMatricesIllegalArgumentException()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2382,7 +2380,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileMatricesIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addTileMatricesIllegalArgumentException2()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2419,7 +2417,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileMatricesIllegalArgumentException3() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addTileMatricesIllegalArgumentException3()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2451,7 +2449,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileMatricesIllegalArgumentException4() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addTileMatricesIllegalArgumentException4()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2482,7 +2480,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileMatricesIllegalArgumentException5() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addTileMatricesIllegalArgumentException5()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2514,7 +2512,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileMatricesIllegalArgumentException6() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addTileMatricesIllegalArgumentException6()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2547,7 +2545,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileMatrixSameZoomDifferentOtherFields() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addTileMatrixSameZoomDifferentOtherFields()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2581,32 +2579,32 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test
-    public void addTileMatrixTwiceVerify() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addTileMatrixTwiceVerify()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("name", "identifier", "description", new BoundingBox(0.0,0.0,90.0,90.0), gpkg.core().getSpatialReferenceSystem(-1));
-            int matrixHeight = 2;
-            int matrixWidth = 2;
-            int tileHeight = 256;
-            int tileWidth = 256;
-            
+            final int matrixHeight = 2;
+            final int matrixWidth = 2;
+            final int tileHeight = 256;
+            final int tileWidth = 256;
+
             final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet,
                                                                       0,
-                                                                      matrixWidth, 
-                                                                      matrixHeight, 
+                                                                      matrixWidth,
+                                                                      matrixHeight,
                                                                       tileWidth,
-                                                                      tileHeight, 
+                                                                      tileHeight,
                                                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
-            
-            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet, 
-                                                                      0, 
-                                                                      matrixWidth, 
-                                                                      matrixHeight, 
+
+            final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet,
+                                                                      0,
+                                                                      matrixWidth,
+                                                                      matrixHeight,
                                                                       tileWidth,
-                                                                      tileHeight, 
+                                                                      tileHeight,
                                                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
@@ -2642,7 +2640,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileMatrixNullTileSet() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addTileMatrixNullTileSet()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2673,7 +2671,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileMatrixWithNegativeZoomLevel() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    public void addTileMatrixWithNegativeZoomLevel()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2718,26 +2716,26 @@ public class GeoPackageTilesAPITest
                                                     new BoundingBox(0.0, 0.0, 80.0, 80.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
-            int matrixWidth = 4;
-            int matrixHeight = 8;
-            int tileWidth = 256;
-            int tileHeight = 512;
-                    
-            gpkg.tiles().addTileMatrix(tileSet, 
-                                       1,  
-                                       matrixWidth, 
-                                       matrixHeight, 
+            final int matrixWidth = 4;
+            final int matrixHeight = 8;
+            final int tileWidth = 256;
+            final int tileHeight = 512;
+
+            gpkg.tiles().addTileMatrix(tileSet,
+                                       1,
+                                       matrixWidth,
+                                       matrixHeight,
                                        tileWidth,
-                                       tileHeight, 
+                                       tileHeight,
                                        (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
         }
         //test if information added is accurate
-        int matrixWidth = 4;
-        int matrixHeight = 8;
-        int tileWidth = 256;
-        int tileHeight = 512;
-        
+        final int matrixWidth = 4;
+        final int matrixHeight = 8;
+        final int tileWidth = 256;
+        final int tileHeight = 512;
+
         final String query = String.format("SELECT table_name FROM gpkg_tile_matrix "
                                            + "WHERE zoom_level    = %d AND "
                                            + "      matrix_height = %d AND "
@@ -2769,7 +2767,7 @@ public class GeoPackageTilesAPITest
      }
     /**
      * Tests if GeoPackage Tiles will throw
-     * an IllegalArgumentException when 
+     * an IllegalArgumentException when
      * the pixelXSize is not correctly
      * calculated
      * @throws FileAlreadyExistsException
@@ -2779,27 +2777,27 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileMatrixIllegalBounds() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addTileMatrixIllegalBounds() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
-        File testFile = this.getRandomFile(7);
-        
+        final File testFile = this.getRandomFile(7);
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            TileSet tileSet = gpkg.tiles()
-                                  .addTileSet("tableName", 
+            final TileSet tileSet = gpkg.tiles()
+                                  .addTileSet("tableName",
                                               "identifier",
-                                              "description", 
-                                              new BoundingBox(0.0,0.0,90.0,180.0), 
+                                              "description",
+                                              new BoundingBox(0.0,0.0,90.0,180.0),
                                               gpkg.core().getSpatialReferenceSystem(4326));
-            int zoomLevel = 5;
-            int matrixWidth = 10;
-            int matrixHeight = 11;
-            int tileWidth = 256;
-            int tileHeight = 512;
-            double pixelXSize = 500.23123;//invalid pixelx size
-            double pixelYSize = tileSet.getBoundingBox().getHeight()/matrixHeight/tileHeight;
+            final int zoomLevel = 5;
+            final int matrixWidth = 10;
+            final int matrixHeight = 11;
+            final int tileWidth = 256;
+            final int tileHeight = 512;
+            final double pixelXSize = 500.23123;//invalid pixelx size
+            final double pixelYSize = tileSet.getBoundingBox().getHeight()/matrixHeight/tileHeight;
             gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
-            
+
             fail("Expected GeopackageTiles to throw an IllegalArgtumentException when pixelXSize != boundingBoxHeight/matrixHeight/tileHeight.");
         }
         finally
@@ -2813,10 +2811,10 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if GeoPackage Tiles will throw
-     * an IllegalArgumentException when 
+     * an IllegalArgumentException when
      * the pixelYSize is not correctly
      * calculated
      * @throws FileAlreadyExistsException
@@ -2826,27 +2824,27 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileMatrixIllegalBounds2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addTileMatrixIllegalBounds2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
-        File testFile = this.getRandomFile(7);
-        
+        final File testFile = this.getRandomFile(7);
+
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            TileSet tileSet = gpkg.tiles()
-                                  .addTileSet("tableName", 
+            final TileSet tileSet = gpkg.tiles()
+                                  .addTileSet("tableName",
                                               "identifier",
-                                              "description", 
-                                              new BoundingBox(0.0,0.0,90.0,180.0), 
+                                              "description",
+                                              new BoundingBox(0.0,0.0,90.0,180.0),
                                               gpkg.core().getSpatialReferenceSystem(4326));
-            int zoomLevel = 5;
-            int matrixWidth = 10;
-            int matrixHeight = 11;
-            int tileWidth = 256;
-            int tileHeight = 512;
-            double pixelXSize = tileSet.getBoundingBox().getWidth()/matrixWidth/tileWidth;
-            double pixelYSize = 500.23123;//invalid pixel y size
+            final int zoomLevel = 5;
+            final int matrixWidth = 10;
+            final int matrixHeight = 11;
+            final int tileWidth = 256;
+            final int tileHeight = 512;
+            final double pixelXSize = tileSet.getBoundingBox().getWidth()/matrixWidth/tileWidth;
+            final double pixelYSize = 500.23123;//invalid pixel y size
             gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
-            
+
             fail("Expected GeopackageTiles to throw an IllegalArgtumentException when pixelXSize != boundingBoxWidth/matrixWidth/tileWidth.");
         }
         finally
@@ -2859,7 +2857,7 @@ public class GeoPackageTilesAPITest
                 }
             }
         }
-                
+
     }
 
     /**
@@ -2872,8 +2870,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void getTileMatricesNullParameter() throws FileAlreadyExistsException, ClassNotFoundException
-    , SQLException, ConformanceException, FileNotFoundException
+    public void getTileMatricesNullParameter() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
 
@@ -2904,7 +2901,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test
-    public void getTileMatrixVerify() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void getTileMatrixVerify()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2915,34 +2912,34 @@ public class GeoPackageTilesAPITest
                                                     "description",
                                                     new BoundingBox(0.0,0.0,100.0,100.0),
                                                     gpkg.core().getSpatialReferenceSystem(-1));
-            int matrixHeight = 2;
-            int matrixWidth = 6;
-            int tileHeight = 512;
-            int tileWidth = 256;
-            
-            gpkg.tiles().addTileMatrix(tileSet, 
-                                       1, 
-                                       matrixWidth, 
-                                       matrixHeight, 
-                                       tileWidth, 
-                                       tileHeight, 
+            final int matrixHeight = 2;
+            final int matrixWidth = 6;
+            final int tileHeight = 512;
+            final int tileWidth = 256;
+
+            gpkg.tiles().addTileMatrix(tileSet,
+                                       1,
+                                       matrixWidth,
+                                       matrixHeight,
+                                       tileWidth,
+                                       tileHeight,
                                        (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
-            
-            int matrixHeight2 = 1;
-            int matrixWidth2 = 3;
-            int tileHeight2 = 512;
-            int tileWidth2 = 256;
-            
+
+            final int matrixHeight2 = 1;
+            final int matrixWidth2 = 3;
+            final int tileHeight2 = 512;
+            final int tileWidth2 = 256;
+
             final TileMatrix tileMatrix         = gpkg.tiles().addTileMatrix(tileSet,
                                                                              0,
-                                                                             matrixWidth2, 
-                                                                             matrixHeight2, 
-                                                                             tileWidth2, 
-                                                                             tileHeight2, 
+                                                                             matrixWidth2,
+                                                                             matrixHeight2,
+                                                                             tileWidth2,
+                                                                             tileHeight2,
                                                                              (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
                                                                              (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
-            
+
             final TileMatrix returnedTileMatrix = gpkg.tiles().getTileMatrix(tileSet, 0);
 
             Assert.assertTrue("GeoPackage did not return the TileMatrix expected", tileMatrix.getMatrixHeight() ==      returnedTileMatrix.getMatrixHeight() &&
@@ -2976,7 +2973,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test
-    public void getTileMatrixNonExistant() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void getTileMatrixNonExistant()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(8);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -3014,7 +3011,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void getTileMatrixNullParameter() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void getTileMatrixNullParameter()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(10);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -3044,7 +3041,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException
      */
     @Test
-    public void getTileMatrixSetVerify() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void getTileMatrixSetVerify()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
 
@@ -3116,7 +3113,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordinateUpperRightGeodetic() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordinateUpperRightGeodetic() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 1;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -3175,7 +3172,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordinateUpperLeftGeodetic() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordinateUpperLeftGeodetic() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 1;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -3234,7 +3231,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordinateLowerLeftGeodetic() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordinateLowerLeftGeodetic() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 1;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -3293,7 +3290,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordinateLowerRightGeodetic() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordinateLowerRightGeodetic() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 1;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -3352,7 +3349,7 @@ public class GeoPackageTilesAPITest
      * @throws IOException
      */
     @Test
-    public void crsToRelativeTileCoordinateUpperLeftGlobalMercator() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordinateUpperLeftGlobalMercator() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 6;
 
@@ -3426,7 +3423,7 @@ public class GeoPackageTilesAPITest
      * @throws IOException
      */
     @Test
-    public void crsToRelativeTileCoordinateUpperRightGlobalMercator() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordinateUpperRightGlobalMercator() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 6;
 
@@ -3499,7 +3496,7 @@ public class GeoPackageTilesAPITest
      * @throws IOException
      */
     @Test
-    public void crsToRelativeTileCoordinateLowerLeftGlobalMercator() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordinateLowerLeftGlobalMercator() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 6;
 
@@ -3571,7 +3568,7 @@ public class GeoPackageTilesAPITest
      * @throws IOException
      */
     @Test
-    public void crsToRelativeTileCoordinateLowerRightGlobalMercator() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordinateLowerRightGlobalMercator() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 6;
 
@@ -3644,7 +3641,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordinateMultipleZoomLevels() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordinateMultipleZoomLevels() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 5;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -3730,7 +3727,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordEdgeCase() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordEdgeCase() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -3788,7 +3785,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordEdgeCase2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordEdgeCase2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -3846,7 +3843,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordEdgeCase3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordEdgeCase3() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -3906,7 +3903,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordEdgeCase4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordEdgeCase4() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -3964,7 +3961,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordEdgeCase5() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordEdgeCase5() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -4022,7 +4019,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordEdgeCase6() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordEdgeCase6() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -4068,14 +4065,14 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     @Test
-    public void crsToRelativeTileCoordianteEdgeCase7() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    public void crsToRelativeTileCoordianteEdgeCase7()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
-        int zoomLevel = 0;
-        CrsCoordinate        coordinate = new CrsCoordinate((GlobalGeodeticCrsProfile.Bounds.getMaxY()-(6*(GlobalGeodeticCrsProfile.Bounds.getHeight())) / 9),
-                (GlobalGeodeticCrsProfile.Bounds.getMinX()+(2*(GlobalGeodeticCrsProfile.Bounds.getWidth()))  / 8), 
-                "epsg", 
+        final int zoomLevel = 0;
+        final CrsCoordinate        coordinate = new CrsCoordinate((GlobalGeodeticCrsProfile.Bounds.getMaxY()-(6*(GlobalGeodeticCrsProfile.Bounds.getHeight())) / 9),
+                (GlobalGeodeticCrsProfile.Bounds.getMinX()+(2*(GlobalGeodeticCrsProfile.Bounds.getWidth()))  / 8),
+                "epsg",
                 4326);
         final File testFile = this.getRandomFile(8);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -4115,7 +4112,7 @@ public class GeoPackageTilesAPITest
                 }
             }
         }
-        
+
     }
 
     /**
@@ -4129,7 +4126,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void crsToRelativeTileCoordException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordException() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -4168,7 +4165,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void crsToRelativeTileCoordException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -4206,7 +4203,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void crsToRelativeTileCoordException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordException3() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -4263,7 +4260,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordException4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordException4() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -4323,7 +4320,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test
-    public void crsToRelativeTileCoordException5() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordException5() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
@@ -4382,7 +4379,7 @@ public class GeoPackageTilesAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void crsToRelativeTileCoordException6() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void crsToRelativeTileCoordException6() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG", 3857);

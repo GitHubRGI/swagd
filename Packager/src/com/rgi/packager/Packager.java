@@ -19,8 +19,7 @@
 package com.rgi.packager;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.nio.file.FileAlreadyExistsException;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.activation.MimeType;
@@ -80,7 +79,7 @@ public class Packager extends AbstractTask implements MonitorableTask {
                                              });
 			    System.out.println("Done.");
 			}
-            catch(FileAlreadyExistsException | ClassNotFoundException | FileNotFoundException | SQLException | ConformanceException | TileStoreException | MimeTypeParseException ex1)
+            catch(ClassNotFoundException | IOException | SQLException | ConformanceException | TileStoreException | MimeTypeParseException ex1)
             {
                 // TODO Auto-generated catch block
                 ex1.printStackTrace();

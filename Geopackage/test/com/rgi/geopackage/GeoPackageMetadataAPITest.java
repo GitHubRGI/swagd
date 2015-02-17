@@ -21,10 +21,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -66,7 +65,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void addMetadataVerify() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void addMetadataVerify() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -105,7 +104,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void addMetadataIllegalArgumentException() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -136,7 +135,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
+    public void addMetadataIllegalArgumentException2() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(18);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -166,7 +165,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataIllegalArgumentException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException
+    public void addMetadataIllegalArgumentException3() throws ClassNotFoundException, IOException, SQLException, ConformanceException, URISyntaxException
     {
         final File testFile = this.getRandomFile(18);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -197,7 +196,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataIllegalArgumentException4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void addMetadataIllegalArgumentException4() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(18);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -229,7 +228,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void addMetadataReference() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReference() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(12);
 
@@ -278,7 +277,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReferenceIllegalArgumentException() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -319,7 +318,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReferenceIllegalArgumentException2() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -360,7 +359,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReferenceIllegalArgumentException3() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -401,7 +400,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReferenceIllegalArgumentException4() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -442,7 +441,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException5() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReferenceIllegalArgumentException5() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -483,7 +482,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException6() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReferenceIllegalArgumentException6() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -524,7 +523,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException7() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addMetadataReferenceIllegalArgumentException7() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -560,7 +559,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void getMetadata() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void getMetadata() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(12);
 
@@ -614,7 +613,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void getMetadataWithIdentifier() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void getMetadataWithIdentifier() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(6);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -662,7 +661,7 @@ public class GeoPackageMetadataAPITest
      * @throws URISyntaxException
      */
     @Test
-    public void getMetadataWithIdentifier2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, URISyntaxException
+    public void getMetadataWithIdentifier2() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException, URISyntaxException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -699,7 +698,7 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void getMetadatReferences() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, URISyntaxException, MimeTypeParseException
+    public void getMetadatReferences() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(12);
 
