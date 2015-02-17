@@ -2,10 +2,10 @@ package com.rgi.packager;
 
 import store.GeoPackageWriter;
 
-
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.task.TaskMonitor;
+import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.store.TileStoreReader;
 
 /**
@@ -38,17 +38,9 @@ public class PackageJob implements Runnable {
 
 	@Override
 	public void run() {
-		this.tileStoreReader.stream().forEach(tileHandle -> {
-			try
+		this.tileStoreReader.stream().forEach(tileHandle -> { try
 			{
-				
-                final CrsCoordinate coordinate = this.crsProfile.tileToCrsCoordinate(tileHandle.getRow(),
-                                                                          tileHandle.getColumn(),
-                                                                          this.crsProfile.getBounds(),
-                                                                          tileHandle.getMatrix(),
-                                                                          this.tileStoreReader);
-
-                gpkgWriter.addTile(coordinate, tileHandle.getZoomLevel(), tileHandle.getImage());
+                gpkgWriter.addTile(tileHandle.getCrsCoordinate(), tileHandle.getZoomLevel(), tileHandle.getImage());
 			}
 			catch(Exception e)
 			{

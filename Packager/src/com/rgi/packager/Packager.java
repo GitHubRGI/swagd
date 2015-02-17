@@ -19,6 +19,8 @@
 package com.rgi.packager;
 
 import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -29,10 +31,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 
 import store.GeoPackageWriter;
 
-import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.task.AbstractTask;
@@ -41,8 +43,10 @@ import com.rgi.common.task.Settings;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
+import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.tms.TmsReader;
+import com.rgi.geopackage.verification.ConformanceException;
 
 /**
  * @author lander
@@ -87,7 +91,7 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                                                                              "1",
                                                                              "test tiles",
                                                                              tileStoreReader.getBounds(),
-                                                                             tileStoreReader.getTimeScheme(),
+                                                                             tileStoreReader.getTileScheme(),
                                                                              new MimeType("image/png"),
                                                                              null))
 				{
@@ -96,10 +100,11 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
 					jobWaiter.setDaemon(true);
 					jobWaiter.start();
 				}
-			} catch (final Exception e)
+			}
+            catch(ClassNotFoundException | IOException | SQLException | ConformanceException | TileStoreException | MimeTypeParseException ex1)
 			{
 				// TODO: Handle exceptions better here for all trys
-				e.printStackTrace();
+				ex1.printStackTrace();
 			}
 		} else {
 			// TODO: Handle more than one file passed to packager

@@ -22,8 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.nio.file.FileAlreadyExistsException;
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -64,7 +63,7 @@ public class GeoPackageSchemaAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void addDataColumn() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
+    public void addDataColumn() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(5);
         final String   columnName     = "columnName";
@@ -117,7 +116,7 @@ public class GeoPackageSchemaAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addDataColumnIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
+    public void addDataColumnIllegalArgumentException() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(12);
 
@@ -152,7 +151,7 @@ public class GeoPackageSchemaAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addDataColumnIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
+    public void addDataColumnIllegalArgumentException2() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(12);
 
@@ -191,7 +190,7 @@ public class GeoPackageSchemaAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void getDataColumn() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
+    public void getDataColumn() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(12);
 
@@ -238,7 +237,7 @@ public class GeoPackageSchemaAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void getDataColumnIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getDataColumnIllegalArgumentException() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
         final File testFile = this.getRandomFile(14);
 
@@ -264,7 +263,7 @@ public class GeoPackageSchemaAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void getDataColumnIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getDataColumnIllegalArgumentException2() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
         final File testFile = this.getRandomFile(12);
 
@@ -296,7 +295,7 @@ public class GeoPackageSchemaAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void getDataColumnIllegalArgumentException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getDataColumnIllegalArgumentException3() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
         final File testFile = this.getRandomFile(12);
 
@@ -328,7 +327,7 @@ public class GeoPackageSchemaAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void getDataColumnCollection() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
+    public void getDataColumnCollection() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(10);
 
@@ -390,7 +389,7 @@ public class GeoPackageSchemaAPITest
      * @throws ConformanceException
      */
     @Test
-    public void addDataColumnConstraint() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addDataColumnConstraint() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
         final File testFile = this.getRandomFile(11);
 
@@ -451,7 +450,7 @@ public class GeoPackageSchemaAPITest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addDataColumnConstraintIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addDataColumnConstraintIllegalArgumentException() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
         final File testFile = this.getRandomFile(13);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -476,7 +475,7 @@ public class GeoPackageSchemaAPITest
     }
 
     @Test
-    public void getDataColumnConstraint() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getDataColumnConstraint() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
         final File testFile = this.getRandomFile(11);
 
@@ -513,7 +512,7 @@ public class GeoPackageSchemaAPITest
         }
     }
 
-    private static GeoPackage createGeoPackage(final String tableName, final String columnName, final File testFile) throws ClassNotFoundException, SQLException, FileAlreadyExistsException, FileNotFoundException, ConformanceException
+    private static GeoPackage createGeoPackage(final String tableName, final String columnName, final File testFile) throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {

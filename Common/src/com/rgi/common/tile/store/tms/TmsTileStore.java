@@ -86,7 +86,7 @@ abstract class TmsTileStore
         return Origin;
     }
 
-    public TileScheme getTimeScheme()
+    public TileScheme getTileScheme()
     {
         return this.tileScheme;
     }
