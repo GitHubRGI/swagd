@@ -159,8 +159,7 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
                 throw new IllegalArgumentException(String.format("Mime type '%s' is not a supported for image writing by your Java environment", imageOutputFormat.toString()));
             }
 
-            this.imageWriteOptions = imageWriteOptions != null ? imageWriteOptions
-                                                               : this.imageWriter.getDefaultWriteParam();
+            this.imageWriteOptions = imageWriteOptions; // May be null
 
             this.tileScheme = tileScheme;
 
