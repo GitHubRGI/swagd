@@ -58,12 +58,20 @@ public class MetadataVerifier extends Verifier
     private boolean                 hasMetadataReferenceTable;
     private List<Metadata>          metadataValues;
     private List<MetadataReference> metadataReferenceValues;
+    /**
+     * @author Jenifer Cochran
+     *
+     */
     public class Metadata
     {
         int    id;
         String md_scope;
     }
 
+    /**
+     * @author Jenifer Cochran
+     *
+     */
     public class MetadataReference
     {
         String  reference_scope;
@@ -75,6 +83,14 @@ public class MetadataVerifier extends Verifier
         Integer md_parent_id;
     }
 
+    /**
+     * @param sqliteConnection
+     *            the handle to the database connection
+     * @throws SQLException
+     *             throws when the method
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             or when other SQLExceptions occur
+     */
     public MetadataVerifier(final Connection sqliteConnection) throws SQLException
     {
         super(sqliteConnection);
@@ -96,8 +112,8 @@ public class MetadataVerifier extends Verifier
      * Definition</a> and <a
      * href="http://www.geopackage.org/spec/#gpkg_metadata_sql">gpkg_metadata
      * Table Definition SQL</a>. </blockquote> </div>
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws if the method verifyTable throws
+     * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
     @Requirement (number   = 68,
                   text     = "A GeoPackage MAY contain a table named gpkg_metadata."
@@ -119,7 +135,7 @@ public class MetadataVerifier extends Verifier
      * or updateable view SHALL be one of the name column values from <a
      * href="http://www.geopackage.org/spec/#metadata_scopes">Metadata
      * Scopes</a>. </blockquote> </div>
-     * @throws AssertionError
+     * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
     @Requirement (number    = 69,
                   text      = "Each md_scope column value in a gpkg_metadata table or "
@@ -153,8 +169,8 @@ public class MetadataVerifier extends Verifier
      * href="http://www.geopackage.org/spec/#gpkg_metadata_reference_sql"
      * >gpkg_metadata_reference Table Definition SQL</a>. </blockquote> </div>
      *
-     * @throws AssertionError
-     * @throws SQLException
+     * @throws AssertionError throws when the GeoPackage fails to meet this requirement
+     * @throws SQLException throws if the method verifyTable throws
      */
     @Requirement (number   = 70,
                   text     = "A GeoPackage that contains a gpkg_metadata table SHALL contain a "
@@ -179,7 +195,7 @@ public class MetadataVerifier extends Verifier
      * <code>gpkg_metadata_reference</code> table reference scope column value
      * SHALL be one of ‘geopackage’, ‘table’, ‘column’, ’row’, ’row/col’ in
      * lowercase. </blockquote> </div>
-     * @throws AssertionError
+     * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
     @Requirement (number   = 71,
                   text     = "Every gpkg_metadata_reference table reference scope column "
@@ -210,8 +226,8 @@ public class MetadataVerifier extends Verifier
      * <code>table_name</code> column value that references a value in the
      * <code>gpkg_contents</code> <code>table_name</code> column. </blockquote>
      * </div>
-     * @throws AssertionError
-     * @throws SQLException
+     * @throws AssertionError throws when the GeoPackage fails to meet this requirement
+     * @throws SQLException throws if various SQLExceptions occur
      */
     @Requirement (number   = 72,
                   text     = "Every gpkg_metadata_reference table row with a reference_scope column "
@@ -282,8 +298,8 @@ public class MetadataVerifier extends Verifier
      * <code>column_name</code> column value that contains the name of a column
      * in the SQLite table or view identified by the <code>table_name</code>
      * column value. </blockquote> </div>
-     * @throws AssertionError
-     * @throws SQLException
+     * @throws AssertionError throws when the GeoPackage fails to meet this requirement
+     * @throws SQLException throws if various SQLExceptions occur
      */
     @Requirement (number   = 73,
                   text     = "Every gpkg_metadata_reference table row with a reference_scope column "
@@ -354,8 +370,8 @@ public class MetadataVerifier extends Verifier
      * have a <code>row_id_value</code> column value that contains the ROWID of
      * a row in the SQLite table or view identified by the
      * <code>table_name</code> column value. </blockquote> </div>
-     * @throws AssertionError
-     * @throws SQLException
+     * @throws AssertionError throws when the GeoPackage fails to meet this requirement
+     * @throws SQLException throws if various SQLExceptions occur
      */
     @Requirement (number    = 74,
                   text      = "Every gpkg_metadata_reference table row with a reference_scope column value "
@@ -409,7 +425,7 @@ public class MetadataVerifier extends Verifier
      * date plus UTC hours, minutes, seconds and a decimal fraction of a second,
      * with a ‘Z’ (‘zulu’) suffix indicating UTC.
      * </blockquote> </div>
-     * @throws AssertionError
+     * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
     @Requirement (number   = 75,
                   text     = "Every gpkg_metadata_reference table row timestamp column value "
@@ -452,7 +468,7 @@ public class MetadataVerifier extends Verifier
      * <code>gpkg_metadata_reference</code> table row <code>md_file_id</code>
      * column value SHALL be an id column value from the
      * <code>gpkg_metadata</code> table. </blockquote> </div>
-     * @throws AssertionError
+     * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
     @Requirement (number   = 76,
                   text     = "Every gpkg_metadata_reference table row md_file_id column "
@@ -486,7 +502,7 @@ public class MetadataVerifier extends Verifier
      * column value that is NOT NULL SHALL be an id column value from the
      * <code>gpkg_metadata</code> table that is not equal to the
      * <code>md_file_id</code> column value for that row. </blockquote> </div>
-     * @throws AssertionError
+     * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
     @Requirement(number  = 77,
                  text    = "Every gpkg_metadata_reference table row md_parent_id column value "

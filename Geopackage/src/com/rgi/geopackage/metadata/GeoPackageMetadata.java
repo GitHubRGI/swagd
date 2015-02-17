@@ -40,6 +40,10 @@ import utility.SelectBuilder;
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.verification.FailedRequirement;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class GeoPackageMetadata
 {
     /**
@@ -57,7 +61,7 @@ public class GeoPackageMetadata
      * Metadata requirements this GeoPackage failed to meet
      *
      * @return The metadata GeoPackage requirements this GeoPackage fails to conform to
-     * @throws SQLException
+     * @throws SQLException throws when the {@link MetadataVerifier#MetadataVerifier(Connection)} throws an SQLException
      */
     public Collection<FailedRequirement> getFailedRequirements() throws SQLException
     {
@@ -68,15 +72,20 @@ public class GeoPackageMetadata
      * Creates an entry in the GeoPackage metadata table
      *
      * @param scope
-     *             Metadata scope
+     *            Metadata scope
      * @param standardUri
-     *             URI reference to the metadata structure definition authority
+     *            URI reference to the metadata structure definition authority
      * @param mimeType
-     *             MIME encoding of metadata
+     *            MIME encoding of metadata
      * @param metadata
-     *             Metadata text
+     *            Metadata text
      * @return Returns the newly added {@link Metadata} object
      * @throws SQLException
+     *             if a database access error occurs, this method is called
+     *             while participating in a distributed transaction, if this
+     *             method is called on a closed connection or this Connection
+     *             object is in auto-commit mode, or if the method getMetadata()
+     *             throws or other various SQLExceptions occur
      */
     public Metadata addMetadata(final Scope    scope,
                                 final URI      standardUri,
@@ -152,19 +161,30 @@ public class GeoPackageMetadata
      * Creates an entry in the GeoPackage metadata reference table
      *
      * @param referenceScope
-     *             Reference scope
+     *            Reference scope
      * @param tableName
-     *             Name of the table to which this metadata reference applies, or NULL for referenceScope of 'geopackage'
+     *            Name of the table to which this metadata reference applies, or
+     *            NULL for referenceScope of 'geopackage'
      * @param columnName
-     *             Name of the column to which this metadata reference applies; NULL for referenceScope of 'geopackage','table' or 'row', or the name of a column in the tableName table for referenceScope of 'column' or 'row/col'
+     *            Name of the column to which this metadata reference applies;
+     *            NULL for referenceScope of 'geopackage','table' or 'row', or
+     *            the name of a column in the tableName table for referenceScope
+     *            of 'column' or 'row/col'
      * @param rowIdentifier
-     *             NULL for referenceScope of 'geopackage', 'table' or 'column', or the rowed of a row record in the table_name table for referenceScope of 'row' or 'row/col'
+     *            NULL for referenceScope of 'geopackage', 'table' or 'column',
+     *            or the rowed of a row record in the table_name table for
+     *            referenceScope of 'row' or 'row/col'
      * @param fileIdentifier
-     *             gpkg_metadata table identifier column value for the metadata to which this gpkg_metadata_reference applies
+     *            gpkg_metadata table identifier column value for the metadata
+     *            to which this gpkg_metadata_reference applies
      * @param parentIdentifier
-     *             gpkg_metadata table identifier column value for the hierarchical parent gpkg_metadata for the gpkg_metadata to which this gpkg_metadata_reference applies, or NULL if file identifier forms the root of a metadata hierarchy
+     *            gpkg_metadata table identifier column value for the
+     *            hierarchical parent gpkg_metadata for the gpkg_metadata to
+     *            which this gpkg_metadata_reference applies, or NULL if file
+     *            identifier forms the root of a metadata hierarchy
      * @return Returns the newly added {@link MetadataReference} object
      * @throws SQLException
+     *             throws if various SQLExceptions occur
      */
     public MetadataReference addMetadataReference(final ReferenceScope referenceScope,
                                                   final String         tableName,
@@ -273,6 +293,9 @@ public class GeoPackageMetadata
      *
      * @return Returns a collection of {@link Metadata} objects
      * @throws SQLException
+     *             throws if the method
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             or if other various SQLExceptions occur
      */
     public Collection<Metadata> getMetadata() throws SQLException
     {
@@ -315,12 +338,18 @@ public class GeoPackageMetadata
     }
 
     /**
-     * Gets an entry in the reference table which matches the supplied primary key
+     * Gets an entry in the reference table which matches the supplied primary
+     * key
      *
      * @param identifier
-     *             Metadata primary key
-     * @return Returns an instance of {@link Metadata} representing an entry in the GeoPackage metadata table, or null if no entry matches the supplied criteria
+     *            Metadata primary key
+     * @return Returns an instance of {@link Metadata} representing an entry in
+     *         the GeoPackage metadata table, or null if no entry matches the
+     *         supplied criteria
      * @throws SQLException
+     *             throws if the method
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             or if other various SQLExceptions occur
      */
     public Metadata getMetadata(final int identifier) throws SQLException
     {
@@ -363,6 +392,9 @@ public class GeoPackageMetadata
      *
      * @return Returns a collection of {@link MetadataReference} objects
      * @throws SQLException
+     *             throws if the method
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             or if other various SQLExceptions occur
      */
     public Collection<MetadataReference> getMetadataReferences() throws SQLException
     {
@@ -595,8 +627,21 @@ public class GeoPackageMetadata
 
     private final Connection databaseConnection;
 
+    /**
+     * The Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
+     */
     public final static SimpleDateFormat DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
-    public final static String MetadataTableName          = "gpkg_metadata";
+    /**
+     * The String name "gpkg_metadata" of the database Metadata table containing
+     * the metadata of the GeoPackage
+     * (http://www.geopackage.org/spec/#_metadata_table)
+     */
+    public final static String MetadataTableName = "gpkg_metadata";
+    /**
+     * The String name "gpkg_metadata_reference" of the database Metadata
+     * Reference table containing the metadata references of the GeoPackage
+     * http://www.geopackage.org/spec/#_metadata_reference_table
+     */
     public final static String MetadataReferenceTableName = "gpkg_metadata_reference";
 }
