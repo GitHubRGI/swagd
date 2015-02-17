@@ -38,6 +38,14 @@ import java.util.Set;
  */
 public class DatabaseUtility
 {
+    /**
+     * @param sqliteFile
+     *            the GeoPackag file
+     * @return the String representation of the sqliteVersion
+     * @throws IOException
+     *             throws when the FileDoes not exist or unable to seek in the
+     *             File to read the SQLite Version
+     */
     public static String getSqliteVersion(final File sqliteFile) throws IOException
     {
         if(sqliteFile == null)
@@ -74,6 +82,17 @@ public class DatabaseUtility
         }
     }
 
+    /**
+     * @param connection
+     *            the connection to the database
+     * @param name
+     *            the name of the table
+     * @return true if the table or view exists in the database; otherwise
+     *         returns false
+     * @throws SQLException
+     *             throws if unable to connect to the database or other various
+     *             SQLExceptions
+     */
     public static boolean tableOrViewExists(final Connection connection, final String name) throws SQLException
     {
         DatabaseUtility.verify(connection);
@@ -86,6 +105,17 @@ public class DatabaseUtility
         }
     }
 
+    /**
+   * @param connection
+     *            the connection to the database
+     * @param names
+     *            the names of the tables
+     * @return true if All the tables or views exists in the database; otherwise
+     *         returns false
+     * @throws SQLException
+     *             throws if unable to connect to the database or other various
+     *             SQLExceptions
+     */
     public static boolean tablesOrViewsExists(final Connection connection, final String... names) throws SQLException
     {
         DatabaseUtility.verify(connection);
@@ -105,6 +135,14 @@ public class DatabaseUtility
         }
     }
 
+    /**
+     * @param connection
+     *            connection to the database
+     * @param applicationId
+     *            the int Application ID to be set
+     * @throws SQLException
+     *             throws if various SQLExceptions occur
+     */
     public static void setApplicationId(final Connection connection, final int applicationId) throws SQLException
     {
         DatabaseUtility.verify(connection);
@@ -116,6 +154,13 @@ public class DatabaseUtility
         }
     }
 
+    /**
+     * @param connection
+     *            connection to the database
+     * @return the application Id of the database
+     * @throws SQLException
+     *             throws if various SQLExceptions occur
+     */
     public static int getApplicationId(final Connection connection) throws SQLException
     {
         DatabaseUtility.verify(connection);
@@ -130,6 +175,15 @@ public class DatabaseUtility
         }
     }
 
+    /**
+     * @param connection
+     *            connection to the database
+     * @param state
+     *            true or false whether you want foreign_keys to be set on or
+     *            off
+     * @throws SQLException
+     *             throws if various SQLExceptions occur
+     */
     public static void setPragmaForeignKeys(final Connection connection, final boolean state) throws SQLException
     {
         DatabaseUtility.verify(connection);

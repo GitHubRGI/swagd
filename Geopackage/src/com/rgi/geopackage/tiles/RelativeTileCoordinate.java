@@ -39,8 +39,6 @@ public class RelativeTileCoordinate extends Coordinate<Integer>
      *             The 'x' portion of the coordinate
      * @param zoomLevel
      *             The zoom level associated with the coordinate
-     * @param origin
-     *             The the corner of the tile that represents the coordinate
      */
     public RelativeTileCoordinate(final int row, final int column, final int zoomLevel)
     {
