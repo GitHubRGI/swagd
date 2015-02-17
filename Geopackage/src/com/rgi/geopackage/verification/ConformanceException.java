@@ -28,6 +28,9 @@ import java.util.stream.Collectors;
 @SuppressWarnings("serial")
 public class ConformanceException extends Exception
 {
+    /**
+     * @param failedRequirements a collection of all the failed requirements of the GeoPackage that did not pass
+     */
     public ConformanceException(final Collection<FailedRequirement> failedRequirements)
     {
         this.failedRequirements = failedRequirements;

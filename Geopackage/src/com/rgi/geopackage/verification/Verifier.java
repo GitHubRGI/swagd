@@ -48,7 +48,6 @@ public class Verifier
     /**
      * Constructor
      *
-     * @param file File handle to the SQLite database
      * @param sqliteConnection JDBC connection to the SQLite database
      */
     public Verifier(final Connection sqliteConnection)
