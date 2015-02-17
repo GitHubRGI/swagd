@@ -34,10 +34,18 @@ import com.rgi.suite.ApplicationContext.Window;
 import com.rgi.view.MapViewWindow;
 import com.rgi.view.Viewer;
 
+/**
+ * A GUI Window representing user file selection.  This is used by multiple work flows.
+ * 
+ * @author lander
+ */
 public class FileChooserWindow extends BaseWindow
 {
     private JFileChooser fileChooser;
 
+    /**
+     * @param context
+     */
     public FileChooserWindow(ApplicationContext context)
     {
         super(context);
@@ -74,16 +82,6 @@ public class FileChooserWindow extends BaseWindow
         this.fileChooser = new JFileChooser();
         this.contentPane.add(this.fileChooser, BorderLayout.CENTER);
         this.fileChooser.addActionListener(event -> { Task task = this.context.getActiveTask();
-
-//                                                      if(task != null)
-//                                                      {
-//                                                          final File defaultFilePath = new File(task.getFactory().getDefaultFilePath());
-//
-//                                                          if(defaultFilePath.canRead())
-//                                                          {
-//                                                              this.fileChooser.setCurrentDirectory(defaultFilePath);
-//                                                          }
-//                                                      }
 
                                                       if(JFileChooser.APPROVE_SELECTION.equals(event.getActionCommand()))
                                                       {
