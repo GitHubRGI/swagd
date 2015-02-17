@@ -273,7 +273,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
     }
 
     @Override
-    public TileScheme getTimeScheme()
+    public TileScheme getTileScheme()
     {
         return this.tileScheme;
     }
