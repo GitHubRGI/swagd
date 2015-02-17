@@ -71,7 +71,8 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
 
 
 	@Override
-	public void execute(final Settings opts) {
+	public void execute(final Settings opts)
+	{
 		// TODO: Create new geopackage or append to existing one
 		// Get file/directory from settings
 		final File[] files = opts.getFiles(Setting.FileSelection);
@@ -85,7 +86,7 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                 // Figure out what the file selection is and create a reader
 				final TmsReader tileStoreReader = new TmsReader(crsProfile, files[0].toPath());
                 // Create a new geopackage writer with things like table name and description
-				try(final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
+				final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
                                                                              crsProfile.getCoordinateReferenceSystem(),
                                                                              "footiles",
                                                                              "1",
@@ -93,13 +94,11 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                                                                              tileStoreReader.getBounds(),
                                                                              tileStoreReader.getTileScheme(),
                                                                              new MimeType("image/png"),
-                                                                             null))
-				{
-                    // Create a new PackageJob task
-					final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Packager.createPackageJob(tileStoreReader, gpkgWriter))));
-					jobWaiter.setDaemon(true);
-					jobWaiter.start();
-				}
+                                                                             null);
+                // Create a new PackageJob task
+				final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Packager.createPackageJob(tileStoreReader, gpkgWriter))));
+				jobWaiter.setDaemon(true);
+				jobWaiter.start();
 			}
             catch(ClassNotFoundException | IOException | SQLException | ConformanceException | TileStoreException | MimeTypeParseException ex1)
 			{
@@ -232,7 +231,6 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
     @Override
     public void setProgress(final int value)
     {
-
         System.out.println("progress updated: " + value);
         // when called by a tilejob, reports a number from 0-100.
         final double perJob = 100.0 / this.jobTotal;
