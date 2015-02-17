@@ -37,10 +37,23 @@ import java.util.stream.Stream;
 public enum Type
 {
     // http://www.geopackage.org/spec/#metadata_scopes
+    /**
+     * text pattern match "range"
+     */
     Range,
+    /**
+     * text pattern match "enum"
+     */
     Enum,
+    /**
+     * text pattern match "glob"
+     */
     Glob;
 
+    /**
+     * @param inName String of a Type
+     * @return the Type object associated with the parameter
+     */
     public static Type fromString(final String inName)
     {
         return Stream.of(Type.values())

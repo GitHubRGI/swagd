@@ -39,6 +39,10 @@ import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.core.Content;
 import com.rgi.geopackage.verification.FailedRequirement;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class GeoPackageSchema
 {
     /**
@@ -56,6 +60,7 @@ public class GeoPackageSchema
      * Metadata requirements this GeoPackage failed to meet
      *
      * @return The metadata GeoPackage requirements this GeoPackage fails to conform to
+     * @throws SQLException throws if the method {@link SchemaVerifier#SchemaVerifier(Connection)} throws an SQLException
      */
     public Collection<FailedRequirement> getFailedRequirements() throws SQLException
     {
@@ -66,21 +71,29 @@ public class GeoPackageSchema
      * Add an entry to the geopackage_data_columns table
      *
      * @param table
-     *             Content table
+     *            Content table
      * @param columnName
-     *             Name of the table column
+     *            Name of the table column
      * @param name
-     *             A human-readable identifier (e.g. short name) for the columnName content
+     *            A human-readable identifier (e.g. short name) for the
+     *            columnName content
      * @param title
-     *             A human-readable formal title for the columnName content
+     *            A human-readable formal title for the columnName content
      * @param description
-     *             A human-readable description for the tableName content
+     *            A human-readable description for the tableName content
      * @param mimeType
-     *            <a href="http://www.iana.org/assignments/media-types/index.html">MIME</a> type of columnName if BLOB type, or NULL for other types
+     *            <a href=
+     *            "http://www.iana.org/assignments/media-types/index.html"
+     *            >MIME</a> type of columnName if BLOB type, or NULL for other
+     *            types
      * @param constraintName
-     *            Case sensitive column value constraint name specified by reference to gpkg_data_column_constraints.constraint name
+     *            Case sensitive column value constraint name specified by
+     *            reference to gpkg_data_column_constraints.constraint name
      * @return Returns the newly added {@link DataColumn} object
      * @throws SQLException
+     *             throws if unable to create the Data Columns Table and unable
+     *             to insert values into the Data Columns Table along with other
+     *             various SQLExceptions
      */
     public DataColumn addDataColumn(final Content  table,
                                     final String   columnName,
@@ -159,23 +172,34 @@ public class GeoPackageSchema
      * Adds an entry to the GeoPackage's data column constraints table
      *
      * @param constraintName
-     *             Case sensitive name of constraint
+     *            Case sensitive name of constraint
      * @param constraintType
-     *             Constraint type
+     *            Constraint type
      * @param value
-     *             Specified case sensitive value for enum or glob or <code>null</code> for range constraintType
+     *            Specified case sensitive value for enum or glob or
+     *            <code>null</code> for range constraintType
      * @param minimum
-     *             Minimum value for "range" or <code>null</code> for "enum" or "glob" constraintType
+     *            Minimum value for "range" or <code>null</code> for "enum" or
+     *            "glob" constraintType
      * @param minimumIsInclusive
-     *             <code>false</code> if minimum value is exclusive, <code>true</code> if minimum value is inclusive, or <code>null</code> for "enum" or "glob" constraintType
+     *            <code>false</code> if minimum value is exclusive,
+     *            <code>true</code> if minimum value is inclusive, or
+     *            <code>null</code> for "enum" or "glob" constraintType
      * @param maximum
-     *             Maximum value for "range" or <code>null</code> for "enum" or "glob" constraintType
+     *            Maximum value for "range" or <code>null</code> for "enum" or
+     *            "glob" constraintType
      * @param maximumIsInclusive
-     *             <code>false</code> if maximum value is exclusive, <code>true</code> if maximum value is inclusive, or <code>null</code> for "enum" or "glob" constraintType
+     *            <code>false</code> if maximum value is exclusive,
+     *            <code>true</code> if maximum value is inclusive, or
+     *            <code>null</code> for "enum" or "glob" constraintType
      * @param description
-     *             For ranges and globs, describes the constraint; for enums, describes the enum value.
+     *            For ranges and globs, describes the constraint; for enums,
+     *            describes the enum value.
      * @return Returns the newly added {@link DataColumnConstraint} object
      * @throws SQLException
+     *             throws if unable to create the Data Columns Constraints Table
+     *             and unable to insert values into the Data Columns Constraints
+     *             Table along with other various SQLExceptions
      */
     public DataColumnConstraint addDataColumnConstraint(final String  constraintName,
                                                         final Type    constraintType,
@@ -291,14 +315,19 @@ public class GeoPackageSchema
     }
 
     /**
-     * Gets an entry in the GeoPackage data column table that matches the supplied criteria
+     * Gets an entry in the GeoPackage data column table that matches the
+     * supplied criteria
      *
      * @param table
-     *             Content table
+     *            Content table
      * @param columnName
-     *             Name of the table column
-     * @return Returns the a {@link DataColumn} that matches the supplied criteria, or null if there isn't a match
+     *            Name of the table column
+     * @return Returns the a {@link DataColumn} that matches the supplied
+     *         criteria, or null if there isn't a match
      * @throws SQLException
+     *             throws if the method
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             or if other various SQLExceptions occur
      */
     public DataColumn getDataColumn(final Content table, final String columnName) throws SQLException
     {
@@ -352,16 +381,22 @@ public class GeoPackageSchema
     }
 
     /**
-     * Gets an entry in the GeoPackage data column constraints table that matches the supplied criteria
+     * Gets an entry in the GeoPackage data column constraints table that
+     * matches the supplied criteria
      *
      * @param constraintName
-     *             Case sensitive name of constraint
+     *            Case sensitive name of constraint
      * @param constraintType
-     *             Constraint type
+     *            Constraint type
      * @param value
-     *             Specified case sensitive value for enum or glob or <code>null</code> for range constraintType
-     * @return Returns the a {@link DataColumnConstraint} that matches the supplied criteria, or null if there isn't a match
+     *            Specified case sensitive value for enum or glob or
+     *            <code>null</code> for range constraintType
+     * @return Returns the a {@link DataColumnConstraint} that matches the
+     *         supplied criteria, or null if there isn't a match
      * @throws SQLException
+     *             throws if the method
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             or if other various SQLExceptions occur
      */
     public DataColumnConstraint getDataColumnConstraint(final String  constraintName,
                                                         final Type    constraintType,
@@ -413,8 +448,13 @@ public class GeoPackageSchema
     /**
      * Gets every entry in the GeoPackage data columns table
      *
-     * @return Returns a collection of {@link DataColumn} objects that represents all of the entries in the GeoPackage data columns table
+     * @return Returns a collection of {@link DataColumn} objects that
+     *         represents all of the entries in the GeoPackage data columns
+     *         table
      * @throws SQLException
+     *             throws if the method
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             or if other various SQLExceptions occur
      */
     public Collection<DataColumn> getDataColumns() throws SQLException
     {
@@ -461,8 +501,13 @@ public class GeoPackageSchema
     /**
      * Gets every entry in the GeoPackage data column constraints table
      *
-     * @return Returns a collection of {@link DataColumnConstraint} objects that represents all of the entries in the GeoPackage data column constraints table
+     * @return Returns a collection of {@link DataColumnConstraint} objects that
+     *         represents all of the entries in the GeoPackage data column
+     *         constraints table
      * @throws SQLException
+     *             throws if the method
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             or if other various SQLExceptions occur
      */
     public Collection<DataColumnConstraint> getDataColumnConstraints() throws SQLException
     {
@@ -589,6 +634,14 @@ public class GeoPackageSchema
 
     private final Connection databaseConnection;
 
+    /**
+     * The name of the Data Columns Table "gpkg_data_columns"
+     * http://www.geopackage.org/spec/#_data_columns
+     */
     public final static String DataColumnsTableName           = "gpkg_data_columns";
+    /**
+     * The name of the Data Column Constraints Table "gpkg_data_column_constraints"
+     * http://www.geopackage.org/spec/#_data_columns_constraints
+     */
     public final static String DataColumnConstraintsTableName = "gpkg_data_column_constraints";
 }
