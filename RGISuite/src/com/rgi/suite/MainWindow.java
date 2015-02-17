@@ -32,8 +32,18 @@ import com.rgi.packager.PackagerFactory;
 import com.rgi.suite.ApplicationContext.Window;
 import com.rgi.view.ViewerFactory;
 
+/**
+ * Create the main window containing the work flow buttons.
+ * @author Duff Means
+ * 
+ */
 public class MainWindow extends BaseWindow
 {
+    /**
+     * Constructor.
+     * @param context The GUI app context.
+     * 
+     */
     public MainWindow(ApplicationContext context)
     {
         super(context);
