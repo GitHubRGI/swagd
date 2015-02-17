@@ -46,6 +46,10 @@ import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.verification.FailedRequirement;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class GeoPackageTiles
 {
     /**
