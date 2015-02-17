@@ -61,6 +61,9 @@ public class ExtensionsVerifier extends Verifier
     private boolean hasGpkgExtensionsTable;
     private Map<ExtensionData, String> gpkgExtensionsDataAndColumnName;
 
+    /**
+     * @param sqliteConnection A connection handle to the database
+     */
     public ExtensionsVerifier(final Connection sqliteConnection)
     {
         super(sqliteConnection);
@@ -122,8 +125,8 @@ public class ExtensionsVerifier extends Verifier
      * href="http://www.geopackage.org/spec/#gpkg_extensions_sql"
      * >gpkg_extensions Table Definition SQL</a>. </blockquote> </div>
      *
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException  throws when various SQLExceptions occur 
+     * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
     @Requirement(number = 78, text = "A GeoPackage MAY contain a table or updateable view named gpkg_extensions."
             + " If present this table SHALL be defined per clause 2.5.2.1.1 Table Definition, "
@@ -176,8 +179,8 @@ public class ExtensionsVerifier extends Verifier
      * rows where the <code>column_name
      * </code> value is not NULL. </blockquote> </div>
      *
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws when various SQLExceptions occur
+     * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
     @Requirement(number = 80,
                  text   = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
@@ -242,8 +245,8 @@ public class ExtensionsVerifier extends Verifier
      * <code>table_name</code> column value for that row, or be NULL.
      * </blockquote> </div>
      *
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws when various SQLExceptions occur
+     * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
     @Requirement(number = 81, text = "The column_name column value in a gpkg_extensions row SHALL"
             + " be the name of a column in the table specified by the "
@@ -299,8 +302,7 @@ public class ExtensionsVerifier extends Verifier
      * those defined in this encoding standard or in an OGC Best Practices
      * Document that extends it. </blockquote> </div>
      *
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
     @Requirement(number = 82, text = "Each extension_name column value in a gpkg_extensions row SHALL be a "
             + "unique case sensitive value of the form <author>_<extension_name> "
@@ -340,8 +342,8 @@ public class ExtensionsVerifier extends Verifier
      * href="http://www.geopackage.org/spec/#extension_template"> GeoPackage
      * Extension Template (Normative)</a>. </blockquote> </div>
      *
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws when various SQLExceptions occur
+     * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
     @Requirement(number = 83,
                  text   = "The definition column value in a gpkg_extensions row SHALL "
@@ -364,18 +366,18 @@ public class ExtensionsVerifier extends Verifier
                  ResultSet invalidDefinitionValues = stmt.executeQuery(query))
             {
                 final List<String> invalidDefinitions = ResultSetStream.getStream(invalidDefinitionValues)
-                                                                 .map(resultSet ->
-                                                                                  {
-                                                                                      try
-                                                                                      {
-                                                                                          return resultSet.getString("table_name");
-                                                                                      } catch (final SQLException ex)
-                                                                                      {
-                                                                                          return null;
-                                                                                      }
-                                                                                  })
-                                                                 .filter(Objects::nonNull)
-                                                                 .collect(Collectors.toList());
+                                                                       .map(resultSet ->
+                                                                                        {
+                                                                                            try
+                                                                                            {
+                                                                                                return resultSet.getString("table_name");
+                                                                                            } catch (final SQLException ex)
+                                                                                            {
+                                                                                                return null;
+                                                                                            }
+                                                                                        })
+                                                                       .filter(Objects::nonNull)
+                                                                       .collect(Collectors.toList());
 
                 Assert.assertTrue(String.format("The following table_name values in gpkg_extension table have invalid values for the definition column: %s.",
                                                 invalidDefinitions.stream()
@@ -396,8 +398,8 @@ public class ExtensionsVerifier extends Verifier
  * or "write-only" for an extension that affects only writers.
  * </blockquote>
  * </div>
-     * @throws SQLException
-     * @throws AssertionError
+     * @throws SQLException throws when various SQLExceptions occur
+     * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
     @Requirement(number = 84, text = "The scope column value in a gpkg_extensions row SHALL be lowercase "
             + "\"read-write\" for an extension that affects both readers and writers, "

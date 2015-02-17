@@ -98,6 +98,14 @@ public class Extension
         this.scope         = scope;
     }
 
+    /**
+     * @param inTableName the tableName corresponding to other Extension 
+     * @param inColumnName the columnName corresponding to other Extension 
+     * @param inExtensionName the extension Name corresponding to other Extension 
+     * @param inDefinition the definition corresponding to other Extension 
+     * @param inScope the Scope corresponding to other Extension 
+     * @return true if this.Extension equals the parameters
+     */
     public boolean equals(final String inTableName,
                           final String inColumnName,
                           final String inExtensionName,
@@ -163,5 +171,10 @@ public class Extension
     private final String definition;
     private final String scope;
 
+    /**
+     * The regular Expression of allowed extension names according to the OGC
+     * specification (http://www.geopackage.org/spec/#_extension_mechanism)
+     * under Requirement 82
+     */
     public static final String ExtensionNameRegularExpression = "[a-zA-Z0-9]+_[a-zA-Z0-9_]+";
 }

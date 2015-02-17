@@ -65,12 +65,16 @@ public class GeoPackageExtensions
     }
 
     /**
-     * Queries the GeoPackage for an specific named extension with the format <author>_<extension_name>
+     * Queries the GeoPackage for an specific named extension with the format
+     * <author>_<extension_name>
      *
      * @param name
-     *             Name of the extension in the form <author>_<extension_name>
+     *            Name of the extension in the form <author>_<extension_name>
      * @return Returns true if the GeoPackage contains the named extension
      * @throws SQLException
+     *             throws if the method
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             throws or other various SQLExceptions occur
      */
     public boolean hasExtension(final String name) throws SQLException
     {
@@ -91,16 +95,31 @@ public class GeoPackageExtensions
     }
 
     /**
-     * Gets an extension represented by a specific table, column, and extension name
+     * Gets an extension represented by a specific table, column, and extension
+     * name
      *
      * @param tableName
-     *             Name of the table that requires the extension. When NULL, the extension is required for the entire GeoPackage. SHALL NOT be NULL when the column_name is not NULL
+     *            Name of the table that requires the extension. When NULL, the
+     *            extension is required for the entire GeoPackage. SHALL NOT be
+     *            NULL when the column_name is not NULL
      * @param columnName
-     *             Name of the column that requires the extension. When NULL, the extension is required for the entire table
+     *            Name of the column that requires the extension. When NULL, the
+     *            extension is required for the entire table
      * @param extensionName
-     *             The case sensitive name of the extension that is required, in the form <author>_<extension_name> where <author> indicates the person or organization that developed and maintains the extension. The valid character set for <author> is [a-zA-Z0-9]. The valid character set for <extension_name> is [a-zA-Z0-9_]
-     * @return Returns an instance of {@link Extension} that represents an entry in the GeoPackage extensions table
+     *            The case sensitive name of the extension that is required, in
+     *            the form <author>_<extension_name> where <author> indicates
+     *            the person or organization that developed and maintains the
+     *            extension. The valid character set for <author> is
+     *            [a-zA-Z0-9]. The valid character set for <extension_name> is
+     *            [a-zA-Z0-9_]
+     * @return Returns an instance of {@link Extension} that represents an entry
+     *         in the GeoPackage extensions table
      * @throws SQLException
+     *             throws if the methods
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             or
+     *             {@link SelectBuilder#SelectBuilder(Connection, String, Collection, Collection)}
+     *             throws or other various SQLExceptions occur
      */
     public Extension getExtension(final String tableName, final String columnName, final String extensionName) throws SQLException
     {
@@ -137,10 +156,15 @@ public class GeoPackageExtensions
     }
 
     /**
-     * Gets the entries of the GeoPackage extension table as a collection of extension objects
+     * Gets the entries of the GeoPackage extension table as a collection of
+     * extension objects
      *
-     * @return Returns a collection of {@link Extension} objects that represent all of the entries in the GeoPackage extensions table
+     * @return Returns a collection of {@link Extension} objects that represent
+     *         all of the entries in the GeoPackage extensions table
      * @throws SQLException
+     *             throws if the method
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             throws or other various SQLExceptions occur
      */
     public Collection<Extension> getExtensions() throws SQLException
     {
@@ -186,17 +210,35 @@ public class GeoPackageExtensions
      * Adds an extension to the GeoPackage extensions table
      *
      * @param tableName
-     *             Name of the table that requires the extension. When NULL, the extension is required for the entire GeoPackage. SHALL NOT be NULL when the column_name is not NULL
+     *            Name of the table that requires the extension. When NULL, the
+     *            extension is required for the entire GeoPackage. SHALL NOT be
+     *            NULL when the column_name is not NULL
      * @param columnName
-     *             Name of the column that requires the extension. When NULL, the extension is required for the entire table
+     *            Name of the column that requires the extension. When NULL, the
+     *            extension is required for the entire table
      * @param extensionName
-     *             The case sensitive name of the extension that is required, in the form <author>_<extension_name> where <author> indicates the person or organization that developed and maintains the extension. The valid character set for <author> is [a-zA-Z0-9]. The valid character set for <extension_name> is [a-zA-Z0-9_]
+     *            The case sensitive name of the extension that is required, in
+     *            the form <author>_<extension_name> where <author> indicates
+     *            the person or organization that developed and maintains the
+     *            extension. The valid character set for <author> is
+     *            [a-zA-Z0-9]. The valid character set for <extension_name> is
+     *            [a-zA-Z0-9_]
      * @param definition
-     *             Definition of the extension in the form specfied by the template in <a href="http://www.geopackage.org/spec/#extension_template">GeoPackage Extension Template (Normative)</a> or reference thereto.
+     *            Definition of the extension in the form specfied by the
+     *            template in <a
+     *            href="http://www.geopackage.org/spec/#extension_template"
+     *            >GeoPackage Extension Template (Normative)</a> or reference
+     *            thereto.
      * @param scope
-     *             Indicates scope of extension effects on readers / writers
-     * @return Returns an instance of {@link Extension} that represents the new extension entry
+     *            Indicates scope of extension effects on readers / writers
+     * @return Returns an instance of {@link Extension} that represents the new
+     *         extension entry
      * @throws SQLException
+     *             throws if the methods
+     *             {@link #getExtension(String, String, String)} or
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             throw or if the Extensions Table is unable to be created or the database
+     *             is unable to rollback the commit after a different Exception is thrown.
      */
     public Extension addExtension(final String tableName,
                                   final String columnName,
@@ -322,5 +364,9 @@ public class GeoPackageExtensions
 
     private final Connection databaseConnection;
 
+    /**
+     * The String name "gpkg_extensions" of the database Extensions table
+     * containing the extensions of the GeoPackage (http://www.geopackage.org/spec/#_extensions)
+     */
     public final static String ExtensionsTableName = "gpkg_extensions";
 }
