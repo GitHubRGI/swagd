@@ -40,6 +40,8 @@ import com.rgi.common.task.Settings;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
+import com.rgi.common.tile.store.TileHandle;
+import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.tile.store.tms.TmsReader;
@@ -110,19 +112,32 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
     private static Runnable createPackageJob(final TileStoreReader tileStoreReader,
                                              final TileStoreWriter tileStoreWriter)
     {
-        return () -> tileStoreReader.stream()
-                                    .forEach(tileHandle -> { try
-                                                             {
-                                                                tileStoreWriter.addTile(tileHandle.getCrsCoordinate(),
-                                                                                        tileHandle.getZoomLevel(),
-                                                                                        tileHandle.getImage());
-                                                             }
-                                                             catch(final Exception e)
-                                                             {
-                                                                // TODO: handle this better
-                                                                e.printStackTrace();
-                                                             }
-                                                           });
+        return () -> { int tileCount = 0;
+
+                       for(final TileHandle tileHandle : (Iterable<TileHandle>)tileStoreReader.stream()::iterator)
+                       {
+                           try
+                           {
+                              tileStoreWriter.addTile(tileHandle.getCrsCoordinate(),
+                                                      tileHandle.getZoomLevel(),
+                                                      tileHandle.getImage());
+                              ++tileCount;
+                           }
+                           catch(final Exception e)
+                           {
+                              // TODO: handle this better
+                              e.printStackTrace();
+                           }
+                       }
+                       try
+                       {
+                           System.out.printf("Packaging complete.  Copied %d of %d tiles.", tileCount, tileStoreReader.countTiles());
+                       }
+                       catch(final TileStoreException ex)
+                       {
+                           System.out.printf("Packaging complete.  Copied %d tiles.", tileCount);
+                       }
+                     };
     }
 
     @Override
