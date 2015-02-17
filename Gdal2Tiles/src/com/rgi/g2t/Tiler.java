@@ -80,8 +80,8 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor
             this.fireCancelled();
         }
     }
-    
-    private void sanityCheckGdalInstallation()
+
+    private static void sanityCheckGdalInstallation()
     {
     	// GDAL_DATA needs to be a valid path
     	if (System.getenv("GDAL_DATA") == null)
@@ -89,7 +89,7 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor
     		System.out.println("Tiling will not work without GDAL_DATA env var.");
     	}
     	// Get the system path
-    	String paths = System.getenv("PATH");
+    	//String paths = System.getenv("PATH");
     	// Parse the path entries
     	// Check each path entry for the required dll's/so's
     	// Throw an error if any of the required ones are missing

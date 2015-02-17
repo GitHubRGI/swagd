@@ -22,9 +22,7 @@ import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -153,7 +151,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage will throw an IllegalArgumentException when given
      * a tilesetentry with a null value for the boundingbox
-     * 
+     *
      * @throws Exception
      *             throws if an exception occurs
      * */
@@ -537,7 +535,7 @@ public class GeoPackageTilesAPITest
     /**
      * Expects GeoPackage to throw an IllegalArgumentException when giving
      * addTileSet a parameter with a null value for bounding box
-     * 
+     *
      * @throws FileAlreadyExistsException
      *             if the file exists already that is given to geopackage
      * @throws ClassNotFoundException
@@ -582,7 +580,7 @@ public class GeoPackageTilesAPITest
     /**
      * Expects GeoPackage to throw an IllegalArgumentException when giving
      * addTileSet a parameter with a null value for bounding box
-     * 
+     *
      * @throws FileAlreadyExistsException
      *             if the file exists already that is given to geopackage
      * @throws ClassNotFoundException
@@ -626,7 +624,7 @@ public class GeoPackageTilesAPITest
     /**
      * Expects GeoPackage to throw an IllegalArgumentException when giving
      * addTileSet a parameter with a null value for bounding box
-     * 
+     *
      * @throws FileAlreadyExistsException
      *             if the file exists already that is given to geopackage
      * @throws ClassNotFoundException
@@ -702,7 +700,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if GeoPackageTiles throws an IllegalArgumentException when giving a
      * table name with symbols
-     * 
+     *
      * @throws FileAlreadyExistsException
      *             if the file exists already that is given to geopackage
      * @throws ClassNotFoundException
@@ -741,7 +739,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if GeoPackageTiles throws an IllegalArgumentException when giving a
      * table name starting with gpkg
-     * 
+     *
      * @throws FileAlreadyExistsException
      *             if the file exists already that is given to geopackage
      * @throws ClassNotFoundException
@@ -780,7 +778,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if GeoPackageTiles throws an IllegalArgumentException when giving a
      * table name with a null value
-     * 
+     *
      * @throws FileAlreadyExistsException
      *             if the file exists already that is given to geopackage
      * @throws ClassNotFoundException
@@ -931,7 +929,7 @@ public class GeoPackageTilesAPITest
 
     /**
      * Tests if the getTileSet returns null when the tile table does not exist
-     * 
+     *
      * @throws FileAlreadyExistsException
      *             if the file exists already that is given to geopackage
      * @throws ClassNotFoundException
@@ -970,7 +968,7 @@ public class GeoPackageTilesAPITest
 
     /**
      * Tests if the getTileSet returns the expected values.
-     * 
+     *
      * @throws FileAlreadyExistsException
      *             if the file exists already that is given to geopackage
      * @throws ClassNotFoundException
@@ -1329,7 +1327,7 @@ public class GeoPackageTilesAPITest
      * @throws FileNotFoundException  if the file is not found
      * @throws SQLException if an SQLException occurs
      * @throws ConformanceException throws if it does not meet all the requirements
-     * @throws IOException throws if the image cannot be read 
+     * @throws IOException throws if the image cannot be read
      */
     @Test
     public void addTileMethodByCrsTileCoordinateNullValue() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -1514,7 +1512,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage throws an IllegalArgumentException when trying to
      * add a tile with a parameter that is null (image data)
-     * 
+     *
      * @throws FileAlreadyExistsException
      *             if the file exists already that is given to geopackage
      * @throws ClassNotFoundException
@@ -1566,7 +1564,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage throws an IllegalArgumentException when trying to
      * add a tile with a parameter that is empty (image data)
-     * 
+     *
      * @throws FileAlreadyExistsException
      *             if the file exists already that is given to geopackage
      * @throws ClassNotFoundException
@@ -1617,7 +1615,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage throws an IllegalArgumentException when trying to
      * add a tile with a parameter that is null (coordinate)
-     * 
+     *
      * @throws FileAlreadyExistsException
      *             if the file exists already that is given to geopackage
      * @throws ClassNotFoundException
@@ -1667,7 +1665,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage throws an IllegalArgumentException when trying to
      * add a tile with a parameter that is null (tileMatrix)
-     * 
+     *
      * @throws FileAlreadyExistsException
      *             if the file exists already that is given to geopackage
      * @throws ClassNotFoundException
@@ -2154,7 +2152,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when given a
      * TileSet null for getZoomLevels()
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -2403,7 +2401,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage will return null if no TileMatrix Entries are
      * found in the GeoPackage that matches the TileSet given.
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -2447,7 +2445,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when giving
      * a TileMatrix with a matrix width that is <=0
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -2486,7 +2484,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when giving
      * a TileMatrix with a matrix height that is <=0
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -2531,7 +2529,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when giving
      * a TileMatrix with a tile width that is <=0
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -2571,7 +2569,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when giving
      * a TileMatrix with a tile height that is <=0
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -2610,7 +2608,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when giving
      * a TileMatrix with a pixelXsize that is <=0
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -2650,7 +2648,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when giving
      * a TileMatrix with a pixelYSize that is <=0
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -2951,7 +2949,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if GeoPackage Tiles will throw an IllegalArgumentException when the
      * pixelXSize is not correctly calculated
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -3004,7 +3002,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if GeoPackage Tiles will throw an IllegalArgumentException when the
      * pixelYSize is not correctly calculated
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -3058,7 +3056,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when giving
      * a null parameter to getTileMatrices
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -3097,7 +3095,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage getTIleMatrix can retrieve the correct TileMatrix
      * from the GeoPackage.
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -3177,7 +3175,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage returns null if the TileMatrix entry does not
      * exist in the GeoPackage file.
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -3601,7 +3599,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage can convert an Global Mercator crsCoordinate to a
      * relative tile coordinate
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -4075,7 +4073,7 @@ public class GeoPackageTilesAPITest
      * This tests the validity of the transformation of crs to relative tile
      * coordinate when the crs coordinate lies between two tiles on top of each
      * other
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -4140,7 +4138,7 @@ public class GeoPackageTilesAPITest
     /**
      * This tests the validity of the transformation of crs to relative tile
      * coordinate when the crs coordinate lies on the left border
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -4207,7 +4205,7 @@ public class GeoPackageTilesAPITest
     /**
      * This tests the validity of the transformation of crs to relative tile
      * coordinate when the crs coordinate lies on the right border
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -4272,7 +4270,7 @@ public class GeoPackageTilesAPITest
     /**
      * This tests the validity of the transformation of crs to relative tile
      * coordinate when the crs coordinate lies on the top border
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -4337,7 +4335,7 @@ public class GeoPackageTilesAPITest
     /**
      * This tests the validity of the transformation of crs to relative tile
      * coordinate when the crs coordinate lies on the bottom border
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -4398,10 +4396,10 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Test if a crsCoordinate can be translated to a tile coordiante
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -4468,7 +4466,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw the appropriate exception when giving
      * the method a null value for crsCoordinate.
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
@@ -4514,7 +4512,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw the appropriate exception when giving
      * the method a null value for crsCoordinate.
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws FileAlreadyExistsException
