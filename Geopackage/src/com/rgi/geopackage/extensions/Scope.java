@@ -35,7 +35,15 @@ package com.rgi.geopackage.extensions;
  */
 public enum Scope
 {
+    /**
+     * The scope column in GeoPackage Extensions with a String value of "read-write"
+     * http://www.geopackage.org/spec/#gpkg_extensions_cols
+     */
     ReadWrite("read-write"),
+    /**
+     * The scope column in GeoPackage Extensions with a String value of
+     * "write-only" http://www.geopackage.org/spec/#gpkg_extensions_cols
+     */
     WriteOnly("write-only");
 
     Scope(final String text)
@@ -49,6 +57,10 @@ public enum Scope
         return this.text;
     }
 
+    /**
+     * @param text the String "read-write" or "write-only"
+     * @return the associated Scope object with the given parameter
+     */
     public static Scope fromText(final String text)
     {
         if(text == null)
