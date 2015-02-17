@@ -48,8 +48,9 @@ import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.geopackage.verification.ConformanceException;
 
 /**
- * @author lander
- *
+ * Package tiles from a tile store into a GeoPackage or append to an existing GeoPackage.
+ * 
+ * @author Steven D. Lander
  */
 public class Packager extends AbstractTask implements MonitorableTask, TaskMonitor
 {
