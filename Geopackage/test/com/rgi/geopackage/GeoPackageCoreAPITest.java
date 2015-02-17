@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
@@ -353,7 +354,7 @@ public class GeoPackageCoreAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void createSpatialReferenceSystemBadName() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void createSpatialReferenceSystemBadName() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -384,7 +385,7 @@ public class GeoPackageCoreAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void createSpatialReferenceSystemBadName2() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void createSpatialReferenceSystemBadName2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -415,7 +416,7 @@ public class GeoPackageCoreAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void createSpatialReferenceSystemBadOrganization() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void createSpatialReferenceSystemBadOrganization() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -446,7 +447,7 @@ public class GeoPackageCoreAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void createSpatialReferenceSystemBadOrganization2() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void createSpatialReferenceSystemBadOrganization2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -477,7 +478,7 @@ public class GeoPackageCoreAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void createSpatialReferenceSystemBadDefinition() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void createSpatialReferenceSystemBadDefinition() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -508,7 +509,7 @@ public class GeoPackageCoreAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void createSpatialReferenceSystemBadDefinition2() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void createSpatialReferenceSystemBadDefinition2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -540,7 +541,7 @@ public class GeoPackageCoreAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void createSpatialReferenceSystemNotUnique() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void createSpatialReferenceSystemNotUnique() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -580,7 +581,7 @@ public class GeoPackageCoreAPITest
      * @throws FileNotFoundException
      */
     @Test
-    public void createSpatialReferenceSystemSameSRS() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void createSpatialReferenceSystemSameSRS() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -831,7 +832,7 @@ public class GeoPackageCoreAPITest
      * @throws FileNotFoundException
      */
     @Test
-    public void addSRSVerify() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addSRSVerify() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(5);
 
@@ -883,7 +884,7 @@ public class GeoPackageCoreAPITest
      * @throws FileNotFoundException
      */
     @Test
-    public void addExistingSRSTwiceVerifyHashCodeAndEquals() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addExistingSRSTwiceVerifyHashCodeAndEquals() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(8);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -924,7 +925,7 @@ public class GeoPackageCoreAPITest
      * @throws FileNotFoundException
      */
     @Test
-    public void addSRSAndCompareEqualsAndHashCodeTwoDifferentSRS() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addSRSAndCompareEqualsAndHashCodeTwoDifferentSRS() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(8);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -949,7 +950,7 @@ public class GeoPackageCoreAPITest
     }
 
     @Test
-    public void addSRSAndCompareEqualsTwoDifferentSRS() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void addSRSAndCompareEqualsTwoDifferentSRS() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(8);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -1045,7 +1046,7 @@ public class GeoPackageCoreAPITest
      * @throws ConformanceException
      */
     @Test
-    public void getSpatialReferenceSystem3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getSpatialReferenceSystem3() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -1082,7 +1083,7 @@ public class GeoPackageCoreAPITest
      * @throws ConformanceException
      */
     @Test
-    public void getSpatialReferenceSystem4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getSpatialReferenceSystem4() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(9);
 
@@ -1133,7 +1134,7 @@ public class GeoPackageCoreAPITest
      * @throws ConformanceException
      */
     @Test
-    public void getSpatialReferenceSystem5() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getSpatialReferenceSystem5() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(9);
 
@@ -1281,9 +1282,9 @@ public class GeoPackageCoreAPITest
      * @throws ConformanceException
      */
     @Test(expected= IllegalArgumentException.class)
-    public void addContentBadBoundingBox() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void addContentBadBoundingBox() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        File testFile = this.getRandomFile(8);
+        final File testFile = this.getRandomFile(8);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
             gpkg.core().addContent("tablename", "tiles", "identifier", "description", null, gpkg.core().getSpatialReferenceSystem(4326));
@@ -1498,7 +1499,7 @@ public class GeoPackageCoreAPITest
      * @throws FileNotFoundException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void getContentNullParameter() throws FileAlreadyExistsException, ClassNotFoundException, SQLException, ConformanceException, FileNotFoundException
+    public void getContentNullParameter() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(12);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -1531,12 +1532,12 @@ public class GeoPackageCoreAPITest
      * @throws ConformanceException
      */
     @Test
-    public void equalsContent() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    public void equalsContent() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(18);
         final String tableName = "tableName";
-        
-        try(GeoPackage gpkg = createGeoPackage(tableName, "columnName", testFile))
+
+        try(GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile))
         {
             final String dataType  = "tiles";
             final String identifier = "identifier";
@@ -1579,21 +1580,21 @@ public class GeoPackageCoreAPITest
      * @throws ConformanceException
      */
     @Test
-    public void equalsContent2() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    public void equalsContent2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(18);
         final String tableName = "tableName";
-        
-        
-        try(GeoPackage gpkg = createGeoPackage(tableName, "columnName", testFile))
+
+
+        try(GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile))
         {
             final String dataType  = "tiles";
             final String identifier = "identifier";
             final String description = "description";
             final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 0.0, 0.0);
             final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
-            
-            
+
+
 
             final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
 
@@ -1630,12 +1631,12 @@ public class GeoPackageCoreAPITest
      * @throws ConformanceException
      */
     @Test
-    public void equalsContent3() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    public void equalsContent3() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(18);
         final String tableName = "tableName";
-        
-        try(GeoPackage gpkg = createGeoPackage(tableName, "columnName", testFile))
+
+        try(GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile))
         {
             final String dataType  = "tiles";
             final String identifier = "identifier";
@@ -1677,12 +1678,12 @@ public class GeoPackageCoreAPITest
      * @throws ConformanceException
      */
     @Test
-    public void equalsContent4() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    public void equalsContent4() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(18);
         final String tableName = "tableName";
-        
-        try(GeoPackage gpkg = createGeoPackage(tableName, "columnName", testFile))
+
+        try(GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile))
         {
             final String dataType  = "tiles";
             final String identifier = "identifier";
@@ -1726,12 +1727,12 @@ public class GeoPackageCoreAPITest
      * @throws ConformanceException
      */
     @Test
-    public void equalsContent5() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    public void equalsContent5() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(18);
         final String tableName = "tableName";
-        
-        try(GeoPackage gpkg = createGeoPackage(tableName, "columnName", testFile))
+
+        try(GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile))
         {
             final String dataType  = "tiles";
             final String identifier = null;
@@ -1760,25 +1761,25 @@ public class GeoPackageCoreAPITest
             }
         }
     }
-    
-    private GeoPackage createGeoPackage(String tableName, String columnName, File testFile) throws ClassNotFoundException, SQLException, FileAlreadyExistsException, FileNotFoundException, ConformanceException
+
+    private GeoPackage createGeoPackage(final String tableName, final String columnName, final File testFile) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
             gpkg.close();
-            createTable(tableName, columnName, testFile);
-            
+            this.createTable(tableName, columnName, testFile);
+
             return new GeoPackage(testFile, false, OpenMode.Open);
         }
     }
-    
-    private void createTable(String tableName, String columnName, File testFile) throws ClassNotFoundException, SQLException
+
+    private void createTable(final String tableName, final String columnName, final File testFile) throws ClassNotFoundException, SQLException
     {
-        String createTable = String.format("CREATE TABLE %s ( %s TEXT," +
+        final String createTable = String.format("CREATE TABLE %s ( %s TEXT," +
                                                              "other_column INTEGER NOT NULL," +
                                                              "more_columns INTEGER NOT NULL," +
-                                                             "last_Column TEXT NOT NULL)", 
-                                            tableName, 
+                                                             "last_Column TEXT NOT NULL)",
+                                            tableName,
                                             columnName);
         try(Connection con = getConnection(testFile);
             Statement stmt = con.createStatement();)
@@ -1786,8 +1787,8 @@ public class GeoPackageCoreAPITest
             stmt.execute(createTable);
         }
     }
-    
-    private static Connection getConnection(File testFile) throws ClassNotFoundException, SQLException
+
+    private static Connection getConnection(final File testFile) throws ClassNotFoundException, SQLException
     {
         Class.forName("org.sqlite.JDBC");   // Register the driver
 

@@ -20,9 +20,7 @@ package store;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
@@ -59,7 +57,7 @@ import com.rgi.geopackage.verification.ConformanceException;
 
 public class GeoPackageReader implements AutoCloseable, TileStoreReader
 {
-    public GeoPackageReader(final File geoPackageFile, final String tileSetTableName) throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    public GeoPackageReader(final File geoPackageFile, final String tileSetTableName) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         if(geoPackageFile == null)
         {
@@ -331,7 +329,13 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                     @Override
                     public CrsCoordinate getCrsCoordinate() throws TileStoreException
                     {
-                        return GeoPackageReader.this.crsProfile.tileToCrsCoordinate(row, column, this.getBounds(), matrix, GeoPackageTiles.Origin);
+                        return GeoPackageReader.this
+                                               .crsProfile
+                                               .tileToCrsCoordinate(row,
+                                                                    column,
+                                                                    this.getBounds(),
+                                                                    matrix,
+                                                                    GeoPackageTiles.Origin);
                     }
 
                     @Override

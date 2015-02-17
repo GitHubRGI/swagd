@@ -22,9 +22,7 @@ import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -82,7 +80,7 @@ public class GeopackageTileStoreTest
      */
 
     @Test(expected = IllegalArgumentException.class)
-    public void geopackageReaderIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void geopackageReaderIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
 
@@ -113,7 +111,7 @@ public class GeopackageTileStoreTest
      * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void geopackageReaderIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void geopackageReaderIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
 
@@ -145,7 +143,7 @@ public class GeopackageTileStoreTest
      *
      */
     @Test
-    public void geopackageReaderGetBounds() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException, TileStoreException
+    public void geopackageReaderGetBounds()throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -244,7 +242,7 @@ public class GeopackageTileStoreTest
      * @throws TileStoreException
      */
     @Test
-    public void getByteSize() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, TileStoreException
+    public void getByteSize() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -464,7 +462,7 @@ public class GeopackageTileStoreTest
      * @throws TileStoreException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void getTileIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, TileStoreException
+    public void getTileIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(12);
 
@@ -509,7 +507,7 @@ public class GeopackageTileStoreTest
      * @throws TileStoreException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void getTileIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, TileStoreException
+    public void getTileIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(12);
 
@@ -554,7 +552,7 @@ public class GeopackageTileStoreTest
      * @throws TileStoreException
      */
     @Test
-    public void getTileThatDoesntExist() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, TileStoreException
+    public void getTileThatDoesntExist() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(9);
 
@@ -598,7 +596,7 @@ public class GeopackageTileStoreTest
      * @throws ConformanceException
      */
     @Test
-    public void getCoordinateReferenceSystem() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+    public void getCoordinateReferenceSystem() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -646,7 +644,7 @@ public class GeopackageTileStoreTest
      * @throws TileStoreException
      */
     @Test
-    public void getZoomLevels() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, TileStoreException
+    public void getZoomLevels() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(10);
 
@@ -775,7 +773,7 @@ public class GeopackageTileStoreTest
      * @throws TileStoreException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
+    public void addTileIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
     {
         final File testFile = this.getRandomFile(6);
 
@@ -810,7 +808,7 @@ public class GeopackageTileStoreTest
      * @throws TileStoreException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileIllegalArgumentException2() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
+    public void addTileIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
     {
         final File testFile = this.getRandomFile(6);
 
@@ -845,7 +843,7 @@ public class GeopackageTileStoreTest
      * @throws TileStoreException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileIllegalArgumentException3() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
+    public void addTileIllegalArgumentException3() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
     {
         final File testFile = this.getRandomFile(6);
 
@@ -881,7 +879,7 @@ public class GeopackageTileStoreTest
      * @throws TileStoreException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileIllegalArgumentException4() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException, TileStoreException
+    public void addTileIllegalArgumentException4() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
     {
         final File testFile = this.getRandomFile(6);
 
@@ -916,7 +914,7 @@ public class GeopackageTileStoreTest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterIllegalArgumentException() throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException, MimeTypeParseException
+    public void geoPackageWriterIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -951,7 +949,7 @@ public class GeopackageTileStoreTest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterIllegalArgumentException2() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException, MimeTypeParseException
+    public void geoPackageWriterIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -985,7 +983,7 @@ public class GeopackageTileStoreTest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterIllegalArgumentException3() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException
+    public void geoPackageWriterIllegalArgumentException3() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -1020,7 +1018,7 @@ public class GeopackageTileStoreTest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterIllegalArgumentException4() throws SQLException, FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, ConformanceException, MimeTypeParseException
+    public void geoPackageWriterIllegalArgumentException4() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 

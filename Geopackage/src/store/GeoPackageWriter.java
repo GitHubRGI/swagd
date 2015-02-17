@@ -20,9 +20,7 @@ package store;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -76,9 +74,8 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
      *             Image format for used for output
      * @param imageWriteOptions
      *             Controls details of the image writing process.  If null, a default ImageWriteParam used instead
-     * @throws FileAlreadyExistsException
      * @throws ClassNotFoundException
-     * @throws FileNotFoundException
+     * @throws IOException
      * @throws SQLException
      * @throws ConformanceException
      */
@@ -90,7 +87,7 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
                             final BoundingBox               tileSetBounds,
                             final TileScheme                tileScheme,
                             final MimeType                  imageOutputFormat,
-                            final ImageWriteParam           imageWriteOptions) throws FileAlreadyExistsException, ClassNotFoundException, FileNotFoundException, SQLException, ConformanceException
+                            final ImageWriteParam           imageWriteOptions) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         this.geoPackage = new GeoPackage(geoPackageFile, OpenMode.OpenOrCreate);
 

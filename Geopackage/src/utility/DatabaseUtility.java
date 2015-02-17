@@ -44,14 +44,17 @@ public class DatabaseUtility
         {
             throw new IllegalArgumentException("File cannot be null");
         }
+
         if(!sqliteFile.exists())
         {
             throw new FileNotFoundException("File does not exist: " + sqliteFile.getPath());
         }
+
         if(sqliteFile.length() < 100)
         {
             throw new IllegalArgumentException("File must be at least 100 bytes to be an SQLite file.");
         }
+
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(sqliteFile, "r"))
         {
             // https://www.sqlite.org/fileformat2.html
