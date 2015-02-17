@@ -30,6 +30,10 @@ import com.rgi.geopackage.verification.ForeignKeyDefinition;
 import com.rgi.geopackage.verification.TableDefinition;
 import com.rgi.geopackage.verification.UniqueDefinition;
 
+/**
+ * @author Jenifer Cochran
+ *
+ */
 public class TilePyramidUserDataTableDefinition extends TableDefinition
 {
     private final static Map<String, ColumnDefinition> Columns;
@@ -50,6 +54,9 @@ public class TilePyramidUserDataTableDefinition extends TableDefinition
         UniqueColumnGroups =  new HashSet<>(Arrays.asList(new UniqueDefinition("zoom_level", "tile_column", "tile_row")));
     }
 
+    /**
+     * @param name table name of the Tiles Table
+     */
     public TilePyramidUserDataTableDefinition(final String name)
     {
         super(name,
