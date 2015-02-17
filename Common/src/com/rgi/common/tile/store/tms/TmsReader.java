@@ -241,7 +241,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
             return Files.walk(TmsReader.this.location)
                         .map(path -> { final File file = path.toFile();
 
-                                       final String absolutePath = file.getAbsolutePath();
+                                       final String absolutePath = file.getAbsolutePath().replace('\\', '/');
 
                                        final Matcher tmsFileMatch = TmsFilePattern.matcher(absolutePath);
 
