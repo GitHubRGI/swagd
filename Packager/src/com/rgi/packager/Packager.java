@@ -33,8 +33,6 @@ import javax.activation.MimeTypeParseException;
 
 import store.GeoPackageWriter;
 
-import com.rgi.common.coordinate.CrsCoordinate;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.task.AbstractTask;
 import com.rgi.common.task.MonitorableTask;
@@ -43,6 +41,7 @@ import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
 import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.geopackage.verification.ConformanceException;
 
@@ -94,26 +93,37 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                                                                              null))
                 {
                     // Create a new PackageJob task
-                    final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Packager.createPackageJob(tileStoreReader, crsProfile, gpkgWriter, this))));
+                    final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Packager.createPackageJob(tileStoreReader, gpkgWriter))));
                     jobWaiter.setDaemon(true);
                     jobWaiter.start();
                 }
-            } catch (final Exception e)
+            }
+            catch(ClassNotFoundException | IOException | SQLException | ConformanceException | TileStoreException | MimeTypeParseException ex1)
             {
                 // TODO: Handle exceptions better here for all trys
-                e.printStackTrace();
+                ex1.printStackTrace();
             }
         } else {
             // TODO: Handle more than one file passed to packager
         }
     }
-    
-    private static Runnable createPackageJob(TileStoreReader tileStoreReader,
-                                             CrsProfile crsProfile,
-                                             GeoPackageWriter gpkgWriter,
-                                             TaskMonitor monitor)
+
+    private static Runnable createPackageJob(final TileStoreReader tileStoreReader,
+                                             final TileStoreWriter tileStoreWriter)
     {
-        return new PackageJob(tileStoreReader, crsProfile, gpkgWriter, monitor);
+        return () -> tileStoreReader.stream()
+                                    .forEach(tileHandle -> { try
+                                                             {
+                                                                tileStoreWriter.addTile(tileHandle.getCrsCoordinate(),
+                                                                                        tileHandle.getZoomLevel(),
+                                                                                        tileHandle.getImage());
+                                                             }
+                                                             catch(final Exception e)
+                                                             {
+                                                                // TODO: handle this better
+                                                                e.printStackTrace();
+                                                             }
+                                                           });
     }
 
     @Override
@@ -135,7 +145,7 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
             this.fireCancelled();
         }
     }
-    
+
     private void fireCancelled()
     {
         for(final TaskMonitor monitor : this.monitors)
@@ -151,7 +161,7 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
             monitor.setProgress(this.completed);
         }
     }
-    
+
     private void fireError(final Exception e)
     {
         for(final TaskMonitor monitor : this.monitors)
