@@ -433,6 +433,16 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                }
 
                                @Override
+                               public CrsCoordinate getCrsCoordinate() throws TileStoreException
+                               {
+                                   return TmsReader.this.profile.tileToCrsCoordinate(row,
+                                                                                     column,
+                                                                                     TmsReader.this.profile.getBounds(),
+                                                                                     this.matrix,
+                                                                                     TmsTileStore.Origin);
+                               }
+
+                               @Override
                                public BoundingBox getBounds() throws TileStoreException
                                {
                                    final Coordinate<Double> lowerLeft  = TmsReader.this.profile.tileToCrsCoordinate(row,   column,   TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);

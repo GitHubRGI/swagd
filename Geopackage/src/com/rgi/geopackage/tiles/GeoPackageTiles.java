@@ -917,15 +917,15 @@ public class GeoPackageTiles
         }
         final CrsProfile    crsProfile    = CrsProfileFactory.create(crs);
         final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
-        final BoundingBox   tileSetBounds = roundBounds(tileMatrixSet.getBoundingBox(), crsProfile);
-        
+        final BoundingBox   tileSetBounds = truncateBounds(tileMatrixSet.getBoundingBox(), crsProfile);
+
         if(!Utility.contains(tileSetBounds, crsCoordinate, GeoPackageTiles.Origin))
         {
             return null;    // The requested SRS coordinate is outside the bounds of our data
         }
 
         final Coordinate<Double> boundsCorner = Utility.boundsCorner(tileSetBounds, GeoPackageTiles.Origin);
-        
+
 
         final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
         final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();
@@ -1019,6 +1019,7 @@ public class GeoPackageTiles
                " tile_data   BLOB    NOT NULL,                  -- Of an image MIME type specified in clauses Tile Encoding PNG, Tile Encoding JPEG, Tile Encoding WEBP\n" +
                " UNIQUE (zoom_level, tile_column, tile_row));";
     }
+
     /**
      * Rounds the bounds to the appropriate level of accuracy
      * (2 decimal places for meters, 7 decimal places for degrees)
@@ -1026,49 +1027,27 @@ public class GeoPackageTiles
      * @param crs the Coordinate Reference System of the bounds (to determine level of precision)
      * @return the rounded bounds
      */
-    private static BoundingBox roundBounds(BoundingBox bounds, CrsProfile crs)
+    private static BoundingBox truncateBounds(final BoundingBox bounds, final CrsProfile crs)
     {
-        int percision = crs.requiredPercision();
-        return new BoundingBox(roundDownMin(bounds.getMinY(), percision),
-                               roundDownMin(bounds.getMinX(), percision),
-                               roundUpMax  (bounds.getMaxY(), percision),
-                               roundUpMax  (bounds.getMaxX(), percision));
+        final int percision = crs.requiredPercision();
+        return new BoundingBox(truncatePercision(bounds.getMinY(), percision),
+                               truncatePercision(bounds.getMinX(), percision),
+                               truncatePercision(bounds.getMaxY(), percision),
+                               truncatePercision(bounds.getMaxX(), percision));
     }
+
     /**
      * Rounds the number to level of precision need for the appropriate level of accuracy.  It rounds
      * down that the minimum bound can be more inclusive
      * @param number number needed to be rounded
      * @return the number of decimal places the number needs to be rounded to
      */
-    private static double roundDownMin(double number, int percision)
+    private static double truncatePercision(final double number, final int percision)
     {
-        double divisor = Math.pow(10, percision);
-        
-        if(number < 0)
-        {
-            return Math.ceil(number*divisor)/divisor;
-        }
-        
-        return Math.floor(number*divisor)/divisor;
+        final double multiplyBy = Math.pow(10, percision);
+
+        return ((int)(number*multiplyBy))/multiplyBy;
     }
-    /**
-     * Rounds the number to level of precision need for the appropriate level of accuracy.  It rounds
-     * Up that the minimum bound can be more inclusive
-     * @param number number needed to be rounded
-     * @return the number of decimal places the number needs to be rounded to
-     */
-    private static double roundUpMax(double number, int percision)
-    {
-        double divisor = Math.pow(10, percision);
-        
-        if(number < 0)
-        {
-            return Math.floor(number*divisor)/divisor;
-        }
-        
-        return Math.ceil(number*divisor)/divisor;
-    }
-    
 
     private final GeoPackageCore core;
     private final Connection     databaseConnection;

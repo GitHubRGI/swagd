@@ -19,12 +19,15 @@
 package com.rgi.packager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.FileAlreadyExistsException;
+import java.sql.SQLException;
 
 import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 
 import store.GeoPackageWriter;
 
-import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.task.AbstractTask;
 import com.rgi.common.task.MonitorableTask;
@@ -32,7 +35,9 @@ import com.rgi.common.task.Settings;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
+import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.tms.TmsReader;
+import com.rgi.geopackage.verification.ConformanceException;
 
 public class Packager extends AbstractTask implements MonitorableTask {
 	public Packager(final TaskFactory factory) {
@@ -40,49 +45,49 @@ public class Packager extends AbstractTask implements MonitorableTask {
 	}
 
 	@Override
-	public void execute(final Settings opts) {
+	public void execute(final Settings opts)
+	{
 		final File[] files = opts.getFiles(Setting.FileSelection);
 		final File gpkgFile = new File("foo.gpkg");
-		if (files.length == 1) {
-			try
+
+		if(files.length == 1)
+		{
+			final SphericalMercatorCrsProfile smcp = new SphericalMercatorCrsProfile();
+			final TmsReader reader = new TmsReader(smcp, files[0].toPath());
+
+			try(final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
+                                                                         smcp.getCoordinateReferenceSystem(),
+                                                                         "footiles",
+                                                                         "1",
+                                                                         "test tiles",
+                                                                         reader.getBounds(),
+                                                                         reader.getTimeScheme(),
+                                                                         new MimeType("image/png"),
+                                                                         null))
 			{
-				final SphericalMercatorCrsProfile smcp = new SphericalMercatorCrsProfile();
-				final TmsReader reader = new TmsReader(smcp, files[0].toPath());
+			    reader.stream()
+			          .forEach(tileHandle -> { try
+                                               {
+                                                   gpkgWriter.addTile(tileHandle.getCrsCoordinate(),
+                                                                      tileHandle.getZoomLevel(),
+                                                                      tileHandle.getImage());
 
-				try(final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
-                                                                             smcp.getCoordinateReferenceSystem(),
-                                                                             "footiles",
-                                                                             "1",
-                                                                             "test tiles",
-                                                                             reader.getBounds(),
-                                                                             reader.getTimeScheme(),
-                                                                             new MimeType("image/png"),
-                                                                             null))
-				{
-				    reader.stream().forEach(tileHandle -> {
-                        try
-                        {
-                            final CrsCoordinate coordinate = smcp.tileToCrsCoordinate(tileHandle.getRow(),
-                                                                                      tileHandle.getColumn(),
-                                                                                      smcp.getBounds(),
-                                                                                      tileHandle.getMatrix(),
-                                                                                      reader.getTileOrigin());
-
-                            gpkgWriter.addTile(coordinate, tileHandle.getZoomLevel(), tileHandle.getImage());
-
-                        }
-                        catch(final Exception e)
-                        {
-                            e.printStackTrace();
-                        }
-                    });
-				    System.out.println("Done.");
-				}
-			} catch (final Exception e)
-			{
-				e.printStackTrace();
+                                               }
+                                               catch(final TileStoreException ex)
+                                               {
+                                                   ex.printStackTrace();
+                                               }
+                                             });
+			    System.out.println("Done.");
 			}
-		} else {
+            catch(FileAlreadyExistsException | ClassNotFoundException | FileNotFoundException | SQLException | ConformanceException | TileStoreException | MimeTypeParseException ex1)
+            {
+                // TODO Auto-generated catch block
+                ex1.printStackTrace();
+            }
+		}
+		else
+		{
 			// i dunno
 		}
 	}

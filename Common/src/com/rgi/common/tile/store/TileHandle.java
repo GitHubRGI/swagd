@@ -21,6 +21,7 @@ package com.rgi.common.tile.store;
 import java.awt.image.BufferedImage;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
@@ -55,6 +56,12 @@ public interface TileHandle
      * @throws TileStoreException
      */
     public TileMatrixDimensions getMatrix() throws TileStoreException;
+
+    /**
+     * @return Returns the real world coordinate of this tile's origin in the unit of its enclosing tile set
+     * @throws TileStoreException
+     */
+    public CrsCoordinate getCrsCoordinate() throws TileStoreException;
 
     /**
      * @return Returns the bounding box of tile tile in real world CRS units
