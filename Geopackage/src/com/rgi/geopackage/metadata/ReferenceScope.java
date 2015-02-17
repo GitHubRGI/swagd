@@ -33,10 +33,25 @@ package com.rgi.geopackage.metadata;
  */
 public enum ReferenceScope
 {
+    /**
+     * The Reference Scope is of the entire GeoPackage
+     */
     GeoPackage("geopackage"),
+    /**
+     * The Reference Scope is of a single Table
+     */
     Table     ("table"),
+    /**
+     * The Reference Scope is of a column
+     */
     Column    ("column"),
+    /**
+     * The Reference Scope is of a row
+     */
     Row       ("row"),
+    /**
+     * The Reference Scope is of a row or a column
+     */
     RowCol    ("row/col");
 
     /**
@@ -47,6 +62,10 @@ public enum ReferenceScope
         return this.text;
     }
 
+    /**
+     * @param text a string value of the valid Reference scopes
+     * @return the ReferenceScope object that corresponds to the text
+     */
     public static ReferenceScope fromText(final String text)
     {
         if(text == null)
@@ -66,11 +85,19 @@ public enum ReferenceScope
         }
     }
 
+    /**
+     * @param scope the ReferenceScope value
+     * @return true if the ReferenceScope pertains to the Row; otherwise returns false.
+     */
     public static boolean isRowScope(final ReferenceScope scope)
     {
         return scope == ReferenceScope.Row || scope == ReferenceScope.RowCol;
     }
 
+    /**
+     * @param scope the ReferenceScope value
+     * @return true if the ReferenceScope pertains to the Column; otherwise returns false;
+     */
     public static boolean isColumnScope(final ReferenceScope scope)
     {
         return scope == ReferenceScope.Column || scope == ReferenceScope.RowCol;
