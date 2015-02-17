@@ -18,19 +18,33 @@
 
 package com.rgi.common.tile.store;
 
+/**
+ * @author lander
+ *
+ */
 @SuppressWarnings("serial")
 public class TileStoreException extends Exception
 {
+    /**
+     * @param message the Exception message as a String when a TileStoreException is thrown
+     */
     public TileStoreException(final String message)
     {
         super(message);
     }
 
+    /**
+     * @param cause the Throwable object that indicates the cause of the TileStoreException
+     */
     public TileStoreException(final Throwable cause)
     {
         super(cause);
     }
 
+    /**
+     * @param message the Exception message as a String when a TileStoreException is thrown
+     * @param cause the Throwable object that indicates the cause of the TileStoreException
+     */
     public TileStoreException(final String message, final Throwable cause)
     {
         super(message, cause);

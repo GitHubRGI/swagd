@@ -22,7 +22,9 @@ import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -34,9 +36,7 @@ import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import store.GeoPackageReader;
 import store.GeoPackageWriter;
@@ -64,19 +64,20 @@ import com.rgi.geopackage.verification.ConformanceException;
  */
 public class GeopackageTileStoreTest
 {
-    @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
 
     /**
-     * Tests if geopackage reader will throw
-     * an IllegalArgumentException when passing
-     * a null value for TileSet
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
+     * Tests if geopackage reader will throw an IllegalArgumentException when
+     * passing a null value for TileSet
+     * 
      * @throws SQLException
+     *             throws if an SQLException occurs
+     * @throws ClassNotFoundException
+     *             if the connection to the database cannot be made
      * @throws ConformanceException
+     *             throws if it does not meet all the requirements
+     * @throws IOException
+     *             if an error occurs from reading or writing a Tile or File
      */
 
     @Test(expected = IllegalArgumentException.class)
@@ -101,14 +102,17 @@ public class GeopackageTileStoreTest
     }
 
     /**
-     * Tests if geopackage reader will throw
-     * an IllegalArgumentException when passing
-     * a null value for TileSet
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
+     * Tests if geopackage reader will throw an IllegalArgumentException when
+     * passing a null value for TileSet
+     * 
      * @throws SQLException
+     *             throws if an SQLException occurs
+     * @throws ClassNotFoundException
+     *             if the connection to the database cannot be made
      * @throws ConformanceException
+     *             throws if it does not meet all the requirements
+     * @throws IOException
+     *             if an error occurs from reading or writing a Tile or File
      */
     @Test(expected = IllegalArgumentException.class)
     public void geopackageReaderIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
