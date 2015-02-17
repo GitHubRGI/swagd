@@ -47,8 +47,12 @@ public class DatabaseUtilityTest
 
     /**
      * Tests if the DatabaseUtility will return the expected application Id.
-     * @throws SQLException throws if an SQLException occurs
-     * @throws Exception can throw an SecurityException when accessing the file and other various Exceptions
+     * 
+     * @throws SQLException
+     *             throws if an SQLException occurs
+     * @throws Exception
+     *             can throw an SecurityException when accessing the file and
+     *             other various Exceptions
      */
     @Test
     public void getApplicationID() throws SQLException, Exception
@@ -70,9 +74,13 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Tests if the application Id can be set correctly through the DatabaseUtility
-     * @throws SQLException throws if an SQLException occurs
-     * @throws Exception throws if cannot access file
+     * Tests if the application Id can be set correctly through the
+     * DatabaseUtility
+     * 
+     * @throws SQLException
+     *             throws if an SQLException occurs
+     * @throws Exception
+     *             throws if cannot access file
      */
     @Test
     public void setApplicationID() throws SQLException, Exception
@@ -96,11 +104,10 @@ public class DatabaseUtilityTest
     /**
      * Verifies if the Database Utility setPragmaForeinKeys can set it to off.
      *
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws when an Exception occurs
      */
     @Test
-    public void databaseUtilitySetPragmaForiegnKeys() throws SQLException, Exception
+    public void databaseUtilitySetPragmaForiegnKeys() throws Exception
     {
         final File testFile = this.getRandomFile(5);
              testFile.createNewFile();
@@ -131,11 +138,11 @@ public class DatabaseUtilityTest
     /**
      * Verifies if the Database Utility setPragmaForeinKeys can set it to on.
      *
-     * @throws SQLException
      * @throws Exception
+     *             throws when an Exception occurs
      */
     @Test
-    public void databaseUtilitySetPragmaForiegnKeys2() throws SQLException, Exception
+    public void databaseUtilitySetPragmaForiegnKeys2() throws Exception
     {
         final File testFile = this.getRandomFile(5);
              testFile.createNewFile();
@@ -164,12 +171,14 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would accurately detect if a table does not exists with the tableOrViewExists method.
-     * @throws SQLException
+     * Checks to see if the Database Utility would accurately detect if a table
+     * does not exists with the tableOrViewExists method.
+     * 
      * @throws Exception
+     *             throws when an Exception occurs
      */
     @Test
-    public void databaseUtilityTableorViewExists() throws SQLException, Exception
+    public void databaseUtilityTableorViewExists() throws Exception
     {
         final File testFile = this.getRandomFile(12);
         testFile.createNewFile();
@@ -189,12 +198,14 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would accurately detect if a table does exists with the tableOrViewExists method.
-     * @throws SQLException
+     * Checks to see if the Database Utility would accurately detect if a table
+     * does exists with the tableOrViewExists method.
+     * 
      * @throws Exception
+     *             throws when an Exception occurs
      */
     @Test
-    public void databaseUtilityTableorViewExists2() throws SQLException, Exception
+    public void databaseUtilityTableorViewExists2() throws Exception
     {
         final File testFile = this.getRandomFile(3);
         testFile.createNewFile();
@@ -216,12 +227,14 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would accurately detect if a table does exists with the tableOrViewExists method.
-     * @throws SQLException
+     * Checks to see if the Database Utility would accurately detect if a table
+     * does exists with the tableOrViewExists method.
+     * 
      * @throws Exception
+     *             throws when an Exception occurs
      */
     @Test
-    public void databaseUtilityTableorViewExists3() throws SQLException, Exception
+    public void databaseUtilityTableorViewExists3() throws Exception
     {
         final File testFile = this.getRandomFile(3);
              testFile.createNewFile();
@@ -242,24 +255,28 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would throw an IllegalArgumentException when given a null connection.
-     * @throws SQLException
+     * Checks to see if the Database Utility would throw an
+     * IllegalArgumentException when given a null connection.
+     * 
      * @throws Exception
+     *             throws when an Exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
-    public void databaseUtilityTableorViewExists4() throws SQLException, Exception
+    public void databaseUtilityTableorViewExists4() throws Exception
     {
             DatabaseUtility.tableOrViewExists(null, null);
             fail("DatabaseUtility should have thrown an IllegalArgumentException when connection is null.");
     }
 
     /**
-     * Checks to see if the Database Utility would throw an IllegalArgumentException when given a closed connection.
-     * @throws SQLException
+     * Checks to see if the Database Utility would throw an
+     * IllegalArgumentException when given a closed connection.
+     * 
      * @throws Exception
+     *             throws when an Exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
-    public void databaseUtilityTableorViewExists5() throws SQLException, Exception
+    public void databaseUtilityTableorViewExists5() throws Exception
     {
         final File testFile = this.getRandomFile(3);
              testFile.createNewFile();
@@ -281,12 +298,14 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would accurately detect if a table does exists with the tablesOrViewsExists method.
-     * @throws SQLException
+     * Checks to see if the Database Utility would accurately detect if a table
+     * does exists with the tablesOrViewsExists method.
+     * 
      * @throws Exception
+     *             throws when an Exception occurs
      */
     @Test
-    public void databaseUtilityTablesorViewsExists() throws SQLException, Exception
+    public void databaseUtilityTablesorViewsExists() throws Exception
     {
         final File testFile = this.getRandomFile(3);
              testFile.createNewFile();
@@ -309,12 +328,14 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would accurately detect if a table does exists with the tablesOrViewsExists method.
-     * @throws SQLException
+     * Checks to see if the Database Utility would accurately detect if a table
+     * does exists with the tablesOrViewsExists method.
+     * 
      * @throws Exception
+     *             throws when an Exception occurs
      */
     @Test
-    public void databaseUtilityTablesorViewsExists2() throws SQLException, Exception
+    public void databaseUtilityTablesorViewsExists2() throws Exception
     {
         final File testFile = this.getRandomFile(3);
              testFile.createNewFile();
@@ -336,12 +357,14 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would accurately detect if a table does exists with the tablesOrViewsExists method.
-     * @throws SQLException
+     * Checks to see if the Database Utility would accurately detect if a table
+     * does exists with the tablesOrViewsExists method.
+     * 
      * @throws Exception
+     *             throws when an Exception occurs
      */
     @Test
-    public void databaseUtilityTablesorViewsExists3() throws SQLException, Exception
+    public void databaseUtilityTablesorViewsExists3() throws Exception
     {
         final File testFile = this.getRandomFile(3);
              testFile.createNewFile();
@@ -367,12 +390,14 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would throw an exception when receiving a file that is less than 100 bytes.
-     * @throws SQLException
+     * Checks to see if the Database Utility would throw an exception when
+     * receiving a file that is less than 100 bytes.
+     * 
      * @throws Exception
+     *             throws when an Exception occurs
      */
     @Test(expected= IllegalArgumentException.class)
-    public void getSqliteVersion() throws SQLException, Exception
+    public void getSqliteVersion() throws Exception
     {
         final File testFile = this.getRandomFile(3);
         testFile.createNewFile();
@@ -393,12 +418,14 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility gets correct sqlite version of a file.
-     * @throws SQLException
+     * Checks to see if the Database Utility gets correct sqlite version of a
+     * file.
+     * 
      * @throws Exception
+     *             throws when an Exception occurs
      */
     @Test
-    public void getSqliteVersion2() throws SQLException, Exception
+    public void getSqliteVersion2() throws Exception
     {
         final File testFile = this.getRandomFile(3);
         testFile.createNewFile();
@@ -421,10 +448,12 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would throw an exception when receiving a file that is null.
+     * Checks to see if the Database Utility would throw an exception when
+     * receiving a file that is null.
+     * 
      * @throws IOException
-     * @throws SQLException
-     * @throws Exception
+     *             throws when DatabaseUtility cannot read sqliteVersion from a
+     *             file
      */
     @Test(expected= IllegalArgumentException.class)
     public void getSqliteVersion3() throws IOException
@@ -434,10 +463,12 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would throw an exception when receiving a file that is null.
+     * Checks to see if the Database Utility would throw an exception when
+     * receiving a file that is null.
+     * 
      * @throws IOException
-     * @throws SQLException
-     * @throws Exception
+     *             throws when DatabaseUtility cannot read sqliteVersion from a
+     *             file
      */
     @Test(expected= FileNotFoundException.class)
     public void getSqliteVersion4() throws IOException

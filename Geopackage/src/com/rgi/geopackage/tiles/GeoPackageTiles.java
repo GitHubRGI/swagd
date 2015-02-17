@@ -70,6 +70,7 @@ public class GeoPackageTiles
      * Requirements this GeoPackage failed to meet
      *
      * @return The tile GeoPackage requirements this GeoPackage fails to conform to
+     * @throws SQLException throws if {@link TilesVerifier#TilesVerifier(Connection) Verifier Constructor} throws
      */
     public Collection<FailedRequirement> getFailedRequirements() throws SQLException
     {
@@ -77,22 +78,31 @@ public class GeoPackageTiles
     }
 
     /**
-     * Creates a user defined tiles table, and adds a corresponding entry to the content table
+     * Creates a user defined tiles table, and adds a corresponding entry to the
+     * content table
      *
      * @param tableName
-     *             The name of the tiles table. The table name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers, and may not begin with the prefix "gpkg_"
+     *            The name of the tiles table. The table name must begin with a
+     *            letter (A..Z, a..z) or an underscore (_) and may only be
+     *            followed by letters, underscores, or numbers, and may not
+     *            begin with the prefix "gpkg_"
      * @param identifier
-     *             A human-readable identifier (e.g. short name) for the tableName content
+     *            A human-readable identifier (e.g. short name) for the
+     *            tableName content
      * @param description
-     *             A human-readable description for the tableName content
-     * @param lastChange
-     *             Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
+     *            A human-readable description for the tableName content
      * @param boundingBox
-     *             Bounding box for all content in tableName
+     *            Bounding box for all content in tableName
      * @param spatialReferenceSystem
-     *             Spatial Reference System (SRS)
+     *            Spatial Reference System (SRS)
      * @return Returns a newly created user defined tiles table
      * @throws SQLException
+     *             throws if the method {@link #getTileSet(String) getTileSet}
+     *             or the method
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)
+     *             tableOrViewExists} or if the database cannot rollback the
+     *             changes after a different exception throws will throw an SQLException
+     * 
      */
     public TileSet addTileSet(final String                 tableName,
                               final String                 identifier,
@@ -181,7 +191,8 @@ public class GeoPackageTiles
      * @param tileSet
      *             A handle to a set of tiles
      * @return Returns all of the zoom levels that apply for tileSet
-     * @throws SQLException
+     * @throws SQLException 
+     *              SQLException thrown by automatic close() invocation on preparedStatement or various other SQLExceptions
      */
     public Set<Integer> getTileZoomLevels(final TileSet tileSet) throws SQLException
     {
@@ -211,12 +222,15 @@ public class GeoPackageTiles
         }
     }
 
-     /**
+    /**
      * Gets all entries in the GeoPackage's contents table with the "tiles"
      * data_type
      *
      * @return Returns a collection of {@link TileSet}s
      * @throws SQLException
+     *             throws if the method
+     *             {@link #getTileSets(SpatialReferenceSystem) getTileSets}
+     *             throws
      */
     public Collection<TileSet> getTileSets() throws SQLException
     {
@@ -228,9 +242,13 @@ public class GeoPackageTiles
      * data_type that also match the supplied spatial reference system
      *
      * @param matchingSpatialReferenceSystem
-     *             Spatial reference system that returned {@link TileSet}s much refer to
+     *            Spatial reference system that returned {@link TileSet}s much
+     *            refer to
      * @return Returns a collection of {@link TileSet}s
      * @throws SQLException
+     *             throws if the method
+     *             {@link GeoPackageCore#getContent(String, com.rgi.geopackage.core.ContentFactory, SpatialReferenceSystem)
+     *             getContent} throws
      */
     public Collection<TileSet> getTileSets(final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
     {
@@ -243,23 +261,33 @@ public class GeoPackageTiles
      * Adds a tile matrix
      *
      * @param tileSet
-     *             A handle to a tile set
+     *            A handle to a tile set
      * @param zoomLevel
-     *             The zoom level of the associated tile set (0 <= zoomLevel <= max_level)
+     *            The zoom level of the associated tile set (0 <= zoomLevel <=
+     *            max_level)
      * @param matrixWidth
-     *             The number of columns (>= 1) for this tile at this zoom level
+     *            The number of columns (>= 1) for this tile at this zoom level
      * @param matrixHeight
-     *             The number of rows (>= 1) for this tile at this zoom level
+     *            The number of rows (>= 1) for this tile at this zoom level
      * @param tileWidth
-     *             The tile width in pixels (>= 1) at this zoom level
+     *            The tile width in pixels (>= 1) at this zoom level
      * @param tileHeight
-     *             The tile height in pixels (>= 1) at this zoom level
+     *            The tile height in pixels (>= 1) at this zoom level
      * @param pixelXSize
-     *             The width of the associated tile set's spatial reference system or default meters for an undefined geographic coordinate reference system (SRS id 0) (> 0)
+     *            The width of the associated tile set's spatial reference
+     *            system or default meters for an undefined geographic
+     *            coordinate reference system (SRS id 0) (> 0)
      * @param pixelYSize
-     *             The height of the associated tile set's spatial reference system or default meters for an undefined geographic coordinate reference system (SRS id 0) (> 0)
+     *            The height of the associated tile set's spatial reference
+     *            system or default meters for an undefined geographic
+     *            coordinate reference system (SRS id 0) (> 0)
      * @return Returns the newly added tile matrix
      * @throws SQLException
+     *             throws when the method {@link #getTileMatrix(TileSet, int)
+     *             getTileMatrix(TileSet, int)} or the method
+     *             {@link #getTileMatrixSet(TileSet) getTileMatrixSet} or the
+     *             database cannot rollback the changes after a different
+     *             exception is thrown, an SQLException is thrown
      */
     public TileMatrix addTileMatrix(final TileSet tileSet,
                                     final int     zoomLevel,
@@ -395,15 +423,22 @@ public class GeoPackageTiles
      * Add a tile to the GeoPackage
      *
      * @param tileSet
-     *             Tile set that which the tiles and tile metadata are associated
+     *            Tile set that which the tiles and tile metadata are associated
      * @param tileMatrix
-     *             Tile matrix associated with the tile set at the corresponding zoom level
+     *            Tile matrix associated with the tile set at the corresponding
+     *            zoom level
      * @param coordinate
-     *             The coordinate of the tile, relative to the tile set
+     *            The coordinate of the tile, relative to the tile set
      * @param imageData
-     *             The bytes of the image file
+     *            The bytes of the image file
+     * @return The Tile added to the GeoPackage with the properties of the
+     *         parameters
      * @throws SQLException
-     * @throws TileReferentialIntegrityException
+     *             SQLException thrown by automatic close() invocation on
+     *             preparedStatement or if the Database is unable to commit the
+     *             changes or if the method
+     *             {@link #getTile(TileSet, RelativeTileCoordinate) getTile}
+     *             throws an SQLException or other various SQLExceptions
      */
     public Tile addTile(final TileSet                tileSet,
                         final TileMatrix             tileMatrix,
@@ -477,17 +512,25 @@ public class GeoPackageTiles
      * Add a tile to the GeoPackage
      *
      * @param tileSet
-     *             Tile set that which the tiles and tile metadata are associated
+     *            Tile set that which the tiles and tile metadata are associated
      * @param tileMatrix
-     *             Tile matrix associated with the tile set at the corresponding zoom level
+     *            Tile matrix associated with the tile set at the corresponding
+     *            zoom level
      * @param coordinate
-     *             The coordinate of the tile in units of the tile set's spatial reference system
+     *            The coordinate of the tile in units of the tile set's spatial
+     *            reference system
      * @param zoomLevel
-     *             Zoom level
+     *            Zoom level
      * @param imageData
-     *             The bytes of the image file
+     *            The bytes of the image file
+     * @return returns a Tile added to the GeoPackage with the properties of the
+     *         parameters
      * @throws SQLException
-     * @throws TileReferentialIntegrityException
+     *             is thrown if the following methods throw
+     *             {@link #crsToRelativeTileCoordinate(TileSet, CrsCoordinate, int)
+     *             crsToRelativeTileCoordinate} or
+     *             {@link #addTile(TileSet, TileMatrix, RelativeTileCoordinate, byte[])
+     *             addTile} throws an SQLException
      */
     public Tile addTile(final TileSet       tileSet,
                         final TileMatrix    tileMatrix,
@@ -554,9 +597,12 @@ public class GeoPackageTiles
      * matrices.
      *
      * @param tileSet
-     *             Handle to the tile set that the requested tiles should belong
-     * @return Returns a {@link Stream} of {@link RelativeTileCoordinate}s representing every tile that the specific tile set contains.
+     *            Handle to the tile set that the requested tiles should belong
+     * @return Returns a {@link Stream} of {@link RelativeTileCoordinate}s
+     *         representing every tile that the specific tile set contains.
      * @throws SQLException
+     *             when SQLException thrown by automatic close() invocation on
+     *             preparedStatement or if other SQLExceptions occur
      */
     public Stream<RelativeTileCoordinate> getTiles(final TileSet tileSet) throws SQLException
     {
@@ -591,11 +637,14 @@ public class GeoPackageTiles
      * Gets a tile
      *
      * @param tileSet
-     *             Handle to the tile set that the requested tile should belong
+     *            Handle to the tile set that the requested tile should belong
      * @param coordinate
      *            Coordinate relative to the tile set, of the requested tile
      * @return Returns the requested tile, or null if it's not found
      * @throws SQLException
+     *             SQLException thrown by automatic close() invocation on
+     *             preparedStatement or if other SQLExceptions occur when adding
+     *             the Tile data to the database
      */
     public Tile getTile(final TileSet                tileSet,
                         final RelativeTileCoordinate coordinate) throws SQLException
@@ -640,17 +689,23 @@ public class GeoPackageTiles
         }
     }
 
-     /**
+    /**
      * Gets a tile
      *
      * @param tileSet
-     *             Handle to the tile set that the requested tile should belong
+     *            Handle to the tile set that the requested tile should belong
      * @param coordinate
-     *            Coordinate, in the units of the tile set's spatial reference system, of the requested tile
+     *            Coordinate, in the units of the tile set's spatial reference
+     *            system, of the requested tile
      * @param zoomLevel
      *            Zoom level
      * @return Returns the requested tile, or null if it's not found
      * @throws SQLException
+     *             throws when the method
+     *             {@link #crsToRelativeTileCoordinate(TileSet, CrsCoordinate, int)
+     *             crsToRelativeTileCoordinate} or the method
+     *             {@link #getTile(TileSet, RelativeTileCoordinate)} throws an
+     *             SQLException
      */
     public Tile getTile(final TileSet       tileSet,
                         final CrsCoordinate coordinate,
@@ -665,9 +720,14 @@ public class GeoPackageTiles
      * Gets a tile set's tile matrix
      *
      * @param tileSet
-     *             A handle to a set of tiles
+     *            A handle to a set of tiles
      * @return Returns a tile set's tile matrix set
      * @throws SQLException
+     *             SQLException thrown by automatic close() invocation on
+     *             preparedStatement or if the method
+     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
+     *             throws or other SQLExceptions occur when retrieving
+     *             information from the database
      */
     public TileMatrixSet getTileMatrixSet(final TileSet tileSet) throws SQLException
     {
@@ -710,9 +770,13 @@ public class GeoPackageTiles
      * Gets a tile set object based on its table name
      *
      * @param tileSetTableName
-     *             Name of a tile set table
-     * @return Returns a TileSet or null if there isn't with the supplied table name
+     *            Name of a tile set table
+     * @return Returns a TileSet or null if there isn't with the supplied table
+     *         name
      * @throws SQLException
+     *             throws if the method
+     *             {@link GeoPackageCore#getContent(String, com.rgi.geopackage.core.ContentFactory, SpatialReferenceSystem)}
+     *             throws an SQLException
      */
     public TileSet getTileSet(final String tileSetTableName) throws SQLException
     {
@@ -721,25 +785,24 @@ public class GeoPackageTiles
     }
 
     /**
-     * Adds a tile matrix associated with a tile set
-     * <br>
+     * Adds a tile matrix associated with a tile set <br>
      * <br>
      * <b>**WARNING**</b> this does not do a database commit. It is expected
      * that this transaction will always be paired with others that need to be
      * committed or roll back as a single transaction.
      *
      * @param tableName
-     *             Name of the tile set
+     *            Name of the tile set
      * @param boundingBox
-     *             Bounding box of the tile matrix set
+     *            Bounding box of the tile matrix set
      * @param spatialReferenceSystem
-     *             Spatial reference system of the tile matrix set
-     *
+     *            Spatial reference system of the tile matrix set
      * @throws SQLException
+     *             thrown by automatic close() invocation on preparedStatement
      */
     private void addTileMatrixSetNoCommit(final String                 tableName,
                                           final BoundingBox            boundingBox,
-                                          final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
+                                          final SpatialReferenceSystem spatialReferenceSystem) throws SQLException 
     {
         if(tableName == null || tableName.isEmpty())
         {
@@ -782,11 +845,15 @@ public class GeoPackageTiles
      * Get a tile set's tile matrix
      *
      * @param tileSet
-     *             A handle to a set of tiles
+     *            A handle to a set of tiles
      * @param zoomLevel
-     *             Zoom level of the tile matrix
-     * @return Returns a tile set's tile matrix that corresponds to the input level, or null if one doesn't exist
+     *            Zoom level of the tile matrix
+     * @return Returns a tile set's tile matrix that corresponds to the input
+     *         level, or null if one doesn't exist
      * @throws SQLException
+     *             SQLException thrown by automatic close() invocation on
+     *             preparedStatement or when an SQLException occurs retrieving
+     *             information from the database
      */
     public TileMatrix getTileMatrix(final TileSet tileSet, final int zoomLevel) throws SQLException
     {
@@ -834,7 +901,10 @@ public class GeoPackageTiles
      * @param tileSet
      *             A handle to a set of tiles
      * @return Returns every tile matrix associated with a tile set in ascending order by zoom level
-     * @throws SQLException
+    * @throws SQLException
+     *             SQLException thrown by automatic close() invocation on
+     *             preparedStatement or when an SQLException occurs retrieving
+     *             information from the database
      */
     public List<TileMatrix> getTileMatrices(final TileSet tileSet) throws SQLException
     {
@@ -882,13 +952,20 @@ public class GeoPackageTiles
      * Convert a CRS coordinate to a tile coordinate relative to a tile set
      *
      * @param tileSet
-     *             A handle to a set of tiles
+     *            A handle to a set of tiles
      * @param crsCoordinate
-     *             A coordinate with a specified coordinate reference system
+     *            A coordinate with a specified coordinate reference system
      * @param zoomLevel
      *            Zoom level
-     * @return Returns a tile coordinate relative and specific to the input tile set.  The input CRS coordinate would be contained in the the associated tile bounds.
+     * @return Returns a tile coordinate relative and specific to the input tile
+     *         set. The input CRS coordinate would be contained in the the
+     *         associated tile bounds.
      * @throws SQLException
+     *             throws if the method {@link #getTileMatrix(TileSet, int)
+     *             getTileMatrix} or the method
+     *             {@link GeoPackageCore#getSpatialReferenceSystem(int)
+     *             getSpatialReferenceSystem} or the method
+     *             {@link #getTileMatrixSet(TileSet) getTileMatrixSet} throws
      */
     public RelativeTileCoordinate crsToRelativeTileCoordinate(final TileSet       tileSet,
                                                               final CrsCoordinate crsCoordinate,
@@ -1056,8 +1133,22 @@ public class GeoPackageTiles
     private final GeoPackageCore core;
     private final Connection     databaseConnection;
 
+    /**
+     * The TileOrigin for GeoPackage's is UpperLeft
+     * http://www.geopackage.org/spec/#clause_tile_matrix_table_data_values
+     */
     public final static TileOrigin Origin = TileOrigin.UpperLeft;   // http://www.geopackage.org/spec/#clause_tile_matrix_table_data_values
 
+    /**
+     * The String name "gpkg_tile_matrix_set" of the database Tiles table
+     * containing the Bounding Box information
+     * http://www.geopackage.org/spec/#_tile_matrix_set
+     */
     public final static String MatrixSetTableName = "gpkg_tile_matrix_set";
+    /**
+     * The String name "gpkg_tile_matrix" of the database Tiles table containing
+     * the pixel x and y values, TileMatrixDimensions at a particular zoom level
+     * http://www.geopackage.org/spec/#tile_matrix
+     */
     public final static String MatrixTableName    = "gpkg_tile_matrix";
 }

@@ -152,15 +152,18 @@ public class GeoPackageCore
     }
 
     /**
-     * Returns a unique spatial reference system (SRS) based on an
-     * organization, and its organization-assigned numeric identifier.
+     * Returns a unique spatial reference system (SRS) based on an organization,
+     * and its organization-assigned numeric identifier.
      *
      * @param organization
-     *             Name of the defining organization
+     *            Name of the defining organization
      * @param organizationSrsId
-     *             Numeric identifier of the Spatial Reference System assigned by the organization
+     *            Numeric identifier of the Spatial Reference System assigned by
+     *            the organization
      * @return Returns the unique spatial reference system (SRS), or null
-     * @throws SQLException throws if an SQLException occurs
+     * @throws SQLException
+     *             throws if an SQLException occurs or thrown by automatic
+     *             close() invocation on preparedStatement
      */
     public SpatialReferenceSystem getSpatialReferenceSystem(final String organization, final int organizationSrsId) throws SQLException
     {
@@ -196,13 +199,15 @@ public class GeoPackageCore
     }
 
     /**
-     * Returns a unique spatial reference system (SRS) based on its
-     * unique identifier for each spatial reference system within a GeoPackage
+     * Returns a unique spatial reference system (SRS) based on its unique
+     * identifier for each spatial reference system within a GeoPackage
      *
      * @param identifier
-     *             Unique identifier for each Spatial Reference System within a GeoPackage
+     *            Unique identifier for each Spatial Reference System within a
+     *            GeoPackage
      * @return Returns the unique spatial reference system (SRS), or null
-     * @throws SQLException throws if an SQLException occurs
+     * @throws SQLException
+     *             thrown by automatic close() invocation on preparedStatement
      */
     public SpatialReferenceSystem getSpatialReferenceSystem(final int identifier) throws SQLException
     {
@@ -351,7 +356,7 @@ public class GeoPackageCore
      * @param matchingSpatialReferenceSystem
      *            Results must reference this spatial reference system.  Results are unfiltered if this parameter is null
      * @return Returns a Collection {@link Content}s of the type indicated by the {@link ContentFactory}
-     * @throws SQLException throws if an SQLException occurs
+     * @throws SQLException  SQLException thrown by automatic close() invocation on preparedStatement or if other various SQLExceptions occur
      */
     public <T extends Content> Collection<T> getContent(final String                 dataType,
                                                         final ContentFactory<T>      contentFactory,
@@ -476,26 +481,33 @@ public class GeoPackageCore
     }
 
     /**
-     * Adds a spatial reference system (SRS) to the gpkg_spatial_ref_sys table.
-     * <br>
+     * Adds a spatial reference system (SRS) to the gpkg_spatial_ref_sys table. <br>
      * <br>
      * <b>**WARNING**</b> this does not do a database commit. It is expected
      * that this transaction will always be paired with others that need to be
      * committed or rollback as a single transaction.
      *
      * @param name
-     *             Human readable name of this spatial reference system
+     *            Human readable name of this spatial reference system
      * @param identifier
-     *             Unique identifier for each Spatial Reference System within a GeoPackage
+     *            Unique identifier for each Spatial Reference System within a
+     *            GeoPackage
      * @param organization
-     *             Case-insensitive name of the defining organization e.g. EPSG or epsg
+     *            Case-insensitive name of the defining organization e.g. EPSG
+     *            or epsg
      * @param organizationSrsId
-     *             Numeric ID of the spatial reference system assigned by the organization
+     *            Numeric ID of the spatial reference system assigned by the
+     *            organization
      * @param definition
-     *             Well-known Text (WKT) representation of the spatial reference system
+     *            Well-known Text (WKT) representation of the spatial reference
+     *            system
      * @param description
-     *             Human readable description of this spatial reference system
+     *            Human readable description of this spatial reference system
      * @throws SQLException
+     *             thrown by automatic close() invocation on preparedStatement
+     *             to add the Spatial Reference System Object to the database or
+     *             if the method {@link #getSpatialReferenceSystem(int)
+     *             getSpatailReferenceSystem} throws
      */
     private SpatialReferenceSystem addSpatialReferenceSystemNoCommit(final String name,
                                                                      final int    identifier,

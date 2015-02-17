@@ -37,9 +37,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.LatLongConversions;
@@ -63,15 +61,13 @@ import com.rgi.geopackage.verification.ConformanceException;
 @SuppressWarnings("static-method")
 public class GeoPackageTilesAPITest
 {
-    @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
 
     /**
      * This tests if a GeoPackage can add a tile set successfully without throwing errors.
      *
-     * @throws SQLException
-     * @throws Exception
+     * @throws SQLException throws when an SQLException occurs
+     * @throws Exception throws if an exception occurs
      */
     @Test
     public void addTileSet() throws SQLException, Exception
@@ -128,11 +124,10 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage will throw an IllegalArgumentException when given a null value for tileSetEntry
      *
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileSetWithNullTileSetEntry() throws SQLException, Exception
+    public void addTileSetWithNullTileSetEntry() throws Exception
     {
         final File testFile = this.getRandomFile(3);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -154,10 +149,12 @@ public class GeoPackageTilesAPITest
     }
 
     /**
-     * Tests if the GeoPackage will throw an IllegalArgumentException when
-     * given a tilesetentry with a null value for the boundingbox
+     * Tests if the GeoPackage will throw an IllegalArgumentException when given
+     * a tilesetentry with a null value for the boundingbox
+     * 
      * @throws Exception
-     */
+     *             throws if an exception occurs
+     * */
     @Test(expected = IllegalArgumentException.class)
     public void addTileSetWithNullBoundingBox() throws Exception
     {
@@ -189,7 +186,7 @@ public class GeoPackageTilesAPITest
    /**
      * Tests if the Geopackage will throw an IllegalArgumentException
      * If it gives tries to create a TileSet with a null SRS value
-     * @throws Exception
+     * @throws Exception throws when exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileSetWithNullSRS() throws Exception
@@ -221,11 +218,10 @@ public class GeoPackageTilesAPITest
 
     /**
      * Test if the GeoPackage will add a Tile set with a new Spatial Reference System (one created by user).
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test
-    public void addTileSetWithNewSpatialReferenceSystem() throws SQLException, Exception
+    public void addTileSetWithNewSpatialReferenceSystem() throws Exception
     {
         final File testFile = this.getRandomFile(5);
 
@@ -270,11 +266,10 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if given a GeoPackage with tiles already inside it can add another Tile Set without throwing an error and verify that it entered the correct information.
      *
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test
-    public void addTileSetToExistingGpkgWithTilesInside() throws SQLException, Exception
+    public void addTileSetToExistingGpkgWithTilesInside() throws Exception
     {
         final File testFile = this.getRandomFile(5);
         //create a geopackage with tiles inside
@@ -361,11 +356,10 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an error when adding a tileset with the same name as another tileset in the GeoPackage.
      *
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileSetWithRepeatedTileSetName() throws SQLException, Exception
+    public void addTileSetWithRepeatedTileSetName() throws Exception
     {
         final File testFile = this.getRandomFile(5);
 
@@ -406,6 +400,7 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage can add 2 Tile Matrix entries with
      * the two different tile pyramids can be entered into one gpkg
+     * @throws Exception throws if an exception occurs
      */
     @Test
     public void addTileSetToExistingTilesTable() throws Exception
@@ -484,11 +479,11 @@ public class GeoPackageTilesAPITest
      * that is returned is the one that already exists in
      * the GeoPackage and verifies its contents
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void addSameTileSetTwice() throws ClassNotFoundException, SQLException, ConformanceException, IOException
@@ -540,11 +535,11 @@ public class GeoPackageTilesAPITest
      * Expects GeoPackage to throw an IllegalArgumentException
      * when giving addTileSet a parameter with a null value
      * for bounding box
-     * @throws SQLException
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileSetBadTableName() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -578,11 +573,11 @@ public class GeoPackageTilesAPITest
      * Expects GeoPackage to throw an IllegalArgumentException
      * when giving addTileSet a parameter with a null value
      * for bounding box
-     * @throws SQLException
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileSetBadSRS() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -615,11 +610,11 @@ public class GeoPackageTilesAPITest
      * Expects GeoPackage to throw an IllegalArgumentException
      * when giving addTileSet a parameter with a null value
      * for bounding box
-     * @throws SQLException
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileSetBadBoundingBox() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -651,11 +646,10 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage will throw an IllegalArgumentException when The table name is an empty string
      * for TileSet.
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
      @Test(expected = IllegalArgumentException.class)
-     public void addTileSetContentEntryInvalidTableName() throws SQLException, Exception
+     public void addTileSetContentEntryInvalidTableName() throws Exception
      {
          final File testFile = this.getRandomFile(5);
          try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -685,11 +679,11 @@ public class GeoPackageTilesAPITest
       * Tests if GeoPackageTiles throws an
       * IllegalArgumentException when giving
       * a table name with symbols
-      * @throws FileAlreadyExistsException
-      * @throws ClassNotFoundException
-      * @throws FileNotFoundException
-      * @throws SQLException
-      * @throws ConformanceException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
       */
      @Test(expected = IllegalArgumentException.class)
      public void addTileIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -717,11 +711,11 @@ public class GeoPackageTilesAPITest
       * Tests if GeoPackageTiles throws an
       * IllegalArgumentException when giving
       * a table name starting with gpkg
-      * @throws FileAlreadyExistsException
-      * @throws ClassNotFoundException
-      * @throws FileNotFoundException
-      * @throws SQLException
-      * @throws ConformanceException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
       */
      @Test(expected = IllegalArgumentException.class)
      public void addTileIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -749,11 +743,11 @@ public class GeoPackageTilesAPITest
       * Tests if GeoPackageTiles throws an
       * IllegalArgumentException when giving
       * a table name with a null value
-      * @throws FileAlreadyExistsException
-      * @throws ClassNotFoundException
-      * @throws FileNotFoundException
-      * @throws SQLException
-      * @throws ConformanceException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
       */
      @Test(expected = IllegalArgumentException.class)
      public void addTileIllegalArgumentException3() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -780,11 +774,10 @@ public class GeoPackageTilesAPITest
 
     /**
      * Tests if a GeoPackage will return the same tileSets that was given to the GeoPackage when adding tileSets.
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception if an exception occurs
      */
     @Test
-    public void getTileSetsFromGpkg() throws SQLException, Exception
+    public void getTileSetsFromGpkg() throws Exception
     {
         final File testFile = this.getRandomFile(6);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -866,11 +859,10 @@ public class GeoPackageTilesAPITest
 
     /**
      * Tests if a GeoPackage will find no tile Sets when searching with an SRS that is not in the GeoPackage.
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test
-    public void getTileSetWithNewSRS() throws SQLException, Exception
+    public void getTileSetWithNewSRS() throws Exception
     {
         final File testFile = this.getRandomFile(7);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -895,11 +887,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the getTileSet returns null when the tile table
      * does not exist
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void getTileSetVerifyReturnNull()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -927,11 +919,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the getTileSet returns the expected
      * values.
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void getTileSetVerifyReturnCorrectTileSet()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -969,11 +961,10 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage can detect there are zoom levels for
      * a tile that is not represented in the Tile Matrix Table.
      * Should throw a IllegalArgumentException.
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTilesIllegalArgumentException() throws SQLException, Exception
+    public void addTilesIllegalArgumentException() throws Exception
     {
         final File testFile = this.getRandomFile(4);
 
@@ -1009,11 +1000,10 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage can detect the tile_row
      * is larger than the matrix_height -1. Which is a violation
      * of the GeoPackage Specifications. Requirement 55.
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTilesIllegalArgumentException2() throws SQLException, Exception
+    public void addTilesIllegalArgumentException2() throws Exception
     {
         final File testFile = this.getRandomFile(4);
 
@@ -1048,11 +1038,10 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage can detect the tile_row
      * is less than 0. Which is a violation
      * of the GeoPackage Specifications. Requirement 55.
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTilesIllegalArgumentException3() throws SQLException, Exception
+    public void addTilesIllegalArgumentException3() throws Exception
     {
         final File      testFile = this.getRandomFile(4);
 
@@ -1087,11 +1076,10 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage can detect the tile_column
      * is larger than matrix_width -1. Which is a violation
      * of the GeoPackage Specifications. Requirement 54.
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTilesIllegalArgumentException4() throws SQLException, Exception
+    public void addTilesIllegalArgumentException4() throws Exception
     {
         final File testFile = this.getRandomFile(4);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -1126,11 +1114,10 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage can detect the tile_column
      * is less than 0. Which is a violation
      * of the GeoPackage Specifications. Requirement 54.
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws when exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTilesIllegalArgumentException5() throws SQLException, Exception
+    public void addTilesIllegalArgumentException5() throws Exception
     {
         final File testFile = this.getRandomFile(4);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -1164,11 +1151,10 @@ public class GeoPackageTilesAPITest
      * Geopackage throws an SQLException when opening a Geopackage since it does not contain the default tables
      * inside after bypassing the verifier.
      *
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test(expected = SQLException.class)
-    public void addTilesToGpkgAndAddTilesAndSetVerifyToFalse() throws SQLException, Exception
+    public void addTilesToGpkgAndAddTilesAndSetVerifyToFalse() throws Exception
     {
         final File testFile = this.getRandomFile(37);
         testFile.createNewFile();
@@ -1212,10 +1198,12 @@ public class GeoPackageTilesAPITest
      * This adds a tile to a GeoPackage and verifies
      * that the Tile object added into the GeoPackage
      * is the same Tile object returned.
-     * @throws SQLException
-     * @throws ClassNotFoundException
-     * @throws ConformanceException
-     * @throws IOException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
+     * @throws IOException throws if the image from the tile is not able to be read
      */
     @Test
     public void addTileMethodByCrsTileCoordinate() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -1277,10 +1265,12 @@ public class GeoPackageTilesAPITest
      * This adds a tile to a GeoPackage and verifies
      * that the Tile object added into the GeoPackage
      * is the same Tile object returned.
-     * @throws SQLException
-     * @throws ClassNotFoundException
-     * @throws ConformanceException
-     * @throws IOException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
+     * @throws IOException throws if the image cannot be read 
      */
     @Test
     public void addTileMethodByCrsTileCoordinateNullValue() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -1338,11 +1328,10 @@ public class GeoPackageTilesAPITest
     /**
      * Test if the GeoPackage can successfully add non empty tiles to a GeoPackage  without throwing an error.
      *
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test
-    public void addNonEmptyTile() throws SQLException, Exception
+    public void addNonEmptyTile() throws Exception
     {
         final File testFile = this.getRandomFile(6);
 
@@ -1403,12 +1392,12 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage will throw an SQLException when adding
      * a duplicate tile to the GeoPackage.
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws IllegalArgumentException
-     * @throws FileNotFoundException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
+     * @throws IllegalArgumentException throws if an illegal argument occurs to a method
      */
     @Test(expected = SQLException.class)
     public void addDuplicateTiles()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -1458,11 +1447,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage throws an IllegalArgumentException
      * when trying to add a tile with a parameter that is null (image data)
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addBadTile()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -1502,11 +1491,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage throws an IllegalArgumentException
      * when trying to add a tile with a parameter that is empty (image data)
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addBadTile2()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -1545,11 +1534,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage throws an IllegalArgumentException
      * when trying to add a tile with a parameter that is null (coordinate)
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addBadTile3()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -1587,11 +1576,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage throws an IllegalArgumentException
      * when trying to add a tile with a parameter that is null (tileMatrix)
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws SQLException if an SQLException occurs
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addBadTile4()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -1629,7 +1618,7 @@ public class GeoPackageTilesAPITest
 
     /**
      * Tests if the GeoPackage get tile will retrieve the correct tile with get tile method.
-     * @throws Exception
+     * @throws  Exception throws if an exception occurs
      */
     @Test
     public void getTile() throws Exception
@@ -1709,7 +1698,7 @@ public class GeoPackageTilesAPITest
 
     /**
      * Tests if the GeoPackage get tile will retrieve the correct tile with get tile method.
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test
     public void getTile2() throws Exception
@@ -1748,7 +1737,7 @@ public class GeoPackageTilesAPITest
 
     /**
      * Tests if the GeoPackage get tile will retrieve the correct tile with get tile method.
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test
     public void getTile3() throws Exception
@@ -1810,11 +1799,10 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will return null when the tile being searched for does not exist.
      *
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test
-    public void getTileThatIsNotInGpkg() throws SQLException, Exception
+    public void getTileThatIsNotInGpkg() throws Exception
     {
         final File testFile = this.getRandomFile(4);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -1857,11 +1845,10 @@ public class GeoPackageTilesAPITest
 
     /**
      * Tests if GeoPackage will throw an IllegalArgumentException when using getTile method with null value for table name.
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
-    public void getTileWithNullTileEntrySet() throws SQLException, Exception
+    public void getTileWithNullTileEntrySet() throws Exception
     {
         final File testFile = this.getRandomFile(5);
 
@@ -1884,11 +1871,10 @@ public class GeoPackageTilesAPITest
 
     /**
      * Tests if a GeoPackage will throw an Illegal Argument Exception when given a null coordinate to getTile method.
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test(expected= IllegalArgumentException.class)
-    public void getTileWithRequestedTileNull() throws SQLException, Exception
+    public void getTileWithRequestedTileNull() throws Exception
     {
         final File testFile = this.getRandomFile(5);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -1918,11 +1904,10 @@ public class GeoPackageTilesAPITest
 
     /**
      * Tests if the GeoPackage will throw an IllegalArgumentException when a zoom level is out of range. (negative value)
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test (expected = IllegalArgumentException.class)
-   public void getTileZoomLevelRangeIncorrect() throws SQLException, Exception
+   public void getTileZoomLevelRangeIncorrect() throws Exception
    {
        final File testFile = this.getRandomFile(5);
 
@@ -1955,10 +1940,12 @@ public class GeoPackageTilesAPITest
      * This adds a tile to a GeoPackage and verifies
      * that the Tile object added into the GeoPackage
      * is the same Tile object returned.
-     * @throws SQLException
-     * @throws ClassNotFoundException
-     * @throws ConformanceException
-     * @throws IOException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
+     * @throws IOException throws if an image cannot be read from or written
      */
     @Test
     public void getTileRelativeTileCoordinateNonExistant() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2000,11 +1987,10 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage will return the all and the correct zoom levels in a GeoPackage
      *
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test
-    public void getZoomLevels() throws SQLException, Exception
+    public void getZoomLevels() throws Exception
     {
         final File testFile = this.getRandomFile(6);
 
@@ -2070,11 +2056,11 @@ public class GeoPackageTilesAPITest
      * Tests if a GeoPackage will throw
      * an IllegalArgumentException when given
      * a TileSet null for getZoomLevels()
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void getZoomLevelsNullTileSetContentEntry()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2101,11 +2087,10 @@ public class GeoPackageTilesAPITest
      /**
       * Tests if GeoPackage will throw an IllegalArgumentException
       * when giving a null parameter to getRowCount
-      * @throws SQLException
-      * @throws Exception
+      * @throws Exception throws if an exception occurs
       */
     @Test(expected = IllegalArgumentException.class)
-    public void getRowCountNullContentEntry() throws SQLException, Exception
+    public void getRowCountNullContentEntry() throws  Exception
     {
         final File testFile = this.getRandomFile(9);
 
@@ -2129,11 +2114,10 @@ public class GeoPackageTilesAPITest
     /**
      * Verifies that the GeoPackage counts the correct number of rows
      * with the method getRowCount
-     * @throws SQLException
-     * @throws Exception
+     * @throws Exception throws if an exception occurs
      */
     @Test
-    public void getRowCountVerify() throws SQLException, Exception
+    public void getRowCountVerify() throws Exception
     {
         final File testFile = this.getRandomFile(8);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2195,11 +2179,11 @@ public class GeoPackageTilesAPITest
      * when giving a null parameter to the method
      * getTileMatrixSetEntry();
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void getTileMatrixSetEntryNullTileSetContentEntry()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2227,14 +2211,15 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if GeoPackage returns the expected tileMatrices using the getTIleMatrices(TileSet tileSet) method
      *
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws IllegalArgumentException
-     * @throws IOException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
+     * @throws IOException throws if an image cannot be read from or written
      */
     @Test
-    public void getTileMatricesVerify() throws ClassNotFoundException, SQLException, ConformanceException, IllegalArgumentException, IOException
+    public void getTileMatricesVerify() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(5);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -2306,11 +2291,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage will return null if no TileMatrix
      * Entries are found in the GeoPackage that matches the TileSet given.
-     * @throws SQLException
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void getTileMatricesNonExistant() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2342,11 +2327,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when
      * giving a TileMatrix with a matrix width that is <=0
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileMatricesIllegalArgumentException()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2373,11 +2358,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when
      * giving a TileMatrix with a matrix height that is <=0
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileMatricesIllegalArgumentException2()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2410,11 +2395,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when
      * giving a TileMatrix with a tile width that is <=0
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileMatricesIllegalArgumentException3()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2442,11 +2427,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when
      * giving a TileMatrix with a tile height that is <=0
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileMatricesIllegalArgumentException4()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2473,11 +2458,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when
      * giving a TileMatrix with a pixelXsize that is <=0
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileMatricesIllegalArgumentException5()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2505,11 +2490,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException when
      * giving a TileMatrix with a pixelYSize that is <=0
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileMatricesIllegalArgumentException6()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2538,11 +2523,11 @@ public class GeoPackageTilesAPITest
      * when attempting to add a Tile Matrix corresponding to the same tile set and
      * zoom level but have differing other fields
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileMatrixSameZoomDifferentOtherFields()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2572,11 +2557,11 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage returns the same TileMatrix when trying
      * to add the same TileMatrix twice (verifies the values are the same)
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void addTileMatrixTwiceVerify()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2633,11 +2618,11 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage returns the same TileMatrix when trying
      * to add the same TileMatrix twice (verifies the values are the same)
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileMatrixNullTileSet()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2664,11 +2649,11 @@ public class GeoPackageTilesAPITest
      * when a user tries to add a negative value for zoom level
      * (when adding a tile Matrix entry)
      *
-     * @throws SQLException
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileMatrixWithNegativeZoomLevel()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2698,8 +2683,8 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if given a non empty tile Matrix Metadata information can be added without throwing an error.
      *
-     * @throws SQLException
-     * @throws Exception
+     * @throws SQLException throws if an SQLException occurs
+     * @throws Exception throws if an exception occurs
      */
     @Test
     public void addNonEmptyTileMatrix() throws SQLException, Exception
@@ -2770,11 +2755,11 @@ public class GeoPackageTilesAPITest
      * an IllegalArgumentException when
      * the pixelXSize is not correctly
      * calculated
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileMatrixIllegalBounds() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2817,11 +2802,11 @@ public class GeoPackageTilesAPITest
      * an IllegalArgumentException when
      * the pixelYSize is not correctly
      * calculated
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void addTileMatrixIllegalBounds2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2863,11 +2848,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if a GeoPackage will throw an IllegalArgumentException
      * when giving a null parameter to getTileMatrices
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void getTileMatricesNullParameter() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2894,11 +2879,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage getTIleMatrix can
      * retrieve the correct TileMatrix from the GeoPackage.
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void getTileMatrixVerify()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -2966,11 +2951,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage returns null if the TileMatrix entry does not
      * exist in the GeoPackage file.
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void getTileMatrixNonExistant()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3004,11 +2989,11 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage will throw an IllegalArgumentException
      * when giving a null parameter to getTileMatrix.
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void getTileMatrixNullParameter()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3034,11 +3019,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if getTileMatrixSet retrieves the values that is expected
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void getTileMatrixSetVerify()throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3078,8 +3063,8 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage will throw a GeoPackage Conformance Exception
      * when given a GeoPackage that violates a requirement with a severity equal
      * to Error
-     * @throws SQLException
-     * @throws Exception
+     * @throws SQLException throws if an SQLException occurs
+     * @throws Exception throws if an exception occurs
      */
     @Test(expected = ConformanceException.class)
     public void geoPackageConformanceException() throws SQLException, Exception
@@ -3106,11 +3091,11 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage can convert an
      * Geodetic crsCoordinate to a relative tile coordinate
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordinateUpperRightGeodetic() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3165,11 +3150,11 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage can convert an
      * Geodetic crsCoordinate to a relative tile coordinate
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordinateUpperLeftGeodetic() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3224,11 +3209,11 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage can convert an
      * Geodetic crsCoordinate to a relative tile coordinate
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordinateLowerLeftGeodetic() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3283,11 +3268,11 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage can convert an
      * Geodetic crsCoordinate to a relative tile coordinate
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordinateLowerRightGeodetic() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3340,13 +3325,11 @@ public class GeoPackageTilesAPITest
     /**
      * Tests if the GeoPackage can convert an
      * Global Mercator crsCoordinate to a relative tile coordinate
-     *
-     * @throws ConformanceException
-     * @throws SQLException
-     * @throws FileNotFoundException
-     * @throws ClassNotFoundException
-     * @throws FileAlreadyExistsException
-     * @throws IOException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordinateUpperLeftGlobalMercator() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3415,12 +3398,11 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage can convert an
      * Global Mercator crsCoordinate to a relative tile coordinate
      *
-     * @throws ConformanceException
-     * @throws SQLException
-     * @throws FileNotFoundException
-     * @throws ClassNotFoundException
-     * @throws FileAlreadyExistsException
-     * @throws IOException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordinateUpperRightGlobalMercator() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3488,12 +3470,11 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage can convert an
      * Global Mercator crsCoordinate to a relative tile coordinate
      *
-     * @throws ConformanceException
-     * @throws SQLException
-     * @throws FileNotFoundException
-     * @throws ClassNotFoundException
-     * @throws FileAlreadyExistsException
-     * @throws IOException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordinateLowerLeftGlobalMercator() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3560,12 +3541,11 @@ public class GeoPackageTilesAPITest
      * Tests if the GeoPackage can convert an
      * Global Mercator crsCoordinate to a relative tile coordinate
      *
-     * @throws ConformanceException
-     * @throws SQLException
-     * @throws FileNotFoundException
-     * @throws ClassNotFoundException
-     * @throws FileAlreadyExistsException
-     * @throws IOException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordinateLowerRightGlobalMercator() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3634,11 +3614,11 @@ public class GeoPackageTilesAPITest
      * are multiple zoom levels and when there are
      * more tiles at the higher zoom
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordinateMultipleZoomLevels() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3720,11 +3700,11 @@ public class GeoPackageTilesAPITest
      * crs to relative tile coordinate when the crs
      * coordinate lies in the middle of four tiles.
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordEdgeCase() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3778,11 +3758,11 @@ public class GeoPackageTilesAPITest
      * This tests the validity of the transformation of
      * crs to relative tile coordinate when the crs
      * coordinate lies between two tiles on top of each other
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordEdgeCase2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3836,11 +3816,11 @@ public class GeoPackageTilesAPITest
      * This tests the validity of the transformation of
      * crs to relative tile coordinate when the crs
      * coordinate lies on the left border
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordEdgeCase3() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3896,11 +3876,11 @@ public class GeoPackageTilesAPITest
      * This tests the validity of the transformation of
      * crs to relative tile coordinate when the crs
      * coordinate lies on the right border
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordEdgeCase4() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -3954,11 +3934,11 @@ public class GeoPackageTilesAPITest
      * This tests the validity of the transformation of
      * crs to relative tile coordinate when the crs
      * coordinate lies on the top border
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordEdgeCase5() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -4012,11 +3992,11 @@ public class GeoPackageTilesAPITest
      * This tests the validity of the transformation of
      * crs to relative tile coordinate when the crs
      * coordinate lies on the bottom border
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordEdgeCase6() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -4065,7 +4045,15 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-
+    
+    /**
+     * Test if a crsCoordinate can be translated to a tile coordiante
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
+     */
     @Test
     public void crsToRelativeTileCoordianteEdgeCase7()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
@@ -4119,11 +4107,11 @@ public class GeoPackageTilesAPITest
      * Tests if a GeoPackage will throw the appropriate
      * exception when giving the method a null value for
      * crsCoordinate.
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void crsToRelativeTileCoordException() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -4158,11 +4146,11 @@ public class GeoPackageTilesAPITest
      * Tests if a GeoPackage will throw the appropriate
      * exception when giving the method a null value for
      * crsCoordinate.
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void crsToRelativeTileCoordException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -4196,11 +4184,11 @@ public class GeoPackageTilesAPITest
      * is thrown when trying to find a crs coordinate
      * from a different SRS from the tiles.
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void crsToRelativeTileCoordException3() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -4253,11 +4241,11 @@ public class GeoPackageTilesAPITest
      * is thrown when trying to find a crs coordinate
      * from with a zoom level that is not in the matrix table
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordException4() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -4313,11 +4301,11 @@ public class GeoPackageTilesAPITest
      * is thrown when trying to find a crs coordinate
      * is not within bounds
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test
     public void crsToRelativeTileCoordException5() throws SQLException, ClassNotFoundException, ConformanceException, IOException
@@ -4372,11 +4360,11 @@ public class GeoPackageTilesAPITest
      * is thrown when trying to find a crs coordinate
      * from a different SRS from the tiles.
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * @throws SQLException throws if an SQLException occurs
+     * @throws FileAlreadyExistsException if the file exists already that is given to geopackage
+     * @throws ClassNotFoundException if the connection to the database cannot be made
+     * @throws FileNotFoundException  if the file is not found
+     * @throws ConformanceException throws if it does not meet all the requirements
      */
     @Test(expected = IllegalArgumentException.class)
     public void crsToRelativeTileCoordException6() throws SQLException, ClassNotFoundException, ConformanceException, IOException

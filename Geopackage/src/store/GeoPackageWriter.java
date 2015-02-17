@@ -53,31 +53,50 @@ import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
 {
     /**
      * @param geoPackageFile
-     *             Handle to a new or existing GeoPackage file
+     *            Handle to a new or existing GeoPackage file
      * @param coordinateReferenceSystem
-     *             Coordinate reference system
+     *            Coordinate reference system
      * @param tileSetTableName
-     *             Name for the new tile set's table in the GeoPackage database
+     *            Name for the new tile set's table in the GeoPackage database
      * @param tileSetIdentifier
-     *             A human-readable identifier (e.g. short name) for the tile set
+     *            A human-readable identifier (e.g. short name) for the tile set
      * @param tileSetDescription
-     *             A human-readable description of the tile set
-     * @param boundingBox
-     *             Minimum bounds of the tile set, in spatial reference system units
+     *            A human-readable description of the tile set
+     * @param tileSetBounds
+     *            Minimum bounds of the tile set, in spatial reference system
+     *            units
      * @param tileScheme
-     *             Contains the mechanism to calculate the relationship between the tile matrix dimensions at valid zoom levels
+     *            Contains the mechanism to calculate the relationship between
+     *            the tile matrix dimensions at valid zoom levels
      * @param imageOutputFormat
-     *             Image format for used for output
+     *            Image format for used for output
      * @param imageWriteOptions
-     *             Controls details of the image writing process.  If null, a default ImageWriteParam used instead
+     *            Controls details of the image writing process. If null, a
+     *            default ImageWriteParam used instead
+     * @throws FileAlreadyExistsException
+     *             when openMode is set to OpenMode.Create, and the file already
+     *             exists
      * @throws ClassNotFoundException
-     * @throws IOException
+     *             when the SQLite JDBC driver cannot be found
+     * @throws FileNotFoundException
+     *             when openMode is set to OpenMode.Open, and the file does not
+     *             exist
      * @throws SQLException
+     *             in various cases where interaction with the JDBC connection
+     *             fails
      * @throws ConformanceException
+     *             when the verifyConformance parameter is true, and if there
+     *             are any conformance violations with the severity
+     *             Severity.Error
+     * 
      */
     public GeoPackageWriter(final File                      geoPackageFile,
                             final CoordinateReferenceSystem coordinateReferenceSystem,

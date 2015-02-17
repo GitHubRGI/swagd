@@ -109,8 +109,7 @@ public class TilesVerifier extends Verifier
      * @param sqliteConnection
      *            the connection to the database
      * @throws SQLException
-     *             throws if it does not have an sqlite_master table (not an
-     *             SQLite3 database)
+     *             throws if the method {@link DatabaseUtility#tableOrViewExists(Connection, String) tableOrViewExists} throws
      */
     public TilesVerifier(final Connection sqliteConnection) throws SQLException
     {
