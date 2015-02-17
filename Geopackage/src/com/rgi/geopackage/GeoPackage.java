@@ -348,7 +348,7 @@ public class GeoPackage implements AutoCloseable
 
         if(failedRequirements.size() > 0)
         {
-            System.err.println(String.format("GeoPackage failed to meet the following requirements:\n %s",
+            System.err.println(String.format("GeoPackage failed to meet the following requirements:\n %s\n",
                                              failedRequirements.stream()
                                                                .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
                                                                .map(failedRequirement -> String.format("(%s) Requirement %d: \"%s\"\n%s",
