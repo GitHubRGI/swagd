@@ -27,6 +27,11 @@ import org.openstreetmap.gui.jmapviewer.interfaces.TileSource;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 
+/**
+ * Connect jmapviewer code with SWAGD code for viewing tile stores in a map viewer.
+ * 
+ * @author Steven D. Lander
+ */
 public class TileStoreTileSource implements TileSource
 {
     private final TileStoreReader tileStore;
@@ -34,6 +39,10 @@ public class TileStoreTileSource implements TileSource
     private final int minimumZoomLevel;
     private final int maximumZoomLevel;
 
+    /**
+     * @param tileStore The tile store that will be viewed.
+     * @throws TileStoreException Thrown when the tile store is not supported or is invalid.
+     */
     public TileStoreTileSource(final TileStoreReader tileStore) throws TileStoreException
     {
         this.tileStore = tileStore;
