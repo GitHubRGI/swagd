@@ -21,39 +21,57 @@ package com.rgi.packager;
 import com.rgi.common.task.Task;
 import com.rgi.common.task.TaskFactory;
 
-public class PackagerFactory implements TaskFactory {
-  private static final PackagerFactory instance = new PackagerFactory();
-  public static final PackagerFactory getInstance() {
-    return instance;
-  }
+/**
+ * Factory for creating Packager tasks.
+ * 
+ * @author Steven D. Lander
+ */
+public class PackagerFactory implements TaskFactory
+{
+	private static final PackagerFactory instance = new PackagerFactory();
 
-  @Override
-  public Task createTask() {
-    return new Packager(this);
-  }
+	/**
+	 * Return a factory for Packager.
+	 * 
+	 * @return A Packager factory instance.
+	 */
+	public static final PackagerFactory getInstance()
+	{
+		return instance;
+	}
 
-  @Override
-  public boolean selectMultiple() {
-    return false;
-  }
+	@Override
+	public Task createTask()
+	{
+		return new Packager(this);
+	}
 
-  @Override
-  public String getFilePrompt() {
-    return "Enter output geopackage name...";
-  }
+	@Override
+	public boolean selectMultiple()
+	{
+		return false;
+	}
 
-  @Override
-  public boolean selectInput() {
-    return false;
-  }
+	@Override
+	public String getFilePrompt()
+	{
+		return "Enter output geopackage name...";
+	}
 
-  @Override
-  public boolean selectFilesOnly() {
-    return false;
-  }
-  
-  @Override
-  public boolean selectFoldersOnly() {
-    return true;
-  }
+	@Override
+	public boolean selectInput()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean selectFilesOnly()
+	{
+		return false;
+	}
+	@Override
+	public boolean selectFoldersOnly()
+	{
+		return true;
+	}
 }
