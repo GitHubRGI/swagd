@@ -59,5 +59,9 @@ public class TileSet extends Content
               spatialReferenceSystemIdentifier);
     }
 
+    /**
+     * According to the OGC specifications, the data type of all Tiles table is
+     * "tiles" http://www.geopackage.org/spec/#tiles
+     */
     public static final String TileContentType = "tiles";
 }

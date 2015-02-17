@@ -21,14 +21,22 @@ package com.rgi.geopackage.tiles;
 import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class TileMatrixSet
 {
     /**
      * Constructor
      *
      * @param tableName
+     *            the name of the Tiles Table that this TileMatrixSet
+     *            corresponds to
      * @param spatialReferenceSystem
+     *            the Spatial Reference System the tiles are projected to
      * @param boundingBox
+     *            the minimum bounding box of the tile data
      */
     protected TileMatrixSet(final String tableName, final SpatialReferenceSystem spatialReferenceSystem, final BoundingBox boundingBox)
     {

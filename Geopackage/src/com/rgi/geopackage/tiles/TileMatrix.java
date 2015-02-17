@@ -169,6 +169,17 @@ public class TileMatrix
         return this.pixelYSize;
     }
 
+    /**
+     * @param inTableName the tableName of the other TileMatrix
+     * @param inZoomLevel the zoomLevel of the other TileMatrix
+     * @param inMatrixWidth the matrixWidth (number of tiles wide) of the other TileMatrix
+     * @param inMatrixHeight the matrixHeight (number of tiles high)of the other TileMatrix
+     * @param inTileWidth the tileWidth in pixels of the other TileMatrix
+     * @param inTileHeight the tileHeight in pixels of the other TileMatrix
+     * @param inPixelXSize the pixelXSize (units/pixel) of the other TileMatrix
+     * @param inPixelYSize the pixelYSize (units/pixel) of the other TileMatrix
+     * @return true if this.TileMatrix equals the parameter values; otherwise returns false
+     */
     public boolean equals(final String inTableName,
                           final int    inZoomLevel,
                           final int    inMatrixWidth,

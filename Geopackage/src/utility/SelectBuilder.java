@@ -38,6 +38,19 @@ import java.util.stream.Collectors;
  */
 public class SelectBuilder implements AutoCloseable
 {
+    /**
+     * @param connection
+     *            a handle to the database connection
+     * @param tableName
+     *            The name of the table pulling information from
+     * @param selectColumns
+     *            the names of the columns in the table that need to be selected
+     * @param where
+     *            the names of the columns and the values that they need to
+     *            equal
+     * @throws SQLException
+     *             throws if various SQLExceptions occur
+     */
     public SelectBuilder(final Connection                        connection,
                          final String                            tableName,
                          final Collection<String>                selectColumns,
@@ -88,6 +101,13 @@ public class SelectBuilder implements AutoCloseable
         }
     }
 
+    /**
+     * @return a ResultSet object that contains the data produced by the query;
+     *         never null
+     * 
+     * @throws SQLException
+     *             throws if various SQLExceptions occur
+     */
     public ResultSet executeQuery() throws SQLException
     {
         return this.preparedStatement.executeQuery();
