@@ -84,7 +84,7 @@ public class GlobalGeodeticCrsProfile extends ProportionalCrsProfile
     public static final BoundingBox Bounds = new BoundingBox(-90.0, -180.0, 90.0, 180.0);
 
     @Override
-    public int requiredPercision()
+    public int getPrecision()
     {
         return 7;
     }

@@ -37,8 +37,6 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.coordinate.referencesystem.profile.Utility;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.util.jdbc.ResultSetStream;
@@ -475,14 +473,16 @@ public class GeoPackageTiles
         final int column = coordinate.getColumn();
 
         // Verify row and column are within the tile metadata's range
-        if(row < 0 || row > tileMatrix.getMatrixHeight())
+        if(row < 0 || row >= tileMatrix.getMatrixHeight())
         {
-            throw new IllegalArgumentException(String.format("tile row must be in the range [0, %d] (tile matrix metadata's matrix height - 1)",
+            throw new IllegalArgumentException(String.format("Tile row %d is outside of the valid row range [0, %d] (0 to tile matrix metadata's matrix height - 1)",
+                                                             row,
                                                              tileMatrix.getMatrixHeight()-1));
         }
-        if(column < 0 || column > tileMatrix.getMatrixWidth())
+        if(column < 0 || column >= tileMatrix.getMatrixWidth())
         {
-            throw new IllegalArgumentException(String.format("tile column must be in the range [0, %d] (tile matrix metadata's matrix width - 1)",
+            throw new IllegalArgumentException(String.format("Tile column %d is outside of the valid column range [0, %d] (0 to tile matrix metadata's matrix width - 1)",
+                                                             column,
                                                              tileMatrix.getMatrixWidth()-1));
         }
 
@@ -519,6 +519,8 @@ public class GeoPackageTiles
      * @param coordinate
      *            The coordinate of the tile in units of the tile set's spatial
      *            reference system
+     * @param precision
+     *            Specifies a tolerance for coordinate value testings to a number of decimal places
      * @param zoomLevel
      *            Zoom level
      * @param imageData
@@ -535,10 +537,15 @@ public class GeoPackageTiles
     public Tile addTile(final TileSet       tileSet,
                         final TileMatrix    tileMatrix,
                         final CrsCoordinate coordinate,
+                        final int           precision,
                         final int           zoomLevel,
                         final byte[]        imageData) throws SQLException
     {
-        final RelativeTileCoordinate relativeCoordinate = this.crsToRelativeTileCoordinate(tileSet, coordinate, zoomLevel);
+        final RelativeTileCoordinate relativeCoordinate = this.crsToRelativeTileCoordinate(tileSet,
+                                                                                           coordinate,
+                                                                                           precision,
+                                                                                           zoomLevel);
+
         return relativeCoordinate != null ? this.addTile(tileSet,
                                                          tileMatrix,
                                                          relativeCoordinate,
@@ -743,6 +750,8 @@ public class GeoPackageTiles
      * @param coordinate
      *            Coordinate, in the units of the tile set's spatial reference
      *            system, of the requested tile
+     * @param precision
+     *            Specifies a tolerance for coordinate value testings to a number of decimal places
      * @param zoomLevel
      *            Zoom level
      * @return Returns the requested tile, or null if it's not found
@@ -755,9 +764,14 @@ public class GeoPackageTiles
      */
     public Tile getTile(final TileSet       tileSet,
                         final CrsCoordinate coordinate,
+                        final int           precision,
                         final int           zoomLevel) throws SQLException
     {
-        final RelativeTileCoordinate relativeCoordiante = this.crsToRelativeTileCoordinate(tileSet, coordinate, zoomLevel);
+        final RelativeTileCoordinate relativeCoordiante = this.crsToRelativeTileCoordinate(tileSet,
+                                                                                           coordinate,
+                                                                                           precision,
+                                                                                           zoomLevel);
+
         return relativeCoordiante != null ? this.getTile(tileSet, relativeCoordiante)
                                           : null;
     }
@@ -1002,6 +1016,8 @@ public class GeoPackageTiles
      *            A handle to a set of tiles
      * @param crsCoordinate
      *            A coordinate with a specified coordinate reference system
+     * @param precision
+     *            Specifies a tolerance for coordinate value testings to a number of decimal places
      * @param zoomLevel
      *            Zoom level
      * @return Returns a tile coordinate relative and specific to the input tile
@@ -1016,6 +1032,7 @@ public class GeoPackageTiles
      */
     public RelativeTileCoordinate crsToRelativeTileCoordinate(final TileSet       tileSet,
                                                               final CrsCoordinate crsCoordinate,
+                                                              final int           precision,
                                                               final int           zoomLevel) throws SQLException
     {
         if(tileSet == null)
@@ -1043,17 +1060,16 @@ public class GeoPackageTiles
         {
             return null;    // No tile matrix for the requested zoom level
         }
-        final CrsProfile    crsProfile    = CrsProfileFactory.create(crs);
-        final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
-        final BoundingBox   tileSetBounds = truncateBounds(tileMatrixSet.getBoundingBox(), crsProfile);
 
-        if(!Utility.contains(tileSetBounds, crsCoordinate, GeoPackageTiles.Origin))
+        final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
+        final BoundingBox   tileSetBounds = tileMatrixSet.getBoundingBox();
+
+        if(!Utility.contains(roundBounds(tileSetBounds, precision), crsCoordinate, GeoPackageTiles.Origin))
         {
             return null;    // The requested SRS coordinate is outside the bounds of our data
         }
 
-        final Coordinate<Double> boundsCorner = Utility.boundsCorner(tileSetBounds, GeoPackageTiles.Origin);
-
+        final Coordinate<Double> boundsCorner = Utility.boundsCorner(roundBounds(tileSetBounds, precision), GeoPackageTiles.Origin);
 
         final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
         final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();
@@ -1151,17 +1167,18 @@ public class GeoPackageTiles
     /**
      * Rounds the bounds to the appropriate level of accuracy
      * (2 decimal places for meters, 7 decimal places for degrees)
-     * @param bounds the bounding box that needs to be rounded
-     * @param crs the Coordinate Reference System of the bounds (to determine level of precision)
-     * @return the rounded bounds
+     * @param bounds
+     *             A {@link BoundingBox} that needs to be rounded
+     * @param precision
+     *             The Coordinate Reference System of the bounds (to determine level of precision)
+     * @return A {@link BoundingBox} with the minimum values rounded down, and the maximum values rounded up to the specified level of precision
      */
-    private static BoundingBox truncateBounds(final BoundingBox bounds, final CrsProfile crs)
+    private static BoundingBox roundBounds(final BoundingBox bounds, final int precision)
     {
-        final int percision = crs.requiredPercision();
-        return new BoundingBox(truncatePercision(bounds.getMinY(), percision),
-                               truncatePercision(bounds.getMinX(), percision),
-                               truncatePercision(bounds.getMaxY(), percision),
-                               truncatePercision(bounds.getMaxX(), percision));
+        return new BoundingBox(roundDownMin(bounds.getMinY(), precision),
+                               roundDownMin(bounds.getMinX(), precision),
+                               roundUpMax  (bounds.getMaxY(), precision),
+                               roundUpMax  (bounds.getMaxX(), precision));
     }
 
     /**

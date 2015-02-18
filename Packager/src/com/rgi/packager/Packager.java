@@ -160,12 +160,17 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                                                       tileHandle.getImage());
                               ++tileCount;
                            }
-                           catch(final Exception e)
+                           catch(final TileStoreException | IllegalArgumentException ex)
                            {
-                              // TODO: handle this better
-                              e.printStackTrace();
+                              // TODO: report this somewhere else?
+                              System.err.printf("Tile z: %d, x: %d, y: %d failed to get copied into the package: %s\n",
+                                                tileHandle.getZoomLevel(),
+                                                tileHandle.getColumn(),
+                                                tileHandle.getRow(),
+                                                ex.getMessage());
                            }
                        }
+
                        try
                        {
                            System.out.printf("Packaging complete.  Packaged %d of %d tiles.", tileCount, tileStoreReader.countTiles());
@@ -244,7 +249,8 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
         }
 
         @Override
-        public void run() {
+        public void run()
+        {
             try
             {
                 this.job.get();
@@ -252,19 +258,19 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
             catch(final InterruptedException ie)
             {
                 // unlikely, but we still need to handle it
-                System.err.println("Tiling job was interrupted.");
+                System.err.println("Packaging job was interrupted.");
                 ie.printStackTrace();
                 Packager.this.fireError(ie);
             }
             catch(final ExecutionException ee)
             {
-                System.err.println("Tiling job failed with exception: " + ee.getMessage());
+                System.err.println("Packaging job failed with exception: " + ee.getMessage());
                 ee.printStackTrace();
                 Packager.this.fireError(ee);
             }
             catch(final CancellationException ce)
             {
-                System.err.println("Tiling job was cancelled.");
+                System.err.println("Packaging job was cancelled.");
                 ce.printStackTrace();
                 Packager.this.fireError(ce);
             }
