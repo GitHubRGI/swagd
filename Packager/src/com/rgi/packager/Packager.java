@@ -55,19 +55,22 @@ import com.rgi.geopackage.verification.ConformanceException;
  * Package tiles from a tile store into a GeoPackage or append to an existing GeoPackage.
  *
  * @author Steven D. Lander
+ * @author Luke D. Lambert
+ *
  */
 public class Packager extends AbstractTask implements MonitorableTask, TaskMonitor
 {
-
-    ExecutorService executor  = Executors.newSingleThreadExecutor();
-    private int     jobTotal  = 0;
-    private int     jobCount  = 0;
-    private int     completed = 0;
+    private final ExecutorService executor  = Executors.newSingleThreadExecutor();
+    private int             jobTotal  = 0;
+    private int             jobCount  = 0;
+    private int             completed = 0;
+    private AutoCloseable   resource;
 
     /**
      * @param factory
      */
-    public Packager(final TaskFactory factory) {
+    public Packager(final TaskFactory factory)
+    {
         super(factory);
     }
 
@@ -131,6 +134,9 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                                                                                           minZoomLevelMatrixWidth),
                                                                          new MimeType("image/png"),
                                                                          null);
+
+                this.resource = gpkgWriter;
+
                 // Create a new PackageJob task
                 final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(this.createPackageJob(tileStoreReader, gpkgWriter))));
                 jobWaiter.setDaemon(true);
@@ -207,10 +213,28 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
         try
         {
             this.executor.awaitTermination(60, TimeUnit.SECONDS);
+            this.close();
         }
         catch(final InterruptedException ie)
         {
             this.fireCancelled();
+        }
+    }
+
+    private void close()
+    {
+        if(this.resource != null)
+        {
+            try
+            {
+                this.resource.close();
+                this.resource = null;
+            }
+            catch(final Exception ex)
+            {
+                // TODO Auto-generated catch block
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -220,6 +244,8 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
         {
             monitor.cancelled();
         }
+
+        this.close();
     }
 
     private void fireProgressUpdate()
@@ -244,6 +270,8 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
         {
             monitor.finished();
         }
+
+        this.close();
     }
 
     private class JobWaiter implements Runnable
@@ -323,6 +351,8 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
         {
             this.setProgress(0);
         }
+
+        this.close();
     }
 
     @Override
