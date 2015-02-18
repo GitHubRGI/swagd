@@ -24,7 +24,7 @@ import com.rgi.suite.ApplicationContext.Window;
 
 /**
  * Entry point for the program.
- * 
+ *
  * @author Duff Means
  * @author Steven D. Lander
  */
@@ -47,7 +47,7 @@ public class GeoSuite
                                          });
     }
 
-    private static void runHeadless(String[] args)
+    private static void runHeadless(@SuppressWarnings("unused") String[] args)
     {
         // TODO
     }
@@ -55,7 +55,7 @@ public class GeoSuite
     /**
      * Code decision point for running in either GUI mode or headless (command-line) mode.
      * @param args
-     * 
+     *
      */
     public static void main(String[] args)
     {
@@ -65,7 +65,8 @@ public class GeoSuite
         }
         else
         {
-            new GeoSuite();
+            @SuppressWarnings("unused")
+            GeoSuite geoSuite = new GeoSuite();
         }
     }
 
