@@ -151,24 +151,32 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
     {
         return () -> { int tileCount = 0;
 
-                       for(final TileHandle tileHandle : (Iterable<TileHandle>)tileStoreReader.stream()::iterator)
+                       try
                        {
-                           try
+                           for(final TileHandle tileHandle : (Iterable<TileHandle>)tileStoreReader.stream()::iterator)
                            {
-                              tileStoreWriter.addTile(tileHandle.getCrsCoordinate(),
-                                                      tileHandle.getZoomLevel(),
-                                                      tileHandle.getImage());
-                              ++tileCount;
+                               try
+                               {
+                                  tileStoreWriter.addTile(tileHandle.getCrsCoordinate(),
+                                                          tileHandle.getZoomLevel(),
+                                                          tileHandle.getImage());
+                                  ++tileCount;
+                               }
+                               catch(final TileStoreException | IllegalArgumentException ex)
+                               {
+                                  // TODO: report this somewhere else?
+                                  System.err.printf("Tile z: %d, x: %d, y: %d failed to get copied into the package: %s\n",
+                                                    tileHandle.getZoomLevel(),
+                                                    tileHandle.getColumn(),
+                                                    tileHandle.getRow(),
+                                                    ex.getMessage());
+                               }
                            }
-                           catch(final TileStoreException | IllegalArgumentException ex)
-                           {
-                              // TODO: report this somewhere else?
-                              System.err.printf("Tile z: %d, x: %d, y: %d failed to get copied into the package: %s\n",
-                                                tileHandle.getZoomLevel(),
-                                                tileHandle.getColumn(),
-                                                tileHandle.getRow(),
-                                                ex.getMessage());
-                           }
+                       }
+                       catch(final TileStoreException ex)
+                       {
+                           // TODO Auto-generated catch block
+                           ex.printStackTrace();
                        }
 
                        try

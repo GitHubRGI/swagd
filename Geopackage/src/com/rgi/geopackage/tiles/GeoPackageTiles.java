@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import utility.DatabaseUtility;
@@ -636,7 +637,9 @@ public class GeoPackageTiles
                                                                 return null;
                                                             }
                                                           })
-                                  .filter(Objects::nonNull);
+                                  .filter(Objects::nonNull)
+                                  .collect(Collectors.toList()) // By collecting here, we prevent the resultSet from being closed by the parent prepared statement being closed
+                                  .stream();
         }
     }
 
@@ -682,7 +685,9 @@ public class GeoPackageTiles
                                                                 return null;
                                                             }
                                                           })
-                                  .filter(Objects::nonNull);
+                                  .filter(Objects::nonNull)
+                                  .collect(Collectors.toList()) // By collecting here, we prevent the resultSet from being closed by the parent prepared statement being closed
+                                  .stream();
         }
     }
 
