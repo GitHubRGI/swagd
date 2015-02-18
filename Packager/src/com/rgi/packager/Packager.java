@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -29,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -42,11 +44,13 @@ import com.rgi.common.task.Settings;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.tile.store.tms.TmsReader;
+import com.rgi.common.util.Range;
 import com.rgi.geopackage.verification.ConformanceException;
 
 /**
@@ -80,7 +84,15 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
 		final File[] files = opts.getFiles(Setting.FileSelection);
 		// Create a new geopackage file
 		final File gpkgFile = new File("foo.gpkg");
-		if (files.length == 1) {
+
+		if(gpkgFile.exists())
+		{
+		    System.err.println(gpkgFile.getAbsolutePath() + " already exists, aborting");
+		    return;
+		}
+
+		if(files.length == 1)
+		{
 			try
 			{
                 // Figure out what the crs profile is, maybe from UI?
@@ -88,20 +100,37 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                 // Figure out what the file selection is and create a reader
 				final TmsReader tileStoreReader = new TmsReader(crsProfile, files[0].toPath());
 
-				//final int minZoomLevel = tileStoreReader.getZoomLevels().stream().min(Integer::compare).orElse(-1);
+				final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
 
+				if(zoomLevels.size() == 0)
+				{
+				    System.err.println("Input tile store contains no zoom levels");
+				    return;
+				}
 
+				final Range<Integer> zoomLevelRange = new Range<>(zoomLevels, Integer::compare);
+
+				final List<TileHandle> tiles = tileStoreReader.stream(zoomLevelRange.getMinimum()).collect(Collectors.toList());
+
+				final Range<Integer> columnRange = new Range<>(tiles, tile -> tile.getColumn(), Integer::compare);
+				final Range<Integer>    rowRange = new Range<>(tiles, tile -> tile.getRow(),    Integer::compare);
+
+				final int minZoomLevelMatrixHeight =    rowRange.getMaximum() -    rowRange.getMinimum() + 1;
+				final int minZoomLevelMatrixWidth  = columnRange.getMaximum() - columnRange.getMinimum() + 1;
 
                 // Create a new geopackage writer with things like table name and description
 				final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
-                                                                             crsProfile.getCoordinateReferenceSystem(),
-                                                                             "footiles",
-                                                                             "1",
-                                                                             "test tiles",
-                                                                             tileStoreReader.getBounds(),
-                                                                             tileStoreReader.getTileScheme(),
-                                                                             new MimeType("image/png"),
-                                                                             null);
+                                                                         crsProfile.getCoordinateReferenceSystem(),
+                                                                         "footiles",
+                                                                         "1",
+                                                                         "test tiles",
+                                                                         tileStoreReader.getBounds(),
+                                                                         new ZoomTimesTwo(zoomLevelRange.getMinimum(),
+                                                                                          zoomLevelRange.getMaximum(),
+                                                                                          minZoomLevelMatrixHeight,
+                                                                                          minZoomLevelMatrixWidth),
+                                                                         new MimeType("image/png"),
+                                                                         null);
                 // Create a new PackageJob task
 				final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(this.createPackageJob(tileStoreReader, gpkgWriter))));
 				jobWaiter.setDaemon(true);
@@ -139,7 +168,7 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                        }
 		               try
                        {
-                           System.out.printf("Packaging complete.  Copied %d of %d tiles.", tileCount, tileStoreReader.countTiles());
+                           System.out.printf("Packaging complete.  Packaged %d of %d tiles.", tileCount, tileStoreReader.countTiles());
                            this.fireFinished();
                        }
                        catch(final TileStoreException ex)
