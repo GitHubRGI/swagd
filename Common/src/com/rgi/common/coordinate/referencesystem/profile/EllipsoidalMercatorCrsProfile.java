@@ -191,6 +191,12 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
                                 metersToLon(coordinate.getX()));
     }
 
+    @Override
+    public int getPrecision()
+    {
+        return 2;
+    }
+
     /**
      * Converts a meters X coordinate of WGS 84
      * Ellipsoid World Mercator EPSG(3395) to its
@@ -358,10 +364,4 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     private final CoordinateReferenceSystem coordinateReferenceSystem;
 
     private final BoundingBox crsBounds;
-
-    @Override
-    public int requiredPercision()
-    {
-        return 2;
-    }
 }

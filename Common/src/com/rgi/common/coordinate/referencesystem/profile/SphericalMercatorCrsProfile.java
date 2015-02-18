@@ -87,7 +87,7 @@ public class SphericalMercatorCrsProfile extends ProportionalCrsProfile
     private final static CoordinateReferenceSystem CoordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
 
     @Override
-    public int requiredPercision()
+    public int getPrecision()
     {
         return 2;
     }

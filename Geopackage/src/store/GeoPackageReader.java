@@ -193,7 +193,12 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
 
         try
         {
-            return getImage(this.geoPackage.tiles().getTile(this.tileSet, coordinate, zoomLevel));
+            return getImage(this.geoPackage
+                                .tiles()
+                                .getTile(this.tileSet,
+                                         coordinate,
+                                         this.crsProfile.getPrecision(),
+                                         zoomLevel));
         }
         catch(final SQLException ex)
         {
