@@ -115,6 +115,11 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
                 throw new IllegalArgumentException("Coordinate reference system cannot be null");
             }
 
+            if(this.geoPackage.tiles().getTileSet(tileSetTableName) != null)
+            {
+                throw new IllegalArgumentException("Tile set table name must be unique in this GeoPackage");
+            }
+
             this.crsProfile = CrsProfileFactory.create(coordinateReferenceSystem);
 
             final SpatialReferenceSystem spatialReferenceSystem = this.geoPackage.core()
