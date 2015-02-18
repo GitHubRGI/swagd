@@ -85,6 +85,11 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                 final SphericalMercatorCrsProfile crsProfile = new SphericalMercatorCrsProfile();
                 // Figure out what the file selection is and create a reader
                 final TmsReader tileStoreReader = new TmsReader(crsProfile, files[0].toPath());
+
+                final int minZoomLevel = tileStoreReader.getZoomLevels().stream().min(Integer::compare).orElse(-1);
+
+
+
                 // Create a new geopackage writer with things like table name and description
                 final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
                                                                              crsProfile.getCoordinateReferenceSystem(),

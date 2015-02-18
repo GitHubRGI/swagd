@@ -232,6 +232,24 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
     }
 
     @Override
+    public Stream<TileHandle> stream(final int zoomLevel)
+    {
+        try
+        {
+            return this.geoPackage
+                       .tiles()
+                       .getTiles(this.tileSet, zoomLevel)
+                       .map(tileCoordinate -> this.getTileHandle(tileCoordinate.getZoomLevel(),
+                                                                 tileCoordinate.getColumn(),
+                                                                 tileCoordinate.getRow()));
+        }
+        catch(final SQLException ex)
+        {
+            return Stream.empty();
+        }
+    }
+
+    @Override
     public String getImageType()
     {
         final TileHandle tile = this.stream().findFirst().orElse(null);

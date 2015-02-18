@@ -154,6 +154,13 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
     }
 
     @Override
+    public Stream<TileHandle> stream(final int zoomLevel)
+    {
+        // TODO
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
         return this.crsProfile.getCoordinateReferenceSystem();
