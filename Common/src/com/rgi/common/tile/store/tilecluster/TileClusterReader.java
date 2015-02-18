@@ -174,7 +174,7 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
     }
 
     @Override
-    public Dimensions getImageDimensions()
+    public Dimensions<Integer> getImageDimensions()
     {
         // TODO
         throw new RuntimeException("Not implemented");

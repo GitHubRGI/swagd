@@ -142,7 +142,7 @@ public class TileStoreTileSource implements TileSource
     {
         try
         {
-            return (int)this.tileStore.getImageDimensions().getWidth();
+            return this.tileStore.getImageDimensions().getWidth();
         }
         catch(final TileStoreException ex)
         {

@@ -283,14 +283,14 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
     }
 
     @Override
-    public Dimensions getImageDimensions() throws TileStoreException
+    public Dimensions<Integer> getImageDimensions() throws TileStoreException
     {
         final TileHandle tile = this.stream().findFirst().orElse(null);
 
         if(tile != null)
         {
             final BufferedImage image = tile.getImage();
-            return new Dimensions(image.getHeight(), image.getWidth());
+            return new Dimensions<>(image.getHeight(), image.getWidth());
         }
 
         return null;

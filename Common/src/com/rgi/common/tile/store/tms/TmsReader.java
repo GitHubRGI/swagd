@@ -229,7 +229,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     }
 
     @Override
-    public Dimensions getImageDimensions()
+    public Dimensions<Integer> getImageDimensions()
     {
         try
         {
@@ -256,7 +256,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
 
                                                    if(image != null)
                                                    {
-                                                       return new Dimensions(image.getHeight(), image.getWidth());
+                                                       return new Dimensions<>(image.getHeight(), image.getWidth());
                                                    }
                                               }
                                            }

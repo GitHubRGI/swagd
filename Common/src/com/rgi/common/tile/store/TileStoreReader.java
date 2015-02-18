@@ -159,7 +159,7 @@ public interface TileStoreReader
      * store.
      * @throws TileStoreException
      */
-    public Dimensions getImageDimensions() throws TileStoreException;
+    public Dimensions<Integer> getImageDimensions() throws TileStoreException;
 
     /**
      * @return the Tile Scheme which can calculate the number of tiles at a particular zoom level
