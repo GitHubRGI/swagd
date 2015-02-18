@@ -22,9 +22,7 @@ import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -69,7 +67,7 @@ public class GeopackageTileStoreTest
     /**
      * Tests if geopackage reader will throw an IllegalArgumentException when
      * passing a null value for TileSet
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws ClassNotFoundException
@@ -104,7 +102,7 @@ public class GeopackageTileStoreTest
     /**
      * Tests if geopackage reader will throw an IllegalArgumentException when
      * passing a null value for TileSet
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws ClassNotFoundException

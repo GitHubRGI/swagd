@@ -49,7 +49,7 @@ import com.rgi.geopackage.verification.ConformanceException;
 
 /**
  * Package tiles from a tile store into a GeoPackage or append to an existing GeoPackage.
- * 
+ *
  * @author Steven D. Lander
  */
 public class Packager extends AbstractTask implements MonitorableTask, TaskMonitor
@@ -86,7 +86,7 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                 // Figure out what the file selection is and create a reader
                 final TmsReader tileStoreReader = new TmsReader(crsProfile, files[0].toPath());
 
-                final int minZoomLevel = tileStoreReader.getZoomLevels().stream().min(Integer::compare).orElse(-1);
+                //final int minZoomLevel = tileStoreReader.getZoomLevels().stream().min(Integer::compare).orElse(-1);
 
 
 
