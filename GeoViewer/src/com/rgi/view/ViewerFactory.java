@@ -15,46 +15,54 @@
  *  or write to the Free Software Foundation, Inc., 59 Temple Place -
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
-
 package com.rgi.view;
 
 import com.rgi.common.task.Task;
 import com.rgi.common.task.TaskFactory;
 
+/**
+ * A factory for the Viewer task.
+ * 
+ * @author lander
+ */
 public class ViewerFactory implements TaskFactory {
-  private static final ViewerFactory instance = new ViewerFactory();
-  public static final ViewerFactory getInstance() {
-    return instance;
-  }
+	private static final ViewerFactory instance = new ViewerFactory();
 
-  @Override
-  public Task createTask() {
-    return new Viewer(this);
-  }
+	/**
+	 * @return An instance of the Viewer factory.
+	 */
+	public static final ViewerFactory getInstance() {
+		return instance;
+	}
 
-  @Override
-  public boolean selectMultiple() {
-    return true;
-  }
+	@Override
+	public Task createTask() {
+		return new Viewer(this);
+	}
 
-  @Override
-  public String getFilePrompt() {
-    return "Select tile collection to be viewed...";
-  }
+	@Override
+	public boolean selectMultiple() {
+		return true;
+	}
 
-  @Override
-  public boolean selectFilesOnly() {
-    return false;
-  }
+	@Override
+	public String getFilePrompt() {
+		return "Select tile collection to be viewed...";
+	}
 
-  @Override
-  public boolean selectInput() {
-    // TODO Auto-generated method stub
-    return true;
-  }
+	@Override
+	public boolean selectFilesOnly() {
+		return false;
+	}
 
-  @Override
-  public boolean selectFoldersOnly() {
-    return false;
-  }
+	@Override
+	public boolean selectInput() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public boolean selectFoldersOnly() {
+		return false;
+	}
 }

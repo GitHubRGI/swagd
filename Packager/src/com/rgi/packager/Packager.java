@@ -50,8 +50,9 @@ import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.geopackage.verification.ConformanceException;
 
 /**
- * @author lander
- *
+ * Package tiles from a tile store into a GeoPackage or append to an existing GeoPackage.
+ * 
+ * @author Steven D. Lander
  */
 public class Packager extends AbstractTask implements MonitorableTask, TaskMonitor
 {
@@ -102,7 +103,7 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                                                                              new MimeType("image/png"),
                                                                              null);
                 // Create a new PackageJob task
-				final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Packager.createPackageJob(tileStoreReader, gpkgWriter))));
+				final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(this.createPackageJob(tileStoreReader, gpkgWriter))));
 				jobWaiter.setDaemon(true);
 				jobWaiter.start();
 			}
@@ -116,7 +117,7 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
 		}
 	}
 
-	private static Runnable createPackageJob(final TileStoreReader tileStoreReader,
+	private Runnable createPackageJob(final TileStoreReader tileStoreReader,
 			                                 final TileStoreWriter tileStoreWriter)
 	{
 		return () -> { int tileCount = 0;
@@ -139,6 +140,7 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
 		               try
                        {
                            System.out.printf("Packaging complete.  Copied %d of %d tiles.", tileCount, tileStoreReader.countTiles());
+                           this.fireFinished();
                        }
                        catch(final TileStoreException ex)
                        {

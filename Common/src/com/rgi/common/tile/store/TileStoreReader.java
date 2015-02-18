@@ -59,6 +59,12 @@ public interface TileStoreReader
      *
      * @return The approximate size of this tile store in bytes.
      * @throws TileStoreException
+     *             When an error occurs reading the from the file to calculate
+     *             the file's total space due to a SecurityException (If a
+     *             security manager has been installed and it denies
+     *             RuntimePermission("getFileSystemAttributes") or its
+     *             SecurityManager.checkRead(String) method denies read access
+     *             to the file), a TileStoreException is thrown
      */
     public long getByteSize() throws TileStoreException;
 

@@ -22,6 +22,12 @@ import javax.swing.SwingUtilities;
 
 import com.rgi.suite.ApplicationContext.Window;
 
+/**
+ * Entry point for the program.
+ * 
+ * @author Duff Means
+ * @author Steven D. Lander
+ */
 public class GeoSuite
 {
     private ApplicationContext context;
@@ -41,12 +47,16 @@ public class GeoSuite
                                          });
     }
 
-    private static void runHeadless(@SuppressWarnings("unused") String[] args)
+    private static void runHeadless(String[] args)
     {
         // TODO
     }
 
-    @SuppressWarnings("unused")
+    /**
+     * Code decision point for running in either GUI mode or headless (command-line) mode.
+     * @param args
+     * 
+     */
     public static void main(String[] args)
     {
         if(args != null && args.length > 0)

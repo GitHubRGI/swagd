@@ -19,10 +19,8 @@
 package com.rgi.suite;
 
 import java.awt.BorderLayout;
-import java.io.File;
 
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import com.rgi.common.task.MonitorableTask;
@@ -31,13 +29,21 @@ import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.Task;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.suite.ApplicationContext.Window;
-import com.rgi.view.MapViewWindow;
 import com.rgi.view.Viewer;
 
+/**
+ * A GUI Window representing user file selection.  This is used by multiple work flows.
+ * 
+ * @author Duff Means
+ * @author Steven D. Lander
+ */
 public class FileChooserWindow extends BaseWindow
 {
     private JFileChooser fileChooser;
 
+    /**
+     * @param context The parent application context.
+     */
     public FileChooserWindow(ApplicationContext context)
     {
         super(context);
@@ -75,16 +81,6 @@ public class FileChooserWindow extends BaseWindow
         this.contentPane.add(this.fileChooser, BorderLayout.CENTER);
         this.fileChooser.addActionListener(event -> { Task task = this.context.getActiveTask();
 
-//                                                      if(task != null)
-//                                                      {
-//                                                          final File defaultFilePath = new File(task.getFactory().getDefaultFilePath());
-//
-//                                                          if(defaultFilePath.canRead())
-//                                                          {
-//                                                              this.fileChooser.setCurrentDirectory(defaultFilePath);
-//                                                          }
-//                                                      }
-
                                                       if(JFileChooser.APPROVE_SELECTION.equals(event.getActionCommand()))
                                                       {
                                                           Settings settings = this.context.getSettings();
@@ -105,31 +101,10 @@ public class FileChooserWindow extends BaseWindow
                                                           }
                                                           else if(task != null && task instanceof Viewer)
                                                           {
-                                                              // Probe the chosen file or files for the type of tile store
-                                                              // Initialize a tile loader object on the file chosen
-                                                              // Create a new JFrame window with a MapViewWindow, pointing
-                                                              // to the appropriate loader
-                                                              String selections = settings.get(Setting.FileSelection);
-                                                              String[] fileSelections = selections.split(";");
-                                                              if(fileSelections.length == 1)
-                                                              {
-                                                                  // Single selection
-                                                                  File store = new File(fileSelections[0]);
-                                                                  try
-                                                                  {
-                                                                      JFrame frame = new MapViewWindow(store);
-                                                                      frame.pack();
-                                                                      frame.setVisible(true);
-                                                                  }
-                                                                  catch(Exception e)
-                                                                  {
-                                                                      e.printStackTrace();
-                                                                  }
-                                                              }
-                                                              else
-                                                              {
-                                                                  // Multi-selection
-                                                              }
+                                                        	  // The Viewer is a special case, since it is not a task
+                                                        	  // that needs to be monitored.  It can simply spawn a 
+                                                        	  // new window with the viewer.
+                                                        	  task.execute(this.context.getSettings());
                                                           }
                                                       }
                                                       else if(JFileChooser.CANCEL_SELECTION.equals(event.getActionCommand()))

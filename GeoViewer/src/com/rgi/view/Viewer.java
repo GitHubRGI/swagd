@@ -18,18 +18,49 @@
 
 package com.rgi.view;
 
+import java.io.File;
+
+import javax.swing.JFrame;
+
 import com.rgi.common.task.AbstractTask;
 import com.rgi.common.task.Settings;
 import com.rgi.common.task.TaskFactory;
+import com.rgi.common.task.Settings.Setting;
 
+/**
+ * View a tile store or stores within a map viewer.
+ * 
+ * @author lander
+ */
 public class Viewer extends AbstractTask {
-  public Viewer(TaskFactory factory) {
-    super(factory);
-  }
 
-    @Override
-    public void execute(Settings opts) {
-        // TODO
-        System.out.println(opts.toString());
-    }
+	/**
+	 * Constructor.
+	 * 
+	 * @param factory The ViewerFactory that spawned this viewer.
+	 */
+	public Viewer(TaskFactory factory) {
+		super(factory);
+	}
+
+	@Override
+	public void execute(Settings opts) {
+		// Probe the chosen file or files for the type of tile store
+		// Initialize a tile loader object on the file chosen
+		// Create a new JFrame window with a MapViewWindow, pointing
+		// to the appropriate loader
+		final File[] files = opts.getFiles(Setting.FileSelection);
+		if (files.length == 1) {
+			// Single selection
+			try {
+				JFrame frame = new MapViewWindow(files[0]);
+				frame.pack();
+				frame.setVisible(true);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			// Multi-selection
+		}
+	}
 }

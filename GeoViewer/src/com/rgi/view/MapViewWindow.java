@@ -50,13 +50,27 @@ import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.tiles.TileSet;
 
+/**
+ * View a supported tile store within a map viewer.
+ * 
+ * @author Steven D. Lander
+ */
 public class MapViewWindow extends JFrame implements JMapViewerEventListener
 {
+    /**
+     * @param location The file that should be viewed in the map viewer.
+     * @throws TileStoreException Thrown when the file is not supported for viewing.
+     */
     public MapViewWindow(final File location) throws TileStoreException
     {
         this("Tile Viewer", location);
     }
 
+    /**
+     * @param title Title of the map view window.  Usually a file name or tiles table name.
+     * @param location The file that should be viewed in the map viewer.
+     * @throws TileStoreException Thrown when the file is not supported for viewing.
+     */
     public MapViewWindow(final String title, final File location) throws TileStoreException
     {
         super(title);
