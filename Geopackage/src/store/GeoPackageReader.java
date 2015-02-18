@@ -219,7 +219,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
     }
 
     @Override
-    public Stream<TileHandle> stream()
+    public Stream<TileHandle> stream() throws TileStoreException
     {
         try
         {
@@ -232,12 +232,12 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
         }
         catch(final SQLException ex)
         {
-            return Stream.empty();
+            throw new TileStoreException(ex);
         }
     }
 
     @Override
-    public Stream<TileHandle> stream(final int zoomLevel)
+    public Stream<TileHandle> stream(final int zoomLevel) throws TileStoreException
     {
         try
         {
@@ -250,39 +250,32 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
         }
         catch(final SQLException ex)
         {
-            return Stream.empty();
+            throw new TileStoreException(ex);
         }
     }
 
     @Override
-    public String getImageType()
+    public String getImageType() throws TileStoreException
     {
         final TileHandle tile = this.stream().findFirst().orElse(null);
 
         if(tile != null)
         {
-            try
+            final BufferedImage image = tile.getImage();
+            if(image != null)
             {
-                final BufferedImage image = tile.getImage();
-                if(image != null)
+                final Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(image);
+
+                if(imageReaders.hasNext())
                 {
-                    final Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(image);
+                    final ImageReader imageReader = imageReaders.next();
 
-                    if(imageReaders.hasNext())
+                    final String[] names = imageReader.getOriginatingProvider().getFormatNames();
+                    if(names != null && names.length > 0)
                     {
-                        final ImageReader imageReader = imageReaders.next();
-
-                        final String[] names = imageReader.getOriginatingProvider().getFormatNames();
-                        if(names != null && names.length > 0)
-                        {
-                            return names[0];
-                        }
+                        return names[0];
                     }
                 }
-            }
-            catch(final TileStoreException ex)
-            {
-                // Fall through to return null
             }
         }
 
@@ -290,24 +283,17 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
     }
 
     @Override
-    public Dimensions getImageDimensions()
+    public Dimensions getImageDimensions() throws TileStoreException
     {
         final TileHandle tile = this.stream().findFirst().orElse(null);
 
-        if(tile == null)
-        {
-            return null;
-        }
-
-        try
+        if(tile != null)
         {
             final BufferedImage image = tile.getImage();
             return new Dimensions(image.getHeight(), image.getWidth());
         }
-        catch(final TileStoreException ex)
-        {
-            return null;
-        }
+
+        return null;
     }
 
     @Override

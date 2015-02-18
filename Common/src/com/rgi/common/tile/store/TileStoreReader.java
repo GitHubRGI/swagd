@@ -113,8 +113,9 @@ public interface TileStoreReader
      * missing entries will not be represented by this stream.
      *
      * @return Returns a {@link Stream} of {@link TileHandle}s
+     * @throws TileStoreException
      */
-    public Stream<TileHandle> stream();
+    public Stream<TileHandle> stream() throws TileStoreException;
 
 
     /**
@@ -127,8 +128,9 @@ public interface TileStoreReader
      * @param zoomLevel
      *             The zoom level of the requested tiles
      * @return Returns a {@link Stream} of {@link TileHandle}s
+     * @throws TileStoreException
      */
-    public Stream<TileHandle> stream(final int zoomLevel);
+    public Stream<TileHandle> stream(final int zoomLevel) throws TileStoreException;
 
     /**
      * @return returns the tile store's coordinate reference system
@@ -144,19 +146,20 @@ public interface TileStoreReader
      * @return Returns the best guess for the image type (MimeType subtype).
      * Tile stores need not necessarily contain a single image type, so the
      * store's implementation will return what it considers the most suitable.
-     * This  function may return null if there are no tiles in the store, or if
-     * there is an error.
+     * This  function may return null if there are no tiles in the store.
+     * @throws TileStoreException
      */
-    public String getImageType();
+    public String getImageType() throws TileStoreException;
 
     /**
      * @return Returns the best guess for the pixel dimensions of the tile
      * store's images. Tile stores may contain images of differing sizes, so
      * the store's implementation will return what it considers the most
      * suitable. This function may return null if there are no tiles in the
-     * store, or if there is an error.
+     * store.
+     * @throws TileStoreException
      */
-    public Dimensions getImageDimensions();
+    public Dimensions getImageDimensions() throws TileStoreException;
 
     /**
      * @return the Tile Scheme which can calculate the number of tiles at a particular zoom level
