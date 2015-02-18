@@ -83,7 +83,7 @@ public interface TileStoreReader
      * @param coordinate
      *            Geographic coordinate that corresponds to the requested tile
      * @param zoomLevel
-     *            The zoom level of the tile.
+     *            The zoom level of the tile
      * @return A buffered image, or null if the tile store has no tile data for the specified coordinate
      * @throws TileStoreException
      *             A TileStoreException occurs if an error occurs during tile retrieval.
@@ -109,6 +109,20 @@ public interface TileStoreReader
      * @return Returns a {@link Stream} of {@link TileHandle}s
      */
     public Stream<TileHandle> stream();
+
+
+    /**
+     * Gets a stream of every tile in the tile store for a given zoom level.
+     * The zoom level need not contain the maximum number of tiles
+     * (rows * columns) so missing entries will not be represented by this
+     * stream.  If there are no tiles at this zoom level, an empty stream will
+     * be returned.
+     *
+     * @param zoomLevel
+     *             The zoom level of the requested tiles
+     * @return Returns a {@link Stream} of {@link TileHandle}s
+     */
+    public Stream<TileHandle> stream(final int zoomLevel);
 
     /**
      * @return returns the tile store's coordinate reference system

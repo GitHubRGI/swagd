@@ -173,18 +173,13 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     @Override
     public Stream<TileHandle> stream()
     {
-        try
-        {
-            return Files.walk(TmsReader.this.location)
-                        .map(path -> this.getTileHandle(path))
-                        .filter(Objects::nonNull);
-        }
-        catch(final IOException ex)
-        {
-            // Do nothing and fall through to return an empty stream
-        }
+        return this.stream(this.location);
+    }
 
-        return Stream.empty();
+    @Override
+    public Stream<TileHandle> stream(final int zoomLevel)
+    {
+        return this.stream(tmsPath(this.location, zoomLevel));
     }
 
     @Override
@@ -537,6 +532,22 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                      .filter(file -> file.isFile() &&
                                                      withoutExtension(file).equals(String.valueOf(row)) &&
                                                      fileIsImage(file));
+    }
+
+    private Stream<TileHandle> stream(final Path startLocation)
+    {
+        try
+        {
+            return Files.walk(startLocation)
+                        .map(path -> this.getTileHandle(path))
+                        .filter(Objects::nonNull);
+        }
+        catch(final IOException ex)
+        {
+            // Do nothing and fall through to return an empty stream
+        }
+
+        return Stream.empty();
     }
 
     private static boolean fileIsImage(final File file)

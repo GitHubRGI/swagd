@@ -102,7 +102,7 @@ public class GeoPackageTiles
      *             {@link DatabaseUtility#tableOrViewExists(Connection, String)
      *             tableOrViewExists} or if the database cannot rollback the
      *             changes after a different exception throws will throw an SQLException
-     * 
+     *
      */
     public TileSet addTileSet(final String                 tableName,
                               final String                 identifier,
@@ -191,7 +191,7 @@ public class GeoPackageTiles
      * @param tileSet
      *             A handle to a set of tiles
      * @return Returns all of the zoom levels that apply for tileSet
-     * @throws SQLException 
+     * @throws SQLException
      *              SQLException thrown by automatic close() invocation on preparedStatement or various other SQLExceptions
      */
     public Set<Integer> getTileZoomLevels(final TileSet tileSet) throws SQLException
@@ -634,6 +634,52 @@ public class GeoPackageTiles
     }
 
     /**
+     * Gets a stream of every tile in the tile store for a given zoom level.
+     * The zoom level need not  have an entry for every possible position in
+     * its respective tile matrices. If there are no tiles at this zoom level,
+     * an empty stream will be returned.
+     *
+     * @param tileSet
+     *            Handle to the tile set that the requested tiles should belong
+     * @param zoomLevel
+     *            The zoom level of the requested tiles
+     * @return Returns a {@link Stream} of {@link RelativeTileCoordinate}s
+     *         representing every tile that the specific tile set contains.
+     * @throws SQLException
+     *             when SQLException thrown by automatic close() invocation on
+     *             preparedStatement or if other SQLExceptions occur
+     */
+    public Stream<RelativeTileCoordinate> getTiles(final TileSet tileSet, final int zoomLevel) throws SQLException
+    {
+        if(tileSet == null)
+        {
+            throw new IllegalArgumentException("Tile set cannot be null");
+        }
+
+        final String tileQuery = String.format("SELECT %s, %s FROM %s WHERE zoom_level = ?;",
+                                               "tile_column",
+                                               "tile_row",
+                                               tileSet.getTableName());
+
+        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
+        {
+            preparedStatement.setInt(1, zoomLevel);
+
+            return ResultSetStream.getStream(preparedStatement.executeQuery(),
+                                             resultSet -> { try
+                                                            {
+                                                                return new RelativeTileCoordinate(resultSet.getInt(2), resultSet.getInt(1), zoomLevel);
+                                                            }
+                                                            catch(final Exception ex)
+                                                            {
+                                                                return null;
+                                                            }
+                                                          })
+                                  .filter(Objects::nonNull);
+        }
+    }
+
+    /**
      * Gets a tile
      *
      * @param tileSet
@@ -802,7 +848,7 @@ public class GeoPackageTiles
      */
     private void addTileMatrixSetNoCommit(final String                 tableName,
                                           final BoundingBox            boundingBox,
-                                          final SpatialReferenceSystem spatialReferenceSystem) throws SQLException 
+                                          final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
     {
         if(tableName == null || tableName.isEmpty())
         {
