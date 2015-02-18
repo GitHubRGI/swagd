@@ -34,8 +34,9 @@ import com.rgi.view.ViewerFactory;
 
 /**
  * Create the main window containing the work flow buttons.
- * @author Duff Means
  * 
+ * @author Duff Means
+ * @author Steven D. Lander
  */
 public class MainWindow extends BaseWindow
 {

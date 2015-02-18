@@ -34,6 +34,7 @@ import com.rgi.view.Viewer;
 /**
  * A GUI Window representing user file selection.  This is used by multiple work flows.
  * 
+ * @author Duff Means
  * @author Steven D. Lander
  */
 public class FileChooserWindow extends BaseWindow

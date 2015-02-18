@@ -24,8 +24,9 @@ import com.rgi.suite.ApplicationContext.Window;
 
 /**
  * Entry point for the program.
- * @author lander
- *
+ * 
+ * @author Duff Means
+ * @author Steven D. Lander
  */
 public class GeoSuite
 {
