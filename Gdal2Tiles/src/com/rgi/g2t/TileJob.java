@@ -124,15 +124,15 @@ public class TileJob implements Runnable
 
         final GeoTransformation geoTransform = new GeoTransformation(dataset.GetGeoTransform());
 
-        final Dimensions outputDatasetRasterDimensions = new Dimensions(dataset.getRasterYSize(),
-                                                                        dataset.getRasterXSize());
+        final Dimensions<Integer> rasterDimensions = new Dimensions<>(dataset.getRasterYSize(),
+                                                                      dataset.getRasterXSize());
 
         final BoundingBox imageCrsBounds = geoTransform.getBounds(dataset);
 
         final int maxZoom = this.getMaxZoom(this.crsProfile.getBounds(), geoTransform.getPixelDimensions());
 
         final int minZoom = this.getMinZoom(geoTransform,
-                                            outputDatasetRasterDimensions,
+                                            rasterDimensions,
                                             imageCrsBounds);
 
         final BufferedImage source = GdalUtility.convert(dataset);
@@ -368,7 +368,7 @@ public class TileJob implements Runnable
         return wellKnownText;
     }
 
-    private int getMaxZoom(final BoundingBox world, final Dimensions pixelDimensions)
+    private int getMaxZoom(final BoundingBox world, final Dimensions<Double> pixelDimensions)
     {
         final int yMaxZoom = getMaxZoom(world.getHeight(), pixelDimensions.getHeight(), (zoomLevel -> TileJob.this.tileScheme.dimensions(zoomLevel).getHeight()));
         final int xMaxZoom = getMaxZoom(world.getWidth(),  pixelDimensions.getWidth(),  (zoomLevel -> TileJob.this.tileScheme.dimensions(zoomLevel).getWidth()));
@@ -426,9 +426,9 @@ public class TileJob implements Runnable
                                                                : zoomCeiling;
     }
 
-    private int getMinZoom(final GeoTransformation geoTransformation,
-                           final Dimensions        rasterDimensions,
-                           final BoundingBox       imageCrsBounds)
+    private int getMinZoom(final GeoTransformation   geoTransformation,
+                           final Dimensions<Integer> rasterDimensions,
+                           final BoundingBox         imageCrsBounds)
     {
         final BoundingBox worldBounds = this.crsProfile.getBounds();
 
