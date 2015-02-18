@@ -85,8 +85,10 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
 
         if(gpkgFile.exists())
         {
-            System.err.println(gpkgFile.getAbsolutePath() + " already exists, aborting");
-            return;
+            if(!gpkgFile.delete())
+            {
+                this.fireError(new Exception("Unable to overwrite existing geopackage file: " + gpkgFile.getAbsolutePath()));
+            }
         }
 
         if(files.length == 1)
@@ -134,18 +136,18 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                 jobWaiter.setDaemon(true);
                 jobWaiter.start();
             }
-            catch(ClassNotFoundException | IOException | SQLException | ConformanceException | TileStoreException | MimeTypeParseException ex1)
+            catch(ClassNotFoundException | IOException | SQLException | ConformanceException | TileStoreException | MimeTypeParseException ex)
             {
-                // TODO: Handle exceptions better here for all trys
-                ex1.printStackTrace();
+                this.fireError(ex);
             }
-        } else {
-            // TODO: Handle more than one file passed to packager
+        } else
+        {
+            this.fireError(new Exception("More than one file was specified for packaging"));
         }
     }
 
     private Runnable createPackageJob(final TileStoreReader tileStoreReader,
-                                             final TileStoreWriter tileStoreWriter)
+                                      final TileStoreWriter tileStoreWriter)
     {
         return () -> { int tileCount = 0;
 
@@ -167,11 +169,14 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                        try
                        {
                            System.out.printf("Packaging complete.  Packaged %d of %d tiles.", tileCount, tileStoreReader.countTiles());
-                           this.fireFinished();
                        }
                        catch(final TileStoreException ex)
                        {
                            System.out.printf("Packaging complete.  Copied %d tiles.", tileCount);
+                       }
+                       finally
+                       {
+                           this.fireFinished();
                        }
                      };
     }
