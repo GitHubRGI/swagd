@@ -21,9 +21,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -47,7 +49,7 @@ import com.rgi.geopackage.verification.ConformanceException;
  * @author Jenifer Cochran
  *
  */
-@SuppressWarnings("static-method")
+@SuppressWarnings({"static-method", "javadoc"})
 public class GeoPackageMetadataAPITest
 {
 

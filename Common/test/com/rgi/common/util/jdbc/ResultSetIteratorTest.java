@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.mockrunner.mock.jdbc.MockResultSet;
 
-@SuppressWarnings("static-method")
+@SuppressWarnings({"static-method", "javadoc"})
 public class ResultSetIteratorTest<T>
 {
 

@@ -33,9 +33,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Random;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.GeoPackage.OpenMode;
@@ -48,11 +46,9 @@ import com.rgi.geopackage.verification.ConformanceException;
  * @author Jenifer Cochran
  *
  */
-@SuppressWarnings("static-method")
+@SuppressWarnings({"static-method", "javadoc"})
 public class GeoPackageCoreAPITest
 {
-    @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
 
     /**Tests if the GeoPackage class when accepting a file {using the method create(File file)}, the file is the same when using the getFile() method.
@@ -60,7 +56,8 @@ public class GeoPackageCoreAPITest
     * @throws SQLException
     * @throws Exception
     */
-   @Test
+   
+@Test
    public void createMethodSettingFile() throws SQLException, Exception
    {
        final File testFile = this.getRandomFile(3);
