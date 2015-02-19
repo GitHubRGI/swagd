@@ -108,27 +108,31 @@ public interface TileStoreReader
     public Set<Integer> getZoomLevels() throws TileStoreException;
 
     /**
-     * Gets a stream of every tile in the tile store.  Tile stores need not
+     * Gets a stream of every tile in the tile store. Tile stores need not
      * contain the maximum number of tiles (rows * columns, per zoom level) so
      * missing entries will not be represented by this stream.
      *
      * @return Returns a {@link Stream} of {@link TileHandle}s
      * @throws TileStoreException
+     *             A TileStoreException is thrown when unable to build a {@link Stream}
+     *             of  {@link TileHandle}s based on the File Path
      */
     public Stream<TileHandle> stream() throws TileStoreException;
 
 
     /**
-     * Gets a stream of every tile in the tile store for a given zoom level.
-     * The zoom level need not contain the maximum number of tiles
-     * (rows * columns) so missing entries will not be represented by this
-     * stream.  If there are no tiles at this zoom level, an empty stream will
-     * be returned.
+     * Gets a stream of every tile in the tile store for a given zoom level. The
+     * zoom level need not contain the maximum number of tiles (rows * columns)
+     * so missing entries will not be represented by this stream. If there are
+     * no tiles at this zoom level, an empty stream will be returned.
      *
      * @param zoomLevel
-     *             The zoom level of the requested tiles
+     *            The zoom level of the requested tiles
      * @return Returns a {@link Stream} of {@link TileHandle}s
      * @throws TileStoreException
+     *             A TileStoreException is thrown when unable to build a
+     *             {@link Stream} of {@link TileHandle}s based on the given File
+     *             Path
      */
     public Stream<TileHandle> stream(final int zoomLevel) throws TileStoreException;
 
@@ -144,20 +148,28 @@ public interface TileStoreReader
 
     /**
      * @return Returns the best guess for the image type (MimeType subtype).
-     * Tile stores need not necessarily contain a single image type, so the
-     * store's implementation will return what it considers the most suitable.
-     * This  function may return null if there are no tiles in the store.
+     *         Tile stores need not necessarily contain a single image type, so
+     *         the store's implementation will return what it considers the most
+     *         suitable. This function may return null if there are no tiles in
+     *         the store.
      * @throws TileStoreException
+     *             A TileStoreException is thrown when the method
+     *             {@link #stream()} throws an Exception or if unable to
+     *             retrieve the specified tile.
      */
-    public String getImageType() throws TileStoreException;
+    public String getImageType() throws TileStoreException ;
 
     /**
      * @return Returns the best guess for the pixel dimensions of the tile
-     * store's images. Tile stores may contain images of differing sizes, so
-     * the store's implementation will return what it considers the most
-     * suitable. This function may return null if there are no tiles in the
-     * store.
+     *         store's images. Tile stores may contain images of differing
+     *         sizes, so the store's implementation will return what it
+     *         considers the most suitable. This function may return null if
+     *         there are no tiles in the store.
      * @throws TileStoreException
+     *             A TileStoreException is thrown if the method
+     *             {@link #stream()} throws or if unable to get the specified
+     *             tile.
+     * 
      */
     public Dimensions<Integer> getImageDimensions() throws TileStoreException;
 
