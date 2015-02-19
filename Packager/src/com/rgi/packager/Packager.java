@@ -218,11 +218,11 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
 
 		               try
                        {
-                           System.out.printf("Packaging complete.  Packaged %d of %d tiles.", tileCount, tileStoreReader.countTiles());
+                           System.out.printf("Packaged %d of %d tiles.\n", tileCount, tileStoreReader.countTiles());
                        }
                        catch(final TileStoreException ex)
                        {
-                           System.out.printf("Packaging complete.  Copied %d tiles.", tileCount);
+                           System.out.printf("Copied %d tiles.\n", tileCount);
                        }
 		               finally
 		               {

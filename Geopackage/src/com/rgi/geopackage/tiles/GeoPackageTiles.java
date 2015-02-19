@@ -1054,7 +1054,7 @@ public class GeoPackageTiles
         final SpatialReferenceSystem    srs = this.core.getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
 
         if(!crs.getAuthority().equalsIgnoreCase(srs.getOrganization()) ||
-           crs.getIdentifier() != srs.getIdentifier())
+           crs.getIdentifier() != srs.getOrganizationSrsId())
         {
             throw new IllegalArgumentException("Coordinate transformation is not currently supported.  The incoming spatial reference system must match that of the tile set's");
         }
@@ -1180,38 +1180,12 @@ public class GeoPackageTiles
      */
     private static BoundingBox roundBounds(final BoundingBox bounds, final int precision)
     {
-        return new BoundingBox(roundDownMin(bounds.getMinY(), precision),
-                               roundDownMin(bounds.getMinX(), precision),
-                               roundUpMax  (bounds.getMaxY(), precision),
-                               roundUpMax  (bounds.getMaxX(), precision));
-    }
+        final double divisor = Math.pow(10, precision);
 
-    /**
-     * Rounds the number to level of precision need for the appropriate level
-     * of accuracy.  It rounds down that the minimum bound can be more
-     * inclusive.
-     *
-     * @param number number needed to be rounded
-     * @return the number of decimal places the number needs to be rounded to
-     */
-    private static double roundDownMin(final double number, final int percision)
-    {
-        final double divisor = Math.pow(10, percision);
-
-        return Math.floor(number*divisor)/divisor;
-    }
-
-    /**
-     * Rounds the number to level of precision need for the appropriate level of accuracy.  It rounds
-     * Up that the minimum bound can be more inclusive
-     * @param number number needed to be rounded
-     * @return the number of decimal places the number needs to be rounded to
-     */
-    private static double roundUpMax(final double number, final int percision)
-    {
-        final double divisor = Math.pow(10, percision);
-
-        return Math.ceil(number*divisor)/divisor;
+        return new BoundingBox(Math.floor(bounds.getMinY()*divisor) / divisor,
+                               Math.floor(bounds.getMinX()*divisor) / divisor,
+                               Math.ceil (bounds.getMaxY()*divisor) / divisor,
+                               Math.ceil (bounds.getMaxX()*divisor) / divisor);
     }
 
     private final GeoPackageCore core;
