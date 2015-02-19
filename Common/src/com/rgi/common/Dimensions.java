@@ -3,24 +3,24 @@ package com.rgi.common;
 /**
  * @author Luke Lambert
  *
+ * @param <T> extends Number
  */
-
-public class Dimensions
+public class Dimensions <T extends Number>
 {
     /**
      * @param height the height
      * @param width the width
      */
-    public Dimensions(final double height, final double width)
+    public Dimensions(final T height, final T width)
     {
         this.height = height;
-        this.width = width;
+        this.width  = width;
     }
 
     /**
      * @return the height
      */
-    public double getHeight()
+    public T getHeight()
     {
         return this.height;
     }
@@ -28,11 +28,11 @@ public class Dimensions
     /**
      * @return the width
      */
-    public double getWidth()
+    public T getWidth()
     {
         return this.width;
     }
 
-    private final double height;
-    private final double width;
+    private final T height;
+    private final T width;
 }

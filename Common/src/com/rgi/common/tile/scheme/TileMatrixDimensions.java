@@ -62,13 +62,13 @@ public class TileMatrixDimensions
     {
         return this.width;
     }
-    
+
     /**
      * @param row  the row
      * @param column the column
-     * @return Returns true if the row and column are within the Tile Matrix Dimensions
+     * @return Returns true if the row and column are within the matrix dimensions
      */
-    public boolean contains(int row, int column)
+    public boolean contains(final int row, final int column)
     {
         return (row    >= 0 && row    <= (this.height-1)) &&
                (column >= 0 && column <= (this.width-1));

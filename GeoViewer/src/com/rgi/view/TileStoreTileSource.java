@@ -29,7 +29,7 @@ import com.rgi.common.tile.store.TileStoreReader;
 
 /**
  * Connect jmapviewer code with SWAGD code for viewing tile stores in a map viewer.
- * 
+ *
  * @author Steven D. Lander
  */
 public class TileStoreTileSource implements TileSource
@@ -126,13 +126,29 @@ public class TileStoreTileSource implements TileSource
     @Override
     public String getTileType()
     {
-        return this.tileStore.getImageType();
+        try
+        {
+            return this.tileStore.getImageType();
+        }
+        catch(final TileStoreException ex)
+        {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     @Override
     public int getTileSize()
     {
-        return (int)this.tileStore.getImageDimensions().getWidth();
+        try
+        {
+            return this.tileStore.getImageDimensions().getWidth();
+        }
+        catch(final TileStoreException ex)
+        {
+            ex.printStackTrace();
+            return 0;
+        }
     }
 
     @Override

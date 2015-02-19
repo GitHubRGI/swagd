@@ -233,6 +233,7 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
                 .addTile(this.tileSet,
                          this.getTileMatrix(zoomLevel, image.getHeight(), image.getWidth()),
                          coordinate,
+                         this.crsProfile.getPrecision(),
                          zoomLevel,
                          ImageUtility.bufferedImageToBytes(image, this.imageWriter, this.imageWriteOptions));
         }
