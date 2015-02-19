@@ -42,8 +42,8 @@ public class MainWindow extends BaseWindow
 {
     /**
      * Constructor.
-     * @param context The GUI app context.
      * 
+     * @param context The GUI app context.
      */
     public MainWindow(ApplicationContext context)
     {

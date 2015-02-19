@@ -94,6 +94,23 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
             }
         }
 
+    @Override
+    public void execute(final Settings opts)
+    {
+        // TODO: Create new geopackage or append to existing one
+        // Get file/directory from settings
+        final File[] files = opts.getFiles(Setting.FileSelection);
+        // Create a new geopackage file
+        final File gpkgFile = new File(opts.get(Setting.OutputFileName));
+
+        if(gpkgFile.exists())
+        {
+            if(!gpkgFile.delete())
+            {
+                this.fireError(new Exception("Unable to overwrite existing geopackage file: " + gpkgFile.getAbsolutePath()));
+            }
+        }
+
         if(files.length == 1)
         {
             try

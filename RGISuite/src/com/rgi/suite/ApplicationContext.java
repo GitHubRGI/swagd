@@ -37,20 +37,58 @@ import javax.swing.WindowConstants;
 import com.rgi.common.task.Settings;
 import com.rgi.common.task.Task;
 
+/**
+ * Extend JFrame functionality for UI elements of SWAGD.
+ * 
+ * @author Duff Means
+ * @author Steven D. Lander
+ */
 public class ApplicationContext extends JFrame
 {
 
     private static final long serialVersionUID = -4996528794673998019L;
     private Task              task;
 
+    /**
+     * Enumerate UI windows.
+     * 
+     * @author Duff Means
+     * @author Steven D. Lander
+     */
     public enum Window
     {
-        MAIN,
+        /**
+         * com.rgi.suite.DoneWindow.java
+         */
+        DONE,
+        /**
+         * com.rgi.suite.FileChooserWindow.java
+         */
         FILECHOOSER,
+        /**
+         * com.rgi.suite.MainWindow.java
+         */
+        MAIN,
+        /**
+         * com.rgi.suite.PackageInput.java
+         */
+        PACKAGEINPUT,
+        /**
+         * com.rgi.suite.PackageOutput.java
+         */
+        PACKAGEOUTPUT,
+        /**
+         * com.rgi.suite.ProgressWindow.java
+         */
         PROGRESS,
+        /**
+         * com.rgi.suite.SettingsWindow.java
+         */
         SETTINGS,
-        WINDOWERROR,
-        DONE;
+        /**
+         * com.rgi.suite.ErrorWindow.java
+         */
+        WINDOWERROR;
     }
 
     private Settings   settings;
@@ -62,6 +100,9 @@ public class ApplicationContext extends JFrame
 
     private Map<Window, ApplicationWindow> windows = new HashMap<>();
 
+    /**
+     * Constructor.
+     */
     public ApplicationContext()
     {
         this.contentPanel = new JPanel(new CardLayout());
@@ -105,6 +146,9 @@ public class ApplicationContext extends JFrame
         });
     }
 
+    /**
+     * Set this JFrame to visible.
+     */
     public void go()
     {
         this.setVisible(true);
@@ -118,26 +162,51 @@ public class ApplicationContext extends JFrame
         this.navPanel    .add(windowContent.getNavigationPane(), window.name());
     }
 
+    /**
+     * Return settings for this context.
+     * 
+     * @return A list of settings relevant to this UI flow.
+     */
     public Settings getSettings()
     {
         return this.settings;
     }
 
+    /**
+     * Return properties for this context.
+     * 
+     * @return A Properties object containing info relevant to this current context.
+     */
     public Properties getProperties()
     {
         return this.props;
     }
 
+    /**
+     * Set an error/exception for this context.
+     * 
+     * @param error The error to be set for this context.
+     */
     public void setError(Exception error)
     {
         this.error = error;
     }
 
+    /**
+     * Get the error set for this context.
+     * 
+     * @return The current error set for this context.
+     */
     public Exception getError()
     {
         return this.error;
     }
 
+    /**
+     * Transition the GUI to 
+     * 
+     * @param window The UI window that the GUI should transition to.
+     */
     public void transitionTo(Window window)
     {
         ApplicationWindow windowContent = this.windows.get(window);
