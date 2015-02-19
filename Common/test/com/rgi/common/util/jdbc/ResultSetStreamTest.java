@@ -28,9 +28,10 @@ import org.junit.Test;
 
 import com.mockrunner.mock.jdbc.MockResultSet;
 
-public class ResultSetStreamTest {
+@SuppressWarnings({"static-method", "javadoc"})
+public class ResultSetStreamTest
+{
 
-    @SuppressWarnings("static-method")
     @Test
     public void ResultSetStreamGetStream() throws SQLException
     {

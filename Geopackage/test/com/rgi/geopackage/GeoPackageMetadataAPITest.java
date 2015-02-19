@@ -47,7 +47,7 @@ import com.rgi.geopackage.verification.ConformanceException;
  * @author Jenifer Cochran
  *
  */
-@SuppressWarnings("static-method")
+@SuppressWarnings({"static-method", "javadoc"})
 public class GeoPackageMetadataAPITest
 {
 

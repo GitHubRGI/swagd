@@ -37,7 +37,9 @@ import javax.activation.MimeTypeParseException;
 
 import store.GeoPackageWriter;
 
+import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.Utility;
 import com.rgi.common.task.AbstractTask;
 import com.rgi.common.task.MonitorableTask;
 import com.rgi.common.task.Settings;
@@ -165,19 +167,26 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                            {
                                try
                                {
-                                  tileStoreWriter.addTile(tileHandle.getCrsCoordinate(),
-                                                          tileHandle.getZoomLevel(),
-                                                          tileHandle.getImage());
-                                  ++tileCount;
+                                   if(!tileStoreReader.getBounds().contains(tileHandle.getCrsCoordinate()))
+                                   {
+                                       System.out.println("wtf");
+                                   }
+
+                                   final CrsCoordinate crsCoordinate = new CrsCoordinate(Utility.boundsCorner(tileHandle.getBounds(), tileStoreWriter.getTileOrigin()), tileStoreReader.getCoordinateReferenceSystem());
+
+                                   tileStoreWriter.addTile(crsCoordinate,
+                                                           tileHandle.getZoomLevel(),
+                                                           tileHandle.getImage());
+                                   ++tileCount;
                                }
                                catch(final TileStoreException | IllegalArgumentException ex)
                                {
-                                  // TODO: report this somewhere else?
-                                  System.err.printf("Tile z: %d, x: %d, y: %d failed to get copied into the package: %s\n",
-                                                    tileHandle.getZoomLevel(),
-                                                    tileHandle.getColumn(),
-                                                    tileHandle.getRow(),
-                                                    ex.getMessage());
+                                   // TODO: report this somewhere else?
+                                   System.err.printf("Tile z: %d, x: %d, y: %d failed to get copied into the package: %s\n",
+                                                     tileHandle.getZoomLevel(),
+                                                     tileHandle.getColumn(),
+                                                     tileHandle.getRow(),
+                                                     ex.getMessage());
                                }
                            }
                        }

@@ -11,16 +11,16 @@ import org.junit.Test;
 
 import com.mockrunner.mock.jdbc.MockResultSet;
 
-@SuppressWarnings("static-method")
+@SuppressWarnings({ "static-method", "javadoc" })
 public class ResultSetIteratorTest<T>
 {
 
     @Test(expected = IllegalArgumentException.class)
     public void ResultSetIteratorConstructorNullResult()
     {
-        Function<ResultSet, T> mappingFunction = null;
+        final Function<ResultSet, T> mappingFunction = null;
         @SuppressWarnings("unused")
-        ResultSetIterator<T> rsi = new ResultSetIterator<>(null, mappingFunction);
+        final ResultSetIterator<T> rsi = new ResultSetIterator<>(null, mappingFunction);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -30,7 +30,7 @@ public class ResultSetIteratorTest<T>
         {
             rs.addColumn("columnA", new Integer[] { 1 });
             @SuppressWarnings("unused")
-            ResultSetIterator<?> rsi = new ResultSetIterator<>(rs, null);
+            final ResultSetIterator<?> rsi = new ResultSetIterator<>(rs, null);
         }
     }
 
@@ -41,7 +41,7 @@ public class ResultSetIteratorTest<T>
         {
             resultSet.addColumn("columnA", new Integer[] { 1 });
             @SuppressWarnings("unused")
-            ResultSetIterator<?> rsi = new ResultSetIterator<>(resultSet, rs -> rs);
+            final ResultSetIterator<?> rsi = new ResultSetIterator<>(resultSet, rs -> rs);
             assertFalse(resultSet.isClosed());
         }
     }
@@ -52,7 +52,7 @@ public class ResultSetIteratorTest<T>
         try(MockResultSet resultSet = new MockResultSet("myMock"))
         {
             resultSet.addColumn("columnA", new Integer[] { 1 });
-            ResultSetIterator<?> rsi = new ResultSetIterator<>(resultSet, rs -> rs);
+            final ResultSetIterator<?> rsi = new ResultSetIterator<>(resultSet, rs -> rs);
             assertTrue(rsi.hasNext());
         }
     }
@@ -62,7 +62,7 @@ public class ResultSetIteratorTest<T>
     {
         try(MockResultSet resultSet = new MockResultSet("myMock"))
         {
-            ResultSetIterator<?> rsi = new ResultSetIterator<>(resultSet, rs -> rs);
+            final ResultSetIterator<?> rsi = new ResultSetIterator<>(resultSet, rs -> rs);
             assertFalse(rsi.hasNext());
         }
     }
@@ -72,7 +72,7 @@ public class ResultSetIteratorTest<T>
     {
         try(MockResultSet resultSet = new MockResultSet("myMock"))
         {
-            ResultSetIterator<?> rsi = new ResultSetIterator<>(resultSet, rs -> rs);
+            final ResultSetIterator<?> rsi = new ResultSetIterator<>(resultSet, rs -> rs);
             resultSet.addColumn("columnA", new Integer[] { 1 });
             resultSet.close();
             assertFalse(rsi.hasNext());
@@ -85,7 +85,7 @@ public class ResultSetIteratorTest<T>
         try(MockResultSet resultSet = new MockResultSet("myMock"))
         {
             resultSet.addColumn("columnA", new Integer[] { 1 });
-            ResultSetIterator<?> rsi = new ResultSetIterator<>(resultSet, rs -> rs);
+            final ResultSetIterator<?> rsi = new ResultSetIterator<>(resultSet, rs -> rs);
             rsi.next();
             assertFalse(rsi.hasNext());
         }

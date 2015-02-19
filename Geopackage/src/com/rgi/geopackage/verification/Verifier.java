@@ -97,6 +97,12 @@ public class Verifier
                    .collect(Collectors.toCollection(ArrayList::new));
     }
 
+    /**
+     * @param dataType
+     *             Data type type string
+     * @return Returns true if dataType is one of the known SQL types or
+     * matches one of the formatted TEXT or BLOB types
+     */
     protected static boolean checkDataType(final String dataType)
     {
         return Verifier.AllowedSqlTypes.contains(dataType)   ||
@@ -115,6 +121,12 @@ public class Verifier
                                                                    method2.getAnnotation(Requirement.class).number()));
     }
 
+    /**
+     * @param table
+     *             Table definition to
+     * @throws AssertionError
+     * @throws SQLException
+     */
     protected void verifyTable(final TableDefinition table) throws AssertionError, SQLException
     {
         this.verifyTableDefinition(table.getName());

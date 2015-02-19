@@ -18,10 +18,16 @@
 
 package com.rgi.common.task;
 
-public interface TaskMonitor {
-  public void setMaximum(int max);
-  public void setProgress(int value);
-  public void cancelled();
-  public void finished();
-  public void setError(Exception e);
+@SuppressWarnings("javadoc")
+public interface TaskMonitor
+{
+    public void setMaximum(int max);
+
+    public void setProgress(int value);
+
+    public void cancelled();
+
+    public void finished();
+
+    public void setError(Exception e);
 }

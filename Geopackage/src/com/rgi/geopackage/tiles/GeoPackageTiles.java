@@ -530,7 +530,7 @@ public class GeoPackageTiles
      *         parameters
      * @throws SQLException
      *             is thrown if the following methods throw
-     *             {@link #crsToRelativeTileCoordinate(TileSet, CrsCoordinate, int)
+     *             {@link #crsToRelativeTileCoordinate(TileSet, CrsCoordinate, int, int)
      *             crsToRelativeTileCoordinate} or
      *             {@link #addTile(TileSet, TileMatrix, RelativeTileCoordinate, byte[])
      *             addTile} throws an SQLException
@@ -762,7 +762,7 @@ public class GeoPackageTiles
      * @return Returns the requested tile, or null if it's not found
      * @throws SQLException
      *             throws when the method
-     *             {@link #crsToRelativeTileCoordinate(TileSet, CrsCoordinate, int)
+     *             {@link #crsToRelativeTileCoordinate(TileSet, CrsCoordinate, int, int)
      *             crsToRelativeTileCoordinate} or the method
      *             {@link #getTile(TileSet, RelativeTileCoordinate)} throws an
      *             SQLException
@@ -1187,19 +1187,16 @@ public class GeoPackageTiles
     }
 
     /**
-     * Rounds the number to level of precision need for the appropriate level of accuracy.  It rounds
-     * down that the minimum bound can be more inclusive
+     * Rounds the number to level of precision need for the appropriate level
+     * of accuracy.  It rounds down that the minimum bound can be more
+     * inclusive.
+     *
      * @param number number needed to be rounded
      * @return the number of decimal places the number needs to be rounded to
      */
     private static double roundDownMin(final double number, final int percision)
     {
         final double divisor = Math.pow(10, percision);
-
-        if(number < 0)
-        {
-            return Math.ceil(number*divisor)/divisor;
-        }
 
         return Math.floor(number*divisor)/divisor;
     }
@@ -1213,11 +1210,6 @@ public class GeoPackageTiles
     private static double roundUpMax(final double number, final int percision)
     {
         final double divisor = Math.pow(10, percision);
-
-        if(number < 0)
-        {
-            return Math.floor(number*divisor)/divisor;
-        }
 
         return Math.ceil(number*divisor)/divisor;
     }

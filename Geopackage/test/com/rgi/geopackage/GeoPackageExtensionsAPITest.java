@@ -22,7 +22,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -34,9 +36,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.extensions.Extension;
@@ -44,12 +44,10 @@ import com.rgi.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.geopackage.extensions.Scope;
 import com.rgi.geopackage.verification.ConformanceException;
 
-@SuppressWarnings("static-method")
+@SuppressWarnings({"static-method", "javadoc"})
 public class GeoPackageExtensionsAPITest
 {
 
-    @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
     private final Random randomGenerator = new Random();
 
 
