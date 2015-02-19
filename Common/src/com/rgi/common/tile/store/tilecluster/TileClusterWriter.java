@@ -48,6 +48,7 @@ import com.rgi.common.util.MimeTypeUtility;
  * TODO give attribution for this code "Tile-Based Geospatial Information Systems" by John T. Sample and Elias Ioup, Chapter 8 and specifically Listing 8.3 "Tile Clusters implementation" i.e. ClusteredTileStream
  *
  */
+@SuppressWarnings("javadoc")
 public class TileClusterWriter extends TileCluster implements TileStoreWriter
 {
     public TileClusterWriter(final Path            location,

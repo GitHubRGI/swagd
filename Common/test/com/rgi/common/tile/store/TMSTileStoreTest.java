@@ -49,6 +49,7 @@ import com.rgi.common.tile.store.tms.TmsWriter;
  * TODO this was written before the TileStore split into TileStoreReader and TileStoreWriter.  Tests may need to be expanded or rewritten.
  *
  */
+@SuppressWarnings("javadoc")
 public class TMSTileStoreTest {
 
     /**
@@ -189,6 +190,7 @@ public class TMSTileStoreTest {
     public void breakConstructorProfile() {
         this.tmsDir = this.createTMSFolderMercator(4);
         @SuppressWarnings("unused")
+        final
         TmsReader reader = new TmsReader(null, this.tmsDir);
     }
 
@@ -199,6 +201,7 @@ public class TMSTileStoreTest {
     public void breakConstructorLocation() {
         this.tmsDir = this.createTMSFolderMercator(4);
         @SuppressWarnings("unused")
+        final
         TmsReader reader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), null);
     }
 
@@ -209,7 +212,7 @@ public class TMSTileStoreTest {
     @Test
     public void verifyMercBoundsCalcLeft() throws TileStoreException {
         this.tmsDir = this.createTMSFolderMercator(4);
-        TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
+        final TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMinX() == -20037508.342789244);
     }
 
@@ -220,10 +223,10 @@ public class TMSTileStoreTest {
     @Test
     public void verifyMercBoundsCalcRight() throws TileStoreException {
         this.tmsDir = this.createTMSFolderMercator(4);
-        TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
+        final TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMaxX() == 20037508.342789244);
     }
-    
+
     /**
      * Tests if the tmsReader will return the correct maximum Y value of a bounding box from a tmsFolder
      * @throws TileStoreException throws if a tileStoreException occurs
@@ -231,10 +234,10 @@ public class TMSTileStoreTest {
     @Test
     public void verifyMercBoundsCalcTop() throws TileStoreException {
         this.tmsDir = this.createTMSFolderMercator(4);
-        TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
+        final TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMaxY() == 20037508.342789244);
     }
-    
+
     /**
      * Tests if the tmsReader will return the correct minimum Y value of a bounding box from a tmsFolder
      * @throws TileStoreException throws if a tileStoreException occurs
@@ -242,10 +245,10 @@ public class TMSTileStoreTest {
     @Test
     public void verifyMercBoundsCalcBottom() throws TileStoreException {
         this.tmsDir = this.createTMSFolderMercator(4);
-        TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
+        final TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 3857), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMinY() == -20037508.342789244);
     }
-    
+
     /**
      * Tests if the tmsReader will return the correct minimum X value of a bounding box from a tmsFolder
      * @throws TileStoreException throws if a tileStoreException occurs
@@ -253,7 +256,7 @@ public class TMSTileStoreTest {
     @Test
     public void verifyGeodBoundsCalcLeft() throws TileStoreException {
         this.tmsDir = this.createTMSFolderGeodetic(4);
-        TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
+        final TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMinX() == -180.0);
     }
     /**
@@ -263,7 +266,7 @@ public class TMSTileStoreTest {
     @Test
     public void verifyGeodBoundsCalcRight() throws TileStoreException {
         this.tmsDir = this.createTMSFolderGeodetic(4);
-        TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
+        final TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMaxX() == 180.0);
     }
 
@@ -274,7 +277,7 @@ public class TMSTileStoreTest {
     @Test
     public void verifyGeodBoundsCalcTop() throws TileStoreException {
         this.tmsDir = this.createTMSFolderGeodetic(4);
-        TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
+        final TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMaxY() == 90.0);
     }
     /**
@@ -284,7 +287,7 @@ public class TMSTileStoreTest {
     @Test
     public void verifyGeodBoundsCalcBottom() throws TileStoreException {
         this.tmsDir = this.createTMSFolderGeodetic(4);
-        TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
+        final TmsReader tmsReader = new TmsReader(CrsProfileFactory.create("EPSG", 4326), this.tmsDir);
         assertTrue(tmsReader.getBounds().getMinY() == -90.0);
     }
 
@@ -302,8 +305,8 @@ public class TMSTileStoreTest {
         final Coordinate<Integer> coordinate = new Coordinate<>(0, 0);
         final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", 3857);
 
-        TmsWriter tmsWriter = new TmsWriter(crsProfile, this.tmsDir, new MimeType("image", "png"));
-        TmsReader tmsReader = new TmsReader(crsProfile, this.tmsDir);
+        final TmsWriter tmsWriter = new TmsWriter(crsProfile, this.tmsDir, new MimeType("image", "png"));
+        final TmsReader tmsReader = new TmsReader(crsProfile, this.tmsDir);
 
         final BufferedImage image = createImage();
 
@@ -320,7 +323,7 @@ public class TMSTileStoreTest {
     }
 
     /**
-     * 
+     *
      * @throws TileStoreException
      * @throws MimeTypeParseException
      */
@@ -333,7 +336,7 @@ public class TMSTileStoreTest {
         final int zoomLevel = 5;
         final Coordinate<Integer> coordinate = new Coordinate<>(0, 0);
 
-        TmsWriter tmsWriter = new TmsWriter(CrsProfileFactory.create("EPSG", 3857),
+        final TmsWriter tmsWriter = new TmsWriter(CrsProfileFactory.create("EPSG", 3857),
                                             this.tmsDir,
                                             new MimeType("image", "png"));
 

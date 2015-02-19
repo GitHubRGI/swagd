@@ -45,6 +45,7 @@ import com.rgi.common.util.ImageUtility;
  * TODO give attribution for this code "Tile-Based Geospatial Information Systems" by John T. Sample and Elias Ioup, Chapter 8 and specifically Listing 8.3 "Tile Clusters implementation" i.e. ClusteredTileStream
  *
  */
+@SuppressWarnings("javadoc")
 public class TileClusterReader extends TileCluster implements TileStoreReader
 {
     public TileClusterReader(final Path       location,

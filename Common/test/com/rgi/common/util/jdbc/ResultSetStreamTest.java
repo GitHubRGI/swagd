@@ -27,7 +27,8 @@ import java.util.stream.Stream;
 import org.junit.Test;
 
 import com.mockrunner.mock.jdbc.MockResultSet;
-@SuppressWarnings({"static-method", "javadoc"})
+
+@SuppressWarnings("javadoc")
 public class ResultSetStreamTest {
 
     @Test

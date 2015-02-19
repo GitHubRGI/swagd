@@ -106,6 +106,6 @@ public class ZoomTimesTwo implements TileScheme
 
     private final TileMatrixDimensions[] zoomLevelDimensions;
 
-    protected final int minimumZoomLevel;
-    protected final int maximumZoomLevel;
+    private final int minimumZoomLevel;
+    private final int maximumZoomLevel;
 }

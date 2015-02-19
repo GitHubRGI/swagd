@@ -18,6 +18,7 @@
 
 package com.rgi.common.task;
 
+@SuppressWarnings("javadoc")
 public abstract class AbstractTask implements Task {
   protected TaskFactory factory;
 
