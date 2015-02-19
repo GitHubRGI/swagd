@@ -267,16 +267,16 @@ public class ExtensionsVerifier extends Verifier
                          ResultSet tableInfo = stmt.executeQuery(query))
                     {
                         final boolean columnExists = ResultSetStream.getStream(tableInfo)
-                                                              .anyMatch(resultSet ->
-                                                                                    {   try
-                                                                                        {
-                                                                                            return resultSet.getString("name").equals(columnName);
-                                                                                        }
-                                                                                        catch (final SQLException ex)
-                                                                                        {
-                                                                                            return false;
-                                                                                        }
-                                                                                    });
+                                                                    .anyMatch(resultSet ->
+                                                                                          {   try
+                                                                                              {
+                                                                                                  return resultSet.getString("name").equals(columnName);
+                                                                                              }
+                                                                                              catch (final SQLException ex)
+                                                                                              {
+                                                                                                  return false;
+                                                                                              }
+                                                                                          });
 
                         Assert.assertTrue(String.format("The column %s does not exist in the table %s. "
                                                             + "Please either add this column to this table "
@@ -414,19 +414,19 @@ public class ExtensionsVerifier extends Verifier
                     ResultSet invalidScopeValues = stmt.executeQuery(query))
             {
                 final List<String> invalidScope = ResultSetStream.getStream(invalidScopeValues)
-                                                           .map(resultSet ->
-                                                                           {
-                                                                               try
-                                                                               {
-                                                                                   return resultSet.getString("scope");
-                                                                               }
-                                                                               catch (final SQLException ex)
-                                                                               {
-                                                                                   return null;
-                                                                               }
-                                                                           })
-                                                           .filter(Objects::nonNull)
-                                                           .collect(Collectors.toList());
+                                                                 .map(resultSet ->
+                                                                                 {
+                                                                                     try
+                                                                                     {
+                                                                                         return resultSet.getString("scope");
+                                                                                     }
+                                                                                     catch (final SQLException ex)
+                                                                                     {
+                                                                                         return null;
+                                                                                     }
+                                                                                 })
+                                                                 .filter(Objects::nonNull)
+                                                                 .collect(Collectors.toList());
 
                 Assert.assertTrue(String.format("There is(are) value(s) in the column scope in gpkg_extensions"
                                                     + " table that is not 'read-write' or 'write-only' in all "

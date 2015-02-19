@@ -150,17 +150,17 @@ public class SchemaVerifier extends Verifier
                 ResultSet invalidTableNamesRS = stmt.executeQuery(query))
             {
                 final List<String> invalidTableNames = ResultSetStream.getStream(invalidTableNamesRS)
-                                                                .map(resultSet -> { try
-                                                                                    {
-                                                                                         return resultSet.getString("table_name");
-                                                                                    }
-                                                                                    catch(final SQLException ex)
-                                                                                    {
-                                                                                         return null;
-                                                                                    }
-                                                                                   })
-                                                                 .filter(Objects::nonNull)
-                                                                 .collect(Collectors.toList());
+                                                                      .map(resultSet -> { try
+                                                                                          {
+                                                                                               return resultSet.getString("table_name");
+                                                                                          }
+                                                                                          catch(final SQLException ex)
+                                                                                          {
+                                                                                               return null;
+                                                                                          }
+                                                                                         })
+                                                                       .filter(Objects::nonNull)
+                                                                       .collect(Collectors.toList());
 
                 Assert.assertTrue(String.format("The following table_name(s) is(are) from gpkg_data_columns and is(are) not referenced in the gpkg_contents table_name: %s",
                                                 invalidTableNames.stream()
@@ -199,15 +199,15 @@ public class SchemaVerifier extends Verifier
                         ResultSet tableInfoRS = stmt.executeQuery(query))
                     {
                         final boolean columnExists = ResultSetStream.getStream(tableInfoRS)
-                                                              .anyMatch(resultSet -> { try
-                                                                                       {
-                                                                                          return resultSet.getString("name").equals(dataColumn.columnName);
-                                                                                       }
-                                                                                       catch(final SQLException ex)
-                                                                                       {
-                                                                                           return false;
-                                                                                       }
-                                                                                      });
+                                                                    .anyMatch(resultSet -> { try
+                                                                                             {
+                                                                                                return resultSet.getString("name").equals(dataColumn.columnName);
+                                                                                             }
+                                                                                             catch(final SQLException ex)
+                                                                                             {
+                                                                                                 return false;
+                                                                                             }
+                                                                                            });
                         Assert.assertTrue(String.format("The column %s does not exist in the table %s.",
                                                         dataColumn.columnName,
                                                         dataColumn.tableName),
@@ -328,17 +328,17 @@ public class SchemaVerifier extends Verifier
                ResultSet constraintNamesWithRangeOrGlobRS = stmt.executeQuery(query))
            {
                final List<String> constraintNamesWithRangeOrGlob = ResultSetStream.getStream(constraintNamesWithRangeOrGlobRS)
-                                                                            .map(resultSet -> { try
-                                                                                                {
-                                                                                                   return resultSet.getString("constraint_name");
-                                                                                                }
-                                                                                                catch(final SQLException ex)
-                                                                                                {
-                                                                                                    return null;
-                                                                                                }
-                                                                                              })
-                                                                           .filter(Objects::nonNull)
-                                                                           .collect(Collectors.toList());
+                                                                                  .map(resultSet -> { try
+                                                                                                      {
+                                                                                                         return resultSet.getString("constraint_name");
+                                                                                                      }
+                                                                                                      catch(final SQLException ex)
+                                                                                                      {
+                                                                                                          return null;
+                                                                                                      }
+                                                                                                    })
+                                                                                 .filter(Objects::nonNull)
+                                                                                 .collect(Collectors.toList());
                for(final String constraintName: constraintNamesWithRangeOrGlob)
                {
                    final String query2 = String.format("SELECT count(*) FROM gpkg_data_column_constraints WHERE constraint_name = '%s'", constraintName);
