@@ -1054,7 +1054,7 @@ public class GeoPackageTiles
         final SpatialReferenceSystem    srs = this.core.getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
 
         if(!crs.getAuthority().equalsIgnoreCase(srs.getOrganization()) ||
-           crs.getIdentifier() != srs.getIdentifier())
+           crs.getIdentifier() != srs.getOrganizationSrsId()())
         {
             throw new IllegalArgumentException("Coordinate transformation is not currently supported.  The incoming spatial reference system must match that of the tile set's");
         }
