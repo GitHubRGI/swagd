@@ -22,7 +22,9 @@ import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -60,6 +62,7 @@ import com.rgi.geopackage.verification.ConformanceException;
  * @author Jenifer Cochran
  *
  */
+@SuppressWarnings("javadoc")
 public class GeopackageTileStoreTest
 {
     private final Random randomGenerator = new Random();

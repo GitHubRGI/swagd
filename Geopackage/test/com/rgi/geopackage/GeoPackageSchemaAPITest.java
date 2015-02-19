@@ -22,7 +22,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -46,6 +48,7 @@ import com.rgi.geopackage.schema.DataColumnConstraint;
 import com.rgi.geopackage.schema.Type;
 import com.rgi.geopackage.verification.ConformanceException;
 
+@SuppressWarnings("javadoc")
 public class GeoPackageSchemaAPITest
 {
     private final Random randomGenerator = new Random();
