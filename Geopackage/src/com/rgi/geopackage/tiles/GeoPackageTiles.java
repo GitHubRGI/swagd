@@ -1187,8 +1187,10 @@ public class GeoPackageTiles
     }
 
     /**
-     * Rounds the number to level of precision need for the appropriate level of accuracy.  It rounds
-     * down that the minimum bound can be more inclusive
+     * Rounds the number to level of precision need for the appropriate level
+     * of accuracy.  It rounds down that the minimum bound can be more
+     * inclusive.
+     *
      * @param number number needed to be rounded
      * @return the number of decimal places the number needs to be rounded to
      */
@@ -1196,7 +1198,20 @@ public class GeoPackageTiles
     {
         final double multiplyBy = Math.pow(10, percision);
 
-        return ((int)(number*multiplyBy))/multiplyBy;
+        return Math.floor(number*divisor)/divisor;
+    }
+
+    /**
+     * Rounds the number to level of precision need for the appropriate level of accuracy.  It rounds
+     * Up that the minimum bound can be more inclusive
+     * @param number number needed to be rounded
+     * @return the number of decimal places the number needs to be rounded to
+     */
+    private static double roundUpMax(final double number, final int percision)
+    {
+        final double divisor = Math.pow(10, percision);
+
+        return Math.ceil(number*divisor)/divisor;
     }
 
     private final GeoPackageCore core;
