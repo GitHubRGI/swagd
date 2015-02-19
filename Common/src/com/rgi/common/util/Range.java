@@ -25,7 +25,7 @@ import java.util.function.Function;
  * Generic range class
  *
  * @author Luke Lambert
- * @param <T> Any value type
+ * @param <T> Any reference type
  *
  */
 public class Range <T>
