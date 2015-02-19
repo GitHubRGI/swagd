@@ -18,7 +18,7 @@
 
 package com.rgi.common.tile.store;
 
-
+@SuppressWarnings("javadoc")
 public class TileClusterTest
 {
     // TODO fix these tests

@@ -18,6 +18,7 @@
 
 package com.rgi.common.task;
 
+@SuppressWarnings("javadoc")
 public interface MonitorableTask {
     // A task that can be monitored while running.
   public void addMonitor(TaskMonitor monitor);

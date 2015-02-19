@@ -22,14 +22,21 @@ import java.util.Comparator;
 import java.util.function.Function;
 
 /**
+ * Generic range class
+ *
  * @author Luke Lambert
+ * @param <T> Any value type
  *
  */
 public class Range <T>
 {
     /**
+     * Constructor
+     *
      * @param minimum
+     *             Minimum value (inclusive)
      * @param maximum
+     *             Maximum value (inclusive)
      */
     public Range(final T minimum, final T maximum)
     {
@@ -37,6 +44,21 @@ public class Range <T>
         this.maximum = maximum;
     }
 
+    /**
+     * Constructor
+     * <br>
+     * <br>
+     * This constructor iterates over a container who's generic type is
+     * mapped to the T via the mapper function.  The comparison function
+     * determines the ordering of the container's objects.
+     *
+     * @param iterable
+     *             Container of objects to be map
+     * @param mapper
+     *             Maps the container type <I> to the Range type <T>
+     * @param comparator
+     *            Comparison function
+     */
     public <I> Range(final Iterable<I> iterable,
                      final Function<? super I, ? extends T> mapper,
                      final Comparator<? super T> comparator)
@@ -83,6 +105,18 @@ public class Range <T>
         this.maximum = max;
     }
 
+    /**
+     * Constructor
+     * <br>
+     * <br>
+     * This constructor iterates over a container using the supplied comparison
+     * function to determine the minimum and maximum values.
+     *
+     * @param iterable
+     *             Container of objects to be map
+     * @param comparator
+     *            Comparison function
+     */
     public Range(final Iterable<T> iterable,
                  final Comparator<? super T> comparator)
     {

@@ -18,6 +18,7 @@
 
 package com.rgi.common.task;
 
+@SuppressWarnings("javadoc")
 public interface TaskFactory
 {
     public Task createTask();

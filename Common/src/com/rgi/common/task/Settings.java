@@ -35,6 +35,7 @@ import java.util.prefs.Preferences;
  * @author Duff Means
  *
  */
+@SuppressWarnings("javadoc")
 public class Settings
 {
     /**
@@ -60,7 +61,7 @@ public class Settings
          */
         TileType     (Type.PNG),
         /**
-         * 
+         *
          */
         Quality      (70),
         /**
@@ -72,7 +73,7 @@ public class Settings
          */
         FileSelection(null),
         /**
-         * 
+         *
          */
         NoDataColor  (TRANSPARENT),
         /**
@@ -92,8 +93,8 @@ public class Settings
         }
 
         /**
-         * 
-         * @return the default value 
+         *
+         * @return the default value
          */
         public Object getDefaultValue()
         {
@@ -110,7 +111,7 @@ public class Settings
         /**
          * The image type jpeg
          */
-        JPG, 
+        JPG,
         /**
          * The image type PNG
          */
@@ -132,12 +133,12 @@ public class Settings
          */
         WebMercator        ("EPSG", 3857),
         /**
-         * World Mercator (also known as Ellipsoidal Mercator) projection to 
+         * World Mercator (also known as Ellipsoidal Mercator) projection to
          * include the spheroid's flattening of the Earth in the calculation
          */
         WorldMercator      ("EPSG", 3395),
         /**
-         * 
+         *
          */
         ScaledWorldMercator("+proj=merc +datum=WGS84 +k_0=0.803798909747978", 9004),
         /**
@@ -151,7 +152,7 @@ public class Settings
          */
         Geodetic           ("EPSG", 4326),
         /**
-         * 
+         *
          */
         Raster             (null, 0);
 
@@ -175,7 +176,7 @@ public class Settings
 
         /**
          * Returns the version number of the Coordinate Reference System
-         * 
+         *
          * @return identifier the version number of the authority
          */
         public int getID()
@@ -186,14 +187,14 @@ public class Settings
 
     private static final int  TILESIZE    = 256;
     /**
-     * 
+     *
      */
     public static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 
     private final Preferences       prefs       = Preferences.userNodeForPackage(Settings.class);
 
     /**
-     * 
+     *
      */
     public Settings()
     {
@@ -209,7 +210,7 @@ public class Settings
 
     /**
      * Saves the user's settings
-     * 
+     *
      * @throws Exception
      *             an Exception is thrown when settings cannot be saved. If this
      *             saving operation cannot be completed due to a failure in the
@@ -230,7 +231,7 @@ public class Settings
 
     /**
      * Returns the settings of the user's preferences
-     * 
+     *
      * @param setting
      *            the settings the user inputed
      * @return the setting value, or null
@@ -250,7 +251,7 @@ public class Settings
 
     /**
      * Places the setting and it's value in into the Object Preferences
-     * 
+     *
      * @param setting
      *            the type of setting (Ex:TileHeight)
      * @param value
@@ -262,7 +263,7 @@ public class Settings
     }
 
     /**
-     * @param 
+     * @param
      * @return
      */
     public Color getColor(final Setting setting)
