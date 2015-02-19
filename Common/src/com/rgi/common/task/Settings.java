@@ -60,11 +60,23 @@ public class Settings
          */
         TileType     (Type.PNG),
         /**
-         * 
+         * The name of the tile set (packaging).
+         */
+        TileSetName  (""),
+        /**
+         * The description of the tile set (packaging).
+         */
+        TileSetDescription (""),
+        /**
+         * The output file name (packaging).
+         */
+        OutputFileName (""),
+        /**
+         * The JPEG image quality.
          */
         Quality      (70),
         /**
-         * The folder where the tiles should be outputed to
+         * The folder where the tiles should be output
          */
         TileFolder   (System.getProperty("user.home")),
         /**

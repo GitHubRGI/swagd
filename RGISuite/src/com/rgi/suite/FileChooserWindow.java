@@ -28,6 +28,7 @@ import com.rgi.common.task.Settings;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.Task;
 import com.rgi.common.task.TaskFactory;
+import com.rgi.packager.Packager;
 import com.rgi.suite.ApplicationContext.Window;
 import com.rgi.view.Viewer;
 
@@ -93,7 +94,12 @@ public class FileChooserWindow extends BaseWindow
                                                               settings.set(Setting.FileSelection, this.fileChooser.getSelectedFile());
                                                           }
                                                           // File chosen is set, now do something based on the workflow
-                                                          if(task != null && task instanceof MonitorableTask)
+                                                          if (task != null && task instanceof Packager)
+                                                          {
+                                                        	  this.context.transitionTo(Window.PACKAGEINPUT);
+                                                        	  return;
+                                                          }
+                                                          else if(task != null && task instanceof MonitorableTask)
                                                           {
                                                               this.context.transitionTo(Window.PROGRESS);
                                                               task.execute(this.context.getSettings());
@@ -101,9 +107,7 @@ public class FileChooserWindow extends BaseWindow
                                                           }
                                                           else if(task != null && task instanceof Viewer)
                                                           {
-                                                        	  // The Viewer is a special case, since it is not a task
-                                                        	  // that needs to be monitored.  It can simply spawn a 
-                                                        	  // new window with the viewer.
+                                                        	  // Viewer cannot be monitored.
                                                         	  task.execute(this.context.getSettings());
                                                           }
                                                       }

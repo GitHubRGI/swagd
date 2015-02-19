@@ -83,7 +83,7 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
 		// Get file/directory from settings
 		final File[] files = opts.getFiles(Setting.FileSelection);
 		// Create a new geopackage file
-		final File gpkgFile = new File("foo.gpkg");
+		final File gpkgFile = new File(opts.get(Setting.OutputFileName));
 
 		if(gpkgFile.exists())
 		{

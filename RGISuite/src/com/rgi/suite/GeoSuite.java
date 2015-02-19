@@ -36,26 +36,29 @@ public class GeoSuite
     {
         SwingUtilities.invokeLater(() -> { this.context = new ApplicationContext();
 
-                                           this.context.addWindow(Window.MAIN,        new MainWindow       (this.context));
-                                           this.context.addWindow(Window.SETTINGS,    new SettingsWindow   (this.context));
-                                           this.context.addWindow(Window.FILECHOOSER, new FileChooserWindow(this.context));
-                                           this.context.addWindow(Window.PROGRESS,    new ProgressWindow   (this.context));
-                                           this.context.addWindow(Window.WINDOWERROR, new ErrorWindow      (this.context));
+                                           this.context.addWindow(Window.MAIN,        new MainWindow       (this.context)); // This has to be first.
                                            this.context.addWindow(Window.DONE,        new DoneWindow       (this.context));
+                                           this.context.addWindow(Window.FILECHOOSER, new FileChooserWindow(this.context));
+                                           this.context.addWindow(Window.PACKAGEINPUT, new PackageInput	   (this.context));
+                                           this.context.addWindow(Window.PACKAGEOUTPUT, new PackageOutput	   (this.context));
+                                           this.context.addWindow(Window.PROGRESS,    new ProgressWindow   (this.context));
+                                           this.context.addWindow(Window.SETTINGS,    new SettingsWindow   (this.context));
+                                           this.context.addWindow(Window.WINDOWERROR, new ErrorWindow      (this.context));
 
                                            this.context.go();
                                          });
     }
 
-    private static void runHeadless(@SuppressWarnings("unused") String[] args)
+    private static void runHeadless(String[] args)
     {
         // TODO
+    	System.out.println("Running headless is not yet supported.");
     }
 
     /**
      * Code decision point for running in either GUI mode or headless (command-line) mode.
-     * @param args
-     *
+     * 
+     * @param args A string array of command line arguments.
      */
     public static void main(String[] args)
     {
