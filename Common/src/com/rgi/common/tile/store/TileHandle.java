@@ -52,26 +52,38 @@ public interface TileHandle
 
     /**
      * @return Returns the maximum number of columns and rows at this tile's
-     * zoom level.
+     *         zoom level.
      * @throws TileStoreException
+     *             A TileStoreException occurs when requesting a matrix at a
+     *             zoom level that is not within the range of the tileScheme
+     *             (below minimum zoom level or above the maximum zoom level)
      */
     public TileMatrixDimensions getMatrix() throws TileStoreException;
 
     /**
-     * @return Returns the real world coordinate of this tile's origin in the unit of its enclosing tile set
+     * @return Returns the real world coordinate of this tile's origin in the
+     *         unit of its enclosing tile set
      * @throws TileStoreException
+     *             A TileStoreException is thrown when it the tile's row or
+     *             column is beyond the range of the matrix or when the
+     *             crsCoordinate lies outside the bounds
      */
     public CrsCoordinate getCrsCoordinate() throws TileStoreException;
 
     /**
      * @return Returns the bounding box of tile tile in real world CRS units
      * @throws TileStoreException
+     *             A TileStoreException is thrown when unable to get the tile's
+     *             row, column, or matrix that is needed to calculate the
+     *             Bounds.
      */
     public BoundingBox getBounds() throws TileStoreException;
 
     /**
      * @return Returns the tile's image data
      * @throws TileStoreException
+     *             A TileStoreException occurs if unable to retrieve the
+     *             specified tile.
      */
     public BufferedImage getImage() throws TileStoreException;
 }
