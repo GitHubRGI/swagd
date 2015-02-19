@@ -530,7 +530,7 @@ public class GeoPackageTiles
      *         parameters
      * @throws SQLException
      *             is thrown if the following methods throw
-     *             {@link #crsToRelativeTileCoordinate(TileSet, CrsCoordinate, int)
+     *             {@link #crsToRelativeTileCoordinate(TileSet, CrsCoordinate, int, int)
      *             crsToRelativeTileCoordinate} or
      *             {@link #addTile(TileSet, TileMatrix, RelativeTileCoordinate, byte[])
      *             addTile} throws an SQLException
@@ -762,7 +762,7 @@ public class GeoPackageTiles
      * @return Returns the requested tile, or null if it's not found
      * @throws SQLException
      *             throws when the method
-     *             {@link #crsToRelativeTileCoordinate(TileSet, CrsCoordinate, int)
+     *             {@link #crsToRelativeTileCoordinate(TileSet, CrsCoordinate, int, int)
      *             crsToRelativeTileCoordinate} or the method
      *             {@link #getTile(TileSet, RelativeTileCoordinate)} throws an
      *             SQLException

@@ -324,6 +324,7 @@ public class TMSTileStoreTest {
      * @throws TileStoreException
      * @throws MimeTypeParseException
      */
+    @SuppressWarnings("javadoc")
     @Test
     public void verifyTileInsertion() throws TileStoreException, MimeTypeParseException
     {
