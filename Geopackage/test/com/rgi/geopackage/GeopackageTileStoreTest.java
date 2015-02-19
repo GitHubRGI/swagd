@@ -62,7 +62,7 @@ import com.rgi.geopackage.verification.ConformanceException;
  * @author Jenifer Cochran
  *
  */
-@SuppressWarnings({"javadoc"})
+@SuppressWarnings("javadoc")
 public class GeopackageTileStoreTest
 {
     private final Random randomGenerator = new Random();

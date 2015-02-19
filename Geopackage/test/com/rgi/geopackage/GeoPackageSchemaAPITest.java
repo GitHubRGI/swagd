@@ -47,7 +47,8 @@ import com.rgi.geopackage.schema.DataColumn;
 import com.rgi.geopackage.schema.DataColumnConstraint;
 import com.rgi.geopackage.schema.Type;
 import com.rgi.geopackage.verification.ConformanceException;
-@SuppressWarnings({"javadoc"})
+
+@SuppressWarnings("javadoc")
 public class GeoPackageSchemaAPITest
 {
     private final Random randomGenerator = new Random();
