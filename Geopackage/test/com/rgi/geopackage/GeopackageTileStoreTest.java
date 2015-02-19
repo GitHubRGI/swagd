@@ -44,6 +44,7 @@ import store.GeoPackageWriter;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
@@ -212,7 +213,7 @@ public class GeopackageTileStoreTest
             final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
             //add tiles
             gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), new byte[]{0,1,2,3});
+            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
@@ -317,7 +318,7 @@ public class GeopackageTileStoreTest
 
             final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
 
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), new byte[]{0,1,2,3});
+            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
@@ -1044,11 +1045,48 @@ public class GeopackageTileStoreTest
             deleteFile(testFile);
         }
     }
-
-//    private static byte[] createImageBytes(final String imageType) throws IOException
-//    {
-//        return ImageUtility.bufferedImageToBytes(new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB), imageType);
-//    }
+    
+    @Test
+    public void addTileCrsCoordinate() throws ClassNotFoundException, ConformanceException, IOException, SQLException, MimeTypeParseException, TileStoreException
+    {
+        File testFile = this.getRandomFile(9);
+        try
+        {
+            SphericalMercatorCrsProfile spherical = new SphericalMercatorCrsProfile();
+            BoundingBox tileSetBounds = new BoundingBox(spherical.getBounds().getMinY()/2,
+                                                        spherical.getBounds().getMinX()/3,
+                                                        spherical.getBounds().getMaxY()-100,
+                                                        spherical.getBounds().getMaxX()-100);
+            String tileSetName = "tableName";
+            try(GeoPackageWriter writer = new GeoPackageWriter(testFile,
+                                                           spherical.getCoordinateReferenceSystem(),
+                                                           tileSetName, 
+                                                           "identifier", 
+                                                           "description", 
+                                                           tileSetBounds,
+                                                           new ZoomTimesTwo(5, 8, 3, 5),
+                                                           new MimeType("image/png"), 
+                                                           null);)
+            {
+                int zoomLevel = 6;
+                BufferedImage  imageExpected = createBufferedImage(BufferedImage.TYPE_BYTE_GRAY);
+                CrsCoordinate crsCoordinate = new CrsCoordinate(tileSetBounds.getMaxY(), tileSetBounds.getMinX(), spherical.getCoordinateReferenceSystem());//upper left tile
+                writer.addTile(crsCoordinate, zoomLevel, imageExpected);
+                
+                try(GeoPackageReader reader = new GeoPackageReader(testFile,tileSetName);)
+                {
+                    BufferedImage imageReturnedCrs = reader.getTile(crsCoordinate, zoomLevel);
+                    BufferedImage imageReturnedTileCoordinate = reader.getTile(0, 0, zoomLevel); //upper left tile
+                    
+                    assertTrue(imageReturnedCrs != null && imageReturnedTileCoordinate != null);
+                }
+           }   
+        } 
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
 
     private static void deleteFile(final File testFile)
     {
@@ -1085,8 +1123,12 @@ public class GeopackageTileStoreTest
 
         return testFile;
     }
+    private static BufferedImage createBufferedImage(final int bufferedImageType)
+    {
+        return new BufferedImage(256,256, bufferedImageType);
+    }
     private static byte[] createImageBytes(final int bufferedImageType) throws IOException
     {
-        return ImageUtility.bufferedImageToBytes(new BufferedImage(256, 256, bufferedImageType), "PNG");
+        return ImageUtility.bufferedImageToBytes(new BufferedImage(256, 256, bufferedImageType), "png");
     }
 }
