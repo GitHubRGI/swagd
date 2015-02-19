@@ -36,6 +36,8 @@ import javax.activation.MimeTypeParseException;
 import store.GeoPackageWriter;
 
 import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.Utility;
 import com.rgi.common.task.AbstractTask;
@@ -86,23 +88,6 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
         // Get file/directory from settings
         final File[] files = opts.getFiles(Setting.FileSelection);
         // Create a new geopackage file
-        final File gpkgFile = new File("foo.gpkg");
-
-        if(gpkgFile.exists())
-        {
-            if(!gpkgFile.delete())
-            {
-                this.fireError(new Exception("Unable to overwrite existing geopackage file: " + gpkgFile.getAbsolutePath()));
-            }
-        }
-
-    @Override
-    public void execute(final Settings opts)
-    {
-        // TODO: Create new geopackage or append to existing one
-        // Get file/directory from settings
-        final File[] files = opts.getFiles(Setting.FileSelection);
-        // Create a new geopackage file
         final File gpkgFile = new File(opts.get(Setting.OutputFileName));
 
         if(gpkgFile.exists())
@@ -117,8 +102,23 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
         {
             try
             {
-                // Figure out what the crs profile is, maybe from UI?
-                final SphericalMercatorCrsProfile crsProfile = new SphericalMercatorCrsProfile();
+                CrsProfile crsProfile = new SphericalMercatorCrsProfile(); // TODO: this should be the default.
+                switch (opts.get(Setting.CrsProfile))
+                {
+                    case "SphericalMercator":
+                    case "WebMercator":
+                        crsProfile = new SphericalMercatorCrsProfile();
+                        break;
+                    case "WorldMercator":
+                        crsProfile = new EllipsoidalMercatorCrsProfile();
+                        break;
+                    case "ScaledWorldMercator":
+                    case "Geodetic":
+                    case "Raster":
+                    default:
+                        // TODO: need to clean up this mess
+                        this.fireError(new Exception("Unsupported output profile or no profile supplied."));
+                }
                 // Figure out what the file selection is and create a reader
                 final TmsReader tileStoreReader = new TmsReader(crsProfile, files[0].toPath());
 
@@ -143,9 +143,12 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                 // Create a new geopackage writer with things like table name and description
                 final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
                                                                          crsProfile.getCoordinateReferenceSystem(),
-                                                                         "footiles",
-                                                                         "1",
-                                                                         "test tiles",
+                                                                         //"footiles",
+                                                                         opts.get(Setting.TileSetName),
+                                                                         //"1",
+                                                                         opts.get(Setting.TileSetName),
+                                                                         //"test tiles",
+                                                                         opts.get(Setting.TileSetDescription),
                                                                          tileStoreReader.getBounds(),
                                                                          new ZoomTimesTwo(zoomLevelRange.getMinimum(),
                                                                                           zoomLevelRange.getMaximum(),

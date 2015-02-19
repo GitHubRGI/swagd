@@ -153,8 +153,10 @@ public class PackageOutput extends AbstractWindow {
 	private void executePackaging()
 	{
 		Settings settings = this.context.getSettings();
+		settings.set(Setting.OutputFileName, outputFileName.getText());
 		settings.set(Setting.TileType, ((Type) (this.outputImageType.getSelectedItem())).name());
-		settings.set(Setting.CrsProfile, ((Profile) (this.outputProfileChoice.getSelectedItem())).name());
+		settings.set(Setting.CrsProfile, (Profile) (this.outputProfileChoice.getSelectedItem()));
+		this.context.transitionTo(Window.PROGRESS);
 		this.context.getActiveTask().execute(settings);
 	}
 }
