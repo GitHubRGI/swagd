@@ -31,6 +31,10 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
+
 /**
  * @author Duff Means
  *
@@ -442,6 +446,11 @@ public class Settings
     public void set(final Setting setting, final File file)
     {
         this.set(setting, file.getPath());
+    }
+    
+    public void set(final Setting setting, final Profile profile)
+    {
+    	this.set(setting, profile.name());
     }
 
     public void set(final Setting setting, final File[] files)
