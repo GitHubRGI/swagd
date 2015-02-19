@@ -1692,8 +1692,8 @@ public class GeoPackageTilesAPITest
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             //Tile coords
-            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(0, 4, 4);
-            final RelativeTileCoordinate coord2 = new RelativeTileCoordinate(0, 8, 8);
+            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(0, 3, 4);
+            final RelativeTileCoordinate coord2 = new RelativeTileCoordinate(0, 7, 8);
 
             //add tile to gpkg
 
@@ -1821,7 +1821,7 @@ public class GeoPackageTilesAPITest
                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
             //Tile coords
-            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(2, 1, 0);
+            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(1, 2, 0);
             final byte[] imageData = new byte[]{1,2,3,4};
 
             //Retrieve tile from gpkg
