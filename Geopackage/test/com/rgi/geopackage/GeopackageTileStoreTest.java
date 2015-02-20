@@ -27,12 +27,12 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -50,7 +50,6 @@ import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsPro
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
-import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage.OpenMode;
@@ -148,8 +147,7 @@ public class GeopackageTileStoreTest
      * @throws ConformanceException
      * @throws IOException
      */
-    //TODO can't delete file after running test
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void geopackageReaderIllegalArgumentException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         File testFile = this.getRandomFile(11);
@@ -652,16 +650,7 @@ public class GeopackageTileStoreTest
             final int tileHeight = 256;
 
             final TileScheme tileScheme = new ZoomTimesTwo(2, 20, 1, 1);
-
-            for(final int zoomLevel : zoomLevelsExpected)
-            {
-                final TileMatrixDimensions dimensions = tileScheme.dimensions(zoomLevel);
-
-                final double pixelXSize = bBox.getWidth()  / dimensions.getWidth()  / tileWidth;
-                final double pixelYSize = bBox.getHeight() / dimensions.getHeight() / tileHeight;
-
-                gpkg.tiles().addTileMatrix(tileSet, zoomLevel, dimensions.getWidth(), dimensions.getHeight(), tileWidth, tileHeight, pixelXSize, pixelYSize);
-            }
+            addTileMatriciesToGpkg(zoomLevelsExpected, tileSet, gpkg, tileScheme, tileWidth, tileHeight);
 
             gpkg.tiles().addTileMatrix(tileSet2,  7, 2, 2, tileWidth, tileHeight, bBox.getWidth() / 2 / tileWidth, bBox.getHeight() / 2 / tileHeight); //this one is not included in zooms because it is a different tileset
 
@@ -680,7 +669,14 @@ public class GeopackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    //TODO throws when trying to retrieve tileScheme/???WHy?!?
+    /**
+     * Tests if the GeoPackage Reader returns the correct TileScheme given a GeoPackage
+     * with various zoom levels and matrices 
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws IOException
+     */
     @Test
     public void geoPackageReaderGetTileScheme() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
@@ -709,39 +705,18 @@ public class GeopackageTileStoreTest
 
             final TileScheme tileScheme = new ZoomTimesTwo(2, 20, 1, 1);
             final Set<TileMatrixDimensions> tileMatrixDimensionsExpected = new HashSet<>();
+            addTileMatriciesToGpkg(zoomLevelsExpected, tileSet, gpkg, tileScheme, tileWidth, tileHeight);
 
-            for(final int zoomLevel : zoomLevelsExpected)
-            {
-                final TileMatrixDimensions dimensions = tileScheme.dimensions(zoomLevel);
-                
-                tileMatrixDimensionsExpected.add(dimensions);
-
-                final double pixelXSize = bBox.getWidth()  / dimensions.getWidth()  / tileWidth;
-                final double pixelYSize = bBox.getHeight() / dimensions.getHeight() / tileHeight;
-
-                gpkg.tiles().addTileMatrix(tileSet, zoomLevel, dimensions.getWidth(), dimensions.getHeight(), tileWidth, tileHeight, pixelXSize, pixelYSize);
-            }
-            
-            //gpkg.close();
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
-                try
-                {
-                TileScheme tileSchemeReturned = gpkgReader.getTileScheme();//does not work here
+                TileScheme tileSchemeReturned = gpkgReader.getTileScheme();
               
                 List<TileMatrixDimensions> tileMatrixDimensionsReturned =  zoomLevelsExpected.stream().map(zoomLevel -> tileSchemeReturned.dimensions(zoomLevel)).collect(Collectors.toList());
                 
                 assertTrue(String.format("The TileScheme from the gpkgReader did not return all the dimensions expected or they were incorrect from what was given to the geopackage"), 
-                           tileMatrixDimensionsExpected.stream().allMatch(expectedDimension -> tileMatrixDimensionsReturned.stream().filter(Objects::nonNull).anyMatch(returnedDimension -> expectedDimension.getWidth() == returnedDimension.getWidth() &&
-                                                                                                                                                                                            expectedDimension.getHeight() == returnedDimension.getWidth()))
-            
-                }
-                catch(Exception ex)
-                {
-                    ex.printStackTrace();
-                    int a =2;
-                    int letmedothis =4;
-                }
+                           tileMatrixDimensionsExpected.stream().allMatch(expectedDimension -> tileMatrixDimensionsReturned.stream().anyMatch(returnedDimension -> expectedDimension.getWidth() == returnedDimension.getWidth() &&
+                                                                                                                                                                   expectedDimension.getHeight() == returnedDimension.getWidth())));
+            }
         }
         finally
         {
@@ -749,6 +724,15 @@ public class GeopackageTileStoreTest
         }
     }
     
+    /**
+     * Tests if the method .stream() in GeoPackageReader returns the expected tile handles
+     * with the correct values
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws IOException
+     * @throws TileStoreException
+     */
     @Test
     public void getStreamofTileHandles() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
     {
@@ -757,16 +741,15 @@ public class GeopackageTileStoreTest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             //create a tileSet
-            
-            final BoundingBox bBox =  new BoundingBox(0.0,0.0,20.0,40.0);
+            final BoundingBox bBox =  new BoundingBox(0.0,0.0,40.0,80.0);
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tableName",
                                                     "identifier",
                                                     "description",
                                                     bBox,
                                                     gpkg.core().getSpatialReferenceSystem(4326));
-            int matrixWidth = 4;
-            int matrixHeight =12;
+            int matrixWidth = 2;
+            int matrixHeight = 4;
             int tileWidth = 256;
             int tileHeight = 256;
             int zoomLevel = 9;
@@ -786,14 +769,34 @@ public class GeopackageTileStoreTest
             Tile tile2 = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate2, createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
             RelativeTileCoordinate coordinate3 = new RelativeTileCoordinate(0, 1, zoomLevel);
             Tile tile3 = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate3, createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
+            //create a list of the expected tiles
+            List<Tile> expectedTiles = Arrays.asList(tile, tile2, tile3);
             //create a geopackage reader
             try(GeoPackageReader reader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
-                //get a stream of tile handles
-                Stream<TileHandle> tileHandles = reader.stream();
-                
                 //check to see if tiles match
-
+                boolean tilesEqual = false;
+                tilesEqual = expectedTiles.stream().allMatch(expectedTile -> { try
+                                                                               {  return reader.stream().anyMatch(tileHandle -> {  try
+                                                                                                                                   {
+                                                                                                                                       return  
+                                                                                                                                       tileHandle.getRow()             == expectedTile.getRow() &&
+                                                                                                                                       tileHandle.getColumn()          == expectedTile.getColumn() &&
+                                                                                                                                       tileHandle.getZoomLevel()       == expectedTile.getZoomLevel() &&
+                                                                                                                                       tileHandle.getImage().getType() == ImageUtility.bytesToBufferedImage(expectedTile.getImageData()).getType();
+                                                                                                                                    }
+                                                                                                                                    catch(IOException | TileStoreException ex)
+                                                                                                                                    {
+                                                                                                                                        return false;
+                                                                                                                                    }
+                                                                                                                               });
+                                                                                 }
+                                                                                 catch(TileStoreException ex)
+                                                                                 {
+                                                                                     return false;
+                                                                                 }
+                                                                            });
+                assertTrue("GeoPackage reader returned tiles that were not equal to the ones in the GeoPackage.", tilesEqual);
             }
         }
         finally
@@ -1373,5 +1376,23 @@ public class GeopackageTileStoreTest
     private static byte[] createImageBytes(final int bufferedImageType) throws IOException
     {
         return ImageUtility.bufferedImageToBytes(new BufferedImage(256, 256, bufferedImageType), "png");
+    }
+    
+    private static Set<TileMatrixDimensions> addTileMatriciesToGpkg(Set<Integer> zoomLevels, TileSet tileSet, GeoPackage gpkg, TileScheme tileScheme, int tileWidth, int tileHeight) throws SQLException
+    {
+        Set<TileMatrixDimensions> tileMatrixDimensionsExpected = new HashSet<>();
+        BoundingBox bBox = tileSet.getBoundingBox();
+        for(final int zoomLevel : zoomLevels)
+        {
+            final TileMatrixDimensions dimensions = tileScheme.dimensions(zoomLevel);
+            
+            tileMatrixDimensionsExpected.add(dimensions);
+
+            final double pixelXSize = bBox.getWidth()  / dimensions.getWidth()  / tileWidth;
+            final double pixelYSize = bBox.getHeight() / dimensions.getHeight() / tileHeight;
+
+            gpkg.tiles().addTileMatrix(tileSet, zoomLevel, dimensions.getWidth(), dimensions.getHeight(), tileWidth, tileHeight, pixelXSize, pixelYSize);
+        }
+        return tileMatrixDimensionsExpected;
     }
 }
