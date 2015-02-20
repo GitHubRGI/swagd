@@ -104,6 +104,16 @@ public abstract class ProportionalCrsProfile implements CrsProfile
         //    throw new IllegalArgumentException("The row and column must be within the tile matrix dimensions");
         //}
 
+        if(row < 0)
+        {
+            throw new IllegalArgumentException("Row must be 0 or greater;");
+        }
+
+        if(column < 0)
+        {
+            throw new IllegalArgumentException("Column must be 0 or greater;");
+        }
+
         if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Origin may not be null");
