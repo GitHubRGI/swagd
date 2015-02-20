@@ -363,12 +363,20 @@ public class GeoPackageTiles
             throw new IllegalArgumentException("Cannot add a tile matrix to a tile set with no tile matrix set.");  // TODO do we need to expose addTileMatrixSet() to help avoid ever getting here? a tile matrix set is created automatically by this API on tile set creation, and the verifier insures that there's one for every tile set.
         }
 
-        if(matrixHeight * tileHeight * pixelYSize != tileMatrixSet.getBoundingBox().getHeight())    // TODO instead of testing for equality, test with an EPSILON tolerance ?
+        //final SpatialReferenceSystem srs = this.core.getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
+
+        final int precision = 7;//CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId()).getPrecision();   // TODO is there another way we can get the precision ?
+
+        if(!compare(matrixHeight * tileHeight * pixelYSize,
+                    tileMatrixSet.getBoundingBox().getHeight(),
+                    precision))
         {
             throw new IllegalArgumentException("The geographic height of the tile matrix [matrix height * tile height (pixels) * pixel y size (srs units per pixel)] differs from the minimum bounds for this tile set specified by the tile matrix set");
         }
 
-        if(matrixWidth * tileWidth * pixelXSize != tileMatrixSet.getBoundingBox().getWidth())    // TODO instead of testing for equality, test with an EPSILON tolerance ?
+        if(!compare(matrixWidth * tileWidth * pixelXSize,
+                    tileMatrixSet.getBoundingBox().getWidth(),
+                    precision))
         {
             throw new IllegalArgumentException("The geographic width of the tile matrix [matrix width * tile width (pixels) * pixel x size (srs units per pixel)] differs from the minimum bounds for this tile set specified by the tile matrix set");
         }
@@ -1186,6 +1194,14 @@ public class GeoPackageTiles
                                Math.floor(bounds.getMinX()*divisor) / divisor,
                                Math.ceil (bounds.getMaxY()*divisor) / divisor,
                                Math.ceil (bounds.getMaxX()*divisor) / divisor);
+    }
+
+    private static boolean compare(final double left, final double right, final int decimalPlaces)
+    {
+        final double divisor = Math.pow(10.0, decimalPlaces);
+
+        return (Math.round(left  * divisor) / divisor) ==
+               (Math.round(right * divisor) / divisor);
     }
 
     private final GeoPackageCore core;
