@@ -26,7 +26,7 @@ import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
  * Calculates profile information for coordinate reference systems that are proportional.
- * 
+ *
  */
 public abstract class ProportionalCrsProfile implements CrsProfile
 {
@@ -96,11 +96,13 @@ public abstract class ProportionalCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Tile matrix dimensions may not be null");
         }
-
-        if(!dimensions.contains(row, column))
-        {
-            throw new IllegalArgumentException("The row and column must be within the tile matrix dimensions");
-        }
+        // This got commented final out because occasionally it final makes
+        // sense for final a coordinate outside final of the bounds (+1) in
+        // final order to calculate final a tile's bounding box.
+        //if(!dimensions.contains(row, column))
+        //{
+        //    throw new IllegalArgumentException("The row and column must be within the tile matrix dimensions");
+        //}
 
         if(tileOrigin == null)
         {

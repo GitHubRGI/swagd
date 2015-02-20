@@ -38,6 +38,7 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.store.TileHandle;
@@ -374,6 +375,18 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                                                .crsProfile
                                                .tileToCrsCoordinate(row,
                                                                     column,
+                                                                    this.getBounds(),
+                                                                    matrix,
+                                                                    GeoPackageTiles.Origin);
+                    }
+
+                    @Override
+                    public CrsCoordinate getCrsCoordinate(final TileOrigin corner) throws TileStoreException
+                    {
+                        return GeoPackageReader.this
+                                               .crsProfile
+                                               .tileToCrsCoordinate(row    - (1 - corner.getVertical()),
+                                                                    column + corner.getHorizontal(),    // same as: column - (GeoPackageTiles.Origin.getVertical() - corner.getHorizontal()) because GeoPackageTiles.Origin.getVertical() is always 0
                                                                     this.getBounds(),
                                                                     matrix,
                                                                     GeoPackageTiles.Origin);
