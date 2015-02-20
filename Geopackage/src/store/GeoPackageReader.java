@@ -104,7 +104,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
 
         if(srs == null)
         {
-            throw new IllegalArgumentException("SRS may not be null or empty");
+            throw new IllegalArgumentException("SRS may not be null");
         }
 
         this.crsProfile = CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId());
