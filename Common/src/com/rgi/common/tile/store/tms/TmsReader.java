@@ -438,6 +438,16 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                }
 
                                @Override
+                               public CrsCoordinate getCrsCoordinate(final TileOrigin corner) throws TileStoreException
+                               {
+                                   return TmsReader.this.profile.tileToCrsCoordinate(row    + corner.getVertical(),
+                                                                                     column + corner.getHorizontal(),
+                                                                                     TmsReader.this.profile.getBounds(),
+                                                                                     this.matrix,
+                                                                                     TmsTileStore.Origin);
+                               }
+
+                               @Override
                                public BoundingBox getBounds() throws TileStoreException
                                {
                                    final Coordinate<Double> lowerLeft  = TmsReader.this.profile.tileToCrsCoordinate(row,   column,   TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
@@ -573,5 +583,5 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     private long         tileCount  = -1;
     private long         storeSize  = -1;
 
-    private static Pattern TmsFilePattern = Pattern.compile("[^0-9]*([0-9]+)[\\\\/]([0-9]+)[\\\\/]([0-9]+)\\.[^\\\\/]*$");
+    private static Pattern TmsFilePattern = Pattern.compile(".*(?:\\\\|/)([0-9]+)(?:\\\\|/)([0-9]+)(?:\\\\|/)([0-9]+)\\.[^\\\\/]*$");
 }

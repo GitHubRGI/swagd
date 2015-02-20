@@ -78,8 +78,8 @@ public class Coordinate<T extends Number>
         @SuppressWarnings("unchecked")
         final Coordinate<T> other = (Coordinate<T>)object;
 
-        return this.y == other.y &&
-               this.x == other.x;
+        return this.y.equals(other.y) &&
+               this.x.equals(other.x);
     }
 
     @Override

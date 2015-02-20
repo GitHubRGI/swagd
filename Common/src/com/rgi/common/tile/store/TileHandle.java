@@ -22,6 +22,7 @@ import java.awt.image.BufferedImage;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
@@ -69,6 +70,18 @@ public interface TileHandle
      *             crsCoordinate lies outside the bounds
      */
     public CrsCoordinate getCrsCoordinate() throws TileStoreException;
+
+    /**
+     * @param corner
+     *             Selects the corner of the tile to represent as the CRS coordinate
+     * @return Returns the real world coordinate of this tile based on the
+     *         corner parameter in the unit of its enclosing tile set
+     * @throws TileStoreException
+     *             A TileStoreException is thrown when it the tile's row or
+     *             column is beyond the range of the matrix or when the
+     *             crsCoordinate lies outside the bounds
+     */
+    public CrsCoordinate getCrsCoordinate(final TileOrigin corner) throws TileStoreException;
 
     /**
      * @return Returns the bounding box of tile tile in real world CRS units
