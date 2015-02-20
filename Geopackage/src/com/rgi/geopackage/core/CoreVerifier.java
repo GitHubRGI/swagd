@@ -77,7 +77,7 @@ public class CoreVerifier extends Verifier
         {
             this.hasContentsTable = this.tableExists(GeoPackageCore.ContentsTableName);
         }
-        catch(SQLException ex)
+        catch(final SQLException ex)
         {
             this.hasContentsTable = false;
         }
@@ -86,7 +86,7 @@ public class CoreVerifier extends Verifier
         {
             this.hasSpatialReferenceSystemTable = this.tableExists(GeoPackageCore.SpatialRefSysTableName);
         }
-        catch(SQLException ex)
+        catch(final SQLException ex)
         {
             this.hasSpatialReferenceSystemTable = false;
         }
@@ -127,7 +127,7 @@ public class CoreVerifier extends Verifier
      * in the application id field of the SQLite database header
      * to indicate a GeoPackage version 1.0 file.
      * </blockquote>
-     * @throws AssertionError throws if it fails to meet the specified requirement; 
+     * @throws AssertionError throws if it fails to meet the specified requirement;
      */
     @Requirement(number = 2,
                  text = "A GeoPackage SHALL contain 0x47503130 ('GP10' in ASCII) in the application id field of the SQLite database header to indicate a GeoPackage version 1.0 file.",
@@ -400,36 +400,31 @@ public class CoreVerifier extends Verifier
     {
         if(this.hasSpatialReferenceSystemTable)
         {
-            final String query  = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = -1    AND       organization  = 'NONE' AND organization_coordsys_id = -1    AND definition = 'undefined';";
-            final String query2 = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id =  0    AND       organization  = 'NONE' AND organization_coordsys_id =  0    AND definition = 'undefined';";
-            final String query3 = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id =  4326 AND LOWER(organization) = 'epsg' AND organization_coordsys_id =  4326;";
+            final String wgs1984Sql = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE organization_coordsys_id =  4326 AND (organization = 'EPSG' OR organization = 'epsg');";
+
+            try(Statement stmt3            = this.getSqliteConnection().createStatement();
+                ResultSet srsdefaultvalue3 = stmt3.executeQuery(wgs1984Sql))
+            {
+                assertTrue("The gpkg_spatial_ref_sys table shall contain a record for organization \"EPSG\" or \"epsg\" and organization_coordsys_id 4326 for WGS-84", srsdefaultvalue3.next());
+            }
+
+            final String undefinedCartesianSql = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = -1 AND organization = 'NONE' AND organization_coordsys_id = -1 AND definition = 'undefined';";
 
             try(Statement stmt             = this.getSqliteConnection().createStatement();
-                ResultSet srsdefaultvalues = stmt.executeQuery(query))
+                ResultSet srsdefaultvalues = stmt.executeQuery(undefinedCartesianSql))
             {
-                // make sure the result sets are not empty
-                assertTrue(String.format("The gpkg_spatial_ref_sys does not contain the default values needed to meet the standard."
-                                        + "\n Need to include a record with this information: %s", query),
-                                          srsdefaultvalues.next());
+                assertTrue("The gpkg_spatial_ref_sys table shall contain a record with an srs_id of -1, an organization of \"NONE\", an organization_coordsys_id of -1, and definition \"undefined\" for undefined Cartesian coordinate reference systems", srsdefaultvalues.next());
             }
-            try(Statement stmt2 = this.getSqliteConnection().createStatement();
-                ResultSet srsdefaultvalue2 = stmt2.executeQuery(query2))
-            {
 
-             assertTrue(String.format("The gpkg_spatial_ref_sys does not contain the default values needed to meet the standard."
-                                + "\n Need to include a record with this information: %s", query2),
-                                 srsdefaultvalue2.next());
-            }
-            try(Statement stmt3 = this.getSqliteConnection().createStatement();
-                ResultSet srsdefaultvalue3 = stmt3.executeQuery(query3))
+            final String undefinedGeographicSql = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = 0 AND organization = 'NONE' AND organization_coordsys_id =  0 AND definition = 'undefined';";
+
+            try(Statement stmt2            = this.getSqliteConnection().createStatement();
+                ResultSet srsdefaultvalue2 = stmt2.executeQuery(undefinedGeographicSql))
             {
-                assertTrue(String.format("The gpkg_spatial_ref_sys does not contain the default values needed to meet the standard."
-                                + "\n Need to include a record with this information: %s", query3),
-                                 srsdefaultvalue3.next());
+                assertTrue("The gpkg_spatial_ref_sys table shall contain a record with an srs_id of 0, an organization of \"NONE\", an organization_coordsys_id of 0, and definition \"undefined\" for undefined geographic coordinate reference systems.", srsdefaultvalue2.next());
             }
         }
     }
-
 
     /**
      * Requirement 12
@@ -649,7 +644,7 @@ public class CoreVerifier extends Verifier
                                                                spatialReferenceSystemColumns);
     }
 
-    private boolean tableExists(String tableName) throws SQLException
+    private boolean tableExists(final String tableName) throws SQLException
     {
         return DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), tableName);
     }
