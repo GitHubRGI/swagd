@@ -187,11 +187,6 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                            {
                                try
                                {
-                                   if(!tileStoreReader.getBounds().contains(tileHandle.getCrsCoordinate()))
-                                   {
-                                       System.out.println("wtf");
-                                   }
-
                                    final CrsCoordinate crsCoordinate = new CrsCoordinate(Utility.boundsCorner(tileHandle.getBounds(), tileStoreWriter.getTileOrigin()), tileStoreReader.getCoordinateReferenceSystem());
 
                                    tileStoreWriter.addTile(crsCoordinate,
