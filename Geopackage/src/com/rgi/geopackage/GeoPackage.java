@@ -221,10 +221,7 @@ public class GeoPackage implements AutoCloseable
         }
         catch(final SQLException | ConformanceException | IOException ex)
         {
-            if(this.databaseConnection != null && this.databaseConnection.isClosed() == false)
-            {
-                this.databaseConnection.close();
-            }
+            this.close();
 
             // If anything goes wrong, clean up the new file that may have been created
             if(isNewFile && file.exists())
