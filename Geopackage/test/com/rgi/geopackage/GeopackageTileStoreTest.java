@@ -760,8 +760,8 @@ public class GeopackageTileStoreTest
                                                                      matrixHeight, 
                                                                      tileWidth, 
                                                                      tileHeight,  
-                                                                     bBox.getWidth()  / bBox.getWidth()  / tileWidth, 
-                                                                     bBox.getHeight() / bBox.getHeight() / tileHeight);
+                                                                     bBox.getWidth()  / matrixWidth / tileWidth, 
+                                                                     bBox.getHeight() / matrixHeight / tileHeight);
             RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, zoomLevel);
             //add three tiles
             Tile tile  = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate,  createImageBytes(BufferedImage.TYPE_INT_ARGB));
@@ -1299,28 +1299,31 @@ public class GeopackageTileStoreTest
         try
         {
             SphericalMercatorCrsProfile spherical = new SphericalMercatorCrsProfile();
-            BoundingBox tileSetBounds = new BoundingBox(spherical.getBounds().getMinY(),
-                                                        spherical.getBounds().getMinX(),
+            BoundingBox tileSetBounds = new BoundingBox(spherical.getBounds().getMinY()/2,
+                                                        spherical.getBounds().getMinX()/3,
                                                         spherical.getBounds().getMaxY()-100,
                                                         spherical.getBounds().getMaxX()-100);
             String tileSetName = "tableName";
+            //create a geopackage writer
             try(GeoPackageWriter writer = new GeoPackageWriter(testFile,
-                                                           spherical.getCoordinateReferenceSystem(),
-                                                           tileSetName, 
-                                                           "identifier", 
-                                                           "description", 
-                                                           tileSetBounds,
-                                                           new ZoomTimesTwo(5, 8, 3, 5),
-                                                           new MimeType("image/png"), 
-                                                           null);)
+                                                               spherical.getCoordinateReferenceSystem(),
+                                                               tileSetName, 
+                                                               "identifier", 
+                                                               "description", 
+                                                               tileSetBounds,
+                                                               new ZoomTimesTwo(5, 8, 3, 5),
+                                                               new MimeType("image/png"), 
+                                                               null);)
             {
                 int zoomLevel = 6;
                 BufferedImage  imageExpected = createBufferedImage(BufferedImage.TYPE_BYTE_GRAY);
                 CrsCoordinate crsCoordinate = new CrsCoordinate(tileSetBounds.getMaxY(), tileSetBounds.getMinX(), spherical.getCoordinateReferenceSystem());//upper left tile
+                //add an image to the writer
                 writer.addTile(crsCoordinate, zoomLevel, imageExpected);
-                
+                //create a reader
                 try(GeoPackageReader reader = new GeoPackageReader(testFile,tileSetName);)
                 {
+                    //check if the images are returned as expected from a crs coordinate and relative tile coordinate
                     BufferedImage imageReturnedCrs = reader.getTile(crsCoordinate, zoomLevel);
                     BufferedImage imageReturnedTileCoordinate = reader.getTile(0, 0, zoomLevel); //upper left tile
                     
