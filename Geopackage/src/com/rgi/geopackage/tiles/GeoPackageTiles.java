@@ -285,7 +285,7 @@ public class GeoPackageTiles
      *             throws when the method {@link #getTileMatrix(TileSet, int)
      *             getTileMatrix(TileSet, int)} or the method
      *             {@link #getTileMatrixSet(TileSet) getTileMatrixSet} or the
-     *             database cannot rollback the changes after a different
+     *             database cannot roll back the changes after a different
      *             exception is thrown, an SQLException is thrown
      */
     public TileMatrix addTileMatrix(final TileSet tileSet,
