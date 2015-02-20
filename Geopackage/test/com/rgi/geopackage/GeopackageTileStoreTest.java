@@ -44,6 +44,7 @@ import store.GeoPackageReader;
 import store.GeoPackageWriter;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
@@ -850,6 +851,85 @@ public class GeopackageTileStoreTest
             deleteFile(testFile);
         }
     }
+//    /**
+//     * Tests if GeoPackageReader image type can return
+//     * the correct format name.
+//     * 
+//     * @throws SQLException
+//     * @throws ClassNotFoundException
+//     * @throws ConformanceException
+//     * @throws IOException
+//     * @throws TileStoreException
+//     */
+//    //TODO bug??? my error? let me know
+//    @Test
+//    public void geoPackageReaderGetImageType() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
+//    {
+//        File testFile = this.getRandomFile(9);
+//        try(GeoPackage gpkg = new GeoPackage(testFile))
+//        {
+//            TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, new BoundingBox(-90.0, -180.0, 90.0, 180.0), 10, 7, 9);
+//            String formatName = "PNG";
+//            gpkg.tiles().addTile(gpkg.tiles().getTileSet(tileMatrix.getTableName()), 
+//                                 tileMatrix, 
+//                                 new RelativeTileCoordinate(5,6,tileMatrix.getZoomLevel()), 
+//                                 createImageBytes(BufferedImage.TYPE_3BYTE_BGR, formatName));
+//            
+//            try(GeoPackageReader reader = new GeoPackageReader(testFile, tileMatrix.getTableName()))
+//            {
+//                String imageTypeReturned = reader.getImageType();
+//                assertTrue("The image Type returned from the reader was not the format name expected.",
+//                           formatName.equalsIgnoreCase(imageTypeReturned));
+//            }
+//            
+//        }
+//        finally 
+//        {
+//            deleteFile(testFile);
+//        }
+//    }
+    
+    /**
+     * Tests if the GeoPackage Reader returns the expected dimensions
+     * using the method getImageDimensions()
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws ConformanceException
+     * @throws IOException
+     * @throws TileStoreException
+     */
+    @Test
+    public void geoPackageReaderGetImageDimensions() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
+    {
+        File testFile = this.getRandomFile(9);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, new BoundingBox(-90.0, -180.0, 90.0, 180.0), 10, 7, 9);
+            String formatName = "PNG";
+            Dimensions<Number> dimensions = new Dimensions<>(512, 256);
+            gpkg.tiles().addTile(gpkg.tiles().getTileSet(tileMatrix.getTableName()), 
+                                 tileMatrix, 
+                                 new RelativeTileCoordinate(5,6,tileMatrix.getZoomLevel()), 
+                                 createImageBytes(BufferedImage.TYPE_3BYTE_BGR, formatName, dimensions));
+            
+            try(GeoPackageReader reader = new GeoPackageReader(testFile, tileMatrix.getTableName()))
+            {
+                Dimensions<Integer> dimensionsReturned = reader.getImageDimensions();
+                assertTrue(String.format("The dimensions returned from getImageDimensions were not as expected. Actual: height %d width %d\nExpected: height %d width %d.",
+                                         dimensionsReturned.getHeight(), 
+                                         dimensionsReturned.getWidth(), 
+                                         dimensions.getHeight(), 
+                                         dimensions.getWidth()),
+                           dimensionsReturned.getHeight().equals(dimensions.getHeight()) &&
+                           dimensionsReturned.getWidth() .equals(dimensions.getWidth()));
+            }
+            
+        }
+        finally 
+        {
+            deleteFile(testFile);
+        }
+    }
 
     /**
      * Tests if GeoPackage Writer will be able to add a tile to
@@ -882,8 +962,6 @@ public class GeopackageTileStoreTest
                                                                new MimeType("image/jpeg"),
                                                                null))
         {
-
-
             final BufferedImage bufferedImage = new BufferedImage(256, 256, BufferedImage.TYPE_BYTE_GRAY);
 
             gpkgWriter.addTile(row, column, zoomLevel, bufferedImage);
@@ -1405,13 +1483,19 @@ public class GeopackageTileStoreTest
 
         return testFile;
     }
+  
     private static BufferedImage createBufferedImage(final int bufferedImageType)
     {
         return new BufferedImage(256,256, bufferedImageType);
     }
+    private static byte[] createImageBytes(final int bufferedImageType, String outputFormat, Dimensions<Number> dimensions) throws IOException
+    {
+        return ImageUtility.bufferedImageToBytes(new BufferedImage(dimensions.getWidth().intValue(), dimensions.getHeight().intValue(), bufferedImageType), outputFormat);
+    }
     private static byte[] createImageBytes(final int bufferedImageType, String outputFormat) throws IOException
     {
-        return ImageUtility.bufferedImageToBytes(new BufferedImage(256, 256, bufferedImageType), outputFormat);
+        Dimensions<Number> dimensions = new Dimensions<>(256, 256);
+        return createImageBytes(bufferedImageType, outputFormat, dimensions);
     }
     private static byte[] createImageBytes(final int bufferedImageType) throws IOException
     {
