@@ -19,6 +19,7 @@
 package store;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -30,6 +31,7 @@ import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
@@ -49,6 +51,7 @@ import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
+import com.rgi.geopackage.tiles.GeoPackageTiles.TileCoordinate;
 import com.rgi.geopackage.tiles.Tile;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileMatrixSet;
@@ -268,29 +271,55 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
     @Override
     public String getImageType() throws TileStoreException
     {
-        final TileHandle tile = this.stream().findFirst().orElse(null);
-
-        if(tile != null)
+        try
         {
-            final BufferedImage image = tile.getImage();
-            if(image != null)
+            final TileCoordinate coordinate = this.geoPackage
+                                                  .tiles()
+                                                  .getTiles(this.tileSet)
+                                                  .findFirst()
+                                                  .orElse(null);
+
+            if(coordinate != null)
             {
-                final Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(image);
-
-                if(imageReaders.hasNext())
+                final Tile tile = this.geoPackage
+                                      .tiles()
+                                      .getTile(this.tileSet,
+                                               coordinate.getColumn(),
+                                               coordinate.getRow(),
+                                               coordinate.getZoomLevel());
+                if(tile != null)
                 {
-                    final ImageReader imageReader = imageReaders.next();
+                    final byte[] imageData = tile.getImageData();
 
-                    final String[] names = imageReader.getOriginatingProvider().getFormatNames();
-                    if(names != null && names.length > 0)
+                    try(final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(imageData))
                     {
-                        return names[0];
+                        try(final ImageInputStream imageInputStream = ImageIO.createImageInputStream(byteArrayInputStream))
+                        {
+                            final Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(imageInputStream);
+
+                            while(imageReaders.hasNext())
+                            {
+                                final ImageReader imageReader = imageReaders.next();
+
+                                final String[] names = imageReader.getOriginatingProvider().getFormatNames();
+                                if(names != null && names.length > 0)
+                                {
+                                    return names[0];
+                                }
+                            }
+                        }
                     }
                 }
             }
+
+            return null;
+        }
+        catch(final IOException | SQLException ex)
+        {
+            throw new TileStoreException(ex);
         }
 
-        return null;
+
     }
 
     @Override
@@ -344,75 +373,75 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
         final TileMatrixDimensions matrix     = new TileMatrixDimensions(tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight());
 
         return new TileHandle()
-               {
-                    @Override
-                    public int getZoomLevel()
-                    {
-                        return zoomLevel;
-                    }
+                   {
+                        @Override
+                        public int getZoomLevel()
+                        {
+                            return zoomLevel;
+                        }
 
-                    @Override
-                    public int getColumn()
-                    {
-                        return column;
-                    }
+                        @Override
+                        public int getColumn()
+                        {
+                            return column;
+                        }
 
-                    @Override
-                    public int getRow()
-                    {
-                        return row;
-                    }
+                        @Override
+                        public int getRow()
+                        {
+                            return row;
+                        }
 
-                    @Override
-                    public TileMatrixDimensions getMatrix() throws TileStoreException
-                    {
-                        return matrix;
-                    }
+                        @Override
+                        public TileMatrixDimensions getMatrix() throws TileStoreException
+                        {
+                            return matrix;
+                        }
 
-                    @Override
-                    public CrsCoordinate getCrsCoordinate() throws TileStoreException
-                    {
-                        return GeoPackageReader.this
-                                               .crsProfile
-                                               .tileToCrsCoordinate(column,
-                                                                    row,
-                                                                    this.getBounds(),
-                                                                    matrix,
-                                                                    GeoPackageTiles.Origin);
-                    }
+                        @Override
+                        public CrsCoordinate getCrsCoordinate() throws TileStoreException
+                        {
+                            return GeoPackageReader.this
+                                                   .crsProfile
+                                                   .tileToCrsCoordinate(column,
+                                                                        row,
+                                                                        this.getBounds(),
+                                                                        matrix,
+                                                                        GeoPackageTiles.Origin);
+                        }
 
-                    @Override
-                    public CrsCoordinate getCrsCoordinate(final TileOrigin corner) throws TileStoreException
-                    {
-                        return GeoPackageReader.this
-                                               .crsProfile
-                                               .tileToCrsCoordinate(column + corner.getHorizontal(),     // same as: column - (GeoPackageTiles.Origin.getVertical() - corner.getHorizontal()) because GeoPackageTiles.Origin.getVertical() is always 0
-                                                                    row    - (1 - corner.getVertical()),
-                                                                    this.getBounds(),
-                                                                    matrix,
-                                                                    GeoPackageTiles.Origin);
-                    }
+                        @Override
+                        public CrsCoordinate getCrsCoordinate(final TileOrigin corner) throws TileStoreException
+                        {
+                            return GeoPackageReader.this
+                                                   .crsProfile
+                                                   .tileToCrsCoordinate(column + corner.getHorizontal(),     // same as: column - (GeoPackageTiles.Origin.getVertical() - corner.getHorizontal()) because GeoPackageTiles.Origin.getVertical() is always 0
+                                                                        row    - (1 - corner.getVertical()),
+                                                                        this.getBounds(),
+                                                                        matrix,
+                                                                        GeoPackageTiles.Origin);
+                        }
 
-                    @Override
-                    public BoundingBox getBounds() throws TileStoreException
-                    {
-                        final Coordinate<Double> upperLeft  = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(column,   row,   this.getBounds(), matrix, GeoPackageTiles.Origin);
-                        final Coordinate<Double> lowerRight = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(column+1, row+1, this.getBounds(), matrix, GeoPackageTiles.Origin);
+                        @Override
+                        public BoundingBox getBounds() throws TileStoreException
+                        {
+                            final Coordinate<Double> upperLeft  = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(column,   row,   this.getBounds(), matrix, GeoPackageTiles.Origin);
+                            final Coordinate<Double> lowerRight = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(column+1, row+1, this.getBounds(), matrix, GeoPackageTiles.Origin);
 
-                        return new BoundingBox(upperLeft.getX(),
-                                               lowerRight.getY(),
-                                               lowerRight.getX(),
-                                               upperLeft.getY());
-                    }
+                            return new BoundingBox(upperLeft.getX(),
+                                                   lowerRight.getY(),
+                                                   lowerRight.getX(),
+                                                   upperLeft.getY());
+                        }
 
-                    @Override
-                    public BufferedImage getImage() throws TileStoreException
-                    {
-                        return GeoPackageReader.this.getTile(column, row, zoomLevel);
-                    }
+                        @Override
+                        public BufferedImage getImage() throws TileStoreException
+                        {
+                            return GeoPackageReader.this.getTile(column, row, zoomLevel);
+                        }
 
 
-               };
+                   };
     }
 
     protected final GeoPackage   geoPackage;
