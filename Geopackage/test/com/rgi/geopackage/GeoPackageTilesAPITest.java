@@ -1806,42 +1806,6 @@ public class GeoPackageTilesAPITest
     }
 
     /**
-     * Tests if the GeoPackage will throw an IllegalArgumentException when a zoom level is out of range. (negative value)
-     * @throws Exception throws if an exception occurs
-     */
-    @Test (expected = IllegalArgumentException.class)
-   public void getTileZoomLevelRangeIncorrect() throws Exception
-   {
-       final File testFile = this.getRandomFile(5);
-
-       try(GeoPackage gpkg = new GeoPackage(testFile))
-       {
-           gpkg.tiles()
-               .getTile(gpkg.tiles()
-                            .addTileSet("name",
-                                        "ind",
-                                        "des",
-                                        new BoundingBox(0.0,0.0,0.0,0.0),
-                                        gpkg.core().getSpatialReferenceSystem(4326)),
-                        2,
-                        2,
-                        -3);
-
-           Assert.fail("GeoPackage did not throw an IllegalArgumentException when giving a zoom level that is out of range (using getTile method)");
-       }
-       finally
-       {
-           if(testFile.exists())
-           {
-               if(!testFile.delete())
-               {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-               }
-           }
-       }
-   }
-
-    /**
      * This adds a tile to a GeoPackage and verifies that the Tile object added
      * into the GeoPackage is the same Tile object returned.
      *
