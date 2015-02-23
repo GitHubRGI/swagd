@@ -137,17 +137,14 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
 				final Range<Integer> columnRange = new Range<>(tiles, tile -> tile.getColumn(), Integer::compare);
 				final Range<Integer>    rowRange = new Range<>(tiles, tile -> tile.getRow(),    Integer::compare);
 
-				final int minZoomLevelMatrixHeight =    rowRange.getMaximum() -    rowRange.getMinimum() + 1;
 				final int minZoomLevelMatrixWidth  = columnRange.getMaximum() - columnRange.getMinimum() + 1;
+				final int minZoomLevelMatrixHeight =    rowRange.getMaximum() -    rowRange.getMinimum() + 1;
 
                 // Create a new geopackage writer with things like table name and description
 				final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
                                                                          crsProfile.getCoordinateReferenceSystem(),
-                                                                         //"footiles",
                                                                          opts.get(Setting.TileSetName),
-                                                                         //"1",
                                                                          opts.get(Setting.TileSetName),
-                                                                         //"test tiles",
                                                                          opts.get(Setting.TileSetDescription),
                                                                          tileStoreReader.getBounds(),
                                                                          new ZoomTimesTwo(zoomLevelRange.getMinimum(),
