@@ -921,7 +921,7 @@ public class GeopackageTileStoreTest
         {
             final TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, new BoundingBox(-180.0, -90.0, 180.0, 90.0), 10, 7, 9);
             final String formatName = "PNG";
-            final Dimensions<Number> dimensions = new Dimensions<>(256, 512);
+            final Dimensions<Integer> dimensions = new Dimensions<>(256, 512);
             gpkg.tiles().addTile(gpkg.tiles().getTileSet(tileMatrix.getTableName()),
                                  tileMatrix,
                                  6,
@@ -1504,13 +1504,13 @@ public class GeopackageTileStoreTest
     {
         return new BufferedImage(256,256, bufferedImageType);
     }
-    private static byte[] createImageBytes(final int bufferedImageType, final String outputFormat, final Dimensions<Number> dimensions) throws IOException
+    private static byte[] createImageBytes(final int bufferedImageType, final String outputFormat, final Dimensions<Integer> dimensions) throws IOException
     {
-        return ImageUtility.bufferedImageToBytes(new BufferedImage(dimensions.getWidth().intValue(), dimensions.getHeight().intValue(), bufferedImageType), outputFormat);
+        return ImageUtility.bufferedImageToBytes(new BufferedImage(dimensions.getWidth(), dimensions.getHeight(), bufferedImageType), outputFormat);
     }
     private static byte[] createImageBytes(final int bufferedImageType, final String outputFormat) throws IOException
     {
-        final Dimensions<Number> dimensions = new Dimensions<>(256, 256);
+        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
         return createImageBytes(bufferedImageType, outputFormat, dimensions);
     }
     private static byte[] createImageBytes(final int bufferedImageType) throws IOException
