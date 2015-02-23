@@ -876,23 +876,24 @@ public class GeopackageTileStoreTest
     @Test
     public void geoPackageReaderGetImageType() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
     {
-        File testFile = this.getRandomFile(9);
+        final File testFile = this.getRandomFile(9);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             //create tileset and matrix
-            TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, new BoundingBox(-90.0, -180.0, 90.0, 180.0), 10, 7, 9);
-            String formatName = "PNG";
+            final TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, new BoundingBox(-90.0, -180.0, 90.0, 180.0), 10, 7, 9);
+            final String formatName = "PNG";
             //create image
-            byte[] imagebytes = createImageBytes(BufferedImage.TYPE_INT_ARGB, formatName);
+            final byte[] imagebytes = createImageBytes(BufferedImage.TYPE_INT_ARGB, formatName);
             //add image to gpkg
             gpkg.tiles().addTile(gpkg.tiles().getTileSet(tileMatrix.getTableName()),
                                  tileMatrix,
-                                 new RelativeTileCoordinate(5,6,tileMatrix.getZoomLevel()),
+                                 5,
+                                 6,
                                  imagebytes);
-            
+
             try(GeoPackageReader reader = new GeoPackageReader(testFile, tileMatrix.getTableName()))
             {
-                String imageTypeReturned = reader.getImageType();
+                final String imageTypeReturned = reader.getImageType();
                 assertTrue(String.format("The image Type returned from the reader was not the format name expected. \nActual: %s\nExpected: %s.", imageTypeReturned, formatName),
                            formatName.equalsIgnoreCase(imageTypeReturned));
             }
