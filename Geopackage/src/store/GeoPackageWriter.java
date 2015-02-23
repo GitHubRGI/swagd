@@ -48,7 +48,6 @@ import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
-import com.rgi.geopackage.tiles.RelativeTileCoordinate;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
@@ -201,7 +200,8 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
                 .tiles()
                 .addTile(this.tileSet,
                          this.getTileMatrix(zoomLevel, image.getWidth(), image.getHeight()),
-                         new RelativeTileCoordinate(column, row, zoomLevel),
+                         column,
+                         row,
                          ImageUtility.bufferedImageToBytes(image, this.imageWriter, this.imageWriteOptions));
         }
         catch(final SQLException | IOException ex)
@@ -236,7 +236,6 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
                          this.getTileMatrix(zoomLevel, image.getWidth(), image.getHeight()),
                          coordinate,
                          this.crsProfile.getPrecision(),
-                         zoomLevel,
                          ImageUtility.bufferedImageToBytes(image, this.imageWriter, this.imageWriteOptions));
         }
         catch(final SQLException | IOException ex)

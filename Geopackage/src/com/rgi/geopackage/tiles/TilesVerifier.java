@@ -1223,9 +1223,9 @@ public class TilesVerifier extends Verifier
 
                                                                                                                  }
                                                                                                                  catch(final SQLException ex)
-                                                                                                               {
-                                                                                                                      return null;
-                                                                                                               }
+                                                                                                                 {
+                                                                                                                     return null;
+                                                                                                                 }
                                                                                                                })
                                                                                            .filter(Objects::nonNull)
                                                                                            .collect(Collectors.groupingBy(tileData -> tileData.zoomLevel));

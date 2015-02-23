@@ -49,7 +49,6 @@ import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
-import com.rgi.geopackage.tiles.RelativeTileCoordinate;
 import com.rgi.geopackage.tiles.Tile;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileMatrixSet;
@@ -180,7 +179,9 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
             return getImage(this.geoPackage
                                 .tiles()
                                 .getTile(this.tileSet,
-                                         new RelativeTileCoordinate(column, row, zoomLevel)));
+                                         column,
+                                         row,
+                                         zoomLevel));
         }
         catch(final SQLException ex)
         {
@@ -254,9 +255,9 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
             return this.geoPackage
                        .tiles()
                        .getTiles(this.tileSet, zoomLevel)
-                       .map(tileCoordinate -> this.getTileHandle(tileCoordinate.getZoomLevel(),
-                                                                 tileCoordinate.getColumn(),
-                                                                 tileCoordinate.getRow()));
+                       .map(tileCoordinate -> this.getTileHandle(zoomLevel,
+                                                                 tileCoordinate.getX(),
+                                                                 tileCoordinate.getY()));
         }
         catch(final SQLException ex)
         {
@@ -339,8 +340,8 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
 
     private TileHandle getTileHandle(final int zoomLevel, final int column, final int row)
     {
-        final TileMatrix tileMatrix = GeoPackageReader.this.tileMatricies.get(zoomLevel);
-        final TileMatrixDimensions matrix = new TileMatrixDimensions(tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight());
+        final TileMatrix           tileMatrix = GeoPackageReader.this.tileMatricies.get(zoomLevel);
+        final TileMatrixDimensions matrix     = new TileMatrixDimensions(tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight());
 
         return new TileHandle()
                {
