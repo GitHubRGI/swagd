@@ -29,20 +29,20 @@ public class Tile
      * Constructor
      *
      * @param identifier
-     *             Autoincrement primary key
+     *             Auto-incremented primary key
      * @param zoomLevel
      *             zoom level
-     * @param row
-     *             Y component of the tile's cartesian coordinate
      * @param column
-     *             X component of the tile's cartesian coordinate
+     *             X component of the tile's Cartesian coordinate
+     * @param row
+     *             Y component of the tile's Cartesian coordinate
      * @param imageData
      *             Bytes of an image file
      */
     protected Tile(final int    identifier,
                    final int    zoomLevel,
-                   final int    row,
                    final int    column,
+                   final int    row,
                    final byte[] imageData)
     {
         if(zoomLevel < 0)
@@ -89,19 +89,19 @@ public class Tile
     }
 
     /**
-     * @return the row
-     */
-    public int getRow()
-    {
-        return this.row;
-    }
-
-    /**
      * @return the column
      */
     public int getColumn()
     {
         return this.column;
+    }
+
+    /**
+     * @return the row
+     */
+    public int getRow()
+    {
+        return this.row;
     }
 
     /**
@@ -114,7 +114,7 @@ public class Tile
 
     private final int    identifier;
     private final int    zoomLevel;
-    private final int    row;
     private final int    column;
+    private final int    row;
     private final byte[] imageData;
 }

@@ -1044,7 +1044,7 @@ public class GeoPackageTilesAPITest
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 2, 2, 2, 1, 1);
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(10, 0, 0), new byte[] {1, 2, 3, 4});
+            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 10, 0), new byte[] {1, 2, 3, 4});
 
             Assert.fail("Geopackage should throw a IllegalArgumentException when tile_row "
                + "is larger than matrix_height - 1 when zoom levels are equal.");
@@ -1082,7 +1082,7 @@ public class GeoPackageTilesAPITest
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 2, 2, 2, 1, 1);
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(-1, 0, 0), new byte[] {1, 2, 3, 4});
+            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, -1, 0), new byte[] {1, 2, 3, 4});
 
             Assert.fail("Geopackage should throw a IllegalArgumentException when tile_row "
                + "is less than 0.");
@@ -1119,7 +1119,7 @@ public class GeoPackageTilesAPITest
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 2, 2, 2, 1, 1);
-            gpkg.tiles().addTile(tileSet,tileMatrix, new RelativeTileCoordinate(0, 10, 0), new byte[] {1, 2, 3, 4});
+            gpkg.tiles().addTile(tileSet,tileMatrix, new RelativeTileCoordinate(10, 0, 0), new byte[] {1, 2, 3, 4});
 
             Assert.fail("Geopackage should throw a IllegalArgumentException when tile_column "
                + "is larger than matrix_width -1.");
@@ -1157,7 +1157,7 @@ public class GeoPackageTilesAPITest
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 2, 2, 2, 1, 1);
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, -1, 0), new byte[] {1, 2, 3, 4});
+            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(-1, 0, 0), new byte[] {1, 2, 3, 4});
 
             Assert.fail("Geopackage should throw a IllegalArgumentException when tile_column "
                + "is less than 0.");
@@ -1460,7 +1460,7 @@ public class GeoPackageTilesAPITest
                                                                     (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                                                     (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
             //tile data
-            final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 1, 1);
+            final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(1, 0, 1);
             final byte[] imageData = new byte[]{1, 2, 3, 4};
             //add tile twice
             gpkg.tiles().addTile(tileSet, matrixSet, coordinate, imageData);
@@ -1510,7 +1510,7 @@ public class GeoPackageTilesAPITest
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             //Tile coords
-            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(0, 4, 4);
+            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(4, 0, 4);
             //add tile to gpkg
             final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet, 4, 10, 10, 1, 1, 1.0, 1.0);
             gpkg.tiles().addTile(tileSet, tileMatrix1, coord1, null);
@@ -1557,7 +1557,7 @@ public class GeoPackageTilesAPITest
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             //Tile coords
-            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(0, 4, 4);
+            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(4, 0, 4);
             //add tile to gpkg
             final TileMatrix tileMatrix1 = gpkg.tiles().addTileMatrix(tileSet, 4, 10, 10, 1, 1, 1.0, 1.0);
             gpkg.tiles().addTile(tileSet,tileMatrix1, coord1, new byte[]{});
@@ -1651,7 +1651,7 @@ public class GeoPackageTilesAPITest
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             //Tile coords
-            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(0, 4, 4);
+            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(4, 0, 4);
             //add tile to gpkg
             gpkg.tiles().addTile(tileSet, null, coord1, new byte[]{1,2,3,4});
 
@@ -1692,8 +1692,8 @@ public class GeoPackageTilesAPITest
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             //Tile coords
-            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(0, 3, 4);
-            final RelativeTileCoordinate coord2 = new RelativeTileCoordinate(0, 7, 8);
+            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(3, 0, 4);
+            final RelativeTileCoordinate coord2 = new RelativeTileCoordinate(7, 0, 8);
 
             //add tile to gpkg
 
@@ -1768,7 +1768,7 @@ public class GeoPackageTilesAPITest
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             //Tile coords
-            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(0, 4, 4);
+            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(4, 0, 4);
 
             //Retrieve tile from gpkg
             final Tile gpkgTile1 = gpkg.tiles().getTile(tileSet, coord1);
@@ -1821,7 +1821,7 @@ public class GeoPackageTilesAPITest
                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
             //Tile coords
-            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(1, 2, 0);
+            final RelativeTileCoordinate coord1 = new RelativeTileCoordinate(2, 1, 0);
             final byte[] imageData = new byte[]{1,2,3,4};
 
             //Retrieve tile from gpkg
@@ -2319,7 +2319,7 @@ public class GeoPackageTilesAPITest
                                                                       (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
 
             gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 0, 0), GeoPackageTilesAPITest.createImageBytes());
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 0), GeoPackageTilesAPITest.createImageBytes());
+            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(1, 0, 0), GeoPackageTilesAPITest.createImageBytes());
 
             final ArrayList<TileMatrix> expectedTileMatrix = new ArrayList<>();
             expectedTileMatrix.add(tileMatrix);

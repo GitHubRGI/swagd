@@ -33,14 +33,14 @@ public class RelativeTileCoordinate extends Coordinate<Integer>
     /**
      * Constructor
      *
-     * @param row
-     *             The 'y' portion of the coordinate
      * @param column
      *             The 'x' portion of the coordinate
+     * @param row
+     *             The 'y' portion of the coordinate
      * @param zoomLevel
      *             The zoom level associated with the coordinate
      */
-    public RelativeTileCoordinate(final int row, final int column, final int zoomLevel)
+    public RelativeTileCoordinate(final int column, final int row, final int zoomLevel)
     {
         super(column, row);
 
@@ -53,19 +53,19 @@ public class RelativeTileCoordinate extends Coordinate<Integer>
     }
 
     /**
-     * @return Returns the row (y) portion of the coordinate
-     */
-    public Integer getRow()
-    {
-        return this.getY();
-    }
-
-    /**
      * @return Returns the column (x) portion of the coordinate
      */
     public Integer getColumn()
     {
         return this.getX();
+    }
+
+    /**
+     * @return Returns the row (y) portion of the coordinate
+     */
+    public Integer getRow()
+    {
+        return this.getY();
     }
 
     /**

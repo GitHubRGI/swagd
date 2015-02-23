@@ -154,7 +154,7 @@ public class TileMatrix
     }
 
     /**
-     * @return the width of the assicated tile set's spatial reference system or default meters for an undefined geographic coordinate reference system (SRS id 0) (SRS units per pixel)
+     * @return the width of the associated tile set's spatial reference system or default meters for an undefined geographic coordinate reference system (SRS id 0) (SRS units per pixel)
      */
     public double getPixelXSize()
     {
@@ -162,7 +162,7 @@ public class TileMatrix
     }
 
     /**
-     * @return the height of the assicated tile set's spatial reference system or default meters for an undefined geographic coordinate reference system (SRS id 0) (SRS units per pixel)
+     * @return the height of the associated tile set's spatial reference system or default meters for an undefined geographic coordinate reference system (SRS id 0) (SRS units per pixel)
      */
     public double getPixelYSize()
     {
@@ -170,15 +170,23 @@ public class TileMatrix
     }
 
     /**
-     * @param inTableName the tableName of the other TileMatrix
-     * @param inZoomLevel the zoomLevel of the other TileMatrix
-     * @param inMatrixWidth the matrixWidth (number of tiles wide) of the other TileMatrix
-     * @param inMatrixHeight the matrixHeight (number of tiles high)of the other TileMatrix
-     * @param inTileWidth the tileWidth in pixels of the other TileMatrix
-     * @param inTileHeight the tileHeight in pixels of the other TileMatrix
-     * @param inPixelXSize the pixelXSize (units/pixel) of the other TileMatrix
-     * @param inPixelYSize the pixelYSize (units/pixel) of the other TileMatrix
-     * @return true if this.TileMatrix equals the parameter values; otherwise returns false
+     * @param inTableName
+     *             The tableName of the other tile matrix
+     * @param inZoomLevel
+     *             The zoomLevel of the other tile matrix
+     * @param inMatrixWidth
+     *             The matrixWidth (number of tiles wide) of the other tile matrix
+     * @param inMatrixHeight
+     *             The matrixHeight (number of tiles high)of the other tile matrix
+     * @param inTileWidth
+     *             The tileWidth in pixels of the other tile matrix
+     * @param inTileHeight
+     *             The tileHeight in pixels of the other tile matrix
+     * @param inPixelXSize
+     *             The pixelXSize (units/pixel) of the other tile matrix
+     * @param inPixelYSize
+     *             The pixelYSize (units/pixel) of the other tile matrix
+     * @return true if this tile matrix equals the parameter values; otherwise returns false
      */
     public boolean equals(final String inTableName,
                           final int    inZoomLevel,

@@ -180,7 +180,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
             return getImage(this.geoPackage
                                 .tiles()
                                 .getTile(this.tileSet,
-                                         new RelativeTileCoordinate(row, column, zoomLevel)));
+                                         new RelativeTileCoordinate(column, row, zoomLevel)));
         }
         catch(final SQLException ex)
         {
@@ -385,8 +385,8 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                     {
                         return GeoPackageReader.this
                                                .crsProfile
-                                               .tileToCrsCoordinate(column + corner.getHorizontal(),
-                                                                    row    - (1 - corner.getVertical()),    // same as: column - (GeoPackageTiles.Origin.getVertical() - corner.getHorizontal()) because GeoPackageTiles.Origin.getVertical() is always 0
+                                               .tileToCrsCoordinate(column + corner.getHorizontal(),     // same as: column - (GeoPackageTiles.Origin.getVertical() - corner.getHorizontal()) because GeoPackageTiles.Origin.getVertical() is always 0
+                                                                    row    - (1 - corner.getVertical()),
                                                                     this.getBounds(),
                                                                     matrix,
                                                                     GeoPackageTiles.Origin);
