@@ -30,6 +30,8 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -56,7 +58,6 @@ import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.tiles.RelativeTileCoordinate;
 import com.rgi.geopackage.tiles.Tile;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileSet;
@@ -232,18 +233,18 @@ public class GeopackageTileStoreTest
         final File testFile = this.getRandomFile(8);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final BoundingBox bBox    = new BoundingBox(0.0,0.0,180.0,180.0);
+            final BoundingBox bBox = new BoundingBox(0.0,0.0,180.0,180.0);
 
-            final int zoomLevel = 2;
-            final int matrixWidth = 3;
+            final int zoomLevel    = 2;
+            final int matrixWidth  = 3;
             final int matrixHeight = 3;
 
-            final TileMatrix               tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
-            final TileSet                  tileSet    = gpkg.tiles().getTileSet(tileMatrix.getTableName());
-            final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
+            final TileMatrix tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
+            final TileSet    tileSet    = gpkg.tiles().getTileSet(tileMatrix.getTableName());
+
             //add tiles
-            gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(1, 0, 2), createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
+            gpkg.tiles().addTile(tileSet, tileMatrix, 0, 0, createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
+            gpkg.tiles().addTile(tileSet, tileMatrix, 1, 0, createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
@@ -318,22 +319,24 @@ public class GeopackageTileStoreTest
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final BoundingBox bBox    = new BoundingBox(0.0, 0.0, 180.0, 180.0);
-            final int zoomLevel = 2;
-            final int matrixWidth = 3;
+            final BoundingBox bBox = new BoundingBox(0.0, 0.0, 180.0, 180.0);
+            final int zoomLevel    = 2;
+            final int matrixWidth  = 3;
             final int matrixHeight = 3;
 
-            final TileMatrix              tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg,  bBox, zoomLevel, matrixWidth, matrixHeight);
-            final TileSet                  tileSet = gpkg.tiles().getTileSet(tileMatrix.getTableName());
-            final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
+            final TileMatrix tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg,  bBox, zoomLevel, matrixWidth, matrixHeight);
+            final TileSet    tileSet = gpkg.tiles().getTileSet(tileMatrix.getTableName());
 
-            final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
+            final int column = 0;
+            final int row    = 0;
 
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(1, 0, 2), createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
+            final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, column, row, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
+
+            gpkg.tiles().addTile(tileSet, tileMatrix, 1, 0, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
-                final BufferedImage returnedImage = gpkgReader.getTile(coordinate.getColumn(), coordinate.getRow(), coordinate.getZoomLevel());
+                final BufferedImage returnedImage = gpkgReader.getTile(column, row, zoomLevel);
 
                 Assert.assertArrayEquals("The tile image data returned from getTile in GeoPackage reader wasn't the same as the one given.",
                                          tileExpected.getImageData(),
@@ -363,18 +366,18 @@ public class GeopackageTileStoreTest
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final BoundingBox bBox    = new BoundingBox(0.0, 0.0, 180.0, 180.0);
-            final int zoomLevel = 2;
-            final int matrixWidth = 3;
+            final BoundingBox bBox = new BoundingBox(0.0, 0.0, 180.0, 180.0);
+            final int zoomLevel    = 2;
+            final int matrixWidth  = 3;
             final int matrixHeight = 3;
 
             final TileMatrix             tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
             final TileSet                tileSet    = gpkg.tiles().getTileSet(tileMatrix.getTableName());
-            final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
-            //add tiles
-            final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
 
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(1, 0, 2), createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
+            //add tiles
+            final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, 0, 0, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
+
+            gpkg.tiles().addTile(tileSet, tileMatrix, 1, 0, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
@@ -409,17 +412,17 @@ public class GeopackageTileStoreTest
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final BoundingBox bBox    = new BoundingBox(0.0, 0.0, 180.0, 180.0);
-            final int zoomLevel = 2;
-            final int matrixWidth = 3;
+            final BoundingBox bBox = new BoundingBox(0.0, 0.0, 180.0, 180.0);
+            final int zoomLevel    = 2;
+            final int matrixWidth  = 3;
             final int matrixHeight = 3;
 
-            final TileMatrix             tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
-            final TileSet                tileSet    = gpkg.tiles().getTileSet(tileMatrix.getTableName());
-            final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
+            final TileMatrix tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
+            final TileSet    tileSet    = gpkg.tiles().getTileSet(tileMatrix.getTableName());
+
             //add tiles
-            gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
-            final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 2, 2), createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
+            gpkg.tiles().addTile(tileSet, tileMatrix, 0, 0, createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
+            final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, 0, 2, createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
@@ -721,36 +724,36 @@ public class GeopackageTileStoreTest
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            //create a tileSet
+            // Create a tileSet
             final BoundingBox bBox =  new BoundingBox(0.0,0.0,80.0,40.0);
-            final int matrixWidth = 2;
+            final int matrixWidth  = 2;
             final int matrixHeight = 4;
-            final int zoomLevel = 9;
-            //create matrix
+            final int zoomLevel    = 9;
+
+            // Create matrix
             final TileMatrix tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
             final TileSet    tileSet    = gpkg.tiles().getTileSet(tileMatrix.getTableName());
-            final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, zoomLevel);
-            //add three tiles
-            final Tile tile  = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate,  createImageBytes(BufferedImage.TYPE_INT_ARGB));
-            final RelativeTileCoordinate coordinate2 = new RelativeTileCoordinate(0, 1, zoomLevel);
-            final Tile tile2 = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate2, createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
-            final RelativeTileCoordinate coordinate3 = new RelativeTileCoordinate(1, 0, zoomLevel);
-            final Tile tile3 = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate3, createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
-            //create a list of the expected tiles
-            final List<Tile> expectedTiles = Arrays.asList(tile, tile2, tile3);
-            //create a geopackage reader
+
+            // Add three tiles
+            final Tile tile  = gpkg.tiles().addTile(tileSet, tileMatrix, 0, 0, createImageBytes(BufferedImage.TYPE_INT_ARGB));
+            final Tile tile2 = gpkg.tiles().addTile(tileSet, tileMatrix, 0, 1, createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
+            final Tile tile3 = gpkg.tiles().addTile(tileSet, tileMatrix, 1, 0, createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
+
+            final List<Tile> expectedTiles = Arrays.asList(tile, tile2, tile3); // Create a list of the expected tiles
+
             try(GeoPackageReader reader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
-                //check to see if tiles match
-                final boolean tilesEqual = expectedTiles.stream().allMatch(expectedTile -> { try
-                                                                                       {
-                                                                                            return reader.stream().anyMatch(tileHandle -> tileAndTileHandleEqual(expectedTile, tileHandle, "png"));
-                                                                                       }
-                                                                                       catch(final TileStoreException ex)
-                                                                                       {
-                                                                                            return false;
-                                                                                       }
-                                                                                     });
+                // Check to see if tiles match
+                final boolean tilesEqual = expectedTiles.stream()
+                                                        .allMatch(expectedTile -> { try
+                                                                                    {
+                                                                                         return reader.stream().anyMatch(tileHandle -> tileAndTileHandleEqual(expectedTile, tileHandle, "png"));
+                                                                                    }
+                                                                                    catch(final TileStoreException ex)
+                                                                                    {
+                                                                                         return false;
+                                                                                    }
+                                                                                  });
                 assertTrue("GeoPackage reader returned tiles that were not equal to the ones in the GeoPackage.", tilesEqual);
             }
         }
@@ -772,7 +775,7 @@ public class GeopackageTileStoreTest
     public void getStreamOfTileHandlesByZoom() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
               final int matrixWidth    = 5;
               final int matrixHeight   = 6;
@@ -782,11 +785,11 @@ public class GeopackageTileStoreTest
               final Set<Integer> zoomLevels = new HashSet<>(Arrays.asList(1,3,6,8));
 
               final TileSet tileSet = gpkg.tiles()
-                                    .addTileSet("TableName",
-                                                "identifier",
-                                                "description",
-                                                bBox,
-                                                gpkg.core().getSpatialReferenceSystem(4326));
+                                          .addTileSet("TableName",
+                                                      "identifier",
+                                                      "description",
+                                                      bBox,
+                                                      gpkg.core().getSpatialReferenceSystem(4326));
 
               addTileMatriciesToGpkg(zoomLevels,
                                      tileSet,
@@ -795,55 +798,63 @@ public class GeopackageTileStoreTest
                                      256,
                                      256);
 
-              final List<TileMatrix>             tileMatrices    = gpkg.tiles().getTileMatrices(tileSet);
-              final List<RelativeTileCoordinate> tileCoordinates = Arrays.asList(new RelativeTileCoordinate(2,1, 1),
-                                                                           new RelativeTileCoordinate(4,2, 3),
-                                                                           new RelativeTileCoordinate(7,5, 6),
-                                                                           new RelativeTileCoordinate(10,9,8),
-                                                                           new RelativeTileCoordinate(5, 2, 6),
-                                                                           new RelativeTileCoordinate(1, 0, 1));
-              //add the tiles
-              final Set<Tile> tiles = new HashSet<>();
-              tileCoordinates.forEach(tileCoordinate -> {   try
-                                                            {
-                                                                final TileMatrix tileMatrix = tileMatrices.stream()
-                                                                                                    .filter(matrix -> matrix.getZoomLevel() == tileCoordinate.getZoomLevel())
-                                                                                                    .collect(Collectors.toList())
-                                                                                                    .get(0);
+              final Map<Integer, TileMatrix> tileMatrices = gpkg.tiles()
+                                                                .getTileMatrices(tileSet)
+                                                                .stream()
+                                                                .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
+                                                                                          tileMatrix -> tileMatrix));
 
-                                                                final int randomIndex = this.randomGenerator.nextInt(this.bufferedImageList.size());
+              final List<Integer[]> tileCoordinates = Arrays.asList(new Integer[]{ 2, 1, 1},
+                                                                    new Integer[]{ 4, 2, 3},
+                                                                    new Integer[]{ 7, 5, 6},
+                                                                    new Integer[]{10, 9, 8},
+                                                                    new Integer[]{ 5, 2, 6},
+                                                                    new Integer[]{ 1, 0, 1});
 
-                                                                tiles.add(gpkg.tiles().addTile(tileSet,
-                                                                                               tileMatrix,
-                                                                                               tileCoordinate,
-                                                                                               createImageBytes(this.bufferedImageList.get(randomIndex))));
-                                                             }
-                                                             catch(final Exception ex)
-                                                             {
-                                                                //do nothing
-                                                             }
-                                                         });
-
-              try(GeoPackageReader reader = new GeoPackageReader(testFile, tileSet.getTableName()))
-              {
-                    for(final int zoomLevel : zoomLevels)
-                    {
-                           final boolean valid =  tiles.stream()
-                                                 .filter(tile -> tile.getZoomLevel() == zoomLevel)
-                                                 .allMatch(expectedTile -> {  try
-                                                                              {
-                                                                               return reader.stream  (zoomLevel)
-                                                                                            .anyMatch(tileHandle -> tileAndTileHandleEqual(expectedTile, tileHandle, "png"));
-                                                                               }
-                                                                               catch(final TileStoreException ex)
+              final List<Tile> tiles = tileCoordinates.stream()
+                                                      .map(tileCoordinate -> { try
                                                                                {
-                                                                                   return false;
+                                                                                  final int randomIndex = this.randomGenerator.nextInt(this.bufferedImageList.size());
+
+                                                                                  final int column    = tileCoordinate[0];
+                                                                                  final int row       = tileCoordinate[1];
+                                                                                  final int zoomLevel = tileCoordinate[2];
+
+                                                                                  return gpkg.tiles()
+                                                                                             .addTile(tileSet,
+                                                                                                      tileMatrices.get(zoomLevel),
+                                                                                                      column,
+                                                                                                      row,
+                                                                                                      createImageBytes(this.bufferedImageList.get(randomIndex)));
                                                                                }
-                                                                            });
-                           assertTrue(String.format("For the zoom level %d the GeoPackageReader.stream(int zoom) did not return the expected tileHandle values.",
-                                                    zoomLevel),
-                                      valid);
-                    }
+                                                                               catch(final Exception ex)
+                                                                               {
+                                                                                  return null;
+                                                                               }
+                                                                             })
+                                                      .filter(Objects::nonNull)
+                                                      .collect(Collectors.toList());
+
+              try(final GeoPackageReader reader = new GeoPackageReader(testFile, tileSet.getTableName()))
+              {
+                  for(final int zoomLevel : zoomLevels)
+                  {
+                         final boolean valid =  tiles.stream()
+                                                     .filter(tile -> tile.getZoomLevel() == zoomLevel)
+                                                     .allMatch(expectedTile -> { try
+                                                                                 {
+                                                                                     return reader.stream(zoomLevel)
+                                                                                                  .anyMatch(tileHandle -> tileAndTileHandleEqual(expectedTile, tileHandle, "png"));
+                                                                                 }
+                                                                                 catch(final TileStoreException ex)
+                                                                                 {
+                                                                                     return false;
+                                                                                 }
+                                                                                });
+                         assertTrue(String.format("For the zoom level %d the GeoPackageReader.stream(int zoom) did not return the expected tileHandle values.",
+                                                  zoomLevel),
+                                    valid);
+                  }
              }
         }
         finally
@@ -909,7 +920,8 @@ public class GeopackageTileStoreTest
             final Dimensions<Number> dimensions = new Dimensions<>(256, 512);
             gpkg.tiles().addTile(gpkg.tiles().getTileSet(tileMatrix.getTableName()),
                                  tileMatrix,
-                                 new RelativeTileCoordinate(6,5,tileMatrix.getZoomLevel()),
+                                 6,
+                                 5,
                                  createImageBytes(BufferedImage.TYPE_3BYTE_BGR, formatName, dimensions));
 
             try(GeoPackageReader reader = new GeoPackageReader(testFile, tileMatrix.getTableName()))
@@ -1506,8 +1518,8 @@ public class GeopackageTileStoreTest
     {
         try
         {
-             return tile.getColumn() == tileHandle.getColumn() &&
-                    tile.getRow()    == tileHandle.getRow()    &&
+             return tile.getColumn()    == tileHandle.getColumn() &&
+                    tile.getRow()       == tileHandle.getRow()    &&
                     tile.getZoomLevel() ==  tileHandle.getZoomLevel() &&
                     Arrays.equals(tile.getImageData(), ImageUtility.bufferedImageToBytes(tileHandle.getImage(), outputFormat));
         }
