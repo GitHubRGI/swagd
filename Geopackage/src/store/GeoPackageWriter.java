@@ -283,8 +283,8 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
                                              zoomLevel,
                                              tileMatrixDimensions.getWidth(),
                                              tileMatrixDimensions.getHeight(),
-                                             tilePixelHeight,
                                              tilePixelWidth,
+                                             tilePixelHeight,
                                              tileSetBounds.getWidth()  / tileMatrixDimensions.getWidth()  / tilePixelWidth,
                                              tileSetBounds.getHeight() / tileMatrixDimensions.getHeight() / tilePixelHeight);
     }

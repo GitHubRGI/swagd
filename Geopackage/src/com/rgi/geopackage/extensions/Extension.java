@@ -18,6 +18,7 @@
 
 package com.rgi.geopackage.extensions;
 
+
 /**
  * GeoPackage Extension
  *
@@ -89,7 +90,7 @@ public class Extension
             throw new IllegalArgumentException("Definition may not be null or empty");
         }
 
-        Scope.fromText(scope);  // Check that this conforms to a valid Scope valid
+        Enum.valueOf(Scope.class, scope);   // Throws if it's null or an invalid value
 
         this.tableName     = tableName;
         this.columnName    = columnName;
@@ -99,11 +100,11 @@ public class Extension
     }
 
     /**
-     * @param inTableName the tableName corresponding to other Extension 
-     * @param inColumnName the columnName corresponding to other Extension 
-     * @param inExtensionName the extension Name corresponding to other Extension 
-     * @param inDefinition the definition corresponding to other Extension 
-     * @param inScope the Scope corresponding to other Extension 
+     * @param inTableName the tableName corresponding to other Extension
+     * @param inColumnName the columnName corresponding to other Extension
+     * @param inExtensionName the extension Name corresponding to other Extension
+     * @param inDefinition the definition corresponding to other Extension
+     * @param inScope the Scope corresponding to other Extension
      * @return true if this.Extension equals the parameters
      */
     public boolean equals(final String inTableName,
