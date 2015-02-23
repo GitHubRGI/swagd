@@ -90,7 +90,10 @@ public class Extension
             throw new IllegalArgumentException("Definition may not be null or empty");
         }
 
-        Enum.valueOf(Scope.class, scope);   // Throws if it's null or an invalid value
+        if(Scope.fromText(scope) == null)
+        {
+            throw new IllegalArgumentException("Bad value for scope");
+        }
 
         this.tableName     = tableName;
         this.columnName    = columnName;
