@@ -35,7 +35,7 @@ public class PackageOutput extends AbstractWindow {
 	@Override
 	protected void buildContentPane() {
 		this.contentPane = new JPanel(new GridBagLayout());
-		
+
 		// Initial UI values
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.weightx = 1;
@@ -63,11 +63,12 @@ public class PackageOutput extends AbstractWindow {
                                                     fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
                                                     fc.addChoosableFileFilter(new FileFilter()
                                                     {
+                                                        @Override
                                                         public String getDescription()
                                                         {
                                                                return "GeoPackage Files (*.gpkg)";
                                                         }
-                                                                    
+
                                                         @Override
                                                         public boolean accept(File pathname) {
                                                                 return pathname.getName().toLowerCase().endsWith(".gpkg");
@@ -78,7 +79,7 @@ public class PackageOutput extends AbstractWindow {
                                                         this.outputFileName.setText(fc.getSelectedFile().getPath());
                                                     }
                                                 });
-        
+
         // Add the input SRS combo box
         ++gbc.gridy;
         gbc.gridwidth = 1;
@@ -89,10 +90,10 @@ public class PackageOutput extends AbstractWindow {
         gbc.gridwidth = 2;
         gbc.weightx = 1;
         this.contentPane.add(this.outputProfileChoice, gbc);
-        
+
         // Add the output image type combo box
         this.outputImageType = new JComboBox<>(new DefaultComboBoxModel<>(Settings.Type.values()));
-        outputImageType.setSelectedItem(Type.PNG);
+        this.outputImageType.setSelectedItem(Type.PNG);
         ++gbc.gridy;
         gbc.gridwidth = 1;
         gbc.weightx = 0;
@@ -149,11 +150,11 @@ public class PackageOutput extends AbstractWindow {
         gbc.anchor = GridBagConstraints.EAST;
         this.navPane.add(nextButton, gbc);
 	}
-	
+
 	private void executePackaging()
 	{
 		Settings settings = this.context.getSettings();
-		settings.set(Setting.OutputFileName, outputFileName.getText());
+		settings.set(Setting.OutputFileName, this.outputFileName.getText());
 		settings.set(Setting.TileType, ((Type) (this.outputImageType.getSelectedItem())).name());
 		settings.set(Setting.CrsProfile, (Profile) (this.outputProfileChoice.getSelectedItem()));
 		this.context.transitionTo(Window.PROGRESS);

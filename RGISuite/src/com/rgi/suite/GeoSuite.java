@@ -49,7 +49,7 @@ public class GeoSuite
                                          });
     }
 
-    private static void runHeadless(String[] args)
+    private static void runHeadless(@SuppressWarnings("unused")String[] args)
     {
         // TODO
     	System.out.println("Running headless is not yet supported.");
@@ -57,7 +57,7 @@ public class GeoSuite
 
     /**
      * Code decision point for running in either GUI mode or headless (command-line) mode.
-     * 
+     *
      * @param args A string array of command line arguments.
      */
     public static void main(String[] args)
