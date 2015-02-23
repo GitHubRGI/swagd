@@ -26,24 +26,24 @@ package com.rgi.common.coordinate;
 public class CrsCoordinate extends Coordinate<Double>
 {
     /**
-     * @param y y value in units of the Coordinate Reference System
      * @param x x value in units of the Coordinate Reference System
+     * @param y y value in units of the Coordinate Reference System
      * @param crsAuthority the Coordinate Reference System authority name (typically "EPSG") of the coordinate
      * @param crsIdentifier the version number of the authority of the coordinate
      */
-    public CrsCoordinate(final double y, final double x, final String crsAuthority, final int crsIdentifier)
+    public CrsCoordinate(final double x, final double y, final String crsAuthority, final int crsIdentifier)
     {
-        this(y, x, new CoordinateReferenceSystem(crsAuthority, crsIdentifier));
+        this(x, y, new CoordinateReferenceSystem(crsAuthority, crsIdentifier));
     }
 
     /**
-     * @param y y value in units of the Coordinate Reference System
      * @param x x value in units of the Coordinate Reference System
+     * @param y y value in units of the Coordinate Reference System
      * @param coordinateReferenceSystem the Coordinate Reference System of the coordinate
      */
-    public CrsCoordinate(final double y, final double x, final CoordinateReferenceSystem coordinateReferenceSystem)
+    public CrsCoordinate(final double x, final double y, final CoordinateReferenceSystem coordinateReferenceSystem)
     {
-        this(new Coordinate<>(y, x), coordinateReferenceSystem);
+        this(new Coordinate<>(x, y), coordinateReferenceSystem);
     }
 
     /**

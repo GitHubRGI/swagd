@@ -36,11 +36,11 @@ public class LatLongConversions
     /**
      * Convert Latitude and longitude to meters
      * for WGS 84 Ellipsoid World mercator EPSG(3395)
-     * @param lat Latitude in Degrees
      * @param lon Longitude in Degrees
+     * @param lat Latitude in Degrees
      * @return MeterCoordiante
      */
-    public static Coordinate<Double> latLongToMeters(final double lat, final double lon)
+    public static Coordinate<Double> latLongToMeters(final double lon, final double lat)
     {
         //Converting the degrees to radian
         final Double latInRadian = Math.toRadians(lat);
@@ -50,7 +50,7 @@ public class LatLongConversions
         final double ymeter = semiMajorAxis * atanh(Math.sin(latInRadian)) - semiMajorAxis*eccentricity*atanh(eccentricity*(Math.sin(latInRadian)));
         
         //initialize the meter's coordinate
-        return new Coordinate<>(ymeter, xmeter);
+        return new Coordinate<>(xmeter, ymeter);
     }
     /**
      * Converting meters of WGS 84 Ellipsoid World Mercator
@@ -64,7 +64,7 @@ public class LatLongConversions
         final double longitudeInRadian = metersX/semiMajorAxis;
         final double latitudeInRadian = inverseMappingConversion(metersY);
 
-        return new Coordinate<>(Math.toDegrees(latitudeInRadian), Math.toDegrees(longitudeInRadian));
+        return new Coordinate<>(Math.toDegrees(longitudeInRadian), Math.toDegrees(latitudeInRadian));
     }
 
     /**

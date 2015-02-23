@@ -42,7 +42,7 @@ public class RelativeTileCoordinate extends Coordinate<Integer>
      */
     public RelativeTileCoordinate(final int row, final int column, final int zoomLevel)
     {
-        super(row, column);
+        super(column, row);
 
         if(zoomLevel < 0)
         {

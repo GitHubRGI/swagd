@@ -124,8 +124,8 @@ public class TileJob implements Runnable
 
         final GeoTransformation geoTransform = new GeoTransformation(dataset.GetGeoTransform());
 
-        final Dimensions<Integer> rasterDimensions = new Dimensions<>(dataset.getRasterYSize(),
-                                                                      dataset.getRasterXSize());
+        final Dimensions<Integer> rasterDimensions = new Dimensions<>(dataset.getRasterXSize(),
+                                                                      dataset.getRasterYSize());
 
         final BoundingBox imageCrsBounds = geoTransform.getBounds(dataset);
 
@@ -538,8 +538,8 @@ public class TileJob implements Runnable
 
     private CrsCoordinate tileToCrsCoordinate(final int tileY, final int tileX, final BoundingBox bounds, final int zoomLevel)
     {
-        return this.crsProfile.tileToCrsCoordinate(tileY,
-                                                   tileX,
+        return this.crsProfile.tileToCrsCoordinate(tileX,
+                                                   tileY,
                                                    bounds,
                                                    this.tileScheme.dimensions(zoomLevel),
                                                    this.tileStoreWriter.getTileOrigin());

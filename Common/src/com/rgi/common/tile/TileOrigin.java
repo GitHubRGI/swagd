@@ -30,7 +30,7 @@ public enum TileOrigin
     /**
      * The TileOrigin of a tile is the UpperLeft corner
      */
-    UpperLeft (1, 0),
+    UpperLeft (0, 1),
     /**
      * The TileOrigin of a tile is the LowerLeft corner
      */
@@ -42,9 +42,9 @@ public enum TileOrigin
     /**
      * The TileOrigin of a tile is the LowerRight corner
      */
-    LowerRight(0, 1);
+    LowerRight(1, 0);
 
-    TileOrigin(final int vertical, final int horizontal)
+    TileOrigin(final int horizontal, final int vertical)
     {
         this.horizontal = horizontal;
         this.vertical   = vertical;
@@ -91,8 +91,8 @@ public enum TileOrigin
             throw new IllegalArgumentException("Tile matrix dimensions may not be null");
         }
 
-        return new Coordinate<>(this.transformVertical  (toOrigin, tileCoordinate.getY().intValue(), matrixDimensions.getHeight()),
-                                this.transformHorizontal(toOrigin, tileCoordinate.getX().intValue(), matrixDimensions.getWidth()));
+        return new Coordinate<>(this.transformHorizontal(toOrigin, tileCoordinate.getX().intValue(), matrixDimensions.getWidth()),
+                                this.transformVertical  (toOrigin, tileCoordinate.getY().intValue(), matrixDimensions.getHeight()));
     }
 
     /**
@@ -116,8 +116,8 @@ public enum TileOrigin
             throw new IllegalArgumentException("Tile matrix dimensions may not be null");
         }
 
-        return new Coordinate<>(this.transformVertical  (toOrigin, tileY, matrixDimensions.getHeight()),
-                                this.transformHorizontal(toOrigin, tileX, matrixDimensions.getWidth()));
+        return new Coordinate<>(this.transformHorizontal(toOrigin, tileX, matrixDimensions.getWidth()),
+                                this.transformVertical  (toOrigin, tileY, matrixDimensions.getHeight()));
     }
 
     /**

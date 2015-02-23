@@ -70,7 +70,7 @@ public class SphericalMercatorCrsProfileTest
     public void crstToTileCoordinateIllegalArgumentException()
     {
         final SphericalMercatorCrsProfile sphericalMerCrs = new SphericalMercatorCrsProfile();
-        sphericalMerCrs.crsToTileCoordinate(null, null, new TileMatrixDimensions(5,8), TileOrigin.UpperRight);
+        sphericalMerCrs.crsToTileCoordinate(null, null, new TileMatrixDimensions(8,5), TileOrigin.UpperRight);
         fail("Expected Spherical Mercator to throw an IllegalArgumentException when coordinate is null for crsToTileCoordinate");
     }
 
@@ -82,7 +82,7 @@ public class SphericalMercatorCrsProfileTest
     public void crstToTileCoordinateIllegalArgumentException2()
     {
         final SphericalMercatorCrsProfile sphericalMerCrs = new SphericalMercatorCrsProfile();
-        sphericalMerCrs.crsToTileCoordinate(new CrsCoordinate(90.0,-50.0, "epsg", 3857), new BoundingBox(0.0, 0.0, 0.0, 0.0), null, TileOrigin.UpperRight);
+        sphericalMerCrs.crsToTileCoordinate(new CrsCoordinate(-50.0,90.0, "epsg", 3857), new BoundingBox(0.0, 0.0, 0.0, 0.0), null, TileOrigin.UpperRight);
         fail("Expected Spherical Mercator to throw an IllegalArgumentException when dimensions is null for crsToTileCoordinate");
     }
 
@@ -94,7 +94,7 @@ public class SphericalMercatorCrsProfileTest
     public void crstToTileCoordinateIllegalArgumentException3()
     {
         final SphericalMercatorCrsProfile sphericalMerCrs = new SphericalMercatorCrsProfile();
-        sphericalMerCrs.crsToTileCoordinate(new CrsCoordinate(90.0,-50.0, "epsg", 3857), new BoundingBox(0.0, 0.0, 0.0, 0.0), new TileMatrixDimensions(5,8), null);
+        sphericalMerCrs.crsToTileCoordinate(new CrsCoordinate(-50.0,90.0, "epsg", 3857), new BoundingBox(0.0, 0.0, 0.0, 0.0), new TileMatrixDimensions(8,5), null);
         fail("Expected Spherical Mercator to throw an IllegalArgumentException when TileOrigin is null for crsToTileCoordinate");
     }
 
@@ -106,7 +106,7 @@ public class SphericalMercatorCrsProfileTest
     public void crstToTileCoordinateIllegalArgumentException4()
     {
         final SphericalMercatorCrsProfile sphericalMerCrs = new SphericalMercatorCrsProfile();
-        sphericalMerCrs.crsToTileCoordinate(new CrsCoordinate(90.0,-50.0, "epsg", 4326), new BoundingBox(0.0, 0.0, 0.0, 0.0), new TileMatrixDimensions(5,8), TileOrigin.LowerLeft);
+        sphericalMerCrs.crsToTileCoordinate(new CrsCoordinate(-50.0,90.0, "epsg", 4326), new BoundingBox(0.0, 0.0, 0.0, 0.0), new TileMatrixDimensions(8,5), TileOrigin.LowerLeft);
         fail("Expected Spherical Mercator to throw an IllegalArgumentException when passing a different crs to crsToTileCoordinate");
     }
 
@@ -118,9 +118,9 @@ public class SphericalMercatorCrsProfileTest
     public void crstToTileCoordinateIllegalArgumentException5()
     {
         final SphericalMercatorCrsProfile sphericalMerCrs = new SphericalMercatorCrsProfile();
-        sphericalMerCrs.crsToTileCoordinate(new CrsCoordinate(sphericalMerCrs.getBounds().getMaxY(),SphericalMercatorCrsProfile.Bounds.getMinX(), "epsg", 3857),
+        sphericalMerCrs.crsToTileCoordinate(new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX(),sphericalMerCrs.getBounds().getMaxY(), "epsg", 3857),
                                             new BoundingBox(0.0, 0.0, 0.0, 0.0),
-                                            new TileMatrixDimensions(5,8),
+                                            new TileMatrixDimensions(8,5),
                                             TileOrigin.LowerLeft);
 
         fail("Expected Spherical Mercator to throw an IllegalArgumentException when passing a coordinate outside the bounds to crsToTileCoordinate");
@@ -135,7 +135,7 @@ public class SphericalMercatorCrsProfileTest
     public void tileToCrsCoordinateIllegalArgumentException()
     {
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
-        sphericalCrs.tileToCrsCoordinate(-5, 8, new BoundingBox(0.0, 0.0, 0.0, 0.0), new TileMatrixDimensions(100,100), TileOrigin.LowerLeft);
+        sphericalCrs.tileToCrsCoordinate(8, -5, new BoundingBox(0.0, 0.0, 0.0, 0.0), new TileMatrixDimensions(100,100), TileOrigin.LowerLeft);
         fail("Expected Spherical Mercator CrsProfile to throw an IllegalArgumentException when row is negative in tileToCrsCoordinate.");
     }
 
@@ -147,7 +147,7 @@ public class SphericalMercatorCrsProfileTest
    public void tileToCrsCoordinateIllegalArgumentException2()
    {
        final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
-       sphericalCrs.tileToCrsCoordinate(5, -8, new BoundingBox(0.0, 0.0, 0.0, 0.0), new TileMatrixDimensions(100,100), TileOrigin.LowerLeft);
+       sphericalCrs.tileToCrsCoordinate(-8, 5, new BoundingBox(0.0, 0.0, 0.0, 0.0), new TileMatrixDimensions(100,100), TileOrigin.LowerLeft);
        fail("Expected Spherical Mercator CrsProfile to throw an IllegalArgumentException when column is negative in tileToCrsCoordinate.");
    }
 
@@ -159,7 +159,7 @@ public class SphericalMercatorCrsProfileTest
     public void tileToCrsCoordinateIllegalArgumentException3()
     {
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
-        sphericalCrs.tileToCrsCoordinate(5, 8, new BoundingBox(0.0, 0.0, 0.0, 0.0), null, TileOrigin.LowerLeft);
+        sphericalCrs.tileToCrsCoordinate(8, 5, new BoundingBox(0.0, 0.0, 0.0, 0.0), null, TileOrigin.LowerLeft);
         fail("Expected Spherical Mercator CrsProfile to throw an IllegalArgumentException when the tile matrix dimensions is null in tileToCrsCoordinate.");
     }
 
@@ -171,7 +171,7 @@ public class SphericalMercatorCrsProfileTest
     public void tileToCrsCoordinateIllegalArgumentException4()
     {
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
-        sphericalCrs.tileToCrsCoordinate(5, 8, new BoundingBox(0.0, 0.0, 0.0, 0.0), new TileMatrixDimensions(100,100), null);
+        sphericalCrs.tileToCrsCoordinate(8, 5, new BoundingBox(0.0, 0.0, 0.0, 0.0), new TileMatrixDimensions(100,100), null);
         fail("Expected Spherical Mercator CrsProfile to throw an IllegalArgumentException when the tile Origin is null in tileToCrsCoordinate.");
     }
 
@@ -207,10 +207,10 @@ public class SphericalMercatorCrsProfileTest
 
     private static boolean verifyCoordinateConversion(final LatLongMetersYMetersX coordinate)
     {
-        final CrsCoordinate               metersCoordinate   = new CrsCoordinate(coordinate.metersY, coordinate.metersX, "epsg", 3857);
+        final CrsCoordinate               metersCoordinate   = new CrsCoordinate(coordinate.metersX, coordinate.metersY, "epsg", 3857);
         final SphericalMercatorCrsProfile sphericalCrs       = new SphericalMercatorCrsProfile();
         final Coordinate<Double>          coordinateReturned = sphericalCrs.toGlobalGeodetic(metersCoordinate);
-        final Coordinate<Double>          coordinateExpected = new Coordinate<>(coordinate.latitude, coordinate.longitude);
+        final Coordinate<Double>          coordinateExpected = new Coordinate<>(coordinate.longitude, coordinate.latitude);
         return isEqual(coordinateExpected, coordinateReturned);
     }
 
@@ -246,8 +246,8 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void crsProfileUpperLeftCrsToTileCoordinate()
     {
-        final CrsCoordinate         coordinate = new CrsCoordinate(0.0, (SphericalMercatorCrsProfile.EarthEquatorialCircumfrence/2.0)-1.0, "epsg", 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(2,3);
+        final CrsCoordinate         coordinate = new CrsCoordinate((SphericalMercatorCrsProfile.EarthEquatorialCircumfrence/2.0)-1.0, 0.0, "epsg", 3857);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(3,2);
         final TileOrigin            tileOrigin = TileOrigin.UpperLeft;
 
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
@@ -266,11 +266,11 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void upperLeftOriginCrsToTileCoordinateUpperLeftCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMinX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMaxY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.UpperLeft;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -289,11 +289,11 @@ public class SphericalMercatorCrsProfileTest
     @Test(expected = IllegalArgumentException.class)
     public void upperLeftOriginCrsToTileCoordinateLowerLeftCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMinX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMinY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.UpperLeft;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -309,11 +309,11 @@ public class SphericalMercatorCrsProfileTest
     @Test(expected = IllegalArgumentException.class)
     public void upperLeftOriginCrsToTileCoordinateUpperRightCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMaxX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMaxY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.UpperLeft;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -329,11 +329,11 @@ public class SphericalMercatorCrsProfileTest
     @Test(expected = IllegalArgumentException.class)
     public void upperLeftOriginCrsToTileCoordinateLowerRightCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMaxX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMinY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.UpperLeft;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -349,10 +349,10 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void upperLeftOriginCrsToTileCoordinateEdgeCaseMiddleOfFourTiles()
     {
-        final TileMatrixDimensions dimensions = new TileMatrixDimensions(5, 13);
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(13, 5);
 
-        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY() - (3*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
-                                                            SphericalMercatorCrsProfile.Bounds.getMinX() + (8*(SphericalMercatorCrsProfile.Bounds.getWidth()  / dimensions.getWidth())),
+        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX() + (8*(SphericalMercatorCrsProfile.Bounds.getWidth()  / dimensions.getWidth())),
+                                                            SphericalMercatorCrsProfile.Bounds.getMaxY() - (3*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
                                                             "epsg",
                                                             3857);
 
@@ -376,10 +376,10 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void upperLeftOriginCrsToTileCoordinateEdgeCaseBetweenTilesSideBySide()
     {
-        final TileMatrixDimensions dimensions = new TileMatrixDimensions(5, 13);
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(13, 5);
 
-        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY() - (2.3*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
-                                                            SphericalMercatorCrsProfile.Bounds.getMinX() + (5*(SphericalMercatorCrsProfile.Bounds.getWidth()  / dimensions.getWidth())),
+        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX() + (5*(SphericalMercatorCrsProfile.Bounds.getWidth()  / dimensions.getWidth())),
+                                                            SphericalMercatorCrsProfile.Bounds.getMaxY() - (2.3*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
                                                             "epsg",
                                                             3857);
 
@@ -403,10 +403,10 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void upperLeftOriginCrsToTileCoordinateEdgeCaseBetweenTilesUpAndDown()
     {
- final TileMatrixDimensions dimensions = new TileMatrixDimensions(5, 13);
+ final TileMatrixDimensions dimensions = new TileMatrixDimensions(13, 5);
 
-        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY() - (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
-                                                            SphericalMercatorCrsProfile.Bounds.getMinX() + (3.8*(SphericalMercatorCrsProfile.Bounds.getWidth()/ dimensions.getWidth())),
+        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX() + (3.8*(SphericalMercatorCrsProfile.Bounds.getWidth()/ dimensions.getWidth())),
+                                                            SphericalMercatorCrsProfile.Bounds.getMaxY() - (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
                                                             "epsg",
                                                             3857);
         final TileOrigin           tileOrigin = TileOrigin.UpperLeft;
@@ -427,9 +427,9 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void crsProfileLowerLeftCrsToTileCoordinate()
     {
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(6,11);
-        final CrsCoordinate         coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY() + (0.3*(SphericalMercatorCrsProfile.Bounds.getHeight()  / dimensions.getHeight())),
-                                                             SphericalMercatorCrsProfile.Bounds.getMinX() + (9.123*(SphericalMercatorCrsProfile.Bounds.getWidth() / dimensions.getWidth())),
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(11,6);
+        final CrsCoordinate         coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX() + (9.123*(SphericalMercatorCrsProfile.Bounds.getWidth() / dimensions.getWidth())),
+                                                             SphericalMercatorCrsProfile.Bounds.getMinY() + (0.3*(SphericalMercatorCrsProfile.Bounds.getHeight()  / dimensions.getHeight())),
                                                              "epsg",
                                                              3857);
         final TileOrigin            tileOrigin = TileOrigin.LowerLeft;
@@ -450,11 +450,11 @@ public class SphericalMercatorCrsProfileTest
     @Test(expected = IllegalArgumentException.class)
     public void lowerLeftOriginCrsToTileCoordinateUpperLeftCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMinX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMaxY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.LowerLeft;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -470,11 +470,11 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void lowerLeftOriginCrsToTileCoordinateLowerLeftCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMinX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMinY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.LowerLeft;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -493,11 +493,11 @@ public class SphericalMercatorCrsProfileTest
     @Test(expected = IllegalArgumentException.class)
     public void lowerLeftOriginCrsToTileCoordinateUpperRightCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMaxX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMaxY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.LowerLeft;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -513,11 +513,11 @@ public class SphericalMercatorCrsProfileTest
     @Test(expected = IllegalArgumentException.class)
     public void lowerLeftOriginCrsToTileCoordinateLowerRightCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMaxX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMinY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.LowerLeft;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -533,10 +533,10 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void lowerLeftOriginCrsToTileCoordinateEdgeCaseMiddleOfFourTiles()
     {
-        final TileMatrixDimensions dimensions = new TileMatrixDimensions(6, 11);
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(11, 6);
 
-        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY() + (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
-                                                            SphericalMercatorCrsProfile.Bounds.getMinX() + (4*(SphericalMercatorCrsProfile.Bounds.getWidth()  / dimensions.getWidth())),
+        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX() + (4*(SphericalMercatorCrsProfile.Bounds.getWidth()  / dimensions.getWidth())),
+                                                            SphericalMercatorCrsProfile.Bounds.getMinY() + (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
                                                             "epsg",
                                                             3857);
 
@@ -560,10 +560,10 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void lowerLeftOriginCrsToTileCoordinateEdgeCaseBetweenTilesSideBySide()
     {
-        final TileMatrixDimensions dimensions = new TileMatrixDimensions(6, 11);
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(11, 6);
 
-        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY() + (1.23*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
-                                                            SphericalMercatorCrsProfile.Bounds.getMinX() + (4*(SphericalMercatorCrsProfile.Bounds.getWidth()     / dimensions.getWidth())),
+        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX() + (4*(SphericalMercatorCrsProfile.Bounds.getWidth()     / dimensions.getWidth())),
+                                                            SphericalMercatorCrsProfile.Bounds.getMinY() + (1.23*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
                                                             "epsg",
                                                             3857);
 
@@ -587,10 +587,10 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void lowerLeftOriginCrsToTileCoordinateEdgeCaseBetweenTilesUpAndDown()
     {
- final TileMatrixDimensions dimensions = new TileMatrixDimensions(5, 13);
+ final TileMatrixDimensions dimensions = new TileMatrixDimensions(13, 5);
 
-        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY() + (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
-                                                            SphericalMercatorCrsProfile.Bounds.getMinX() + (2.15*(SphericalMercatorCrsProfile.Bounds.getWidth()/ dimensions.getWidth())),
+        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX() + (2.15*(SphericalMercatorCrsProfile.Bounds.getWidth()/ dimensions.getWidth())),
+                                                            SphericalMercatorCrsProfile.Bounds.getMinY() + (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
                                                             "epsg",
                                                             3857);
         final TileOrigin           tileOrigin = TileOrigin.LowerLeft;
@@ -611,9 +611,9 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void crsProfileUpperRightCrsToTileCoordinate()
     {
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(9,14);
-        final CrsCoordinate         coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY() - (2.22*(SphericalMercatorCrsProfile.Bounds.getHeight()  / dimensions.getHeight())),
-                                                             SphericalMercatorCrsProfile.Bounds.getMaxX() - (3.123*(SphericalMercatorCrsProfile.Bounds.getWidth() / dimensions.getWidth())),
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(14,9);
+        final CrsCoordinate         coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX() - (3.123*(SphericalMercatorCrsProfile.Bounds.getWidth() / dimensions.getWidth())),
+                                                             SphericalMercatorCrsProfile.Bounds.getMaxY() - (2.22*(SphericalMercatorCrsProfile.Bounds.getHeight()  / dimensions.getHeight())),
                                                              "epsg",
                                                              3857);
         final TileOrigin            tileOrigin = TileOrigin.UpperRight;
@@ -634,11 +634,11 @@ public class SphericalMercatorCrsProfileTest
     @Test(expected = IllegalArgumentException.class)
     public void upperRightOriginCrsToTileCoordinateUpperLeftCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMinX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMaxY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.UpperRight;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -654,11 +654,11 @@ public class SphericalMercatorCrsProfileTest
     @Test(expected = IllegalArgumentException.class)
     public void upperRightOriginCrsToTileCoordinateLowerLeftCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMinX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMinY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.UpperRight;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -674,11 +674,11 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void upperRightOriginCrsToTileCoordinateUpperRightCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMaxX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMaxY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.UpperRight;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -697,11 +697,11 @@ public class SphericalMercatorCrsProfileTest
     @Test(expected = IllegalArgumentException.class)
     public void upperRightOriginCrsToTileCoordinateLowerRightCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMaxX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMinY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.UpperRight;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -717,10 +717,10 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void upperRightOriginCrsToTileCoordinateEdgeCaseMiddleOfFourTiles()
     {
-        final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 14);
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(14, 9);
 
-        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY() - (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
-                                                            SphericalMercatorCrsProfile.Bounds.getMaxX() - (4*(SphericalMercatorCrsProfile.Bounds.getWidth()  / dimensions.getWidth())),
+        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX() - (4*(SphericalMercatorCrsProfile.Bounds.getWidth()  / dimensions.getWidth())),
+                                                            SphericalMercatorCrsProfile.Bounds.getMaxY() - (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
                                                             "epsg",
                                                             3857);
 
@@ -744,10 +744,10 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void upperRightOriginCrsToTileCoordinateEdgeCaseBetweenTilesSideBySide()
     {
-        final TileMatrixDimensions dimensions = new TileMatrixDimensions(6, 11);
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(11, 6);
 
-        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY() - (4.23*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
-                                                            SphericalMercatorCrsProfile.Bounds.getMaxX() - (1*(SphericalMercatorCrsProfile.Bounds.getWidth()     / dimensions.getWidth())),
+        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX() - (1*(SphericalMercatorCrsProfile.Bounds.getWidth()     / dimensions.getWidth())),
+                                                            SphericalMercatorCrsProfile.Bounds.getMaxY() - (4.23*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
                                                             "epsg",
                                                             3857);
 
@@ -771,10 +771,10 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void upperRightOriginCrsToTileCoordinateEdgeCaseBetweenTilesUpAndDown()
     {
-        final TileMatrixDimensions dimensions = new TileMatrixDimensions(5, 13);
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(13, 5);
 
-        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY() - (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
-                                                            SphericalMercatorCrsProfile.Bounds.getMaxX() - (2.15*(SphericalMercatorCrsProfile.Bounds.getWidth()/ dimensions.getWidth())),
+        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX() - (2.15*(SphericalMercatorCrsProfile.Bounds.getWidth()/ dimensions.getWidth())),
+                                                            SphericalMercatorCrsProfile.Bounds.getMaxY() - (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
                                                             "epsg",
                                                             3857);
         final TileOrigin           tileOrigin = TileOrigin.UpperRight;
@@ -795,9 +795,9 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void crsProfileLowerRightCrsToTileCoordinate()
     {
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(9,14);
-        final CrsCoordinate         coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY() + (2.22*(SphericalMercatorCrsProfile.Bounds.getHeight()  / dimensions.getHeight())),
-                                                             SphericalMercatorCrsProfile.Bounds.getMaxX() - (3.123*(SphericalMercatorCrsProfile.Bounds.getWidth() / dimensions.getWidth())),
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(14,9);
+        final CrsCoordinate         coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX() - (3.123*(SphericalMercatorCrsProfile.Bounds.getWidth() / dimensions.getWidth())),
+                                                             SphericalMercatorCrsProfile.Bounds.getMinY() + (2.22*(SphericalMercatorCrsProfile.Bounds.getHeight()  / dimensions.getHeight())),
                                                              "epsg",
                                                              3857);
         final TileOrigin            tileOrigin = TileOrigin.LowerRight;
@@ -818,11 +818,11 @@ public class SphericalMercatorCrsProfileTest
     @Test(expected = IllegalArgumentException.class)
     public void lowerRightOriginCrsToTileCoordinateUpperLeftCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMinX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMaxY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.LowerRight;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -838,11 +838,11 @@ public class SphericalMercatorCrsProfileTest
     @Test(expected = IllegalArgumentException.class)
     public void lowerRightOriginCrsToTileCoordinateLowerLeftCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMinX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMinY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.LowerRight;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -858,11 +858,11 @@ public class SphericalMercatorCrsProfileTest
     @Test(expected = IllegalArgumentException.class)
     public void lowerRightOriginCrsToTileCoordinateUpperRightCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMaxX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMaxY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.LowerRight;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -878,11 +878,11 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void lowerRightOriginCrsToTileCoordinateLowerRightCorner()
     {
-        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY(),
-                                                                SphericalMercatorCrsProfile.Bounds.getMaxX(),
+        final CrsCoordinate         crsCoordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX(),
+                                                                SphericalMercatorCrsProfile.Bounds.getMinY(),
                                                                 "epsg",
                                                                 3857);
-        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(19,13);
+        final TileMatrixDimensions  dimensions = new TileMatrixDimensions(13,19);
         final TileOrigin            tileOrigin = TileOrigin.LowerRight;
 
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
@@ -901,10 +901,10 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void lowerRightOriginCrsToTileCoordinateEdgeCaseMiddleOfFourTiles()
     {
-        final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 14);
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(14, 9);
 
-        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY() + (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
-                                                            SphericalMercatorCrsProfile.Bounds.getMaxX() - (4*(SphericalMercatorCrsProfile.Bounds.getWidth()  / dimensions.getWidth())),
+        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX() - (4*(SphericalMercatorCrsProfile.Bounds.getWidth()  / dimensions.getWidth())),
+                                                            SphericalMercatorCrsProfile.Bounds.getMinY() + (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
                                                             "epsg",
                                                             3857);
 
@@ -928,10 +928,10 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void lowerRightOriginCrsToTileCoordinateEdgeCaseBetweenTilesSideBySide()
     {
-        final TileMatrixDimensions dimensions = new TileMatrixDimensions(6, 11);
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(11, 6);
 
-        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY() + (4.23*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
-                                                            SphericalMercatorCrsProfile.Bounds.getMaxX() - (1*(SphericalMercatorCrsProfile.Bounds.getWidth()     / dimensions.getWidth())),
+        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX() - (1*(SphericalMercatorCrsProfile.Bounds.getWidth()     / dimensions.getWidth())),
+                                                            SphericalMercatorCrsProfile.Bounds.getMinY() + (4.23*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
                                                             "epsg",
                                                             3857);
 
@@ -955,10 +955,10 @@ public class SphericalMercatorCrsProfileTest
     @Test
     public void lowerRightOriginCrsToTileCoordinateEdgeCaseBetweenTilesUpAndDown()
     {
-        final TileMatrixDimensions dimensions = new TileMatrixDimensions(5, 13);
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(13, 5);
 
-        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMinY() + (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
-                                                            SphericalMercatorCrsProfile.Bounds.getMaxX() - (2.15*(SphericalMercatorCrsProfile.Bounds.getWidth()/ dimensions.getWidth())),
+        final CrsCoordinate        coordinate = new CrsCoordinate(SphericalMercatorCrsProfile.Bounds.getMaxX() - (2.15*(SphericalMercatorCrsProfile.Bounds.getWidth()/ dimensions.getWidth())),
+                                                            SphericalMercatorCrsProfile.Bounds.getMinY() + (1*(SphericalMercatorCrsProfile.Bounds.getHeight() / dimensions.getHeight())),
                                                             "epsg",
                                                             3857);
         final TileOrigin           tileOrigin = TileOrigin.LowerRight;
@@ -980,11 +980,11 @@ public class SphericalMercatorCrsProfileTest
     public void tileCoordinateToCrsBackToTileCoordinate()
     {
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
-        final TileMatrixDimensions     dimensions    = new TileMatrixDimensions(13, 20);
+        final TileMatrixDimensions     dimensions    = new TileMatrixDimensions(20, 13);
         final TileOrigin origin = TileOrigin.UpperLeft;
-        final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(3,7);
+        final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(7,3);
 
-        final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), sphericalCrs.getBounds(), dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getX(), originalTileCoordinate.getY(), sphericalCrs.getBounds(), dimensions, origin);
         final Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, sphericalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
@@ -1005,11 +1005,11 @@ public class SphericalMercatorCrsProfileTest
     public void tileCoordinateToCrsBackToTileCoordinate2()
     {
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
-        final TileMatrixDimensions     dimensions    = new TileMatrixDimensions(60, 73);
+        final TileMatrixDimensions     dimensions    = new TileMatrixDimensions(73, 60);
         final TileOrigin origin = TileOrigin.UpperRight;
-        final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(50,9); //15, 9
+        final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(9,50); //15, 9
 
-        final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), sphericalCrs.getBounds(), dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getX(), originalTileCoordinate.getY(), sphericalCrs.getBounds(), dimensions, origin);
         final Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, sphericalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
@@ -1031,11 +1031,11 @@ public class SphericalMercatorCrsProfileTest
     public void tileCoordinateToCrsBackToTileCoordinate3()
     {
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
-        final TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
+        final TileMatrixDimensions     dimensions    = new TileMatrixDimensions(73, 103);
         final TileOrigin origin = TileOrigin.LowerLeft;
-        final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(24,67);
+        final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(67,24);
 
-        final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), sphericalCrs.getBounds(), dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getX(), originalTileCoordinate.getY(), sphericalCrs.getBounds(), dimensions, origin);
         final Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, sphericalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
@@ -1060,11 +1060,11 @@ public class SphericalMercatorCrsProfileTest
     public void tileCoordinateToCrsBackToTileCoordinate4()
     {
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
-        final TileMatrixDimensions     dimensions    = new TileMatrixDimensions(80, 73);
+        final TileMatrixDimensions     dimensions    = new TileMatrixDimensions(73, 80);
         final TileOrigin origin = TileOrigin.LowerRight;
-        final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(79,32);
+        final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(32,79);
 
-        final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), sphericalCrs.getBounds(), dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getX(), originalTileCoordinate.getY(), sphericalCrs.getBounds(), dimensions, origin);
         final Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, sphericalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
@@ -1088,11 +1088,11 @@ public class SphericalMercatorCrsProfileTest
     public void tileCoordinateToCrsBackToTileCoordinateEdgeCase1()
     {
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
-        final TileMatrixDimensions     dimensions    = new TileMatrixDimensions(103, 73);
+        final TileMatrixDimensions     dimensions    = new TileMatrixDimensions(73, 103);
         final TileOrigin origin = TileOrigin.UpperRight;
         final Coordinate<Integer>  originalTileCoordinate = new Coordinate<>(0,0);
 
-        final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getY(), originalTileCoordinate.getX(), sphericalCrs.getBounds(), dimensions, origin);
+        final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getX(), originalTileCoordinate.getY(), sphericalCrs.getBounds(), dimensions, origin);
         final Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, sphericalCrs.getBounds(), dimensions, origin);
 
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"

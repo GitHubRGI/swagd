@@ -38,8 +38,8 @@ public class SphericalMercatorCrsProfile extends ProportionalCrsProfile
     public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate)
     {
         // TODO algorithm documentation
-        return new Coordinate<>(Math.toDegrees(2 * Math.atan(Math.exp(coordinate.getY() / EarthEquatorialRadius)) - Math.PI / 2),
-                                Math.toDegrees(coordinate.getX() / EarthEquatorialRadius));
+        return new Coordinate<>(Math.toDegrees(coordinate.getX() / EarthEquatorialRadius),
+                                Math.toDegrees(2 * Math.atan(Math.exp(coordinate.getY() / EarthEquatorialRadius)) - Math.PI / 2));
     }
 
     @Override

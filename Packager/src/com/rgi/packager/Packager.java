@@ -150,8 +150,8 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                                                                          tileStoreReader.getBounds(),
                                                                          new ZoomTimesTwo(zoomLevelRange.getMinimum(),
                                                                                           zoomLevelRange.getMaximum(),
-                                                                                          minZoomLevelMatrixHeight,
-                                                                                          minZoomLevelMatrixWidth),
+                                                                                          minZoomLevelMatrixWidth,
+                                                                                          minZoomLevelMatrixHeight),
                                                                          new MimeType("image/png"),
                                                                          null);
 

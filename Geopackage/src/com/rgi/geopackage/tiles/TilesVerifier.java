@@ -310,7 +310,7 @@ public class TilesVerifier extends Verifier
                                 final double maxX = boundingBoxRS.getDouble("max_x");
                                 final double maxY = boundingBoxRS.getDouble("max_y");
 
-                                final BoundingBox boundingBox = new BoundingBox(minY, minX, maxY, maxX);
+                                final BoundingBox boundingBox = new BoundingBox(minX, minY, maxX, maxY);
 
                                 final List<TileData> invalidPixelValues = tileDataSet.stream()
                                                                                .filter(tileData -> !validPixelValues(tileData, boundingBox))

@@ -831,10 +831,10 @@ public class GeoPackageTiles
             {
                 return new TileMatrixSet(result.getString(1),                                   // table name
                                          this.core.getSpatialReferenceSystem(result.getInt(2)), // srs id
-                                         new BoundingBox(result.getDouble(4),                   // min y
-                                                         result.getDouble(3),                   // min x
-                                                         result.getDouble(6),                   // max y
-                                                         result.getDouble(5)));                 // max x
+                                         new BoundingBox(result.getDouble(3),                   // min y
+                                                         result.getDouble(4),                   // min x
+                                                         result.getDouble(5),                   // max y
+                                                         result.getDouble(6)));                 // max x
             }
         }
     }
@@ -1190,10 +1190,10 @@ public class GeoPackageTiles
     {
         final double divisor = Math.pow(10, precision);
 
-        return new BoundingBox(Math.floor(bounds.getMinY()*divisor) / divisor,
-                               Math.floor(bounds.getMinX()*divisor) / divisor,
-                               Math.ceil (bounds.getMaxY()*divisor) / divisor,
-                               Math.ceil (bounds.getMaxX()*divisor) / divisor);
+        return new BoundingBox(Math.floor(bounds.getMinX()*divisor) / divisor,
+                               Math.floor(bounds.getMinY()*divisor) / divisor,
+                               Math.ceil (bounds.getMaxX()*divisor) / divisor,
+                               Math.ceil (bounds.getMaxY()*divisor) / divisor);
     }
 
     private static boolean compare(final double left, final double right, final int decimalPlaces)

@@ -407,10 +407,10 @@ public class GeoPackageCore
                                                       results.getString(3),                          // identifier
                                                       results.getString(4),                          // description
                                                       results.getString(5),                          // last change
-                                                      new BoundingBox((Double)results.getObject(7),  // min y        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                                                      (Double)results.getObject(6),  // min x
-                                                                      (Double)results.getObject(9),  // max y
-                                                                      (Double)results.getObject(8)), // max x
+                                                      new BoundingBox((Double)results.getObject(6),  // min y        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
+                                                                      (Double)results.getObject(7),  // min x
+                                                                      (Double)results.getObject(8),  // max y
+                                                                      (Double)results.getObject(9)), // max x
                                                       (Integer)results.getObject(10)));              // srs id
                 }
             }
@@ -468,10 +468,10 @@ public class GeoPackageCore
                                                  result.getString(2),                          // identifier
                                                  result.getString(3),                          // description
                                                  result.getString(4),                          // last change
-                                                 new BoundingBox((Double)result.getObject(6),  // min y        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                                                 (Double)result.getObject(5),  // min x
-                                                                 (Double)result.getObject(8),  // max y
-                                                                 (Double)result.getObject(7)), // max x
+                                                 new BoundingBox((Double)result.getObject(5),  // min y        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
+                                                                 (Double)result.getObject(6),  // min x
+                                                                 (Double)result.getObject(7),  // max y
+                                                                 (Double)result.getObject(8)), // max x
                                                  (Integer)result.getObject(9));                // srs id
                 }
 

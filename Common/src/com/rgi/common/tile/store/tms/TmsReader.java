@@ -117,9 +117,9 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     }
 
     @Override
-    public BufferedImage getTile(final int row, final int column, final int zoomLevel) throws TileStoreException
+    public BufferedImage getTile(final int column, final int row, final int zoomLevel) throws TileStoreException
     {
-        final Optional<File> tileFile = this.getTiles(row, column, zoomLevel).findFirst();    // TODO prioritize list based on file type suitability (prefer transparency, etc)
+        final Optional<File> tileFile = this.getTiles(column, row, zoomLevel).findFirst();    // TODO prioritize list based on file type suitability (prefer transparency, etc)
 
         if(tileFile.isPresent())
         {
@@ -154,8 +154,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                                                                    this.tileScheme.dimensions(zoomLevel),
                                                                                    TmsTileStore.Origin);
 
-        return this.getTile(tmsCoordiante.getY(),
-                            tmsCoordiante.getX(),
+        return this.getTile(tmsCoordiante.getX(),
+                            tmsCoordiante.getY(),
                             zoomLevel);
     }
 
@@ -252,11 +252,11 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                                    final int column    = Integer.parseInt(tmsFileMatch.group(2));
                                                    final int row       = Integer.parseInt(tmsFileMatch.group(3));
 
-                                                   final BufferedImage image = TmsReader.this.getTile(row, column, zoomLevel);
+                                                   final BufferedImage image = TmsReader.this.getTile(column, row, zoomLevel);
 
                                                    if(image != null)
                                                    {
-                                                       return new Dimensions<>(image.getHeight(), image.getWidth());
+                                                       return new Dimensions<>(image.getWidth(), image.getHeight());
                                                    }
                                               }
                                            }
@@ -302,16 +302,16 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
 
         final TileMatrixDimensions dimensions = this.tileScheme.dimensions(minimumZoom);
 
-        final Coordinate<Integer> transformedMinTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.LowerLeft,  new Coordinate<>(yRange.minimum, xRange.minimum), dimensions);
-        final Coordinate<Integer> transformedMaxTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.UpperRight, new Coordinate<>(yRange.maximum, xRange.maximum), dimensions);
+        final Coordinate<Integer> transformedMinTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.LowerLeft,  new Coordinate<>(xRange.minimum, yRange.minimum), dimensions);
+        final Coordinate<Integer> transformedMaxTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.UpperRight, new Coordinate<>(xRange.maximum, yRange.maximum), dimensions);
 
-        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(transformedMinTileCoordinate.getY(), transformedMinTileCoordinate.getX(), this.profile.getBounds(), dimensions, TileOrigin.LowerLeft);    // TMS uses absolute tiling, which covers the whole globe
-        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(transformedMaxTileCoordinate.getY(), transformedMaxTileCoordinate.getX(), this.profile.getBounds(), dimensions, TileOrigin.UpperRight);   // TMS uses absolute tiling, which covers the whole globe
+        final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(transformedMinTileCoordinate.getX(), transformedMinTileCoordinate.getY(), this.profile.getBounds(), dimensions, TileOrigin.LowerLeft);    // TMS uses absolute tiling, which covers the whole globe
+        final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(transformedMaxTileCoordinate.getX(), transformedMaxTileCoordinate.getY(), this.profile.getBounds(), dimensions, TileOrigin.UpperRight);   // TMS uses absolute tiling, which covers the whole globe
 
-        this.bounds = new BoundingBox(lowerLeftCorner.getY(),
-                                      lowerLeftCorner.getX(),
-                                      upperRightCorner.getY(),
-                                      upperRightCorner.getX());
+        this.bounds = new BoundingBox(lowerLeftCorner.getX(),
+                                      lowerLeftCorner.getY(),
+                                      upperRightCorner.getX(),
+                                      upperRightCorner.getY());
     }
 
     /**
@@ -430,8 +430,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                @Override
                                public CrsCoordinate getCrsCoordinate() throws TileStoreException
                                {
-                                   return TmsReader.this.profile.tileToCrsCoordinate(row,
-                                                                                     column,
+                                   return TmsReader.this.profile.tileToCrsCoordinate(column,
+                                                                                     row,
                                                                                      TmsReader.this.profile.getBounds(),
                                                                                      this.matrix,
                                                                                      TmsTileStore.Origin);
@@ -440,8 +440,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                @Override
                                public CrsCoordinate getCrsCoordinate(final TileOrigin corner) throws TileStoreException
                                {
-                                   return TmsReader.this.profile.tileToCrsCoordinate(row    + corner.getVertical(),
-                                                                                     column + corner.getHorizontal(),
+                                   return TmsReader.this.profile.tileToCrsCoordinate(column + corner.getHorizontal(),
+                                                                                     row    + corner.getVertical(),
                                                                                      TmsReader.this.profile.getBounds(),
                                                                                      this.matrix,
                                                                                      TmsTileStore.Origin);
@@ -450,13 +450,13 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                @Override
                                public BoundingBox getBounds() throws TileStoreException
                                {
-                                   final Coordinate<Double> lowerLeft  = TmsReader.this.profile.tileToCrsCoordinate(row,   column,   TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
-                                   final Coordinate<Double> upperRight = TmsReader.this.profile.tileToCrsCoordinate(row+1, column+1, TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
+                                   final Coordinate<Double> lowerLeft  = TmsReader.this.profile.tileToCrsCoordinate(column,   row,   TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
+                                   final Coordinate<Double> upperRight = TmsReader.this.profile.tileToCrsCoordinate(column+1, row+1, TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
 
-                                   return new BoundingBox(lowerLeft.getY(),
-                                                          lowerLeft.getX(),
-                                                          upperRight.getY(),
-                                                          upperRight.getX());
+                                   return new BoundingBox(lowerLeft.getX(),
+                                                          lowerLeft.getY(),
+                                                          upperRight.getX(),
+                                                          upperRight.getY());
                                }
 
                                @Override
@@ -464,7 +464,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                {
                                    if(!this.gotImage)
                                    {
-                                       this.image = TmsReader.this.getTile(row, column, zoomLevel);
+                                       this.image = TmsReader.this.getTile(column, row, zoomLevel);
                                    }
 
                                    return this.image;
@@ -530,7 +530,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         return minmax;
     }
 
-    private Stream<File> getTiles(final int row, final int column, final int zoomLevel)
+    private Stream<File> getTiles(final int column, final int row, final int zoomLevel)
     {
         final File[] files = tmsPath(this.location,
                                      zoomLevel,

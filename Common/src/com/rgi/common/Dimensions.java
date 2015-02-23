@@ -8,10 +8,10 @@ package com.rgi.common;
 public class Dimensions <T extends Number>
 {
     /**
-     * @param height the height
      * @param width the width
+     * @param height the height
      */
-    public Dimensions(final T height, final T width)
+    public Dimensions(final T width, final T height)
     {
         this.height = height;
         this.width  = width;

@@ -35,11 +35,11 @@ public class GeoTransformation
 
         this.affineTransform = affineTransform;
 
-        this.topLeft = new Coordinate<>(this.affineTransform[3],
-                                        this.affineTransform[0]);
+        this.topLeft = new Coordinate<>(this.affineTransform[0],
+                                        this.affineTransform[3]);
 
-        this.pixelDimensions = new Dimensions<>(-this.affineTransform[5],  // Height is stored as a negative number...
-                                                 this.affineTransform[1]);
+        this.pixelDimensions = new Dimensions<>(this.affineTransform[1],  // Height is stored as a negative number...
+                                                 -this.affineTransform[5]);
     }
 
     /**
@@ -77,16 +77,16 @@ public class GeoTransformation
 
     public Coordinate<Double> getBottomRight(final double rasterHeight, final double rasterWidth)
     {
-        return new Coordinate<>(this.affineTransform[3] + this.affineTransform[5] * rasterHeight,
-                                this.affineTransform[0] + this.affineTransform[1] * rasterWidth);
+        return new Coordinate<>(this.affineTransform[0] + this.affineTransform[1] * rasterWidth,
+                                this.affineTransform[3] + this.affineTransform[5] * rasterHeight);
     }
 
     public BoundingBox getBounds(final Dataset dataset)
     {
-        return new BoundingBox(this.affineTransform[3] + this.affineTransform[5] * dataset.getRasterYSize(),
-                               this.affineTransform[0],
-                               this.affineTransform[3],
-                               this.affineTransform[0] + this.affineTransform[1] * dataset.getRasterXSize());
+        return new BoundingBox(this.affineTransform[0],
+                               this.affineTransform[3] + this.affineTransform[5] * dataset.getRasterYSize(),
+                               this.affineTransform[0] + this.affineTransform[1] * dataset.getRasterXSize(),
+                               this.affineTransform[3]);
     }
 
     public static final GeoTransformation Identity = new GeoTransformation(new double[] {0.0, 1.0, 0.0, 0.0, 0.0, 1.0});

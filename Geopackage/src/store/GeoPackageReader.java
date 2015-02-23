@@ -126,7 +126,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
             this.tileScheme = zoomLevel -> { if(GeoPackageReader.this.tileMatricies.containsKey(zoomLevel))
                                              {
                                                  final TileMatrix tileMatrix = GeoPackageReader.this.tileMatricies.get(zoomLevel);
-                                                 return new TileMatrixDimensions(tileMatrix.getMatrixHeight(), tileMatrix.getMatrixWidth());
+                                                 return new TileMatrixDimensions(tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight());
                                              }
 
                                              return new TileMatrixDimensions(0, 0);
@@ -173,7 +173,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
     }
 
     @Override
-    public BufferedImage getTile(final int row, final int column, final int zoomLevel) throws TileStoreException
+    public BufferedImage getTile(final int column, final int row, final int zoomLevel) throws TileStoreException
     {
         try
         {
@@ -300,7 +300,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
         if(tile != null)
         {
             final BufferedImage image = tile.getImage();
-            return new Dimensions<>(image.getHeight(), image.getWidth());
+            return new Dimensions<>(image.getWidth(), image.getHeight());
         }
 
         return null;
@@ -340,7 +340,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
     private TileHandle getTileHandle(final int zoomLevel, final int column, final int row)
     {
         final TileMatrix tileMatrix = GeoPackageReader.this.tileMatricies.get(zoomLevel);
-        final TileMatrixDimensions matrix = new TileMatrixDimensions(tileMatrix.getMatrixHeight(), tileMatrix.getMatrixWidth());
+        final TileMatrixDimensions matrix = new TileMatrixDimensions(tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight());
 
         return new TileHandle()
                {
@@ -373,8 +373,8 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                     {
                         return GeoPackageReader.this
                                                .crsProfile
-                                               .tileToCrsCoordinate(row,
-                                                                    column,
+                                               .tileToCrsCoordinate(column,
+                                                                    row,
                                                                     this.getBounds(),
                                                                     matrix,
                                                                     GeoPackageTiles.Origin);
@@ -385,8 +385,8 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                     {
                         return GeoPackageReader.this
                                                .crsProfile
-                                               .tileToCrsCoordinate(row    - (1 - corner.getVertical()),
-                                                                    column + corner.getHorizontal(),    // same as: column - (GeoPackageTiles.Origin.getVertical() - corner.getHorizontal()) because GeoPackageTiles.Origin.getVertical() is always 0
+                                               .tileToCrsCoordinate(column + corner.getHorizontal(),
+                                                                    row    - (1 - corner.getVertical()),    // same as: column - (GeoPackageTiles.Origin.getVertical() - corner.getHorizontal()) because GeoPackageTiles.Origin.getVertical() is always 0
                                                                     this.getBounds(),
                                                                     matrix,
                                                                     GeoPackageTiles.Origin);
@@ -395,19 +395,19 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                     @Override
                     public BoundingBox getBounds() throws TileStoreException
                     {
-                        final Coordinate<Double> upperLeft  = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(row,   column,   this.getBounds(), matrix, GeoPackageTiles.Origin);
-                        final Coordinate<Double> lowerRight = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(row+1, column+1, this.getBounds(), matrix, GeoPackageTiles.Origin);
+                        final Coordinate<Double> upperLeft  = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(column,   row,   this.getBounds(), matrix, GeoPackageTiles.Origin);
+                        final Coordinate<Double> lowerRight = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(column+1, row+1, this.getBounds(), matrix, GeoPackageTiles.Origin);
 
-                        return new BoundingBox(lowerRight.getY(),
-                                               upperLeft.getX(),
-                                               upperLeft.getY(),
-                                               lowerRight.getX());
+                        return new BoundingBox(upperLeft.getX(),
+                                               lowerRight.getY(),
+                                               lowerRight.getX(),
+                                               upperLeft.getY());
                     }
 
                     @Override
                     public BufferedImage getImage() throws TileStoreException
                     {
-                        return GeoPackageReader.this.getTile(row, column, zoomLevel);
+                        return GeoPackageReader.this.getTile(column, row, zoomLevel);
                     }
 
 
