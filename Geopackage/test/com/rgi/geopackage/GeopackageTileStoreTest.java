@@ -851,43 +851,46 @@ public class GeopackageTileStoreTest
             deleteFile(testFile);
         }
     }
-//    /**
-//     * Tests if GeoPackageReader image type can return
-//     * the correct format name.
-//     *
-//     * @throws SQLException
-//     * @throws ClassNotFoundException
-//     * @throws ConformanceException
-//     * @throws IOException
-//     * @throws TileStoreException
-//     */
-//    //TODO bug??? my error? let me know
-//    @Test
-//    public void geoPackageReaderGetImageType() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
-//    {
-//        File testFile = this.getRandomFile(9);
-//        try(GeoPackage gpkg = new GeoPackage(testFile))
-//        {
-//            TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, new BoundingBox(-90.0, -180.0, 90.0, 180.0), 10, 7, 9);
-//            String formatName = "PNG";
-//            gpkg.tiles().addTile(gpkg.tiles().getTileSet(tileMatrix.getTableName()),
-//                                 tileMatrix,
-//                                 new RelativeTileCoordinate(5,6,tileMatrix.getZoomLevel()),
-//                                 createImageBytes(BufferedImage.TYPE_3BYTE_BGR, formatName));
-//
-//            try(GeoPackageReader reader = new GeoPackageReader(testFile, tileMatrix.getTableName()))
-//            {
-//                String imageTypeReturned = reader.getImageType();
-//                assertTrue("The image Type returned from the reader was not the format name expected.",
-//                           formatName.equalsIgnoreCase(imageTypeReturned));
-//            }
-//
-//        }
-//        finally
-//        {
-//            deleteFile(testFile);
-//        }
-//    }
+    /**
+     * Tests if GeoPackageReader image type can return
+     * the correct format name.
+     *
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws ConformanceException
+     * @throws IOException
+     * @throws TileStoreException
+     */
+    //TODO bug??? my error? let me know
+    @Test
+    public void geoPackageReaderGetImageType() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
+    {
+        File testFile = this.getRandomFile(9);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            //create tileset and matrix
+            TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, new BoundingBox(-90.0, -180.0, 90.0, 180.0), 10, 7, 9);
+            String formatName = "PNG";
+            //create image
+            byte[] imagebytes = createImageBytes(BufferedImage.TYPE_INT_ARGB, formatName);
+            //add image to gpkg
+            gpkg.tiles().addTile(gpkg.tiles().getTileSet(tileMatrix.getTableName()),
+                                 tileMatrix,
+                                 new RelativeTileCoordinate(5,6,tileMatrix.getZoomLevel()),
+                                 imagebytes);
+            
+            try(GeoPackageReader reader = new GeoPackageReader(testFile, tileMatrix.getTableName()))
+            {
+                String imageTypeReturned = reader.getImageType();
+                assertTrue(String.format("The image Type returned from the reader was not the format name expected. \nActual: %s\nExpected: %s.", imageTypeReturned, formatName),
+                           formatName.equalsIgnoreCase(imageTypeReturned));
+            }
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
 
     /**
      * Tests if the GeoPackage Reader returns the expected dimensions
