@@ -18,6 +18,7 @@
 
 package com.rgi.suite;
 
+import java.net.URL;
 import java.util.Properties;
 
 import javax.swing.AbstractAction;
@@ -28,32 +29,37 @@ import javax.swing.KeyStroke;
 @SuppressWarnings("serial")
 public abstract class PropertiesAction extends AbstractAction {
   protected PropertiesAction(Properties p, String key) {
-    setString(p, key+".name", Action.NAME);
-    setKeyStroke(p, key+".accel", Action.ACCELERATOR_KEY);
-    setString(p, key+".short", Action.SHORT_DESCRIPTION);
-    setString(p, key+".long", Action.LONG_DESCRIPTION);
-    setIcon(p, key+".small", Action.SMALL_ICON);
-    setIcon(p, key+".large", Action.LARGE_ICON_KEY);
+    this.setString(p, key+".name", Action.NAME);
+    this.setKeyStroke(p, key+".accel", Action.ACCELERATOR_KEY);
+    this.setString(p, key+".short", Action.SHORT_DESCRIPTION);
+    this.setString(p, key+".long", Action.LONG_DESCRIPTION);
+    this.setIcon(p, key+".small", Action.SMALL_ICON);
+    this.setIcon(p, key+".large", Action.LARGE_ICON_KEY);
   }
 
   private void setString(Properties p, String property, String key) {
     String value = p.getProperty(property);
     if (value != null) {
-      putValue(key, value);
+      this.putValue(key, value);
     }
   }
 
   private void setKeyStroke(Properties p, String property, String key) {
     String value = p.getProperty(property);
     if (value != null) {
-      putValue(key, KeyStroke.getKeyStroke(value));
+      this.putValue(key, KeyStroke.getKeyStroke(value));
     }
   }
 
   private void setIcon(Properties p, String property, String key) {
     String value = p.getProperty(property);
-    if (value != null) {
-    	putValue(key, new ImageIcon(getClass().getResource("/" + value)));
+    if (value != null)
+    {
+    	URL resource = this.getClass().getResource("/" + value);
+    	if(resource != null)
+    	{
+    	    this.putValue(key, new ImageIcon(resource));
+    	}
     }
   }
 }
