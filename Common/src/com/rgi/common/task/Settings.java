@@ -129,7 +129,7 @@ public class Settings
         /**
          *  Web Mercator (also known as Spherical Mercator) projection
          *  used in many popular web mapping applications (Google/Bing/OpenStreetMap/etc).
-         *  Sometimes know nas EPSG:900913
+         *  Sometimes known as EPSG:900913
          */
         WebMercator        ("EPSG", 3857),
         /**
