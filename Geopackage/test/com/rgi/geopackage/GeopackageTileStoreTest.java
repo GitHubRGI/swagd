@@ -27,11 +27,12 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -733,14 +734,15 @@ public class GeopackageTileStoreTest
             // Create matrix
             final TileMatrix tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
             final TileSet    tileSet    = gpkg.tiles().getTileSet(tileMatrix.getTableName());
-
-            // Add three tiles
-            final Tile tile  = gpkg.tiles().addTile(tileSet, tileMatrix, 0, 0, createImageBytes(BufferedImage.TYPE_INT_ARGB));
-            final Tile tile2 = gpkg.tiles().addTile(tileSet, tileMatrix, 0, 1, createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
-            final Tile tile3 = gpkg.tiles().addTile(tileSet, tileMatrix, 1, 0, createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
-
-            final List<Tile> expectedTiles = Arrays.asList(tile, tile2, tile3); // Create a list of the expected tiles
-
+            //add three tiles
+            Map<RelativeTileCoordinate, Integer> coordinates = new HashMap<>();
+            coordinates.put(new RelativeTileCoordinate(0, 0, zoomLevel), BufferedImage.TYPE_INT_ARGB);
+            coordinates.put(new RelativeTileCoordinate(0, 1, zoomLevel), BufferedImage.TYPE_3BYTE_BGR);
+            coordinates.put(new RelativeTileCoordinate(1, 0, zoomLevel), BufferedImage.TYPE_BYTE_GRAY);
+            //create a list of the expected tiles
+            final List<Tile> expectedTiles = addTilesToGpkg(gpkg, tileSet, tileMatrix, coordinates);
+         
+            //create a geopackage reader
             try(GeoPackageReader reader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
                 // Check to see if tiles match
@@ -903,6 +905,31 @@ public class GeopackageTileStoreTest
             deleteFile(testFile);
         }
     }
+ //TODO finish test   
+//    @Test
+//    public void tileHandleCrsCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+//    {
+//        File testFile = this.getRandomFile(12);
+//        try(GeoPackage gpkg = new GeoPackage(testFile))
+//        {
+//            //createTileSet and matrix
+//            BoundingBox bBox = new BoundingBox(0.0, 0.0, 80.0, 90.0);
+//            TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, bBox, 12, 4, 3);
+//            Integer row = 0;
+//            Integer column = 2;
+//            gpkg.tiles().addTile(gpkg.tiles().getTileSet(tileMatrix.getTableName()), 
+//                                 tileMatrix, 
+//                                 new RelativeTileCoordinate(row, column, tileMatrix.getZoomLevel()), 
+//                                 createImageBytes(BufferedImage.TYPE_INT_BGR));
+//            
+//        
+//        }
+//        finally
+//        {
+//            deleteFile(testFile);
+//        }
+//    }
+            
 
     /**
      * Tests if the GeoPackage Reader returns the expected dimensions
@@ -1504,15 +1531,18 @@ public class GeopackageTileStoreTest
     {
         return new BufferedImage(256,256, bufferedImageType);
     }
-    private static byte[] createImageBytes(final int bufferedImageType, final String outputFormat, final Dimensions<Integer> dimensions) throws IOException
+    
+    private static byte[] createImageBytes(final int bufferedImageType, final String outputFormat, final Dimensions<Number> dimensions) throws IOException
     {
         return ImageUtility.bufferedImageToBytes(new BufferedImage(dimensions.getWidth(), dimensions.getHeight(), bufferedImageType), outputFormat);
     }
+    
     private static byte[] createImageBytes(final int bufferedImageType, final String outputFormat) throws IOException
     {
         final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
         return createImageBytes(bufferedImageType, outputFormat, dimensions);
     }
+    
     private static byte[] createImageBytes(final int bufferedImageType) throws IOException
     {
         return createImageBytes(bufferedImageType, "png");
@@ -1579,6 +1609,19 @@ public class GeopackageTileStoreTest
                                            tileHeight,
                                            bBox.getWidth()  / matrixWidth / tileWidth,
                                            bBox.getHeight() / matrixHeight / tileHeight);
+    }
+    
+    private static List<Tile> addTilesToGpkg(GeoPackage gpkg, TileSet tileSet, TileMatrix tileMatrix, Map<RelativeTileCoordinate, Integer> coordinates) throws SQLException, IOException
+    {
+       
+        List<Tile> tiles =  new ArrayList<>();
+        for(RelativeTileCoordinate coordinate: coordinates.keySet())
+        {
+            Tile tile = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(coordinates.get(coordinate)));
+            tiles.add(tile);
+        }
+            
+        return tiles;
     }
 
 }
