@@ -514,12 +514,12 @@ public class TileJob implements Runnable
      * @param d the origin delta, -1 or 1
      * @return the transformed z value
      */
-    private static int f(final int z, final int d)
-    {
-        return d > 0 ? z
-                     : z > 0 ? 0
-                             : 1;
-    }
+//    private static int f(final int z, final int d)
+//    {
+//        return d > 0 ? z
+//                     : z > 0 ? 0
+//                             : 1;
+//    }
 
     private static double log2(final double value)
     {
