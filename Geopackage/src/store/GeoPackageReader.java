@@ -38,6 +38,7 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.store.TileHandle;
@@ -93,40 +94,49 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
         }
 
         this.geoPackage = new GeoPackage(geoPackageFile, OpenMode.Open);
-        this.tileSet    = this.geoPackage.tiles().getTileSet(tileSetTableName);
 
-        if(this.tileSet == null)
+        try
         {
-            throw new IllegalArgumentException("Table name does not specify a valid GeoPackage tile set");
+            this.tileSet    = this.geoPackage.tiles().getTileSet(tileSetTableName);
+
+            if(this.tileSet == null)
+            {
+                throw new IllegalArgumentException("Table name does not specify a valid GeoPackage tile set");
+            }
+
+            final SpatialReferenceSystem srs = this.geoPackage.core().getSpatialReferenceSystem(this.tileSet.getSpatialReferenceSystemIdentifier());
+
+            if(srs == null)
+            {
+                throw new IllegalArgumentException("SRS may not be null");
+            }
+
+            this.crsProfile = CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId());
+
+            this.zoomLevels = this.geoPackage.tiles().getTileZoomLevels(this.tileSet);
+
+            this.tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
+
+            this.tileMatricies = this.geoPackage.tiles()
+                                           .getTileMatrices(this.tileSet)
+                                           .stream()
+                                           .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
+                                                                     tileMatrix -> tileMatrix));
+
+            this.tileScheme = zoomLevel -> { if(GeoPackageReader.this.tileMatricies.containsKey(zoomLevel))
+                                             {
+                                                 final TileMatrix tileMatrix = GeoPackageReader.this.tileMatricies.get(zoomLevel);
+                                                 return new TileMatrixDimensions(tileMatrix.getMatrixHeight(), tileMatrix.getMatrixWidth());
+                                             }
+
+                                             return new TileMatrixDimensions(0, 0);
+                                           };
         }
-
-        final SpatialReferenceSystem srs = this.geoPackage.core().getSpatialReferenceSystem(this.tileSet.getSpatialReferenceSystemIdentifier());
-
-        if(srs == null)
+        catch(final IllegalArgumentException | SQLException ex)
         {
-            throw new IllegalArgumentException("SRS may not be null");
+            this.close();
+            throw ex;
         }
-
-        this.crsProfile = CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId());
-
-        this.zoomLevels = this.geoPackage.tiles().getTileZoomLevels(this.tileSet);
-
-        this.tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
-
-        this.tileMatricies = this.geoPackage.tiles()
-                                       .getTileMatrices(this.tileSet)
-                                       .stream()
-                                       .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
-                                                                 tileMatrix -> tileMatrix));
-
-        this.tileScheme = zoomLevel -> { if(GeoPackageReader.this.tileMatricies.containsKey(zoomLevel))
-                                         {
-                                             final TileMatrix tileMatrix = GeoPackageReader.this.tileMatricies.get(zoomLevel);
-                                             return new TileMatrixDimensions(tileMatrix.getMatrixHeight(), tileMatrix.getMatrixWidth());
-                                         }
-
-                                         return new TileMatrixDimensions(0, 0);
-                                       };
     }
 
     @Override
@@ -365,6 +375,18 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                                                .crsProfile
                                                .tileToCrsCoordinate(row,
                                                                     column,
+                                                                    this.getBounds(),
+                                                                    matrix,
+                                                                    GeoPackageTiles.Origin);
+                    }
+
+                    @Override
+                    public CrsCoordinate getCrsCoordinate(final TileOrigin corner) throws TileStoreException
+                    {
+                        return GeoPackageReader.this
+                                               .crsProfile
+                                               .tileToCrsCoordinate(row    - (1 - corner.getVertical()),
+                                                                    column + corner.getHorizontal(),    // same as: column - (GeoPackageTiles.Origin.getVertical() - corner.getHorizontal()) because GeoPackageTiles.Origin.getVertical() is always 0
                                                                     this.getBounds(),
                                                                     matrix,
                                                                     GeoPackageTiles.Origin);

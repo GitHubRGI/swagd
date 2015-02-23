@@ -37,11 +37,9 @@ import javax.activation.MimeTypeParseException;
 
 import store.GeoPackageWriter;
 
-import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
-import com.rgi.common.coordinate.referencesystem.profile.Utility;
 import com.rgi.common.task.AbstractTask;
 import com.rgi.common.task.MonitorableTask;
 import com.rgi.common.task.Settings;
@@ -187,14 +185,7 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                            {
                                try
                                {
-                                   if(!tileStoreReader.getBounds().contains(tileHandle.getCrsCoordinate()))
-                                   {
-                                       System.out.println("wtf");
-                                   }
-
-                                   final CrsCoordinate crsCoordinate = new CrsCoordinate(Utility.boundsCorner(tileHandle.getBounds(), tileStoreWriter.getTileOrigin()), tileStoreReader.getCoordinateReferenceSystem());
-
-                                   tileStoreWriter.addTile(crsCoordinate,
+                                   tileStoreWriter.addTile(tileHandle.getCrsCoordinate(tileStoreWriter.getTileOrigin()),
                                                            tileHandle.getZoomLevel(),
                                                            tileHandle.getImage());
                                    ++tileCount;
