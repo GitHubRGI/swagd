@@ -427,12 +427,14 @@ public class GeoPackage implements AutoCloseable
          * Open or Create a GeoPackage
          */
         OpenOrCreate,
+
         /**
          * Open an Existing GeoPackage
          */
         Open,
+
         /**
-         * Create a GeoPackage
+         * Create a new GeoPackage
          */
         Create
     }

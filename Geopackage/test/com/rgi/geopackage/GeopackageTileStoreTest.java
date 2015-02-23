@@ -243,7 +243,7 @@ public class GeopackageTileStoreTest
             final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
             //add tiles
             gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
+            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(1, 0, 2), createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
@@ -329,7 +329,7 @@ public class GeopackageTileStoreTest
 
             final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
 
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
+            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(1, 0, 2), createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
@@ -374,7 +374,7 @@ public class GeopackageTileStoreTest
             //add tiles
             final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
 
-            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 1, 2), createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
+            gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(1, 0, 2), createImageBytes(BufferedImage.TYPE_4BYTE_ABGR));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
@@ -419,7 +419,7 @@ public class GeopackageTileStoreTest
             final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, 2);
             //add tiles
             gpkg.tiles().addTile(tileSet, tileMatrix, coordinate, createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
-            final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(2, 0, 2), createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
+            final Tile tileExpected = gpkg.tiles().addTile(tileSet, tileMatrix, new RelativeTileCoordinate(0, 2, 2), createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
@@ -732,9 +732,9 @@ public class GeopackageTileStoreTest
             final RelativeTileCoordinate coordinate = new RelativeTileCoordinate(0, 0, zoomLevel);
             //add three tiles
             final Tile tile  = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate,  createImageBytes(BufferedImage.TYPE_INT_ARGB));
-            final RelativeTileCoordinate coordinate2 = new RelativeTileCoordinate(1, 0, zoomLevel);
+            final RelativeTileCoordinate coordinate2 = new RelativeTileCoordinate(0, 1, zoomLevel);
             final Tile tile2 = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate2, createImageBytes(BufferedImage.TYPE_3BYTE_BGR));
-            final RelativeTileCoordinate coordinate3 = new RelativeTileCoordinate(0, 1, zoomLevel);
+            final RelativeTileCoordinate coordinate3 = new RelativeTileCoordinate(1, 0, zoomLevel);
             final Tile tile3 = gpkg.tiles().addTile(tileSet, tileMatrix, coordinate3, createImageBytes(BufferedImage.TYPE_BYTE_GRAY));
             //create a list of the expected tiles
             final List<Tile> expectedTiles = Arrays.asList(tile, tile2, tile3);
@@ -796,12 +796,12 @@ public class GeopackageTileStoreTest
                                      256);
 
               final List<TileMatrix>             tileMatrices    = gpkg.tiles().getTileMatrices(tileSet);
-              final List<RelativeTileCoordinate> tileCoordinates = Arrays.asList(new RelativeTileCoordinate(1,2, 1),
-                                                                           new RelativeTileCoordinate(2,4, 3),
-                                                                           new RelativeTileCoordinate(5,7, 6),
-                                                                           new RelativeTileCoordinate(9,10,8),
-                                                                           new RelativeTileCoordinate(2, 5, 6),
-                                                                           new RelativeTileCoordinate(0, 1, 1));
+              final List<RelativeTileCoordinate> tileCoordinates = Arrays.asList(new RelativeTileCoordinate(2,1, 1),
+                                                                           new RelativeTileCoordinate(4,2, 3),
+                                                                           new RelativeTileCoordinate(7,5, 6),
+                                                                           new RelativeTileCoordinate(10,9,8),
+                                                                           new RelativeTileCoordinate(5, 2, 6),
+                                                                           new RelativeTileCoordinate(1, 0, 1));
               //add the tiles
               final Set<Tile> tiles = new HashSet<>();
               tileCoordinates.forEach(tileCoordinate -> {   try
@@ -909,7 +909,7 @@ public class GeopackageTileStoreTest
             final Dimensions<Number> dimensions = new Dimensions<>(256, 512);
             gpkg.tiles().addTile(gpkg.tiles().getTileSet(tileMatrix.getTableName()),
                                  tileMatrix,
-                                 new RelativeTileCoordinate(5,6,tileMatrix.getZoomLevel()),
+                                 new RelativeTileCoordinate(6,5,tileMatrix.getZoomLevel()),
                                  createImageBytes(BufferedImage.TYPE_3BYTE_BGR, formatName, dimensions));
 
             try(GeoPackageReader reader = new GeoPackageReader(testFile, tileMatrix.getTableName()))

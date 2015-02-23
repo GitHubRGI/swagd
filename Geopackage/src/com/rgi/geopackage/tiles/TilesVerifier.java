@@ -65,45 +65,11 @@ import com.rgi.geopackage.verification.Verifier;
  */
 public class TilesVerifier extends Verifier
 {
-    private class TileData implements Comparable<TileData>
-    {
-        int     matrixWidth;
-        int     matrixHeight;
-        int     zoomLevel;
-        Integer tileID;
-        int     tileRow;
-        int     tileColumn;
-        double  pixelXSize;
-        double  pixelYSize;
-        int     tileWidth;
-        int     tileHeight;
-
-        public String columnInvalidToString()
-        {
-            return String.format("      Tile id: %d, column: %2d (max: %d)", this.tileID, this.tileColumn, this.matrixWidth-1);
-        }
-
-        public String rowInvalidToString()
-        {
-            return String.format("      Tile id: %d, row: %2d (max: %d)", this.tileID, this.tileRow, this.matrixHeight-1);
-        }
-
-        @Override
-        public int compareTo(final TileData other)
-        {
-           return this.tileID.compareTo(other.tileID);
-        }
-    }
     /**
-     * this Epsilon is the greatest difference we allow
-     * when comparing doubles
+     * This Epsilon is the greatest difference we allow when comparing doubles
      */
     public static final double EPSILON = 0.0001;
-    private Set<String> allPyramidUserDataTables;
-    private Set<String> pyramidTablesInContents;
-    private Set<String> pyramidTablesInTileMatrix;
-    private boolean hasTileMatrixTable;
-    private boolean hasTileMatrixSetTable;
+
 
     /**
      * @param sqliteConnection
@@ -1252,9 +1218,9 @@ public class TilesVerifier extends Verifier
                                                                                                                       tileData.matrixWidth = resultSet.getInt("gtmm_width");
                                                                                                                       tileData.zoomLevel   = resultSet.getInt("udt_zoom");
                                                                                                                       tileData.tileID      = resultSet.getInt("udt_id");
-                                                                                          
+
                                                                                                                       return tileData;
-                                                                                          
+
                                                                                                                  }
                                                                                                                  catch(final SQLException ex)
                                                                                                                {
@@ -1446,6 +1412,42 @@ public class TilesVerifier extends Verifier
                                                        }
                                                     });
     }
+
+    private class TileData implements Comparable<TileData>
+    {
+        int     matrixWidth;
+        int     matrixHeight;
+        int     zoomLevel;
+        Integer tileID;
+        int     tileRow;
+        int     tileColumn;
+        double  pixelXSize;
+        double  pixelYSize;
+        int     tileWidth;
+        int     tileHeight;
+
+        public String columnInvalidToString()
+        {
+            return String.format("      Tile id: %d, column: %2d (max: %d)", this.tileID, this.tileColumn, this.matrixWidth-1);
+        }
+
+        public String rowInvalidToString()
+        {
+            return String.format("      Tile id: %d, row: %2d (max: %d)", this.tileID, this.tileRow, this.matrixHeight-1);
+        }
+
+        @Override
+        public int compareTo(final TileData other)
+        {
+           return this.tileID.compareTo(other.tileID);
+        }
+    }
+
+    private Set<String> allPyramidUserDataTables;
+    private Set<String> pyramidTablesInContents;
+    private Set<String> pyramidTablesInTileMatrix;
+    private boolean     hasTileMatrixTable;
+    private boolean     hasTileMatrixSetTable;
 
     private static final TableDefinition TileMatrixSetTableDefinition;
     private static final TableDefinition TileMatrixTableDefinition;

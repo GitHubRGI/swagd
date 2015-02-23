@@ -45,7 +45,7 @@ import com.rgi.geopackage.verification.TableDefinition;
 import com.rgi.geopackage.verification.UniqueDefinition;
 import com.rgi.geopackage.verification.Verifier;
 /**
- * 
+ *
  * @author Jenifer Cochran
  *
  */
@@ -90,15 +90,12 @@ public class ExtensionsVerifier extends Verifier
                                                                                         {   try
                                                                                             {
                                                                                                 final ExtensionData extensionData = new ExtensionData();
-                                                                                                extensionData.tableName = resultSet
-                                                                                                        .getString("table_name");
-                                                                                                extensionData.columnName = resultSet
-                                                                                                        .getString("column_name");
-                                                                                                extensionData.extensionName = resultSet
-                                                                                                        .getString("extension_name");
-                                                                                                return new AbstractMap.SimpleImmutableEntry<>(
-                                                                                                        extensionData, extensionData.columnName);
-                                                                                            } catch (final SQLException ex)
+                                                                                                extensionData.tableName     = resultSet.getString("table_name");
+                                                                                                extensionData.columnName    = resultSet.getString("column_name");
+                                                                                                extensionData.extensionName = resultSet.getString("extension_name");
+                                                                                                return new AbstractMap.SimpleImmutableEntry<>(extensionData, extensionData.columnName);
+                                                                                            }
+                                                                                            catch(final SQLException ex)
                                                                                             {
                                                                                                 return null;
                                                                                             }
@@ -115,8 +112,8 @@ public class ExtensionsVerifier extends Verifier
 
     /**
      * <div class="title">Requirement 78</div> <blockquote> A GeoPackage MAY
-     * contain a table or updateable view named gpkg_extensions. If present this
-     * table SHALL be defined per clause 2.5.2.1.1 <a
+     * contain a table or update table view named gpkg_extensions. If present
+     * this table SHALL be defined per clause 2.5.2.1.1 <a
      * href="http://www.geopackage.org/spec/#extensions_table_definition">Table
      * Definition</a>, <a
      * href="http://www.geopackage.org/spec/#gpkg_extensions_cols">GeoPackage
@@ -125,7 +122,7 @@ public class ExtensionsVerifier extends Verifier
      * href="http://www.geopackage.org/spec/#gpkg_extensions_sql"
      * >gpkg_extensions Table Definition SQL</a>. </blockquote> </div>
      *
-     * @throws SQLException  throws when various SQLExceptions occur 
+     * @throws SQLException  throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
     @Requirement(number = 78, text = "A GeoPackage MAY contain a table or updateable view named gpkg_extensions."
@@ -143,12 +140,12 @@ public class ExtensionsVerifier extends Verifier
 
     /**
      * <div class="title">Requirement 79</div>
- * <blockquote>
- * Every extension of a GeoPackage SHALL be registered in a corresponding row in the gpkg_extensions table.
- * The absence of a gpkg_extensions table or the absence of rows in gpkg_extnsions table SHALL both indicate
- * the absence of extensions to a GeoPackage.
- * </blockquote>
- * </div>
+     * <blockquote>
+     * Every extension of a GeoPackage SHALL be registered in a corresponding row in the gpkg_extensions table.
+     * The absence of a gpkg_extensions table or the absence of rows in gpkg_extnsions table SHALL both indicate
+     * the absence of extensions to a GeoPackage.
+     * </blockquote>
+     * </div>
      */
     @Requirement(number   = 79,
      text     = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
@@ -158,26 +155,27 @@ public class ExtensionsVerifier extends Verifier
      severity = Severity.Warning)
     public void Requirement79()
     {
-        //TODO implement this requirement
-    //Check if it has geometry_columns table
-    //if it does check geometry_type_name,
-               //if in Annex E
-    //if it is not in the extensions table under extension_name = gpkg_geo_<geometry_type_name>, throw assertion Error
-    //else not in annex e
-    // extension name does not begin with gpkg and extension name ends with geom<geometry_type_name>
-    //check master table for rtree% table
-        //check if extension name has gpkg_rtree_index fail if doesnt
-    //check master table for fgti_%
-    //fail if extension_name != gpkg_srs_id_trigger
+        // TODO implement this requirement
+        // Check if it has geometry_columns table
+        // if it does check geometry_type_name,
+        // if in Annex E
+        // if it is not in the extensions table under extension_name = gpkg_geo_<geometry_type_name>, throw assertion Error
+        // else not in annex e
+        // extension name does not begin with gpkg and extension name ends with geom<geometry_type_name>
+        // check master table for rtree% table
+        // check if extension name has gpkg_rtree_index fail if doesn't
+        // check master table for fgti_%
+        // fail if extension_name != gpkg_srs_id_trigger
     }
 
     /**
-     * <div class="title">Requirement 80</div> <blockquote> Values of the
-     * <code>gpkg_extensions</code> <code>table_name</code> column SHALL
-     * reference values in the <code>gpkg_contents</code>
+     * <div class="title">Requirement 80</div>
+     * <blockquote> Values of the <code>gpkg_extensions</code> <code>table_name
+     * </code> column SHALL reference values in the <code>gpkg_contents</code>
      * <code>table_name</code> column or be NULL. They SHALL NOT be NULL for
-     * rows where the <code>column_name
-     * </code> value is not NULL. </blockquote> </div>
+     * rows where the <code>column_name</code> value is not NULL.
+     * </blockquote>
+     * </div>
      *
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
@@ -195,13 +193,11 @@ public class ExtensionsVerifier extends Verifier
             for (final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName.keySet())
             {
                 final String columnName = this.gpkgExtensionsDataAndColumnName.get(extensionData);
-                final boolean validEntry = extensionData.tableName == null ? columnName == null : true; // if table name is null then so must column
-                                                                                                  // name
+                final boolean validEntry = extensionData.tableName == null ? columnName == null : true; // If table name is null then so must column name
                 Assert.assertTrue("The value in table_name can only be null if column_name is also null.",
                                    validEntry);
             }
-            // check that the table_name in GeoPackage Extensions references a
-            // table in sqlite master
+            // Check that the table_name in GeoPackage Extensions references a table in sqlite master
             final String query2 = "SELECT DISTINCT ge.table_name AS ge_table, "
                                           + "sm.tbl_name   AS sm_table "
                                 + "FROM  gpkg_extensions AS ge "
@@ -217,7 +213,8 @@ public class ExtensionsVerifier extends Verifier
                                                                                                 final String geTableName = resultSet.getString("ge_table");
                                                                                                 final String smTableName = resultSet.getString("sm_table");
                                                                                                 return new AbstractMap.SimpleImmutableEntry<>(geTableName, smTableName);
-                                                                                            } catch (final SQLException ex)
+                                                                                            }
+                                                                                            catch(final SQLException ex)
                                                                                             {
                                                                                                 return null;
                                                                                             }

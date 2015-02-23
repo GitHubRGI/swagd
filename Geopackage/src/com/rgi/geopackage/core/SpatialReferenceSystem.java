@@ -95,7 +95,7 @@ public class SpatialReferenceSystem
 
         final SpatialReferenceSystem otherSrs = (SpatialReferenceSystem)other;
 
-        // The testing of this.description vs other.description is intentionally left out.
+        // The testing of this.description v.s. other.description is intentionally left out.
         return this.name              .equals(otherSrs.name)                   &&
                this.identifier        == otherSrs.identifier                   &&
                this.organization      .equalsIgnoreCase(otherSrs.organization) &&
@@ -106,7 +106,7 @@ public class SpatialReferenceSystem
     @Override
     public int hashCode()
     {
-        // description is intentionally left out
+        // Description is intentionally left out
         return this.name.hashCode()         ^
                this.identifier              ^
                this.organization.hashCode() ^
@@ -128,7 +128,7 @@ public class SpatialReferenceSystem
                           final int    inOrganizationSrsId,
                           final String inDefinition)
     {
-        // The testing of this.description vs other.description is intentionally left out.
+        // The testing of this.description v.s. other.description is intentionally left out.
         return this.name              .equals(inName)                   &&
                this.identifier        == inIdentifier                   &&
                this.organization      .equalsIgnoreCase(inOrganization) &&
