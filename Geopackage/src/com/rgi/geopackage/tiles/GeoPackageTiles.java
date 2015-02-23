@@ -1030,7 +1030,13 @@ public class GeoPackageTiles
         }
 
         final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
-        final BoundingBox   tileSetBounds = tileMatrixSet.getBoundingBox();
+
+        if(tileMatrixSet == null)
+        {
+            return null;    // No Tile matrix set entry
+        }
+
+        final BoundingBox tileSetBounds = tileMatrixSet.getBoundingBox();
 
         if(!Utility.contains(roundBounds(tileSetBounds, precision), crsCoordinate, GeoPackageTiles.Origin))
         {
