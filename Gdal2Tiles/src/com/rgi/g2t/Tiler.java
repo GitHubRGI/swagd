@@ -133,6 +133,12 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor
         final Profile profile = Settings.Profile.valueOf(opts.get(Setting.CrsProfile));
         // split the job up into individual files, process those files one at a time
         final File[] files = opts.getFiles(Setting.FileSelection);
+
+        if(files == null)
+        {
+            return;
+        }
+
         for(final File file : files)
         {
             try
