@@ -82,7 +82,7 @@ public class GeoPackageTilesAPITest
                                        .addTileSet("pyramid",
                                                    "title",
                                                    "tiles",
-                                                   new BoundingBox(0.0, 0.0, 60.0, 50.0),
+                                                   new BoundingBox(0.0, 0.0, 50.0, 60.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
 
 
@@ -306,7 +306,7 @@ public class GeoPackageTilesAPITest
                                                            .addTileSet("newTileSetTWO",
                                                                        "title2",
                                                                        "tiles",
-                                                                       new BoundingBox(0.0, 0.0, 50.0, 70.0),
+                                                                       new BoundingBox(0.0, 0.0, 70.0, 50.0),
                                                                        gpkgWithTiles.core().getSpatialReferenceSystem(4326));
 
                 final double pixelXSize =  (tileSetEntry2.getBoundingBox().getWidth()/matrixWidth)/tileWidth;
@@ -498,7 +498,7 @@ public class GeoPackageTilesAPITest
             final String      tableName   = "tableName";
             final String      identifier  = "identifier";
             final String      description = "description";
-            final BoundingBox boundingBox = new BoundingBox(1.0,2.0,3.0,4.0);
+            final BoundingBox boundingBox = new BoundingBox(2.0,1.0,4.0,3.0);
 
             final SpatialReferenceSystem srs = gpkg.core().getSpatialReferenceSystem(0);
 
@@ -807,14 +807,14 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tileSetName",
                                                     "tiles",
                                                     "desc",
-                                                    new BoundingBox(0.0, 0.0, 50.0, 90.0),
+                                                    new BoundingBox(0.0, 0.0, 90.0, 50.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             final TileSet tileSet2 = gpkg.tiles()
                                          .addTileSet("SecondTileSet",
                                                      "ident",
                                                      "descrip",
-                                                     new BoundingBox(1.0,1.0,111.0,122.0),
+                                                     new BoundingBox(1.0,1.0,122.0,111.0),
                                                      gpkg.core().getSpatialReferenceSystem(4326));
 
             final ArrayList<TileSet> tileSetContnentEntries = new ArrayList<>();
@@ -1243,7 +1243,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(-80.0, -180.0, 80.0, 180.0),
+                                                      new BoundingBox(-180.0, -80.0, 180.0, 80.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int zoomLevel = 2;
             final int matrixWidth = 2;
@@ -1266,7 +1266,7 @@ public class GeoPackageTilesAPITest
 
             final CrsProfile crsProfile = CrsProfileFactory.create(coordinateReferenceSystem);
 
-            final CrsCoordinate crsCoordinate = new CrsCoordinate(-60.0, 0.0, coordinateReferenceSystem);
+            final CrsCoordinate crsCoordinate = new CrsCoordinate(0.0, -60.0, coordinateReferenceSystem);
 
             final Tile tileAdded = gpkg.tiles().addTile(tileSet, tileMatrix, crsCoordinate, crsProfile.getPrecision(), zoomLevel, GeoPackageTilesAPITest.createImageBytes());
 
@@ -1314,7 +1314,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(-80.0, -180.0, 80.0, 180.0),
+                                                      new BoundingBox(-180.0, -80.0, 180.0, 80.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int zoomLevel = 2;
             final int matrixWidth = 2;
@@ -1336,7 +1336,7 @@ public class GeoPackageTilesAPITest
             final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
 
             final int differentZoomLevel = 12;
-            final CrsCoordinate crsCoordinate = new CrsCoordinate(-60.0, 0.0, coordinateReferenceSystem);
+            final CrsCoordinate crsCoordinate = new CrsCoordinate(0.0, -60.0, coordinateReferenceSystem);
 
             final Tile tileAdded = gpkg.tiles().addTile(tileSet, tileMatrix, crsCoordinate, CrsProfileFactory.create(coordinateReferenceSystem).getPrecision(), differentZoomLevel, GeoPackageTilesAPITest.createImageBytes());
 
@@ -1374,7 +1374,7 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tileSetName",
                                                     "title",
                                                     "tiles",
-                                                    new BoundingBox(0.0, 0.0, 50.0, 20.0),
+                                                    new BoundingBox(0.0, 0.0, 20.0, 50.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             final int matrixHeight = 2;
@@ -1688,7 +1688,7 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tileSetName",
                                                     "title",
                                                     "tiles",
-                                                    new BoundingBox(0.0, 0.0, 80.0, 90.0),
+                                                    new BoundingBox(0.0, 0.0, 90.0, 80.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             //Tile coords
@@ -1803,7 +1803,7 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tileSetName",
                                                     "title",
                                                     "tiles",
-                                                    new BoundingBox(0.0, 0.0, 50.0, 80.0),
+                                                    new BoundingBox(0.0, 0.0, 80.0, 50.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
 
             final int matrixHeight = 2;
@@ -2011,13 +2011,13 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(-80.0, -180.0, 80.0, 180.0),
+                                                      new BoundingBox(-180.0, -80.0, 180.0, 80.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int zoomLevel = 2;
 
             final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
 
-            final CrsCoordinate crsCoordinate = new CrsCoordinate(-60.0, 0.0, coordinateReferenceSystem);
+            final CrsCoordinate crsCoordinate = new CrsCoordinate(0.0, -60.0, coordinateReferenceSystem);
 
             final Tile tileFound = gpkg.tiles().getTile(tileSet, crsCoordinate, CrsProfileFactory.create(coordinateReferenceSystem).getPrecision(), zoomLevel);
 
@@ -2184,7 +2184,7 @@ public class GeoPackageTilesAPITest
                                         .addTileSet("tableName",
                                                     "ident",
                                                     "desc",
-                                                    new BoundingBox(0.0,0.0,50.0,80.0),
+                                                    new BoundingBox(0.0,0.0,80.0,50.0),
                                                     gpkg.core().getSpatialReferenceSystem(4326));
             //create two TileMatrices to represent the tiles
             final int matrixHeight = 2;
@@ -2768,7 +2768,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(1.0,2.0,3.0,4.0),
+                                                      new BoundingBox(2.0,1.0,4.0,3.0),
                                                       gpkg.core().getSpatialReferenceSystem(0));
             gpkg.tiles().addTileMatrix(tileSet, -1, 2, 4, 6, 8, 10, 12);
         }
@@ -2879,7 +2879,7 @@ public class GeoPackageTilesAPITest
                                   .addTileSet("tableName",
                                               "identifier",
                                               "description",
-                                              new BoundingBox(0.0,0.0,90.0,180.0),
+                                              new BoundingBox(0.0,0.0,180.0,90.0),
                                               gpkg.core().getSpatialReferenceSystem(4326));
             final int zoomLevel = 5;
             final int matrixWidth = 10;
@@ -2928,7 +2928,7 @@ public class GeoPackageTilesAPITest
                                   .addTileSet("tableName",
                                               "identifier",
                                               "description",
-                                              new BoundingBox(0.0,0.0,90.0,180.0),
+                                              new BoundingBox(0.0,0.0,180.0,90.0),
                                               gpkg.core().getSpatialReferenceSystem(4326));
             final int zoomLevel = 5;
             final int matrixWidth = 10;
@@ -3163,7 +3163,7 @@ public class GeoPackageTilesAPITest
             final String                 tableName   = "tableName";
             final String                 identifier  = "identifier";
             final String                 description = "description";
-            final BoundingBox            bBox        = new BoundingBox(1.0, 2.0, 3.0, 4.0);
+            final BoundingBox            bBox        = new BoundingBox(2.0, 1.0, 4.0, 3.0);
             final SpatialReferenceSystem srs         = gpkg.core().getSpatialReferenceSystem(4326);
             //add tileSet and tileMatrixSet to gpkg
             final TileSet       tileSet       = gpkg.tiles().addTileSet(tableName, identifier, description, bBox, srs);
@@ -3232,7 +3232,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 1;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(45.213192, -45.234567, geodeticRefSys);//upper right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(-45.234567, 45.213192, geodeticRefSys);//upper right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -3241,7 +3241,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0),
+                                                      new BoundingBox(-180.0, 0.0, 0.0, 85.0511287798066),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
@@ -3294,7 +3294,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 1;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(85, -180, geodeticRefSys);//upper left tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(-180, 85, geodeticRefSys);//upper left tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -3303,7 +3303,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                             "identifier",
                                                             "description",
-                                                            new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0),
+                                                            new BoundingBox(-180.0, 0.0, 0.0, 85.0511287798066),
                                                             gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
@@ -3356,7 +3356,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 1;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(41, -90, geodeticRefSys);//lower left tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(-90, 41, geodeticRefSys);//lower left tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -3365,7 +3365,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0),
+                                                      new BoundingBox(-180.0, 0.0, 0.0, 85.0511287798066),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
@@ -3418,7 +3418,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 1;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(12, -0.000001, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(-0.000001, 12, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -3427,7 +3427,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(0.0, -180.0, 85.0511287798066, 0.0),
+                                                      new BoundingBox(-180.0, 0.0, 0.0, 85.0511287798066),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
@@ -3480,20 +3480,20 @@ public class GeoPackageTilesAPITest
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(5, -45);
-        final CrsCoordinate         crsMercatorCoord = new CrsCoordinate(coordInMeters.getY(), coordInMeters.getX(), globalMercator);
+        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-45, 5);
+        final CrsCoordinate         crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-60.0, -90.0);
-            final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 10.0,   5.0);
+            final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-90.0, -60.0);
+            final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 5.0,   10.0);
 
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(minBoundingBoxCoord.getY(), minBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX()),
+                                                      new BoundingBox(minBoundingBoxCoord.getX(), minBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY()),
                                                       gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator",
                                                                                               3395,
                                                                                               "EPSG",
@@ -3556,20 +3556,20 @@ public class GeoPackageTilesAPITest
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(5, -42);
-        final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getY(), coordInMeters.getX(), globalMercator);
+        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-42, 5);
+        final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-60.0, -90.0);
-            final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 10.0,   5.0);
+            final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-90.0, -60.0);
+            final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 5.0,   10.0);
 
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(minBoundingBoxCoord.getY(), minBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX()),
+                                                      new BoundingBox(minBoundingBoxCoord.getX(), minBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY()),
                                                       gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator",
                                                                                               3395,
                                                                                               "EPSG",
@@ -3631,20 +3631,20 @@ public class GeoPackageTilesAPITest
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-45, -47);
-        final CrsCoordinate         crsMercatorCoord = new CrsCoordinate(coordInMeters.getY(), coordInMeters.getX(), globalMercator);
+        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-47, -45);
+        final CrsCoordinate         crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-60.0, -90.0);
-            final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 10.0,   5.0);
+            final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-90.0, -60.0);
+            final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 5.0,   10.0);
 
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(minBoundingBoxCoord.getY(), minBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX()),
+                                                      new BoundingBox(minBoundingBoxCoord.getX(), minBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY()),
                                                       gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator",
                                                                                               3395,
                                                                                               "EPSG",
@@ -3705,20 +3705,20 @@ public class GeoPackageTilesAPITest
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-55,4.999);
-        final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getY(), coordInMeters.getX(), globalMercator);
+        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(4.999,-55);
+        final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-60.0, -90);
-            final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 10.0,   5.0);
+            final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-90, -60.0);
+            final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 5.0,   10.0);
 
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                             "identifier",
                                                             "description",
-                                                            new BoundingBox(minBoundingBoxCoord.getY(), minBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX()),
+                                                            new BoundingBox(minBoundingBoxCoord.getX(), minBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY()),
                                                             gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator",
                                                                                                     3395,
                                                                                                     "EPSG",
@@ -3779,7 +3779,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 5;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(-1.25, -27.5, geodeticRefSys);
+        final CrsCoordinate crsCoord = new CrsCoordinate(-27.5, -1.25, geodeticRefSys);
 
         final File testFile = this.getRandomFile(8);
 
@@ -3788,7 +3788,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(-60.0, -100.0, 60.0, 100.0),
+                                                      new BoundingBox(-100.0, -60.0, 100.0, 60.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
 
             final int matrixWidth1  = 16;
@@ -3867,7 +3867,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(36.45, 76.4875, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(76.4875, 36.45, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -3876,7 +3876,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(0.0, -180.0, 85.05, 90.0),
+                                                      new BoundingBox(-180.0, 0.0, 90.0, 85.05),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 20;
             final int matrixHeight = 7;
@@ -3929,7 +3929,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(25, 10, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(10, 25, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -3938,7 +3938,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(0.0, 0.0, 50.0, 30.0),
+                                                      new BoundingBox(0.0, 0.0, 30.0, 50.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
@@ -3990,7 +3990,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(40, 0, geodeticRefSys);//upper Left tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(0, 40, geodeticRefSys);//upper Left tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -3999,7 +3999,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                             "identifier",
                                                             "description",
-                                                            new BoundingBox(0.0, 0.0, 50.0, 30.0),
+                                                            new BoundingBox(0.0, 0.0, 30.0, 50.0),
                                                             gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
@@ -4053,7 +4053,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(30, 29.9, geodeticRefSys);//upper right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(29.9, 30, geodeticRefSys);//upper right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -4062,7 +4062,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(0.0, 0.0, 50.0, 30.0),
+                                                      new BoundingBox(0.0, 0.0, 30.0, 50.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
@@ -4114,7 +4114,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(50, 20, geodeticRefSys);//upper right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(20, 50, geodeticRefSys);//upper right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -4123,7 +4123,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(0.0, 0.0, 50.0, 30.0),
+                                                      new BoundingBox(0.0, 0.0, 30.0, 50.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
@@ -4175,7 +4175,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(0.01, 20, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(20, 0.01, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -4184,7 +4184,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                             "identifier",
                                                             "description",
-                                                            new BoundingBox(0.0, 0.0, 50.0, 30.0),
+                                                            new BoundingBox(0.0, 0.0, 30.0, 50.0),
                                                             gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
@@ -4235,8 +4235,8 @@ public class GeoPackageTilesAPITest
     public void crsToRelativeTileCoordianteEdgeCase7()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 0;
-        final CrsCoordinate        coordinate = new CrsCoordinate((GlobalGeodeticCrsProfile.Bounds.getMaxY()-(6*(GlobalGeodeticCrsProfile.Bounds.getHeight())) / 9),
-                (GlobalGeodeticCrsProfile.Bounds.getMinX()+(2*(GlobalGeodeticCrsProfile.Bounds.getWidth()))  / 8),
+        final CrsCoordinate        coordinate = new CrsCoordinate((GlobalGeodeticCrsProfile.Bounds.getMinX()+(2*(GlobalGeodeticCrsProfile.Bounds.getWidth()))  / 8),
+                (GlobalGeodeticCrsProfile.Bounds.getMaxY()-(6*(GlobalGeodeticCrsProfile.Bounds.getHeight())) / 9),
                 "epsg",
                 4326);
         final File testFile = this.getRandomFile(8);
@@ -4303,7 +4303,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(0.0, 0.0, 50.0, 30.0),
+                                                      new BoundingBox(0.0, 0.0, 30.0, 50.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
 
             gpkg.tiles().crsToRelativeTileCoordinate(tileSet, null, CrsProfileFactory.create("EPSG", 4326).getPrecision(), 0);
@@ -4344,7 +4344,7 @@ public class GeoPackageTilesAPITest
         {
             final int zoomLevel = 1;
             final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("Police", 99);
-            final CrsCoordinate           crsCoord                     = new CrsCoordinate(20, 15, coordinateReferenceSystem);
+            final CrsCoordinate           crsCoord                     = new CrsCoordinate(15, 20, coordinateReferenceSystem);
 
             gpkg.tiles().crsToRelativeTileCoordinate(null, crsCoord, 2, zoomLevel);
 
@@ -4380,7 +4380,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(50, 20, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(20, 50, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -4389,7 +4389,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(0.0, 0.0, 50.0, 30.0),
+                                                      new BoundingBox(0.0, 0.0, 30.0, 50.0),
                                                       gpkg.core().getSpatialReferenceSystem(-1));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
@@ -4439,7 +4439,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(50, 20, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(20, 50, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -4448,7 +4448,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(0.0, 0.0, 50.0, 30.0),
+                                                      new BoundingBox(0.0, 0.0, 30.0, 50.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
@@ -4501,7 +4501,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG",4326);
-        final CrsCoordinate crsCoord = new CrsCoordinate(-50, 20, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(20, -50, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -4510,7 +4510,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(0.0, 0.0, 50.0, 30.0),
+                                                      new BoundingBox(0.0, 0.0, 30.0, 50.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
@@ -4562,7 +4562,7 @@ public class GeoPackageTilesAPITest
     {
         final int zoomLevel = 15;
         final CoordinateReferenceSystem geodeticRefSys = new CoordinateReferenceSystem("EPSG", 3857);
-        final CrsCoordinate crsCoord = new CrsCoordinate(50, 20, geodeticRefSys);//lower right tile
+        final CrsCoordinate crsCoord = new CrsCoordinate(20, 50, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
 
@@ -4571,7 +4571,7 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
-                                                      new BoundingBox(0.0, 0.0, 50.0, 30.0),
+                                                      new BoundingBox(0.0, 0.0, 30.0, 50.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             final int matrixWidth = 2;
             final int matrixHeight = 2;

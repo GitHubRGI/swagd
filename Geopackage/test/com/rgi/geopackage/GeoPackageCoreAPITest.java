@@ -1600,7 +1600,7 @@ public class GeoPackageCoreAPITest
                                         dataType,
                                         identifier,
                                         description,
-                                        new BoundingBox(1.0, 2.0, 3.0, 4.0),
+                                        new BoundingBox(2.0, 1.0, 4.0, 3.0),
                                         spatialReferenceSystem.getIdentifier()));
         }
         finally

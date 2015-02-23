@@ -69,19 +69,19 @@ public interface TileStoreReader
     public long getByteSize() throws TileStoreException;
 
     /**
-     * Get a tile at a specified zoom, row (y), and column (x).
-     *
-     * @param row
-     *             The 'y' portion of the coordinate. This value is relative to this tile store's tile scheme.
+     * Get a tile at a specified zoom, column (x) and row (y)
+     * <br>
      * @param column
      *             The 'x' portion of the coordinate. This value is relative to this tile store's tile scheme.
+     * @param row
+     *             The 'y' portion of the coordinate. This value is relative to this tile store's tile scheme.
      * @param zoomLevel
      *            The zoom level of the tile.
      * @return A buffered image, or null if the tile store has no tile data for the specified coordinate
      * @throws TileStoreException
      *             A TileStoreException occurs if an error occurs during tile retrieval.
      */
-    public BufferedImage getTile(final int row, final int column, final int zoomLevel) throws TileStoreException;
+    public BufferedImage getTile(final int column, final int row, final int zoomLevel) throws TileStoreException;
 
     /**
      * Get a tile at a specified zoom, and geographic coordinate.
@@ -157,7 +157,7 @@ public interface TileStoreReader
      *             {@link #stream()} throws an Exception or if unable to
      *             retrieve the specified tile.
      */
-    public String getImageType() throws TileStoreException ;
+    public String getImageType() throws TileStoreException;
 
     /**
      * @return Returns the best guess for the pixel dimensions of the tile
@@ -169,7 +169,7 @@ public interface TileStoreReader
      *             A TileStoreException is thrown if the method
      *             {@link #stream()} throws or if unable to get the specified
      *             tile.
-     * 
+     *
      */
     public Dimensions<Integer> getImageDimensions() throws TileStoreException;
 

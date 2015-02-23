@@ -67,13 +67,13 @@ public class TmsWriterTest
 
         final BufferedImage image = createImage();
 
-        tmsWriter.addTile(coordinate.getY(),
-                          coordinate.getX(),
+        tmsWriter.addTile(coordinate.getX(),
+                          coordinate.getY(),
                           zoomLevel,
                           image);
 
-        final BufferedImage tileImage = tmsReader.getTile(coordinate.getY(),
-                                                          coordinate.getX(),
+        final BufferedImage tileImage = tmsReader.getTile(coordinate.getX(),
+                                                          coordinate.getY(),
                                                           zoomLevel);
 
         assertTrue(bufferedImagesEqual(image, tileImage));
@@ -97,8 +97,8 @@ public class TmsWriterTest
 
         final BufferedImage img = createImage();
 
-        tmsWriter.addTile(coordinate.getY(),
-                          coordinate.getX(),
+        tmsWriter.addTile(coordinate.getX(),
+                          coordinate.getY(),
                           zoomLevel,
                           img);
 

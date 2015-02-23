@@ -84,9 +84,9 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
     }
 
     @Override
-    public void addTile(final int row, final int column, final int zoomLevel, final BufferedImage image) throws TileStoreException
+    public void addTile(final int column, final int row, final int zoomLevel, final BufferedImage image) throws TileStoreException
     {
-        final ClusterAddress clusterAddress = this.getClusterAddress(row, column, zoomLevel);
+        final ClusterAddress clusterAddress = this.getClusterAddress(column, row, zoomLevel);
         final File           clusterFile    = this.getClusterFile(clusterAddress);
 
         // If the file doesn't exist, set up an empty cluster file
@@ -154,8 +154,8 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
                                                                                           this.getBounds(),
                                                                                           this.tileScheme.dimensions(zoomLevel),
                                                                                           TileCluster.Origin);
-        this.addTile(clusterCoordinate.getY(),
-                     clusterCoordinate.getX(),
+        this.addTile(clusterCoordinate.getX(),
+                     clusterCoordinate.getY(),
                      zoomLevel,
                      image);
     }

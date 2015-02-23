@@ -186,7 +186,7 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
     }
 
     @Override
-    public void addTile(final int row, final int column, final int zoomLevel, final BufferedImage image) throws TileStoreException
+    public void addTile(final int column, final int row, final int zoomLevel, final BufferedImage image) throws TileStoreException
     {
         if(image == null)
         {

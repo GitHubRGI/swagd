@@ -91,10 +91,10 @@ public class EllipsoidalMercatorCrsProfileTest
     
     private static boolean verifyCoordinateConversion(LatLongMetersYMetersX coordinate)
     {
-        CrsCoordinate                 metersCoordinate   = new CrsCoordinate(coordinate.metersY, coordinate.metersX, "epsg", 3857);
+        CrsCoordinate                 metersCoordinate   = new CrsCoordinate(coordinate.metersX, coordinate.metersY, "epsg", 3857);
         EllipsoidalMercatorCrsProfile ellipsoidalCrs     = new EllipsoidalMercatorCrsProfile();
         Coordinate<Double>            coordinateReturned = ellipsoidalCrs.toGlobalGeodetic(metersCoordinate);
-        Coordinate<Double>            coordinateExpected = new Coordinate<>(coordinate.latitude, coordinate.longitude);
+        Coordinate<Double>            coordinateExpected = new Coordinate<>(coordinate.longitude, coordinate.latitude);
         return isEqual(coordinateExpected, coordinateReturned);
     }
     
