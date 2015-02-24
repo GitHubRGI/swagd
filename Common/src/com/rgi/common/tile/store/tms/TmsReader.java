@@ -451,8 +451,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                @Override
                                public BoundingBox getBounds() throws TileStoreException
                                {
-                                   final Coordinate<Double> lowerLeft  = TmsReader.this.profile.tileToCrsCoordinate(column,   row,   TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
-                                   final Coordinate<Double> upperRight = TmsReader.this.profile.tileToCrsCoordinate(column+1, row+1, TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
+                                   final Coordinate<Double> lowerLeft  = this.getCrsCoordinate(TileOrigin.LowerLeft);
+                                   final Coordinate<Double> upperRight = this.getCrsCoordinate(TileOrigin.UpperRight);
 
                                    return new BoundingBox(lowerLeft.getX(),
                                                           lowerLeft.getY(),
