@@ -416,8 +416,8 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                             return GeoPackageReader.this
                                                    .crsProfile
                                                    .tileToCrsCoordinate(column + corner.getHorizontal(),     // same as: column - (GeoPackageTiles.Origin.getVertical() - corner.getHorizontal()) because GeoPackageTiles.Origin.getVertical() is always 0
-                                                                        row    - (1 - corner.getVertical()),
-                                                                        this.getBounds(),
+                                                                        row    + (1 - corner.getVertical()),
+                                                                        GeoPackageReader.this.getBounds(),
                                                                         matrix,
                                                                         GeoPackageTiles.Origin);
                         }
@@ -425,8 +425,8 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                         @Override
                         public BoundingBox getBounds() throws TileStoreException
                         {
-                            final Coordinate<Double> upperLeft  = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(column,   row,   this.getBounds(), matrix, GeoPackageTiles.Origin);
-                            final Coordinate<Double> lowerRight = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(column+1, row+1, this.getBounds(), matrix, GeoPackageTiles.Origin);
+                            final Coordinate<Double> upperLeft  = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(column,   row,   GeoPackageReader.this.getBounds(), matrix, GeoPackageTiles.Origin);
+                            final Coordinate<Double> lowerRight = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(column+1, row+1, GeoPackageReader.this.getBounds(), matrix, GeoPackageTiles.Origin);
 
                             return new BoundingBox(upperLeft.getX(),
                                                    lowerRight.getY(),
