@@ -117,7 +117,8 @@ public class Packager extends AbstractTask implements MonitorableTask, TaskMonit
                         // TODO: need to clean up this mess
                         this.fireError(new Exception("Unsupported output profile or no profile supplied."));
                 }
-                // Figure out what the file selection is and create a reader
+
+                // TODO: Figure out what the file selection is and create a reader
                 final TmsReader tileStoreReader = new TmsReader(crsProfile, files[0].toPath());
 
                 final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
