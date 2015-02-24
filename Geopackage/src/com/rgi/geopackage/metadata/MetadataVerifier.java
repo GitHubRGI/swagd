@@ -660,7 +660,7 @@ public class MetadataVerifier extends Verifier
         final Map<String, ColumnDefinition> metadataTableColumns = new HashMap<>();
 
         metadataTableColumns.put("id",               new ColumnDefinition("INTEGER", true,  true, false, null));
-        metadataTableColumns.put("md_scope",         new ColumnDefinition("TEXT",    true, false, false, "'\\s*dataset\\s*'||\"\\s*dataset\\s*\"")); //TODO check if regex works as intended
+        metadataTableColumns.put("md_scope",         new ColumnDefinition("TEXT",    true, false, false, "'\\s*dataset\\s*'||\"\\s*dataset\\s*\"")); 
         metadataTableColumns.put("md_standard_uri",  new ColumnDefinition("TEXT",    true, false, false, null));
         metadataTableColumns.put("mime_type",        new ColumnDefinition("TEXT",    true, false, false, "['\"]\\s*text[/\\\\]xml\\s*['\"]"));
         metadataTableColumns.put("metadata",         new ColumnDefinition("TEXT",    true, false, false, "\\s*''\\s*|\\s*\"\"\\s*"));
