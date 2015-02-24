@@ -119,15 +119,15 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
 
             this.tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
 
-            this.tileMatricies = this.geoPackage.tiles()
+            this.tileMatrices = this.geoPackage.tiles()
                                                 .getTileMatrices(this.tileSet)
                                                 .stream()
                                                 .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
                                                                           tileMatrix -> tileMatrix));
 
-            this.tileScheme = zoomLevel -> { if(GeoPackageReader.this.tileMatricies.containsKey(zoomLevel))
+            this.tileScheme = zoomLevel -> { if(GeoPackageReader.this.tileMatrices.containsKey(zoomLevel))
                                              {
-                                                 final TileMatrix tileMatrix = GeoPackageReader.this.tileMatricies.get(zoomLevel);
+                                                 final TileMatrix tileMatrix = GeoPackageReader.this.tileMatrices.get(zoomLevel);
                                                  return new TileMatrixDimensions(tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight());
                                              }
 
@@ -369,7 +369,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
 
     private TileHandle getTileHandle(final int zoomLevel, final int column, final int row)
     {
-        final TileMatrix           tileMatrix = GeoPackageReader.this.tileMatricies.get(zoomLevel);
+        final TileMatrix           tileMatrix = GeoPackageReader.this.tileMatrices.get(zoomLevel);
         final TileMatrixDimensions matrix     = new TileMatrixDimensions(tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight());
 
         return new TileHandle()
@@ -442,12 +442,11 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                    };
     }
 
-    protected final GeoPackage   geoPackage;
-    protected final TileSet      tileSet;
-    protected final CrsProfile   crsProfile;
-    protected final TileScheme   tileScheme;
-    protected final Set<Integer> zoomLevels;
-
-    private final Map<Integer, TileMatrix> tileMatricies;
-    private final TileMatrixSet tileMatrixSet;
+    private final GeoPackage               geoPackage;
+    private final TileSet                  tileSet;
+    private final CrsProfile               crsProfile;
+    private final TileScheme               tileScheme;
+    private final Set<Integer>             zoomLevels;
+    private final Map<Integer, TileMatrix> tileMatrices;
+    private final TileMatrixSet            tileMatrixSet;
 }
