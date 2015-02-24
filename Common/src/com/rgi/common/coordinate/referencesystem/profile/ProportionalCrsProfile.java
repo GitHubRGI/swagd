@@ -118,7 +118,7 @@ public abstract class ProportionalCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
-
+        
         final double tileCrsHeight = bounds.getHeight() / dimensions.getHeight();
         final double tileCrsWidth  = bounds.getWidth()  / dimensions.getWidth();
 
@@ -126,14 +126,11 @@ public abstract class ProportionalCrsProfile implements CrsProfile
                                                                         row,
                                                                         column,
                                                                         dimensions);
+        
+        final Coordinate<Double> boundsCorner = bounds.getBottomLeft();
 
-        final BoundingBox globalBounds = this.getBounds();
-
-        final double originShiftY = globalBounds.getHeight() / 2.0;
-        final double originShiftX = globalBounds.getWidth()  / 2.0;
-
-        return new CrsCoordinate(((tileCoordinate.getX() + tileOrigin.getHorizontal()) * tileCrsWidth)  - originShiftX,
-                                 ((tileCoordinate.getY() + tileOrigin.getVertical())   * tileCrsHeight) - originShiftY,
+        return new CrsCoordinate(boundsCorner.getX() + (tileCoordinate.getX() + tileOrigin.getHorizontal())*(tileCrsWidth),
+                                 boundsCorner.getY() + (tileCoordinate.getY() + tileOrigin.getVertical())  *(tileCrsHeight),
                                  this.getCoordinateReferenceSystem());
     }
 }
