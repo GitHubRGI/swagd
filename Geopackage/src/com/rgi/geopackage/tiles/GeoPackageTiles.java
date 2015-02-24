@@ -260,26 +260,26 @@ public class GeoPackageTiles
      * Adds a tile matrix
      *
      * @param tileSet
-     *            A handle to a tile set
+     *             A handle to a tile set
      * @param zoomLevel
-     *            The zoom level of the associated tile set (0 <= zoomLevel <=
-     *            max_level)
+     *             The zoom level of the associated tile set (0 <= zoomLevel <=
+     *             max_level)
      * @param matrixWidth
      *            The number of columns (>= 1) for this tile at this zoom level
      * @param matrixHeight
-     *            The number of rows (>= 1) for this tile at this zoom level
+     *             The number of rows (>= 1) for this tile at this zoom level
      * @param tileWidth
-     *            The tile width in pixels (>= 1) at this zoom level
+     *             The tile width in pixels (>= 1) at this zoom level
      * @param tileHeight
-     *            The tile height in pixels (>= 1) at this zoom level
+     *             The tile height in pixels (>= 1) at this zoom level
      * @param pixelXSize
-     *            The width of the associated tile set's spatial reference
-     *            system or default meters for an undefined geographic
-     *            coordinate reference system (SRS id 0) (> 0)
+     *             The width of the associated tile set's spatial reference
+     *             system or default meters for an undefined geographic
+     *             coordinate reference system (SRS id 0) (> 0)
      * @param pixelYSize
-     *            The height of the associated tile set's spatial reference
-     *            system or default meters for an undefined geographic
-     *            coordinate reference system (SRS id 0) (> 0)
+     *             The height of the associated tile set's spatial reference
+     *             system or default meters for an undefined geographic
+     *             coordinate reference system (SRS id 0) (> 0)
      * @return Returns the newly added tile matrix
      * @throws SQLException
      *             throws when the method {@link #getTileMatrix(TileSet, int)
@@ -365,7 +365,7 @@ public class GeoPackageTiles
 
         //final SpatialReferenceSystem srs = this.core.getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
 
-        final int precision = 7;//CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId()).getPrecision();   // TODO is there another way we can get the precision ?
+        final int precision = 7; //CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId()).getPrecision();   // TODO is there another way we can get the precision ?
 
         if(!compare(matrixWidth * tileWidth * pixelXSize,
                     tileMatrixSet.getBoundingBox().getWidth(),
