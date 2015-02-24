@@ -84,7 +84,7 @@ public interface TileHandle
     public CrsCoordinate getCrsCoordinate(final TileOrigin corner) throws TileStoreException;
 
     /**
-     * @return Returns the bounding box of tile tile in real world CRS units
+     * @return Returns the bounding box of a tile in real world CRS units
      * @throws TileStoreException
      *             A TileStoreException is thrown when unable to get the tile's
      *             row, column, or matrix that is needed to calculate the
