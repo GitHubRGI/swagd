@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class TableDefinition
 {
     /**
-     * TODO
+     * Constructor
      *
      * @param name
      *            the name of the table
@@ -46,7 +46,7 @@ public class TableDefinition
     }
 
     /**
-     * TODO
+     * Constructor
      *
      * @param name
      *            the name of the table
@@ -65,7 +65,7 @@ public class TableDefinition
 
 
     /**
-     * TODO
+     * Constructor
      *
      * @param name
      *            the name of the table

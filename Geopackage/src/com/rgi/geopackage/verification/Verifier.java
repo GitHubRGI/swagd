@@ -61,7 +61,7 @@ public class Verifier
     }
 
     /**
-     * Checks a GeoPackage (via it's {@link java.sql.Connection}) for violoations of the requirements outlined in the <a href="http://www.geopackage.org/spec/">standard</a>.
+     * Checks a GeoPackage (via it's {@link java.sql.Connection}) for violations of the requirements outlined in the <a href="http://www.geopackage.org/spec/">standard</a>.
      *
      * @return Returns the definition for all failed requirements
      */
@@ -76,7 +76,7 @@ public class Verifier
                                                    catch(final InvocationTargetException ex)
                                                    {
                                                        final Requirement requirement = requirementTestMethod.getAnnotation(Requirement.class);
-                                                       // The ruling on the field,  right now,  is that everything will be wrapped in a failed requirement,  even if it's an issue in the test code.
+                                                       // The ruling on the field, right now,  is that everything will be wrapped in a failed requirement, even if it's an issue in the test code.
                                                        //if(ex.getCause() instanceof AssertionError)
                                                        //{
                                                            return new FailedRequirement(ex.getCause().getMessage(),  requirement);
@@ -171,7 +171,7 @@ public class Verifier
                                                                                                                                                                     tableInfo.getBoolean("notnull"),
                                                                                                                                                                     tableInfo.getBoolean("pk"),
                                                                                                                                                                     uniques.stream().anyMatch(unique -> unique.equals(columnName)),
-                                                                                                                                                                    tableInfo.getString ("dflt_value")));   // Manipulate values so that they're "normalized" sql expressions, e.g. "" -> '', strftime ( '%Y-%m-%dT%H:%M:%fZ' , 'now' ) -> strftime('%Y-%m-%dT%H:%M:%fZ','now')
+                                                                                                                                                                    tableInfo.getString ("dflt_value")));   // TODO manipulate values so that they're "normalized" sql expressions, e.g. "" -> '', strftime ( '%Y-%m-%dT%H:%M:%fZ' , 'now' ) -> strftime('%Y-%m-%dT%H:%M:%fZ','now')
                                                                                              }
                                                                                              catch(final SQLException ex)
                                                                                              {
@@ -300,7 +300,7 @@ public class Verifier
     }
 
     /**
-     * @return the sqliteConnection
+     * @return The SQLite connection
      */
     protected Connection getSqliteConnection()
     {
@@ -308,7 +308,7 @@ public class Verifier
     }
 
     /**
-     * @return the AllowedSqlTypes
+     * @return The list of allowed SQL types
      */
     protected static List<String> getAllowedSqlTypes()
     {
