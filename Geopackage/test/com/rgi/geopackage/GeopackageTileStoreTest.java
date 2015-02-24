@@ -17,6 +17,7 @@
  */
 
 package com.rgi.geopackage;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -51,6 +52,7 @@ import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
+import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
@@ -864,6 +866,7 @@ public class GeopackageTileStoreTest
             deleteFile(testFile);
         }
     }
+    
     /**
      * Tests if GeoPackageReader image type can return
      * the correct format name.
@@ -874,7 +877,6 @@ public class GeopackageTileStoreTest
      * @throws IOException
      * @throws TileStoreException
      */
-    //TODO bug??? my error? let me know
     @Test
     public void geoPackageReaderGetImageType() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
     {
@@ -905,30 +907,136 @@ public class GeopackageTileStoreTest
             deleteFile(testFile);
         }
     }
+    
+    /**
+     * Tests if GeoPackageReader image type can return
+     * the correct format name.
+     *
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws ConformanceException
+     * @throws IOException
+     * @throws TileStoreException
+     */
+    @Test
+    public void geoPackageReaderGetImageType2() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
+    {
+        final File testFile = this.getRandomFile(9);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            //create tileset and matrix
+            final TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, new BoundingBox(-90.0, -180.0, 90.0, 180.0), 10, 7, 9);
+            final String formatName = "jpeg";
+            //create image
+            final byte[] imagebytes = createImageBytes(BufferedImage.TYPE_INT_ARGB, formatName);
+            //add image to gpkg
+            gpkg.tiles().addTile(gpkg.tiles().getTileSet(tileMatrix.getTableName()),
+                                 tileMatrix,
+                                 5,
+                                 6,
+                                 imagebytes);
+
+            try(GeoPackageReader reader = new GeoPackageReader(testFile, tileMatrix.getTableName()))
+            {
+                final String imageTypeReturned = reader.getImageType();
+                assertTrue(String.format("The image Type returned from the reader was not the format name expected. \nActual: %s\nExpected: %s.", imageTypeReturned, formatName),
+                           formatName.equalsIgnoreCase(imageTypeReturned));
+            }
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if GeoPackageReader image type can return
+     * the correct format name.
+     *
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws ConformanceException
+     * @throws IOException
+     * @throws TileStoreException
+     */
+    @Test
+    public void geoPackageReaderGetImageType3() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
+    {
+        final File testFile = this.getRandomFile(9);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            //create tileset and matrix
+            final TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, new BoundingBox(-90.0, -180.0, 90.0, 180.0), 10, 7, 9);
+
+            try(GeoPackageReader reader = new GeoPackageReader(testFile, tileMatrix.getTableName()))
+            {
+                final String imageTypeReturned = reader.getImageType();
+                assertTrue(String.format("The image Type returned from the reader was not the format name expected. \nActual: %s\nExpected: null.", imageTypeReturned),
+                           imageTypeReturned == null);
+            }
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
  //TODO finish test   
-//    @Test
-//    public void tileHandleCrsCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException
-//    {
-//        File testFile = this.getRandomFile(12);
-//        try(GeoPackage gpkg = new GeoPackage(testFile))
-//        {
-//            //createTileSet and matrix
-//            BoundingBox bBox = new BoundingBox(0.0, 0.0, 80.0, 90.0);
-//            TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, bBox, 12, 4, 3);
-//            Integer row = 0;
-//            Integer column = 2;
-//            gpkg.tiles().addTile(gpkg.tiles().getTileSet(tileMatrix.getTableName()), 
-//                                 tileMatrix, 
-//                                 new RelativeTileCoordinate(row, column, tileMatrix.getZoomLevel()), 
-//                                 createImageBytes(BufferedImage.TYPE_INT_BGR));
-//            
-//        
-//        }
-//        finally
-//        {
-//            deleteFile(testFile);
-//        }
-//    }
+    @Test
+    public void tileHandleCrsCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
+    {
+        File testFile = this.getRandomFile(12);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            //createTileSet and matrix
+            BoundingBox bBox = new BoundingBox(0.0, 0.0, 80.0, 90.0);
+            
+            TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, bBox, 12, 4, 3);
+            Integer row = 1;
+            Integer column = 0;
+            gpkg.tiles().addTile(gpkg.tiles().getTileSet(tileMatrix.getTableName()), 
+                                 tileMatrix, 
+                                 column,
+                                 row,
+                                 createImageBytes(BufferedImage.TYPE_INT_BGR));
+            //expected CrsCoords
+            CrsCoordinate expectedLowerLeft = new CrsCoordinate(bBox.getTopLeft().getX() + column*(bBox.getWidth()/tileMatrix.getMatrixWidth()), 
+                                                                bBox.getTopLeft().getY() - (row+1)*(bBox.getHeight()/tileMatrix.getMatrixHeight()), 
+                                                                "EPSG", 
+                                                                4326);
+            CrsCoordinate expectedUpperRight = new CrsCoordinate(bBox.getTopLeft().getX() + (column+1)*(bBox.getWidth()/tileMatrix.getMatrixWidth()), 
+                                                                 bBox.getTopLeft().getY() - row*(bBox.getHeight()/tileMatrix.getMatrixHeight()), 
+                                                                 "EPSG", 
+                                                                 4326);
+            CrsCoordinate expectedLowerRight = new CrsCoordinate(bBox.getTopLeft().getX() + (column+1)*(bBox.getWidth()/tileMatrix.getMatrixWidth()), 
+                                                                 bBox.getTopLeft().getY() - (row+1)*(bBox.getHeight()/tileMatrix.getMatrixHeight()), 
+                                                                 "EPSG", 
+                                                                 4326);
+            CrsCoordinate expectedUpperLeft = new CrsCoordinate(bBox.getTopLeft().getX() + (column)*(bBox.getWidth()/tileMatrix.getMatrixWidth()), 
+                                                                bBox.getTopLeft().getY() - row*(bBox.getHeight()/tileMatrix.getMatrixHeight()), 
+                                                                "EPSG", 
+                                                                4326);
+            
+            try(GeoPackageReader reader = new GeoPackageReader(testFile, tileMatrix.getTableName()))
+            {
+                TileHandle tileHandle = reader.stream(tileMatrix.getZoomLevel()).collect(Collectors.toList()).get(0);
+                CrsCoordinate lowerLeftCorner = tileHandle.getCrsCoordinate(TileOrigin.LowerLeft);
+                CrsCoordinate upperLeftCorner = tileHandle.getCrsCoordinate(TileOrigin.UpperLeft);
+                CrsCoordinate lowerRightCorner = tileHandle.getCrsCoordinate(TileOrigin.LowerRight);
+                CrsCoordinate upperRightCorner = tileHandle.getCrsCoordinate(TileOrigin.UpperRight);
+               
+                assertEquals(expectedLowerLeft,  lowerLeftCorner);
+                assertEquals(expectedUpperLeft,  upperLeftCorner);
+                assertEquals(expectedLowerRight, lowerRightCorner);
+                assertEquals(expectedUpperRight, upperRightCorner);
+            }
+            
+        
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
             
 
     /**
