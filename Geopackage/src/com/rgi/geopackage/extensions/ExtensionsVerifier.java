@@ -353,7 +353,6 @@ public class ExtensionsVerifier extends Verifier
                  severity = Severity.Warning)
     public void Requirement83() throws SQLException, AssertionError
     {
-        // TODO: Ask about how restrictive we want the strings to be
         if (this.hasGpkgExtensionsTable)
         {
             final String query = "SELECT table_name " + "FROM gpkg_extensions "
