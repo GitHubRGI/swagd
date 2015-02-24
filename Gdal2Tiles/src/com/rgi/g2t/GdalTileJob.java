@@ -9,6 +9,12 @@ import java.util.stream.IntStream;
 import javax.activation.MimeType;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.Driver;
@@ -85,8 +91,6 @@ public class GdalTileJob implements Runnable {
 		{
 			// TODO: make a temp vrt with gdal_translate to expand this to RGB/RGBA
 		}
-		// Get NODATA values
-		final Double[] noDataValues = this.getNoDataValues(dataset);
 		final SpatialReference inputSrs = this.openInputSrs(dataset);
 		// We cannot tile an image with no geo referencing information
 		if (this.datasetHasNoGeoReference(dataset)) throw new TilingException("Input raster image has no georeference.");
@@ -94,7 +98,7 @@ public class GdalTileJob implements Runnable {
 		return dataset;
 	}
 
-	private Dataset openOutput(final Dataset inputDataset, final SpatialReference inputSrs)
+	private Dataset openOutput(final Dataset inputDataset, final SpatialReference inputSrs) throws TilingException
 	{
 		final Dataset outputDataset;
 		// Get the output SRS
@@ -110,8 +114,7 @@ public class GdalTileJob implements Runnable {
 			// The input and output projections are the same, no reprojection needed
 			outputDataset = inputDataset;
 		}
-		outputDataset = this.correctNoData(dataset, noDataValues);
-		return outputDataset;
+		return this.correctNoData(outputDataset, this.getNoDataValues(inputDataset));
 	}
 	
 	private SpatialReference openInputSrs(final Dataset dataset) throws TilingException
@@ -158,21 +161,29 @@ public class GdalTileJob implements Runnable {
 		{
 			Double[] noDataValue = new Double[1];
 			dataset.GetRasterBand(band).GetNoDataValue(noDataValue);
-			// Assumes only one value coming back from the band
-			noDataValues[band-1] = noDataValue[0];
+			if (noDataValue != null)
+			{
+				// Assumes only one value coming back from the band
+				noDataValues[band-1] = noDataValue[0];
+			}
 		});
+		// TODO: Is it possible to see a raster from GDAL with 2 bands? I think
+		// only Mono and RGB options are possible
+		if (noDataValues.length == 1)
+		{
+			noDataValues[1] = noDataValues[0];
+			noDataValues[2] = noDataValues[0];
+		}
 		return noDataValues;
 	}
 	
 	private Dataset correctNoData(final Dataset dataset, final Double[] noDataValues) throws TilingException
 	{
-		final File tempFile;
 		if (noDataValues.length > 0)
 		{
 			try
 			{
-				// Create a tempfile
-				tempFile = this.tempFolder.newFile();
+				final File tempFile = this.tempFolder.newFile();
 				// Create a vrt copy of dataset saved to tempfile
 				dataset.GetDriver().CreateCopy(tempFile.toPath().toString(), dataset);
 				// Open the tempfile as a text file
@@ -182,28 +193,83 @@ public class GdalTileJob implements Runnable {
 				// Add the Option node for INIT_DEST
 				final Element initDestOption = vrtXml.createElement("Option");
 				initDestOption.setAttribute("name", "INIT_DEST");
-				initDestOption.appendChild(vrtXml.createTextNode("NODATA"));
+				//initDestOption.appendChild(vrtXml.createTextNode("NODATA"));
+				initDestOption.setTextContent("NODATA");
 				gdalWarpOptions.appendChild(initDestOption);
 				// Add the Option element for UNIFIED_SRC_NODATA
 				final Element unifiedSrcNodataOption = vrtXml.createElement("Option");
 				unifiedSrcNodataOption.setAttribute("name", "UNIFIED_SRC_NODATA");
-				unifiedSrcNodataOption.appendChild(vrtXml.createTextNode("YES"));
-				gdalWarpOptions.appendChild(unifiedSrcNodataOption);g
-				// Replace BandMapping tag for nodata bands
-				IntStream.range();
+				//unifiedSrcNodataOption.appendChild(vrtXml.createTextNode("YES"));
+				unifiedSrcNodataOption.setTextContent("YES");
+				gdalWarpOptions.appendChild(unifiedSrcNodataOption);
+                // Get the node containing the band list mappings, we are going to remove
+				// and replace them. There should only be one BandList node...
+				final Node bandList = vrtXml.getElementsByTagName("BandList").item(0);
+				// Remove all the current band info, it should be empty
+				IntStream.range(1, bandList.getChildNodes().getLength()).forEach(childNodeNumber ->
+				{
+					// Keep removing the first until they are all gone
+					bandList.removeChild(bandList.getChildNodes().item(0));
+				});
+				// Add the new band/nodata info
+				IntStream.range(1, noDataValues.length).forEach(bandNumber ->
+				{
+					final Element bandMapping = vrtXml.createElement("BandMapping");
+					bandMapping.setAttribute("src", String.format("{0}", bandNumber));
+					bandMapping.setAttribute("dst", String.format("{0}", bandNumber));
+					// SrcNoDataReal
+					final Element srcNoDataReal = vrtXml.createElement("SrcNoDataReal");
+					srcNoDataReal.setTextContent(noDataValues[bandNumber-1].toString());
+					bandMapping.appendChild(srcNoDataReal);
+					// SrcNoDataImag
+					final Element srcNoDataImag = vrtXml.createElement("SrcNoDataImag");
+					srcNoDataImag.setTextContent("0");
+					bandMapping.appendChild(srcNoDataImag);
+					// DstNoDataReal
+					final Element dstNoDataReal = vrtXml.createElement("DstNoDataReal");
+					dstNoDataReal.setTextContent(noDataValues[bandNumber-1].toString());
+					bandMapping.appendChild(dstNoDataReal);
+					// DstNoDataImag
+					final Element dstNoDataImag = vrtXml.createElement("DstNoDataImag");
+					dstNoDataImag.setTextContent("0");
+					bandMapping.appendChild(dstNoDataImag);
+				});
 				// Write the tempfile changes to disk
+				Transformer transformer = TransformerFactory.newInstance().newTransformer();
+				// Create a tempfile
+				StreamResult result = new StreamResult(tempFile);
+				transformer.transform(new DOMSource(vrtXml), result);
 				// Open tempfile using gdal.Open() and return
+				final Dataset resultDataset = gdal.Open(tempFile.toPath().toString());
+				resultDataset.SetMetadataItem("NODATA_VALUES", String.format("{0} {1} {2}", noDataValues[0], noDataValues[1], noDataValues[2]));
+				return resultDataset;
 			}
-			catch (SAXException | IOException | ParserConfigurationException ex1)
+			catch (SAXException | IOException | ParserConfigurationException | TransformerException ex1)
 			{
 				ex1.printStackTrace();
 				throw new TilingException("Could not correct output dataset NODATA values.");
 			}
 		}
-		if (noDataValues.length == 0 && (dataset.GetRasterCount() == 1 || dataset.GetRasterCount() == 3))
+		return this.correctNoDataMono(dataset);
+	}
+	
+	private Dataset correctNoDataMono(final Dataset dataset)
+	{
+		// Correction of AutoCreateWarpedVRT images for Mono and RGB files without NODATA
+		// Equivalent to gdalwarp -dstapha
+		if (dataset.getRasterCount() != 1 && dataset.getRasterCount() != 3)
 		{
-			// Correction of AutoCreateWarpedVRT for Mono (1 band) and RGB (3 bands) without NODATA
-			// Same as gdalwarp -dstalpha
+			return dataset;
+		}
+		try
+		{
+			final File tempFile = this.tempFolder.newFile();
+			dataset.GetDriver().CreateCopy(tempFile.toPath().toString(), dataset);
+			final Document vrtXml = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(tempFile.toPath().toString());
+		}
+		catch (SAXException | IOException | ParserConfigurationException | TransformerException ex1)
+		{
+			
 		}
 	}
 	
