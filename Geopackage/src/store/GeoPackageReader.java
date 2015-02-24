@@ -439,8 +439,6 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                         {
                             return GeoPackageReader.this.getTile(column, row, zoomLevel);
                         }
-
-
                    };
     }
 
