@@ -399,9 +399,10 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
 
                     return new TileHandle()
                            {
-                               private final boolean gotImage = false;
-                               private BufferedImage image;
                                private final TileMatrixDimensions matrix = TmsReader.this.tileScheme.dimensions(zoomLevel);
+
+                               private boolean       gotImage = false;
+                               private BufferedImage image;
 
                                @Override
                                public int getZoomLevel()
@@ -464,7 +465,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                {
                                    if(!this.gotImage)
                                    {
-                                       this.image = TmsReader.this.getTile(column, row, zoomLevel);
+                                       this.image    = TmsReader.this.getTile(column, row, zoomLevel);
+                                       this.gotImage = true;
                                    }
 
                                    return this.image;
