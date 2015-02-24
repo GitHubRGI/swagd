@@ -16,30 +16,43 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.geopackage.features;
-
-import java.sql.Connection;
-
-import com.rgi.geopackage.verification.VerificationLevel;
-import com.rgi.geopackage.verification.Verifier;
+package com.rgi.geopackage.verification;
 
 /**
- * @author Jenifer Cochran
  * @author Luke Lambert
  *
  */
-public class FeaturesVerifier extends Verifier
+public class VerificationIssue
 {
     /**
-     * @param verificationLevel
-     *             Controls the level of verification testing performed
-     * @param sqliteConnection
-     *             A connection handle to the database
+     * Constructor
+     *
+     * @param message
+     *             The explanation of how a GeoPackage didn't conform to a specific requirement
+     * @param requirement
+     *             The requirement that the GeoPackage didn't fully conform to
      */
-    public FeaturesVerifier(final Connection sqliteConnection, final VerificationLevel verificationLevel)
+    public VerificationIssue(final String message, final Requirement requirement)
     {
-        super(sqliteConnection, verificationLevel);
+        this.message     = message;
+        this.requirement = requirement;
     }
 
-    // TODO
+    /**
+     * @return the message
+     */
+    public String getReason()
+    {
+        return this.message;
+    }
+    /**
+     * @return the requirement
+     */
+    public Requirement getRequirement()
+    {
+        return this.requirement;
+    }
+
+    final private String      message;
+    final private Requirement requirement;
 }

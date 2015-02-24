@@ -40,8 +40,9 @@ import com.rgi.geopackage.metadata.GeoPackageMetadata;
 import com.rgi.geopackage.schema.GeoPackageSchema;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
 import com.rgi.geopackage.verification.ConformanceException;
-import com.rgi.geopackage.verification.FailedRequirement;
 import com.rgi.geopackage.verification.Severity;
+import com.rgi.geopackage.verification.VerificationIssue;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * Implementation of the <a href="http://www.geopackage.org/spec/">OGC GeoPackage specification</a>
@@ -69,36 +70,36 @@ public class GeoPackage implements AutoCloseable
      */
     public GeoPackage(final File file) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        this(file, true, OpenMode.OpenOrCreate);
+        this(file, VerificationLevel.Fast, OpenMode.OpenOrCreate);
     }
 
     /**
      * @param file
-     *          Location on disk that represents where an existing GeoPackage will opened and/or created
-     * @param verifyConformance
-     *          Indicates whether {@link #verify()} should be called
-     *          automatically.  If verifyConformance is true and
-     *          {@link #verify()} is called automatically, it will throw if
-     *          there are any conformance violations with the severity
-     *          {@link Severity#Error}.  Throwing from this method means that
-     *          it won't be possible to instantiate a GeoPackage object based
-     *          on an SQLite "GeoPackage" file with severe errors.
+     *             Location on disk that represents where an existing GeoPackage will opened and/or created
+     * @param verificationLevel
+     *             Controls the level of verification testing performed on this
+     *             GeoPackage.  If verificationLevel is not None
+     *             {@link #verify()} is called automatically and will throw if
+     *             there are any conformance violations with the severity
+     *             {@link Severity#Error}.  Throwing from this method means
+     *             that it won't be possible to instantiate a GeoPackage object
+     *             based on an SQLite "GeoPackage" file with severe errors.
      * @throws ClassNotFoundException
-     *          when the SQLite JDBC driver cannot be found
+     *             When the SQLite JDBC driver cannot be found
      * @throws ConformanceException
-     *          when the verifyConformance parameter is true, and if
-     *          there are any conformance violations with the severity
-     *          {@link Severity#Error}
+     *             When the verifyConformance parameter is true, and if
+     *             there are any conformance violations with the severity
+     *             {@link Severity#Error}
      * @throws IOException
-     *          when openMode is set to OpenMode.Create, and the file already
-     *          exists, openMode is set to OpenMode.Open, and the file does not
-     *          exist, or if there is a file read error
+     *             When openMode is set to OpenMode.Create, and the file
+     *             already exists, openMode is set to OpenMode.Open, and the
+     *             file does not exist, or if there is a file read error
      * @throws SQLException
-     *          in various cases where interaction with the JDBC connection fails
+     *             In various cases where interaction with the JDBC connection fails
      */
-    public GeoPackage(final File file, final boolean verifyConformance) throws ClassNotFoundException, ConformanceException, IOException, SQLException
+    public GeoPackage(final File file, final VerificationLevel verificationLevel) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        this(file, verifyConformance, OpenMode.OpenOrCreate);
+        this(file, verificationLevel, OpenMode.OpenOrCreate);
     }
 
     /**
@@ -121,14 +122,14 @@ public class GeoPackage implements AutoCloseable
      */
     public GeoPackage(final File file, final OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        this(file, true, openMode);
+        this(file, VerificationLevel.Fast, openMode);
     }
 
     /**
      * @param file
      *            Location on disk that represents where an existing GeoPackage
      *            will opened and/or created
-     * @param verifyConformance
+     * @param verificationLevel
      *            Indicates whether {@link #verify()} should be called
      *            automatically. If verifyConformance is true and
      *            {@link #verify()} is called automatically, it will throw if
@@ -158,11 +159,21 @@ public class GeoPackage implements AutoCloseable
      *             in various cases where interaction with the JDBC connection
      *             fails
      */
-    public GeoPackage(final File file, final boolean verifyConformance, final OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
+    public GeoPackage(final File file, final VerificationLevel verificationLevel, final OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         if(file == null)
         {
-            throw new IllegalArgumentException("file is null");
+            throw new IllegalArgumentException("File may not be null");
+        }
+
+        if(verificationLevel == null)
+        {
+            throw new IllegalArgumentException("Verification level may not be null");
+        }
+
+        if(openMode == null)
+        {
+            throw new IllegalArgumentException("Open mode may not be null");
         }
 
         final boolean isNewFile = !file.exists();
@@ -178,6 +189,8 @@ public class GeoPackage implements AutoCloseable
         }
 
         this.file = file;
+
+        this.verificationLevel = verificationLevel;
 
         Class.forName("org.sqlite.JDBC");   // Register the driver
 
@@ -205,7 +218,7 @@ public class GeoPackage implements AutoCloseable
                 this.databaseConnection.commit();
             }
 
-            if(verifyConformance)
+            if(verificationLevel != VerificationLevel.None)
             {
                 this.verify();
             }
@@ -286,9 +299,9 @@ public class GeoPackage implements AutoCloseable
      * @return the GeoPackage requirements this GeoPackage fails to conform to
      * @throws SQLException throws if SQLException occurs
      */
-    public Collection<FailedRequirement> getFailedRequirements() throws SQLException
+    public Collection<VerificationIssue> getVerificationIssues() throws SQLException
     {
-        return this.getFailedRequirements(false);
+        return this.getVerificationIssues(false);
     }
 
     /**
@@ -305,23 +318,23 @@ public class GeoPackage implements AutoCloseable
      * @return the GeoPackage requirements this GeoPackage fails to conform to
      * @throws SQLException throws if SQLException occurs
      */
-    public Collection<FailedRequirement> getFailedRequirements(final boolean continueAfterCoreErrors) throws SQLException
+    public Collection<VerificationIssue> getVerificationIssues(final boolean continueAfterCoreErrors) throws SQLException
     {
-        final List<FailedRequirement> failedRequirements = new ArrayList<>();
+        final List<VerificationIssue> verificationIssues = new ArrayList<>();
 
-        failedRequirements.addAll(this.core.getFailedRequirements(this.file));
+        verificationIssues.addAll(this.core.getVerificationIssues(this.file, this.verificationLevel));
 
         // Skip verifying GeoPackage subsystems if there are fatal errors in core
-        if(continueAfterCoreErrors || !failedRequirements.stream().anyMatch(failedRequirement -> failedRequirement.getRequirement().severity() == Severity.Error))
+        if(continueAfterCoreErrors || !verificationIssues.stream().anyMatch(failedRequirement -> failedRequirement.getRequirement().severity() == Severity.Error))
         {
-            failedRequirements.addAll(this.features  .getFailedRequirements());
-            failedRequirements.addAll(this.tiles     .getFailedRequirements());
-            failedRequirements.addAll(this.schema    .getFailedRequirements());
-            failedRequirements.addAll(this.metadata  .getFailedRequirements());
-            failedRequirements.addAll(this.extensions.getFailedRequirements());
+            verificationIssues.addAll(this.features  .getVerificationIssues(this.verificationLevel));
+            verificationIssues.addAll(this.tiles     .getVerificationIssues(this.verificationLevel));
+            verificationIssues.addAll(this.schema    .getVerificationIssues(this.verificationLevel));
+            verificationIssues.addAll(this.metadata  .getVerificationIssues(this.verificationLevel));
+            verificationIssues.addAll(this.extensions.getVerificationIssues(this.verificationLevel));
         }
 
-        return failedRequirements;
+        return verificationIssues;
     }
 
     /**
@@ -334,19 +347,19 @@ public class GeoPackage implements AutoCloseable
     {
         //final long startTime = System.nanoTime();
 
-        final Collection<FailedRequirement> failedRequirements = this.getFailedRequirements();
+        final Collection<VerificationIssue> verificationIssues = this.getVerificationIssues();
 
         //System.out.println(String.format("GeoPackage took %.2f seconds to verify.", (System.nanoTime() - startTime)/1.0e9));
 
-        if(failedRequirements.stream().anyMatch(failedRequirement -> failedRequirement.getRequirement().severity() == Severity.Error))
+        if(verificationIssues.stream().anyMatch(failedRequirement -> failedRequirement.getRequirement().severity() == Severity.Error))
         {
-            throw new ConformanceException(failedRequirements);
+            throw new ConformanceException(verificationIssues);
         }
 
-        if(failedRequirements.size() > 0)
+        if(verificationIssues.size() > 0)
         {
-            System.err.println(String.format("GeoPackage failed to meet the following requirements:\n %s\n",
-                                             failedRequirements.stream()
+            System.out.println(String.format("GeoPackage had the following verification issues:\n %s\n",
+                                             verificationIssues.stream()
                                                                .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
                                                                .map(failedRequirement -> String.format("(%s) Requirement %d: \"%s\"\n%s",
                                                                                                        failedRequirement.getRequirement().severity(),
@@ -442,6 +455,7 @@ public class GeoPackage implements AutoCloseable
     private final File                 file;
     private final Connection           databaseConnection;
     private final String               sqliteVersion;
+    private final VerificationLevel    verificationLevel;
     private final GeoPackageCore       core;
     private final GeoPackageFeatures   features;
     private final GeoPackageTiles      tiles;

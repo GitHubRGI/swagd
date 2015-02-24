@@ -32,7 +32,8 @@ import java.util.Collection;
 import utility.DatabaseUtility;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.geopackage.verification.FailedRequirement;
+import com.rgi.geopackage.verification.VerificationIssue;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
@@ -73,13 +74,16 @@ public class GeoPackageCore
 
     /**
      * Requirements this GeoPackage failed to meet
-     * @param file the GeoPackage database file
      *
-     * @return the Core GeoPackage requirements this GeoPackage fails to conform to
+     * @param file
+     *             the GeoPackage database file
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
+     * @return The Core GeoPackage requirements this GeoPackage fails to conform to
      */
-    public Collection<FailedRequirement> getFailedRequirements(final File file)
+    public Collection<VerificationIssue> getVerificationIssues(final File file, final VerificationLevel verificationLevel)
     {
-        return new CoreVerifier(file, this.databaseConnection).getFailedRequirements();
+        return new CoreVerifier(file, this.databaseConnection, verificationLevel).getVerificationIssues();
     }
 
     /**

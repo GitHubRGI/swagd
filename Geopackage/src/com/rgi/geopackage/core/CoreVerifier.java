@@ -47,6 +47,7 @@ import com.rgi.geopackage.verification.ForeignKeyDefinition;
 import com.rgi.geopackage.verification.Requirement;
 import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.TableDefinition;
+import com.rgi.geopackage.verification.VerificationLevel;
 import com.rgi.geopackage.verification.Verifier;
 
 /**
@@ -60,12 +61,17 @@ public class CoreVerifier extends Verifier
     /**
      * Constructor
      *
-     * @param file File handle to the SQLite database
-     * @param sqliteConnection JDBC connection to the SQLite database
+     * @param file
+     *             File handle to the SQLite database
+     * @param sqliteConnection
+     *             JDBC connection to the SQLite database
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
      */
-    public CoreVerifier(final File file, final Connection sqliteConnection)
+    public CoreVerifier(final File file, final Connection sqliteConnection, final VerificationLevel verificationLevel)
     {
-        super(sqliteConnection);
+        super(sqliteConnection, verificationLevel);
+
         if(file == null)
         {
             throw new IllegalArgumentException("File cannot be null");

@@ -43,6 +43,7 @@ import com.rgi.geopackage.verification.Requirement;
 import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.TableDefinition;
 import com.rgi.geopackage.verification.UniqueDefinition;
+import com.rgi.geopackage.verification.VerificationLevel;
 import com.rgi.geopackage.verification.Verifier;
 /**
  *
@@ -62,15 +63,17 @@ public class ExtensionsVerifier extends Verifier
     private Map<ExtensionData, String> gpkgExtensionsDataAndColumnName;
 
     /**
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
      * @param sqliteConnection A connection handle to the database
      */
-    public ExtensionsVerifier(final Connection sqliteConnection)
+    public ExtensionsVerifier(final Connection sqliteConnection, final VerificationLevel verificationLevel)
     {
-        super(sqliteConnection);
+        super(sqliteConnection, verificationLevel);
 
         try
         {
-            this.hasGpkgExtensionsTable = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(),GeoPackageExtensions.ExtensionsTableName);
+            this.hasGpkgExtensionsTable = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageExtensions.ExtensionsTableName);
         }
         catch (final SQLException ex)
         {
@@ -389,12 +392,12 @@ public class ExtensionsVerifier extends Verifier
 
     /**
      * <div class="title">Requirement 84</div>
- * <blockquote>
- * The scope column value in a <code>gpkg_extensions</code> row SHALL be
- * lowercase "read-write" for an extension that affects both readers and writers,
- * or "write-only" for an extension that affects only writers.
- * </blockquote>
- * </div>
+     * <blockquote>
+     * The scope column value in a <code>gpkg_extensions</code> row SHALL be
+     * lowercase "read-write" for an extension that affects both readers and writers,
+     * or "write-only" for an extension that affects only writers.
+     * </blockquote>
+     * </div>
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */

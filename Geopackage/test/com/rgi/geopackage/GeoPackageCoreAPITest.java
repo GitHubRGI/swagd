@@ -41,6 +41,7 @@ import com.rgi.geopackage.core.Content;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Jenifer Cochran
@@ -56,7 +57,7 @@ public class GeoPackageCoreAPITest
     * @throws SQLException
     * @throws Exception
     */
-   
+
 @Test
    public void createMethodSettingFile() throws SQLException, Exception
    {
@@ -191,7 +192,7 @@ public class GeoPackageCoreAPITest
    {
        final File testFile = this.getRandomFile(12);
 
-       try(GeoPackage gpkg = new GeoPackage(testFile, true))
+       try(GeoPackage gpkg = new GeoPackage(testFile))
        {
            // get the first number in the sqlite version and make sure it is a
            // version 3
@@ -1766,7 +1767,7 @@ public class GeoPackageCoreAPITest
             gpkg.close();
             this.createTable(tableName, columnName, testFile);
 
-            return new GeoPackage(testFile, false, OpenMode.Open);
+            return new GeoPackage(testFile, VerificationLevel.None, OpenMode.Open);
         }
     }
 

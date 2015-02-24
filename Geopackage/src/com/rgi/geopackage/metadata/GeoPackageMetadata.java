@@ -38,7 +38,8 @@ import utility.DatabaseUtility;
 import utility.SelectBuilder;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.verification.FailedRequirement;
+import com.rgi.geopackage.verification.VerificationIssue;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
@@ -59,13 +60,14 @@ public class GeoPackageMetadata
 
     /**
      * Metadata requirements this GeoPackage failed to meet
-     *
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
      * @return The metadata GeoPackage requirements this GeoPackage fails to conform to
-     * @throws SQLException throws when the {@link MetadataVerifier#MetadataVerifier(Connection)} throws an SQLException
+     * @throws SQLException throws when the {@link MetadataVerifier#MetadataVerifier} throws an SQLException
      */
-    public Collection<FailedRequirement> getFailedRequirements() throws SQLException
+    public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel) throws SQLException
     {
-        return new MetadataVerifier(this.databaseConnection).getFailedRequirements();
+        return new MetadataVerifier(this.databaseConnection, verificationLevel).getVerificationIssues();
     }
 
     /**
@@ -271,7 +273,7 @@ public class GeoPackageMetadata
             }
 
             this.databaseConnection.commit();
-            
+
             final MetadataReference metadataReference = this.getMetadataReference(referenceScope.getText(),
                                                                                   tableName,
                                                                                   columnName,

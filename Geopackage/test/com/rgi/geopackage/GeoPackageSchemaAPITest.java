@@ -47,6 +47,7 @@ import com.rgi.geopackage.schema.DataColumn;
 import com.rgi.geopackage.schema.DataColumnConstraint;
 import com.rgi.geopackage.schema.Type;
 import com.rgi.geopackage.verification.ConformanceException;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 @SuppressWarnings("javadoc")
 public class GeoPackageSchemaAPITest
@@ -522,7 +523,7 @@ public class GeoPackageSchemaAPITest
             gpkg.close();
             createTable(tableName, columnName, testFile);
 
-            return new GeoPackage(testFile, false, OpenMode.Open);
+            return new GeoPackage(testFile, VerificationLevel.None, OpenMode.Open);
         }
     }
 

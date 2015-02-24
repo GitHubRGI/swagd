@@ -115,15 +115,15 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
 
             this.crsProfile = CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId());
 
-            this.zoomLevels = this.geoPackage.tiles().getTileZoomLevels(this.tileSet);
+            this.zoomLevels    = this.geoPackage.tiles().getTileZoomLevels(this.tileSet);
 
             this.tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
 
             this.tileMatricies = this.geoPackage.tiles()
-                                           .getTileMatrices(this.tileSet)
-                                           .stream()
-                                           .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
-                                                                     tileMatrix -> tileMatrix));
+                                                .getTileMatrices(this.tileSet)
+                                                .stream()
+                                                .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
+                                                                          tileMatrix -> tileMatrix));
 
             this.tileScheme = zoomLevel -> { if(GeoPackageReader.this.tileMatricies.containsKey(zoomLevel))
                                              {
@@ -416,7 +416,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                             return GeoPackageReader.this
                                                    .crsProfile
                                                    .tileToCrsCoordinate(column + corner.getHorizontal(),     // same as: column - (GeoPackageTiles.Origin.getVertical() - corner.getHorizontal()) because GeoPackageTiles.Origin.getVertical() is always 0
-                                                                        row    - (1 - corner.getVertical()),
+                                                                        row    + (1 - corner.getVertical()),
                                                                         this.getBounds(),
                                                                         matrix,
                                                                         GeoPackageTiles.Origin);
