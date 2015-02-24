@@ -25,7 +25,8 @@ import java.util.Collection;
 
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.verification.FailedRequirement;
+import com.rgi.geopackage.verification.VerificationIssue;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
@@ -48,11 +49,13 @@ public class GeoPackageFeatures
     }
 
     /**
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
      * @return the Feature GeoPackage requirements this GeoPackage fails to conform to
      */
-    public Collection<FailedRequirement> getFailedRequirements()
+    public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel)
     {
-        return new FeaturesVerifier(this.databaseConnection).getFailedRequirements();
+        return new FeaturesVerifier(this.databaseConnection, verificationLevel).getVerificationIssues();
     }
 
     @SuppressWarnings("unused")

@@ -43,6 +43,7 @@ import com.rgi.geopackage.extensions.Extension;
 import com.rgi.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.geopackage.extensions.Scope;
 import com.rgi.geopackage.verification.ConformanceException;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 @SuppressWarnings({"static-method", "javadoc"})
 public class GeoPackageExtensionsAPITest
@@ -496,7 +497,7 @@ public class GeoPackageExtensionsAPITest
         testFile.createNewFile();
         //Create Extensions table
         GeoPackageExtensionsAPITest.createExtensionsTable(testFile);
-        try(GeoPackage gpkg = new GeoPackage(testFile, false, OpenMode.OpenOrCreate))
+        try(GeoPackage gpkg = new GeoPackage(testFile, VerificationLevel.None, OpenMode.OpenOrCreate))
         {
             final String tableName ="tablename";
             final String columnName = "columnName";

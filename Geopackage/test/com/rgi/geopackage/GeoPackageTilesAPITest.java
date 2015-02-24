@@ -55,6 +55,7 @@ import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileMatrixSet;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Jenifer Cochran
@@ -1185,7 +1186,7 @@ public class GeoPackageTilesAPITest
         final File testFile = this.getRandomFile(37);
         testFile.createNewFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, false, OpenMode.Open))
+        try(GeoPackage gpkg = new GeoPackage(testFile, VerificationLevel.None, OpenMode.Open))
         {
             gpkg.tiles()
                 .addTileSet("diff_tile_set",

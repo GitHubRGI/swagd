@@ -43,7 +43,8 @@ import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.verification.FailedRequirement;
+import com.rgi.geopackage.verification.VerificationIssue;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
@@ -68,12 +69,14 @@ public class GeoPackageTiles
     /**
      * Requirements this GeoPackage failed to meet
      *
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
      * @return The tile GeoPackage requirements this GeoPackage fails to conform to
-     * @throws SQLException throws if {@link TilesVerifier#TilesVerifier(Connection) Verifier Constructor} throws
+     * @throws SQLException throws if {@link TilesVerifier#TilesVerifier Verifier Constructor} throws
      */
-    public Collection<FailedRequirement> getFailedRequirements() throws SQLException
+    public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel) throws SQLException
     {
-        return new TilesVerifier(this.databaseConnection).getFailedRequirements();
+        return new TilesVerifier(this.databaseConnection, verificationLevel).getVerificationIssues();
     }
 
     /**

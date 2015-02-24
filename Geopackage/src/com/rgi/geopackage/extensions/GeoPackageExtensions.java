@@ -35,7 +35,8 @@ import utility.DatabaseUtility;
 import utility.SelectBuilder;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.verification.FailedRequirement;
+import com.rgi.geopackage.verification.VerificationIssue;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
@@ -57,11 +58,13 @@ public class GeoPackageExtensions
     /**
      * Extension requirements this GeoPackage failed to meet
      *
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
      * @return The extension GeoPackage requirements this GeoPackage fails to conform to
      */
-    public Collection<FailedRequirement> getFailedRequirements()
+    public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel)
     {
-        return new ExtensionsVerifier(this.databaseConnection).getFailedRequirements();
+        return new ExtensionsVerifier(this.databaseConnection, verificationLevel).getVerificationIssues();
     }
 
     /**

@@ -16,30 +16,26 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.geopackage.features;
-
-import java.sql.Connection;
-
-import com.rgi.geopackage.verification.VerificationLevel;
-import com.rgi.geopackage.verification.Verifier;
+package com.rgi.geopackage.verification;
 
 /**
- * @author Jenifer Cochran
- * @author Luke Lambert
+ * @author Luke.Lambert
  *
  */
-public class FeaturesVerifier extends Verifier
+public enum VerificationLevel
 {
     /**
-     * @param verificationLevel
-     *             Controls the level of verification testing performed
-     * @param sqliteConnection
-     *             A connection handle to the database
+     * Indicates that no verification should be performed
      */
-    public FeaturesVerifier(final Connection sqliteConnection, final VerificationLevel verificationLevel)
-    {
-        super(sqliteConnection, verificationLevel);
-    }
+    None,
 
-    // TODO
+    /**
+     * Skip verification tests that may take a very long time to execute.  Skipped tests should issue warnings.
+     */
+    Fast,
+
+    /**
+     * All verification tests should be run
+     */
+    Full
 }

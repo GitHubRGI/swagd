@@ -29,11 +29,11 @@ import java.util.stream.Collectors;
 public class ConformanceException extends Exception
 {
     /**
-     * @param failedRequirements a collection of all the failed requirements of the GeoPackage that did not pass
+     * @param conformanceIssues a collection of all the failed requirements of the GeoPackage that did not pass
      */
-    public ConformanceException(final Collection<FailedRequirement> failedRequirements)
+    public ConformanceException(final Collection<VerificationIssue> conformanceIssues)
     {
-        this.failedRequirements = failedRequirements;
+        this.conformanceIssues = conformanceIssues;
     }
 
     @Override
@@ -46,15 +46,15 @@ public class ConformanceException extends Exception
     public String toString()
     {
         return String.format("GeoPackage failed to meet the following requirements:\n %s",
-                             this.failedRequirements.stream()
-                                                    .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
-                                                    .map(failedRequirement -> String.format("(%s) Requirement %d: \"%s\"\n%s",
-                                                                                      failedRequirement.getRequirement().severity(),
-                                                                                      failedRequirement.getRequirement().number(),
-                                                                                      failedRequirement.getRequirement().text(),
-                                                                                      failedRequirement.getReason()))
-                                                    .collect(Collectors.joining("\n")));
+                             this.conformanceIssues.stream()
+                                                   .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
+                                                   .map(failedRequirement -> String.format("(%s) Requirement %d: \"%s\"\n%s",
+                                                                                     failedRequirement.getRequirement().severity(),
+                                                                                     failedRequirement.getRequirement().number(),
+                                                                                     failedRequirement.getRequirement().text(),
+                                                                                     failedRequirement.getReason()))
+                                                   .collect(Collectors.joining("\n")));
     }
 
-    private final Collection<FailedRequirement> failedRequirements;
+    private final Collection<VerificationIssue> conformanceIssues;
 }

@@ -48,16 +48,20 @@ public class Verifier
     /**
      * Constructor
      *
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
      * @param sqliteConnection JDBC connection to the SQLite database
+     *
      */
-    public Verifier(final Connection sqliteConnection)
+    public Verifier(final Connection sqliteConnection, final VerificationLevel verificationLevel)
     {
         if(sqliteConnection == null)
         {
             throw new IllegalArgumentException("SQLite connection cannot be null");
         }
 
-        this.sqliteConnection = sqliteConnection;
+        this.sqliteConnection  = sqliteConnection;
+        this.verificationLevel = verificationLevel;
     }
 
     /**
@@ -65,7 +69,7 @@ public class Verifier
      *
      * @return Returns the definition for all failed requirements
      */
-    public Collection<FailedRequirement> getFailedRequirements()
+    public Collection<VerificationIssue> getVerificationIssues()
     {
         return this.getRequirements()
                    .map(requirementTestMethod -> { try
@@ -79,7 +83,7 @@ public class Verifier
                                                        // The ruling on the field, right now,  is that everything will be wrapped in a failed requirement, even if it's an issue in the test code.
                                                        //if(ex.getCause() instanceof AssertionError)
                                                        //{
-                                                           return new FailedRequirement(ex.getCause().getMessage(),  requirement);
+                                                           return new VerificationIssue(ex.getCause().getMessage(),  requirement);
                                                        //}
 
                                                        //throw new RuntimeException(String.format("Unexpected exception thrown when testing requirement %d for GeoPackage verification: %s",
@@ -316,6 +320,8 @@ public class Verifier
     }
 
     private final Connection sqliteConnection;
+
+    protected final VerificationLevel verificationLevel;
 
     private static final List<String> AllowedSqlTypes = Arrays.asList("BOOLEAN",        "TINYINT",         "SMALLINT",     "MEDIUMINT",
                                                                       "INT",            "FLOAT",           "DOUBLE",       "REAL",

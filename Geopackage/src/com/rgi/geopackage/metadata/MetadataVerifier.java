@@ -46,6 +46,7 @@ import com.rgi.geopackage.verification.ForeignKeyDefinition;
 import com.rgi.geopackage.verification.Requirement;
 import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.TableDefinition;
+import com.rgi.geopackage.verification.VerificationLevel;
 import com.rgi.geopackage.verification.Verifier;
 
 /**
@@ -54,46 +55,19 @@ import com.rgi.geopackage.verification.Verifier;
  */
 public class MetadataVerifier extends Verifier
 {
-    private boolean                 hasMetadataTable;
-    private boolean                 hasMetadataReferenceTable;
-    private List<Metadata>          metadataValues;
-    private List<MetadataReference> metadataReferenceValues;
-    /**
-     * @author Jenifer Cochran
-     *
-     */
-    public class Metadata
-    {
-        int    id;
-        String md_scope;
-    }
-
-    /**
-     * @author Jenifer Cochran
-     *
-     */
-    public class MetadataReference
-    {
-        String  reference_scope;
-        String  table_name;
-        String  column_name;
-        Integer row_id_value;
-        String  timestamp;
-        Integer md_file_id;
-        Integer md_parent_id;
-    }
-
     /**
      * @param sqliteConnection
      *            the handle to the database connection
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
      * @throws SQLException
      *             throws when the method
      *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
      *             or when other SQLExceptions occur
      */
-    public MetadataVerifier(final Connection sqliteConnection) throws SQLException
+    public MetadataVerifier(final Connection sqliteConnection, final VerificationLevel verificationLevel) throws SQLException
     {
-        super(sqliteConnection);
+        super(sqliteConnection, verificationLevel);
 
         this.hasMetadataTable          = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageMetadata.MetadataTableName);
         this.hasMetadataReferenceTable = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageMetadata.MetadataReferenceTableName);
@@ -145,7 +119,7 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataTable)
         {
-            List<Metadata> invalidMetadataValues = this.metadataValues.stream()
+            final List<Metadata> invalidMetadataValues = this.metadataValues.stream()
                                                                      .filter(metadata -> !MetadataVerifier.validMdScope(metadata.md_scope))
                                                                      .collect(Collectors.toList());
 
@@ -206,7 +180,7 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            List<MetadataReference>  invalidMetadataReferenceValues = this.metadataReferenceValues.stream()
+            final List<MetadataReference>  invalidMetadataReferenceValues = this.metadataReferenceValues.stream()
                                                                                                   .filter(value -> !MetadataVerifier.validReferenceScope(value.reference_scope))
                                                                                                   .collect(Collectors.toList());
             Assert.assertTrue(String.format("The following reference_scope value(s) are invalid from the gpkg_metadata_reference table: %s",
@@ -240,7 +214,7 @@ public class MetadataVerifier extends Verifier
         if(this.hasMetadataReferenceTable)
         {
             //check reference_scope column that has 'geopackage'
-            List<MetadataReference> invalidGeopackageValue = this.metadataReferenceValues.stream()
+            final List<MetadataReference> invalidGeopackageValue = this.metadataReferenceValues.stream()
                                                                                          .filter(columnValue -> columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()))
                                                                                          .filter(columnValue -> columnValue.column_name != null)
                                                                                          .collect(Collectors.toList());
@@ -253,16 +227,16 @@ public class MetadataVerifier extends Verifier
                               invalidGeopackageValue.isEmpty());
 
             //get table_name values from the gpkg_contents table
-            String query = "SELECT table_name FROM gpkg_contents;";
+            final String query = "SELECT table_name FROM gpkg_contents;";
             try(Statement stmt                 = this.getSqliteConnection().createStatement();
                 ResultSet contentsTableNamesRS = stmt.executeQuery(query))
             {
-              List<String> contentsTableNames = ResultSetStream.getStream(contentsTableNamesRS)
+              final List<String> contentsTableNames = ResultSetStream.getStream(contentsTableNamesRS)
                                                                .map(resultSet ->  { try
                                                                                     {
                                                                                         return resultSet.getString("table_name");
                                                                                     }
-                                                                                    catch(SQLException ex)
+                                                                                    catch(final SQLException ex)
                                                                                     {
                                                                                         return null;
                                                                                     }
@@ -271,7 +245,7 @@ public class MetadataVerifier extends Verifier
                                                                .collect(Collectors.toList());
 
               //check other records that does not have 'geopackage' as a value
-              List<MetadataReference> invalidTableNameValues = this.metadataReferenceValues.stream()
+              final List<MetadataReference> invalidTableNameValues = this.metadataReferenceValues.stream()
                                                                                            .filter(columnValue -> !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()))
                                                                                            .filter(columnValue -> contentsTableNames.stream().anyMatch(contentsTableName -> !columnValue.table_name.equals(contentsTableName)))
                                                                                            .collect(Collectors.toList());
@@ -312,7 +286,7 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            List<MetadataReference> invalidColumnNameValues = this.metadataReferenceValues.stream()
+            final List<MetadataReference> invalidColumnNameValues = this.metadataReferenceValues.stream()
                                                                                           .filter(columnValue -> columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) ||
                                                                                                                  columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      ||
                                                                                                                  columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Row.toString()))
@@ -327,26 +301,26 @@ public class MetadataVerifier extends Verifier
                                                                    .collect(Collectors.joining("\n"))),
                               invalidColumnNameValues.isEmpty());
 
-            List<MetadataReference> otherReferenceScopeValues = this.metadataReferenceValues.stream()
+            final List<MetadataReference> otherReferenceScopeValues = this.metadataReferenceValues.stream()
                                                                                             .filter(columnValue -> !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) &&
                                                                                                                    !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      &&
                                                                                                                    !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Row.toString()))
                                                                                             .collect(Collectors.toList());
-            for(MetadataReference value: otherReferenceScopeValues)
+            for(final MetadataReference value: otherReferenceScopeValues)
             {
                 if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), value.table_name))
                 {
-                    String query = String.format("PRAGMA table_info(%s);", value.table_name);
+                    final String query = String.format("PRAGMA table_info(%s);", value.table_name);
 
                     try(Statement stmt      = this.getSqliteConnection().createStatement();
                         ResultSet tableInfo = stmt.executeQuery(query))
                     {
-                        boolean columnExists = ResultSetStream.getStream(tableInfo)
+                        final boolean columnExists = ResultSetStream.getStream(tableInfo)
                                                               .anyMatch(resultSet -> {  try
                                                                                         {
                                                                                             return resultSet.getString("name").equals(value.column_name);
                                                                                         }
-                                                                                        catch(SQLException ex)
+                                                                                        catch(final SQLException ex)
                                                                                         {
                                                                                             return false;
                                                                                         }
@@ -384,7 +358,7 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            List<MetadataReference> invalidColumnValues = this.metadataReferenceValues.stream()
+            final List<MetadataReference> invalidColumnValues = this.metadataReferenceValues.stream()
                                                                                       .filter(columnValue -> columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) ||
                                                                                                              columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      ||
                                                                                                              columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Column.toString()))
@@ -397,14 +371,14 @@ public class MetadataVerifier extends Verifier
                                                                .collect(Collectors.joining("\n"))),
                               invalidColumnValues.isEmpty());
 
-            List<MetadataReference> invalidColumnNameValues = this.metadataReferenceValues.stream()
+            final List<MetadataReference> invalidColumnNameValues = this.metadataReferenceValues.stream()
                                                                                           .filter(columnValue -> !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) &&
                                                                                                                  !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      &&
                                                                                                                  !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Column.toString()))
                                                                                           .collect(Collectors.toList());
-            for(MetadataReference value: invalidColumnNameValues)
+            for(final MetadataReference value: invalidColumnNameValues)
             {
-                String query = String.format("SELECT * FROM %s WHERE ROWID = %d;", value.table_name, value.row_id_value);
+                final String query = String.format("SELECT * FROM %s WHERE ROWID = %d;", value.table_name, value.row_id_value);
 
                 try(Statement stmt            = this.getSqliteConnection().createStatement();
                     ResultSet matchingRowIdRS = stmt.executeQuery(query))
@@ -437,7 +411,7 @@ public class MetadataVerifier extends Verifier
     {
         if (this.hasMetadataReferenceTable)
         {
-            for (MetadataReference value : this.metadataReferenceValues)
+            for (final MetadataReference value : this.metadataReferenceValues)
             {
                 try
                 {
@@ -478,7 +452,7 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            List<MetadataReference> invalidIds = this.metadataReferenceValues.stream()
+            final List<MetadataReference> invalidIds = this.metadataReferenceValues.stream()
                                                                               .filter(metadataReferenceValue ->
                                                                                                           !(this.metadataValues.stream()
                                                                                                                                .anyMatch(metadataValue ->
@@ -513,7 +487,7 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            List<MetadataReference> invalidParentIdsBcFileIds = this.metadataReferenceValues.stream()
+            final List<MetadataReference> invalidParentIdsBcFileIds = this.metadataReferenceValues.stream()
                                                                                             .filter(metadataReferenceValue -> metadataReferenceValue.md_file_id.equals(metadataReferenceValue.md_parent_id))
                                                                                             .collect(Collectors.toList());
 
@@ -524,7 +498,7 @@ public class MetadataVerifier extends Verifier
                                                                      .collect(Collectors.joining("\n"))),
                               invalidParentIdsBcFileIds.isEmpty());
 
-            List<MetadataReference> invalidParentIds = this.metadataReferenceValues.stream()
+            final List<MetadataReference> invalidParentIds = this.metadataReferenceValues.stream()
                                                                                    .filter(metadataReferenceValue -> metadataReferenceValue.md_parent_id != null)
                                                                                    .filter(metadataReferenceValue -> !(this.metadataValues.stream()
                                                                                                                                           .anyMatch(metadataValue ->  metadataReferenceValue.md_parent_id.equals(metadataValue.id))))
@@ -548,7 +522,7 @@ public class MetadataVerifier extends Verifier
     private List<MetadataReference> getMetadataReferenceValues()
     {
 
-        String query = "SELECT reference_scope, table_name, column_name, row_id_value, timestamp, md_file_id, md_parent_id FROM gpkg_metadata_reference;";
+        final String query = "SELECT reference_scope, table_name, column_name, row_id_value, timestamp, md_file_id, md_parent_id FROM gpkg_metadata_reference;";
 
         try(Statement stmt            = this.getSqliteConnection().createStatement();
             ResultSet metadataValueRS = stmt.executeQuery(query))
@@ -556,7 +530,7 @@ public class MetadataVerifier extends Verifier
                 return ResultSetStream.getStream(metadataValueRS)
                                       .map(resultSet -> {  try
                                                            {
-                                                                MetadataReference metadataReference = new MetadataReference();
+                                                                final MetadataReference metadataReference = new MetadataReference();
 
                                                                 metadataReference.reference_scope   = resultSet.getString("reference_scope");
                                                                 metadataReference.table_name        = resultSet.getString("table_name");
@@ -584,7 +558,7 @@ public class MetadataVerifier extends Verifier
 
                                                                 return metadataReference;
                                                            }
-                                                           catch(SQLException ex)
+                                                           catch(final SQLException ex)
                                                            {
                                                                return null;
                                                            }
@@ -593,7 +567,7 @@ public class MetadataVerifier extends Verifier
                                       .collect(Collectors.toList());
 
             }
-            catch(SQLException ex)
+            catch(final SQLException ex)
             {
                 return Collections.emptyList();
             }
@@ -606,7 +580,7 @@ public class MetadataVerifier extends Verifier
      */
     private List<Metadata> getMetadataValues()
     {
-        String query = "SELECT md_scope, id FROM gpkg_metadata;";
+        final String query = "SELECT md_scope, id FROM gpkg_metadata;";
 
         try(Statement stmt            = this.getSqliteConnection().createStatement();
             ResultSet metadataValueRS = stmt.executeQuery(query))
@@ -614,13 +588,13 @@ public class MetadataVerifier extends Verifier
                 return ResultSetStream.getStream(metadataValueRS)
                                       .map(resultSet -> {  try
                                                            {
-                                                                Metadata metadata = new Metadata();
+                                                                final Metadata metadata = new Metadata();
                                                                 metadata.id = resultSet.getInt("id");
                                                                 metadata.md_scope = resultSet.getString("md_scope");
 
                                                                 return metadata;
                                                            }
-                                                           catch(SQLException ex)
+                                                           catch(final SQLException ex)
                                                            {
                                                                return null;
                                                            }
@@ -629,7 +603,7 @@ public class MetadataVerifier extends Verifier
                                       .collect(Collectors.toList());
 
             }
-            catch(SQLException ex)
+            catch(final SQLException ex)
             {
                 return Collections.emptyList();
             }
@@ -657,6 +631,28 @@ public class MetadataVerifier extends Verifier
         return Stream.of(Scope.values()).anyMatch(scope -> scope.toString().equalsIgnoreCase(mdScope));
     }
 
+    private final boolean                 hasMetadataTable;
+    private final boolean                 hasMetadataReferenceTable;
+    private final List<Metadata>          metadataValues;
+    private final List<MetadataReference> metadataReferenceValues;
+
+    private class Metadata
+    {
+        int    id;
+        String md_scope;
+    }
+
+    private class MetadataReference
+    {
+        String  reference_scope;
+        String  table_name;
+        String  column_name;
+        Integer row_id_value;
+        String  timestamp;
+        Integer md_file_id;
+        Integer md_parent_id;
+    }
+
     private static final TableDefinition MetadataTableDefinition;
     private static final TableDefinition MetadataReferenceTableDefinition;
     static
@@ -664,7 +660,7 @@ public class MetadataVerifier extends Verifier
         final Map<String, ColumnDefinition> metadataTableColumns = new HashMap<>();
 
         metadataTableColumns.put("id",               new ColumnDefinition("INTEGER", true,  true, false, null));
-        metadataTableColumns.put("md_scope",         new ColumnDefinition("TEXT",    true, false, false, "'\\s*dataset\\s*'||\"\\s*dataset\\s*\""));//TODO check if regex works as intended
+        metadataTableColumns.put("md_scope",         new ColumnDefinition("TEXT",    true, false, false, "'\\s*dataset\\s*'||\"\\s*dataset\\s*\"")); //TODO check if regex works as intended
         metadataTableColumns.put("md_standard_uri",  new ColumnDefinition("TEXT",    true, false, false, null));
         metadataTableColumns.put("mime_type",        new ColumnDefinition("TEXT",    true, false, false, "['\"]\\s*text[/\\\\]xml\\s*['\"]"));
         metadataTableColumns.put("metadata",         new ColumnDefinition("TEXT",    true, false, false, "\\s*''\\s*|\\s*\"\"\\s*"));
