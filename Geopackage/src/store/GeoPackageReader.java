@@ -47,6 +47,7 @@ import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.util.ImageUtility;
+import com.rgi.common.util.Range;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
@@ -131,7 +132,8 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                                                  return new TileMatrixDimensions(tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight());
                                              }
 
-                                             return new TileMatrixDimensions(0, 0);
+                                             throw new IllegalArgumentException(String.format("Zoom level must be in the range %s",
+                                                                                              new Range<>(GeoPackageReader.this.tileMatrices.keySet(), Integer::compare)));
                                            };
         }
         catch(final IllegalArgumentException | SQLException ex)
