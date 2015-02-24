@@ -165,7 +165,7 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
 
             this.tileScheme = tileScheme;
 
-            this.tileMatricies = this.geoPackage.tiles()
+            this.tileMatrices = this.geoPackage.tiles()
                                            .getTileMatrices(this.tileSet)
                                            .stream()
                                            .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
@@ -258,14 +258,14 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
     {
         TileMatrix tileMatrix = null;
 
-        if(!this.tileMatricies.containsKey(zoomLevel))
+        if(!this.tileMatrices.containsKey(zoomLevel))
         {
             tileMatrix = this.addTileMatrix(zoomLevel, imageHeight, imageWidth);
-            this.tileMatricies.put(zoomLevel, tileMatrix);
+            this.tileMatrices.put(zoomLevel, tileMatrix);
         }
         else
         {
-            tileMatrix = this.tileMatricies.get(zoomLevel);
+            tileMatrix = this.tileMatrices.get(zoomLevel);
         }
 
         return tileMatrix;
@@ -291,7 +291,7 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
     private final GeoPackage               geoPackage;
     private final TileSet                  tileSet;
     private final CrsProfile               crsProfile;
-    private final Map<Integer, TileMatrix> tileMatricies;
+    private final Map<Integer, TileMatrix> tileMatrices;
     private final ImageWriter              imageWriter;
     private final ImageWriteParam          imageWriteOptions;
     private final TileScheme               tileScheme;

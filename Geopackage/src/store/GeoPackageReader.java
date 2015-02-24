@@ -47,6 +47,7 @@ import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.util.ImageUtility;
+import com.rgi.common.util.Range;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
@@ -119,19 +120,20 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
 
             this.tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
 
-            this.tileMatricies = this.geoPackage.tiles()
+            this.tileMatrices = this.geoPackage.tiles()
                                                 .getTileMatrices(this.tileSet)
                                                 .stream()
                                                 .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
                                                                           tileMatrix -> tileMatrix));
 
-            this.tileScheme = zoomLevel -> { if(GeoPackageReader.this.tileMatricies.containsKey(zoomLevel))
+            this.tileScheme = zoomLevel -> { if(GeoPackageReader.this.tileMatrices.containsKey(zoomLevel))
                                              {
-                                                 final TileMatrix tileMatrix = GeoPackageReader.this.tileMatricies.get(zoomLevel);
+                                                 final TileMatrix tileMatrix = GeoPackageReader.this.tileMatrices.get(zoomLevel);
                                                  return new TileMatrixDimensions(tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight());
                                              }
 
-                                             return new TileMatrixDimensions(0, 0);
+                                             throw new IllegalArgumentException(String.format("Zoom level must be in the range %s",
+                                                                                              new Range<>(GeoPackageReader.this.tileMatrices.keySet(), Integer::compare)));
                                            };
         }
         catch(final IllegalArgumentException | SQLException ex)
@@ -369,7 +371,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
 
     private TileHandle getTileHandle(final int zoomLevel, final int column, final int row)
     {
-        final TileMatrix           tileMatrix = GeoPackageReader.this.tileMatricies.get(zoomLevel);
+        final TileMatrix           tileMatrix = GeoPackageReader.this.tileMatrices.get(zoomLevel);
         final TileMatrixDimensions matrix     = new TileMatrixDimensions(tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight());
 
         return new TileHandle()
@@ -405,7 +407,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                                                    .crsProfile
                                                    .tileToCrsCoordinate(column,
                                                                         row,
-                                                                        this.getBounds(),
+                                                                        GeoPackageReader.this.getBounds(),
                                                                         matrix,
                                                                         GeoPackageTiles.Origin);
                         }
@@ -425,8 +427,8 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                         @Override
                         public BoundingBox getBounds() throws TileStoreException
                         {
-                            final Coordinate<Double> upperLeft  = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(column,   row,   GeoPackageReader.this.getBounds(), matrix, GeoPackageTiles.Origin);
-                            final Coordinate<Double> lowerRight = GeoPackageReader.this.crsProfile.tileToCrsCoordinate(column+1, row+1, GeoPackageReader.this.getBounds(), matrix, GeoPackageTiles.Origin);
+                            final Coordinate<Double> upperLeft  = this.getCrsCoordinate(TileOrigin.UpperLeft);
+                            final Coordinate<Double> lowerRight = this.getCrsCoordinate(TileOrigin.LowerRight);
 
                             return new BoundingBox(upperLeft.getX(),
                                                    lowerRight.getY(),
@@ -439,17 +441,14 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                         {
                             return GeoPackageReader.this.getTile(column, row, zoomLevel);
                         }
-
-
                    };
     }
 
-    protected final GeoPackage   geoPackage;
-    protected final TileSet      tileSet;
-    protected final CrsProfile   crsProfile;
-    protected final TileScheme   tileScheme;
-    protected final Set<Integer> zoomLevels;
-
-    private final Map<Integer, TileMatrix> tileMatricies;
-    private final TileMatrixSet tileMatrixSet;
+    private final GeoPackage               geoPackage;
+    private final TileSet                  tileSet;
+    private final CrsProfile               crsProfile;
+    private final TileScheme               tileScheme;
+    private final Set<Integer>             zoomLevels;
+    private final Map<Integer, TileMatrix> tileMatrices;
+    private final TileMatrixSet            tileMatrixSet;
 }

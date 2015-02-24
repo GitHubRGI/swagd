@@ -52,7 +52,7 @@ import com.rgi.geopackage.tiles.TileSet;
 
 /**
  * View a supported tile store within a map viewer.
- * 
+ *
  * @author Steven D. Lander
  */
 public class MapViewWindow extends JFrame implements JMapViewerEventListener

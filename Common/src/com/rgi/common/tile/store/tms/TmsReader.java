@@ -399,9 +399,10 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
 
                     return new TileHandle()
                            {
-                               private final boolean gotImage = false;
-                               private BufferedImage image;
                                private final TileMatrixDimensions matrix = TmsReader.this.tileScheme.dimensions(zoomLevel);
+
+                               private boolean       gotImage = false;
+                               private BufferedImage image;
 
                                @Override
                                public int getZoomLevel()
@@ -450,8 +451,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                @Override
                                public BoundingBox getBounds() throws TileStoreException
                                {
-                                   final Coordinate<Double> lowerLeft  = TmsReader.this.profile.tileToCrsCoordinate(column,   row,   TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
-                                   final Coordinate<Double> upperRight = TmsReader.this.profile.tileToCrsCoordinate(column+1, row+1, TmsReader.this.profile.getBounds(), this.matrix, TmsTileStore.Origin);
+                                   final Coordinate<Double> lowerLeft  = this.getCrsCoordinate(TileOrigin.LowerLeft);
+                                   final Coordinate<Double> upperRight = this.getCrsCoordinate(TileOrigin.UpperRight);
 
                                    return new BoundingBox(lowerLeft.getX(),
                                                           lowerLeft.getY(),
@@ -464,7 +465,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                {
                                    if(!this.gotImage)
                                    {
-                                       this.image = TmsReader.this.getTile(column, row, zoomLevel);
+                                       this.image    = TmsReader.this.getTile(column, row, zoomLevel);
+                                       this.gotImage = true;
                                    }
 
                                    return this.image;
