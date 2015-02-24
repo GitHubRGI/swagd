@@ -89,7 +89,7 @@ abstract class TileCluster
         return TileCluster.Origin;
     }
 
-    protected ClusterAddress getClusterAddress(final int row, final int column, final int zoomLevel)
+    protected ClusterAddress getClusterAddress(final int column, final int row, final int zoomLevel)
     {
         if(zoomLevel <= 0 || zoomLevel > this.zoomLevels)
         {
@@ -139,7 +139,7 @@ abstract class TileCluster
 
     protected long getIndexPosition(final int row, final int column, final int zoomLevel)
     {
-        final ClusterAddress clusterAddress = this.getClusterAddress(row, column, zoomLevel); // compute the local address that's the relative address of the tile in the cluster
+        final ClusterAddress clusterAddress = this.getClusterAddress(column, row, zoomLevel); // compute the local address that's the relative address of the tile in the cluster
 
         final int localZoomLevel = zoomLevel - clusterAddress.startlevel;
 

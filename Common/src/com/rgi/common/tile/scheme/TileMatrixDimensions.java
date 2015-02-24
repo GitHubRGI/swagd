@@ -28,10 +28,10 @@ package com.rgi.common.tile.scheme;
 public class TileMatrixDimensions
 {
     /**
-     * @param height the number of tiles high in the matrix (rows)
      * @param width the number of tiles wide in the matrix (columns)
+     * @param height the number of tiles high in the matrix (rows)
      */
-    public TileMatrixDimensions(final int height, final int width)
+    public TileMatrixDimensions(final int width, final int height)
     {
         if(height <= 0)
         {

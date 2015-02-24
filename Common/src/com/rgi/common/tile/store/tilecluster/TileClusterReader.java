@@ -77,9 +77,9 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
     }
 
     @Override
-    public BufferedImage getTile(final int row, final int column, final int zoomLevel) throws TileStoreException
+    public BufferedImage getTile(final int column, final int row, final int zoomLevel) throws TileStoreException
     {
-        final ClusterAddress clusterAddress = this.getClusterAddress(row, column, zoomLevel);
+        final ClusterAddress clusterAddress = this.getClusterAddress(column, row, zoomLevel);
         final File           clusterFile    = this.getClusterFile(clusterAddress);
 
         if(!clusterFile.canRead())
@@ -135,8 +135,8 @@ public class TileClusterReader extends TileCluster implements TileStoreReader
                                                                                           this.tileScheme.dimensions(zoomLevel),
                                                                                           TileCluster.Origin);
 
-        return this.getTile(clusterCoordinate.getY(),
-                            clusterCoordinate.getX(),
+        return this.getTile(clusterCoordinate.getX(),
+                            clusterCoordinate.getY(),
                             zoomLevel);
     }
 

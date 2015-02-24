@@ -32,7 +32,8 @@ import java.util.Collection;
 import utility.DatabaseUtility;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.geopackage.verification.FailedRequirement;
+import com.rgi.geopackage.verification.VerificationIssue;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
@@ -73,13 +74,16 @@ public class GeoPackageCore
 
     /**
      * Requirements this GeoPackage failed to meet
-     * @param file the GeoPackage database file
      *
-     * @return the Core GeoPackage requirements this GeoPackage fails to conform to
+     * @param file
+     *             the GeoPackage database file
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
+     * @return The Core GeoPackage requirements this GeoPackage fails to conform to
      */
-    public Collection<FailedRequirement> getFailedRequirements(final File file)
+    public Collection<VerificationIssue> getVerificationIssues(final File file, final VerificationLevel verificationLevel)
     {
-        return new CoreVerifier(file, this.databaseConnection).getFailedRequirements();
+        return new CoreVerifier(file, this.databaseConnection, verificationLevel).getVerificationIssues();
     }
 
     /**
@@ -407,10 +411,10 @@ public class GeoPackageCore
                                                       results.getString(3),                          // identifier
                                                       results.getString(4),                          // description
                                                       results.getString(5),                          // last change
-                                                      new BoundingBox((Double)results.getObject(7),  // min y        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                                                      (Double)results.getObject(6),  // min x
-                                                                      (Double)results.getObject(9),  // max y
-                                                                      (Double)results.getObject(8)), // max x
+                                                      new BoundingBox((Double)results.getObject(6),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
+                                                                      (Double)results.getObject(7),  // min y
+                                                                      (Double)results.getObject(8),  // max x
+                                                                      (Double)results.getObject(9)), // max y
                                                       (Integer)results.getObject(10)));              // srs id
                 }
             }
@@ -468,10 +472,10 @@ public class GeoPackageCore
                                                  result.getString(2),                          // identifier
                                                  result.getString(3),                          // description
                                                  result.getString(4),                          // last change
-                                                 new BoundingBox((Double)result.getObject(6),  // min y        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                                                 (Double)result.getObject(5),  // min x
-                                                                 (Double)result.getObject(8),  // max y
-                                                                 (Double)result.getObject(7)), // max x
+                                                 new BoundingBox((Double)result.getObject(5),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
+                                                                 (Double)result.getObject(6),  // min y
+                                                                 (Double)result.getObject(7),  // max x
+                                                                 (Double)result.getObject(8)), // max y
                                                  (Integer)result.getObject(9));                // srs id
                 }
 
@@ -485,7 +489,7 @@ public class GeoPackageCore
      * <br>
      * <b>**WARNING**</b> this does not do a database commit. It is expected
      * that this transaction will always be paired with others that need to be
-     * committed or rollback as a single transaction.
+     * committed or roll back as a single transaction.
      *
      * @param name
      *            Human readable name of this spatial reference system
@@ -700,5 +704,5 @@ public class GeoPackageCore
     /**
      * The name of the GeoPackage Contents Table "gpkg_contents"
      */
-    public final static String ContentsTableName      = "gpkg_contents";
+    public final static String ContentsTableName = "gpkg_contents";
 }

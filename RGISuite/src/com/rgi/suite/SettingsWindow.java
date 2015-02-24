@@ -78,6 +78,12 @@ public class SettingsWindow extends AbstractWindow {
         this.tileOutputPathField = new JTextField();
         JButton tileOutputPathButton = new JButton("\u2026");
         Insets i = tileOutputPathButton.getMargin();
+
+        if(i == null)
+        {
+            throw new RuntimeException("JButton::getMargin returned null");
+        }
+
         Insets j = new Insets(i.top, 1, i.bottom, 1);
         tileOutputPathButton.setMargin(j);
         gbc.gridy = 0;

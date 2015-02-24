@@ -22,24 +22,28 @@ package com.rgi.geopackage.verification;
  * @author Luke Lambert
  *
  */
-public class FailedRequirement
+public class VerificationIssue
 {
     /**
-     * @param reason the message with why a certain GeoPackage failed a specific requirement
-     * @param requirement the requirement that the GeoPackage failed
+     * Constructor
+     *
+     * @param message
+     *             The explanation of how a GeoPackage didn't conform to a specific requirement
+     * @param requirement
+     *             The requirement that the GeoPackage didn't fully conform to
      */
-    public FailedRequirement(final String reason, final Requirement requirement)
+    public VerificationIssue(final String message, final Requirement requirement)
     {
-        this.reason      = reason;
+        this.message     = message;
         this.requirement = requirement;
     }
 
     /**
-     * @return the reason
+     * @return the message
      */
     public String getReason()
     {
-        return this.reason;
+        return this.message;
     }
     /**
      * @return the requirement
@@ -49,6 +53,6 @@ public class FailedRequirement
         return this.requirement;
     }
 
-    final private String      reason;
+    final private String      message;
     final private Requirement requirement;
 }

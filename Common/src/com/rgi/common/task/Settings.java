@@ -31,10 +31,6 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
-import com.rgi.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsProfile;
-import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
-
 /**
  * @author Duff Means
  *
@@ -145,7 +141,7 @@ public class Settings
         /**
          *  Web Mercator (also known as Spherical Mercator) projection
          *  used in many popular web mapping applications (Google/Bing/OpenStreetMap/etc).
-         *  Sometimes know nas EPSG:900913
+         *  Sometimes known as EPSG:900913
          */
         WebMercator        ("EPSG", 3857),
         /**
@@ -447,7 +443,7 @@ public class Settings
     {
         this.set(setting, file.getPath());
     }
-    
+
     public void set(final Setting setting, final Profile profile)
     {
     	this.set(setting, profile.name());

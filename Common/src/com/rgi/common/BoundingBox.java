@@ -13,34 +13,34 @@ public class BoundingBox
     /**
      * Constructor
      *
-     * @param minY
-     *            Minimum Y
      * @param minX
      *            Minimum X
-     * @param maxY
-     *            Maximum Y
+     * @param minY
+     *            Minimum Y
      * @param maxX
      *            Maximum X
+     * @param maxY
+     *            Maximum Y
      */
-    public BoundingBox(final double minY,
-                       final double minX,
-                       final double maxY,
-                       final double maxX)
+    public BoundingBox(final double minX,
+                       final double minY,
+                       final double maxX,
+                       final double maxY)
     {
-        if(minY > maxY)
-        {
-            throw new IllegalArgumentException("Min y cannot be greater than max y");
-        }
-
         if(minX > maxX)
         {
             throw new IllegalArgumentException("Min x cannot be greater than max x");
         }
 
-        this.minY = minY;
+        if(minY > maxY)
+        {
+            throw new IllegalArgumentException("Min y cannot be greater than max y");
+        }
+
         this.minX = minX;
-        this.maxY = maxY;
+        this.minY = minY;
         this.maxX = maxX;
+        this.maxY = maxY;
     }
 
     @Override
@@ -99,8 +99,8 @@ public class BoundingBox
      */
     public Coordinate<Double> getCenter()
     {
-        return new Coordinate<>((this.getMaxY() + this.getMinY()) / 2.0,
-                                (this.getMaxX() + this.getMinX()) / 2.0);
+        return new Coordinate<>((this.getMaxX() + this.getMinX()) / 2.0,
+                                (this.getMaxY() + this.getMinY()) / 2.0);
     }
 
     /**
@@ -140,7 +140,7 @@ public class BoundingBox
      */
     public Coordinate<Double> getMin()
     {
-        return new Coordinate<>(this.minY, this.minX);
+        return new Coordinate<>(this.minX, this.minY);
     }
 
     /**
@@ -148,7 +148,7 @@ public class BoundingBox
      */
     public Coordinate<Double> getMax()
     {
-        return new Coordinate<>(this.maxY, this.maxX);
+        return new Coordinate<>(this.maxX, this.maxY);
     }
 
     /**
@@ -156,9 +156,9 @@ public class BoundingBox
      */
     public Coordinate<Double> getTopLeft()
     {
-        return new Coordinate<>(this.maxY, this.minX);
+        return new Coordinate<>(this.minX, this.maxY);
     }
-    
+
     /**
      * @return the coordinate of the top right corner of the bounding box
      */
@@ -174,13 +174,13 @@ public class BoundingBox
     {
         return this.getMin();
     }
-    
+
     /**
      * @return the coordinate of the bottom right corner of the bounding box
      */
     public Coordinate<Double> getBottomRight()
     {
-        return new Coordinate<>(this.minY, this.maxX);
+        return new Coordinate<>(this.maxX, this.minY);
     }
 
     /**

@@ -32,15 +32,15 @@ public class ZoomTimesTwo implements TileScheme
      *             Lowest valid level of zoom for this tile scheme.  Must be 0 or greater, and less than or equal to maximumZoomLevel.
      * @param maximumZoomLevel
      *             Highest valid level of zoom for this tile scheme  Must be 0 or greater, and greater than or equal to minimumZoomLevel.
-     * @param baseZoomLevelTileMatrixHeight
-     *             The number of tiles along the y axis for the lowest zoom level
      * @param baseZoomLevelTileMatrixWidth
      *             The number of tiles along the x axis for the lowest zoom level
+     * @param baseZoomLevelTileMatrixHeight
+     *             The number of tiles along the y axis for the lowest zoom level
      */
     public ZoomTimesTwo(final int minimumZoomLevel,
                         final int maximumZoomLevel,
-                        final int baseZoomLevelTileMatrixHeight,
-                        final int baseZoomLevelTileMatrixWidth)
+                        final int baseZoomLevelTileMatrixWidth,
+                        final int baseZoomLevelTileMatrixHeight)
     {
         if(minimumZoomLevel < 0)
         {
@@ -86,8 +86,8 @@ public class ZoomTimesTwo implements TileScheme
         {
             final int zoom = zoomLevel - minimumZoomLevel;
             final int twoToTheZoomPower = (int)Math.pow(2.0, zoom);
-            this.zoomLevelDimensions[zoom] = new TileMatrixDimensions(baseZoomLevelTileMatrixHeight * twoToTheZoomPower,
-                                                                      baseZoomLevelTileMatrixWidth  * twoToTheZoomPower);
+            this.zoomLevelDimensions[zoom] = new TileMatrixDimensions(baseZoomLevelTileMatrixWidth  * twoToTheZoomPower,
+                                                                      baseZoomLevelTileMatrixHeight * twoToTheZoomPower);
         }
     }
 

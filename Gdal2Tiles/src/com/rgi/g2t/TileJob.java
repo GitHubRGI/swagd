@@ -124,8 +124,8 @@ public class TileJob implements Runnable
 
         final GeoTransformation geoTransform = new GeoTransformation(dataset.GetGeoTransform());
 
-        final Dimensions<Integer> rasterDimensions = new Dimensions<>(dataset.getRasterYSize(),
-                                                                      dataset.getRasterXSize());
+        final Dimensions<Integer> rasterDimensions = new Dimensions<>(dataset.getRasterXSize(),
+                                                                      dataset.getRasterYSize());
 
         final BoundingBox imageCrsBounds = geoTransform.getBounds(dataset);
 
@@ -514,12 +514,12 @@ public class TileJob implements Runnable
      * @param d the origin delta, -1 or 1
      * @return the transformed z value
      */
-    private static int f(final int z, final int d)
-    {
-        return d > 0 ? z
-                     : z > 0 ? 0
-                             : 1;
-    }
+//    private static int f(final int z, final int d)
+//    {
+//        return d > 0 ? z
+//                     : z > 0 ? 0
+//                             : 1;
+//    }
 
     private static double log2(final double value)
     {
@@ -538,8 +538,8 @@ public class TileJob implements Runnable
 
     private CrsCoordinate tileToCrsCoordinate(final int tileY, final int tileX, final BoundingBox bounds, final int zoomLevel)
     {
-        return this.crsProfile.tileToCrsCoordinate(tileY,
-                                                   tileX,
+        return this.crsProfile.tileToCrsCoordinate(tileX,
+                                                   tileY,
                                                    bounds,
                                                    this.tileScheme.dimensions(zoomLevel),
                                                    this.tileStoreWriter.getTileOrigin());

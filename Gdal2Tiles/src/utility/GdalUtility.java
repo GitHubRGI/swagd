@@ -75,13 +75,18 @@ public class GdalUtility
 
         final int pixelCount = rasterWidth * rasterHeight;
 
-        final Band band = dataset.GetRasterBand(1);   // Bands are not 1-base indexed
+        final Band band = dataset.GetRasterBand(1);   // Bands are 1-base indexed
+
+        if(band == null)
+        {
+            throw new RuntimeException("GDAL returned a null raster band");
+        }
 
         final int bandDataType = band.getDataType();
 
         if(bandCount == 1)
         {
-            if(band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex)
+            if(band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex && band.GetRasterColorTable() != null)
             {
                 final ByteBuffer byteBuffer = band.ReadRaster_Direct(0, 0, band.getXSize(), band.getYSize(), band.getDataType());
 

@@ -81,7 +81,7 @@ public class GlobalGeodeticCrsProfile extends ProportionalCrsProfile
      *
      * TODO: what defines the bounds?  The information doesn't seem to be specified in the datum
      */
-    public static final BoundingBox Bounds = new BoundingBox(-90.0, -180.0, 90.0, 180.0);
+    public static final BoundingBox Bounds = new BoundingBox(-180.0, -90.0, 180.0, 90.0);
 
     @Override
     public int getPrecision()

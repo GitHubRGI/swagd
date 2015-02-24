@@ -77,12 +77,12 @@ public abstract class ProportionalCrsProfile implements CrsProfile
         final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileCrsHeight);
         final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileCrsWidth);
 
-        return new Coordinate<>(tileY, tileX);
+        return new Coordinate<>(tileX, tileY);
     }
 
     @Override
-    public CrsCoordinate tileToCrsCoordinate(final int                  row,
-                                             final int                  column,
+    public CrsCoordinate tileToCrsCoordinate(final int                  column,
+                                             final int                  row,
                                              final BoundingBox          bounds,
                                              final TileMatrixDimensions dimensions,
                                              final TileOrigin           tileOrigin)
@@ -118,7 +118,7 @@ public abstract class ProportionalCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
-
+        
         final double tileCrsHeight = bounds.getHeight() / dimensions.getHeight();
         final double tileCrsWidth  = bounds.getWidth()  / dimensions.getWidth();
 
@@ -126,14 +126,11 @@ public abstract class ProportionalCrsProfile implements CrsProfile
                                                                         row,
                                                                         column,
                                                                         dimensions);
+        
+        final Coordinate<Double> boundsCorner = bounds.getBottomLeft();
 
-        final BoundingBox globalBounds = this.getBounds();
-
-        final double originShiftY = globalBounds.getHeight() / 2.0;
-        final double originShiftX = globalBounds.getWidth()  / 2.0;
-
-        return new CrsCoordinate(((tileCoordinate.getY() + tileOrigin.getVertical())   * tileCrsHeight) - originShiftY,
-                                 ((tileCoordinate.getX() + tileOrigin.getHorizontal()) * tileCrsWidth)  - originShiftX,
+        return new CrsCoordinate(boundsCorner.getX() + (tileCoordinate.getX() + tileOrigin.getHorizontal())*(tileCrsWidth),
+                                 boundsCorner.getY() + (tileCoordinate.getY() + tileOrigin.getVertical())  *(tileCrsHeight),
                                  this.getCoordinateReferenceSystem());
     }
 }

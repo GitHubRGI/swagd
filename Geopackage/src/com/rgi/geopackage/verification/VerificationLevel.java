@@ -19,17 +19,23 @@
 package com.rgi.geopackage.verification;
 
 /**
- * @author Luke Lambert
+ * @author Luke.Lambert
  *
  */
-public enum Severity
+public enum VerificationLevel
 {
     /**
-     * A minor violation of the <a href="http://www.geopackage.org/spec/">GeoPackage Standards</a>
+     * Indicates that no verification should be performed
      */
-    Warning,
+    None,
+
     /**
-     * A major violation of the <a href="http://www.geopackage.org/spec/">GeoPackage Standards</a>
+     * Skip verification tests that may take a very long time to execute.  Skipped tests should issue warnings.
      */
-    Error
+    Fast,
+
+    /**
+     * All verification tests should be run
+     */
+    Full
 }

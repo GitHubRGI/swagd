@@ -47,6 +47,7 @@ import com.rgi.geopackage.schema.DataColumn;
 import com.rgi.geopackage.schema.DataColumnConstraint;
 import com.rgi.geopackage.schema.Type;
 import com.rgi.geopackage.verification.ConformanceException;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 @SuppressWarnings("javadoc")
 public class GeoPackageSchemaAPITest
@@ -78,7 +79,7 @@ public class GeoPackageSchemaAPITest
                                                    "tiles",
                                                    "identifier",
                                                    "description",
-                                                   new BoundingBox(0.0,0.0,90.0,180.0),
+                                                   new BoundingBox(0.0,0.0,180.0,90.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
 
 
@@ -164,7 +165,7 @@ public class GeoPackageSchemaAPITest
                                                    "tiles",
                                                    "identifier",
                                                    "description",
-                                                   new BoundingBox(0.0,0.0,90.0,180.0),
+                                                   new BoundingBox(0.0,0.0,180.0,90.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
             final String   name           = "name";
             final String   title          = "title";
@@ -203,7 +204,7 @@ public class GeoPackageSchemaAPITest
                                                    "tiles",
                                                    "identifier",
                                                    "description",
-                                                   new BoundingBox(0.0,0.0,90.0,180.0),
+                                                   new BoundingBox(0.0,0.0,180.0,90.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
 
             final String   columnName     = "columnName";
@@ -276,7 +277,7 @@ public class GeoPackageSchemaAPITest
                                                    "tiles",
                                                    "identifier",
                                                    "description",
-                                                   new BoundingBox(0.0,0.0,90.0,180.0),
+                                                   new BoundingBox(0.0,0.0,180.0,90.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
 
             gpkg.schema().getDataColumn(table, null);
@@ -308,7 +309,7 @@ public class GeoPackageSchemaAPITest
                                                    "tiles",
                                                    "identifier",
                                                    "description",
-                                                   new BoundingBox(0.0,0.0,90.0,180.0),
+                                                   new BoundingBox(0.0,0.0,180.0,90.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
 
             gpkg.schema().getDataColumn(table, "");
@@ -348,7 +349,7 @@ public class GeoPackageSchemaAPITest
                                                    "tiles",
                                                    "identifier",
                                                    "description",
-                                                   new BoundingBox(0.0,0.0,90.0,180.0),
+                                                   new BoundingBox(0.0,0.0,180.0,90.0),
                                                    gpkg.core().getSpatialReferenceSystem(4326));
 
             final String   name           = "name";
@@ -522,7 +523,7 @@ public class GeoPackageSchemaAPITest
             gpkg.close();
             createTable(tableName, columnName, testFile);
 
-            return new GeoPackage(testFile, false, OpenMode.Open);
+            return new GeoPackage(testFile, VerificationLevel.None, OpenMode.Open);
         }
     }
 

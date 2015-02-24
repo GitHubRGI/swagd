@@ -20,6 +20,7 @@ package com.rgi.geopackage.features;
 
 import java.sql.Connection;
 
+import com.rgi.geopackage.verification.VerificationLevel;
 import com.rgi.geopackage.verification.Verifier;
 
 /**
@@ -30,11 +31,14 @@ import com.rgi.geopackage.verification.Verifier;
 public class FeaturesVerifier extends Verifier
 {
     /**
-     * @param sqliteConnection the connection to the file
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
+     * @param sqliteConnection
+     *             A connection handle to the database
      */
-    public FeaturesVerifier(final Connection sqliteConnection)
+    public FeaturesVerifier(final Connection sqliteConnection, final VerificationLevel verificationLevel)
     {
-        super(sqliteConnection);
+        super(sqliteConnection, verificationLevel);
     }
 
     // TODO

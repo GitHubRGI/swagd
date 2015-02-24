@@ -37,7 +37,8 @@ import utility.SelectBuilder;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.core.Content;
-import com.rgi.geopackage.verification.FailedRequirement;
+import com.rgi.geopackage.verification.VerificationIssue;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
@@ -57,14 +58,16 @@ public class GeoPackageSchema
     }
 
     /**
-     * Metadata requirements this GeoPackage failed to meet
+     * Schema requirements this GeoPackage failed to meet
      *
-     * @return The metadata GeoPackage requirements this GeoPackage fails to conform to
-     * @throws SQLException throws if the method {@link SchemaVerifier#SchemaVerifier(Connection)} throws an SQLException
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
+     * @return The schema GeoPackage requirements this GeoPackage fails to conform to
+     * @throws SQLException throws if the method {@link SchemaVerifier#SchemaVerifier} throws an SQLException
      */
-    public Collection<FailedRequirement> getFailedRequirements() throws SQLException
+    public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel) throws SQLException
     {
-        return new SchemaVerifier(this.databaseConnection).getFailedRequirements();
+        return new SchemaVerifier(this.databaseConnection, verificationLevel).getVerificationIssues();
     }
 
     /**

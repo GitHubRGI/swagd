@@ -26,10 +26,10 @@ package com.rgi.common.coordinate;
 public class Coordinate<T extends Number>
 {
     /**
-     * @param y y value
      * @param x x value
+     * @param y y value
      */
-    public Coordinate(final T y, final T x)
+    public Coordinate(final T x, final T y)
     {
         if(y == null)
         {

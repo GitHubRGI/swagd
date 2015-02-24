@@ -43,7 +43,8 @@ import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.verification.FailedRequirement;
+import com.rgi.geopackage.verification.VerificationIssue;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
@@ -68,12 +69,14 @@ public class GeoPackageTiles
     /**
      * Requirements this GeoPackage failed to meet
      *
+     * @param verificationLevel
+     *             Controls the level of verification testing performed
      * @return The tile GeoPackage requirements this GeoPackage fails to conform to
-     * @throws SQLException throws if {@link TilesVerifier#TilesVerifier(Connection) Verifier Constructor} throws
+     * @throws SQLException throws if {@link TilesVerifier#TilesVerifier Verifier Constructor} throws
      */
-    public Collection<FailedRequirement> getFailedRequirements() throws SQLException
+    public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel) throws SQLException
     {
-        return new TilesVerifier(this.databaseConnection).getFailedRequirements();
+        return new TilesVerifier(this.databaseConnection, verificationLevel).getVerificationIssues();
     }
 
     /**
@@ -99,7 +102,7 @@ public class GeoPackageTiles
      *             throws if the method {@link #getTileSet(String) getTileSet}
      *             or the method
      *             {@link DatabaseUtility#tableOrViewExists(Connection, String)
-     *             tableOrViewExists} or if the database cannot rollback the
+     *             tableOrViewExists} or if the database cannot roll back the
      *             changes after a different exception throws will throw an SQLException
      *
      */
@@ -260,26 +263,26 @@ public class GeoPackageTiles
      * Adds a tile matrix
      *
      * @param tileSet
-     *            A handle to a tile set
+     *             A handle to a tile set
      * @param zoomLevel
-     *            The zoom level of the associated tile set (0 <= zoomLevel <=
-     *            max_level)
+     *             The zoom level of the associated tile set (0 <= zoomLevel <=
+     *             max_level)
      * @param matrixWidth
      *            The number of columns (>= 1) for this tile at this zoom level
      * @param matrixHeight
-     *            The number of rows (>= 1) for this tile at this zoom level
+     *             The number of rows (>= 1) for this tile at this zoom level
      * @param tileWidth
-     *            The tile width in pixels (>= 1) at this zoom level
+     *             The tile width in pixels (>= 1) at this zoom level
      * @param tileHeight
-     *            The tile height in pixels (>= 1) at this zoom level
+     *             The tile height in pixels (>= 1) at this zoom level
      * @param pixelXSize
-     *            The width of the associated tile set's spatial reference
-     *            system or default meters for an undefined geographic
-     *            coordinate reference system (SRS id 0) (> 0)
+     *             The width of the associated tile set's spatial reference
+     *             system or default meters for an undefined geographic
+     *             coordinate reference system (SRS id 0) (> 0)
      * @param pixelYSize
-     *            The height of the associated tile set's spatial reference
-     *            system or default meters for an undefined geographic
-     *            coordinate reference system (SRS id 0) (> 0)
+     *             The height of the associated tile set's spatial reference
+     *             system or default meters for an undefined geographic
+     *             coordinate reference system (SRS id 0) (> 0)
      * @return Returns the newly added tile matrix
      * @throws SQLException
      *             throws when the method {@link #getTileMatrix(TileSet, int)
@@ -365,20 +368,20 @@ public class GeoPackageTiles
 
         //final SpatialReferenceSystem srs = this.core.getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
 
-        final int precision = 7;//CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId()).getPrecision();   // TODO is there another way we can get the precision ?
-
-        if(!compare(matrixHeight * tileHeight * pixelYSize,
-                    tileMatrixSet.getBoundingBox().getHeight(),
-                    precision))
-        {
-            throw new IllegalArgumentException("The geographic height of the tile matrix [matrix height * tile height (pixels) * pixel y size (srs units per pixel)] differs from the minimum bounds for this tile set specified by the tile matrix set");
-        }
+        final int precision = 7; //CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId()).getPrecision();   // TODO is there another way we can get the precision ?
 
         if(!compare(matrixWidth * tileWidth * pixelXSize,
                     tileMatrixSet.getBoundingBox().getWidth(),
                     precision))
         {
             throw new IllegalArgumentException("The geographic width of the tile matrix [matrix width * tile width (pixels) * pixel x size (srs units per pixel)] differs from the minimum bounds for this tile set specified by the tile matrix set");
+        }
+
+        if(!compare(matrixHeight * tileHeight * pixelYSize,
+                    tileMatrixSet.getBoundingBox().getHeight(),
+                    precision))
+        {
+            throw new IllegalArgumentException("The geographic height of the tile matrix [matrix height * tile height (pixels) * pixel y size (srs units per pixel)] differs from the minimum bounds for this tile set specified by the tile matrix set");
         }
 
         try
@@ -434,8 +437,10 @@ public class GeoPackageTiles
      * @param tileMatrix
      *            Tile matrix associated with the tile set at the corresponding
      *            zoom level
-     * @param coordinate
-     *            The coordinate of the tile, relative to the tile set
+     * @param column
+     *             The 'x' portion of the coordinate
+     * @param row
+     *             The 'y' portion of the coordinate
      * @param imageData
      *            The bytes of the image file
      * @return The Tile added to the GeoPackage with the properties of the
@@ -444,13 +449,14 @@ public class GeoPackageTiles
      *             SQLException thrown by automatic close() invocation on
      *             preparedStatement or if the Database is unable to commit the
      *             changes or if the method
-     *             {@link #getTile(TileSet, RelativeTileCoordinate) getTile}
+     *             {@link #getTile(TileSet, int, int, int) getTile}
      *             throws an SQLException or other various SQLExceptions
      */
-    public Tile addTile(final TileSet                tileSet,
-                        final TileMatrix             tileMatrix,
-                        final RelativeTileCoordinate coordinate,
-                        final byte[]                 imageData) throws SQLException
+    public Tile addTile(final TileSet    tileSet,
+                        final TileMatrix tileMatrix,
+                        final int        column,
+                        final int        row,
+                        final byte[]     imageData) throws SQLException
     {
         if(tileSet == null)
         {
@@ -462,24 +468,11 @@ public class GeoPackageTiles
             throw new IllegalArgumentException("Tile matrix may not be null");
         }
 
-        if(coordinate == null)
-        {
-            throw new IllegalArgumentException("Coordinate may not be null");
-        }
-
         if(imageData == null || imageData.length == 0) // TODO the standard restricts the image types to image/jpeg, image/png and image/x-webp (by extension only: http://www.geopackage.org/spec/#extension_tiles_webp)
                                                        // TODO It'd be desirable to check the height/width of the image against the values described by the tile matrix, but this is difficult to do with a string of bytes.  One solution would be to changed to a java BufferedImage rather than raw bytes, but this *might* unnecessarily confine extension writers to to formats that fit into Java.ImageIO
         {
             throw new IllegalArgumentException("Image data may not be null or empty");
         }
-
-        if(coordinate.getZoomLevel() != tileMatrix.getZoomLevel())
-        {
-            throw new IllegalArgumentException("The zoom level of the tile coordinate must match the zoom level of the tile matrix");
-        }
-
-        final int row    = coordinate.getRow();
-        final int column = coordinate.getColumn();
 
         // Verify row and column are within the tile metadata's range
         if(row < 0 || row >= tileMatrix.getMatrixHeight())
@@ -504,9 +497,9 @@ public class GeoPackageTiles
 
         try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileSql))
         {
-            preparedStatement.setInt  (1, coordinate.getZoomLevel());
-            preparedStatement.setInt  (2, coordinate.getColumn());
-            preparedStatement.setInt  (3, coordinate.getRow());
+            preparedStatement.setInt  (1, tileMatrix.getZoomLevel());
+            preparedStatement.setInt  (2, column);
+            preparedStatement.setInt  (3, row);
             preparedStatement.setBytes(4, imageData);  // .setBlob() does not work as advertised in the sqlite-jdbc driver.  See this post by the developer: https://groups.google.com/d/msg/xerial/FfNOo-dPlsE/hUQWDPrZvSYJ
 
             preparedStatement.executeUpdate();
@@ -514,7 +507,7 @@ public class GeoPackageTiles
 
         this.databaseConnection.commit();
 
-        return this.getTile(tileSet, coordinate);
+        return this.getTile(tileSet, column, row, tileMatrix.getZoomLevel());
     }
 
     /**
@@ -530,82 +523,35 @@ public class GeoPackageTiles
      *            reference system
      * @param precision
      *            Specifies a tolerance for coordinate value testings to a number of decimal places
-     * @param zoomLevel
-     *            Zoom level
      * @param imageData
      *            The bytes of the image file
      * @return returns a Tile added to the GeoPackage with the properties of the
      *         parameters
      * @throws SQLException
      *             is thrown if the following methods throw
-     *             {@link #crsToRelativeTileCoordinate(TileSet, CrsCoordinate, int, int)
+     *             {@link #crsToTileCoordinate(TileSet, CrsCoordinate, int, int)
      *             crsToRelativeTileCoordinate} or
-     *             {@link #addTile(TileSet, TileMatrix, RelativeTileCoordinate, byte[])
+     *             {@link #addTile(TileSet, TileMatrix, int, int, byte[])
      *             addTile} throws an SQLException
      */
     public Tile addTile(final TileSet       tileSet,
                         final TileMatrix    tileMatrix,
                         final CrsCoordinate coordinate,
                         final int           precision,
-                        final int           zoomLevel,
                         final byte[]        imageData) throws SQLException
     {
-        final RelativeTileCoordinate relativeCoordinate = this.crsToRelativeTileCoordinate(tileSet,
-                                                                                           coordinate,
-                                                                                           precision,
-                                                                                           zoomLevel);
+        final Coordinate<Integer> tileCoordinate = this.crsToTileCoordinate(tileSet,
+                                                                            coordinate,
+                                                                            precision,
+                                                                            tileMatrix.getZoomLevel());
 
-        return relativeCoordinate != null ? this.addTile(tileSet,
-                                                         tileMatrix,
-                                                         relativeCoordinate,
-                                                         imageData)
-                                          : null;
+        return tileCoordinate != null ? this.addTile(tileSet,
+                                                     tileMatrix,
+                                                     tileCoordinate.getX(),
+                                                     tileCoordinate.getY(),
+                                                     imageData)
+                                      : null;
     }
-
-//    public Tile updateTile(final TileSet tileSet,
-//                           final Tile    tile,
-//                           final byte[]  imageData) throws SQLException
-//    {
-//        if(tileSet == null)
-//        {
-//            throw new IllegalArgumentException("Tile set may not be null");
-//        }
-//
-//        if(tile == null)
-//        {
-//           throw new IllegalArgumentException("Tile may not be null");
-//        }
-//
-//        if(imageData == null)
-//        {
-//           throw new IllegalArgumentException("Image data may not be null");
-//        }
-//
-//        final String updateTileSql = String.format("UPDATE %s SET %s = ? WHERE %s = ? AND %s = ? AND %s = ?",
-//                                                   tileSet.getTableName(),
-//                                                   "tile_data",
-//                                                   "zoom_level",
-//                                                   "tile_column",
-//                                                   "tile_row");
-//
-//        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(updateTileSql))
-//        {
-//            preparedStatement.setBytes(1, imageData);  // .setBlob() does not work as advertised in the sqlite-jdbc driver.  See this post by the developer: https://groups.google.com/d/msg/xerial/FfNOo-dPlsE/hUQWDPrZvSYJ
-//            preparedStatement.setInt  (2, tile.getZoomLevel());
-//            preparedStatement.setInt  (3, tile.getColumn());
-//            preparedStatement.setInt  (4, tile.getRow());
-//
-//            preparedStatement.executeUpdate();
-//        }
-//
-//        this.databaseConnection.commit();
-//
-//        return new Tile(tile.getIdentifier(),
-//                        tile.getZoomLevel(),
-//                        tile.getRow(),
-//                        tile.getColumn(),
-//                        imageData);
-//    }
 
     /**
      * Gets tile coordinates for every tile in a tile set. A tile set need not
@@ -614,13 +560,13 @@ public class GeoPackageTiles
      *
      * @param tileSet
      *            Handle to the tile set that the requested tiles should belong
-     * @return Returns a {@link Stream} of {@link RelativeTileCoordinate}s
+     * @return Returns a {@link Stream} of {@link TileCoordinate}s
      *         representing every tile that the specific tile set contains.
      * @throws SQLException
      *             when SQLException thrown by automatic close() invocation on
      *             preparedStatement or if other SQLExceptions occur
      */
-    public Stream<RelativeTileCoordinate> getTiles(final TileSet tileSet) throws SQLException
+    public Stream<TileCoordinate> getTiles(final TileSet tileSet) throws SQLException
     {
         if(tileSet == null)
         {
@@ -638,7 +584,11 @@ public class GeoPackageTiles
             return ResultSetStream.getStream(preparedStatement.executeQuery(),
                                              resultSet -> { try
                                                             {
-                                                                return new RelativeTileCoordinate(resultSet.getInt(3), resultSet.getInt(2), resultSet.getInt(1));
+                                                                final int zoomLevel = resultSet.getInt(1);
+                                                                final int column    = resultSet.getInt(2);
+                                                                final int row       = resultSet.getInt(3);
+
+                                                                return new TileCoordinate(column, row, zoomLevel);
                                                             }
                                                             catch(final Exception ex)
                                                             {
@@ -646,7 +596,7 @@ public class GeoPackageTiles
                                                             }
                                                           })
                                   .filter(Objects::nonNull)
-                                  .collect(Collectors.toList()) // By collecting here, we prevent the resultSet from being closed by the parent prepared statement being closed
+                                  .collect(Collectors.toList()) // By collecting here, we prevent the problem of the prepared statement being closed before we've read the results
                                   .stream();
         }
     }
@@ -661,13 +611,13 @@ public class GeoPackageTiles
      *            Handle to the tile set that the requested tiles should belong
      * @param zoomLevel
      *            The zoom level of the requested tiles
-     * @return Returns a {@link Stream} of {@link RelativeTileCoordinate}s
+     * @return Returns a {@link Stream} of relative tile {@link Coordinate}s
      *         representing every tile that the specific tile set contains.
      * @throws SQLException
      *             when SQLException thrown by automatic close() invocation on
      *             preparedStatement or if other SQLExceptions occur
      */
-    public Stream<RelativeTileCoordinate> getTiles(final TileSet tileSet, final int zoomLevel) throws SQLException
+    public Stream<Coordinate<Integer>> getTiles(final TileSet tileSet, final int zoomLevel) throws SQLException
     {
         if(tileSet == null)
         {
@@ -686,7 +636,7 @@ public class GeoPackageTiles
             return ResultSetStream.getStream(preparedStatement.executeQuery(),
                                              resultSet -> { try
                                                             {
-                                                                return new RelativeTileCoordinate(resultSet.getInt(2), resultSet.getInt(1), zoomLevel);
+                                                                return new Coordinate<>(resultSet.getInt(1), resultSet.getInt(2));
                                                             }
                                                             catch(final Exception ex)
                                                             {
@@ -694,7 +644,7 @@ public class GeoPackageTiles
                                                             }
                                                           })
                                   .filter(Objects::nonNull)
-                                  .collect(Collectors.toList()) // By collecting here, we prevent the resultSet from being closed by the parent prepared statement being closed
+                                  .collect(Collectors.toList()) // By collecting here, we prevent the problem of the prepared statement being closed before we've read the results
                                   .stream();
         }
     }
@@ -704,25 +654,26 @@ public class GeoPackageTiles
      *
      * @param tileSet
      *            Handle to the tile set that the requested tile should belong
-     * @param coordinate
-     *            Coordinate relative to the tile set, of the requested tile
+     * @param column
+     *             The 'x' portion of the coordinate
+     * @param row
+     *             The 'y' portion of the coordinate
+     * @param zoomLevel
+     *             The zoom level associated with the coordinate
      * @return Returns the requested tile, or null if it's not found
      * @throws SQLException
      *             SQLException thrown by automatic close() invocation on
      *             preparedStatement or if other SQLExceptions occur when adding
      *             the Tile data to the database
      */
-    public Tile getTile(final TileSet                tileSet,
-                        final RelativeTileCoordinate coordinate) throws SQLException
+    public Tile getTile(final TileSet tileSet,
+                        final int     column,
+                        final int     row,
+                        final int     zoomLevel) throws SQLException
     {
         if(tileSet == null)
         {
             throw new IllegalArgumentException("Tile set cannot be null");
-        }
-
-        if(coordinate == null)
-        {
-            throw new IllegalArgumentException("Requested tile cannot be null");
         }
 
         final String tileQuery = String.format("SELECT %s, %s, %s, %s, %s FROM %s WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?;",
@@ -735,9 +686,9 @@ public class GeoPackageTiles
 
         try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
         {
-            preparedStatement.setInt(1, coordinate.getZoomLevel());
-            preparedStatement.setInt(2, coordinate.getColumn());
-            preparedStatement.setInt(3, coordinate.getRow());
+            preparedStatement.setInt(1, zoomLevel);
+            preparedStatement.setInt(2, column);
+            preparedStatement.setInt(3, row);
 
             try(ResultSet tileResult = preparedStatement.executeQuery())
             {
@@ -745,8 +696,8 @@ public class GeoPackageTiles
                 {
                     return new Tile(tileResult.getInt(1),    // id
                                     tileResult.getInt(2),    // zoom level
-                                    tileResult.getInt(4),    // row
-                                    tileResult.getInt(3),    // column
+                                    tileResult.getInt(3),    // row
+                                    tileResult.getInt(4),    // column
                                     tileResult.getBytes(5)); // data
                 }
 
@@ -770,9 +721,9 @@ public class GeoPackageTiles
      * @return Returns the requested tile, or null if it's not found
      * @throws SQLException
      *             throws when the method
-     *             {@link #crsToRelativeTileCoordinate(TileSet, CrsCoordinate, int, int)
+     *             {@link #crsToTileCoordinate(TileSet, CrsCoordinate, int, int)
      *             crsToRelativeTileCoordinate} or the method
-     *             {@link #getTile(TileSet, RelativeTileCoordinate)} throws an
+     *             {@link #getTile(TileSet, int, int, int)} throws an
      *             SQLException
      */
     public Tile getTile(final TileSet       tileSet,
@@ -780,12 +731,15 @@ public class GeoPackageTiles
                         final int           precision,
                         final int           zoomLevel) throws SQLException
     {
-        final RelativeTileCoordinate relativeCoordiante = this.crsToRelativeTileCoordinate(tileSet,
-                                                                                           coordinate,
-                                                                                           precision,
-                                                                                           zoomLevel);
+        final Coordinate<Integer> tileCoordinate = this.crsToTileCoordinate(tileSet,
+                                                                             coordinate,
+                                                                             precision,
+                                                                             zoomLevel);
 
-        return relativeCoordiante != null ? this.getTile(tileSet, relativeCoordiante)
+        return tileCoordinate != null ? this.getTile(tileSet,
+                                                         tileCoordinate.getX(),
+                                                         tileCoordinate.getY(),
+                                                         zoomLevel)
                                           : null;
     }
 
@@ -831,10 +785,10 @@ public class GeoPackageTiles
             {
                 return new TileMatrixSet(result.getString(1),                                   // table name
                                          this.core.getSpatialReferenceSystem(result.getInt(2)), // srs id
-                                         new BoundingBox(result.getDouble(4),                   // min y
-                                                         result.getDouble(3),                   // min x
-                                                         result.getDouble(6),                   // max y
-                                                         result.getDouble(5)));                 // max x
+                                         new BoundingBox(result.getDouble(3),                   // min x
+                                                         result.getDouble(4),                   // min y
+                                                         result.getDouble(5),                   // max x
+                                                         result.getDouble(6)));                 // max y
             }
         }
     }
@@ -960,7 +914,7 @@ public class GeoPackageTiles
                                           result.getInt   (3),  // tile width
                                           result.getInt   (4),  // tile height
                                           result.getDouble(5),  // pixel x size
-                                          result.getDouble(6)); // pizel y size
+                                          result.getDouble(6)); // pixel y size
                 }
 
                 return null; // No matrix exists for this table name and zoom level
@@ -1014,7 +968,7 @@ public class GeoPackageTiles
                                                     results.getInt   (4),   // tile width
                                                     results.getInt   (5),   // tile height
                                                     results.getDouble(6),   // pixel x size
-                                                    results.getDouble(7))); // pizel y size
+                                                    results.getDouble(7))); // pixel y size
                 }
 
                 return tileMatrices;
@@ -1043,10 +997,10 @@ public class GeoPackageTiles
      *             getSpatialReferenceSystem} or the method
      *             {@link #getTileMatrixSet(TileSet) getTileMatrixSet} throws
      */
-    public RelativeTileCoordinate crsToRelativeTileCoordinate(final TileSet       tileSet,
-                                                              final CrsCoordinate crsCoordinate,
-                                                              final int           precision,
-                                                              final int           zoomLevel) throws SQLException
+    public Coordinate<Integer> crsToTileCoordinate(final TileSet       tileSet,
+                                                   final CrsCoordinate crsCoordinate,
+                                                   final int           precision,
+                                                   final int           zoomLevel) throws SQLException
     {
         if(tileSet == null)
         {
@@ -1075,7 +1029,13 @@ public class GeoPackageTiles
         }
 
         final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
-        final BoundingBox   tileSetBounds = tileMatrixSet.getBoundingBox();
+
+        if(tileMatrixSet == null)
+        {
+            return null;    // No Tile matrix set entry
+        }
+
+        final BoundingBox tileSetBounds = tileMatrixSet.getBoundingBox();
 
         if(!Utility.contains(roundBounds(tileSetBounds, precision), crsCoordinate, GeoPackageTiles.Origin))
         {
@@ -1093,9 +1053,7 @@ public class GeoPackageTiles
         final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);
         final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
 
-        return new RelativeTileCoordinate(tileY,
-                                          tileX,
-                                          zoomLevel);
+        return new Coordinate<>(tileX, tileY);
     }
 
     /**
@@ -1190,10 +1148,10 @@ public class GeoPackageTiles
     {
         final double divisor = Math.pow(10, precision);
 
-        return new BoundingBox(Math.floor(bounds.getMinY()*divisor) / divisor,
-                               Math.floor(bounds.getMinX()*divisor) / divisor,
-                               Math.ceil (bounds.getMaxY()*divisor) / divisor,
-                               Math.ceil (bounds.getMaxX()*divisor) / divisor);
+        return new BoundingBox(Math.floor(bounds.getMinX()*divisor) / divisor,
+                               Math.floor(bounds.getMinY()*divisor) / divisor,
+                               Math.ceil (bounds.getMaxX()*divisor) / divisor,
+                               Math.ceil (bounds.getMaxY()*divisor) / divisor);
     }
 
     private static boolean compare(final double left, final double right, final int decimalPlaces)
@@ -1224,5 +1182,55 @@ public class GeoPackageTiles
      * the pixel x and y values, TileMatrixDimensions at a particular zoom level
      * http://www.geopackage.org/spec/#tile_matrix
      */
-    public final static String MatrixTableName    = "gpkg_tile_matrix";
+    public final static String MatrixTableName = "gpkg_tile_matrix";
+
+    /**
+     * Tile coordinate
+     *
+     */
+    public class TileCoordinate
+    {
+        /**
+         * @param column
+         *         X portion of the coordinate
+         * @param row
+         *         Y portion of the coordinate
+         * @param zoomLevel
+         *         zoom level of the tile
+         */
+        private TileCoordinate(final int column, final int row, final int zoomLevel)
+        {
+            this.column    = column;
+            this.row       = row;
+            this.zoomLevel = zoomLevel;
+        }
+
+        /**
+         * @return Returns the column (X) portion of the coordinate
+         */
+        public int getColumn()
+        {
+            return this.column;
+        }
+
+        /**
+         * @return Returns the row (Y) portion of the coordinate
+         */
+        public int getRow()
+        {
+            return this.row;
+        }
+
+        /**
+         * @return Returns the zoom level of the tile
+         */
+        public int getZoomLevel()
+        {
+            return this.zoomLevel;
+        }
+
+        private final int column;
+        private final int row;
+        private final int zoomLevel;
+    }
 }

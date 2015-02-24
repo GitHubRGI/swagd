@@ -57,10 +57,10 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; // TODO IS THIS RIGHT? Verify!
         //final double earthPolarCircumfrence = 2.0 * Math.PI * scaledEarthPolarRadius;
 
-        this.crsBounds = new BoundingBox(-Math.PI * scaledEarthPolarRadius,
-                                         -Math.PI * this.scaledEarthEquatorialRadius,
-                                          Math.PI * scaledEarthPolarRadius,
-                                          Math.PI * this.scaledEarthEquatorialRadius);
+        this.crsBounds = new BoundingBox(-Math.PI * this.scaledEarthEquatorialRadius,
+                                         -Math.PI * scaledEarthPolarRadius,
+                                          Math.PI * this.scaledEarthEquatorialRadius,
+                                          Math.PI * scaledEarthPolarRadius);
     }
 
     @Override
@@ -103,8 +103,8 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     }
 
     @Override
-    public CrsCoordinate tileToCrsCoordinate(final int                  row,
-                                             final int                  column,
+    public CrsCoordinate tileToCrsCoordinate(final int                  column,
+                                             final int                  row,
                                              final BoundingBox          bounds,
                                              final TileMatrixDimensions dimensions,
                                              final TileOrigin           tileOrigin)
@@ -174,8 +174,8 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      */
     public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
     {
-        return new Coordinate<>(metersToLat(coordinate.getY()),
-                                metersToLon(coordinate.getX()));
+        return new Coordinate<>(metersToLon(coordinate.getX()),
+                                metersToLat(coordinate.getY()));
     }
 
     @Override
@@ -187,8 +187,8 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     @Override
     public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate)
     {
-        return new Coordinate<>(metersToLat(coordinate.getY()),
-                                metersToLon(coordinate.getX()));
+        return new Coordinate<>(metersToLon(coordinate.getX()),
+                                metersToLat(coordinate.getY()));
     }
 
     @Override
@@ -272,10 +272,11 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         double previous = Math.tanh(meters/UnscaledEarthEquatorialRadius);
         //arbitrary initializations of next and difference
         double next = 0;
-        double difference = 100000000;
+        double difference = Double.MAX_VALUE;
+        final double epsilon = 0.00000001;
         //this will loop until the conversion factor is to the level of accuracy
         //determined by the conversion factor difference
-        while(Math.abs(difference) > 0.00000001)
+        while(Math.abs(difference) > epsilon)
         {
            //s(n+1) calculated by the recursion formula s(n)
            next = Math.tanh(((meters/UnscaledEarthEquatorialRadius) + (Eccentricity*inverseHyperbolicTangent(Eccentricity*previous))));

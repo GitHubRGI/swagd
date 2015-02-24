@@ -128,14 +128,14 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
                                                                                    this.profile.getBounds(),    // TMS uses absolute tiling, which covers the whole globe
                                                                                    this.tileScheme.dimensions(zoomLevel),
                                                                                    TmsTileStore.Origin);
-        this.addTile(tmsCoordiante.getY(),
-                     tmsCoordiante.getX(),
+        this.addTile(tmsCoordiante.getX(),
+                     tmsCoordiante.getY(),
                      zoomLevel,
                      image);
     }
 
     @Override
-    public void addTile(final int row, final int column, final int zoomLevel, final BufferedImage image) throws TileStoreException
+    public void addTile(final int column, final int row, final int zoomLevel, final BufferedImage image) throws TileStoreException
     {
         if(image == null)
         {

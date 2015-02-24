@@ -48,7 +48,6 @@ import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
-import com.rgi.geopackage.tiles.RelativeTileCoordinate;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
@@ -186,7 +185,7 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
     }
 
     @Override
-    public void addTile(final int row, final int column, final int zoomLevel, final BufferedImage image) throws TileStoreException
+    public void addTile(final int column, final int row, final int zoomLevel, final BufferedImage image) throws TileStoreException
     {
         if(image == null)
         {
@@ -198,8 +197,9 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
             this.geoPackage
                 .tiles()
                 .addTile(this.tileSet,
-                         this.getTileMatrix(zoomLevel, image.getHeight(), image.getWidth()),
-                         new RelativeTileCoordinate(row, column, zoomLevel),
+                         this.getTileMatrix(zoomLevel, image.getWidth(), image.getHeight()),
+                         column,
+                         row,
                          ImageUtility.bufferedImageToBytes(image, this.imageWriter, this.imageWriteOptions));
         }
         catch(final SQLException | IOException ex)
@@ -231,10 +231,9 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
             this.geoPackage
                 .tiles()
                 .addTile(this.tileSet,
-                         this.getTileMatrix(zoomLevel, image.getHeight(), image.getWidth()),
+                         this.getTileMatrix(zoomLevel, image.getWidth(), image.getHeight()),
                          coordinate,
                          this.crsProfile.getPrecision(),
-                         zoomLevel,
                          ImageUtility.bufferedImageToBytes(image, this.imageWriter, this.imageWriteOptions));
         }
         catch(final SQLException | IOException ex)
@@ -255,7 +254,7 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
         return GeoPackageTiles.Origin;
     }
 
-    private TileMatrix getTileMatrix(final int zoomLevel, final int imageHeight, final int imageWidth) throws SQLException
+    private TileMatrix getTileMatrix(final int zoomLevel, final int imageWidth, final int imageHeight) throws SQLException
     {
         TileMatrix tileMatrix = null;
 
@@ -283,8 +282,8 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
                                              zoomLevel,
                                              tileMatrixDimensions.getWidth(),
                                              tileMatrixDimensions.getHeight(),
-                                             tilePixelHeight,
                                              tilePixelWidth,
+                                             tilePixelHeight,
                                              tileSetBounds.getWidth()  / tileMatrixDimensions.getWidth()  / tilePixelWidth,
                                              tileSetBounds.getHeight() / tileMatrixDimensions.getHeight() / tilePixelHeight);
     }
