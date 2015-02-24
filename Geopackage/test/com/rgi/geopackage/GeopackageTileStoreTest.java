@@ -642,7 +642,7 @@ public class GeopackageTileStoreTest
             final int tileHeight = 256;
 
             final TileScheme tileScheme = new ZoomTimesTwo(2, 20, 1, 1);
-            addTileMatriciesToGpkg(zoomLevelsExpected, tileSet, gpkg, tileScheme, tileWidth, tileHeight);
+            addTileMatricesToGpkg(zoomLevelsExpected, tileSet, gpkg, tileScheme, tileWidth, tileHeight);
 
             gpkg.tiles().addTileMatrix(tileSet2,  7, 2, 2, tileWidth, tileHeight, bBox.getWidth() / 2 / tileWidth, bBox.getHeight() / 2 / tileHeight); //this one is not included in zooms because it is a different tileset
 
@@ -693,7 +693,7 @@ public class GeopackageTileStoreTest
 
             final TileScheme tileScheme = new ZoomTimesTwo(2, 20, 1, 1);
             final Set<TileMatrixDimensions> tileMatrixDimensionsExpected = new HashSet<>();
-            addTileMatriciesToGpkg(zoomLevelsExpected, tileSet, gpkg, tileScheme, tileWidth, tileHeight);
+            addTileMatricesToGpkg(zoomLevelsExpected, tileSet, gpkg, tileScheme, tileWidth, tileHeight);
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
@@ -827,7 +827,7 @@ public class GeopackageTileStoreTest
                                                       bBox,
                                                       gpkg.core().getSpatialReferenceSystem(4326));
 
-              addTileMatriciesToGpkg(zoomLevels,
+              addTileMatricesToGpkg(zoomLevels,
                                      tileSet,
                                      gpkg,
                                      tileScheme,
@@ -1919,7 +1919,7 @@ public class GeopackageTileStoreTest
         }
     }
 
-    private static Set<TileMatrixDimensions> addTileMatriciesToGpkg(final Set<Integer> zoomLevels, final TileSet tileSet, final GeoPackage gpkg, final TileScheme tileScheme, final int tileWidth, final int tileHeight) throws SQLException
+    private static Set<TileMatrixDimensions> addTileMatricesToGpkg(final Set<Integer> zoomLevels, final TileSet tileSet, final GeoPackage gpkg, final TileScheme tileScheme, final int tileWidth, final int tileHeight) throws SQLException
     {
         final Set<TileMatrixDimensions> tileMatrixDimensionsExpected = new HashSet<>();
         final BoundingBox bBox = tileSet.getBoundingBox();
