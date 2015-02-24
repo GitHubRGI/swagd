@@ -155,6 +155,14 @@ public class Range <T>
         this.maximum = max;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("[%s, %s]",
+                             this.minimum,
+                             this.maximum);
+    }
+
     /**
      * @return the minimum
      */
