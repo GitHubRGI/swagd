@@ -27,19 +27,32 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 public class CrsProfileFactory
 {
     /**
-     * @param crsAuthority the Coordinate Reference System authority name (typically "EPSG")
-     * @param crsIdentifier the version number of the authority
-     * @return a CrsProfile object
+     * Attempts to create a CrsProfile object based on an authority and
+     * identifier. A RuntimeException is thrown if the combination of
+     * authority and identifier isn't supported.
+     *
+     * @param authority
+     *             The name of the defining authority of the coordinate
+     *             reference system (e.g. "EPSG")
+     * @param identifier
+     *             The identifier as assigned by the the authority of the
+     *             coordinate reference system
+     * @return Returns a {@link CrsProfile} object
      */
-    public static CrsProfile create(final String crsAuthority,
-                                    final int    crsIdentifier)
+    public static CrsProfile create(final String authority,
+                                    final int    identifier)
     {
-        return CrsProfileFactory.create(new CoordinateReferenceSystem(crsAuthority, crsIdentifier));
+        return CrsProfileFactory.create(new CoordinateReferenceSystem(authority, identifier));
     }
 
     /**
-     * @param coordinateReferenceSystem the Coordinate Reference System
-     * @return a CrsProfile object
+     * Attempts to create a CrsProfile object based on a coordinate reference
+     * system object. A RuntimeException is thrown if coordinate reference
+     * system isn't supported.
+     *
+     * @param coordinateReferenceSystem
+     *             A coordinate reference system object
+     * @return Returns a {@link CrsProfile} object
      */
     public static CrsProfile create(final CoordinateReferenceSystem coordinateReferenceSystem)
     {

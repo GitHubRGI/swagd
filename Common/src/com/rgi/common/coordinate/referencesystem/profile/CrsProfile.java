@@ -26,14 +26,19 @@ import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
+ * A collection of metadata for a specific coordinate reference system, and
+ * methods used to interact with tiling systems.
+ *
  * @author Luke Lambert
  *
  */
 public interface CrsProfile
 {
     /**
-     * Returns the bounds of the world in the units of the coordinate reference system.
-     * @return the bounds of the world in the units of the coordinate reference system
+     * Returns the bounds of the world in the units of the coordinate reference
+     * system.
+     *
+     * @return The bounds of the world in the units of the coordinate reference system
      */
     public BoundingBox getBounds();
 
@@ -41,9 +46,11 @@ public interface CrsProfile
      * Determines what tile the coordinate lies in
      *
      * @param coordinate
-     *             Coordinate in the same unit as this tile profile
+     *             Coordinate in the same reference system as this tile profile
      * @param bounds
-     *             The area, in CRS units, that represents the valid area for tiling numbering
+     *             The area, in the units of the coordinate reference system,
+     *             that represents the valid area for tiling numbering (bounds
+     *             of the tile matrix dimensions)
      * @param dimensions
      *             Height and width of the tile matrix
      * @param tileOrigin
@@ -56,13 +63,18 @@ public interface CrsProfile
                                                    final TileOrigin           tileOrigin);
 
     /**
-     * Determines the profile unit coordinate for the specified tile
+     * Determines the coordinate, in the units of the coordinate reference
+     * system, for the specified tile. The tile origin specifies corner of the
+     * the tile that will be represented by the coordinate.
+     *
      * @param column
      *             Horizontal portion of the tile's coordinate
      * @param row
      *             Vertical portion of the tile's coordinate
      * @param bounds
-     *             The area, in CRS units, that represents the valid area for tiling numbering
+     *             The area, in the units of the coordinate reference system,
+     *             that represents the valid area for tiling numbering (bounds
+     *             of the tile matrix dimensions)
      * @param dimensions
      *             Height and width of the tile matrix
      * @param tileOrigin
@@ -77,39 +89,51 @@ public interface CrsProfile
                                              final TileOrigin           tileOrigin);
 
     /**
-     * @return Returns the coordinate reference system implemented by this CrsProfile
+     * @return Returns the {@link CoordinateReferenceSystem} object that
+     * corresponds to this profile
      */
     public CoordinateReferenceSystem getCoordinateReferenceSystem();
 
     /**
-     * @return Returns the name of the Coordinate Reference System (ex: "Web Mercator")
+     * @return Returns the name of the coordinate reference system that
+     * corresponds to this profile (e.g. "Web Mercator")
      */
     public String getName();
 
     /**
-     * @return Returns the Well Known text defined by OGC for this Spatial Reference System
+     * @return Returns the well known text (<a
+     * href=http://www.opengeospatial.org/standards/sfa">WKT</a>) defined by
+     * <a href="http://www.opengeospatial.org/">Open Geospatial Consortium</a>
+     * for the coordinate reference system that corresponds to this profile
      */
     public String getWellKnownText();
 
     /**
-     * @return a human readable description for the Spatial Reference System
+     * @return Returns a human readable description for the coordinate
+     * reference system that corresponds to this profile
      */
     public String getDescription();
 
     /**
-     * Transform a coordinate from the CRS of the CrsProfile implementation to Global Geodetic (EPSG 4326)
+     * Transform a coordinate from the coordinate reference system of this
+     * profile to Global Geodetic (EPSG:4326)
+     * <br>
+     * <b>This is a temporary stopgap</b> implemented in lieu of a general
+     * coordinate transformation mechanism. This method will be deprecated
+     * and removed in future releases.
      *
-     * This is *temporary* because we don't have a good coordinate transformation mechanism
-     *
-     * @param coordinate coordinate in current CrsProfile
-     * @return a coordinate in GlobalGeodetic
+     * @param coordinate
+     *             Coordinate in the same reference system as this profile
+     * @return Returns the equivalent coordinate in the global geodetic
+     * coordinate reference system
      */
     public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate);
 
     /**
-     * The maximum number of decimal places of precision allowed for coordinate comparison
+     * The maximum acceptable number of decimal places to be used in coordinate
+     * comparison
      *
-     * @return returns the number of decimal places
+     * @return Returns the number of decimal places
      */
     public int getPrecision();
 }
