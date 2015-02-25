@@ -28,6 +28,9 @@ import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 
 /**
+ * Abstract base class for a tile store reader and writer of the "Tile Cluster"
+ * method of storing tiles
+ *
  * @author Luke Lambert
  *
  * TODO This implementation is incomplete, and not ready for use
@@ -35,9 +38,23 @@ import com.rgi.common.tile.scheme.ZoomTimesTwo;
  * TODO give attribution for this code "Tile-Based Geospatial Information Systems" by John T. Sample and Elias Ioup, Chapter 8 and specifically Listing 8.3 "Tile Clusters implementation" i.e. ClusteredTileStream
  *
  */
+@SuppressWarnings("javadoc")
 abstract class TileCluster
 {
-    public TileCluster(final Path location, final String setName, final int levels, final int breakPoint, final CrsProfile crsProfile)
+    /**
+     * Constructor
+     *
+     * @param location
+     * @param setName
+     * @param levels
+     * @param breakPoint
+     * @param crsProfile
+     */
+    public TileCluster(final Path       location,
+                       final String     setName,
+                       final int        levels,
+                       final int        breakPoint,
+                       final CrsProfile crsProfile)
     {
         if(location == null)
         {
