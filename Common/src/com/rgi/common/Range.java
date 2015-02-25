@@ -20,6 +20,7 @@ package com.rgi.common;
 
 import java.util.Comparator;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Generic range class
@@ -107,13 +108,12 @@ public class Range <T>
 
     /**
      * Constructor
-     * <br>
-     * <br>
+     *
      * This constructor iterates over a container using the supplied comparison
      * function to determine the minimum and maximum values.
      *
      * @param iterable
-     *             Container of objects to be map
+     *             Container of objects
      * @param comparator
      *            Comparison function
      */
@@ -153,6 +153,23 @@ public class Range <T>
 
         this.minimum = min;
         this.maximum = max;
+    }
+
+    /**
+     * Constructor
+     *
+     * This constructor iterates over a container using the supplied comparison
+     * function to determine the minimum and maximum values.
+     *
+     * @param stream
+     *             Stream of objects
+     * @param comparator
+     *            Comparison function
+     */
+    public Range(final Stream<T> stream,
+                 final Comparator<? super T> comparator)
+    {
+        this((Iterable<T>)stream::iterator, comparator);
     }
 
     @Override

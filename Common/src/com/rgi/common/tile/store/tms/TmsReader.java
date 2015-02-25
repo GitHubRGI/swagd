@@ -42,6 +42,7 @@ import javax.imageio.ImageIO;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
+import com.rgi.common.Range;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
@@ -53,6 +54,9 @@ import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 
 /**
+ * <a href="http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification">TMS</a>
+ * implementation of {@link TileStoreReader}
+ *
  * @author Luke Lambert
  *
  */
@@ -62,9 +66,9 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
      * Constructor
      *
      * @param profile
-     *            The tile profile this tile store is using.
+     *            The tile profile this tile store is using
      * @param location
-     *            The location of this tile store on-disk.
+     *            The location of this tile store on-disk
      */
     public TmsReader(final CrsProfile profile, final Path location)
     {
@@ -279,31 +283,19 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         return null;
     }
 
-    private static class Range
-    {
-        public Range(final int minimum, final int maximum)
-        {
-            this.minimum = minimum;
-            this.maximum = maximum;
-        }
-
-        public int minimum;
-        public int maximum;
-    }
-
     private void calculateBounds() throws TileStoreException
     {
-        final int minimumZoom = TmsReader.getTmsRange(this.location.toFile()).minimum;
+        final int minimumZoom = TmsReader.getTmsRange(this.location.toFile()).getMinimum();
 
         final Path pathToMinimumZoom = tmsPath(this.location, minimumZoom);
 
-        final Range xRange = TmsReader.getTmsRange(pathToMinimumZoom.toFile());
-        final Range yRange = TmsReader.getTmsRange(tmsPath(pathToMinimumZoom, xRange.maximum).toFile());
+        final Range<Integer> xRange = TmsReader.getTmsRange(pathToMinimumZoom.toFile());
+        final Range<Integer> yRange = TmsReader.getTmsRange(tmsPath(pathToMinimumZoom, xRange.getMaximum()).toFile());
 
         final TileMatrixDimensions dimensions = this.tileScheme.dimensions(minimumZoom);
 
-        final Coordinate<Integer> transformedMinTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.LowerLeft,  new Coordinate<>(xRange.minimum, yRange.minimum), dimensions);
-        final Coordinate<Integer> transformedMaxTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.UpperRight, new Coordinate<>(xRange.maximum, yRange.maximum), dimensions);
+        final Coordinate<Integer> transformedMinTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.LowerLeft,  new Coordinate<>(xRange.getMinimum(), yRange.getMinimum()), dimensions);
+        final Coordinate<Integer> transformedMaxTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.UpperRight, new Coordinate<>(xRange.getMaximum(), yRange.getMaximum()), dimensions);
 
         final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(transformedMinTileCoordinate.getX(), transformedMinTileCoordinate.getY(), this.profile.getBounds(), dimensions, TileOrigin.LowerLeft);    // TMS uses absolute tiling, which covers the whole globe
         final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(transformedMaxTileCoordinate.getX(), transformedMaxTileCoordinate.getY(), this.profile.getBounds(), dimensions, TileOrigin.UpperRight);   // TMS uses absolute tiling, which covers the whole globe
@@ -489,47 +481,36 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
      * highest).
      *
      * @param directory
-     *            The directory that contains files with integer names.
-     * @param type
-     *            The file name to retrieve, either highest integer value or
-     *            lowest integer value (parsed from a string).
-     * @return The integer value of the lowest or highest file name.
+     *            The directory that contains files with integer names
+     * @return The minimum and maximum integer value the supplied directory's file names
      * @throws TileStoreException
      *             If a file name cannot be parsed to an integer, a
      *             TileStoreException is thrown.
      */
-    private static Range getTmsRange(final File directory) throws TileStoreException
+    private static Range<Integer> getTmsRange(final File directory) throws TileStoreException
     {
-        final Range minmax = Stream.of(directory.listFiles())
-                                   .collect(() -> new Range(Integer.MAX_VALUE, Integer.MIN_VALUE),
-                                            (range, file) -> { try
-                                                               {
-                                                                   final int value = Integer.parseInt(withoutExtension(file));
+        try
+        {
+            final Iterable<Integer> tmsNames = Stream.of(directory.listFiles())
+                                                     .map(file -> { try
+                                                                    {
+                                                                        return Integer.parseInt(withoutExtension(file));
+                                                                    }
+                                                                    catch(final NumberFormatException ex)
+                                                                    {
+                                                                        return null;
+                                                                    }
+                                                                  })
+                                                     .filter(Objects::nonNull)
+                                                     .collect(Collectors.toList());
 
-                                                                   if(value < range.minimum)
-                                                                   {
-                                                                       range.minimum = value;
-                                                                   }
-                                                                   if(value > range.maximum)
-                                                                   {
-                                                                       range.maximum = value;
-                                                                   }
-                                                               }
-                                                               catch(final NumberFormatException ex)
-                                                               {
-                                                                   // do nothing
-                                                               }
-                                                             },
-                                             (range1, range2) -> { range1.minimum = Math.min(range1.minimum, range2.minimum);
-                                                                   range1.maximum = Math.max(range1.maximum, range2.maximum);
-                                                                 });
-        if(minmax.minimum == Integer.MAX_VALUE)
+            return new Range<>(tmsNames, Integer::compare);
+        }
+        catch(final IllegalArgumentException ex)
         {
             throw new TileStoreException(String.format("Directory %s contains no TMS entites",
                                                        directory.getName()));
         }
-
-        return minmax;
     }
 
     private Stream<File> getTiles(final int column, final int row, final int zoomLevel)
