@@ -66,9 +66,9 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
      * Constructor
      *
      * @param profile
-     *            The tile profile this tile store is using
+     *             The tile profile this tile store is using
      * @param location
-     *            The location of this tile store on-disk
+     *             The location of this tile store on-disk
      */
     public TmsReader(final CrsProfile profile, final Path location)
     {

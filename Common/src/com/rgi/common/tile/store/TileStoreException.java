@@ -19,7 +19,7 @@
 package com.rgi.common.tile.store;
 
 /**
- * @author lander
+ * @author Steven D. Lander
  *
  */
 @SuppressWarnings("serial")
