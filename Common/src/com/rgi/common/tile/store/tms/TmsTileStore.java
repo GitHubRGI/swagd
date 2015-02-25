@@ -26,6 +26,10 @@ import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 
 /**
+ * Abstract base class for a tile store reader and writer of the <a
+ * href="http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification">TMS</a>
+ * tiling convention.
+ *
  * @author Steven D. Lander
  * @author Luke D. Lambert
  *
@@ -36,9 +40,9 @@ abstract class TmsTileStore
      * Constructor
      *
      * @param profile
-     *            The tile profile this tile store is using.
+     *            The tile profile this tile store is using
      * @param location
-     *            The location of this tile store on-disk.
+     *            The location of this tile store on-disk
      */
     protected TmsTileStore(final CrsProfile profile, final Path location)
     {
