@@ -53,7 +53,7 @@ public interface TileHandle
 
     /**
      * @return Returns the maximum number of columns and rows at this tile's
-     *         zoom level
+     *             zoom level
      * @throws TileStoreException
      *             Occurs when the requested zoom level doesn't exist for the
      *             tile handle's containing tile set
@@ -62,7 +62,7 @@ public interface TileHandle
 
     /**
      * @return Returns the real world coordinate of this tile's origin in the
-     *         unit of its enclosing tile set
+     *             unit of its enclosing tile set
      * @throws TileStoreException
      *             Occurs when there's an error in converting a tile coordinate
      *             to one of the associated coordinate reference system
@@ -73,7 +73,7 @@ public interface TileHandle
      * @param corner
      *             Selects the corner of the tile to represent as the CRS coordinate
      * @return Returns the real world coordinate of this tile based on the
-     *         corner parameter in the unit of its enclosing tile set
+     *             corner parameter in the unit of its enclosing tile set
      * @throws TileStoreException
      *             Occurs when there's an error in converting a tile coordinate
      *             to one of the associated coordinate reference system

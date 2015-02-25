@@ -52,9 +52,9 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
      * Constructor
      *
      * @param profile
-     *            The tile profile this tile store is using.
+     *             The tile profile this tile store is using.
      * @param location
-     *            The location of this tile store on-disk.
+     *             The location of this tile store on-disk.
      * @param imageOutputFormat
      *             Image format for used for output
      */
@@ -69,9 +69,9 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
      * Constructor
      *
      * @param profile
-     *            The tile profile this tile store is using.
+     *             The tile profile this tile store is using.
      * @param location
-     *            The location of this tile store on-disk.
+     *             The location of this tile store on-disk.
      * @param imageOutputFormat
      *             Image format for used for output
      * @param imageWriteOptions
