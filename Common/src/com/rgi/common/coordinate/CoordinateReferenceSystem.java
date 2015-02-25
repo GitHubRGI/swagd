@@ -19,14 +19,23 @@
 package com.rgi.common.coordinate;
 
 /**
+ * A means of uniquely identifying a coordinate reference system
+ *
  * @author Luke Lambert
  *
  */
 public class CoordinateReferenceSystem
 {
     /**
-     * @param authority the Coordinate Reference System authority name (typically "EPSG")
-     * @param identifier the version number of the authority
+     * Constructor
+     *
+     * @param authority
+     *             The name of the defining authority of the coordinate
+     *             reference system (e.g. "EPSG"). This value is converted to
+     *             upper case.
+     * @param identifier
+     *             The identifier as assigned by the the authority of the
+     *             coordinate reference system
      */
     public CoordinateReferenceSystem(final String authority, final int identifier)
     {
@@ -40,7 +49,7 @@ public class CoordinateReferenceSystem
     }
 
     /**
-     * @return the authority
+     * @return Returns the defining authority's name
      */
     public String getAuthority()
     {
@@ -48,7 +57,7 @@ public class CoordinateReferenceSystem
     }
 
     /**
-     * @return the identifier
+     * @return Returns the identifier as assigned by the the authority
      */
     public int getIdentifier()
     {
