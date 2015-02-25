@@ -102,7 +102,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Verifies if the Database Utility setPragmaForeinKeys can set it to off.
+     * Verifies if the Database BoundsUtility setPragmaForeinKeys can set it to off.
      *
      * @throws Exception throws when an Exception occurs
      */
@@ -123,7 +123,7 @@ public class DatabaseUtilityTest
                  ResultSet fkPragma = stmt.executeQuery(query);)
             {
                 final int off = fkPragma.getInt("foreign_keys");
-                assertTrue("Database Utility set pragma foreign keys didn't set the foreign_keys to off when given the parameter false.", off == 0);
+                assertTrue("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to off when given the parameter false.", off == 0);
             }
         }
         finally
@@ -136,7 +136,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Verifies if the Database Utility setPragmaForeinKeys can set it to on.
+     * Verifies if the Database BoundsUtility setPragmaForeinKeys can set it to on.
      *
      * @throws Exception
      *             throws when an Exception occurs
@@ -158,7 +158,7 @@ public class DatabaseUtilityTest
                 ResultSet fkPragma = stmt.executeQuery(query);)
             {
                 final int on = fkPragma.getInt("foreign_keys");
-                assertTrue("Database Utility set pragma foreign keys didn't set the foreign_keys to on when given the parameter true.", on == 1);
+                assertTrue("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to on when given the parameter true.", on == 1);
             }
         }
         finally
@@ -171,7 +171,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would accurately detect if a table
+     * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does not exists with the tableOrViewExists method.
      * 
      * @throws Exception
@@ -186,7 +186,7 @@ public class DatabaseUtilityTest
         try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
         {
             final boolean tableFound = DatabaseUtility.tableOrViewExists(con, "non_existant_table");
-            assertTrue("The Database Utility method table or view exists method returned true when it should have returned false.", !tableFound);
+            assertTrue("The Database BoundsUtility method table or view exists method returned true when it should have returned false.", !tableFound);
         }
         finally
         {
@@ -198,7 +198,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would accurately detect if a table
+     * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tableOrViewExists method.
      * 
      * @throws Exception
@@ -215,7 +215,7 @@ public class DatabaseUtilityTest
         try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
         {
             this.addTable(con, tableName);
-            assertTrue("The Database Utility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tableOrViewExists(con, tableName));
+            assertTrue("The Database BoundsUtility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tableOrViewExists(con, tableName));
         }
         finally
         {
@@ -227,7 +227,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would accurately detect if a table
+     * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tableOrViewExists method.
      * 
      * @throws Exception
@@ -243,7 +243,7 @@ public class DatabaseUtilityTest
             )
         {
             final boolean tableFound = DatabaseUtility.tableOrViewExists(con, null);
-            assertTrue("The Database Utility method table or view exists method returned true when it should have returned false.", !tableFound);
+            assertTrue("The Database BoundsUtility method table or view exists method returned true when it should have returned false.", !tableFound);
         }
         finally
         {
@@ -255,7 +255,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would throw an
+     * Checks to see if the Database BoundsUtility would throw an
      * IllegalArgumentException when given a null connection.
      * 
      * @throws Exception
@@ -269,7 +269,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would throw an
+     * Checks to see if the Database BoundsUtility would throw an
      * IllegalArgumentException when given a closed connection.
      * 
      * @throws Exception
@@ -286,7 +286,7 @@ public class DatabaseUtilityTest
         {
             con.close();
             DatabaseUtility.tableOrViewExists(con, null);
-            fail("Database Utility should have thrown an IllegalArgumentException when given a closed connection.");
+            fail("Database BoundsUtility should have thrown an IllegalArgumentException when given a closed connection.");
         }
         finally
         {
@@ -298,7 +298,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would accurately detect if a table
+     * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tablesOrViewsExists method.
      * 
      * @throws Exception
@@ -316,7 +316,7 @@ public class DatabaseUtilityTest
             this.addTable(con, tableName);
             final String[] tables = {tableName, "non_existant_table"};
 
-            assertTrue("The Database Utility method table or view exists method returned true when it should have returned false.", !DatabaseUtility.tablesOrViewsExists(con, tables));
+            assertTrue("The Database BoundsUtility method table or view exists method returned true when it should have returned false.", !DatabaseUtility.tablesOrViewsExists(con, tables));
         }
         finally
         {
@@ -328,7 +328,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would accurately detect if a table
+     * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tablesOrViewsExists method.
      * 
      * @throws Exception
@@ -345,7 +345,7 @@ public class DatabaseUtilityTest
             final String tableName = "gpkg_tile_matrix";
             this.addTable(con, tableName);
             final String[] tables = {tableName, tableName};
-            assertTrue("The Database Utility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tablesOrViewsExists(con, tables));
+            assertTrue("The Database BoundsUtility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tablesOrViewsExists(con, tables));
         }
         finally
         {
@@ -357,7 +357,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would accurately detect if a table
+     * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tablesOrViewsExists method.
      * 
      * @throws Exception
@@ -378,7 +378,7 @@ public class DatabaseUtilityTest
             this.addTable(con, tableName2);
             final String[] tables = {tableName1, tableName2};
 
-            assertTrue("The Database Utility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tablesOrViewsExists(con, tables));
+            assertTrue("The Database BoundsUtility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tablesOrViewsExists(con, tables));
         }
         finally
         {
@@ -390,7 +390,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would throw an exception when
+     * Checks to see if the Database BoundsUtility would throw an exception when
      * receiving a file that is less than 100 bytes.
      * 
      * @throws Exception
@@ -418,7 +418,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility gets correct sqlite version of a
+     * Checks to see if the Database BoundsUtility gets correct sqlite version of a
      * file.
      * 
      * @throws Exception
@@ -448,7 +448,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would throw an exception when
+     * Checks to see if the Database BoundsUtility would throw an exception when
      * receiving a file that is null.
      * 
      * @throws IOException
@@ -463,7 +463,7 @@ public class DatabaseUtilityTest
     }
 
     /**
-     * Checks to see if the Database Utility would throw an exception when
+     * Checks to see if the Database BoundsUtility would throw an exception when
      * receiving a file that is null.
      * 
      * @throws IOException
