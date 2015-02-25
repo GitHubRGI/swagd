@@ -161,12 +161,11 @@ public class GeoPackageSchemaAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final Content table = gpkg.core().addContent("tableName",
-                                                   "tiles",
-                                                   "identifier",
-                                                   "description",
-                                                   new BoundingBox(0.0,0.0,180.0,90.0),
-                                                   gpkg.core().getSpatialReferenceSystem(4326));
+            final Content table = gpkg.tiles().addTileSet("tableName",
+                                                          "identifier",
+                                                          "description",
+                                                          new BoundingBox(0.0,0.0,180.0,90.0),
+                                                          gpkg.core().getSpatialReferenceSystem(4326));
             final String   name           = "name";
             final String   title          = "title";
             final String   description    = "description";
@@ -174,6 +173,45 @@ public class GeoPackageSchemaAPITest
             final String   constraintName = "constraint_name";
 
             gpkg.schema().addDataColumn(table, null, name, title, description, mimeType, constraintName);
+            fail("Expected GeoPackage to throw an IllegalArgumentException when trying to add a datacolumn and columnName is null.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+
+    /**
+     * Tests if GeoPackage Schema throws
+     * an IllegalArgumentException when adding
+     * a data column with an empty string for columnName
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws MimeTypeParseException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnIllegalArgumentException3() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
+    {
+        final File testFile = this.getRandomFile(12);
+
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final Content table = gpkg.tiles().addTileSet("tableName",
+                                                          "identifier",
+                                                          "description",
+                                                          new BoundingBox(0.0,0.0,180.0,90.0),
+                                                          gpkg.core().getSpatialReferenceSystem(4326));
+            final String   name           = "name";
+            final String   title          = "title";
+            final String   description    = "description";
+            final MimeType mimeType       = new MimeType("image/png");
+            final String   constraintName = "constraint_name";
+
+            gpkg.schema().addDataColumn(table, "", name, title, description, mimeType, constraintName);
             fail("Expected GeoPackage to throw an IllegalArgumentException when trying to add a datacolumn and columnName is null.");
         }
         finally
@@ -201,12 +239,12 @@ public class GeoPackageSchemaAPITest
         try(GeoPackage gpkg = createGeoPackage("tableName", "columnName", testFile))
         {
             final Content table = gpkg.core().addContent("tableName",
-                                                   "tiles",
-                                                   "identifier",
-                                                   "description",
-                                                   new BoundingBox(0.0,0.0,180.0,90.0),
-                                                   gpkg.core().getSpatialReferenceSystem(4326));
-
+                                                         "tiles",
+                                                         "identifier",
+                                                         "description",
+                                                         new BoundingBox(0.0,0.0,180.0,90.0),
+                                                         gpkg.core().getSpatialReferenceSystem(4326));
+                                                      
             final String   columnName     = "columnName";
             final String   name           = "name";
             final String   title          = "title";
@@ -228,7 +266,7 @@ public class GeoPackageSchemaAPITest
             deleteFile(testFile);
         }
     }
-
+    
     /**
      * Tests if geopackage schema
      * will throw an IllegalArgumentException when
@@ -273,12 +311,11 @@ public class GeoPackageSchemaAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final Content table = gpkg.core().addContent("tableName",
-                                                   "tiles",
-                                                   "identifier",
-                                                   "description",
-                                                   new BoundingBox(0.0,0.0,180.0,90.0),
-                                                   gpkg.core().getSpatialReferenceSystem(4326));
+            final Content table = gpkg.tiles().addTileSet("tableName",
+                                                          "identifier",
+                                                          "description",
+                                                          new BoundingBox(0.0,0.0,180.0,90.0),
+                                                          gpkg.core().getSpatialReferenceSystem(4326));
 
             gpkg.schema().getDataColumn(table, null);
         }
@@ -305,12 +342,11 @@ public class GeoPackageSchemaAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final Content table = gpkg.core().addContent("tableName",
-                                                   "tiles",
-                                                   "identifier",
-                                                   "description",
-                                                   new BoundingBox(0.0,0.0,180.0,90.0),
-                                                   gpkg.core().getSpatialReferenceSystem(4326));
+            final Content table =  gpkg.tiles().addTileSet("tableName",
+                                                           "identifier",
+                                                           "description",
+                                                           new BoundingBox(0.0,0.0,180.0,90.0),
+                                                           gpkg.core().getSpatialReferenceSystem(4326));
 
             gpkg.schema().getDataColumn(table, "");
         }
@@ -410,13 +446,13 @@ public class GeoPackageSchemaAPITest
             final String  description         = "description";
 
             final DataColumnConstraint constraint = gpkg.schema().addDataColumnConstraint(constraintName,
-                                                                                    constraintType,
-                                                                                    value,
-                                                                                    minimum,
-                                                                                    minimumIsInclusive,
-                                                                                    maximum,
-                                                                                    maximumIsInclusive,
-                                                                                    description);
+                                                                                          constraintType,
+                                                                                          value,
+                                                                                          minimum,
+                                                                                          minimumIsInclusive,
+                                                                                          maximum,
+                                                                                          maximumIsInclusive,
+                                                                                          description);
             gpkg.schema().addDataColumnConstraint(constraintName,
                                                   constraintType,
                                                   value,
@@ -429,11 +465,50 @@ public class GeoPackageSchemaAPITest
             assertTrue("The Returned datacolumnconstraint using addDataColumnConstraint does not return the expected values",
                        constraint.getConstraintName().equals(constraintName)            &&
                        constraint.getConstraintType().equals(constraintType.toString()) &&
-                       constraint.getValue() == null                                    &&
+                       constraint.getValue() == value                                    &&
                        constraint.getMinimum().equals(minimum)                          &&
                        constraint.getMinimumIsInclusive().equals(minimumIsInclusive)    &&
                        constraint.getMaximum().equals(maximum)                          &&
                        constraint.getMaximumIsInclusive().equals(maximumIsInclusive));
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if geopackage addDataColumnConstraint
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void addDataColumnConstraint2() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Glob;
+            final String  value               = "value";
+            final Number  minimum             = null;
+            final Boolean minimumIsInclusive  = null;
+            final Number  maximum             = null;
+            final Boolean maximumIsInclusive  = null;
+            final String  description         = "description";
+
+            DataColumnConstraint constraint = gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            assertTrue("The Returned datacolumnconstraint using addDataColumnConstraint does not return the expected values",
+                        constraint.getConstraintName().equals(constraintName)            &&
+                        constraint.getConstraintType().equals(constraintType.toString()) &&
+                        constraint.getValue().equals(value)                              &&
+                        constraint.getMinimum() == (minimum)                             &&
+                        constraint.getMinimumIsInclusive() == (minimumIsInclusive)       &&
+                        constraint.getMaximum() == (maximum)                             &&
+                        constraint.getMaximumIsInclusive() == (maximumIsInclusive));
         }
         finally
         {
@@ -459,7 +534,7 @@ public class GeoPackageSchemaAPITest
         final File testFile = this.getRandomFile(13);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final String  constraintName      = null;
+            final String  constraintName      = null;//illegal!
             final Type    constraintType      = Type.Range;
             final String  value               = null;
             final Number  minimum             = 0;
@@ -477,7 +552,554 @@ public class GeoPackageSchemaAPITest
             deleteFile(testFile);
         }
     }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with a
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException2() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "";//illegal!
+            final Type    constraintType      = Type.Range;
+            final String  value               = null;
+            final Number  minimum             = 0;
+            final Boolean minimumIsInclusive  = true;
+            final Number  maximum             = 20;
+            final Boolean maximumIsInclusive  = false;
+            final String  description         = "description";
 
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with an empty string for constraint name");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException3() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = null;//illegal!
+            final String  value               = null;
+            final Number  minimum             = 0;
+            final Boolean minimumIsInclusive  = true;
+            final Number  maximum             = 20;
+            final Boolean maximumIsInclusive  = false;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a null value for constraint type");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException4() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Range;
+            final String  value               = "illegal";//illegal when type is range
+            final Number  minimum             = 0;
+            final Boolean minimumIsInclusive  = true;
+            final Number  maximum             = 20;
+            final Boolean maximumIsInclusive  = false;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a non-null value for value when the constraint type is range.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException5() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Range;
+            final String  value               = null;
+            final Number  minimum             = null;//illegal when type is range
+            final Boolean minimumIsInclusive  = true;
+            final Number  maximum             = 20;
+            final Boolean maximumIsInclusive  = false;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a null value for minimum when the constraintType is Range.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException6() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Range;
+            final String  value               = null;
+            final Number  minimum             = 0;
+            final Boolean minimumIsInclusive  = true;
+            final Number  maximum             = null;//illegal when type is range
+            final Boolean maximumIsInclusive  = false;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a null value for maximum when the constraintType is Range.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException7() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Range;
+            final String  value               = null;
+            final Number  minimum             = 0;
+            final Boolean minimumIsInclusive  = true;
+            final Number  maximum             = -1;//illegal if minimum is < maximum
+            final Boolean maximumIsInclusive  = false;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a minimum that is < maximum.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException8() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Range;
+            final String  value               = null;
+            final Number  minimum             = 0;
+            final Boolean minimumIsInclusive  = null;// illegal when type is range
+            final Number  maximum             = 20;
+            final Boolean maximumIsInclusive  = false;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a a null value for minimumIsInclusive when constraint type is range.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException9() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Range;
+            final String  value               = null;
+            final Number  minimum             = 0;
+            final Boolean minimumIsInclusive  = true;
+            final Number  maximum             = 20;
+            final Boolean maximumIsInclusive  = null;// illegal when type is range
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a a null value for maximumIsInclusive when constraint type is range.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException10() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Enum;
+            final String  value               = "value";
+            final Number  minimum             = 0;// illegal when type is Enum or Glob
+            final Boolean minimumIsInclusive  = null;
+            final Number  maximum             = null;
+            final Boolean maximumIsInclusive  = null;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a non null value for minimum when constraint type is enum or glob.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException11() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Glob;
+            final String  value               = "value";
+            final Number  minimum             = 0;// illegal when type is Enum or Glob
+            final Boolean minimumIsInclusive  = null;
+            final Number  maximum             = null;
+            final Boolean maximumIsInclusive  = null;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a non null value for minimum when constraint type is enum or glob.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException12() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Enum;
+            final String  value               = "value";
+            final Number  minimum             = null;
+            final Boolean minimumIsInclusive  = true;// illegal when type is Enum or Glob
+            final Number  maximum             = null;
+            final Boolean maximumIsInclusive  = null;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a non null value for minimumIsInclusive when constraint type is enum or glob.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException13() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Enum;
+            final String  value               = "value";
+            final Number  minimum             = null;
+            final Boolean minimumIsInclusive  = null;
+            final Number  maximum             = 10;// illegal when type is Enum or Glob
+            final Boolean maximumIsInclusive  = null;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a non null value for maximum when constraint type is enum or glob.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException14() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Enum;
+            final String  value               = "value";
+            final Number  minimum             = null;
+            final Boolean minimumIsInclusive  = null;
+            final Number  maximum             = null;
+            final Boolean maximumIsInclusive  = true;// illegal when type is Enum or Glob
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a non null value for maximumIsInclusive when constraint type is enum or glob.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException15() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Enum;
+            final String  value               = null;// illegal when type is Enum or Glob
+            final Number  minimum             = null;
+            final Boolean minimumIsInclusive  = null;
+            final Number  maximum             = null;
+            final Boolean maximumIsInclusive  = null;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a null value for value when constraint type is enum or glob.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if Geopackage schema will
+     * throw an IllegalArgumentException when
+     * trying to add a dataColumnConstraint with 
+     * invalid parameters
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addDataColumnConstraintIllegalArgumentException16() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(13);
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+            final String  constraintName      = "Constraint name";
+            final Type    constraintType      = Type.Glob;
+            final String  value               = null;// illegal when type is Enum or Glob
+            final Number  minimum             = null;
+            final Boolean minimumIsInclusive  = null;
+            final Number  maximum             = null;
+            final Boolean maximumIsInclusive  = null;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
+            fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a null value for value when constraint type is enum or glob.");
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests if the data Column constraint contains the values expected
+     * @throws ClassNotFoundException
+     * @throws IOException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
     @Test
     public void getDataColumnConstraint() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
@@ -496,13 +1118,13 @@ public class GeoPackageSchemaAPITest
             final String  description         = "description";
 
             final DataColumnConstraint constraintExpected = gpkg.schema().addDataColumnConstraint(constraintName,
-                                                                                            constraintType,
-                                                                                            value,
-                                                                                            minimum,
-                                                                                            minimumIsInclusive,
-                                                                                            maximum,
-                                                                                            maximumIsInclusive,
-                                                                                            description);
+                                                                                                  constraintType,
+                                                                                                  value,
+                                                                                                  minimum,
+                                                                                                  minimumIsInclusive,
+                                                                                                  maximum,
+                                                                                                  maximumIsInclusive,
+                                                                                                  description);
 
             final DataColumnConstraint constraintReturned = gpkg.schema().getDataColumnConstraint(constraintName, constraintType, value);
 
@@ -515,6 +1137,231 @@ public class GeoPackageSchemaAPITest
             deleteFile(testFile);
         }
     }
+    
+    /**
+     * Tests if the data Column constraint contains the values expected
+     * @throws ClassNotFoundException
+     * @throws IOException
+     * @throws SQLException
+     * @throws ConformanceException
+     */
+    @Test
+    public void getDataColumnConstraint2() throws ClassNotFoundException, IOException, SQLException, ConformanceException
+    {
+        final File testFile = this.getRandomFile(11);
+
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+
+            final String  constraintName      = "constraint_name";
+            final Type    constraintType      = Type.Range;
+            final String  value               = null;
+            final Number  minimum             = 0;
+            final Boolean minimumIsInclusive  = false;
+            final Number  maximum             = 20;
+            final Boolean maximumIsInclusive  = true;
+            final String  description         = "description";
+
+            gpkg.schema().addDataColumnConstraint(constraintName,
+                                                  constraintType,
+                                                  value,
+                                                  minimum,
+                                                  minimumIsInclusive,
+                                                  maximum,
+                                                  maximumIsInclusive,
+                                                  description);
+
+            final DataColumnConstraint constraintReturned = gpkg.schema().getDataColumnConstraint("ConstraintThatDoesn'tExist", Type.Range, "Doesn'tExist");
+
+            assertTrue("The data Column Constraint returned a non null value when the data column constraint searched for did not exist in the geopackage.",
+                       constraintReturned == null);
+
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if GeoPackage Schema throws an IllegalArgumentException 
+     * when using the method getDataColumnConstraint with illegal values
+     * for the parameters
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws ConformanceException
+     * @throws IOException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getDataColumnContraintIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    {
+        final File testFile = this.getRandomFile(11);
+
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+
+            final String  constraintName      = null;//illegal!!
+            final Type    constraintType      = Type.Range;
+            final String  value               = null;
+
+            gpkg.schema().getDataColumnConstraint(constraintName, constraintType, value);
+            
+            fail("Expected GeopackageSchema to throw an IllegalArgumentException when passing in a null paramter for constraintName.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if GeoPackage Schema throws an IllegalArgumentException 
+     * when using the method getDataColumnConstraint with illegal values
+     * for the parameters
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws ConformanceException
+     * @throws IOException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getDataColumnContraintIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    {
+        final File testFile = this.getRandomFile(11);
+
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+
+            final String  constraintName      = "";//illegal!!
+            final Type    constraintType      = Type.Range;
+            final String  value               = null;
+
+            gpkg.schema().getDataColumnConstraint(constraintName, constraintType, value);
+            
+            fail("Expected GeopackageSchema to throw an IllegalArgumentException when passing in an empty string for constraintName.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if GeoPackage Schema throws an IllegalArgumentException 
+     * when using the method getDataColumnConstraint with illegal values
+     * for the parameters
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws ConformanceException
+     * @throws IOException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getDataColumnContraintIllegalArgumentException3() throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    {
+        final File testFile = this.getRandomFile(11);
+
+        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        {
+
+            final String  constraintName      = "constraintName";
+            final Type    constraintType      = null;//Illegal!!!
+            final String  value               = null;
+
+            gpkg.schema().getDataColumnConstraint(constraintName, constraintType, value);
+            
+            fail("Expected GeopackageSchema to throw an IllegalArgumentException when passing in an empty string for constraintName.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if getDataColumnConstraints() returns the
+     * expected values
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws IOException
+     */
+    @Test
+    public void getDataColumnConstraints() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    {
+        final File testFile = this.getRandomFile(12);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+           Collection<DataColumnConstraint> shouldBeEmptyList = gpkg.schema().getDataColumnConstraints();
+           assertTrue("Expected GeoPackageSchema to return an empty list when there are no data column constraints in the GeoPackage.",shouldBeEmptyList.size() == 0);
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if getDataColumnConstraints() returns the
+     * expected values
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws IOException
+     */
+    @Test
+    public void getDataColumnConstraints2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    {
+        final File testFile = this.getRandomFile(12);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            
+           Number  minimumNull            = null;
+           Boolean minimumIsInclusiveNull = null;
+           Number  maximumNull            = null;
+           Boolean maximumIsInclusiveNull = null;
+           String  descriptionNull        = null;
+           final String  valueNull        = null;
+           
+           DataColumnConstraint  constraint1 = gpkg.schema().addDataColumnConstraint("name1", 
+                                                                                     Type.Enum, 
+                                                                                     "value1", 
+                                                                                     minimumNull, 
+                                                                                     minimumIsInclusiveNull, 
+                                                                                     maximumNull, 
+                                                                                     maximumIsInclusiveNull, 
+                                                                                     descriptionNull);
+           DataColumnConstraint  constraint2 = gpkg.schema().addDataColumnConstraint("name2", 
+                                                                                     Type.Glob, 
+                                                                                     "value2", 
+                                                                                     minimumNull, 
+                                                                                     minimumIsInclusiveNull, 
+                                                                                     maximumNull, 
+                                                                                     maximumIsInclusiveNull, 
+                                                                                     descriptionNull);
+           DataColumnConstraint  constraint3 = gpkg.schema().addDataColumnConstraint("name3", 
+                                                                                     Type.Range, 
+                                                                                     valueNull, 
+                                                                                     0, 
+                                                                                     true, 
+                                                                                     20, 
+                                                                                     false, 
+                                                                                     "description");
+           
+           Collection<DataColumnConstraint> expectedCollection = Arrays.asList(constraint1, constraint2, constraint3);
+           Collection<DataColumnConstraint> returnedCollection = gpkg.schema().getDataColumnConstraints();
+           assertTrue("Expected GeoPackageSchema to return an empty list when there are no data column constraints in the GeoPackage.", 
+                      returnedCollection.stream()
+                                        .allMatch(returned -> expectedCollection.stream()
+                                                                                .anyMatch(expected -> dataColumnConstraintsEqual(expected, returned))));
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    
 
     private static GeoPackage createGeoPackage(final String tableName, final String columnName, final File testFile) throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
