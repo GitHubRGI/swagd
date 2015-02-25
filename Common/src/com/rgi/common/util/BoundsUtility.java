@@ -17,20 +17,19 @@
  */
 
 
-package com.rgi.common.coordinate.referencesystem.profile;
+package com.rgi.common.util;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.tile.TileOrigin;
 
 /**
- * This class's functionality could be contained in CrsProfile if it were a
- * class rather than an interface.
- *
+ * {@link BoundingBox} utilities specific to a {@link TileOrigin}
+ * 
  * @author Luke Lambert
  *
  */
-public class Utility
+public class BoundsUtility
 {
     /**
      * @param bounds the bounding box of the coordinates
