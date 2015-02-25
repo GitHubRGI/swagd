@@ -126,10 +126,10 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Tile matrix dimensions may not be null");
         }
 
-        if(!dimensions.contains(row, column))
-        {
-            throw new IllegalArgumentException("The row and column must be within the tile matrix dimensions");
-        }
+//        if(!dimensions.contains(column, row))
+//        {
+//            throw new IllegalArgumentException("The row and column must be within the tile matrix dimensions");
+//        }
 
         if(tileOrigin == null)
         {
