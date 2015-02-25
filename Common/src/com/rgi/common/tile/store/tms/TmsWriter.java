@@ -40,6 +40,9 @@ import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.MimeTypeUtility;
 
 /**
+ * <a href="http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification">TMS</a>
+ * implementation of {@link TileStoreWriter}
+ *
  * @author Luke Lambert
  *
  */
