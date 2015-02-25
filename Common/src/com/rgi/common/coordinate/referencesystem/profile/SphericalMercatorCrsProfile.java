@@ -23,6 +23,10 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 
 /**
+ * Spherical Mercator implementation of a coordinate reference system profile.
+ * Spherical Mercator is also known as Web Mercator, Google Web Mercator,
+ * WGS 84 Web Mercator, WGS 84 Web Mercator or WGS 84/Pseudo-Mercator.
+ *
  * @author Luke Lambert
  *
  */
