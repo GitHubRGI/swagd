@@ -26,6 +26,8 @@ import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
+ * Ellipsoidal Mercator implementation of a coordinate reference system profile
+ *
  * @author Luke Lambert
  *
  */
@@ -41,12 +43,15 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     }
 
     /**
-     * Constructor
+     * Constructor used to build slight variants of the Ellipsoidal Mercator projections
      *
-     * @param earthEquatorialRadiusScaleFactor the scale factor for the equatorial radius the earth
-     * @param coordinateReferenceSystem The Coordinate Reference System
+     * @param earthEquatorialRadiusScaleFactor
+     *             The scale factor for the equatorial radius the earth
+     * @param coordinateReferenceSystem
+     *             The coordinate reference system that corresponds to this
+     *             variant of the Ellipsoidal Mercator projection
      */
-    public EllipsoidalMercatorCrsProfile(final double earthEquatorialRadiusScaleFactor, final CoordinateReferenceSystem coordinateReferenceSystem)
+    protected EllipsoidalMercatorCrsProfile(final double earthEquatorialRadiusScaleFactor, final CoordinateReferenceSystem coordinateReferenceSystem)
     {
         this.coordinateReferenceSystem = coordinateReferenceSystem;
 
@@ -99,6 +104,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Coordinate is outside the crsBounds of this coordinate reference system");
         }
 
+        // TODO
         throw new RuntimeException("Method not implemented");
     }
 
@@ -168,16 +174,6 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         return "World (Ellipsoidal) Mercator";
     }
 
-    /**
-     * @param coordinate coordinate in meters of Ellipsoidal Mercator
-     * @return coordinate in Global Geodetic
-     */
-    public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
-    {
-        return new Coordinate<>(metersToLon(coordinate.getX()),
-                                metersToLat(coordinate.getY()));
-    }
-
     @Override
     public BoundingBox getBounds()
     {
@@ -203,9 +199,10 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      * corresponding longitude value in degrees.
      *
      * Formula:
-     *         Longitude(in radian) = meters/UnscaledEarthEquatorialRadius
+     *         Longitude(in radians) = meters/UnscaledEarthEquatorialRadius
      *
-     * @param meters in WGS 3395
+     * @param meters
+     *             Meters in the in EPSG:3395 coordinate reference system
      * @return longitude in Degrees
      */
     private static double metersToLon(final double meters)
@@ -221,7 +218,8 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      * This value is found through the Inverse Mapping Conversion
      * function.
      *
-     * @param meters in WGS 3395
+     * @param meters
+     *             Meters in the in EPSG:3395 coordinate reference system
      * @return latitude in Degrees
      */
     private static double metersToLat(final double meters)
@@ -237,7 +235,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      * </pre>
      *
      * @param x
-     *            in degrees or radian
+     *             in degrees or radians
      * @return the corresponding length from the angle x
      */
     private static double inverseHyperbolicTangent(final double x)
@@ -268,27 +266,28 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      */
     private static double inverseMappingConversion(final double meters)
     {
-        //s(1) calculation set to previous
+        // s(1) calculation set to previous
         double previous = Math.tanh(meters/UnscaledEarthEquatorialRadius);
-        //arbitrary initializations of next and difference
+        // Arbitrary initializations of next and difference
         double next = 0;
         double difference = Double.MAX_VALUE;
         final double epsilon = 0.00000001;
-        //this will loop until the conversion factor is to the level of accuracy
-        //determined by the conversion factor difference
+
+        // This will loop until the conversion factor is to the level of
+        // accuracy determined by the conversion factor difference
         while(Math.abs(difference) > epsilon)
         {
-           //s(n+1) calculated by the recursion formula s(n)
+           // s(n+1) calculated by the recursion formula s(n)
            next = Math.tanh(((meters/UnscaledEarthEquatorialRadius) + (Eccentricity*inverseHyperbolicTangent(Eccentricity*previous))));
-           //calculate conversion factor
-           difference = next - previous;
-           //set s(n) to s(n+1)
-           previous = next;
-        }
-         //latitude = arcsine(s(n+1)) Latitude formula
-        final double yInRadian = Math.asin(next);
 
-        return yInRadian;
+           difference = next - previous; // Calculate conversion factor
+           previous = next;              // Set s(n) to s(n+1)
+        }
+
+        // Latitude = arcsine(s(n+1)) Latitude formula
+        final double yRadians = Math.asin(next);
+
+        return yRadians;
     }
 
     /**
