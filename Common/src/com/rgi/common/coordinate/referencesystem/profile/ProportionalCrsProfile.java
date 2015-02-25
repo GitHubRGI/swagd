@@ -96,9 +96,10 @@ public abstract class ProportionalCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Tile matrix dimensions may not be null");
         }
-        // This got commented final out because occasionally it final makes
-        // sense for final a coordinate outside final of the bounds (+1) in
-        // final order to calculate final a tile's bounding box.
+
+        // This got commented out because occasionally it final makes sense for
+        // a coordinate outside final of the bounds (+1) in order to calculate
+        // a tile's bounding box.
         //if(!dimensions.contains(row, column))
         //{
         //    throw new IllegalArgumentException("The row and column must be within the tile matrix dimensions");
@@ -118,7 +119,7 @@ public abstract class ProportionalCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
-        
+
         final double tileCrsHeight = bounds.getHeight() / dimensions.getHeight();
         final double tileCrsWidth  = bounds.getWidth()  / dimensions.getWidth();
 
@@ -126,7 +127,7 @@ public abstract class ProportionalCrsProfile implements CrsProfile
                                                                         row,
                                                                         column,
                                                                         dimensions);
-        
+
         final Coordinate<Double> boundsCorner = bounds.getBottomLeft();
 
         return new CrsCoordinate(boundsCorner.getX() + (tileCoordinate.getX() + tileOrigin.getHorizontal())*(tileCrsWidth),
