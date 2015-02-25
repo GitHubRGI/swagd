@@ -19,6 +19,9 @@
 package com.rgi.common.tile.scheme;
 
 /**
+ * Mechanism to describe the number of tiles in a tile set, at a given zoom
+ * level
+ *
  * @author Luke Lambert
  *
  */
@@ -27,8 +30,10 @@ public interface TileScheme
     /**
      * Calculates the height and width of the tile matrix for a given zoom level
      *
-     * @param zoomLevel Zoom Level
-     * @return Returns a {@link TileMatrixDimensions} specifying the height and width of a tile matrix at the given zoom level
+     * @param zoomLevel
+     *             Zoom level
+     * @return Returns a {@link TileMatrixDimensions} specifying the width and
+     *             height of a tile matrix at the given zoom level
      */
     public abstract TileMatrixDimensions dimensions(final int zoomLevel);
 }
