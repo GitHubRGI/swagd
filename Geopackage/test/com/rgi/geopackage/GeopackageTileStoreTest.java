@@ -712,34 +712,38 @@ public class GeopackageTileStoreTest
         }
     }
     
-    //TODO Dimensions bug
-//    
-//    @Test
-//    public void geopackageReaderGetTileScheme2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
-//    {
-//        File testFile = this.getRandomFile(8);
-//        try(GeoPackage gpkg = new GeoPackage(testFile))
-//        {
-//            BoundingBox bBox = new BoundingBox(0.0,0.0,90.0,90.0);
-//            int zoomLevel = 9;
-//            int matrixWidth = 4;
-//            int matrixHeight = 5;
-//            TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
-//            
-//            try(GeoPackageReader reader = new GeoPackageReader(testFile,tileMatrix.getTableName()))
-//            {
-//                @SuppressWarnings("unused")
-//                TileMatrixDimensions dimensionsReturned = reader.getTileScheme().dimensions(10);
-//            }
-//            
-//        }
-//        finally
-//        {
-//            deleteFile(testFile);
-//        }
-//        
-//        //reader.getTileScheme().dimensions(8);//TODO
-//    }
+    /**
+     * Tests if GeoPackageReader will throw an IllegalArgumentException when
+     * asking for dimensions at a zoomlevel that was not defined in the GeoPackage
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws IOException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void geopackageReaderGetTileScheme2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    {
+        File testFile = this.getRandomFile(8);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            BoundingBox bBox = new BoundingBox(0.0,0.0,90.0,90.0);
+            int zoomLevel = 9;
+            int matrixWidth = 4;
+            int matrixHeight = 5;
+            TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
+            
+            try(GeoPackageReader reader = new GeoPackageReader(testFile,tileMatrix.getTableName()))
+            {
+                reader.getTileScheme().dimensions(10);
+                fail("Expected GeoPackage reader to throw an illegalArgumentException when asking TileScheme for dimensions of a zoom level that was not defined in the GeoPackage");
+            }
+            
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
 
     /**
      * Tests if the method .stream() in GeoPackageReader returns the expected tile handles
