@@ -99,7 +99,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
         }
 
-        if(!Utility.contains(this.crsBounds, coordinate, tileOrigin))
+        if(!BoundsUtility.contains(this.crsBounds, coordinate, tileOrigin))
         {
             throw new IllegalArgumentException("Coordinate is outside the crsBounds of this coordinate reference system");
         }

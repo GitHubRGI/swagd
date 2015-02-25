@@ -61,12 +61,12 @@ public abstract class ProportionalCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
         }
 
-        if(!Utility.contains(bounds, coordinate, tileOrigin))
+        if(!BoundsUtility.contains(bounds, coordinate, tileOrigin))
         {
             throw new IllegalArgumentException("Coordinate is outside the bounds of this coordinate reference system");
         }
 
-        final Coordinate<Double> tileCorner = Utility.boundsCorner(bounds, tileOrigin);
+        final Coordinate<Double> tileCorner = BoundsUtility.boundsCorner(bounds, tileOrigin);
 
         final double tileCrsHeight = bounds.getHeight() / dimensions.getHeight();
         final double tileCrsWidth  = bounds.getWidth()  / dimensions.getWidth();
