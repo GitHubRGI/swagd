@@ -184,14 +184,38 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     @Override
     public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate)
     {
-        return new Coordinate<>(metersToLon(coordinate.getX()),
-                                metersToLat(coordinate.getY()));
+        return new Coordinate<>(toLongitude(coordinate.getX()),
+                                toLatitude(coordinate.getY()));
     }
 
     @Override
     public int getPrecision()
     {
         return 2;
+    }
+
+    /**
+     * Transform a coordinate from Global Geodetic (EPSG:4326) to WGS 84
+     * Ellipsoid World mercator EPSG(3395).
+     *
+     * <b>This is a temporary stopgap</b> implemented in lieu of a general
+     * coordinate transformation mechanism. This method will be deprecated and
+     * removed in future releases.
+     *
+     * @param coordinate
+     *             Coordinate in global geodetic (EPSG:4326) decimal degrees
+     * @return Returns a coordinate in Ellipsoidal Mercator (EPSG:3395) meters
+     */
+    public Coordinate<Double> fromGlobalGeodetic(final Coordinate<Double> coordinate)
+    {
+        final Double lonInRadian = Math.toRadians(coordinate.getX());
+        final Double latInRadian = Math.toRadians(coordinate.getY());
+
+        final double xmeter = this.scaledEarthEquatorialRadius * lonInRadian;
+        final double ymeter = this.scaledEarthEquatorialRadius * atanh(Math.sin(latInRadian)) - this.scaledEarthEquatorialRadius*Eccentricity*atanh(Eccentricity*(Math.sin(latInRadian)));
+
+        //initialize the meter's coordinate
+        return new Coordinate<>(xmeter, ymeter);
     }
 
     /**
@@ -206,7 +230,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      *             Meters in the in EPSG:3395 coordinate reference system
      * @return longitude in Degrees
      */
-    private static double metersToLon(final double meters)
+    private static double toLongitude(final double meters)
     {
         return Math.toDegrees(meters/UnscaledEarthEquatorialRadius);
     }
@@ -223,7 +247,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      *             Meters in the in EPSG:3395 coordinate reference system
      * @return latitude in Degrees
      */
-    private static double metersToLat(final double meters)
+    private static double toLatitude(final double meters)
     {
         return Math.toDegrees(inverseMappingConversion(meters));
     }
@@ -240,6 +264,15 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      * @return the corresponding length from the angle x
      */
     private static double inverseHyperbolicTangent(final double x)
+    {
+        return 0.5 * Math.log((1.0 + x) / (1.0 - x));
+    }
+
+    /**
+     * Inverse Hyperbolic Tangent equation
+     *
+     */
+    private static double atanh(final double x)
     {
         return 0.5 * Math.log((1.0 + x) / (1.0 - x));
     }
