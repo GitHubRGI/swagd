@@ -25,17 +25,26 @@ import com.rgi.common.tile.TileOrigin;
 
 /**
  * {@link BoundingBox} utilities specific to a {@link TileOrigin}
- * 
+ *
  * @author Luke Lambert
  *
  */
 public class BoundsUtility
 {
     /**
-     * @param bounds the bounding box of the coordinates
-     * @param coordinate the coordinate being tested if within the bounding box
-     * @param origin the origin the tiles are numbered
-     * @return true if the coordinate is within the bounding box; otherwise returns false;
+     * Checks to see if a coordinate is contained is a bounding box without
+     * lying on the edges opposite a tile origin
+     *
+     * @param bounds
+     *             An area described by a {@link BoundingBox}
+     * @param coordinate
+     *             The coordinate being tested against the bounding box
+     * @param origin
+     *             Indication of which sides of the bounding box should be
+     *             treated as inclusive. The sides opposite the corner are
+     *             considered to be outside of the bounds.
+     * @return True if the coordinate is fully within the bounding box or lies
+     *             on the sides adjacent to the origin; otherwise returns false
      */
     public static boolean contains(final BoundingBox bounds, final Coordinate<Double> coordinate, final TileOrigin origin)
     {
@@ -71,9 +80,15 @@ public class BoundsUtility
     }
 
     /**
-     * @param bounds the bounding box of the information
-     * @param origin the origin of the tiles
-     * @return the coordinate of the bounding box corner based on the Tile Origin (example: TileOrigin.LowerLeft returns LowerLeft corner of bounding box)
+     * Gets the corner of a bounding box that corresponds to the tile origin
+     *
+     * @param bounds
+     *             An area described by a {@link BoundingBox}
+     * @param origin
+     *             Representation of the bounding box's corner
+     * @return The coordinate of the bounding box corner based on the tile
+     *             origin. e.g.: {@link TileOrigin#LowerLeft} returns lower
+     *             left corner of the bounding box
      */
     public static Coordinate<Double> boundsCorner(final BoundingBox bounds, final TileOrigin origin)
     {
