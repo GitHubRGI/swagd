@@ -26,6 +26,9 @@ import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
+ * A collection of metadata for a specific coordinate reference system, and
+ * methods used to interact with tiling systems.
+ *
  * @author Luke Lambert
  *
  */
