@@ -40,6 +40,9 @@ import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.MimeTypeUtility;
 
 /**
+ * <a href="http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification">TMS</a>
+ * implementation of {@link TileStoreWriter}
+ *
  * @author Luke Lambert
  *
  */
@@ -49,9 +52,9 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
      * Constructor
      *
      * @param profile
-     *            The tile profile this tile store is using.
+     *             The tile profile this tile store is using.
      * @param location
-     *            The location of this tile store on-disk.
+     *             The location of this tile store on-disk.
      * @param imageOutputFormat
      *             Image format for used for output
      */
@@ -66,9 +69,9 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
      * Constructor
      *
      * @param profile
-     *            The tile profile this tile store is using.
+     *             The tile profile this tile store is using.
      * @param location
-     *            The location of this tile store on-disk.
+     *             The location of this tile store on-disk.
      * @param imageOutputFormat
      *             Image format for used for output
      * @param imageWriteOptions

@@ -19,6 +19,8 @@
 package com.rgi.common.coordinate.referencesystem.profile;
 
 /**
+ * Parameterized variants of the Ellipsoidal Mercator projections
+ *
  * @author Luke Lambert
  *
  */

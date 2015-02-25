@@ -40,12 +40,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.LatLongConversions;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.GlobalGeodeticCrsProfile;
 import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage.OpenMode;
@@ -3294,18 +3294,20 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordinateUpperLeftGlobalMercator() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
+        final EllipsoidalMercatorCrsProfile mercator = new EllipsoidalMercatorCrsProfile();
+
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-45, 5);
-        final CrsCoordinate         crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
+        final Coordinate<Double>        coordInMeters    = mercator.fromGlobalGeodetic(new Coordinate<>(-45.0, 5.0));
+        final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-90.0, -60.0);
-            final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 5.0,   10.0);
+            final Coordinate<Double> minBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>(-90.0, -60.0));
+            final Coordinate<Double> maxBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>( 5.0,   10.0));
 
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3370,18 +3372,20 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordinateUpperRightGlobalMercator() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
+        final EllipsoidalMercatorCrsProfile mercator = new EllipsoidalMercatorCrsProfile();
+
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-42, 5);
+        final Coordinate<Double>        coordInMeters    = mercator.fromGlobalGeodetic(new Coordinate<>(-42.0, 5.0));
         final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-90.0, -60.0);
-            final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 5.0,   10.0);
+            final Coordinate<Double> minBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>(-90.0, -60.0));
+            final Coordinate<Double> maxBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>( 5.0,   10.0));
 
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3445,18 +3449,20 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordinateLowerLeftGlobalMercator() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
+        final EllipsoidalMercatorCrsProfile mercator = new EllipsoidalMercatorCrsProfile();
+
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(-47, -45);
-        final CrsCoordinate         crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
+        final Coordinate<Double>        coordInMeters    = mercator.fromGlobalGeodetic(new Coordinate<>(-47.0, -45.0));
+        final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-90.0, -60.0);
-            final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 5.0,   10.0);
+            final Coordinate<Double> minBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>(-90.0, -60.0));
+            final Coordinate<Double> maxBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>( 5.0,   10.0));
 
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3519,29 +3525,31 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordinateLowerRightGlobalMercator() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
+        final EllipsoidalMercatorCrsProfile mercator = new EllipsoidalMercatorCrsProfile();
+
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = LatLongConversions.latLongToMeters(4.999,-55);
+        final Coordinate<Double>        coordInMeters    = mercator.fromGlobalGeodetic(new Coordinate<>(4.999, -55.0));
         final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final Coordinate<Double> minBoundingBoxCoord = LatLongConversions.latLongToMeters(-90, -60.0);
-            final Coordinate<Double> maxBoundingBoxCoord = LatLongConversions.latLongToMeters( 5.0,   10.0);
+            final Coordinate<Double> minBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>(-90.0, -60.0));
+            final Coordinate<Double> maxBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>(  5.0,  10.0));
 
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                             "identifier",
                                                             "description",
                                                             new BoundingBox(minBoundingBoxCoord.getX(), minBoundingBoxCoord.getY(), maxBoundingBoxCoord.getX(), maxBoundingBoxCoord.getY()),
                                                             gpkg.core().addSpatialReferenceSystem("EPSG/World Mercator",
-                                                                                                    3395,
-                                                                                                    "EPSG",
-                                                                                                    3395,
-                                                                                                    "definition",
-                                                                                                    "description"));
+                                                                                                  3395,
+                                                                                                  "EPSG",
+                                                                                                  3395,
+                                                                                                  "definition",
+                                                                                                  "description"));
             final int matrixWidth = 2;
             final int matrixHeight = 2;
             final int pixelXSize = 256;

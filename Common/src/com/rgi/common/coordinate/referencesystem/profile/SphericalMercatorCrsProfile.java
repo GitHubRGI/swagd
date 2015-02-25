@@ -23,6 +23,10 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 
 /**
+ * Spherical Mercator implementation of a coordinate reference system profile.
+ * Spherical Mercator is also known as Web Mercator, Google Web Mercator,
+ * WGS 84 Web Mercator, WGS 84 Web Mercator or WGS 84/Pseudo-Mercator.
+ *
  * @author Luke Lambert
  *
  */
@@ -37,9 +41,19 @@ public class SphericalMercatorCrsProfile extends ProportionalCrsProfile
     @Override
     public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate)
     {
-        // TODO algorithm documentation
+        /*Formula was obtain from: http://pubs.usgs.gov/pp/1395/report.pdf
+         * The formula is documented on page 44 with a label of (7-4)
+         * which reads
+         * latitude in degrees = Pi/2 - 2*arctan(e^(-y/R))
+         * 
+         * Where:
+         *    y is the coordinate in meters
+         *    e = 2.7182818... the base of natural logarithms
+         *    R is the Earth Equatorial Radius 
+         *    Pi is the mathematical constant, the ratio of a circle's circumference to its diameter 
+        */
         return new Coordinate<>(Math.toDegrees(coordinate.getX() / EarthEquatorialRadius),
-                                Math.toDegrees(2 * Math.atan(Math.exp(coordinate.getY() / EarthEquatorialRadius)) - Math.PI / 2));
+                                Math.toDegrees(Math.PI / 2 - 2 * Math.atan(Math.exp(-coordinate.getY() / EarthEquatorialRadius))));
     }
 
     @Override

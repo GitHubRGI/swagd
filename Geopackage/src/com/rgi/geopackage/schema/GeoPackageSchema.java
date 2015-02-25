@@ -290,9 +290,9 @@ public class GeoPackageSchema
                 preparedStatement.setString (2, constraintType.toString());
                 preparedStatement.setString (3, value);
                 preparedStatement.setObject (4, minimum);
-                preparedStatement.setBoolean(5, minimumIsInclusive);
+                preparedStatement.setObject (5, minimumIsInclusive);
                 preparedStatement.setObject (6, maximum);
-                preparedStatement.setBoolean(7, maximumIsInclusive);
+                preparedStatement.setObject (7, maximumIsInclusive);
                 preparedStatement.setObject (8, description);
 
                 preparedStatement.executeUpdate();
@@ -541,9 +541,9 @@ public class GeoPackageSchema
                                                                                                 result.getString(2),  // constraint type
                                                                                                 result.getString(3),  // value
                                                                                        (Number) result.getObject(4),  // minimum
-                                                                                       (Boolean)result.getObject(5),  // minimum is inclusive
+                                                                                  cast((Integer)result.getObject(5)), // minimum is inclusive
                                                                                        (Number) result.getObject(6),  // maximum
-                                                                                       (Boolean)result.getObject(7),  // maximum is inclusive
+                                                                                  cast((Integer)result.getObject(7)), // maximum is inclusive
                                                                                                 result.getString(8)); // description
                                                    }
                                                    catch(final SQLException ex)
@@ -554,6 +554,11 @@ public class GeoPackageSchema
                                   .filter(Objects::nonNull)
                                   .collect(Collectors.toList());
         }
+    }
+    
+    private static Boolean cast(final Integer integer)
+    {
+        return integer == null ? null : integer != 0;
     }
 
 
@@ -569,7 +574,7 @@ public class GeoPackageSchema
      */
     protected void createDataColumnsTableNoCommit() throws SQLException
     {
-        // Create the tile matrix set table or view
+        // Create the data columns table
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageSchema.DataColumnsTableName))
         {
             try(Statement statement = this.databaseConnection.createStatement())
@@ -591,8 +596,8 @@ public class GeoPackageSchema
      */
     protected void createDataColumnConstraintsTableNoCommit() throws SQLException
     {
-        // Create the tile matrix table or view
-        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageSchema.DataColumnsTableName))
+        // Create the data column constraints table
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageSchema.DataColumnConstraintsTableName))
         {
             try(Statement statement = this.databaseConnection.createStatement())
             {

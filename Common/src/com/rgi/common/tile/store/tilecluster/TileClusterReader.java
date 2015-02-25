@@ -48,6 +48,15 @@ import com.rgi.common.util.ImageUtility;
 @SuppressWarnings("javadoc")
 public class TileClusterReader extends TileCluster implements TileStoreReader
 {
+    /**
+     * Constructor
+     *
+     * @param location
+     * @param setName
+     * @param levels
+     * @param breakPoint
+     * @param crsProfile
+     */
     public TileClusterReader(final Path       location,
                              final String     setName,
                              final int        levels,

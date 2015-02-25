@@ -23,6 +23,9 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 
 /**
+ * Global Geodetic (WGS 84) implementation of a coordinate reference system
+ * profile.  Global Geodetic is also known as World Geodetic System 84.
+ *
  * @author Luke Lambert
  *
  */
@@ -33,15 +36,6 @@ public class GlobalGeodeticCrsProfile extends ProportionalCrsProfile
     public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
         return GlobalGeodeticCrsProfile.CoordinateReferenceSystem;
-    }
-
-    /**
-     * @param coordinate coordinate in current Coordinate Reference System
-     * @return coordinate in Global Geodetic
-     */
-    public static Coordinate<Double> coordinateToGeographic(final Coordinate<Double> coordinate)
-    {
-        return coordinate;
     }
 
     @Override
@@ -74,6 +68,12 @@ public class GlobalGeodeticCrsProfile extends ProportionalCrsProfile
         return "World Geodetic System 1984";
     }
 
+    @Override
+    public int getPrecision()
+    {
+        return 7;
+    }
+
     private final static CoordinateReferenceSystem CoordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
 
     /**
@@ -82,10 +82,4 @@ public class GlobalGeodeticCrsProfile extends ProportionalCrsProfile
      * TODO: what defines the bounds?  The information doesn't seem to be specified in the datum
      */
     public static final BoundingBox Bounds = new BoundingBox(-180.0, -90.0, 180.0, 90.0);
-
-    @Override
-    public int getPrecision()
-    {
-        return 7;
-    }
 }

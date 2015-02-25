@@ -20,6 +20,9 @@ package com.rgi.common.tile.scheme;
 
 
 /**
+ * A {@link TileScheme} implementation of a common convention where a tile
+ * set's tile matrix doubles width and height between successive zoom levels.
+ *
  * @author Luke Lambert
  *
  */
@@ -29,9 +32,9 @@ public class ZoomTimesTwo implements TileScheme
      * Constructor
      *
      * @param minimumZoomLevel
-     *             Lowest valid level of zoom for this tile scheme.  Must be 0 or greater, and less than or equal to maximumZoomLevel.
+     *             Lowest valid level of zoom for this tile scheme. Must be 0 or greater, and less than or equal to maximumZoomLevel.
      * @param maximumZoomLevel
-     *             Highest valid level of zoom for this tile scheme  Must be 0 or greater, and greater than or equal to minimumZoomLevel.
+     *             Highest valid level of zoom for this tile scheme. Must be 0 or greater, and greater than or equal to minimumZoomLevel.
      * @param baseZoomLevelTileMatrixWidth
      *             The number of tiles along the x axis for the lowest zoom level
      * @param baseZoomLevelTileMatrixHeight

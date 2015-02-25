@@ -38,8 +38,8 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
-import com.rgi.common.coordinate.referencesystem.profile.Utility;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.util.BoundsUtility;
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
@@ -1037,12 +1037,12 @@ public class GeoPackageTiles
 
         final BoundingBox tileSetBounds = tileMatrixSet.getBoundingBox();
 
-        if(!Utility.contains(roundBounds(tileSetBounds, precision), crsCoordinate, GeoPackageTiles.Origin))
+        if(!BoundsUtility.contains(roundBounds(tileSetBounds, precision), crsCoordinate, GeoPackageTiles.Origin))
         {
             return null;    // The requested SRS coordinate is outside the bounds of our data
         }
 
-        final Coordinate<Double> boundsCorner = Utility.boundsCorner(roundBounds(tileSetBounds, precision), GeoPackageTiles.Origin);
+        final Coordinate<Double> boundsCorner = BoundsUtility.boundsCorner(roundBounds(tileSetBounds, precision), GeoPackageTiles.Origin);
 
         final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
         final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();
