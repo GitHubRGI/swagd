@@ -35,6 +35,7 @@ import javax.activation.MimeTypeParseException;
 
 import store.GeoPackageWriter;
 
+import com.rgi.common.Range;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
@@ -50,7 +51,6 @@ import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.tile.store.tms.TmsReader;
-import com.rgi.common.util.Range;
 import com.rgi.geopackage.verification.ConformanceException;
 
 /**

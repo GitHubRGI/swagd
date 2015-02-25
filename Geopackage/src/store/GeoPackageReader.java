@@ -35,6 +35,7 @@ import javax.imageio.stream.ImageInputStream;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
+import com.rgi.common.Range;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
@@ -47,7 +48,6 @@ import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.util.ImageUtility;
-import com.rgi.common.util.Range;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;

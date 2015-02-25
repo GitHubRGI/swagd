@@ -23,6 +23,7 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
+import com.rgi.common.util.BoundsUtility;
 
 /**
  * Calculates profile information for coordinate reference systems that are proportional.

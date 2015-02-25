@@ -24,6 +24,7 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
+import com.rgi.common.util.BoundsUtility;
 
 /**
  * Ellipsoidal Mercator implementation of a coordinate reference system profile
