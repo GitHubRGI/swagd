@@ -51,6 +51,17 @@ import com.rgi.common.util.MimeTypeUtility;
 @SuppressWarnings("javadoc")
 public class TileClusterWriter extends TileCluster implements TileStoreWriter
 {
+    /**
+     * Constructor
+     *
+     * @param location
+     * @param setName
+     * @param levels
+     * @param breakPoint
+     * @param crsProfile
+     * @param imageOutputFormat
+     * @param imageWriteOptions
+     */
     public TileClusterWriter(final Path            location,
                              final String          setName,
                              final int             levels,
