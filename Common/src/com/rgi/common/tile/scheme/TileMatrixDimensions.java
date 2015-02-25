@@ -28,8 +28,12 @@ package com.rgi.common.tile.scheme;
 public class TileMatrixDimensions
 {
     /**
-     * @param width the number of tiles wide in the matrix (columns)
-     * @param height the number of tiles high in the matrix (rows)
+     * Constructor
+     *
+     * @param width
+     *             The number of columns in the matrix
+     * @param height
+     *             The number of rows in the matrix (rows)
      */
     public TileMatrixDimensions(final int width, final int height)
     {
@@ -64,14 +68,22 @@ public class TileMatrixDimensions
     }
 
     /**
-     * @param row  the row
-     * @param column the column
+     * Tests if a tile coordinate (column, row) is within the bounds of this
+     * tile matrix
+     *
+     * @param column
+     *             The horizontal portion of a tile coordinate
+     * @param row
+     *             The vertical portion of a tile coordinate
+     *
      * @return Returns true if the row and column are within the matrix dimensions
      */
-    public boolean contains(final int row, final int column)
+    public boolean contains(final int column, final int row)
     {
-        return (row    >= 0 && row    <= (this.height-1)) &&
-               (column >= 0 && column <= (this.width-1));
+        return column >= 0          &&
+               row    >= 0          &&
+               column < this.width  &&
+               row    < this.height;
     }
 
     private final int height;
