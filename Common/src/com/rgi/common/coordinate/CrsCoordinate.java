@@ -20,26 +20,42 @@ package com.rgi.common.coordinate;
 
 
 /**
+ * Coordinate within a specific coordinate reference system
+ *
  * @author Luke Lambert
  *
  */
 public class CrsCoordinate extends Coordinate<Double>
 {
     /**
-     * @param x x value in units of the Coordinate Reference System
-     * @param y y value in units of the Coordinate Reference System
-     * @param crsAuthority the Coordinate Reference System authority name (typically "EPSG") of the coordinate
-     * @param crsIdentifier the version number of the authority of the coordinate
+     * Constructor
+     *
+     * @param x
+     *             Horizontal portion of the coordinate
+     * @param y
+     *             Vertical portion of the coordinate
+     * @param authority
+     *             The name of the defining authority of the coordinate
+     *             reference system (e.g. "EPSG"). This value is converted to
+     *             upper case.
+     * @param identifier
+     *             The identifier as assigned by the the authority of the
+     *             coordinate reference system
      */
-    public CrsCoordinate(final double x, final double y, final String crsAuthority, final int crsIdentifier)
+    public CrsCoordinate(final double x, final double y, final String authority, final int identifier)
     {
-        this(x, y, new CoordinateReferenceSystem(crsAuthority, crsIdentifier));
+        this(x, y, new CoordinateReferenceSystem(authority, identifier));
     }
 
     /**
-     * @param x x value in units of the Coordinate Reference System
-     * @param y y value in units of the Coordinate Reference System
-     * @param coordinateReferenceSystem the Coordinate Reference System of the coordinate
+     * Constructor
+     *
+     * @param x
+     *             Horizontal portion of the coordinate
+     * @param y
+     *             Vertical portion of the coordinate
+     * @param coordinateReferenceSystem
+     *             A coordinate reference system object
      */
     public CrsCoordinate(final double x, final double y, final CoordinateReferenceSystem coordinateReferenceSystem)
     {
@@ -47,8 +63,12 @@ public class CrsCoordinate extends Coordinate<Double>
     }
 
     /**
-     * @param coordinate the coordinate in units of the Coordinate Reference System
-     * @param coordinateReferenceSystem the Coordinate Reference System of the coordinate
+     * Constructor
+     *
+     * @param coordinate
+     *             A coordinate in the units of the coordinate reference system
+     * @param coordinateReferenceSystem
+     *             A coordinate reference system object
      */
     public CrsCoordinate(final Coordinate<Double> coordinate, final CoordinateReferenceSystem coordinateReferenceSystem)
     {
@@ -60,14 +80,6 @@ public class CrsCoordinate extends Coordinate<Double>
         }
 
         this.coordinateReferenceSystem = coordinateReferenceSystem;
-    }
-
-    /**
-     * @return the coordinateReferenceSystem
-     */
-    public CoordinateReferenceSystem getCoordinateReferenceSystem()
-    {
-        return this.coordinateReferenceSystem;
     }
 
     @Override
@@ -87,6 +99,14 @@ public class CrsCoordinate extends Coordinate<Double>
     public int hashCode()
     {
         return super.hashCode() ^ this.coordinateReferenceSystem.hashCode();
+    }
+
+    /**
+     * @return Returns the coordinate reference system
+     */
+    public CoordinateReferenceSystem getCoordinateReferenceSystem()
+    {
+        return this.coordinateReferenceSystem;
     }
 
     private final CoordinateReferenceSystem coordinateReferenceSystem;

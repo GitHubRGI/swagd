@@ -19,6 +19,8 @@
 package com.rgi.common.coordinate;
 
 /**
+ * A simple coordinate
+ *
  * @author Luke Lambert
  *
  * @param <T> Extends {@link Number}
@@ -26,8 +28,12 @@ package com.rgi.common.coordinate;
 public class Coordinate<T extends Number>
 {
     /**
-     * @param x x value
-     * @param y y value
+     * Constructor
+     *
+     * @param x
+     *             Horizontal portion of the coordinate
+     * @param y
+     *             Vertical portion of the coordinate
      */
     public Coordinate(final T x, final T y)
     {
@@ -46,17 +52,20 @@ public class Coordinate<T extends Number>
     }
 
     /**
-     * @param other coordinate
+     * Constructor
+     *
+     * @param coordinate
+     *           Coordinate to clone
      */
-    public Coordinate(final Coordinate<T> other)
+    public Coordinate(final Coordinate<T> coordinate)
     {
-        if(other == null)
+        if(coordinate == null)
         {
             throw new IllegalArgumentException("Coordinate may not be null");
         }
 
-        this.y = other.getY();
-        this.x = other.getX();
+        this.y = coordinate.getY();
+        this.x = coordinate.getX();
     }
 
     @Override
@@ -89,19 +98,19 @@ public class Coordinate<T extends Number>
     }
 
     /**
-     * @return the y
-     */
-    public T getY()
-    {
-        return this.y;
-    }
-
-    /**
-     * @return the x
+     * @return Returns the horizontal portion of the coordinate
      */
     public T getX()
     {
         return this.x;
+    }
+
+    /**
+     * @return Returns the vertical portion of the coordinate
+     */
+    public T getY()
+    {
+        return this.y;
     }
 
     private final T y;
