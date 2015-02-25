@@ -24,7 +24,7 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 
 /**
  * Global Geodetic (WGS 84) implementation of a coordinate reference system
- * profile
+ * profile.  Global Geodetic is also known as World Geodetic System 84.
  *
  * @author Luke Lambert
  *
