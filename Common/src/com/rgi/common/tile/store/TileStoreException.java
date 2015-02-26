@@ -19,6 +19,8 @@
 package com.rgi.common.tile.store;
 
 /**
+ * Exception specific to tile store readers and writers
+ *
  * @author Steven D. Lander
  *
  */
@@ -26,7 +28,10 @@ package com.rgi.common.tile.store;
 public class TileStoreException extends Exception
 {
     /**
-     * @param message the Exception message as a String when a TileStoreException is thrown
+     * Constructor
+     *
+     * @param message
+     *             The exception message as a String when a TileStoreException is thrown
      */
     public TileStoreException(final String message)
     {
@@ -34,7 +39,10 @@ public class TileStoreException extends Exception
     }
 
     /**
-     * @param cause the Throwable object that indicates the cause of the TileStoreException
+     * Constructor
+     *
+     * @param cause
+     *             The Throwable object that indicates the cause of the TileStoreException
      */
     public TileStoreException(final Throwable cause)
     {
@@ -42,8 +50,12 @@ public class TileStoreException extends Exception
     }
 
     /**
-     * @param message the Exception message as a String when a TileStoreException is thrown
-     * @param cause the Throwable object that indicates the cause of the TileStoreException
+     * Constructor
+     *
+     * @param message
+     *             The Exception message as a String when a TileStoreException is thrown
+     * @param cause
+     *             The Throwable object that indicates the cause of the TileStoreException
      */
     public TileStoreException(final String message, final Throwable cause)
     {
