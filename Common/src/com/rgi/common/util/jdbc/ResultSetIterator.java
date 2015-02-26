@@ -24,7 +24,10 @@ import java.util.Iterator;
 import java.util.function.Function;
 
 /**
- * Based on idea found here: https://stackoverflow.com/a/1870090/16434
+ * {@link Iterator} implementation for a {@link ResultSet}
+ * <br>
+ * Based on the example found
+ * <a href="https://stackoverflow.com/a/1870090/16434">here</a>
  *
  * @author Luke Lambert
  *
@@ -32,12 +35,14 @@ import java.util.function.Function;
  */
 class ResultSetIterator<T> implements Iterator<T>
 {
-    private final ResultSet              resultSet;
-    private final Function<ResultSet, T> mappingFunction;
-
-    private boolean hasNext = false;
-    private boolean didNext = false;
-
+    /**
+     * Constructor
+     *
+     * @param resultSet
+     *             Result set to be iterated over
+     * @param mappingFunction
+     *             Function to map a result set instance to a derived value
+     */
     protected ResultSetIterator(final ResultSet resultSet, final Function<ResultSet, T> mappingFunction)
     {
         if(resultSet == null)
@@ -104,4 +109,10 @@ class ResultSetIterator<T> implements Iterator<T>
         this.didNext = false;
         return this.mappingFunction.apply(this.resultSet);
     }
+
+    private final ResultSet              resultSet;
+    private final Function<ResultSet, T> mappingFunction;
+
+    private boolean hasNext = false;
+    private boolean didNext = false;
 }

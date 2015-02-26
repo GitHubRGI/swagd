@@ -32,7 +32,7 @@ import com.rgi.common.tile.TileOrigin;
 public class BoundsUtility
 {
     /**
-     * Checks to see if a coordinate is contained is a bounding box without
+     * Checks to see if a coordinate is contained in a bounding box without
      * lying on the edges opposite a tile origin
      *
      * @param bounds
