@@ -294,8 +294,8 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
 
         final TileMatrixDimensions dimensions = this.tileScheme.dimensions(minimumZoom);
 
-        final Coordinate<Integer> transformedMinTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.LowerLeft,  new Coordinate<>(xRange.getMinimum(), yRange.getMinimum()), dimensions);
-        final Coordinate<Integer> transformedMaxTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.UpperRight, new Coordinate<>(xRange.getMaximum(), yRange.getMaximum()), dimensions);
+        final Coordinate<Integer> transformedMinTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.LowerLeft,  xRange.getMinimum(), yRange.getMinimum(), dimensions);
+        final Coordinate<Integer> transformedMaxTileCoordinate = TmsTileStore.Origin.transform(TileOrigin.UpperRight, xRange.getMaximum(), yRange.getMaximum(), dimensions);
 
         final Coordinate<Double> lowerLeftCorner  = this.profile.tileToCrsCoordinate(transformedMinTileCoordinate.getX(), transformedMinTileCoordinate.getY(), this.profile.getBounds(), dimensions, TileOrigin.LowerLeft);    // TMS uses absolute tiling, which covers the whole globe
         final Coordinate<Double> upperRightCorner = this.profile.tileToCrsCoordinate(transformedMaxTileCoordinate.getX(), transformedMaxTileCoordinate.getY(), this.profile.getBounds(), dimensions, TileOrigin.UpperRight);   // TMS uses absolute tiling, which covers the whole globe

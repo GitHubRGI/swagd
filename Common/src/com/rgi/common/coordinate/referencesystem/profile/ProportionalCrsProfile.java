@@ -125,8 +125,8 @@ public abstract class ProportionalCrsProfile implements CrsProfile
         final double tileCrsWidth  = bounds.getWidth()  / dimensions.getWidth();
 
         final Coordinate<Integer> tileCoordinate = tileOrigin.transform(TileOrigin.LowerLeft,
-                                                                        row,
                                                                         column,
+                                                                        row,
                                                                         dimensions);
 
         final Coordinate<Double> boundsCorner = bounds.getBottomLeft();
