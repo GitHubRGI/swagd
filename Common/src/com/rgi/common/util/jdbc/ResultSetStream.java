@@ -25,14 +25,19 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
+ * A {@link Stream} wrapper for a {@link ResultSet}
+ *
  * @author Luke Lambert
  *
  */
 public class ResultSetStream
 {
     /**
-     * @param resultSet a Result Set
-     * @return a stream of result sets
+     * Creates a stream from a {@link ResultSet}
+     *
+     * @param resultSet
+     *             A {@link ResultSet}
+     * @return A {@link Stream} of {@link ResultSet}s
      */
     public static Stream<ResultSet> getStream(final ResultSet resultSet)
     {
@@ -40,9 +45,12 @@ public class ResultSetStream
     }
 
     /**
-     * @param resultSet The Result Set of your SQL query
-     * @param mappingFunction the mapping function you wish to perform on each record in the result set
-     * @return a stream of Objects from a Result Set
+     * @param resultSet
+     *             A {@link ResultSet}
+     * @param mappingFunction
+     *             A mapping function that transforms a result set instance to
+     *             another derived value
+     * @return A {@link Stream} of values derived from a {@link ResultSet}
      */
     public static <T> Stream<T> getStream(final ResultSet resultSet, final Function<ResultSet, T> mappingFunction)
     {
