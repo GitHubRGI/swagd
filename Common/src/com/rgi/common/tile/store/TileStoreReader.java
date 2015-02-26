@@ -59,16 +59,11 @@ public interface TileStoreReader
     public long countTiles() throws TileStoreException;
 
     /**
-     * Return the byte size of this tile store.
+     * Return the size of the tile store in bytes
      *
-     * @return The approximate size of this tile store in bytes.
+     * @return The approximate size of this tile store in bytes
      * @throws TileStoreException
-     *             When an error occurs reading the from the file to calculate
-     *             the file's total space due to a SecurityException (If a
-     *             security manager has been installed and it denies
-     *             RuntimePermission("getFileSystemAttributes") or its
-     *             SecurityManager.checkRead(String) method denies read access
-     *             to the file), a TileStoreException is thrown
+     *             Wraps errors thrown by the tile store reader implementation
      */
     public long getByteSize() throws TileStoreException;
 
@@ -80,10 +75,10 @@ public interface TileStoreReader
      * @param row
      *             The 'y' portion of the coordinate. This value is relative to this tile store's tile scheme.
      * @param zoomLevel
-     *            The zoom level of the tile.
-     * @return A buffered image, or null if the tile store has no tile data for the specified coordinate
+     *            The zoom level of the tile
+     * @return A {@link BufferedImage}, or null if the tile store has no tile data for the specified coordinate
      * @throws TileStoreException
-     *             A TileStoreException occurs if an error occurs during tile retrieval.
+     *             Wraps errors thrown by the tile store reader implementation
      */
     public BufferedImage getTile(final int column, final int row, final int zoomLevel) throws TileStoreException;
 
@@ -91,52 +86,46 @@ public interface TileStoreReader
      * Get a tile at a specified zoom, and geographic coordinate.
      *
      * @param coordinate
-     *            Geographic coordinate that corresponds to the requested tile
+     *             Geographic coordinate that corresponds to the requested tile
      * @param zoomLevel
-     *            The zoom level of the tile
-     * @return A buffered image, or null if the tile store has no tile data for the specified coordinate
+     *             The zoom level of the tile
+     * @return A {@link BufferedImage}, or null if the tile store has no tile data for the specified coordinate
      * @throws TileStoreException
-     *             A TileStoreException occurs if an error occurs during tile retrieval.
+     *             Wraps errors thrown by the tile store reader implementation
      */
     public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException;
 
     /**
-     * Ask the tile store for all the zoom levels that it contains.
+     * Gets the set of zoom levels that are valid for this tile store
      *
-     * @return A list of integers that represent zoom levels this tile store
-     *         contains.
+     * @return The set of zoom levels that are valid for this tile store
      * @throws TileStoreException
-     *             A TileStoreException is thrown when the list of zoom levels
-     *             cannot be built.
+     *             Wraps errors thrown by the tile store reader implementation
      */
     public Set<Integer> getZoomLevels() throws TileStoreException;
 
     /**
      * Gets a stream of every tile in the tile store. Tile stores need not
      * contain the maximum number of tiles (rows * columns, per zoom level) so
-     * missing entries will not be represented by this stream.
+     * missing entries will not be reported by this stream.
      *
      * @return Returns a {@link Stream} of {@link TileHandle}s
      * @throws TileStoreException
-     *             A TileStoreException is thrown when unable to build a {@link Stream}
-     *             of  {@link TileHandle}s based on the File Path
+     *             Wraps errors thrown by the tile store reader implementation
      */
     public Stream<TileHandle> stream() throws TileStoreException;
-
 
     /**
      * Gets a stream of every tile in the tile store for a given zoom level. The
      * zoom level need not contain the maximum number of tiles (rows * columns)
-     * so missing entries will not be represented by this stream. If there are
+     * so missing entries will not be reported by this stream. If there are
      * no tiles at this zoom level, an empty stream will be returned.
      *
      * @param zoomLevel
      *            The zoom level of the requested tiles
      * @return Returns a {@link Stream} of {@link TileHandle}s
      * @throws TileStoreException
-     *             A TileStoreException is thrown when unable to build a
-     *             {@link Stream} of {@link TileHandle}s based on the given File
-     *             Path
+     *             Wraps errors thrown by the tile store reader implementation
      */
     public Stream<TileHandle> stream(final int zoomLevel) throws TileStoreException;
 
@@ -146,20 +135,20 @@ public interface TileStoreReader
     public CoordinateReferenceSystem getCoordinateReferenceSystem();
 
     /**
+     * Tile source name
+     *
      * @return returns a human readable identifier for this tile store
      */
     public String getName();
 
     /**
-     * @return Returns the best guess for the image type (MimeType subtype).
+     * @return Returns the best guess for the image type (a MimeType subtype).
      *         Tile stores need not necessarily contain a single image type, so
      *         the store's implementation will return what it considers the most
      *         suitable. This function may return null if there are no tiles in
      *         the store.
      * @throws TileStoreException
-     *             A TileStoreException is thrown when the method
-     *             {@link #stream()} throws an Exception or if unable to
-     *             retrieve the specified tile.
+     *             Wraps errors thrown by the tile store reader implementation
      */
     public String getImageType() throws TileStoreException;
 
@@ -170,9 +159,7 @@ public interface TileStoreReader
      *         considers the most suitable. This function may return null if
      *         there are no tiles in the store.
      * @throws TileStoreException
-     *             A TileStoreException is thrown if the method
-     *             {@link #stream()} throws or if unable to get the specified
-     *             tile.
+     *             Wraps errors thrown by the tile store reader implementation
      *
      */
     public Dimensions<Integer> getImageDimensions() throws TileStoreException;
