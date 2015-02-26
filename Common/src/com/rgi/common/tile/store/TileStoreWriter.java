@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.activation.MimeType;
 
+import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 
@@ -33,17 +34,33 @@ import com.rgi.common.tile.TileOrigin;
 public interface TileStoreWriter
 {
     /**
+     * Converts a geographic coordinate, in units of the tile store's
+     * coordinate reference system, to a tile coordinate relative to this tile
+     * store's tile scheme.
+     *
+     * @param coordinate
+     *            The geographic coordinate that corresponds to the tile
+     * @param zoomLevel
+     *            The zoom level of the tile
+     * @return Returns a tile {@link Coordinate} that is relative to this tile
+     *            store's tile scheme
+     * @throws TileStoreException
+     *             Wraps errors thrown by the tile store reader implementation
+     */
+    public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel)  throws TileStoreException;
+
+    /**
      * Insert a tile into this tile store via at a row and column that corresponds to a geographic coordinate
      *
      * @param coordinate
-     *            The geographic coordinate that corresponds to the tile.
+     *            The geographic coordinate that corresponds to the tile
      * @param zoomLevel
-     *            The zoom level of the tile.
+     *            The zoom level of the tile
      * @param image
-     *            The BufferedImage containing the tile data.
+     *            The BufferedImage containing the tile data
      * @throws TileStoreException
      *             A TileStoreException is thrown when an error occurs while
-     *             inserting this tile into the tile store.
+     *             inserting this tile into the tile store
      */
     public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException;
 
@@ -51,16 +68,16 @@ public interface TileStoreWriter
      * Insert a tile into this tile store via at a column and row that corresponds to a geographic coordinate
      *
      * @param column
-     *             The 'x' portion of the coordinate. This value is relative to this tile store's tile scheme.
+     *             The 'x' portion of the coordinate. This value is relative to this tile store's tile scheme
      * @param row
-     *             The 'y' portion of the coordinate. This value is relative to this tile store's tile scheme.
+     *             The 'y' portion of the coordinate. This value is relative to this tile store's tile scheme
      * @param zoomLevel
-     *            The zoom level of the tile.
+     *            The zoom level of the tile
      * @param image
-     *            The BufferedImage containing the tile data.
+     *            The BufferedImage containing the tile data
      * @throws TileStoreException
      *             A TileStoreException is thrown when an error occurs while
-     *             inserting this tile into the tile store.
+     *             inserting this tile into the tile store
      */
     public void addTile(final int column, final int row, final int zoomLevel, final BufferedImage image) throws TileStoreException;
 
