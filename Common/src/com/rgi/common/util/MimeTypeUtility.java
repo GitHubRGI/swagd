@@ -18,6 +18,7 @@
 
 package com.rgi.common.util;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,18 +26,25 @@ import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 
 /**
+ * Utility to simplify the creation and interaction with sets of
+ * {@link MimeType}s
+ *
  * @author Luke Lambert
  *
  */
 public class MimeTypeUtility
 {
     /**
-     * @param types the mimeTypes wanting to add to the set
-     * @return a set of MimeType objects
+     * Create a set of {@link MimeType} objects from their corresponding string
+     * designations
+     *
+     * @param types
+     *             Mime type strings
+     * @return A set of MimeType objects
      */
     public static Set<MimeType> createMimeTypeSet(final String... types)
     {
-        Set<MimeType> imageFormats = new HashSet<>();
+        final Set<MimeType> imageFormats = new HashSet<>();
 
         for(final String type : types)
         {
@@ -51,14 +59,18 @@ public class MimeTypeUtility
         }
         return imageFormats;
     }
-    
+
     /**
-     * @param supportedMimeTypes the supported MimeTypes that are allowed
-     * @param mimeType the mimeType tested
-     * @return true if the mimeType is supported in the Set; otherwise false;
+     * Checks if a specific {@link MimeType} is in a collection of mime types
+     *
+     * @param mimeTypes
+     *             A collection of {@link MimeType}s
+     * @param mimeType
+     *             The mime type to test
+     * @return True if the mime type is in the collection
      */
-    public static boolean contains(Set<MimeType> supportedMimeTypes, MimeType mimeType)
+    public static boolean contains(final Collection<MimeType> mimeTypes, final MimeType mimeType)
     {
-        return supportedMimeTypes.stream().anyMatch(allowedImageOutputFormat-> allowedImageOutputFormat.match(mimeType));
+        return mimeTypes.stream().anyMatch(allowedImageOutputFormat-> allowedImageOutputFormat.match(mimeType));
     }
 }
