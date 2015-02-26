@@ -110,6 +110,16 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
     }
 
     @Override
+    public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel)
+    {
+        return this.profile.crsToTileCoordinate(coordinate,
+                                                this.profile.getBounds(),    // TMS uses absolute tiling, which covers the whole globe
+                                                this.tileScheme.dimensions(zoomLevel),
+                                                TmsTileStore.Origin);
+
+    }
+
+    @Override
     public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException
     {
         if(coordinate == null)
@@ -127,10 +137,8 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
-        final Coordinate<Integer> tmsCoordiante = this.profile.crsToTileCoordinate(coordinate,
-                                                                                   this.profile.getBounds(),    // TMS uses absolute tiling, which covers the whole globe
-                                                                                   this.tileScheme.dimensions(zoomLevel),
-                                                                                   TmsTileStore.Origin);
+        final Coordinate<Integer> tmsCoordiante = this.crsToTileCoordinate(coordinate, zoomLevel);
+
         this.addTile(tmsCoordiante.getX(),
                      tmsCoordiante.getY(),
                      zoomLevel,
