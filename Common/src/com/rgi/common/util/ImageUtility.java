@@ -19,9 +19,11 @@
 package com.rgi.common.util;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -30,23 +32,27 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 /**
+ * Utility methods to convert back and forth between <code>byte[]</code>s and
+ * {@link BufferedImage}s
+ *
  * @author Luke Lambert
  *
  */
 public class ImageUtility
 {
     /**
+     * Converts a {@link BufferedImage} into bytes using a specific image
+     * writer, and image write parameters
+     *
      * @param bufferedImage
-     *            the image wanting to convert to bytes[]
+     *             The {@link BufferedImage} to be converted to bytes
      * @param imageWriter
-     *            Writes out images in the context of the Java Image I/O
-     *            framework
+     *             Writer responsible for the conversion
      * @param imageWriteParameter
-     *            controls aspects (transparency, compression, etc) of the image
-     *            output process
-     * @return the image in bytes
+     *             Controls image writing parameters, e.g. transparency, compression, etc
+     * @return The image as an array of bytes
      * @throws IOException
-     *             throws if an I/O exception occurs
+     *             Throws if image writing fails
      */
     public static byte[] bufferedImageToBytes(final BufferedImage bufferedImage, final ImageWriter imageWriter, final ImageWriteParam imageWriteParameter) throws IOException
     {
@@ -74,10 +80,16 @@ public class ImageUtility
     }
 
     /**
-     * @param bufferedImage the image wanted in bytes
-     * @param outputFormat the format of the image returned
-     * @return the image in bytes
-     * @throws IOException throws if an I/O exception occurs 
+     * Converts a {@link BufferedImage} into bytes using an image writer that
+     * corresponds to the specified output format
+     *
+     * @param bufferedImage
+     *             The {@link BufferedImage} to be converted to bytes
+     * @param outputFormat
+     *             A string containing the informal name of the format.  See {@link ImageIO#write(RenderedImage, String, OutputStream)}
+     * @return The image as an array of bytes
+     * @throws IOException
+     *             Throws if image writing fails
      */
     public static byte[] bufferedImageToBytes(final BufferedImage bufferedImage, final String outputFormat) throws IOException
     {
@@ -103,9 +115,12 @@ public class ImageUtility
     }
 
     /**
-     * @param imageData the image in bytes[] needing to be converted to a buffered image
-     * @return a buffered image
-     * @throws IOException throws if an I/O exception occurs 
+     * Converts an image as an array of bytes to a {@link BufferedImage}
+     *
+     * @param imageData
+     *             The image as an array of bytes
+     * @return A {@link BufferedImage}
+     * @throws IOException If an error occurs in reading the image
      */
     public static BufferedImage bytesToBufferedImage(final byte[] imageData) throws IOException
     {
@@ -116,7 +131,7 @@ public class ImageUtility
 
         try(ByteArrayInputStream imageInputStream = new ByteArrayInputStream(imageData))
         {
-            BufferedImage bufferedImage = ImageIO.read(imageInputStream);
+            final BufferedImage bufferedImage = ImageIO.read(imageInputStream);
 
             if(bufferedImage == null)
             {
