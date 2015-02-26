@@ -29,18 +29,23 @@ import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.scheme.TileScheme;
 
 /**
+ * Interface for tile store reading
+ *
  * @author Luke Lambert
  *
  */
 public interface TileStoreReader
 {
     /**
-     * Calculate the bounds of this tile store.
+     * Gets the geographic bounds
      *
-     * @return a simple bounding box in the default unit of measure of the tile
-     *         profile of this tile store
+     * @return Returns a {@link BoundingBox} that represents the minimum
+     *             bounding area of the data contained in this tile store, in
+     *             the units of the store's coordinate reference system. This
+     *             is not necessarily the same value as the bounds of the
+     *             store's tile matrices.
      * @throws TileStoreException
-     *             TileStoreException in the event of a specific error.
+     *             Wraps errors thrown by the tile store reader implementation
      */
     public BoundingBox getBounds() throws TileStoreException;
 
@@ -49,8 +54,7 @@ public interface TileStoreReader
      *
      * @return The number of tiles contained within this tile store.
      * @throws TileStoreException
-     *             When an error occurs calculating the bounds of this tile
-     *             store, a TileStoreException is thrown.
+     *             Wraps errors thrown by the tile store reader implementation
      */
     public long countTiles() throws TileStoreException;
 
@@ -70,7 +74,7 @@ public interface TileStoreReader
 
     /**
      * Get a tile at a specified zoom, column (x) and row (y)
-     * <br>
+     *
      * @param column
      *             The 'x' portion of the coordinate. This value is relative to this tile store's tile scheme.
      * @param row

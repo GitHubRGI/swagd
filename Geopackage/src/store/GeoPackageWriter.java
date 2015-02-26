@@ -33,6 +33,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
@@ -187,26 +188,20 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
     }
 
     @Override
-    public void addTile(final int column, final int row, final int zoomLevel, final BufferedImage image) throws TileStoreException
+    public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException
     {
-        if(image == null)
-        {
-            throw new IllegalArgumentException("Image may not be null");
-        }
-
         try
         {
-            this.geoPackage
-                .tiles()
-                .addTile(this.tileSet,
-                         this.getTileMatrix(zoomLevel, image.getWidth(), image.getHeight()),
-                         column,
-                         row,
-                         ImageUtility.bufferedImageToBytes(image, this.imageWriter, this.imageWriteOptions));
+            return this.geoPackage
+                       .tiles()
+                       .crsToTileCoordinate(this.tileSet,
+                                            coordinate,
+                                            this.crsProfile.getPrecision(),
+                                            zoomLevel);
         }
-        catch(final SQLException | IOException ex)
+        catch(final SQLException ex)
         {
-           throw new TileStoreException(ex);
+            throw new TileStoreException(ex);
         }
     }
 
@@ -236,6 +231,30 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
                          this.getTileMatrix(zoomLevel, image.getWidth(), image.getHeight()),
                          coordinate,
                          this.crsProfile.getPrecision(),
+                         ImageUtility.bufferedImageToBytes(image, this.imageWriter, this.imageWriteOptions));
+        }
+        catch(final SQLException | IOException ex)
+        {
+           throw new TileStoreException(ex);
+        }
+    }
+
+    @Override
+    public void addTile(final int column, final int row, final int zoomLevel, final BufferedImage image) throws TileStoreException
+    {
+        if(image == null)
+        {
+            throw new IllegalArgumentException("Image may not be null");
+        }
+
+        try
+        {
+            this.geoPackage
+                .tiles()
+                .addTile(this.tileSet,
+                         this.getTileMatrix(zoomLevel, image.getWidth(), image.getHeight()),
+                         column,
+                         row,
                          ImageUtility.bufferedImageToBytes(image, this.imageWriter, this.imageWriteOptions));
         }
         catch(final SQLException | IOException ex)

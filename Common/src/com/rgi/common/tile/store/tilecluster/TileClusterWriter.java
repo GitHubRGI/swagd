@@ -95,6 +95,42 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
     }
 
     @Override
+    public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel)
+    {
+        return this.crsProfile.crsToTileCoordinate(coordinate,
+                                                   this.getBounds(),    // TODO: Should this be crs bounds?
+                                                   this.tileScheme.dimensions(zoomLevel),
+                                                   TileCluster.Origin);
+    }
+
+
+    @Override
+    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException
+    {
+        if(coordinate == null)
+        {
+            throw new IllegalArgumentException("Coordinate may not be null");
+        }
+
+        if(image == null)
+        {
+            throw new IllegalArgumentException("Image may not be null");
+        }
+
+        if(!coordinate.getCoordinateReferenceSystem().equals(this.crsProfile.getCoordinateReferenceSystem()))
+        {
+            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
+        }
+
+        final Coordinate<Integer> clusterCoordinate = this.crsToTileCoordinate(coordinate, zoomLevel);
+
+        this.addTile(clusterCoordinate.getX(),
+                     clusterCoordinate.getY(),
+                     zoomLevel,
+                     image);
+    }
+
+    @Override
     public void addTile(final int column, final int row, final int zoomLevel, final BufferedImage image) throws TileStoreException
     {
         final ClusterAddress clusterAddress = this.getClusterAddress(column, row, zoomLevel);
@@ -141,34 +177,6 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
         {
             throw new TileStoreException(ex);
         }
-    }
-
-    @Override
-    public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException
-    {
-        if(coordinate == null)
-        {
-            throw new IllegalArgumentException("Coordinate may not be null");
-        }
-
-        if(image == null)
-        {
-            throw new IllegalArgumentException("Image may not be null");
-        }
-
-        if(!coordinate.getCoordinateReferenceSystem().equals(this.crsProfile.getCoordinateReferenceSystem()))
-        {
-            throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
-        }
-
-        final Coordinate<Integer> clusterCoordinate = this.crsProfile.crsToTileCoordinate(coordinate,
-                                                                                          this.getBounds(),
-                                                                                          this.tileScheme.dimensions(zoomLevel),
-                                                                                          TileCluster.Origin);
-        this.addTile(clusterCoordinate.getX(),
-                     clusterCoordinate.getY(),
-                     zoomLevel,
-                     image);
     }
 
     /**
