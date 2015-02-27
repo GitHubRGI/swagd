@@ -138,7 +138,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         /*
          * The formula calculates a row and column that is of the UpperLeft origin, this will transform the origin to the one it is asking for
          */
-        Coordinate<Integer> tileCoordinate = TileOrigin.UpperLeft.transform(tileOrigin, new Coordinate<>(tileX, tileY), dimensions);
+        Coordinate<Integer> tileCoordinate = TileOrigin.UpperLeft.transform(tileOrigin, tileX, tileY, dimensions);
 
         return tileCoordinate;
     }
@@ -170,7 +170,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Origin may not be null");
         }
         //Formula uses Upper Left need to convert the Tile coordinate to the expected values
-        Coordinate<Integer> tileCoordinate = tileOrigin.transform(TileOrigin.UpperLeft, new Coordinate<>(column,row), dimensions);
+        Coordinate<Integer> tileCoordinate = tileOrigin.transform(TileOrigin.UpperLeft, column, row, dimensions);
 
         final int numberOfTiles = dimensions.getHeight()*dimensions.getWidth();
         /*
