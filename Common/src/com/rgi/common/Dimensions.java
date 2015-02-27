@@ -1,6 +1,8 @@
 package com.rgi.common;
 
 /**
+ * Generic dimensions container
+ *
  * @author Luke Lambert
  *
  * @param <T> extends Number
@@ -8,8 +10,12 @@ package com.rgi.common;
 public class Dimensions <T extends Number>
 {
     /**
-     * @param width the width
-     * @param height the height
+     * Constructor
+     *
+     * @param width
+     *             The width
+     * @param height
+     *             The height
      */
     public Dimensions(final T width, final T height)
     {
@@ -18,7 +24,7 @@ public class Dimensions <T extends Number>
     }
 
     /**
-     * @return the height
+     * @return The height
      */
     public T getHeight()
     {
@@ -26,7 +32,7 @@ public class Dimensions <T extends Number>
     }
 
     /**
-     * @return the width
+     * @return The width
      */
     public T getWidth()
     {
