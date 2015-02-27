@@ -194,9 +194,9 @@ public class BoundingBox
      * > this article</a>.
      *
      * @param point
-     *            A Point
-     * @return Returns true if the point is on the boundary of, wholly within
-     *         the bounding box and otherwise false
+     *             A Point
+     * @return Returns true if the point is on the boundary of, or wholly
+     *             within the bounding box and otherwise false
      */
     public boolean contains(final Coordinate<Double> point)
     {
