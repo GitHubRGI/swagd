@@ -104,9 +104,43 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Coordinate is outside the crsBounds of this coordinate reference system");
         }
+        //TODO formulas have yet to be tested.  Unsure of their validity.  
+        Coordinate<Double> geodeticCoordinate = toGlobalGeodetic(coordinate);
+        
+        double latitudeRadians = Math.toRadians (geodeticCoordinate.getY());
+        double longitudeRadians = Math.toRadians(geodeticCoordinate.getX());
+        
+        int numberOfTiles = dimensions.getHeight()*dimensions.getWidth();
+        //
+        /*
+         *              /      n  /       longitude \   \
+         *column = Floor| 128*2  |  1 +  ----------- |   |
+         *              \         \        Math.PI  /   / 
+         * 
+         * 2^n       = the number of tiles at a particular zoom level
+         * longitude = in radians 
+         * 
+         */
+        int tileX = (int) Math.floor(128*numberOfTiles*(1 + (longitudeRadians/Math.PI)));
+        
+        /*
+         * 
+         *              /      n  /      atanh(sin(latitude)) - Eccentricity*atanh(Eccentricity*sin(latitude))  \   \
+         * row =   Floor| 128*2  |  1 -  ---------------------------------------------------------------------  |   |
+         *              \         \                        Math.PI                                              /   / 
+         *              
+         *  2^n     = the number of tiles at a particular zoom level
+         * latitude = in radians 
+         * atanh    = inverse hyperbolic tangent
+         */
+        int tileY = (int) Math.floor(128*numberOfTiles*(1-((atanh(Math.sin(latitudeRadians))-Eccentricity*atanh(Eccentricity*Math.sin(latitudeRadians)))/(Math.PI))));
+         
+        /*
+         * The formula calculates a row and column that is of the UpperLeft origin, this will transform the origin to the one it is asking for
+         */
+        Coordinate<Integer> tileCoordinate = TileOrigin.UpperLeft.transform(tileOrigin, new Coordinate<>(tileX, tileY), dimensions);
 
-        // TODO
-        throw new RuntimeException("Method not implemented");
+        return tileCoordinate;
     }
 
     @Override
@@ -135,20 +169,32 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
+        //Formula uses Upper Left need to convert the Tile coordinate to the expected values
+        Coordinate<Integer> tileCoordinate = tileOrigin.transform(TileOrigin.UpperLeft, new Coordinate<>(column,row), dimensions);
 
-        // TODO
-        throw new RuntimeException("Method not implemented");
-
-        //final double tileSubdivision = Math.pow(2.0, absoluteTileCoordinate.getZoomLevel());
-        //
-        //final Double metersX = ((absoluteTileCoordinate.getX() * this.scaledEarthEquatorialRadius) / tileSubdivision) - (this.scaledEarthEquatorialRadius / 2.0);
-        //
-        //final double metersY = ;
-        //
-        //return new CrsCoordinate(metersY,
-        //                             metersX,
-        //                             absoluteTileCoordinate.getZoomLevel(),
-        //                             this.getCoordinateReferenceSystem());
+        final int numberOfTiles = dimensions.getHeight()*dimensions.getWidth();
+        /*
+         *                      / 2*row + 1      \
+         * longitude = Math.PI |-----------  - 1  |
+         *                      \ 256* 2^n       /
+         *                    
+         * 2^n = number of tiles at the particular zoom level
+         * row = is numbered in Lower Left Origin
+         */
+      //TODO formulas have yet to be tested.  Unsure of their validity. 
+//        possibly use over the 256 and use dimensions width over number of tiles
+//        final double tileCrsHeight = bounds.getHeight() / dimensions.getHeight();
+//        final double tileCrsWidth  = bounds.getWidth()  / dimensions.getWidth();
+        final double longitudeRadians = Math.PI*(((2*tileCoordinate.getX() + 1)/(256*numberOfTiles))-1);
+        
+        final double latitudeRadians  = inverseMappingConversionRowtoLatitude(tileCoordinate.getY(), numberOfTiles);
+        
+        final Coordinate<Double> geodeticCoordinate = new Coordinate<>(Math.toDegrees(longitudeRadians), Math.toDegrees(latitudeRadians));
+        final Coordinate<Double> metersCoordinate   = fromGlobalGeodetic(geodeticCoordinate);
+        
+        return new CrsCoordinate(metersCoordinate.getX(),
+                                 metersCoordinate.getY(),
+                                 this.getCoordinateReferenceSystem());
     }
 
     @Override
@@ -249,7 +295,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      */
     private static double toLatitude(final double meters)
     {
-        return Math.toDegrees(inverseMappingConversion(meters));
+        return Math.toDegrees(inverseMappingConversionMetersToLatitude(meters));
     }
 
     /**
@@ -298,7 +344,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      * @param meters for the latitude in WGS 3395
      * @return latitude in radians
      */
-    private static double inverseMappingConversion(final double meters)
+    private static double inverseMappingConversionMetersToLatitude(final double meters)
     {
         // s(1) calculation set to previous
         double previous = Math.tanh(meters/UnscaledEarthEquatorialRadius);
@@ -322,6 +368,68 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         final double yRadians = Math.asin(next);
 
         return yRadians;
+    }
+    
+   /** Converts a row tile Coordinate (with a {@link TileOrigin#LowerLeft}) to the latitude in radians using the inverse
+    * mapping equation
+    * <p>
+    * <h1><b>Formula for latitude: </b></h1><p>
+    * <body><pre>Latitude(in radian) ={@link Math#asin(double)}(limit s(1), s(2), s(3)...)</body></pre>
+    * <h2><b>where</b></h2>
+    * <h3><b>Recursion formula:</b></h3>
+    *         <body>
+    *         <pre>
+    *                       /         /          2*row  + 1    \  \
+    *         s(1)   = tanh| {@link Math#PI} |   1   -  -------------   |  |
+    *                       \         \           256*2^n      /  /
+    *         </pre>
+    *         <pre>
+    *         
+    *         P(k) =       ({@link Eccentricity}*{@link inverseHyperbolicTangent}({@link Eccentricity}*s(k)))
+    *                {@link Math#E}^
+    *                
+    *          for k = 1,2,3....
+    *         </pre>
+    *         <pre>
+    *                     [1 + s(1)]*P(k)^2   -  [ 1 - s(1)]
+    *          s(k+1) =   ---------------------------------- 
+    *                     [1 + s(1)]*P(k)^2   +  [ 1 - s(1)]
+    *                     
+    *          for k = 1, 2, 3... 
+    *          </pre>
+    *          </body>
+    *         <p>
+    * 
+     * @param row the vertical integer value that has a TileOrigin of UpperLeft
+     * @param numberOfTiles the number of tiles at this zoom level that contains the row given
+     * @return the latitude in radians for that given row value
+     */
+    private static double inverseMappingConversionRowtoLatitude(int row, int numberOfTiles)
+    {
+        //calculate s(1)
+        double firstElement = Math.tanh(Math.PI*(1 - ((2*row+1)/(256*numberOfTiles))));
+        //arbitrary value to initialize the difference
+        double difference = Integer.MAX_VALUE;
+        //Start with k = 1
+        double kElement = firstElement;
+        //summation
+        double sum  = firstElement;
+        
+        for(int k = 1; Math.abs(difference) >= .000000001 && k <= 1000; k++)
+        {
+             double PofK   = Math.exp(Eccentricity*atanh(Math.E*kElement));
+             double first         = (1 + firstElement)*Math.pow(PofK, 2);
+             double second        =  1 - firstElement;
+             double kPlus1Element = (first - second)/(first + second);
+             //difference of previous sum and the sum with the next element
+             //see if they converge at a certian value
+             difference = sum - (sum + kPlus1Element);
+             sum += kPlus1Element;//increment the sum
+             kElement             = kPlus1Element; //set the k element to the next
+        }
+            
+            
+        return Math.asin(kElement);
     }
 
     /**
