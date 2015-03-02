@@ -3,19 +3,21 @@ package com.rgi.g2t;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import javax.activation.MimeType;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.gdal.gdal.Band;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.Driver;
 import org.gdal.gdal.gdal;
@@ -28,8 +30,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import com.rgi.common.BoundingBox;
+import com.rgi.common.Range;
+import com.rgi.common.coordinate.Coordinate;
+import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.task.Settings;
+import com.rgi.common.tile.scheme.TileScheme;
+import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
 
 /**
@@ -39,6 +47,7 @@ import com.rgi.common.tile.store.TileStoreWriter;
 public class GdalTileJob implements Runnable {
 	
 	private final TileStoreWriter writer;
+	private final TileScheme tileScheme;
 	private final CrsProfile crsProfile;
 	private final Path location;
 	private final MimeType imageOutputFormat;
@@ -50,13 +59,23 @@ public class GdalTileJob implements Runnable {
 	private final int gdalGeoQuerySize = 4 * tileSize;
 	private final TemporaryFolder tempFolder = new TemporaryFolder();
 	
+	/**
+	 * @param writer
+	 * @param tileScheme 
+	 * @param crsProfile
+	 * @param location
+	 * @param imageOutputFormat
+	 * @param settings
+	 */
 	public GdalTileJob(final TileStoreWriter writer,
+					   final TileScheme tileScheme,
 					   final CrsProfile crsProfile,
 					   final Path location,
 					   final MimeType imageOutputFormat,
 					   final Settings settings)
 	{
 		this.writer = writer;
+		this.tileScheme = tileScheme;
 		this.crsProfile = crsProfile;
 		this.location = location;
 		this.imageOutputFormat = imageOutputFormat;
@@ -70,6 +89,7 @@ public class GdalTileJob implements Runnable {
 		{
 			final Dataset inputDataset = this.openInput();
 			final Dataset outputDataset = this.openOutput(inputDataset, this.openInputSrs(inputDataset));
+			
 			//this.generateBaseTiles(dataset, tileStoreWriter);
 		}
 		catch(final TilingException ex1)
@@ -161,7 +181,7 @@ public class GdalTileJob implements Runnable {
 		{
 			Double[] noDataValue = new Double[1];
 			dataset.GetRasterBand(band).GetNoDataValue(noDataValue);
-			if (noDataValue != null)
+			if (noDataValue.length != 0 && noDataValue != null)
 			{
 				// Assumes only one value coming back from the band
 				noDataValues[band-1] = noDataValue[0];
@@ -234,17 +254,13 @@ public class GdalTileJob implements Runnable {
 					dstNoDataImag.setTextContent("0");
 					bandMapping.appendChild(dstNoDataImag);
 				});
-				// Write the tempfile changes to disk
-				Transformer transformer = TransformerFactory.newInstance().newTransformer();
-				// Create a tempfile
-				StreamResult result = new StreamResult(tempFile);
-				transformer.transform(new DOMSource(vrtXml), result);
+				this.saveXmlToDisk(vrtXml, tempFile);
 				// Open tempfile using gdal.Open() and return
 				final Dataset resultDataset = gdal.Open(tempFile.toPath().toString());
 				resultDataset.SetMetadataItem("NODATA_VALUES", String.format("{0} {1} {2}", noDataValues[0], noDataValues[1], noDataValues[2]));
 				return resultDataset;
 			}
-			catch (SAXException | IOException | ParserConfigurationException | TransformerException ex1)
+			catch (SAXException | IOException | ParserConfigurationException ex1)
 			{
 				ex1.printStackTrace();
 				throw new TilingException("Could not correct output dataset NODATA values.");
@@ -253,7 +269,7 @@ public class GdalTileJob implements Runnable {
 		return this.correctNoDataMono(dataset);
 	}
 	
-	private Dataset correctNoDataMono(final Dataset dataset)
+	private Dataset correctNoDataMono(final Dataset dataset) throws TilingException
 	{
 		// Correction of AutoCreateWarpedVRT images for Mono and RGB files without NODATA
 		// Equivalent to gdalwarp -dstapha
@@ -266,19 +282,143 @@ public class GdalTileJob implements Runnable {
 			final File tempFile = this.tempFolder.newFile();
 			dataset.GetDriver().CreateCopy(tempFile.toPath().toString(), dataset);
 			final Document vrtXml = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(tempFile.toPath().toString());
+			// Create a new raster band element for the alpha band
+			final Element vrtRasterBand = vrtXml.createElement("VRTRasterBand");
+			vrtRasterBand.setAttribute("dataType", "Byte");
+			vrtRasterBand.setAttribute("band", String.format("{0}", dataset.GetRasterCount()+1));
+			vrtRasterBand.setAttribute("subClass", "VRTWarpedRasterBand");
+			// Create the sub element for vrtRasterBand
+			final Element colorInterp = vrtXml.createElement("ColorInterp");
+			colorInterp.setTextContent("Alpha");
+			vrtRasterBand.appendChild(colorInterp);
+			vrtXml.appendChild(vrtRasterBand);
+			// Get the GDAL Warp options node
+			final Node gdalWarpOptions = vrtXml.getElementsByTagName("GDALWarpOptions").item(0);
+			// Set the init dest option
+			final Element initDestOption = vrtXml.createElement("Option");
+			initDestOption.setAttribute("name", "INIT_DEST");
+			initDestOption.setTextContent("0"); //TODO: Ensure this omits quotation marks
+			gdalWarpOptions.appendChild(initDestOption);
+			// Save xml
+			this.saveXmlToDisk(vrtXml, tempFile);
+			// Open tempfile using gdal.Open() and return
+			final Dataset resultDataset = gdal.Open(tempFile.toPath().toString());
+			return resultDataset;
 		}
-		catch (SAXException | IOException | ParserConfigurationException | TransformerException ex1)
+		catch (SAXException | IOException | ParserConfigurationException ex1)
 		{
-			
+			ex1.printStackTrace();
+			throw new TilingException("Error encountered adding XML to VRT.");
 		}
 	}
 	
-	private void generateBaseTiles(final Dataset dataset, final TileStoreWriter tileStoreWriter)
+	private void saveXmlToDisk(final Document xml, final File location) throws TilingException
+	{
+		// Write the tempfile changes to disk
+		try
+		{
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			// Create a tempfile
+			StreamResult result = new StreamResult(location);
+			// Apply the transformer
+			transformer.transform(new DOMSource(xml), result);
+		}
+		catch(TransformerException ex1)
+		{
+			ex1.printStackTrace();
+			throw new TilingException("Error saving modified VRT to disk.");
+		}
+	}
+	
+	private Band getAlphaBand(final Dataset dataset)
+	{
+		return dataset.GetRasterBand(1).GetMaskBand();
+	}
+	
+	private int getRasterBandCount(final Dataset dataset, final Band alphaBand)
+	{
+		// TODO: The bitwise calc functionality needs to be verified from the python functionality
+		final boolean bitwiseAlpha = (alphaBand.GetMaskFlags() & gdalconstConstants.GMF_ALPHA) != 0;
+		if (bitwiseAlpha || dataset.GetRasterCount() == 4 || dataset.GetRasterCount() == 2)
+		{
+			return dataset.GetRasterCount() + 1;
+		}
+		return dataset.GetRasterCount();
+	}
+	
+	private BoundingBox getOutputBounds(final Dataset dataset) throws TilingException
+	{
+		final double[] outputGeotransform = dataset.GetGeoTransform();
+		// Report error in case rotation/skew is in geotransform (only for raster profile)
+		if (outputGeotransform[2] != 0 && outputGeotransform[4] != 0)
+		{
+			throw new TilingException("Georeference of the raster contains rotation or skew. " +
+					"Such raster is not supported. Please use gdalwarp first.");
+		}
+		final double minX = outputGeotransform[0];
+		final double maxX = outputGeotransform[0] + dataset.GetRasterXSize() * outputGeotransform[1];
+		final double maxY = outputGeotransform[3];
+		final double minY = outputGeotransform[3] - dataset.GetRasterYSize() * outputGeotransform[1];
+		return new BoundingBox(minX, minY, maxX, maxY);
+	}
+	
+	private List<Range<Coordinate<Integer>>> calculateTileRangesForAllZooms(final BoundingBox outputBounds)
+	{
+		final List<Range<Coordinate<Integer>>> tilesRangeByZoom = new ArrayList<Range<Coordinate<Integer>>>();
+		// Get the crs coordinates of the output bounds
+		final CrsCoordinate topLeft = new CrsCoordinate(outputBounds.getTopLeft(), this.crsProfile.getCoordinateReferenceSystem());
+		final CrsCoordinate bottomRight = new CrsCoordinate(outputBounds.getBottomRight(), this.crsProfile.getCoordinateReferenceSystem());
+		// Get the tile coordinates of the bounding box for each zoom level
+		IntStream.range(0, 32).forEach(zoom ->
+		{
+			final Coordinate<Integer> topLeftTile = this.crsProfile.crsToTileCoordinate(topLeft, this.crsProfile.getBounds(), this.tileScheme.dimensions(zoom), this.writer.getTileOrigin());
+			final Coordinate<Integer> bottomRightTile = this.crsProfile.crsToTileCoordinate(bottomRight, this.crsProfile.getBounds(), this.tileScheme.dimensions(zoom), this.writer.getTileOrigin());
+			tilesRangeByZoom.add(zoom, new Range<Coordinate<Integer>>(topLeftTile, bottomRightTile));
+		});
+		return tilesRangeByZoom;
+	}
+	
+	private int minimalZoomForPixelSize(final Dataset dataset, final BoundingBox outputBounds, final List<Range<Coordinate<Integer>>> tileRanges) throws TileStoreException
+	{
+		final double pixelSize = dataset.GetGeoTransform()[1];
+		final double zoomPixelSize = (pixelSize * Math.max(dataset.GetRasterXSize(), dataset.GetRasterYSize()) / this.tileSize);
+		int[] zooms = IntStream.range(0, 31).toArray();
+		for(int zoom : zooms)
+		{
+			// Get the tile coordinates of the top-left and bottom-right tiles
+			final Coordinate<Integer> topLeftTile = this.writer.crsToTileCoordinate(new CrsCoordinate(outputBounds.getTopLeft(), this.crsProfile.getCoordinateReferenceSystem()), zoom);
+			final Coordinate<Integer> bottomRightTile = this.writer.crsToTileCoordinate(new CrsCoordinate(outputBounds.getBottomRight(), this.crsProfile.getCoordinateReferenceSystem()), zoom);
+			// Convert tile coordinates to crs coordinates: this will give us correct units-of-measure-per-pixel
+			// This is tile data *plus* padding to the full tile grid
+			final CrsCoordinate topLeftCrsFull = this.crsProfile.tileToCrsCoordinate(topLeftTile.getY(),
+																					 topLeftTile.getX(),
+																					 this.crsProfile.getBounds(),
+																					 this.tileScheme.dimensions(zoom),
+																					 this.writer.getTileOrigin());
+			final CrsCoordinate bottomRightCrsFull = this.crsProfile.tileToCrsCoordinate(bottomRightTile.getY(),
+																					 bottomRightTile.getX(),
+																					 this.crsProfile.getBounds(),
+																					 this.tileScheme.dimensions(zoom),
+																					 this.writer.getTileOrigin());
+			final double width = (new BoundingBox(topLeftCrsFull.getX(), bottomRightCrsFull.getY(), bottomRightCrsFull.getX(), topLeftCrsFull.getY())).getWidth();
+			// get how many tiles wide this zoom will be so that number can be multiplied by tile size
+			int zoomTilesWide = tileRanges.get(zoom).getMaximum().getX() - tileRanges.get(zoom).getMinimum().getX() + 1;
+			double zoomResolution = width / (zoomTilesWide * this.tileSize);
+			if (zoomPixelSize > zoomResolution)
+			{
+				return zoom == 0 ? 0 : zoom - 1;
+			}
+		}
+		// In the worst case, zoom level zero will have only one tile...
+		return 0;
+	}
+	
+	private void generateBaseTiles(final Dataset dataset)
 	{
 		// TODO;
 	}
 	
-	private void generateOverviewTiles(final TileStoreWriter tileStoreWriter)
+	private void generateOverviewTiles()
 	{
 		// TODO:
 	}
