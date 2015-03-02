@@ -41,6 +41,7 @@ import com.rgi.common.task.Settings.Profile;
 import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
+import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.tile.store.tms.TmsReader;
@@ -156,7 +157,8 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor
                 final TileStoreWriter tileWriter = new TmsWriter(crsProfile, outputFolder, new MimeType("image", imageFormat));
                 final TileStoreReader tileReader = new TmsReader(crsProfile, outputFolder);
 
-                final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createTileJob(file, tileReader, tileWriter, opts, this))));
+                //final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createTileJob(file, tileReader, tileWriter, opts, this))));
+                final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createGdalTileJob(tileWriter, tileReader.getTileScheme(), crsProfile, outputFolder, new MimeType("image", imageFormat), opts))));
                 jobWaiter.setDaemon(true);
                 jobWaiter.start();
             }
@@ -178,6 +180,16 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor
                            tileStoreWriter,
                            opts,
                            monitor);
+    }
+    
+    private static Runnable createGdalTileJob(final TileStoreWriter writer,
+    										  final TileScheme tileScheme,
+    										  final CrsProfile crsProfile,
+    										  final Path location,
+    										  final MimeType imageOutputFormat,
+    										  final Settings settings)
+    {
+    	return new GdalTileJob(writer, tileScheme, crsProfile, location, imageOutputFormat, settings);
     }
 
     private class JobWaiter implements Runnable
