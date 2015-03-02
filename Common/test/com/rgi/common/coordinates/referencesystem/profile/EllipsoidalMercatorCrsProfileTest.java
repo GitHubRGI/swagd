@@ -67,10 +67,11 @@ public class EllipsoidalMercatorCrsProfileTest
     public void tileToCrsCoordinateBackToTileCoordinate()
     {
         EllipsoidalMercatorCrsProfile ellipsoidalCrs = new EllipsoidalMercatorCrsProfile();
-        Coordinate<Integer> tileCoordinateExpected = new Coordinate<>(1,5);
-        CrsCoordinate crsCoordinate = ellipsoidalCrs.tileToCrsCoordinate(tileCoordinateExpected.getX(), tileCoordinateExpected.getY(), ellipsoidalCrs.getBounds(), new TileMatrixDimensions(2^3, 2^3), TileOrigin.LowerLeft);
+        TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(2^10, 2^19);
+        Coordinate<Integer> tileCoordinateExpected = new Coordinate<>(15,17);
+        CrsCoordinate crsCoordinate = ellipsoidalCrs.tileToCrsCoordinate(tileCoordinateExpected.getX(), tileCoordinateExpected.getY(), ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.UpperLeft);
         System.out.println(String.format("x: %f, y: %f", crsCoordinate.getX(),  crsCoordinate.getY()));
-        Coordinate<Integer> tileCoordinateReturned = ellipsoidalCrs.crsToTileCoordinate(crsCoordinate,  ellipsoidalCrs.getBounds(), new TileMatrixDimensions(2^3, 2^3), TileOrigin.LowerLeft);
+        Coordinate<Integer> tileCoordinateReturned = ellipsoidalCrs.crsToTileCoordinate(crsCoordinate,  ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.UpperLeft);
         
         assertEquals(tileCoordinateExpected, tileCoordinateReturned);
     }
