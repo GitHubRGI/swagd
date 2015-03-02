@@ -24,12 +24,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
 import com.rgi.common.task.MonitorableTask;
-import com.rgi.common.task.Settings;
-import com.rgi.common.task.Settings.Setting;
 import com.rgi.common.task.Task;
 import com.rgi.common.task.TaskFactory;
 import com.rgi.packager.Packager;
 import com.rgi.suite.ApplicationContext.Window;
+import com.rgi.suite.Settings.Setting;
 import com.rgi.view.Viewer;
 
 /**

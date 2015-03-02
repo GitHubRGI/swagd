@@ -62,9 +62,9 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
      * @param location The file that should be viewed in the map viewer.
      * @throws TileStoreException Thrown when the file is not supported for viewing.
      */
-    public MapViewWindow(final File location) throws TileStoreException
+    public MapViewWindow(final File... files) throws TileStoreException
     {
-        this("Tile Viewer", location);
+        this("Tile Viewer", files);
     }
 
     /**
@@ -72,9 +72,14 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
      * @param location The file that should be viewed in the map viewer.
      * @throws TileStoreException Thrown when the file is not supported for viewing.
      */
-    public MapViewWindow(final String title, final File location) throws TileStoreException
+    public MapViewWindow(final String title, final File... files) throws TileStoreException
     {
         super(title);
+
+        if(files == null || files.length == 0)
+        {
+            throw new IllegalArgumentException("No file or files selected");
+        }
 
         this.treeMap = new JMapViewerTree("Visualized tile set");
 
@@ -97,7 +102,9 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         final JPanel panel = new JPanel();
         this.add(panel, BorderLayout.NORTH);
 
-        final TileStoreReader tileStore = this.pickTileStore(location);
+        // TODO multi-file display
+
+        final TileStoreReader tileStore = this.pickTileStore(files[0]);
 
 <<<<<<< HEAD
         //this.treeMap.getViewer().setTileSource(new TileStoreTileSource(tileStore)); // TODO - investigate which method is causing the viewer to not work

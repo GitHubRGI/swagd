@@ -24,8 +24,10 @@ import java.util.Set;
 import javax.activation.MimeType;
 
 import com.rgi.common.coordinate.Coordinate;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileScheme;
 
 /**
  * Interface for writing tiles to a store
@@ -89,6 +91,16 @@ public interface TileStoreWriter
      * @return A set of {@link MimeType}s that this type of tile store writer supports
      */
     public Set<MimeType> getSupportedImageFormats();
+
+    /**
+     * @return returns the tile store's coordinate reference system
+     */
+    public CoordinateReferenceSystem getCoordinateReferenceSystem();
+
+    /**
+     * @return Tile numbering scheme used by this tile store
+     */
+    public TileScheme getTileScheme();
 
     /**
      * @return Returns the tile origin

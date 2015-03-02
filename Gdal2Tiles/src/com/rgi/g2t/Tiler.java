@@ -18,8 +18,8 @@
 
 package com.rgi.g2t;
 
+import java.awt.Color;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -29,34 +29,38 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
-
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.task.AbstractTask;
+import com.rgi.common.Dimensions;
 import com.rgi.common.task.MonitorableTask;
-import com.rgi.common.task.Settings;
-import com.rgi.common.task.Settings.Profile;
-import com.rgi.common.task.Settings.Setting;
-import com.rgi.common.task.TaskFactory;
 import com.rgi.common.task.TaskMonitor;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
-import com.rgi.common.tile.store.tms.TmsReader;
-import com.rgi.common.tile.store.tms.TmsWriter;
 
-public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor
+public class Tiler implements MonitorableTask, TaskMonitor
 {
     ExecutorService executor  = Executors.newSingleThreadExecutor();
     private int     jobTotal  = 0;
     private int     jobCount  = 0;
     private int     completed = 0;
 
-    public Tiler(final TaskFactory factory)
+    final File[]              files;
+    final TileStoreWriter     tileWriter;
+    final TileStoreReader     tileReader;
+    final Dimensions<Integer> tileDimensions;
+    final Color               noDataColor;
+
+    public Tiler(final File[]              files,
+                 final TileStoreWriter     tileWriter,
+                 final TileStoreReader     tileReader,
+                 final Dimensions<Integer> tileDimensions,
+                 final Color               noDataColor)
     {
-        super(factory);
+        this.files          = files;
+        this.tileReader     = tileReader;
+        this.tileWriter     = tileWriter;
+        this.tileDimensions = tileDimensions;
+        this.noDataColor    = noDataColor;
+
         sanityCheckGdalInstallation();
     }
 
@@ -84,16 +88,16 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor
 
     private static void sanityCheckGdalInstallation()
     {
-    	// GDAL_DATA needs to be a valid path
-    	if (System.getenv("GDAL_DATA") == null)
-    	{
-    		System.out.println("Tiling will not work without GDAL_DATA env var.");
-    	}
-    	// Get the system path
-    	//String paths = System.getenv("PATH");
-    	// Parse the path entries
-    	// Check each path entry for the required dll's/so's
-    	// Throw an error if any of the required ones are missing
+        // GDAL_DATA needs to be a valid path
+        if(System.getenv("GDAL_DATA") == null)
+        {
+            throw new RuntimeException("Tiling will not work without GDAL_DATA environment variable.");
+        }
+        // Get the system path
+        //String paths = System.getenv("PATH");
+        // Parse the path entries
+        // Check each path entry for the required dll's/so's
+        // Throw an error if any of the required ones are missing
     }
 
     private void fireProgressUpdate()
@@ -128,68 +132,39 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor
         }
     }
 
-    @Override
-    public void execute(final Settings opts)
+    public void execute()
     {
-        final Profile profile = Settings.Profile.valueOf(opts.get(Setting.CrsProfile));
-        // split the job up into individual files, process those files one at a time
-        final File[] files = opts.getFiles(Setting.FileSelection);
-
-        if(files == null)
+        for(final File file : this.files)
         {
-            return;
-        }
+//            try
+//            {
+//                final String imageFormat = Settings.Type.valueOf(opts.get(Setting.TileType)).name();
+//                final Path outputFolder = new File(opts.get(Setting.TileFolder)).toPath();
+//
+//                if(!outputFolder.toFile().exists())
+//                {
+//                    outputFolder.toFile().mkdir();
+//                }
+//
+//
+//                final TileStoreWriter tileWriter = new TmsWriter(crsProfile, outputFolder, new MimeType("image", imageFormat));
+//                final TileStoreReader tileReader = new TmsReader(crsProfile, outputFolder);
 
-        for(final File file : files)
-        {
-            try
-            {
-                final String imageFormat = Settings.Type.valueOf(opts.get(Setting.TileType)).name();
-                final Path outputFolder = new File(opts.get(Setting.TileFolder)).toPath();
+                final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(new TileJob(file,
+                                                                                                   this.tileReader,
+                                                                                                   this.tileWriter,
+                                                                                                   this.tileDimensions,
+                                                                                                   this.noDataColor,
+                                                                                                   this))));
 
-                if(!outputFolder.toFile().exists())
-                {
-                    outputFolder.toFile().mkdir();
-                }
-
-                final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", profile.getID());
-
-                final TileStoreWriter tileWriter = new TmsWriter(crsProfile, outputFolder, new MimeType("image", imageFormat));
-                final TileStoreReader tileReader = new TmsReader(crsProfile, outputFolder);
-
-                //final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createTileJob(file, tileReader, tileWriter, opts, this))));
-                final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createGdalTileJob(tileWriter, tileReader.getTileScheme(), crsProfile, outputFolder, new MimeType("image", imageFormat), opts))));
                 jobWaiter.setDaemon(true);
                 jobWaiter.start();
-            }
-            catch(final MimeTypeParseException ex)
-            {
-                System.err.println("Unable to create tile store for input file " + file.getName() + " " + ex.getMessage());
-            }
+//            }
+//            catch(final MimeTypeParseException ex)
+//            {
+//                System.err.println("Unable to create tile store for input file " + file.getName() + " " + ex.getMessage());
+//            }
         }
-    }
-
-    private static Runnable createTileJob(final File            file,
-                                          final TileStoreReader tileStoreReader,
-                                          final TileStoreWriter tileStoreWriter,
-                                          final Settings        opts,
-                                          final TaskMonitor     monitor)
-    {
-        return new TileJob(file,
-                           tileStoreReader,
-                           tileStoreWriter,
-                           opts,
-                           monitor);
-    }
-    
-    private static Runnable createGdalTileJob(final TileStoreWriter writer,
-    										  final TileScheme tileScheme,
-    										  final CrsProfile crsProfile,
-    										  final Path location,
-    										  final MimeType imageOutputFormat,
-    										  final Settings settings)
-    {
-    	return new GdalTileJob(writer, tileScheme, crsProfile, location, imageOutputFormat, settings);
     }
 
     private class JobWaiter implements Runnable

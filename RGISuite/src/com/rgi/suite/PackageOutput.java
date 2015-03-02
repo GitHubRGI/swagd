@@ -16,11 +16,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 
-import com.rgi.common.task.Settings;
-import com.rgi.common.task.Settings.Profile;
-import com.rgi.common.task.Settings.Setting;
-import com.rgi.common.task.Settings.Type;
 import com.rgi.suite.ApplicationContext.Window;
+import com.rgi.suite.Settings.Profile;
+import com.rgi.suite.Settings.Setting;
+import com.rgi.suite.Settings.Type;
 
 public class PackageOutput extends AbstractWindow {
 
