@@ -21,7 +21,7 @@ package com.rgi.common.task;
 @SuppressWarnings("javadoc")
 public interface Task
 {
-    public void execute(Settings opts);
+    public void execute();
 
     public TaskFactory getFactory();
 

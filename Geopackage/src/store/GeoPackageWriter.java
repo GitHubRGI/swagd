@@ -268,6 +268,18 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
     }
 
     @Override
+    public CoordinateReferenceSystem getCoordinateReferenceSystem()
+    {
+        return this.crsProfile.getCoordinateReferenceSystem();
+    }
+
+    @Override
+    public TileScheme getTileScheme()
+    {
+        return this.tileScheme;
+    }
+
+    @Override
     public TileOrigin getTileOrigin()
     {
         return GeoPackageTiles.Origin;

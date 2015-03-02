@@ -22,45 +22,41 @@ import java.io.File;
 
 import javax.swing.JFrame;
 
-import com.rgi.common.task.AbstractTask;
-import com.rgi.common.task.Settings;
-import com.rgi.common.task.TaskFactory;
-import com.rgi.common.task.Settings.Setting;
-
 /**
- * View a tile store or stores within a map viewer.
- * 
- * @author lander
+ * View a tile store or stores within a map viewer
+ *
+ * @author Steven D. Lander
+ * @author Luke D. Lambert
  */
-public class Viewer extends AbstractTask {
+public class Viewer
+{
+    /**
+     * Constructor
+     *
+     */
+    public Viewer(final File[] files)
+    {
+        if(files == null)
+        {
+            throw new IllegalArgumentException("Array of files may not be null");
+        }
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param factory The ViewerFactory that spawned this viewer.
-	 */
-	public Viewer(TaskFactory factory) {
-		super(factory);
-	}
+        this.files = files;
+    }
 
-	@Override
-	public void execute(Settings opts) {
-		// Probe the chosen file or files for the type of tile store
-		// Initialize a tile loader object on the file chosen
-		// Create a new JFrame window with a MapViewWindow, pointing
-		// to the appropriate loader
-		final File[] files = opts.getFiles(Setting.FileSelection);
-		if (files.length == 1) {
-			// Single selection
-			try {
-				JFrame frame = new MapViewWindow(files[0]);
-				frame.pack();
-				frame.setVisible(true);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		} else {
-			// Multi-selection
-		}
-	}
+    public void execute()
+    {
+        try
+        {
+            final JFrame frame = new MapViewWindow(this.files);
+            frame.pack();
+            frame.setVisible(true);
+        }
+        catch(final Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private final File[] files;
 }

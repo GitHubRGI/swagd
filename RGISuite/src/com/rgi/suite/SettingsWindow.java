@@ -38,13 +38,12 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
-import com.rgi.common.task.Settings;
-import com.rgi.common.task.Settings.Profile;
-import com.rgi.common.task.Settings.Setting;
-import com.rgi.common.task.Settings.Type;
 import com.rgi.common.task.Task;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.suite.ApplicationContext.Window;
+import com.rgi.suite.Settings.Profile;
+import com.rgi.suite.Settings.Setting;
+import com.rgi.suite.Settings.Type;
 
 public class SettingsWindow extends AbstractWindow {
     private JTextField tileOutputPathField;

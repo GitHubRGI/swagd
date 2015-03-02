@@ -18,6 +18,8 @@
 
 package com.rgi.suite;
 
+import java.io.IOException;
+
 import javax.swing.SwingUtilities;
 
 import com.rgi.suite.ApplicationContext.Window;
@@ -34,18 +36,25 @@ public class GeoSuite
 
     private GeoSuite()
     {
-        SwingUtilities.invokeLater(() -> { this.context = new ApplicationContext();
+        SwingUtilities.invokeLater(() -> { try
+                                           {
+                                               this.context = new ApplicationContext();
 
-                                           this.context.addWindow(Window.MAIN,        new MainWindow       (this.context)); // This has to be first.
-                                           this.context.addWindow(Window.DONE,        new DoneWindow       (this.context));
-                                           this.context.addWindow(Window.FILECHOOSER, new FileChooserWindow(this.context));
-                                           this.context.addWindow(Window.PACKAGEINPUT, new PackageInput	   (this.context));
-                                           this.context.addWindow(Window.PACKAGEOUTPUT, new PackageOutput	   (this.context));
-                                           this.context.addWindow(Window.PROGRESS,    new ProgressWindow   (this.context));
-                                           this.context.addWindow(Window.SETTINGS,    new SettingsWindow   (this.context));
-                                           this.context.addWindow(Window.WINDOWERROR, new ErrorWindow      (this.context));
+                                               this.context.addWindow(Window.MAIN,        new MainWindow       (this.context)); // This has to be first.
+                                               this.context.addWindow(Window.DONE,        new DoneWindow       (this.context));
+                                               this.context.addWindow(Window.FILECHOOSER, new FileChooserWindow(this.context));
+                                               this.context.addWindow(Window.PACKAGEINPUT, new PackageInput	   (this.context));
+                                               this.context.addWindow(Window.PACKAGEOUTPUT, new PackageOutput	   (this.context));
+                                               this.context.addWindow(Window.PROGRESS,    new ProgressWindow   (this.context));
+                                               this.context.addWindow(Window.SETTINGS,    new SettingsWindow   (this.context));
+                                               this.context.addWindow(Window.WINDOWERROR, new ErrorWindow      (this.context));
 
-                                           this.context.go();
+                                               this.context.go();
+                                           }
+                                           catch(final IOException ex)
+                                           {
+                                               ex.printStackTrace();
+                                           }
                                          });
     }
 

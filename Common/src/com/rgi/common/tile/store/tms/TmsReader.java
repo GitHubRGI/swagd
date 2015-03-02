@@ -44,7 +44,6 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
 import com.rgi.common.Range;
 import com.rgi.common.coordinate.Coordinate;
-import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
@@ -184,12 +183,6 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     public Stream<TileHandle> stream(final int zoomLevel)
     {
         return this.stream(tmsPath(this.location, zoomLevel));
-    }
-
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem()
-    {
-        return this.profile.getCoordinateReferenceSystem();
     }
 
     @Override

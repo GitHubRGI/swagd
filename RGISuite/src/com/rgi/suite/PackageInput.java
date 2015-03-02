@@ -11,9 +11,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import com.rgi.common.task.Settings;
-import com.rgi.common.task.Settings.Setting;
 import com.rgi.suite.ApplicationContext.Window;
+import com.rgi.suite.Settings.Setting;
 
 /**
  * Gather additional information during Packaging workflow.

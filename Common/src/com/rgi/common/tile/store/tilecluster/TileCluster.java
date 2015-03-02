@@ -22,6 +22,7 @@ import java.io.File;
 import java.nio.file.Path;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
@@ -104,6 +105,16 @@ abstract class TileCluster
     public TileOrigin getTileOrigin()
     {
         return TileCluster.Origin;
+    }
+
+    public TileScheme getTileScheme()
+    {
+        return this.tileScheme;
+    }
+
+    public CoordinateReferenceSystem getCoordinateReferenceSystem()
+    {
+        return this.crsProfile.getCoordinateReferenceSystem();
     }
 
     protected ClusterAddress getClusterAddress(final int column, final int row, final int zoomLevel)

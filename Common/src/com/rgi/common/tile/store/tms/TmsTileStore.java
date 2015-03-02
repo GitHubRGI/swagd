@@ -20,6 +20,7 @@ package com.rgi.common.tile.store.tms;
 
 import java.nio.file.Path;
 
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
@@ -93,6 +94,11 @@ abstract class TmsTileStore
     public TileScheme getTileScheme()
     {
         return this.tileScheme;
+    }
+
+    public CoordinateReferenceSystem getCoordinateReferenceSystem()
+    {
+        return this.profile.getCoordinateReferenceSystem();
     }
 
     protected final CrsProfile profile;

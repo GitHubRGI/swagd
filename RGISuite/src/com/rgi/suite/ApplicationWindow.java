@@ -20,8 +20,13 @@ package com.rgi.suite;
 
 import javax.swing.JPanel;
 
-public interface ApplicationWindow {
-  public void activate();
-  public JPanel getContentPane();
-  public JPanel getNavigationPane();
+public interface ApplicationWindow
+{
+    public void activate();
+
+    public JPanel getContentPane();
+
+    public JPanel getNavigationPane();
+
+    public String getName();
 }

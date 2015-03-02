@@ -21,12 +21,14 @@ package com.rgi.suite;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
+import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.swing.JFrame;
@@ -34,76 +36,34 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
-import com.rgi.common.task.Settings;
 import com.rgi.common.task.Task;
 
 /**
  * Extend JFrame functionality for UI elements of SWAGD.
- * 
+ *
  * @author Duff Means
  * @author Steven D. Lander
+ * @author Luke D. Lambert
  */
 public class ApplicationContext extends JFrame
 {
-
     private static final long serialVersionUID = -4996528794673998019L;
     private Task              task;
-
-    /**
-     * Enumerate UI windows.
-     * 
-     * @author Duff Means
-     * @author Steven D. Lander
-     */
-    public enum Window
-    {
-        /**
-         * com.rgi.suite.DoneWindow.java
-         */
-        DONE,
-        /**
-         * com.rgi.suite.FileChooserWindow.java
-         */
-        FILECHOOSER,
-        /**
-         * com.rgi.suite.MainWindow.java
-         */
-        MAIN,
-        /**
-         * com.rgi.suite.PackageInput.java
-         */
-        PACKAGEINPUT,
-        /**
-         * com.rgi.suite.PackageOutput.java
-         */
-        PACKAGEOUTPUT,
-        /**
-         * com.rgi.suite.ProgressWindow.java
-         */
-        PROGRESS,
-        /**
-         * com.rgi.suite.SettingsWindow.java
-         */
-        SETTINGS,
-        /**
-         * com.rgi.suite.ErrorWindow.java
-         */
-        WINDOWERROR;
-    }
 
     private Settings   settings;
     private Properties props;
 
-    private JPanel     contentPanel;
-    private JPanel     navPanel;
-    private Exception  error;
+    private JPanel    contentPanel;
+    private JPanel    navPanel;
+    private Exception error;
 
-    private Map<Window, ApplicationWindow> windows = new HashMap<>();
+    private List<ApplicationWindow> windows = new ArrayList<>();
 
     /**
      * Constructor.
+     * @throws IOException
      */
-    public ApplicationContext()
+    public ApplicationContext() throws IOException
     {
         this.contentPanel = new JPanel(new CardLayout());
         this.navPanel = new JPanel(new CardLayout());
@@ -120,7 +80,7 @@ public class ApplicationContext extends JFrame
             throw new RuntimeException(ioe.getMessage());
         }
 
-        this.settings = new Settings();
+        this.settings = new Settings(new File("settings.txt"));
 
         Container c = this.getContentPane();
         c.setLayout(new BorderLayout());
@@ -154,9 +114,9 @@ public class ApplicationContext extends JFrame
         this.setVisible(true);
     }
 
-    void addWindow(Window window, ApplicationWindow windowContent)
+    void addWindow(final ApplicationWindow windowContent)
     {
-        this.windows.put(window, windowContent);
+        this.windows.add(windowContent);
 
         this.contentPanel.add(windowContent.getContentPane(),    window.name());
         this.navPanel    .add(windowContent.getNavigationPane(), window.name());
@@ -164,7 +124,7 @@ public class ApplicationContext extends JFrame
 
     /**
      * Return settings for this context.
-     * 
+     *
      * @return A list of settings relevant to this UI flow.
      */
     public Settings getSettings()
@@ -174,7 +134,7 @@ public class ApplicationContext extends JFrame
 
     /**
      * Return properties for this context.
-     * 
+     *
      * @return A Properties object containing info relevant to this current context.
      */
     public Properties getProperties()
@@ -184,7 +144,7 @@ public class ApplicationContext extends JFrame
 
     /**
      * Set an error/exception for this context.
-     * 
+     *
      * @param error The error to be set for this context.
      */
     public void setError(Exception error)
@@ -194,7 +154,7 @@ public class ApplicationContext extends JFrame
 
     /**
      * Get the error set for this context.
-     * 
+     *
      * @return The current error set for this context.
      */
     public Exception getError()
@@ -203,8 +163,8 @@ public class ApplicationContext extends JFrame
     }
 
     /**
-     * Transition the GUI to 
-     * 
+     * Transition the GUI to
+     *
      * @param window The UI window that the GUI should transition to.
      */
     public void transitionTo(Window window)
