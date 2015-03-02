@@ -165,22 +165,19 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
         if(location.getName().toLowerCase().endsWith(".gpkg"))
         {
-            try
+            try(final GeoPackage gpkg = new GeoPackage(location, OpenMode.Open))
             {
-                try(final GeoPackage gpkg = new GeoPackage(location, OpenMode.Open))
+                final Collection<TileSet> tileSets = gpkg.tiles().getTileSets();
+
+                if(tileSets.size() > 0)
                 {
-                    final Collection<TileSet> tileSets = gpkg.tiles().getTileSets();
+                    final String tableName = tileSets.iterator().next().getTableName(); // TODO this just picks the first one
 
-                    if(tileSets.size() > 0)
-                    {
-                        final String tableName = tileSets.iterator().next().getTableName(); // TODO this just picks the first one
+                    final GeoPackageReader reader = new GeoPackageReader(location, tableName);
 
-                        final GeoPackageReader reader = new GeoPackageReader(location, tableName);
+                    this.resource = reader;
 
-                        this.resource = reader;
-
-                        return reader;
-                    }
+                    return reader;
                 }
             }
             catch(final Exception e)

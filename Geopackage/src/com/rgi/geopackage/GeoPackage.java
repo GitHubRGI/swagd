@@ -29,7 +29,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import utility.DatabaseUtility;
 
@@ -351,22 +350,16 @@ public class GeoPackage implements AutoCloseable
 
         //System.out.println(String.format("GeoPackage took %.2f seconds to verify.", (System.nanoTime() - startTime)/1.0e9));
 
-        if(verificationIssues.stream().anyMatch(failedRequirement -> failedRequirement.getRequirement().severity() == Severity.Error))
-        {
-            throw new ConformanceException(verificationIssues);
-        }
-
         if(verificationIssues.size() > 0)
         {
-            System.out.println(String.format("GeoPackage had the following verification issues:\n %s\n",
-                                             verificationIssues.stream()
-                                                               .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
-                                                               .map(failedRequirement -> String.format("(%s) Requirement %d: \"%s\"\n%s",
-                                                                                                       failedRequirement.getRequirement().severity(),
-                                                                                                       failedRequirement.getRequirement().number(),
-                                                                                                       failedRequirement.getRequirement().text(),
-                                                                                                       failedRequirement.getReason()))
-                                                               .collect(Collectors.joining("\n"))));
+            final ConformanceException conformanceException = new ConformanceException(verificationIssues);
+
+            System.out.println(conformanceException.toString());
+
+            if(verificationIssues.stream().anyMatch(failedRequirement -> failedRequirement.getRequirement().severity() == Severity.Error))
+            {
+                throw conformanceException;
+            }
         }
     }
 
