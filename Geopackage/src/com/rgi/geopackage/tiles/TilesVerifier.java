@@ -227,29 +227,27 @@ public class TilesVerifier extends Verifier
                 try (Statement stmt      = this.getSqliteConnection().createStatement();
                      ResultSet pixelInfo = stmt.executeQuery(query1))
                 {
-
                     final List<TileData> tileDataSet = ResultSetStream.getStream(pixelInfo)
-                                                                .map(resultSet -> { try
-                                                                                    {
-                                                                                       final TileData tileData = new TileData();
-                                                                                       tileData.pixelXSize   = resultSet.getDouble("pixel_x_size");
-                                                                                       tileData.pixelYSize   = resultSet.getDouble("pixel_y_size");
-                                                                                       tileData.zoomLevel    = resultSet.getInt("zoom_level");
-                                                                                       tileData.matrixHeight = resultSet.getInt("matrix_height");
-                                                                                       tileData.matrixWidth  = resultSet.getInt("matrix_width");
-                                                                                       tileData.tileHeight   = resultSet.getInt("tile_height");
-                                                                                       tileData.tileWidth    = resultSet.getInt("tile_width");
+                                                                      .map(resultSet -> { try
+                                                                                          {
+                                                                                              final TileData tileData = new TileData();
+                                                                                              tileData.pixelXSize   = resultSet.getDouble("pixel_x_size");
+                                                                                              tileData.pixelYSize   = resultSet.getDouble("pixel_y_size");
+                                                                                              tileData.zoomLevel    = resultSet.getInt("zoom_level");
+                                                                                              tileData.matrixHeight = resultSet.getInt("matrix_height");
+                                                                                              tileData.matrixWidth  = resultSet.getInt("matrix_width");
+                                                                                              tileData.tileHeight   = resultSet.getInt("tile_height");
+                                                                                              tileData.tileWidth    = resultSet.getInt("tile_width");
 
-                                                                                       return tileData;
-                                                                                    }
-                                                                                    catch(final SQLException ex)
-                                                                                    {
-                                                                                        return null;
-                                                                                    }
-                                                                                  })
-                                                               .filter(Objects::nonNull)
-                                                               .collect(Collectors.toList());
-
+                                                                                              return tileData;
+                                                                                          }
+                                                                                          catch(final SQLException ex)
+                                                                                          {
+                                                                                              return null;
+                                                                                          }
+                                                                                         })
+                                                                      .filter(Objects::nonNull)
+                                                                      .collect(Collectors.toList());
 
                     for(int index = 0; index < tileDataSet.size()-1; ++index)
                     {
@@ -267,11 +265,12 @@ public class TilesVerifier extends Verifier
                         }
                     }
 
-                    //This tests if the pixel x values and pixel y values are valid based on their bounding box
-                    //in the tile matrix set
+                    //This tests if the pixel x values and pixel y values are valid based on their bounding box in the tile matrix set
                     if(this.hasTileMatrixSetTable)
                     {
-                        final String query2 =String.format("SELECT min_x, min_y, max_x, max_y FROM %s WHERE table_name = '%s'", GeoPackageTiles.MatrixSetTableName, tableName);
+                        final String query2 = String.format("SELECT min_x, min_y, max_x, max_y FROM %s WHERE table_name = '%s'",
+                                                            GeoPackageTiles.MatrixSetTableName,
+                                                            tableName);
 
                         try(Statement stmt2         = this.getSqliteConnection().createStatement();
                             ResultSet boundingBoxRS = stmt2.executeQuery(query2))
@@ -286,10 +285,10 @@ public class TilesVerifier extends Verifier
                                 final BoundingBox boundingBox = new BoundingBox(minX, minY, maxX, maxY);
 
                                 final List<TileData> invalidPixelValues = tileDataSet.stream()
-                                                                               .filter(tileData -> !validPixelValues(tileData, boundingBox))
-                                                                               .collect(Collectors.toList());
+                                                                                     .filter(tileData -> !validPixelValues(tileData, boundingBox))
+                                                                                     .collect(Collectors.toList());
 
-                                Assert.assertTrue(String.format("Based on the bounding box given in the Tile Matrix Set for table %s, "
+                                Assert.assertTrue(String.format("Based on the bounding box given in the Tile Matrix Set for tiles table %s, "
                                                                            + "tile_height, "
                                                                            + "tile_width, "
                                                                            + "matrix_width, and "
@@ -1370,8 +1369,8 @@ public class TilesVerifier extends Verifier
     private static boolean validPixelValues(final TileData tileData, final BoundingBox boundingBox)
     {
 
-        return isEqual(tileData.pixelXSize, (boundingBox.getWidth()/tileData.matrixWidth)/tileData.tileWidth) &&
-               isEqual(tileData.pixelYSize, (boundingBox.getHeight()/tileData.matrixHeight)/tileData.tileHeight);
+        return isEqual(tileData.pixelXSize, (boundingBox.getWidth()  / tileData.matrixWidth)  / tileData.tileWidth) &&
+               isEqual(tileData.pixelYSize, (boundingBox.getHeight() / tileData.matrixHeight) / tileData.tileHeight);
     }
 
     /**

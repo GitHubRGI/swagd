@@ -45,15 +45,15 @@ public class ConformanceException extends Exception
     @Override
     public String toString()
     {
-        return String.format("GeoPackage failed to meet the following requirements:\n %s",
+        return String.format("GeoPackage failed to meet the following requirements:\n%s",
                              this.conformanceIssues.stream()
                                                    .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
-                                                   .map(failedRequirement -> String.format("(%s) Requirement %d: \"%s\"\n%s",
+                                                   .map(failedRequirement -> String.format("* (%s) Requirement %d: \"%s\"\n%s",
                                                                                      failedRequirement.getRequirement().severity(),
                                                                                      failedRequirement.getRequirement().number(),
                                                                                      failedRequirement.getRequirement().text(),
                                                                                      failedRequirement.getReason()))
-                                                   .collect(Collectors.joining("\n")));
+                                                   .collect(Collectors.joining("\n\n")));
     }
 
     private final Collection<VerificationIssue> conformanceIssues;

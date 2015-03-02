@@ -23,7 +23,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
- * Generic range class
+ * Generic range class.  Minimum and maximum values are inclusive.
  *
  * @author Luke Lambert
  * @param <T> Any reference type
@@ -46,9 +46,6 @@ public class Range <T>
     }
 
     /**
-     * Constructor
-     * <br>
-     * <br>
      * This constructor iterates over a container who's generic type is
      * mapped to the T via the mapper function.  The comparison function
      * determines the ordering of the container's objects.
@@ -58,7 +55,7 @@ public class Range <T>
      * @param mapper
      *             Maps the container type <I> to the Range type <T>
      * @param comparator
-     *            Comparison function
+     *             Comparison function
      */
     public <I> Range(final Iterable<I> iterable,
                      final Function<? super I, ? extends T> mapper,
@@ -110,12 +107,12 @@ public class Range <T>
      * Constructor
      *
      * This constructor iterates over a container using the supplied comparison
-     * function to determine the minimum and maximum values.
+     * function to determine the minimum and maximum values
      *
      * @param iterable
      *             Container of objects
      * @param comparator
-     *            Comparison function
+     *             Comparison function
      */
     public Range(final Iterable<T> iterable,
                  final Comparator<? super T> comparator)
@@ -156,15 +153,13 @@ public class Range <T>
     }
 
     /**
-     * Constructor
-     *
      * This constructor iterates over a container using the supplied comparison
-     * function to determine the minimum and maximum values.
+     * function to determine the minimum and maximum values
      *
      * @param stream
      *             Stream of objects
      * @param comparator
-     *            Comparison function
+     *             Comparison function
      */
     public Range(final Stream<T> stream,
                  final Comparator<? super T> comparator)
