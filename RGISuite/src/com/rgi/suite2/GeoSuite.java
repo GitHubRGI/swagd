@@ -27,6 +27,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -38,6 +40,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import com.rgi.suite.PropertiesAction;
+import com.rgi.suite.Settings;
 
 /**
  * Entry point for the program.
@@ -52,7 +55,7 @@ public class GeoSuite
      *
      * @param args A string array of command line arguments.
      */
-    public static void main(String[] args)
+    public static void main(final String[] args)
     {
         if(args != null && args.length > 0)
         {
@@ -61,12 +64,14 @@ public class GeoSuite
         else
         {
             @SuppressWarnings("unused")
-            GeoSuite geoSuite = new GeoSuite();
+            final GeoSuite geoSuite = new GeoSuite();
         }
     }
 
     private GeoSuite()
     {
+        this.settings = new Settings(new File("settings.txt"));
+
         SwingUtilities.invokeLater(() -> this.startGui());
     }
 
@@ -75,24 +80,21 @@ public class GeoSuite
         final JPanel contentPanel = new JPanel(new CardLayout());
         final JPanel navPanel     = new JPanel(new CardLayout());
 
-        JFrame suiteWindow = new JFrame();
+        final JFrame suiteWindow = new JFrame();
 
-        Properties props = new Properties();
+        final Properties props = new Properties();
 
         try(InputStream inputStream = this.getClass().getResourceAsStream("geosuite.properties"))
         {
             props.load(inputStream);
         }
-        catch(final Throwable th)
+        catch(final IllegalArgumentException | IOException ex)
         {
             JOptionPane.showMessageDialog(null, "RGI Suite", "Unable to load properties", JOptionPane.OK_OPTION);
-            th.printStackTrace();
-            //throw new RuntimeException(th.getMessage());
+            ex.printStackTrace();
         }
 
-        //this.settings = new Settings(new File("settings.txt"));
-
-        Container c = suiteWindow.getContentPane();
+        final Container c = suiteWindow.getContentPane();
         c.setLayout(new BorderLayout());
 
         c.add(contentPanel, BorderLayout.CENTER);
@@ -107,9 +109,9 @@ public class GeoSuite
         suiteWindow.addWindowListener(new WindowAdapter()
                                       {
                                           @Override
-                                          public void windowClosing(WindowEvent event)
+                                          public void windowClosing(final WindowEvent event)
                                           {
-                                              int option = JOptionPane.showConfirmDialog(suiteWindow, "Are you sure you want to exit?", "Confirm Exit", JOptionPane.YES_NO_OPTION);
+                                              final int option = JOptionPane.showConfirmDialog(suiteWindow, "Are you sure you want to exit?", "Confirm Exit", JOptionPane.YES_NO_OPTION);
                                               if(option == JOptionPane.YES_OPTION)
                                               {
                                                   System.exit(0);
@@ -118,16 +120,16 @@ public class GeoSuite
                                       });
 
         // Settings panel / button
-        JPanel settingsNavPanel = new JPanel(new GridBagLayout());
+        final JPanel settingsNavPanel = new JPanel(new GridBagLayout());
 
-        JButton settingsButton = new JButton(new PropertiesAction(props, "pref")
+        final JButton settingsButton = new JButton(new PropertiesAction(props, "pref")
                                              {
                                                  private static final long serialVersionUID = 5258278444574348376L;
 
                                                  @Override
-                                                 public void actionPerformed(ActionEvent event)
+                                                 public void actionPerformed(final ActionEvent event)
                                                  {
-                                                     final JFrame frame = new SettingsWindow();
+                                                     final JFrame frame = new SettingsWindow(GeoSuite.this.settings);
                                                      frame.pack();
                                                      frame.setVisible(true);
                                                  }
@@ -135,7 +137,7 @@ public class GeoSuite
 
         settingsButton.setHideActionText(true);
         settingsButton.setMargin(new Insets(0, 0, 0, 0));
-        GridBagConstraints gbc = new GridBagConstraints();
+        final GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.EAST;
         gbc.weightx = 1.0;
         gbc.insets = new Insets(10, 10, 10, 10);
@@ -148,9 +150,11 @@ public class GeoSuite
         suiteWindow.setVisible(true);
     }
 
-    private static void runHeadless(@SuppressWarnings("unused")String[] args)
+    private static void runHeadless(@SuppressWarnings("unused") final String[] args)
     {
         // TODO
         System.out.println("Running headless is not yet supported.");
     }
+
+    private final Settings settings;
 }
