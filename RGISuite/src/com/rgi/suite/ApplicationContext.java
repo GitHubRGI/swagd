@@ -21,7 +21,6 @@ package com.rgi.suite;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
-import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -60,13 +59,14 @@ public class ApplicationContext extends JFrame
     private List<ApplicationWindow> windows = new ArrayList<>();
 
     /**
-     * Constructor.
+     * Constructor
+     *
      * @throws IOException
      */
     public ApplicationContext() throws IOException
     {
         this.contentPanel = new JPanel(new CardLayout());
-        this.navPanel = new JPanel(new CardLayout());
+        this.navPanel     = new JPanel(new CardLayout());
 
         this.props = new Properties();
         try(InputStream inputStream = this.getClass().getResourceAsStream("geosuite.properties"))
@@ -87,23 +87,24 @@ public class ApplicationContext extends JFrame
         c.add(this.contentPanel, BorderLayout.CENTER);
         c.add(this.navPanel, BorderLayout.SOUTH);
 
-        this.setTitle("RGI Tiling and Geopackaging Suite");
+        this.setTitle("RGI Tiling and Packaging Suite");
         this.setSize(640, 480);
         this.setResizable(false);
         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        // show the window
+
+        // Show the window
         this.addWindowListener(new WindowAdapter()
-        {
-            @Override
-            public void windowClosing(WindowEvent event)
-            {
-                int option = JOptionPane.showConfirmDialog(ApplicationContext.this, "Are you sure you want to exit?", "Confirm Exit", JOptionPane.YES_NO_OPTION);
-                if(option == JOptionPane.YES_OPTION)
-                {
-                    System.exit(0);
-                }
-            }
-        });
+                               {
+                                   @Override
+                                   public void windowClosing(WindowEvent event)
+                                   {
+                                       int option = JOptionPane.showConfirmDialog(ApplicationContext.this, "Are you sure you want to exit?", "Confirm Exit", JOptionPane.YES_NO_OPTION);
+                                       if(option == JOptionPane.YES_OPTION)
+                                       {
+                                           System.exit(0);
+                                       }
+                                   }
+                               });
     }
 
     /**
@@ -118,8 +119,8 @@ public class ApplicationContext extends JFrame
     {
         this.windows.add(windowContent);
 
-        this.contentPanel.add(windowContent.getContentPane(),    window.name());
-        this.navPanel    .add(windowContent.getNavigationPane(), window.name());
+        this.contentPanel.add(windowContent.getContentPane(),    windowContent.getName());
+        this.navPanel    .add(windowContent.getNavigationPane(), windowContent.getName());
     }
 
     /**
@@ -167,14 +168,13 @@ public class ApplicationContext extends JFrame
      *
      * @param window The UI window that the GUI should transition to.
      */
-    public void transitionTo(Window window)
+    public void transitionTo(ApplicationWindow window)
     {
-        ApplicationWindow windowContent = this.windows.get(window);
-        if(windowContent != null)
+        if(window != null)
         {
-            windowContent.activate();
-            ((CardLayout)this.contentPanel.getLayout()).show(this.contentPanel, window.name());
-            ((CardLayout)this.navPanel    .getLayout()).show(this.navPanel,     window.name());
+            window.activate();
+            ((CardLayout)this.contentPanel.getLayout()).show(this.contentPanel, window.getName());
+            ((CardLayout)this.navPanel    .getLayout()).show(this.navPanel,     window.getName());
         }
     }
 

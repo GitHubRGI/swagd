@@ -21,34 +21,38 @@ package com.rgi.suite;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import com.rgi.suite.ApplicationContext.Window;
-
-public abstract class BaseWindow extends AbstractWindow {
-    protected BaseWindow(ApplicationContext context) {
+public abstract class BaseWindow extends AbstractWindow
+{
+    protected BaseWindow(ApplicationContext context)
+    {
         super(context);
     }
 
     @Override
-    protected void buildNavPane() {
+    protected void buildNavPane()
+    {
         this.navPane = new JPanel(new GridBagLayout());
-        Properties props = this.context.getProperties();
-        JButton settingsButton = new JButton(new PropertiesAction(props, "pref") {
-            /**
-             * Generated serial
-             */
-            private static final long serialVersionUID = 5258278444574348376L;
 
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                BaseWindow.this.context.transitionTo(Window.SETTINGS);
-            }
-        });
+        Properties props = this.context.getProperties();
+
+        JButton settingsButton = new JButton(new PropertiesAction(props, "pref")
+                                             {
+                                                 private static final long serialVersionUID = 5258278444574348376L;
+
+                                                 @Override
+                                                 public void actionPerformed(ActionEvent event)
+                                                 {
+                                                     BaseWindow.this.context.transitionTo(Window.SETTINGS);
+                                                 }
+                                             });
+
         settingsButton.setHideActionText(true);
         settingsButton.setMargin(new Insets(0, 0, 0, 0));
         GridBagConstraints gbc = new GridBagConstraints();

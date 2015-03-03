@@ -21,20 +21,16 @@ package com.rgi.suite;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import com.rgi.g2t.TilerFactory;
-import com.rgi.packager.PackagerFactory;
-import com.rgi.suite.ApplicationContext.Window;
-import com.rgi.view.ViewerFactory;
-
 /**
  * Create the main window containing the work flow buttons.
- * 
+ *
  * @author Duff Means
  * @author Steven D. Lander
  */
@@ -42,7 +38,7 @@ public class MainWindow extends BaseWindow
 {
     /**
      * Constructor.
-     * 
+     *
      * @param context The GUI app context.
      */
     public MainWindow(ApplicationContext context)

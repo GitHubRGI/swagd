@@ -27,39 +27,46 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
 @SuppressWarnings("serial")
-public abstract class PropertiesAction extends AbstractAction {
-  protected PropertiesAction(Properties p, String key) {
-    this.setString(p, key+".name", Action.NAME);
-    this.setKeyStroke(p, key+".accel", Action.ACCELERATOR_KEY);
-    this.setString(p, key+".short", Action.SHORT_DESCRIPTION);
-    this.setString(p, key+".long", Action.LONG_DESCRIPTION);
-    this.setIcon(p, key+".small", Action.SMALL_ICON);
-    this.setIcon(p, key+".large", Action.LARGE_ICON_KEY);
-  }
-
-  private void setString(Properties p, String property, String key) {
-    String value = p.getProperty(property);
-    if (value != null) {
-      this.putValue(key, value);
-    }
-  }
-
-  private void setKeyStroke(Properties p, String property, String key) {
-    String value = p.getProperty(property);
-    if (value != null) {
-      this.putValue(key, KeyStroke.getKeyStroke(value));
-    }
-  }
-
-  private void setIcon(Properties p, String property, String key) {
-    String value = p.getProperty(property);
-    if (value != null)
+public abstract class PropertiesAction extends AbstractAction
+{
+    protected PropertiesAction(Properties p, String key)
     {
-    	URL resource = this.getClass().getResource("/" + value);
-    	if(resource != null)
-    	{
-    	    this.putValue(key, new ImageIcon(resource));
-    	}
+        this.setString   (p, key + ".name",  Action.NAME);
+        this.setKeyStroke(p, key + ".accel", Action.ACCELERATOR_KEY);
+        this.setString   (p, key + ".short", Action.SHORT_DESCRIPTION);
+        this.setString   (p, key + ".long",  Action.LONG_DESCRIPTION);
+        this.setIcon     (p, key + ".small", Action.SMALL_ICON);
+        this.setIcon     (p, key + ".large", Action.LARGE_ICON_KEY);
     }
-  }
+
+    private void setString(Properties p, String property, String key)
+    {
+        String value = p.getProperty(property);
+        if(value != null)
+        {
+            this.putValue(key, value);
+        }
+    }
+
+    private void setKeyStroke(Properties p, String property, String key)
+    {
+        String value = p.getProperty(property);
+        if(value != null)
+        {
+            this.putValue(key, KeyStroke.getKeyStroke(value));
+        }
+    }
+
+    private void setIcon(Properties p, String property, String key)
+    {
+        String value = p.getProperty(property);
+        if(value != null)
+        {
+            URL resource = this.getClass().getResource("/" + value);
+            if(resource != null)
+            {
+                this.putValue(key, new ImageIcon(resource));
+            }
+        }
+    }
 }
