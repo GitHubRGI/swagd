@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -41,6 +42,7 @@ import javax.swing.WindowConstants;
 
 import com.rgi.suite.PropertiesAction;
 import com.rgi.suite.Settings;
+import com.rgi.view.MapViewWindow;
 
 /**
  * Entry point for the program.
@@ -119,6 +121,91 @@ public class GeoSuite
                                           }
                                       });
 
+        // main buttons
+        final JPanel mainButtonPanel = new JPanel(new GridBagLayout());
+        final GridBagConstraints gbc = new GridBagConstraints();
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+
+        final JButton tileButton = new JButton(new PropertiesAction(props, "tile")
+                                   {
+                                       private static final long serialVersionUID = -3249428374853166484L;
+
+                                       @Override
+                                       public void actionPerformed(final ActionEvent event)
+                                       {
+
+                                       }
+                                   });
+
+        tileButton.setHideActionText(true);
+        tileButton.setMargin(new Insets(0, 0, 0, 0));
+
+        final JButton gpkgButton = new JButton(new PropertiesAction(props, "gpkg")
+                             {
+                                 private static final long serialVersionUID = -1836754318915912580L;
+
+                                 @Override
+                                 public void actionPerformed(final ActionEvent event)
+                                 {
+
+                                 }
+                             });
+
+        gpkgButton.setHideActionText(true);
+        gpkgButton.setMargin(new Insets(0, 0, 0, 0));
+
+        final JButton viewButton = new JButton(new PropertiesAction(props, "view")
+                                   {
+                                       private static final long serialVersionUID = 1882624675173160883L;
+
+                                       private static final String LastFileSelectionSettingName = "lastViewDirectory";
+
+                                       @Override
+                                       public void actionPerformed(final ActionEvent event)
+                                       {
+                                           final String startDirectory = GeoSuite.this.settings.get(LastFileSelectionSettingName, SettingsWindow.DefaultOutputLocation);
+
+                                           final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
+
+                                           fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                                           fileChooser.setMultiSelectionEnabled(true);
+
+                                           fileChooser.addActionListener(chooseEvent -> { if(JFileChooser.APPROVE_SELECTION.equals(chooseEvent.getActionCommand()))
+                                                                                          {
+                                                                                              final File[] files = fileChooser.getSelectedFiles();
+
+                                                                                              if(files.length > 0)
+                                                                                              {
+                                                                                                  GeoSuite.this.settings.set(LastFileSelectionSettingName, files[0].getParent());
+                                                                                                  GeoSuite.this.settings.save();
+
+                                                                                                  final JFrame frame = new MapViewWindow(files);
+                                                                                                  frame.pack();
+                                                                                                  frame.setVisible(true);
+                                                                                              }
+                                                                                          }
+                                                                                          // else if(JFileChooser.CANCEL_SELECTION.equals(event.getActionCommand()))
+                                                                                          // {
+                                                                                          //     this.context.setActiveTask(null);
+                                                                                          // }
+                                                                                          // this.context.transitionTo(Window.MAIN);
+                                                                                        });
+
+                                           fileChooser.showOpenDialog(suiteWindow);
+
+                                       }
+                                   });
+
+        viewButton.setHideActionText(true);
+        viewButton.setMargin(new Insets(0, 0, 0, 0));
+
+        mainButtonPanel.add(tileButton, gbc);
+        mainButtonPanel.add(gpkgButton, gbc);
+        mainButtonPanel.add(viewButton, gbc);
+
+        contentPanel.add(mainButtonPanel);
+
         // Settings panel / button
         final JPanel settingsNavPanel = new JPanel(new GridBagLayout());
 
@@ -137,12 +224,12 @@ public class GeoSuite
 
         settingsButton.setHideActionText(true);
         settingsButton.setMargin(new Insets(0, 0, 0, 0));
-        final GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.weightx = 1.0;
-        gbc.insets = new Insets(10, 10, 10, 10);
+        final GridBagConstraints settingsGridBagConstraints = new GridBagConstraints();
+        settingsGridBagConstraints.anchor = GridBagConstraints.EAST;
+        settingsGridBagConstraints.weightx = 1.0;
+        settingsGridBagConstraints.insets = new Insets(10, 10, 10, 10);
 
-        settingsNavPanel.add(settingsButton, gbc);
+        settingsNavPanel.add(settingsButton, settingsGridBagConstraints);
 
         navPanel.add(settingsNavPanel);
 

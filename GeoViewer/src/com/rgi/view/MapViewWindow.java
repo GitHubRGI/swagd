@@ -61,7 +61,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
      * @param location The file that should be viewed in the map viewer.
      * @throws TileStoreException Thrown when the file is not supported for viewing.
      */
-    public MapViewWindow(final File... files) throws TileStoreException
+    public MapViewWindow(final File... files)
     {
         this("Tile Viewer", files);
     }
@@ -71,7 +71,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
      * @param location The file that should be viewed in the map viewer.
      * @throws TileStoreException Thrown when the file is not supported for viewing.
      */
-    public MapViewWindow(final String title, final File... files) throws TileStoreException
+    public MapViewWindow(final String title, final File... files)
     {
         super(title);
 
@@ -109,10 +109,10 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
         final CrsProfile profile = CrsProfileFactory.create(tileStore.getCoordinateReferenceSystem());
 
-        this.treeMap.getViewer().setTileLoader(new TileStoreLoader(tileStore, this.treeMap.getViewer()));
-
         try
         {
+            this.treeMap.getViewer().setTileLoader(new TileStoreLoader(tileStore, this.treeMap.getViewer()));
+
             final com.rgi.common.coordinate.Coordinate<Double> center = profile.toGlobalGeodetic(tileStore.getBounds().getCenter());
 
             this.treeMap.getViewer()

@@ -25,7 +25,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,7 +36,6 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -53,21 +51,21 @@ public class SettingsWindow extends JFrame
     private static String[] imageTypes = new String[] { "JPG", "PNG" }; // TODO enum?
     private static String[] crsTypes = new String[] {"EPSG:3857", "EPSG:3395", "EPSG:4326"}; // TODO enum?
 
-    private static final String OutputLocationSettingName     = "outputLocation";
-    private static final String TileWidthSettingName          = "tileWidth";
-    private static final String TileHeightSettingName         = "tileHeight";
-    private static final String OutputImageFormatSettingName  = "outputImageFormat";
-    private static final String OutputImageQualitySettingName = "outputImageQuality";
-    private static final String NoDataColorSettingName        = "noDataColor";
-    private static final String OutputCrsSettingName          = "outputCrs";
+    public static final String OutputLocationSettingName     = "outputLocation";
+    public static final String TileWidthSettingName          = "tileWidth";
+    public static final String TileHeightSettingName         = "tileHeight";
+    public static final String OutputImageFormatSettingName  = "outputImageFormat";
+    public static final String OutputImageQualitySettingName = "outputImageQuality";
+    public static final String NoDataColorSettingName        = "noDataColor";
+    public static final String OutputCrsSettingName          = "outputCrs";
 
-    private static final String DefaultOutputLocation     = System.getProperty("user.home");
-    private static final int    DefaultTileWidth          = 256;
-    private static final int    DefaultTileHeight         = 256;
-    private static final String DefaultOutputImageFormat  = imageTypes[0];
-    private static final int    DefaultOutputImageQuality = 70;
-    private static final Color  DefaultNoDataColor        = new Color(0, 0, 0, 0);
-    private static final String DefaultOutputCrs          = crsTypes[0];
+    public static final String DefaultOutputLocation     = System.getProperty("user.home");
+    public static final int    DefaultTileWidth          = 256;
+    public static final int    DefaultTileHeight         = 256;
+    public static final String DefaultOutputImageFormat  = imageTypes[0];
+    public static final int    DefaultOutputImageQuality = 70;
+    public static final Color  DefaultNoDataColor        = new Color(0, 0, 0, 0);
+    public static final String DefaultOutputCrs          = crsTypes[0];
 
     private JTextField        tileOutputPathField;
     private JComboBox<String> outputCrs;
@@ -231,17 +229,9 @@ public class SettingsWindow extends JFrame
                                                  @Override
                                                  public void actionPerformed(final ActionEvent event)
                                                  {
-                                                     try
-                                                     {
-                                                         SettingsWindow.this.apply();
-                                                         SettingsWindow.this.settings.save();
-                                                         SettingsWindow.this.closeFrame();
-                                                     }
-                                                     catch(final IOException ex)
-                                                     {
-                                                         JOptionPane.showMessageDialog(SettingsWindow.this.contentPane, "Unable to save settings: " + ex.getMessage());
-                                                         ex.printStackTrace();
-                                                     }
+                                                     SettingsWindow.this.apply();
+                                                     SettingsWindow.this.settings.save();
+                                                     SettingsWindow.this.closeFrame();
                                                  }
                                              });
         okButton.setText("OK");

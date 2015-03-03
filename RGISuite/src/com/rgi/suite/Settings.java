@@ -112,7 +112,7 @@ public class Settings
         return settings;
     }
 
-    public void save() throws IOException
+    public boolean save()
     {
         try(FileOutputStream   fileOutputStream   = new FileOutputStream  (this.file);
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
@@ -125,6 +125,13 @@ public class Settings
                                                    setting.getValue()));
                 bufferedWriter.newLine();
             }
+
+            return true;
+        }
+        catch(final IOException ex)
+        {
+            ex.printStackTrace();
+            return false;
         }
     }
 
