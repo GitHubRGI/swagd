@@ -22,6 +22,7 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Properties;
@@ -40,32 +41,32 @@ import javax.swing.SpinnerNumberModel;
 
 import com.rgi.common.task.Task;
 import com.rgi.common.tile.TileOrigin;
-import com.rgi.suite.ApplicationContext.Window;
-import com.rgi.suite.Settings.Profile;
-import com.rgi.suite.Settings.Setting;
-import com.rgi.suite.Settings.Type;
 
-public class SettingsWindow extends AbstractWindow {
-    private JTextField tileOutputPathField;
-    private JComboBox<TileOrigin> tileOriginChoice;
+public class SettingsWindow extends AbstractWindow
+{
+    private JTextField                  tileOutputPathField;
+    private JComboBox<TileOrigin>       tileOriginChoice;
     private JComboBox<Settings.Profile> outputProfileChoice;
-    private JSpinner tileHeightSpinner;
-    private JSpinner tileWidthSpinner;
-    private JSpinner outputQualitySpinner;
-    private JComboBox<Settings.Type> outputImageType;
-    private SwatchButton nullDataColorButton;
+    private JSpinner                    tileHeightSpinner;
+    private JSpinner                    tileWidthSpinner;
+    private JSpinner                    outputQualitySpinner;
+    private JComboBox<Settings.Type>    outputImageType;
+    private SwatchButton                nullDataColorButton;
 
-    public SettingsWindow(ApplicationContext context) {
+    public SettingsWindow(ApplicationContext context)
+    {
         super(context);
     }
 
     @Override
-    public void activate() {
+    public void activate()
+    {
         this.load(this.context.getSettings());
     }
 
     @Override
-    protected void buildContentPane() {
+    protected void buildContentPane()
+    {
         this.contentPane = new JPanel(new GridBagLayout());
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -97,7 +98,8 @@ public class SettingsWindow extends AbstractWindow {
             fc.setMultiSelectionEnabled(false);
             fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int option = fc.showOpenDialog(this.contentPane);
-            if (option == JFileChooser.APPROVE_OPTION) {
+            if(option == JFileChooser.APPROVE_OPTION)
+            {
                 this.tileOutputPathField.setText(fc.getSelectedFile().getPath());
             }
         });
@@ -154,7 +156,7 @@ public class SettingsWindow extends AbstractWindow {
         });
 
         this.nullDataColorButton = new SwatchButton("...");
-        this.nullDataColorButton.setColor((Color) Settings.Setting.NoDataColor.getDefaultValue());
+        this.nullDataColorButton.setColor((Color)Settings.Setting.NoDataColor.getDefaultValue());
         ++gbc.gridy;
         gbc.gridwidth = 1;
         gbc.weightx = 0;
@@ -164,7 +166,8 @@ public class SettingsWindow extends AbstractWindow {
         this.contentPane.add(this.nullDataColorButton, gbc);
         this.nullDataColorButton.addActionListener(e -> {
             Color c = JColorChooser.showDialog(this.contentPane, "Choose No Data color...", this.nullDataColorButton.getColor());
-            if (c != null) {
+            if(c != null)
+            {
                 this.nullDataColorButton.setColor(c);
             }
         });
@@ -172,8 +175,7 @@ public class SettingsWindow extends AbstractWindow {
         ++gbc.gridy;
         gbc.gridwidth = 1;
         gbc.weightx = 0;
-        this.outputProfileChoice = new JComboBox<>(new DefaultComboBoxModel<>(
-                Settings.Profile.values()));
+        this.outputProfileChoice = new JComboBox<>(new DefaultComboBoxModel<>(Settings.Profile.values()));
         this.contentPane.add(new JLabel("Output Profile: "), gbc);
         gbc.gridwidth = 2;
         gbc.weightx = 1;
@@ -181,25 +183,31 @@ public class SettingsWindow extends AbstractWindow {
     }
 
     @Override
-    protected void buildNavPane() {
+    protected void buildNavPane()
+    {
         this.navPane = new JPanel(new GridBagLayout());
 
         Properties props = this.context.getProperties();
 
         // save settings
-        JButton okButton = new JButton(new PropertiesAction(props, "ok") {
+        JButton okButton = new JButton(new PropertiesAction(props, "ok")
+        {
             /**
              * Generated serial
              */
             private static final long serialVersionUID = -2265844182174484489L;
 
             @Override
-            public void actionPerformed(ActionEvent event) {
+            public void actionPerformed(ActionEvent event)
+            {
                 Settings settings = SettingsWindow.this.context.getSettings();
-                try {
+                try
+                {
                     SettingsWindow.this.apply(settings);
                     settings.save();
-                } catch (Exception e) {
+                }
+                catch(Exception e)
+                {
                     JOptionPane.showMessageDialog(SettingsWindow.this.contentPane, "Unable to save settings!");
                     e.printStackTrace();
                 }
@@ -210,14 +218,16 @@ public class SettingsWindow extends AbstractWindow {
         okButton.setMargin(new Insets(0, 0, 0, 0));
 
         // cancel settings editing
-        JButton cancelButton = new JButton(new PropertiesAction(props, "cancel") {
+        JButton cancelButton = new JButton(new PropertiesAction(props, "cancel")
+        {
             /**
              * Generated serial
              */
             private static final long serialVersionUID = -4389758606354266920L;
 
             @Override
-            public void actionPerformed(ActionEvent event) {
+            public void actionPerformed(ActionEvent event)
+            {
                 SettingsWindow.this.closeSettings();
             }
         });
@@ -232,39 +242,48 @@ public class SettingsWindow extends AbstractWindow {
         this.navPane.add(okButton, gbc);
     }
 
-    private void closeSettings() {
+    private void closeSettings()
+    {
         Task task = this.context.getActiveTask();
-        if (task == null) {
+        if(task == null)
+        {
             this.context.transitionTo(Window.MAIN);
-        } else {
+        }
+        else
+        {
             this.context.transitionTo(Window.FILECHOOSER);
         }
     }
 
-    public void load(Settings settings) {
+    public void load(Settings settings)
+    {
         this.tileOutputPathField.setText(settings.get(Setting.TileFolder)); // where am I going to write files to
         this.nullDataColorButton.setColor(settings.getColor(Setting.NoDataColor));
         Integer quality = Integer.parseInt(settings.get(Setting.Quality));
-        ((SpinnerNumberModel) this.outputQualitySpinner.getModel()).setValue(quality);
+        ((SpinnerNumberModel)this.outputQualitySpinner.getModel()).setValue(quality);
         int tileHeight = Integer.parseInt(settings.get(Setting.TileHeight));
-        ((SpinnerNumberModel) this.tileHeightSpinner.getModel()).setValue(tileHeight);
+        ((SpinnerNumberModel)this.tileHeightSpinner.getModel()).setValue(tileHeight);
         int tileWidth = Integer.parseInt(settings.get(Setting.TileWidth));
-        ((SpinnerNumberModel) this.tileWidthSpinner.getModel()).setValue(tileWidth);
-        try {
+        ((SpinnerNumberModel)this.tileWidthSpinner.getModel()).setValue(tileWidth);
+        try
+        {
             this.tileOriginChoice.setSelectedItem(TileOrigin.valueOf(settings.get(Setting.TileOrigin)));
-        } catch (Exception e) {
+        }
+        catch(Exception e)
+        {
             this.tileOriginChoice.setSelectedItem(Setting.TileOrigin.getDefaultValue());
         }
         this.outputProfileChoice.setSelectedItem(Profile.valueOf(settings.get(Setting.CrsProfile)));
     }
 
-    public void apply(Settings settings) throws IOException {
+    public void apply(Settings settings) throws IOException
+    {
         settings.set(Setting.TileFolder, this.tileOutputPathField.getText());
         settings.set(Setting.NoDataColor, this.nullDataColorButton.getColor());
         settings.set(Setting.Quality, this.outputQualitySpinner.getValue().toString());
         settings.set(Setting.TileHeight, this.tileHeightSpinner.getValue().toString());
         settings.set(Setting.TileWidth, this.tileWidthSpinner.getValue().toString());
-        settings.set(Setting.TileOrigin, ((TileOrigin) this.tileOriginChoice.getSelectedItem()).name());
-        settings.set(Setting.CrsProfile, ((Profile) this.outputProfileChoice.getSelectedItem()).name());
+        settings.set(Setting.TileOrigin, ((TileOrigin)this.tileOriginChoice.getSelectedItem()).name());
+        settings.set(Setting.CrsProfile, ((Profile)this.outputProfileChoice.getSelectedItem()).name());
     }
 }
