@@ -24,6 +24,7 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
+import com.rgi.common.util.BoundsUtility;
 
 /**
  * Ellipsoidal Mercator implementation of a coordinate reference system profile
@@ -98,18 +99,27 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
         }
-//
-//        if(!BoundsUtility.contains(this.crsBounds, coordinate, tileOrigin))
-//        {
-//            throw new IllegalArgumentException("Coordinate is outside the crsBounds of this coordinate reference system");
-//        }
-        //TODO formulas have yet to be tested.  Unsure of their validity.  
-        Coordinate<Double> geodeticCoordinate = toGlobalGeodetic(coordinate);
+
+        if(!BoundsUtility.contains(this.crsBounds, coordinate, tileOrigin))
+        {
+            throw new IllegalArgumentException("Coordinate is outside the crsBounds of this coordinate reference system");
+        }
         
-        double latitudeRadians  = Math.toRadians(geodeticCoordinate.getY());
-        double longitudeRadians = Math.toRadians(geodeticCoordinate.getX());
+        Coordinate<Double> geodeticCoordinate   = toGlobalGeodetic(coordinate);
+        BoundingBox        geodeticBounds       = new BoundingBox(toLongitude(bounds.getMinX()), 
+                                                                  toLatitude (bounds.getMinY()), 
+                                                                  toLongitude(bounds.getMaxX()), 
+                                                                  toLatitude (bounds.getMaxY()));
         
-        //
+        GlobalGeodeticCrsProfile global         = new GlobalGeodeticCrsProfile();
+        Coordinate<Integer>      tileCoordinate = global.crsToTileCoordinate(new CrsCoordinate(geodeticCoordinate, 
+                                                                                               global.getCoordinateReferenceSystem()), 
+                                                                             geodeticBounds, 
+                                                                             dimensions, 
+                                                                             tileOrigin);
+
+        return tileCoordinate;
+        
         /*
          *              /      n  /       longitude \   \
          *column = Floor| 128*2  |  1 +  ----------- |   |
@@ -119,12 +129,13 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
          * longitude = in radians 
          * 
          */
-//        double pixelWidth  = Math.toRadians(toLatitude(bounds.getWidth()))  * Math.toRadians(toLongitude(bounds.getHeight()))*(256^2);
-//        double pixelHeight = pixelWidth;
-        double pixelWidth  =256*dimensions.getHeight()*dimensions.getWidth();
-        double pixelHeight = 256*dimensions.getHeight()*dimensions.getWidth();
         
-        int tileX = (int) Math.floor(0.5*pixelWidth*(1 + (longitudeRadians/Math.PI)));
+        // double latitudeRadians = Math.toRadians(geodeticCoordinate.getY());
+        // double longitudeRadians = Math.toRadians(geodeticCoordinate.getX());
+        // double totalPixelsX =256*dimensions.getWidth();
+        // double totalPixelsY = 256*dimensions.getHeight();
+        // int tileX = (int) Math.floor(0.5*totalPixelsX*(1 + (longitudeRadians/Math.PI)));
+        
         /*
          * 
          *              /      n  /      atanh(sin(latitude)) - Eccentricity*atanh(Eccentricity*sin(latitude))  \   \
@@ -135,16 +146,18 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
          * latitude = in radians 
          * atanh    = inverse hyperbolic tangent
          */
-        int tileY = (int) Math.floor(0.5*pixelHeight*(1-((atanh(Math.sin(latitudeRadians))-Eccentricity*atanh(Eccentricity*Math.sin(latitudeRadians)))/(Math.PI))));
-         
+        
+        // int tileY = (int)
+        // Math.floor(0.5*totalPixelsY*(1-((atanh(Math.sin(latitudeRadians))-Eccentricity*atanh(Eccentricity*Math.sin(latitudeRadians)))/(Math.PI))));
+
         /*
-         * The formula calculates a row and column that is of the UpperLeft origin, this will transform the origin to the one it is asking for
+         * The formula calculates a row and column that is of the UpperLeft
+         * origin, this will transform the origin to the one it is asking for
          */
-        Coordinate<Integer> tileCoordinate = TileOrigin.UpperLeft.transform(tileOrigin, tileX, tileY, dimensions);
-
-        return tileCoordinate;
+        
+        // Coordinate<Integer> tileCoordinate = TileOrigin.UpperLeft.transform(tileOrigin, tileX, tileY, dimensions);
     }
-
+    
     @Override
     public CrsCoordinate tileToCrsCoordinate(final int                  column,
                                              final int                  row,
@@ -171,34 +184,42 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
+        
+        GlobalGeodeticCrsProfile geodeticCrs    = new GlobalGeodeticCrsProfile();
+        BoundingBox              geodeticBounds = new BoundingBox(toLongitude(bounds.getMinX()), 
+                                                                  toLatitude (bounds.getMinY()), 
+                                                                  toLongitude(bounds.getMaxX()), 
+                                                                  toLatitude (bounds.getMaxY()));
+        
+        CrsCoordinate      geodeticCoordinate = geodeticCrs.tileToCrsCoordinate(column, row, geodeticBounds, dimensions, tileOrigin);
+        Coordinate<Double> metersCoordinate   = fromGlobalGeodetic(geodeticCoordinate);
+        
+        return new CrsCoordinate(metersCoordinate.getX(),
+                                 metersCoordinate.getY(),
+                                 this.getCoordinateReferenceSystem());
+        
         //Formula uses Upper Left need to convert the Tile coordinate to the expected values
-        Coordinate<Integer> tileCoordinate = tileOrigin.transform(TileOrigin.UpperLeft, column, row, dimensions);
-
+        //Coordinate<Integer> tileCoordinate = tileOrigin.transform(TileOrigin.UpperLeft, column, row, dimensions);
+        
         /*
          *                      / 2*column + 1      \
          * longitude = Math.PI |--------------  - 1  |
          *                      \ 256* 2^n          /
          *                    
          * 2^n = number of tiles at the particular zoom level
-         * row = is numbered in Lower Left Origin
+         * row = is numbered in Upper Left Origin
          */
-      //TODO formulas have yet to be tested.  Unsure of their validity. 
-//        possibly use over the 256 and use dimensions width over number of tiles
-//        final double tileCrsHeight = Math.toRadians(toLatitude (bounds.getHeight())) * dimensions.getHeight();
-//        final double tileCrsWidth  = Math.toRadians(toLongitude(bounds.getWidth()))  * dimensions.getWidth();
+        // possibly use over the 256 and use dimensions width over number of
+        // tiles
+
+        // double totalPixelsX = 256*dimensions.getWidth();
+        // double totalPixelsY = 256*dimensions.getHeight();
         
-        double tileCrsHeight  = 256*dimensions.getHeight()*dimensions.getWidth();
-        double tileCrsWidth   = 256*dimensions.getHeight()*dimensions.getWidth();
-        final double longitudeRadians = Math.PI*(((2*tileCoordinate.getX() + 1)/(tileCrsWidth))-1);
+        // final double longitudeRadians = Math.PI*(((2*tileCoordinate.getX() + 1)/(totalPixelsX))-1);
+        // final double latitudeRadians  = inverseMappingConversionRowtoLatitude(tileCoordinate.getY(), totalPixelsY);
         
-        final double latitudeRadians  = inverseMappingConversionRowtoLatitude(tileCoordinate.getY(), tileCrsHeight);
-        
-        final Coordinate<Double> geodeticCoordinate = new Coordinate<>(Math.toDegrees(longitudeRadians), Math.toDegrees(latitudeRadians));
-        final Coordinate<Double> metersCoordinate   = fromGlobalGeodetic(geodeticCoordinate);
-        
-        return new CrsCoordinate(metersCoordinate.getX(),
-                                 metersCoordinate.getY(),
-                                 this.getCoordinateReferenceSystem());
+        // final Coordinate<Double> geodeticCoordinate = new Coordinate<>(Math.toDegrees(longitudeRadians), Math.toDegrees(latitudeRadians));
+        // final Coordinate<Double> metersCoordinate   = fromGlobalGeodetic(geodeticCoordinate);
     }
 
     @Override
@@ -408,32 +429,31 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      * @param numberOfTiles the number of tiles at this zoom level that contains the row given
      * @return the latitude in radians for that given row value
      */
-    private static double inverseMappingConversionRowtoLatitude(int row, double tileCrsHeight)
-    {
-        //calculate s(1)
-        double firstElement = Math.tanh(Math.PI*(1 - ((2*row+1)/(tileCrsHeight))));
-        //arbitrary value to initialize the difference
-        double difference = Integer.MAX_VALUE;
-        //Start with k = 1
-        double kElement = firstElement;
-        //summation
-        
-        for(int k = 1; Math.abs(difference) >= .000000001 && k <= 1000; k++)
-        {
-             double PofK          = Math.exp(Eccentricity*atanh(Eccentricity*kElement));
-             double first         = (1 + firstElement)*Math.pow(PofK, 2);
-             double second        =  1 - firstElement;
-             double kPlus1Element = (first - second)/(first + second);
-             //difference of previous sum and the sum with the next element
-             //see if they converge at a certian value
-             difference = kElement - kPlus1Element;
-             
-             kElement             = kPlus1Element; //set the k element to the next
-        }
-            
-            
-        return Math.asin(kElement);
-    }
+    //still debugging old formula
+//    private static double inverseMappingConversionRowtoLatitude(int row, double tileCrsHeight)
+//    {
+//        //calculate s(1)
+//        double firstElement = Math.tanh(Math.PI*(1 - ((2*row+1)/(tileCrsHeight))));
+//        //arbitrary value to initialize the difference
+//        double difference = Integer.MAX_VALUE;
+//        //Start with k = 1
+//        double kElement = firstElement;
+//        //summation
+//        
+//        for(int k = 1; Math.abs(difference) >= .000000001 && k <= 1000; k++)
+//        {
+//             double PofK          = Math.exp(Eccentricity*atanh(Eccentricity*kElement));
+//             double first         = (1 + firstElement)*Math.pow(PofK, 2);
+//             double second        =  1 - firstElement;
+//             double kPlus1Element = (first - second)/(first + second);
+//             //difference of previous sum and the sum with the next element
+//             //see if they converge at a certain value
+//             difference = kElement - kPlus1Element;
+//             
+//             kElement             = kPlus1Element; //set the k element to the next
+//        }
+//        return Math.asin(kElement);
+//    }
 
     /**
      * Datum's (WGS 84) spheroid's semi-major axis (radius of earth) in meters
