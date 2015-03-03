@@ -20,6 +20,8 @@ package com.rgi.view;
 
 import java.awt.BorderLayout;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -27,12 +29,14 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.DefaultMapController;
+import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.JMapViewerTree;
 //import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
 //import org.openstreetmap.gui.jmapviewer.TileStoreTileSource;
@@ -58,6 +62,8 @@ import com.rgi.geopackage.tiles.TileSet;
  */
 public class MapViewWindow extends JFrame implements JMapViewerEventListener
 {
+    private boolean tileGridVisible = false;
+
     /**
      * @param location The file that should be viewed in the map viewer.
      * @throws TileStoreException Thrown when the file is not supported for viewing.
@@ -100,7 +106,22 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         new DefaultMapController(this.treeMap.getViewer()).setMovementMouseButton(MouseEvent.BUTTON1);
 
         final JPanel panel = new JPanel();
+        final JPanel panelBottom = new JPanel();
         this.add(panel, BorderLayout.NORTH);
+        this.add(panelBottom, BorderLayout.NORTH);
+        
+        ///
+        final JCheckBox showTileGrid = new JCheckBox("Tile grid visible");
+        showTileGrid.setSelected(this.treeMap.getViewer().isTileGridVisible());
+        showTileGrid.addActionListener(new ActionListener() 
+                                                          {
+                                                            @Override
+                                                            public void actionPerformed(ActionEvent e) 
+                                                              {
+                                                                  map().setTileGridVisible(showTileGrid.isSelected());
+                                                              }
+                                                          });
+        panelBottom.add(showTileGrid);
 
         // TODO multi-file display
 
@@ -194,6 +215,10 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         }
 
         throw new RuntimeException("Tile store unable to be generated.");
+    }
+    
+    private JMapViewer map(){
+        return treeMap.getViewer();
     }
 
     private static final long serialVersionUID = 1337L;
