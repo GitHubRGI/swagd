@@ -29,6 +29,7 @@ import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 /**
  * @author Luke Lambert
@@ -36,7 +37,7 @@ import java.util.Map.Entry;
  */
 public class Settings
 {
-    public Settings(final File file) throws IOException
+    public Settings(final File file)
     {
         this.file     = file;
         this.settings = Settings.readSettings(file);
@@ -52,40 +53,72 @@ public class Settings
         return defaultValue;
     }
 
-    public void set(final String setting, final String value) throws IOException
+    public <R> R get(final String setting, final Function<String, R> mapper, final R defaultValue)
     {
-        this.settings.put(setting, value);
-        this.save();
+        if(this.settings.containsKey(setting))
+        {
+            return mapper.apply(this.settings.get(setting));
+        }
+
+        return defaultValue;
     }
 
-    private static Map<String, String> readSettings(final File file) throws IOException
+    public void set(final String setting, final String value)
     {
-        Map<String, String> settings = new HashMap<>();
+        this.settings.put(setting, value);
+    }
 
-        try(FileInputStream   fileInputStream   = new FileInputStream  (file);
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-            BufferedReader    bufferedReader    = new BufferedReader   (inputStreamReader))
+    public <T> void set(final String setting, final T value, final Function<T, String> mapper)
+    {
+        this.settings.put(setting, mapper.apply(value));
+    }
+
+    private static Map<String, String> readSettings(final File file)
+    {
+        final Map<String, String> settings = new HashMap<>();
+
+        if(file.exists())
         {
-            for(String line = bufferedReader.readLine(); line != null; line = bufferedReader.readLine())
+            try(final FileInputStream   fileInputStream   = new FileInputStream  (file);
+                final InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+                final BufferedReader    bufferedReader    = new BufferedReader   (inputStreamReader))
             {
-                String[] keyValuePair = line.split("=", 2);
-                if(keyValuePair.length == 2)
+                for(String line = bufferedReader.readLine(); line != null; line = bufferedReader.readLine())
                 {
-                    settings.put(keyValuePair[0], keyValuePair[1]);
+                    final String[] keyValuePair = line.split("=", 2);
+                    if(keyValuePair.length == 2)
+                    {
+                        settings.put(keyValuePair[0], keyValuePair[1]);
+                    }
                 }
+            }
+            catch(final IOException ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+        else
+        {
+            try
+            {
+                file.createNewFile();
+            }
+            catch(final IOException ex)
+            {
+                throw new RuntimeException(ex);
             }
         }
 
         return settings;
     }
 
-    private void save() throws IOException
+    public void save() throws IOException
     {
         try(FileOutputStream   fileOutputStream   = new FileOutputStream  (this.file);
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
             BufferedWriter     bufferedWriter     = new BufferedWriter    (outputStreamWriter))
         {
-            for(Entry<String, String> setting : this.settings.entrySet())
+            for(final Entry<String, String> setting : this.settings.entrySet())
             {
                 bufferedWriter.write(String.format("%s=%s",
                                                    setting.getKey(),
