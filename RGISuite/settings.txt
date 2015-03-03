@@ -1,0 +1,8 @@
+outputLocation=C:\Users\corp
+noDataColor=0,0,0,0
+lastViewDirectory=C:\Users\corp\Desktop\sample data
+outputImageFormat=JPG
+tileWidth=256
+outputImageQuality=70
+outputCrs=EPSG:3857
+tileHeight=256
