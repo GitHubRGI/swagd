@@ -43,7 +43,6 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
-import com.rgi.common.tile.TileOrigin;
 import com.rgi.suite.Settings;
 import com.rgi.suite.SwatchButton;
 
@@ -234,6 +233,7 @@ public class SettingsWindow extends JFrame
                                                  {
                                                      try
                                                      {
+                                                         SettingsWindow.this.apply();
                                                          SettingsWindow.this.settings.save();
                                                          SettingsWindow.this.closeFrame();
                                                      }
@@ -316,12 +316,12 @@ public class SettingsWindow extends JFrame
 
     private void apply()
     {
-        this.settings.set(Setting.TileFolder, this.tileOutputPathField.getText());
-        this.settings.set(Setting.NoDataColor, this.nullDataColorButton.getColor());
-        this.settings.set(Setting.Quality, this.outputQualitySpinner.getValue().toString());
-        this.settings.set(Setting.TileHeight, this.tileHeightSpinner.getValue().toString());
-        this.settings.set(Setting.TileWidth, this.tileWidthSpinner.getValue().toString());
-        this.settings.set(Setting.TileOrigin, ((TileOrigin)this.tileOriginChoice.getSelectedItem()).name());
-        this.settings.set(Setting.CrsProfile, ((Profile)this.outputProfileChoice.getSelectedItem()).name());
+        this.settings.set(OutputLocationSettingName,     this.tileOutputPathField.getText());
+        this.settings.set(TileWidthSettingName,          this.tileWidthSpinner.getValue().toString());
+        this.settings.set(TileHeightSettingName,         this.tileHeightSpinner.getValue().toString());
+        this.settings.set(OutputImageFormatSettingName,  (String)this.outputImageType.getSelectedItem());
+        this.settings.set(OutputImageQualitySettingName, this.outputQualitySpinner.getValue().toString());
+        this.settings.set(NoDataColorSettingName,        this.nullDataColorButton.getColor(), SettingsWindow::colorToString);
+        this.settings.set(OutputCrsSettingName,          (String)this.outputCrs.getSelectedItem());
     }
 }
