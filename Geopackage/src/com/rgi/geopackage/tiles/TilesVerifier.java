@@ -265,7 +265,7 @@ public class TilesVerifier extends Verifier
                         }
                     }
 
-                    //This tests if the pixel x values and pixel y values are valid based on their bounding box in the tile matrix set
+                    //TODO Test will be moved on later release//This tests if the pixel x values and pixel y values are valid based on their bounding box in the tile matrix set
                     if(this.hasTileMatrixSetTable)
                     {
                         final String query2 = String.format("SELECT min_x, min_y, max_x, max_y FROM %s WHERE table_name = '%s'",
@@ -434,6 +434,7 @@ public class TilesVerifier extends Verifier
                               this.hasTileMatrixSetTable);
 
             this.verifyTable(TilesVerifier.TileMatrixSetTableDefinition);
+            
         }
     }
 
@@ -1272,6 +1273,49 @@ public class TilesVerifier extends Verifier
                                      incorrectColumnSet.isEmpty());
 
                 }
+            }
+            //TODO this test will be moved in a later release to its own individual test, this is not necessarily part of this requirement (wording is below requirement 37 but this is closest to what we are checking).
+            for(String pyramidTable: this.allPyramidUserDataTables)
+            {
+                 String query1 = String.format("SELECT MIN(tile_column), MIN(tile_row), MAX(tile_row), MAX(tile_column) FROM %s WHERE zoom_level = (SELECT MIN(zoom_level) FROM %s);", pyramidTable, pyramidTable);
+                 
+                 try(Statement stmt1              = this.getSqliteConnection().createStatement();
+                     ResultSet minXMaxXMinYMaxYRS = stmt1.executeQuery(query1))
+                 {
+                      int minX = minXMaxXMinYMaxYRS.getInt("MIN(tile_column)");//this should always be 0
+                      int minY = minXMaxXMinYMaxYRS.getInt("MIN(tile_row)");   //this should always be 0
+                      int maxX = minXMaxXMinYMaxYRS.getInt("MAX(tile_column)");
+                      int maxY = minXMaxXMinYMaxYRS.getInt("MAX(tile_row)");
+                      
+                      String query2 = String.format("SELECT matrix_width, matrix_height, zoom_level FROM %s WHERE zoom_level = (SELECT MIN(zoom_level) FROM %s)", GeoPackageTiles.MatrixTableName, pyramidTable);
+                      try(Statement stmt2        = this.getSqliteConnection().createStatement();
+                          ResultSet dimensionsRS = stmt2.executeQuery(query2))
+                      {
+                          while(dimensionsRS.next())
+                          {
+                              int matrixWidth  = dimensionsRS.getInt("matrix_width");
+                              int matrixHeight = dimensionsRS.getInt("matrix_height");
+                              int zoomLevel    = dimensionsRS.getInt("zoom_level");
+                              
+                              Assert.assertTrue(String.format("The BoundingBox in gpkg_tile_matrix_set does not define the minimum bounding box for all content in the table %s.\n "
+                                                                  + "\tActual Values:   MIN(tile_column): %4d,  MIN(tile_row): %4d, MAX(tile_column): %4d,                   MAX(tile_row): %4d\n "
+                                                                  + "\tExpected values: MIN(tile_column):    0,  MIN(tile_row):    0, MAX(tile_column): %4d (matrix_width -1), MAX(tile_row): %4d (matrix_height -1),"
+                                                                  + "\n\tExpected values based on the Tile Matrix given at the MIN(zoom_level) %d.", 
+                                                              pyramidTable,
+                                                              minX,
+                                                              minY,
+                                                              maxX,
+                                                              maxY,
+                                                              matrixWidth  - 1,
+                                                              matrixHeight - 1,
+                                                              zoomLevel),
+                                                minX == 0 && 
+                                                minY == 0 && 
+                                                maxX == (matrixWidth - 1) && 
+                                                maxY == (matrixHeight - 1));
+                          }
+                      }
+                 }
             }
         }
     }
