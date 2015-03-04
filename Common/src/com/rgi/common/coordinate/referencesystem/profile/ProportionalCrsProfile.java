@@ -69,14 +69,15 @@ public abstract class ProportionalCrsProfile implements CrsProfile
 
         final Coordinate<Double> tileCorner = BoundsUtility.boundsCorner(bounds, tileOrigin);
 
-        final double tileCrsHeight = bounds.getHeight() / dimensions.getHeight();
         final double tileCrsWidth  = bounds.getWidth()  / dimensions.getWidth();
+        final double tileCrsHeight = bounds.getHeight() / dimensions.getHeight();
 
-        final double normalizedSrsTileCoordinateY = Math.abs(coordinate.getY() - tileCorner.getY());
         final double normalizedSrsTileCoordinateX = Math.abs(coordinate.getX() - tileCorner.getX());
+        final double normalizedSrsTileCoordinateY = Math.abs(coordinate.getY() - tileCorner.getY());
 
-        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileCrsHeight);
         final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileCrsWidth);
+        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileCrsHeight);
+
 
         return new Coordinate<>(tileX, tileY);
     }
@@ -106,14 +107,14 @@ public abstract class ProportionalCrsProfile implements CrsProfile
         //    throw new IllegalArgumentException("The row and column must be within the tile matrix dimensions");
         //}
 
-        if(row < 0)
-        {
-            throw new IllegalArgumentException("Row must be 0 or greater;");
-        }
-
         if(column < 0)
         {
             throw new IllegalArgumentException("Column must be 0 or greater;");
+        }
+
+        if(row < 0)
+        {
+            throw new IllegalArgumentException("Row must be 0 or greater;");
         }
 
         if(tileOrigin == null)
@@ -121,8 +122,9 @@ public abstract class ProportionalCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Origin may not be null");
         }
 
-        final double tileCrsHeight = bounds.getHeight() / dimensions.getHeight();
         final double tileCrsWidth  = bounds.getWidth()  / dimensions.getWidth();
+        final double tileCrsHeight = bounds.getHeight() / dimensions.getHeight();
+
 
         final Coordinate<Integer> tileCoordinate = tileOrigin.transform(TileOrigin.LowerLeft,
                                                                         column,

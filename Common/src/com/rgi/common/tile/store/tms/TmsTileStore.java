@@ -20,6 +20,9 @@ package com.rgi.common.tile.store.tms;
 
 import java.nio.file.Path;
 
+import com.rgi.common.BoundingBox;
+import com.rgi.common.coordinate.Coordinate;
+import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
@@ -93,6 +96,31 @@ abstract class TmsTileStore
     public TileScheme getTileScheme()
     {
         return this.tileScheme;
+    }
+
+    public CrsCoordinate tileToCrsCoordinate(final int column, final int row, final int zoomLevel, final TileOrigin corner)
+    {
+        if(corner == null)
+        {
+            throw new IllegalArgumentException("Corner may not be null");
+        }
+
+        return this.profile.tileToCrsCoordinate(column + corner.getHorizontal(),
+                                                row    + corner.getVertical(),
+                                                this.profile.getBounds(),    // TMS uses absolute tiling, which covers the whole globe
+                                                this.tileScheme.dimensions(zoomLevel),
+                                                TmsTileStore.Origin);
+    }
+
+    public BoundingBox getTileBoundingBox(final int column, final int row, final int zoomLevel)
+    {
+        final Coordinate<Double> lowerLeft  = this.tileToCrsCoordinate(column, row, zoomLevel, TileOrigin.LowerLeft);
+        final Coordinate<Double> upperRight = this.tileToCrsCoordinate(column, row, zoomLevel, TileOrigin.UpperRight);
+
+        return new BoundingBox(lowerLeft.getX(),
+                               lowerLeft.getY(),
+                               upperRight.getX(),
+                               upperRight.getY());
     }
 
     protected final CrsProfile profile;

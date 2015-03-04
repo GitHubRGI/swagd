@@ -544,13 +544,11 @@ public class GeoPackageTiles
                                                                             coordinate,
                                                                             precision,
                                                                             tileMatrix.getZoomLevel());
-
-        return tileCoordinate != null ? this.addTile(tileSet,
-                                                     tileMatrix,
-                                                     tileCoordinate.getX(),
-                                                     tileCoordinate.getY(),
-                                                     imageData)
-                                      : null;
+        return this.addTile(tileSet,
+                            tileMatrix,
+                            tileCoordinate.getX(),
+                            tileCoordinate.getY(),
+                            imageData);
     }
 
     /**
@@ -736,11 +734,10 @@ public class GeoPackageTiles
                                                                              precision,
                                                                              zoomLevel);
 
-        return tileCoordinate != null ? this.getTile(tileSet,
-                                                         tileCoordinate.getX(),
-                                                         tileCoordinate.getY(),
-                                                         zoomLevel)
-                                          : null;
+        return this.getTile(tileSet,
+                            tileCoordinate.getX(),
+                            tileCoordinate.getY(),
+                            zoomLevel);
     }
 
     /**
@@ -761,11 +758,6 @@ public class GeoPackageTiles
         if(tileSet == null)
         {
             throw new IllegalArgumentException("Tile set cannot be null");
-        }
-
-        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixTableName))
-        {
-            return null;
         }
 
         final String querySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s WHERE table_name = ?;",
@@ -1025,35 +1017,94 @@ public class GeoPackageTiles
 
         if(tileMatrix == null)
         {
-            return null;    // No tile matrix for the requested zoom level
+            throw new IllegalArgumentException("Invalid zoom level for this tile set");
         }
 
         final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
-
-        if(tileMatrixSet == null)
-        {
-            return null;    // No Tile matrix set entry
-        }
 
         final BoundingBox tileSetBounds = tileMatrixSet.getBoundingBox();
 
         if(!BoundsUtility.contains(roundBounds(tileSetBounds, precision), crsCoordinate, GeoPackageTiles.Origin))
         {
-            return null;    // The requested SRS coordinate is outside the bounds of our data
+            throw new IllegalArgumentException("The requested geographic coordinate is outside the bounds of the tile set");
         }
 
         final Coordinate<Double> boundsCorner = BoundsUtility.boundsCorner(roundBounds(tileSetBounds, precision), GeoPackageTiles.Origin);
 
-        final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
         final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();
+        final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
 
-        final double normalizedSrsTileCoordinateY = Math.abs(crsCoordinate.getY() - boundsCorner.getY());
         final double normalizedSrsTileCoordinateX = Math.abs(crsCoordinate.getX() - boundsCorner.getX());
+        final double normalizedSrsTileCoordinateY = Math.abs(crsCoordinate.getY() - boundsCorner.getY());
 
-        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);
         final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
+        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);
 
         return new Coordinate<>(tileX, tileY);
+    }
+
+    /**
+     * Converts a tile coordinate, relative to the input tile set, to a
+     * geographic point.  {@link GeoPackageTiles#Origin} is used as the
+     * representative point of the tile.
+     *
+     * @param tileSet
+     *            Handle to the tile set that the requested tile should belong
+     * @param column
+     *             The 'x' portion of the coordinate
+     * @param row
+     *             The 'y' portion of the coordinate
+     * @param zoomLevel
+     *             The zoom level associated with the coordinate
+     * @return A {@link CrsCoordinate} point, using
+     *             {@link GeoPackageTiles#Origin} as the representative corner
+     *             of the tile.
+     * @throws SQLException
+     *             When there is an SQL failure in getting the tile matrix, the
+     *             spatial reference system, or the tile matrix set of the
+     *             input tile set.
+     */
+    public CrsCoordinate tileToCrsCoordinate(final TileSet tileSet,
+                                             final int     column,
+                                             final int     row,
+                                             final int     zoomLevel) throws SQLException
+    {
+        if(tileSet == null)
+        {
+            throw new IllegalArgumentException("Tile set may not be null");
+        }
+
+        if(column < 0)
+        {
+            throw new IllegalArgumentException("Column must be 0 or greater;");
+        }
+
+        if(row < 0)
+        {
+            throw new IllegalArgumentException("Row must be 0 or greater;");
+        }
+
+        final TileMatrix tileMatrix = this.getTileMatrix(tileSet, zoomLevel);
+
+        if(tileMatrix == null)
+        {
+            throw new IllegalArgumentException("Invalid zoom level for this tile set");
+        }
+
+        final double tileWidthInSrs  = tileMatrix.getPixelXSize() * tileMatrix.getTileWidth();  // We could also divide the tile set bounds by the tile matrix width/height
+        final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
+
+        final SpatialReferenceSystem srs = this.core.getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
+
+        final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
+
+        final BoundingBox tileSetBounds = tileMatrixSet.getBoundingBox();
+
+        final Coordinate<Double> boundsCorner = tileSetBounds.getTopLeft();
+
+        return new CrsCoordinate(boundsCorner.getX() + (column * tileWidthInSrs),
+                                 boundsCorner.getY() - (row    * tileHeightInSrs),
+                                 new CoordinateReferenceSystem(srs.getOrganization(), srs.getOrganizationSrsId()));
     }
 
     /**
