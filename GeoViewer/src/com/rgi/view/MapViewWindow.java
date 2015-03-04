@@ -20,13 +20,10 @@ package com.rgi.view;
 
 import java.awt.BorderLayout;
 import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.util.Collection;
 import java.util.Collections;
 
 import javax.swing.JCheckBox;
@@ -42,17 +39,10 @@ import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
 import org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent;
 import org.openstreetmap.gui.jmapviewer.interfaces.JMapViewerEventListener;
 
-import store.GeoPackageReader;
-
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
-import com.rgi.common.tile.store.tms.TmsReader;
-import com.rgi.geopackage.GeoPackage;
-import com.rgi.geopackage.GeoPackage.OpenMode;
-import com.rgi.geopackage.tiles.TileSet;
 
 /**
  * View a supported tile store within a map viewer.
@@ -61,7 +51,7 @@ import com.rgi.geopackage.tiles.TileSet;
  */
 public class MapViewWindow extends JFrame implements JMapViewerEventListener
 {
-    private boolean tileGridVisible = false;
+    private final boolean tileGridVisible = false;
 
     /**
      * @param location The file that should be viewed in the map viewer.
@@ -108,18 +98,11 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         final JPanel panelBottom = new JPanel();
         this.add(panel, BorderLayout.NORTH);
         this.add(panelBottom, BorderLayout.NORTH);
-        
+
         ///
         final JCheckBox showTileGrid = new JCheckBox("Tile grid visible");
         showTileGrid.setSelected(this.treeMap.getViewer().isTileGridVisible());
-        showTileGrid.addActionListener(new ActionListener() 
-                                                          {
-                                                            @Override
-                                                            public void actionPerformed(ActionEvent e) 
-                                                              {
-                                                                  map().setTileGridVisible(showTileGrid.isSelected());
-                                                              }
-                                                          });
+        showTileGrid.addActionListener(e -> MapViewWindow.this.map().setTileGridVisible(showTileGrid.isSelected()));
         panelBottom.add(showTileGrid);
 
         // TODO multi-file display
@@ -174,43 +157,43 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         }
     }
 
-    private TileStoreReader pickTileStore(final File location)
-    {
-        this.cleanUpResources();
+//    private TileStoreReader pickTileStore(final File location)
+//    {
+//        this.cleanUpResources();
+//
+//        if(location.isDirectory()) // TMS or WMTS based directory create a TMS tile store
+//        {
+//            return new TmsReader(new SphericalMercatorCrsProfile(), location.toPath());   // TODO: we need a way of selecting the profile/CRS
+//        }
+//
+//        if(location.getName().toLowerCase().endsWith(".gpkg"))
+//        {
+//            try(final GeoPackage gpkg = new GeoPackage(location, OpenMode.Open))
+//            {
+//                final Collection<TileSet> tileSets = gpkg.tiles().getTileSets();
+//
+//                if(tileSets.size() > 0)
+//                {
+//                    final String tableName = tileSets.iterator().next().getTableName(); // TODO this just picks the first one
+//
+//                    final GeoPackageReader reader = new GeoPackageReader(location, tableName);
+//
+//                    this.resource = reader;
+//
+//                    return reader;
+//                }
+//            }
+//            catch(final Exception e)
+//            {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        throw new RuntimeException("Tile store unable to be generated.");
+//    }
 
-        if(location.isDirectory()) // TMS or WMTS based directory create a TMS tile store
-        {
-            return new TmsReader(new SphericalMercatorCrsProfile(), location.toPath());   // TODO: we need a way of selecting the profile/CRS
-        }
-
-        if(location.getName().toLowerCase().endsWith(".gpkg"))
-        {
-            try(final GeoPackage gpkg = new GeoPackage(location, OpenMode.Open))
-            {
-                final Collection<TileSet> tileSets = gpkg.tiles().getTileSets();
-
-                if(tileSets.size() > 0)
-                {
-                    final String tableName = tileSets.iterator().next().getTableName(); // TODO this just picks the first one
-
-                    final GeoPackageReader reader = new GeoPackageReader(location, tableName);
-
-                    this.resource = reader;
-
-                    return reader;
-                }
-            }
-            catch(final Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        throw new RuntimeException("Tile store unable to be generated.");
-    }
-    
     private JMapViewer map(){
-        return treeMap.getViewer();
+        return this.treeMap.getViewer();
     }
 
     private static final long serialVersionUID = 1337L;

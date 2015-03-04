@@ -259,6 +259,20 @@ public class GeoPackageTiles
                                     matchingSpatialReferenceSystem);
     }
 
+    public static Collection<String> getTileSets(final Connection connection)
+    {
+        return GeoPackageTiles.getTileSets(connection, null);
+
+    }
+
+    public static Collection<String> getTileSets(final Connection connection, final CoordinateReferenceSystem coordinateReferenceSystem)
+    {
+        return GeoPackageCore.getContent(connection,
+                                         TileSet.TileContentType,
+                                         (tableName, dataType, identifier, description, lastChange, boundingBox, spatialReferenceSystem) -> tableName,
+                                         coordinateReferenceSystem);
+    }
+
     /**
      * Adds a tile matrix
      *

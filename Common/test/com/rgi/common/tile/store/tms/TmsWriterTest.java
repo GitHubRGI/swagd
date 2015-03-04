@@ -33,8 +33,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.rgi.common.coordinate.Coordinate;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.tile.store.TileStoreException;
 
 /**
@@ -60,10 +59,10 @@ public class TmsWriterTest
 
         final int zoomLevel = 1;
         final Coordinate<Integer> coordinate = new Coordinate<>(0, 0);
-        final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", 3857);
+        final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
 
-        final TmsWriter tmsWriter = new TmsWriter(crsProfile, tmsDir, new MimeType("image", "png"));
-        final TmsReader tmsReader = new TmsReader(crsProfile, tmsDir);
+        final TmsWriter tmsWriter = new TmsWriter(coordinateReferenceSystem, tmsDir, new MimeType("image", "png"));
+        final TmsReader tmsReader = new TmsReader(coordinateReferenceSystem, tmsDir);
 
         final BufferedImage image = createImage();
 
@@ -87,7 +86,9 @@ public class TmsWriterTest
         final int zoomLevel = 5;
         final Coordinate<Integer> coordinate = new Coordinate<>(0, 0);
 
-        final TmsWriter tmsWriter = new TmsWriter(CrsProfileFactory.create("EPSG", 3857),
+        final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
+
+        final TmsWriter tmsWriter = new TmsWriter(coordinateReferenceSystem,
                                                   tmsDir,
                                                   new MimeType("image", "png"));
 

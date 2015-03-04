@@ -1,4 +1,4 @@
-/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+/*  Copyright (C) 2014 Reinventing Geospatial, Incoord
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,10 +28,15 @@ import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import utility.DatabaseUtility;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
@@ -351,7 +356,90 @@ public class GeoPackageCore
     }
 
     /**
-     * Request all of a specific type of conent from the {@value #ContentsTableName} table that matches a specific spatial reference system
+     * Request all of a specific type of content from the {@value #ContentsTableName} table that matches a specific spatial reference system
+     *
+     * @param dataType
+     *            Type of content being requested e.g. "tiles", "features" or another value representing an extended GeoPackage's content
+     * @param contentFactory
+     *            Mechanism used to create a type that corresponds to the dataType
+     * @param matchingCReferenceSystem
+     *            Results must reference this spatial reference system.  Results are unfiltered if this parameter is null
+     * @return Returns a Collection {@link Content}s of the type indicated by the {@link ContentFactory}
+     * @throws SQLException  SQLException thrown by automatic close() invocation on preparedStatement or if other various SQLExceptions occur
+     */
+    public static <T extends Content> Collection<T> getContent(final Connection                connection,
+                                                               final String                    dataType,
+                                                               final ContentFactory<T>         contentFactory,
+                                                               final CoordinateReferenceSystem matchingCoordinateReferenceSystem) throws SQLException
+    {
+        if(connection == null || connection.isClosed())
+        {
+            throw new IllegalArgumentException("Connection may not be null or closed");
+        }
+
+        if(dataType == null || dataType.isEmpty())
+        {
+            throw new IllegalArgumentException("Data type may not be null or empty");
+        }
+
+        if(contentFactory == null)
+        {
+            throw new IllegalArgumentException("Content factory may not be null");
+        }
+
+        final String query = String.format("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE data_type = ?%s;",
+                                           "table_name",
+                                           "data_type",
+                                           "identifier",
+                                           "description",
+                                           "strftime('%Y-%m-%dT%H:%M:%fZ', last_change)",
+                                           "min_x",
+                                           "min_y",
+                                           "max_x",
+                                           "max_y",
+                                           "srs_id",
+                                           GeoPackageCore.ContentsTableName,
+                                           matchingCoordinateReferenceSystem != null ? " AND srs_id = ?"
+                                                                            : "");
+
+        try(PreparedStatement preparedStatement = connection.prepareStatement(query))
+        {
+            preparedStatement.setString(1, dataType);
+
+            if(matchingCoordinateReferenceSystem != null)
+            {
+                preparedStatement.setInt(2, matchingCoordinateReferenceSystem.getIdentifier());
+            }
+
+            try(ResultSet         results         = preparedStatement.executeQuery();
+                Stream<ResultSet> resultSetStream = ResultSetStream.getStream(results))
+            {
+                return resultSetStream.map(result -> { try
+                                                       {
+                                                           return contentFactory.create(result.getString(1),                          // table name
+                                                                                        result.getString(2),                          // data type
+                                                                                        result.getString(3),                          // identifier
+                                                                                        result.getString(4),                          // description
+                                                                                        result.getString(5),                          // last change
+                                                                                        new BoundingBox((Double)result.getObject(6),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
+                                                                                                        (Double)result.getObject(7),  // min y
+                                                                                                        (Double)result.getObject(8),  // max x
+                                                                                                        (Double)result.getObject(9)), // max y
+                                                                                        (Integer)result.getObject(10));               // srs id
+                                                       }
+                                                       catch(final SQLException ex)
+                                                       {
+                                                           return null;
+                                                       }
+                                                      })
+                                      .filter(Objects::nonNull)
+                                      .collect(Collectors.toCollection(ArrayList::new));
+            }
+        }
+    }
+
+    /**
+     * Request all of a specific type of content from the {@value #ContentsTableName} table that matches a specific spatial reference system
      *
      * @param dataType
      *            Type of content being requested e.g. "tiles", "features" or another value representing an extended GeoPackage's content
@@ -366,64 +454,11 @@ public class GeoPackageCore
                                                         final ContentFactory<T>      contentFactory,
                                                         final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
     {
-        if(dataType == null || dataType.isEmpty())
-        {
-            throw new IllegalArgumentException("Data type may not be null or empty");
-        }
-
-        if(contentFactory == null)
-        {
-            throw new IllegalArgumentException("Content factory may not be null");
-        }
-
-        final ArrayList<T> content = new ArrayList<>();
-
-        final String query = String.format("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE data_type = ?%s;",
-                                           "table_name",
-                                           "data_type",
-                                           "identifier",
-                                           "description",
-                                           "strftime('%Y-%m-%dT%H:%M:%fZ', last_change)",
-                                           "min_x",
-                                           "min_y",
-                                           "max_x",
-                                           "max_y",
-                                           "srs_id",
-                                           GeoPackageCore.ContentsTableName,
-                                           matchingSpatialReferenceSystem != null ? " AND srs_id = ?"
-                                                                                  : "");
-
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(query))
-        {
-            preparedStatement.setString(1, dataType);
-
-            if(matchingSpatialReferenceSystem != null)
-            {
-                preparedStatement.setInt(2, matchingSpatialReferenceSystem.getIdentifier());
-            }
-
-            try(ResultSet results = preparedStatement.executeQuery())
-            {
-                while(results.next())
-                {
-                    content.add(contentFactory.create(results.getString(1),                          // table name
-                                                      results.getString(2),                          // data type
-                                                      results.getString(3),                          // identifier
-                                                      results.getString(4),                          // description
-                                                      results.getString(5),                          // last change
-                                                      new BoundingBox((Double)results.getObject(6),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                                                      (Double)results.getObject(7),  // min y
-                                                                      (Double)results.getObject(8),  // max x
-                                                                      (Double)results.getObject(9)), // max y
-                                                      (Integer)results.getObject(10)));              // srs id
-                }
-            }
-        }
-
-        return content;
+        return GeoPackageCore.getContent(this.databaseConnection,
+                                         dataType,
+                                         contentFactory,
+                                         matchingSpatialReferenceSystem);
     }
-
-
 
     /**
      * Gets a specific entry in the contents table based on the name of the table the entry corresponds to
