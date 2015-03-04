@@ -32,9 +32,11 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
+import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.ImageUtility;
@@ -103,6 +105,19 @@ public class TileClusterWriter extends TileCluster implements TileStoreWriter
                                                    TileCluster.Origin);
     }
 
+    @Override
+    public CrsCoordinate tileToCrsCoordinate(final int column, final int row, final int zoomLevel, final TileOrigin corner)
+    {
+        // TODO
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public BoundingBox getTileBoundingBox(final int column, final int row, final int zoomLevel)
+    {
+        // TODO
+        throw new RuntimeException("Not implemented");
+    }
 
     @Override
     public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException

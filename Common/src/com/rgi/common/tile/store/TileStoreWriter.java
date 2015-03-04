@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.activation.MimeType;
 
+import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
@@ -49,7 +50,50 @@ public interface TileStoreWriter
      * @throws TileStoreException
      *             Wraps errors thrown by the tile store writer implementation
      */
-    public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel)  throws TileStoreException;
+    public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException;
+
+
+    /**
+     * Converts a tile coordinate to a geographic coordinate, in the coordinate
+     * reference system of this tile store.  The <code>corner</code> parameter
+     * controls which corner point will represent the tile.
+     *
+     * @param column
+     *             The 'x' portion of the coordinate. This value is relative to
+     *             this tile store's tile scheme
+     * @param row
+     *             The 'y' portion of the coordinate. This value is relative to
+     *             this tile store's tile scheme
+     * @param zoomLevel
+     *            The zoom level of the tile
+     * @param corner
+     *             Selects the corner of the tile to represent as the CRS
+     *             coordinate
+     * @return A {@link CrsCoordinate} that represents one of the corners of
+     *             the specified tile
+     * @throws TileStoreException
+     *             Wraps errors thrown by the tile store writer implementation
+     */
+    public CrsCoordinate tileToCrsCoordinate(final int column, final int row, final int zoomLevel, final TileOrigin corner) throws TileStoreException;
+
+    /**
+     * Gets the geographic bounds of a tile, in units of the tile store's
+     * coordinate reference system.
+     *
+     * @param column
+     *             The 'x' portion of the coordinate. This value is relative to
+     *             this tile store's tile scheme
+     * @param row
+     *             The 'y' portion of the coordinate. This value is relative to
+     *             this tile store's tile scheme
+     * @param zoomLevel
+     *            The zoom level of the tile
+     * @return A {@link BoundingBox} that represents the geographic bounds of a
+     *            tile
+     * @throws TileStoreException
+     *             Wraps errors thrown by the tile store writer implementation
+     */
+    public BoundingBox getTileBoundingBox(final int column, final int row, final int zoomLevel) throws TileStoreException;
 
     /**
      * Insert a tile into this tile store via at a row and column that
@@ -70,9 +114,11 @@ public interface TileStoreWriter
      * Insert a tile into this tile store via at a column and row that corresponds to a geographic coordinate
      *
      * @param column
-     *             The 'x' portion of the coordinate. This value is relative to this tile store's tile scheme
+     *             The 'x' portion of the coordinate. This value is relative to
+     *             this tile store's tile scheme
      * @param row
-     *             The 'y' portion of the coordinate. This value is relative to this tile store's tile scheme
+     *             The 'y' portion of the coordinate. This value is relative to
+     *             this tile store's tile scheme
      * @param zoomLevel
      *            The zoom level of the tile
      * @param image
