@@ -1819,8 +1819,8 @@ public class GeoPackageTilesAPITest
      * @throws IOException
      *             throws if an image cannot be read from or written
      */
-    @Test
-    public void getTileRelativeTileCoordinateNonExistant() throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    @Test(expected = IllegalArgumentException.class)
+    public void getTileRelativeTileCoordinateNonExistent() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(18);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
@@ -1836,13 +1836,7 @@ public class GeoPackageTilesAPITest
 
             final CrsCoordinate crsCoordinate = new CrsCoordinate(0.0, -60.0, coordinateReferenceSystem);
 
-            final Tile tileFound = gpkg.tiles().getTile(tileSet, crsCoordinate, CrsProfileFactory.create(coordinateReferenceSystem).getPrecision(), zoomLevel);
-
-            Assert.assertTrue("The Geopackage returned a Tile object that is null when there did not exist a "
-                            + "tile with that particular crsTileCoodinate",
-                       tileFound == null);
-
-
+            gpkg.tiles().getTile(tileSet, crsCoordinate, CrsProfileFactory.create(coordinateReferenceSystem).getPrecision(), zoomLevel);
         }
         finally
         {
@@ -4261,7 +4255,7 @@ public class GeoPackageTilesAPITest
      * @throws IOException
      *             if an error occurs from reading or writing a Tile or File
      */
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void crsToRelativeTileCoordException4() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 15;
@@ -4292,11 +4286,7 @@ public class GeoPackageTilesAPITest
                                        (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
 
-            final Coordinate<Integer> relativeTileCoord = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
-
-            Assert.assertTrue("Expected the GeoPackage to return a null value when the crs tile coordinate zoom level is not in the tile matrix table.",
-                      relativeTileCoord == null);
-
+            gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
         }
         finally
         {
@@ -4324,7 +4314,7 @@ public class GeoPackageTilesAPITest
      * @throws IOException
      *             if an error occurs from reading or writing a Tile or File
      */
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void crsToRelativeTileCoordException5() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 15;
@@ -4354,11 +4344,7 @@ public class GeoPackageTilesAPITest
                                        (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
 
-            final Coordinate<Integer> relativeTileCoord = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
-
-            Assert.assertTrue("Expected the GeoPackage to return a null value when the crs tile coordinate is outside of the bounding box.",
-                      relativeTileCoord == null);
-
+            gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
         }
         finally
         {

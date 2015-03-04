@@ -206,6 +206,41 @@ public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
     }
 
     @Override
+    public CrsCoordinate tileToCrsCoordinate(final int column, final int row, final int zoomLevel, final TileOrigin corner) throws TileStoreException
+    {
+        if(corner == null)
+        {
+            throw new IllegalArgumentException("Corner may not be null");
+        }
+
+        try
+        {
+            return this.geoPackage
+                       .tiles()
+                       .tileToCrsCoordinate(this.tileSet,
+                                            column,
+                                            row,
+                                            zoomLevel);
+        }
+        catch(final SQLException ex)
+        {
+            throw new TileStoreException(ex);
+        }
+    }
+
+    @Override
+    public BoundingBox getTileBoundingBox(final int column, final int row, final int zoomLevel) throws TileStoreException
+    {
+        final Coordinate<Double> lowerLeft  = this.tileToCrsCoordinate(column, row, zoomLevel, TileOrigin.LowerLeft);
+        final Coordinate<Double> upperRight = this.tileToCrsCoordinate(column, row, zoomLevel, TileOrigin.UpperRight);
+
+        return new BoundingBox(lowerLeft.getX(),
+                               lowerLeft.getY(),
+                               upperRight.getX(),
+                               upperRight.getY());
+    }
+
+    @Override
     public void addTile(final CrsCoordinate coordinate, final int zoomLevel, final BufferedImage image) throws TileStoreException
     {
         if(coordinate == null)
