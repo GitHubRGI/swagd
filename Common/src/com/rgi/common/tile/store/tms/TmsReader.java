@@ -44,8 +44,8 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
 import com.rgi.common.Range;
 import com.rgi.common.coordinate.Coordinate;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.store.TileHandle;
@@ -64,14 +64,16 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     /**
      * Constructor
      *
-     * @param profile
-     *             The tile profile this tile store is using
+     * @param coordinateReferenceSystem
+     *             The coordinate reference system of this tile store. TMS's
+     *             lack of metadata means the coordinate reference system
+     *             cannot be inferred.
      * @param location
      *             The location of this tile store on-disk
      */
-    public TmsReader(final CrsProfile profile, final Path location)
+    public TmsReader(final CoordinateReferenceSystem coordinateReferenceSystem, final Path location)
     {
-        super(profile, location);
+        super(coordinateReferenceSystem, location);
 
         if(!location.toFile().canRead())
         {

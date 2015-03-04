@@ -22,6 +22,7 @@ import java.nio.file.Path;
 
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
@@ -40,16 +41,16 @@ abstract class TmsTileStore
     /**
      * Constructor
      *
-     * @param profile
-     *             The tile profile this tile store is using
+     * @param coordinateReferenceSystem
+     *             The coordinate reference system of this tile store
      * @param location
      *             The location of this tile store on-disk
      */
-    protected TmsTileStore(final CrsProfile profile, final Path location)
+    protected TmsTileStore(final CoordinateReferenceSystem coordinateReferenceSystem, final Path location)
     {
-        if(profile == null)
+        if(coordinateReferenceSystem == null)
         {
-            throw new IllegalArgumentException("Tile profile cannot be null");
+            throw new IllegalArgumentException("Coordinate reference may not be null");
         }
 
         if(location == null)
@@ -62,7 +63,7 @@ abstract class TmsTileStore
             throw new IllegalArgumentException("Location must specify a directory");
         }
 
-        this.profile  = profile;
+        this.profile  = CrsProfileFactory.create(coordinateReferenceSystem);
         this.location = location;
 
         this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1);

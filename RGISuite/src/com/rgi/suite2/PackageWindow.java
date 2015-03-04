@@ -18,6 +18,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 
+import com.rgi.packager.Packager;
+
 /**
  * Gather additional information during Packaging workflow.
  *
@@ -136,7 +138,7 @@ public class PackageWindow extends JFrame
                                                  @Override
                                                  public void actionPerformed(final ActionEvent event)
                                                  {
-
+                                                     PackageWindow.this.makePackage();
                                                      PackageWindow.this.closeFrame();
                                                  }
                                              });
@@ -171,5 +173,79 @@ public class PackageWindow extends JFrame
     private void closeFrame()
     {
         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+    }
+
+    private void makePackage()
+    {
+//        // TODO: Create new geopackage or append to existing one
+//        // Get file/directory from settings
+//        final File[] files = opts.getFiles(Setting.FileSelection);
+//        // Create a new geopackage file
+//        final File gpkgFile = new File(opts.get(Setting.OutputFileName));
+//
+//        if(gpkgFile.exists())
+//        {
+//            if(!gpkgFile.delete())
+//            {
+//                this.fireError(new Exception("Unable to overwrite existing geopackage file: " + gpkgFile.getAbsolutePath()));
+//            }
+//        }
+//
+//      try
+//      {
+//            CrsProfile crsProfile = new SphericalMercatorCrsProfile(); // TODO: this should be the default.
+//            switch (opts.get(Setting.CrsProfile))
+//            {
+//                case "SphericalMercator":
+//                case "WebMercator":
+//                    crsProfile = new SphericalMercatorCrsProfile();
+//                    break;
+//                case "WorldMercator":
+//                    crsProfile = new EllipsoidalMercatorCrsProfile();
+//                    break;
+//                case "ScaledWorldMercator":
+//                case "Geodetic":
+//                case "Raster":
+//                default:
+//                    // TODO: need to clean up this mess
+//                    this.fireError(new Exception("Unsupported output profile or no profile supplied."));
+//            }
+//
+//            // TODO: Figure out what the file selection is and create a reader
+//            final TileStoreReader tileStoreReader = new TmsReader(crsProfile, files[0].toPath());
+//
+//            final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
+//
+//            if(zoomLevels.size() == 0)
+//            {
+//                System.err.println("Input tile store contains no zoom levels");
+//                return;
+//            }
+//
+//            final Range<Integer> zoomLevelRange = new Range<>(zoomLevels, Integer::compare);
+//
+//            final List<TileHandle> tiles = tileStoreReader.stream(zoomLevelRange.getMinimum()).collect(Collectors.toList());
+//
+//            final Range<Integer> columnRange = new Range<>(tiles, tile -> tile.getColumn(), Integer::compare);
+//            final Range<Integer>    rowRange = new Range<>(tiles, tile -> tile.getRow(),    Integer::compare);
+//
+//            final int minZoomLevelMatrixWidth  = columnRange.getMaximum() - columnRange.getMinimum() + 1;
+//            final int minZoomLevelMatrixHeight =    rowRange.getMaximum() -    rowRange.getMinimum() + 1;
+//
+//            // Create a new geopackage writer with things like table name and description
+//            final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
+//                                                                     crsProfile.getCoordinateReferenceSystem(),
+//                                                                     opts.get(Setting.TileSetName),
+//                                                                     opts.get(Setting.TileSetName),
+//                                                                     opts.get(Setting.TileSetDescription),
+//                                                                     tileStoreReader.getBounds(),
+//                                                                     new ZoomTimesTwo(zoomLevelRange.getMinimum(),
+//                                                                                      zoomLevelRange.getMaximum(),
+//                                                                                      minZoomLevelMatrixWidth,
+//                                                                                      minZoomLevelMatrixHeight),
+//                                                                     new MimeType("image/png"),
+//                                                                     null);
+
+        final Packager packager = new Packager(tileStoreReader, tileStoreWriter);
     }
 }
