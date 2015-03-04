@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -61,7 +62,8 @@ import com.rgi.geopackage.tiles.TileSet;
  */
 public class MapViewWindow extends JFrame implements JMapViewerEventListener
 {
-    private boolean tileGridVisible = false;
+    com.rgi.common.coordinate.Coordinate<Double> center = new com.rgi.common.coordinate.Coordinate<>(0.0, 0.0);
+    private int minZoomLevel = 0;
 
     /**
      * @param location The file that should be viewed in the map viewer.
@@ -100,11 +102,11 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         new DefaultMapController(this.treeMap.getViewer()).setMovementMouseButton(MouseEvent.BUTTON1);
 
         final JPanel panel = new JPanel();
-        final JPanel panelBottom = new JPanel();
+        final JPanel panelTop = new JPanel();
         this.add(panel, BorderLayout.NORTH);
-        this.add(panelBottom, BorderLayout.NORTH);
+        this.add(panelTop, BorderLayout.NORTH);
         
-        ///
+        ///add a checkbox to show tile gridlines on map
         final JCheckBox showTileGrid = new JCheckBox("Tile grid visible");
         showTileGrid.setSelected(this.treeMap.getViewer().isTileGridVisible());
         showTileGrid.addActionListener(new ActionListener() 
@@ -115,7 +117,22 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
                                                                   map().setTileGridVisible(showTileGrid.isSelected());
                                                               }
                                                           });
-        panelBottom.add(showTileGrid);
+        panelTop.add(showTileGrid);
+        
+        final JButton backToCenterButton = new JButton("Center");
+        backToCenterButton.addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                map().setDisplayPosition(new Coordinate(getCenterCoordiante().getY(),
+                                                        getCenterCoordiante().getX()),
+                                                        getMinZoom());
+            }
+             
+        });
+        panelTop.add(backToCenterButton);
+        
 
         final TileStoreReader tileStore = this.pickTileStore(location);
 
@@ -127,12 +144,13 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
         try
         {
-            final com.rgi.common.coordinate.Coordinate<Double> center = profile.toGlobalGeodetic(tileStore.getBounds().getCenter());
+            this.center = profile.toGlobalGeodetic(tileStore.getBounds().getCenter());
+            this.minZoomLevel = Collections.min(tileStore.getZoomLevels());
 
             this.treeMap.getViewer()
-                        .setDisplayPosition(new Coordinate(center.getY(),
-                                                           center.getX()),
-                                            Collections.min(tileStore.getZoomLevels()));
+                        .setDisplayPosition(new Coordinate(this.center.getY(),
+                                                           this.center.getX()),
+                                                           this.minZoomLevel);
         }
         catch(final TileStoreException ex)
         {
@@ -203,7 +221,17 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     }
     
     private JMapViewer map(){
-        return treeMap.getViewer();
+        return this.treeMap.getViewer();
+    }
+    
+    private com.rgi.common.coordinate.Coordinate<Double> getCenterCoordiante()
+    {
+        return this.center;
+    }
+    
+    private int getMinZoom()
+    {
+        return this.minZoomLevel;
     }
 
     private static final long serialVersionUID = 1337L;
