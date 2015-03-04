@@ -41,9 +41,6 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
-import com.rgi.suite.Settings;
-import com.rgi.suite.SwatchButton;
-
 public class SettingsWindow extends JFrame
 {
     private static final long serialVersionUID = 4509050309011262891L;

@@ -60,65 +60,65 @@ public class Packager implements MonitorableTask, TaskMonitor
 
     private final Set<TaskMonitor> monitors = new HashSet<>();
 
-	public void execute()
-	{
-//		// TODO: Create new geopackage or append to existing one
-//		// Get file/directory from settings
-//		final File[] files = opts.getFiles(Setting.FileSelection);
-//		// Create a new geopackage file
-//		final File gpkgFile = new File(opts.get(Setting.OutputFileName));
+    public void execute()
+    {
+//        // TODO: Create new geopackage or append to existing one
+//        // Get file/directory from settings
+//        final File[] files = opts.getFiles(Setting.FileSelection);
+//        // Create a new geopackage file
+//        final File gpkgFile = new File(opts.get(Setting.OutputFileName));
 //
-//		if(gpkgFile.exists())
-//		{
-//		    if(!gpkgFile.delete())
-//		    {
-//		        this.fireError(new Exception("Unable to overwrite existing geopackage file: " + gpkgFile.getAbsolutePath()));
-//		    }
-//		}
+//        if(gpkgFile.exists())
+//        {
+//            if(!gpkgFile.delete())
+//            {
+//                this.fireError(new Exception("Unable to overwrite existing geopackage file: " + gpkgFile.getAbsolutePath()));
+//            }
+//        }
 
-//		try
-//		{
-//			CrsProfile crsProfile = new SphericalMercatorCrsProfile(); // TODO: this should be the default.
-//			switch (opts.get(Setting.CrsProfile))
-//			{
-//				case "SphericalMercator":
-//				case "WebMercator":
-//					crsProfile = new SphericalMercatorCrsProfile();
-//					break;
-//				case "WorldMercator":
-//					crsProfile = new EllipsoidalMercatorCrsProfile();
-//					break;
-//				case "ScaledWorldMercator":
-//				case "Geodetic":
-//				case "Raster":
-//				default:
-//					// TODO: need to clean up this mess
-//					this.fireError(new Exception("Unsupported output profile or no profile supplied."));
-//			}
+//        try
+//        {
+//            CrsProfile crsProfile = new SphericalMercatorCrsProfile(); // TODO: this should be the default.
+//            switch (opts.get(Setting.CrsProfile))
+//            {
+//                case "SphericalMercator":
+//                case "WebMercator":
+//                    crsProfile = new SphericalMercatorCrsProfile();
+//                    break;
+//                case "WorldMercator":
+//                    crsProfile = new EllipsoidalMercatorCrsProfile();
+//                    break;
+//                case "ScaledWorldMercator":
+//                case "Geodetic":
+//                case "Raster":
+//                default:
+//                    // TODO: need to clean up this mess
+//                    this.fireError(new Exception("Unsupported output profile or no profile supplied."));
+//            }
 //
 //            // TODO: Figure out what the file selection is and create a reader
-//			final TileStoreReader tileStoreReader = new TmsReader(crsProfile, files[0].toPath());
+//            final TileStoreReader tileStoreReader = new TmsReader(crsProfile, files[0].toPath());
 //
-//			final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
+//            final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
 //
-//			if(zoomLevels.size() == 0)
-//			{
-//			    System.err.println("Input tile store contains no zoom levels");
-//			    return;
-//			}
+//            if(zoomLevels.size() == 0)
+//            {
+//                System.err.println("Input tile store contains no zoom levels");
+//                return;
+//            }
 //
-//			final Range<Integer> zoomLevelRange = new Range<>(zoomLevels, Integer::compare);
+//            final Range<Integer> zoomLevelRange = new Range<>(zoomLevels, Integer::compare);
 //
-//			final List<TileHandle> tiles = tileStoreReader.stream(zoomLevelRange.getMinimum()).collect(Collectors.toList());
+//            final List<TileHandle> tiles = tileStoreReader.stream(zoomLevelRange.getMinimum()).collect(Collectors.toList());
 //
-//			final Range<Integer> columnRange = new Range<>(tiles, tile -> tile.getColumn(), Integer::compare);
-//			final Range<Integer>    rowRange = new Range<>(tiles, tile -> tile.getRow(),    Integer::compare);
+//            final Range<Integer> columnRange = new Range<>(tiles, tile -> tile.getColumn(), Integer::compare);
+//            final Range<Integer>    rowRange = new Range<>(tiles, tile -> tile.getRow(),    Integer::compare);
 //
-//			final int minZoomLevelMatrixWidth  = columnRange.getMaximum() - columnRange.getMinimum() + 1;
-//			final int minZoomLevelMatrixHeight =    rowRange.getMaximum() -    rowRange.getMinimum() + 1;
+//            final int minZoomLevelMatrixWidth  = columnRange.getMaximum() - columnRange.getMinimum() + 1;
+//            final int minZoomLevelMatrixHeight =    rowRange.getMaximum() -    rowRange.getMinimum() + 1;
 //
 //            // Create a new geopackage writer with things like table name and description
-//			final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
+//            final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
 //                                                                     crsProfile.getCoordinateReferenceSystem(),
 //                                                                     opts.get(Setting.TileSetName),
 //                                                                     opts.get(Setting.TileSetName),
@@ -131,25 +131,25 @@ public class Packager implements MonitorableTask, TaskMonitor
 //                                                                     new MimeType("image/png"),
 //                                                                     null);
 
-			//this.resource = gpkgWriter;
+            //this.resource = gpkgWriter;
 
             // Create a new PackageJob task
-			final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(this.createPackageJob())));
-			jobWaiter.setDaemon(true);
-			jobWaiter.start();
-//		}
+            final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(this.createPackageJob())));
+            jobWaiter.setDaemon(true);
+            jobWaiter.start();
+//        }
 //        catch(ClassNotFoundException | IOException | SQLException | ConformanceException | TileStoreException | MimeTypeParseException ex)
-//		{
-//			this.fireError(ex);
-//		}
+//        {
+//            this.fireError(ex);
+//        }
 
-	}
+    }
 
-	private Runnable createPackageJob()
-	{
-		return () -> { int tileCount = 0;
+    private Runnable createPackageJob()
+    {
+        return () -> { int tileCount = 0;
 
-		               try
+                       try
                        {
                            for(final TileHandle tileHandle : (Iterable<TileHandle>)this.tileStoreReader.stream()::iterator)
                            {
@@ -177,7 +177,7 @@ public class Packager implements MonitorableTask, TaskMonitor
                            ex.printStackTrace();
                        }
 
-		               try
+                       try
                        {
                            System.out.printf("Packaged %d of %d tiles.\n", tileCount, this.tileStoreReader.countTiles());
                        }
@@ -185,22 +185,22 @@ public class Packager implements MonitorableTask, TaskMonitor
                        {
                            System.out.printf("Copied %d tiles.\n", tileCount);
                        }
-		               finally
-		               {
-		                   this.fireFinished();
-		               }
-		             };
-	}
+                       finally
+                       {
+                           this.fireFinished();
+                       }
+                     };
+    }
 
-	@Override
-	public void addMonitor(final TaskMonitor monitor)
-	{
+    @Override
+    public void addMonitor(final TaskMonitor monitor)
+    {
         this.monitors.add(monitor);
-	}
+    }
 
-	@Override
-	public void requestCancel()
-	{
+    @Override
+    public void requestCancel()
+    {
         this.executor.shutdownNow();
         try
         {
@@ -210,15 +210,15 @@ public class Packager implements MonitorableTask, TaskMonitor
         {
             this.fireCancelled();
         }
-	}
+    }
 
-	private void fireCancelled()
-	{
+    private void fireCancelled()
+    {
         for(final TaskMonitor monitor : this.monitors)
         {
             monitor.cancelled();
         }
-	}
+    }
 
     private void fireProgressUpdate()
     {
@@ -244,9 +244,9 @@ public class Packager implements MonitorableTask, TaskMonitor
         }
     }
 
-	private class JobWaiter implements Runnable
-	{
-		private final Future<?> job;
+    private class JobWaiter implements Runnable
+    {
+        private final Future<?> job;
 
         public JobWaiter(final Future<?> job)
         {
@@ -254,10 +254,10 @@ public class Packager implements MonitorableTask, TaskMonitor
             this.job = job;
         }
 
-		@Override
-		public void run()
-		{
-			try
+        @Override
+        public void run()
+        {
+            try
             {
                 this.job.get();
             }
@@ -280,8 +280,8 @@ public class Packager implements MonitorableTask, TaskMonitor
                 ce.printStackTrace();
                 Packager.this.fireError(ce);
             }
-		}
-	}
+        }
+    }
 
     @Override
     public void setMaximum(final int max)

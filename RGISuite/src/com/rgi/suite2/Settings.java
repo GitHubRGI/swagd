@@ -16,7 +16,7 @@
  *  Suite 330, Boston, MA 02111-1307, USA.
  */
 
-package com.rgi.suite;
+package com.rgi.suite2;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
