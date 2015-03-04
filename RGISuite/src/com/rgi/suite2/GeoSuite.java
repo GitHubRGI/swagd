@@ -40,8 +40,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-import com.rgi.suite.PropertiesAction;
-import com.rgi.suite.Settings;
 import com.rgi.view.MapViewWindow;
 
 /**
@@ -148,7 +146,9 @@ public class GeoSuite
                                  @Override
                                  public void actionPerformed(final ActionEvent event)
                                  {
-
+                                     final JFrame frame = new PackageWindow();
+                                     frame.pack();
+                                     frame.setVisible(true);
                                  }
                              });
 

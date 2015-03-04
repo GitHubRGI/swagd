@@ -1,6 +1,6 @@
 outputLocation=C:\Users\corp
 noDataColor=0,0,0,0
-lastViewDirectory=C:\Users\corp\Desktop\sample data
+lastViewDirectory=C:\Users\corp\Desktop\sample data\geopackage
 outputImageFormat=JPG
 tileWidth=256
 outputImageQuality=70
