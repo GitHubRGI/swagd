@@ -91,7 +91,6 @@ public class TileStoreLoader implements TileLoader
                     }
                     else
                     {
-                        tile.setError("No tile available at this location.");
                         tile.setImage(TransparentTile);
                     }
 
