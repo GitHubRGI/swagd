@@ -241,17 +241,16 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
     private void cleanUpResources()
     {
-        if(this.resource != null)
+        for(final TileStoreReader tileStoreReader : this.tileStoreReaders)
         {
             try
             {
-                this.resource.close();
+                tileStoreReader.close();
             }
             catch(final Exception ex)
             {
                 ex.printStackTrace();
             }
-            this.resource = null;
         }
     }
 
@@ -286,6 +285,4 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     private static final long serialVersionUID = 1337L;
 
     private final JMapViewerTree treeMap;
-
-    private AutoCloseable resource;
 }
