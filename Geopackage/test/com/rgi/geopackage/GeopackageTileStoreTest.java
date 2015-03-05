@@ -532,7 +532,7 @@ public class GeopackageTileStoreTest
      * @throws ConformanceException
      * @throws TileStoreException
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getTileThatDoesntExist() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(9);
@@ -550,7 +550,8 @@ public class GeopackageTileStoreTest
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
                 final CrsCoordinate coordinate = new CrsCoordinate(0, 2, "EPSG", 3857);
-                gpkgReader.getTile(coordinate, 4);
+                BufferedImage tile = gpkgReader.getTile(coordinate, 4);
+                assertTrue("Expected the reader to return null if the tile doesn't exist.",tile == null);
             }
         }
         finally
