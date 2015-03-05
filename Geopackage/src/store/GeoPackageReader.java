@@ -216,6 +216,12 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                                          this.crsProfile.getPrecision(),
                                          zoomLevel));
         }
+        catch(IllegalArgumentException ex)
+        {
+            return null;//this is to catch an IAE if the crsCoordinate 
+                        //Requested is outside the bounds of the GeoPackage
+                        //Tiles BoundingBox
+        }
         catch(final SQLException ex)
         {
             throw new TileStoreException(ex);
