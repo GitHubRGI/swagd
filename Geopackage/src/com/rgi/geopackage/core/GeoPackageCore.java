@@ -35,7 +35,6 @@ import java.util.stream.Stream;
 import utility.DatabaseUtility;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
@@ -358,28 +357,19 @@ public class GeoPackageCore
     /**
      * Request all of a specific type of content from the {@value #ContentsTableName} table that matches a specific spatial reference system
      *
-     * @param connection
-     *            Open JDBC {@link Connection} to an SQLite database
      * @param dataType
      *            Type of content being requested e.g. "tiles", "features" or another value representing an extended GeoPackage's content
      * @param contentFactory
      *            Mechanism used to create a type that corresponds to the dataType
-     * @param coordinateReferenceSystem
-     *            Results must reference this coordinate reference system.  Results are unfiltered if this parameter is null
+     * @param spatialReferenceSystem
+     *            Results must reference this spatial reference system.  Results are unfiltered if this parameter is null
      * @return Returns a Collection {@link Content}s of the type indicated by the {@link ContentFactory}
-     * @throws SQLException
-     *            SQLException thrown by automatic close() invocation on preparedStatement or if other various SQLExceptions occur
+     * @throws SQLException  SQLException thrown by automatic close() invocation on preparedStatement or if other various SQLExceptions occur
      */
-    public static <T extends Content> Collection<T> getContent(final Connection                connection,
-                                                               final String                    dataType,
-                                                               final ContentFactory<T>         contentFactory,
-                                                               final CoordinateReferenceSystem coordinateReferenceSystem) throws SQLException
+    public <T extends Content> Collection<T> getContent(final String                 dataType,
+                                                        final ContentFactory<T>      contentFactory,
+                                                        final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
     {
-        if(connection == null || connection.isClosed())
-        {
-            throw new IllegalArgumentException("Connection may not be null or closed");
-        }
-
         if(dataType == null || dataType.isEmpty())
         {
             throw new IllegalArgumentException("Data type may not be null or empty");
@@ -390,48 +380,29 @@ public class GeoPackageCore
             throw new IllegalArgumentException("Content factory may not be null");
         }
 
-        String query;
 
-        if(coordinateReferenceSystem == null)
-        {
-            query = String.format("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE data_type = ?;",
-                                  "table_name",
-                                  "data_type",
-                                  "identifier",
-                                  "description",
-                                  "strftime('%Y-%m-%dT%H:%M:%fZ', last_change)",
-                                  "min_x",
-                                  "min_y",
-                                  "max_x",
-                                  "max_y",
-                                  "srs_id",
-                                  GeoPackageCore.ContentsTableName);
-        }
-        else
-        {
-            query = String.format("SELECT %s, %s, %s, %11$s.%s, %s, %s, %s, %s, %s, %11$s.%s FROM %s, %s WHERE data_type = ? AND %11$s.%10$s = %12$s.%10$s AND organization = ? AND organization_coordsys_id = ?;",
-                                  "table_name",
-                                  "data_type",
-                                  "identifier",
-                                  "description",
-                                  "strftime('%Y-%m-%dT%H:%M:%fZ', last_change)",
-                                  "min_x",
-                                  "min_y",
-                                  "max_x",
-                                  "max_y",
-                                  "srs_id",
-                                  GeoPackageCore.ContentsTableName,
-                                  GeoPackageCore.SpatialRefSysTableName);
-        }
+        final String query = String.format("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE data_type = ?%s;",
+                                           "table_name",
+                                           "data_type",
+                                           "identifier",
+                                           "description",
+                                           "strftime('%Y-%m-%dT%H:%M:%fZ', last_change)",
+                                           "min_x",
+                                           "min_y",
+                                           "max_x",
+                                           "max_y",
+                                           "srs_id",
+                                           GeoPackageCore.ContentsTableName,
+                                           spatialReferenceSystem != null ? " AND srs_id = ?"
+                                                                                  : "");
 
-        try(PreparedStatement preparedStatement = connection.prepareStatement(query))
+        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(query))
         {
             preparedStatement.setString(1, dataType);
 
-            if(coordinateReferenceSystem != null)
+            if(spatialReferenceSystem != null)
             {
-                preparedStatement.setString(2, coordinateReferenceSystem.getAuthority());
-                preparedStatement.setInt   (3, coordinateReferenceSystem.getIdentifier());
+                preparedStatement.setInt(2, spatialReferenceSystem.getIdentifier());
             }
 
             try(ResultSet         results         = preparedStatement.executeQuery();
@@ -459,30 +430,6 @@ public class GeoPackageCore
                                       .collect(Collectors.toCollection(ArrayList::new));
             }
         }
-    }
-
-    /**
-     * Request all of a specific type of content from the {@value #ContentsTableName} table that matches a specific spatial reference system
-     *
-     * @param dataType
-     *            Type of content being requested e.g. "tiles", "features" or another value representing an extended GeoPackage's content
-     * @param contentFactory
-     *            Mechanism used to create a type that corresponds to the dataType
-     * @param spatialReferenceSystem
-     *            Results must reference this spatial reference system.  Results are unfiltered if this parameter is null
-     * @return Returns a Collection {@link Content}s of the type indicated by the {@link ContentFactory}
-     * @throws SQLException  SQLException thrown by automatic close() invocation on preparedStatement or if other various SQLExceptions occur
-     */
-    public <T extends Content> Collection<T> getContent(final String                 dataType,
-                                                        final ContentFactory<T>      contentFactory,
-                                                        final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
-    {
-        final CoordinateReferenceSystem crs = (spatialReferenceSystem != null) ? new CoordinateReferenceSystem(spatialReferenceSystem.getOrganization(), spatialReferenceSystem.getOrganizationSrsId())
-                                                                         : null;
-        return GeoPackageCore.getContent(this.databaseConnection,
-                                         dataType,
-                                         contentFactory,
-                                         crs);
     }
 
     /**

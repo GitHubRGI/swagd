@@ -19,23 +19,40 @@
 package utility;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import store.GeoPackageReader;
 
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
-import com.rgi.geopackage.tiles.TileSet;
+import com.rgi.geopackage.verification.ConformanceException;
 
 public class TileStoreUtility
 {
-    public static Collection<TileStoreReader> getStores(final File file, final CoordinateReferenceSystem inputCoordinateReferenceSystem)
+    public static Collection<TileStoreReader> getStores(final File file, final CoordinateReferenceSystem inputCoordinateReferenceSystem) throws FileNotFoundException, TileStoreException
     {
-        if(file.isDirectory()) // TMS or WMTS based directory create a TMS tile store
+        if(file == null)
+        {
+            throw new IllegalArgumentException("File may not be null");
+        }
+
+        if(!file.exists())
+        {
+            throw new FileNotFoundException();
+        }
+
+        if(file.isDirectory()) // TODO: do we need to do some verification that this folder structure is actually TMS?
         {
             return Arrays.asList(new TmsReader(inputCoordinateReferenceSystem, file.toPath()));
         }
@@ -44,23 +61,27 @@ public class TileStoreUtility
         {
             try(final GeoPackage gpkg = new GeoPackage(file, OpenMode.Open))
             {
-                final Collection<TileSet> tileSets = gpkg.tiles().getTileSets();
-
-                if(tileSets.size() > 0)
-                {
-                    final String tableName = tileSets.iterator().next().getTableName(); // TODO this just picks the first one
-
-                    final GeoPackageReader reader = new GeoPackageReader(file, tableName);
-
-                    this.resource = reader;
-
-                    return reader;
-                }
+               return gpkg.tiles()
+                          .getTileSets()
+                          .stream()
+                          .map(tileSet -> { try
+                                            {
+                                                return new GeoPackageReader(file, tileSet.getTableName());
+                                            }
+                                            catch(final ClassNotFoundException | SQLException | ConformanceException | IOException ex)
+                                            {
+                                                return null;
+                                            }
+                                          })
+                          .filter(Objects::nonNull)
+                          .collect(Collectors.toCollection(ArrayList<TileStoreReader>::new));
             }
-            catch(final Exception e)
+            catch(final ClassNotFoundException | SQLException | ConformanceException | IOException ex)
             {
-                e.printStackTrace();
+                throw new TileStoreException(ex);
             }
         }
+
+        throw new TileStoreException("Unrecognized file store type");
     }
 }
