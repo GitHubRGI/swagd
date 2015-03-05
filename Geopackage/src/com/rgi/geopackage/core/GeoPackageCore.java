@@ -35,7 +35,6 @@ import java.util.stream.Stream;
 import utility.DatabaseUtility;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
@@ -362,22 +361,15 @@ public class GeoPackageCore
      *            Type of content being requested e.g. "tiles", "features" or another value representing an extended GeoPackage's content
      * @param contentFactory
      *            Mechanism used to create a type that corresponds to the dataType
-     * @param coordinateReferenceSystem
-     *            Results must reference this coordinate reference system.  Results are unfiltered if this parameter is null
+     * @param spatialReferenceSystem
+     *            Results must reference this spatial reference system.  Results are unfiltered if this parameter is null
      * @return Returns a Collection {@link Content}s of the type indicated by the {@link ContentFactory}
-     * @throws SQLException
-     *            SQLException thrown by automatic close() invocation on preparedStatement or if other various SQLExceptions occur
+     * @throws SQLException  SQLException thrown by automatic close() invocation on preparedStatement or if other various SQLExceptions occur
      */
-    public static <T extends Content> Collection<T> getContent(final Connection                connection,
-                                                               final String                    dataType,
-                                                               final ContentFactory<T>         contentFactory,
-                                                               final CoordinateReferenceSystem matchingCoordinateReferenceSystem) throws SQLException
+    public <T extends Content> Collection<T> getContent(final String                 dataType,
+                                                        final ContentFactory<T>      contentFactory,
+                                                        final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
     {
-        if(connection == null || connection.isClosed())
-        {
-            throw new IllegalArgumentException("Connection may not be null or closed");
-        }
-
         if(dataType == null || dataType.isEmpty())
         {
             throw new IllegalArgumentException("Data type may not be null or empty");
@@ -387,6 +379,7 @@ public class GeoPackageCore
         {
             throw new IllegalArgumentException("Content factory may not be null");
         }
+
 
         final String query = String.format("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE data_type = ?%s;",
                                            "table_name",
@@ -400,16 +393,16 @@ public class GeoPackageCore
                                            "max_y",
                                            "srs_id",
                                            GeoPackageCore.ContentsTableName,
-                                           matchingCoordinateReferenceSystem != null ? " AND srs_id = ?"
-                                                                            : "");
+                                           spatialReferenceSystem != null ? " AND srs_id = ?"
+                                                                                  : "");
 
-        try(PreparedStatement preparedStatement = connection.prepareStatement(query))
+        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(query))
         {
             preparedStatement.setString(1, dataType);
 
-            if(matchingCoordinateReferenceSystem != null)
+            if(spatialReferenceSystem != null)
             {
-                preparedStatement.setInt(2, matchingCoordinateReferenceSystem.getIdentifier());
+                preparedStatement.setInt(2, spatialReferenceSystem.getIdentifier());
             }
 
             try(ResultSet         results         = preparedStatement.executeQuery();
@@ -437,28 +430,6 @@ public class GeoPackageCore
                                       .collect(Collectors.toCollection(ArrayList::new));
             }
         }
-    }
-
-    /**
-     * Request all of a specific type of content from the {@value #ContentsTableName} table that matches a specific spatial reference system
-     *
-     * @param dataType
-     *            Type of content being requested e.g. "tiles", "features" or another value representing an extended GeoPackage's content
-     * @param contentFactory
-     *            Mechanism used to create a type that corresponds to the dataType
-     * @param matchingSpatialReferenceSystem
-     *            Results must reference this spatial reference system.  Results are unfiltered if this parameter is null
-     * @return Returns a Collection {@link Content}s of the type indicated by the {@link ContentFactory}
-     * @throws SQLException  SQLException thrown by automatic close() invocation on preparedStatement or if other various SQLExceptions occur
-     */
-    public <T extends Content> Collection<T> getContent(final String                 dataType,
-                                                        final ContentFactory<T>      contentFactory,
-                                                        final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
-    {
-        return GeoPackageCore.getContent(this.databaseConnection,
-                                         dataType,
-                                         contentFactory,
-                                         matchingSpatialReferenceSystem);
     }
 
     /**

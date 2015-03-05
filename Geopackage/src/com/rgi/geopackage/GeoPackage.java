@@ -439,6 +439,8 @@ public class GeoPackage implements AutoCloseable
          */
         Open,
 
+        // TODO: OpenReadOnly
+
         /**
          * Create a new GeoPackage
          */
