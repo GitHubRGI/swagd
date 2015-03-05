@@ -362,10 +362,11 @@ public class GeoPackageCore
      *            Type of content being requested e.g. "tiles", "features" or another value representing an extended GeoPackage's content
      * @param contentFactory
      *            Mechanism used to create a type that corresponds to the dataType
-     * @param matchingCReferenceSystem
-     *            Results must reference this spatial reference system.  Results are unfiltered if this parameter is null
+     * @param coordinateReferenceSystem
+     *            Results must reference this coordinate reference system.  Results are unfiltered if this parameter is null
      * @return Returns a Collection {@link Content}s of the type indicated by the {@link ContentFactory}
-     * @throws SQLException  SQLException thrown by automatic close() invocation on preparedStatement or if other various SQLExceptions occur
+     * @throws SQLException
+     *            SQLException thrown by automatic close() invocation on preparedStatement or if other various SQLExceptions occur
      */
     public static <T extends Content> Collection<T> getContent(final Connection                connection,
                                                                final String                    dataType,
