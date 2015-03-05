@@ -36,7 +36,7 @@ import com.rgi.common.tile.scheme.TileScheme;
  * @author Luke Lambert
  *
  */
-public interface TileStoreWriter
+public interface TileStoreWriter extends AutoCloseable
 {
     /**
      * Converts a geographic coordinate, in units of the tile store's

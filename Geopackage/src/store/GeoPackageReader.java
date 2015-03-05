@@ -63,7 +63,7 @@ import com.rgi.geopackage.verification.ConformanceException;
  * @author Luke Lambert
  *
  */
-public class GeoPackageReader implements AutoCloseable, TileStoreReader
+public class GeoPackageReader implements TileStoreReader
 {
     /**
      * @param geoPackageFile
@@ -216,9 +216,9 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                                          this.crsProfile.getPrecision(),
                                          zoomLevel));
         }
-        catch(IllegalArgumentException ex)
+        catch(final IllegalArgumentException ex)
         {
-            return null;//this is to catch an IAE if the crsCoordinate 
+            return null;//this is to catch an IAE if the crsCoordinate
                         //Requested is outside the bounds of the GeoPackage
                         //Tiles BoundingBox
         }

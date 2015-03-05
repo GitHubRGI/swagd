@@ -30,6 +30,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Properties;
 
 import javax.swing.JButton;
@@ -40,6 +41,11 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import utility.TileStoreUtility;
+
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.common.tile.store.TileStoreException;
+import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.view.MapViewWindow;
 
 /**
@@ -180,9 +186,19 @@ public class GeoSuite
                                                                                                   GeoSuite.this.settings.set(LastFileSelectionSettingName, files[0].getParent());
                                                                                                   GeoSuite.this.settings.save();
 
-                                                                                                  final JFrame frame = new MapViewWindow(files);
-                                                                                                  frame.pack();
-                                                                                                  frame.setVisible(true);
+                                                                                                  final Collection<TileStoreReader> readers = TileStoreUtility.getStores(new CoordinateReferenceSystem("EPSG", 3857), files);   // TODO: !!Importat!! figure out a way of getting the right CRS
+
+                                                                                                  try
+                                                                                                  {
+                                                                                                      final JFrame frame = new MapViewWindow(readers);
+                                                                                                      frame.pack();
+                                                                                                      frame.setVisible(true);
+                                                                                                  }
+                                                                                                  catch(final TileStoreException ex)
+                                                                                                  {
+                                                                                                      JOptionPane.showMessageDialog(null, "Map View", "Unable to view file selection: " + ex.getMessage(), JOptionPane.OK_OPTION);
+                                                                                                      ex.printStackTrace();
+                                                                                                  }
                                                                                               }
                                                                                           }
                                                                                           // else if(JFileChooser.CANCEL_SELECTION.equals(event.getActionCommand()))

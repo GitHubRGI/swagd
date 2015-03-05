@@ -57,7 +57,7 @@ import com.rgi.geopackage.verification.ConformanceException;
  * @author Luke Lambert
  *
  */
-public class GeoPackageWriter implements AutoCloseable, TileStoreWriter
+public class GeoPackageWriter implements TileStoreWriter
 {
     /**
      * @param geoPackageFile
