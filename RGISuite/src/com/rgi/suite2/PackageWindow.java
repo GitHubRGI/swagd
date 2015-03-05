@@ -8,20 +8,36 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import javax.activation.MimeType;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.filechooser.FileFilter;
+
+import store.GeoPackageWriter;
+import utility.TileStoreUtility;
+
+import com.rgi.common.Range;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
+import com.rgi.common.tile.store.TileHandle;
+import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.common.tile.store.TileStoreWriter;
+import com.rgi.packager.Packager;
 
 /**
- * Gather additional information during Packaging workflow.
+ * Gather additional information for packaging, and package
  *
  * @author Steven D. Lander
+ * @author Luke D. Lambert
  *
  */
 public class PackageWindow extends JFrame
@@ -31,6 +47,7 @@ public class PackageWindow extends JFrame
     private final JPanel navPane;
     private final JPanel contentPane;
 
+    private final JTextField inputFileName;
     private final JTextField tileSetName;
     private final JTextField tileSetDescription;
     private final JTextField outputFileName;
@@ -50,6 +67,7 @@ public class PackageWindow extends JFrame
 
         this.tileSetName        = new JTextField();
         this.tileSetDescription = new JTextField();
+        this.inputFileName      = new JTextField();
         this.outputFileName     = new JTextField();
 
         this.buildContentPane();
@@ -61,93 +79,67 @@ public class PackageWindow extends JFrame
 
     private void buildContentPane()
     {
-        // Initial UI values
-        final GridBagConstraints gbc = new GridBagConstraints();
-        gbc.weightx = 1;
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.BOTH;
+        final JButton inputFileNameButton = new JButton("\u2026");
 
-        // Add the tile set name elements
+        inputFileNameButton.addActionListener(e -> { final JFileChooser fileChooser = new JFileChooser();
 
-        gbc.gridy = 0;
-        gbc.weightx = 0;
-        this.contentPane.add(new JLabel("Tile Set Name:"), gbc);
-        gbc.weightx = 1;
+                                                      fileChooser.setMultiSelectionEnabled(false);
+                                                      fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-        this.contentPane.add(this.tileSetName, gbc);
-
-        // Add the tile set description elements
-
-        ++gbc.gridy;
-        gbc.weightx = 0;
-        this.contentPane.add(new JLabel("Tile Set Description:"), gbc);
-        gbc.weightx = 1;
-        this.contentPane.add(this.tileSetDescription, gbc);
-
-        // Add the output geopackage name elements
-        final JButton outputFileNameButton = new JButton("\u2026");
-        ++gbc.gridy;
-        final Insets i = outputFileNameButton.getMargin();
-        final Insets j = new Insets(i.top, 1, i.bottom, 1);
-        outputFileNameButton.setMargin(j);
-        gbc.weightx = 0;
-        this.contentPane.add(new JLabel("Output File Name:"), gbc);
-        gbc.weightx = 1;
-        this.contentPane.add(this.outputFileName, gbc);
-        gbc.weightx = 0;
-        this.contentPane.add(outputFileNameButton, gbc);
-        outputFileNameButton.addActionListener(e -> { final JFileChooser fc = new JFileChooser();
-
-                                                      fc.setMultiSelectionEnabled(false);
-                                                      fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-                                                      fc.addChoosableFileFilter(new FileFilter()
-                                                                                {
-                                                                                    @Override
-                                                                                    public String getDescription()
-                                                                                    {
-                                                                                        return "GeoPackage Files (*.gpkg)";
-                                                                                    }
-
-                                                                                    @Override
-                                                                                    public boolean accept(final File pathname)
-                                                                                    {
-                                                                                        return pathname.getName().toLowerCase().endsWith(".gpkg");
-                                                                                    }
-                                                                                });
-
-                                                      final int option = fc.showOpenDialog(this.contentPane);
+                                                      final int option = fileChooser.showOpenDialog(this.contentPane);
 
                                                       if(option == JFileChooser.APPROVE_OPTION)
                                                       {
-                                                          this.outputFileName.setText(fc.getSelectedFile().getPath());
+                                                          this.inputFileName.setText(fileChooser.getSelectedFile().getPath());
                                                       }
                                                     });
+
+        final int    anchor = GridBagConstraints.WEST;
+        final int    fill   = GridBagConstraints.HORIZONTAL;
+        final Insets insets = new Insets(5, 5, 5, 5);
+
+        // Input tile store file
+        this.contentPane.add(new JLabel("Input tile store:"),     new GridBagConstraints(0, 0, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.contentPane.add(this.inputFileName,                  new GridBagConstraints(1, 0, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+        this.contentPane.add(inputFileNameButton,                 new GridBagConstraints(2, 0, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+
+        // Tile set name
+        this.contentPane.add(new JLabel("Tile Set Name:"),        new GridBagConstraints(0, 1, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.contentPane.add(this.tileSetName,                    new GridBagConstraints(1, 1, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+
+        // Tile set description
+        this.contentPane.add(new JLabel("Tile Set Description:"), new GridBagConstraints(0, 2, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.contentPane.add(this.tileSetDescription,             new GridBagConstraints(1, 2, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+
+        // Output file name
+        this.contentPane.add(new JLabel("Output File Name:"),     new GridBagConstraints(0, 3, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.contentPane.add(this.outputFileName,                 new GridBagConstraints(1, 3, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
     }
 
     private void buildNavPane()
     {
-        // Navigation buttons go here.  These will either cancel and return
-        // to the main window or continue on to build the geopackage.
-
-        // move to next step
-        final JButton okButton = new JButton(new AbstractAction()
+         final JButton okButton = new JButton(new AbstractAction()
                                              {
                                                  private static final long serialVersionUID = -5059914828508260038L;
 
                                                  @Override
                                                  public void actionPerformed(final ActionEvent event)
                                                  {
-                                                     PackageWindow.this.makePackage();
-                                                     PackageWindow.this.closeFrame();
+                                                     try
+                                                    {
+                                                        PackageWindow.this.makePackage();
+                                                        PackageWindow.this.closeFrame();
+                                                    }
+                                                    catch(final Exception ex)
+                                                    {
+                                                        ex.printStackTrace();
+                                                        JOptionPane.showMessageDialog(PackageWindow.this, "Packaging", "An error has occurred: " + ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+                                                    }
                                                  }
                                              });
 
         okButton.setText("OK");
-        //nextButton.setHideActionText(true);
 
-        // cancel packaging workflow
         final JButton cancelButton = new JButton(new AbstractAction()
                                                  {
                                                      private static final long serialVersionUID = -4389758606354266920L;
@@ -160,65 +152,71 @@ public class PackageWindow extends JFrame
                                                  });
 
         cancelButton.setText("Cancel");
-        //cancelButton.setHideActionText(true);
-        cancelButton.setMargin(new Insets(0, 0, 0, 0));
+
         // Add buttons to pane
-        final GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(10, 10, 10, 10);
-        this.navPane.add(cancelButton, gbc);
-        gbc.anchor = GridBagConstraints.EAST;
-        this.navPane.add(okButton, gbc);
+        final Insets insets = new Insets(10, 10, 10, 10);
+        final int    fill   = GridBagConstraints.NONE;
+
+        this.navPane.add(okButton,     new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.EAST, fill, insets, 0, 0));
+        this.navPane.add(cancelButton, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.EAST, fill, insets, 0, 0));
     }
+
 
     private void closeFrame()
     {
         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }
 
-    private void makePackage()
+    private void makePackage() throws Exception
     {
-        final File gpkgFile = new File(this.outputFileName.getText());
+        final Collection<TileStoreReader> readers = TileStoreUtility.getStores(null, new File(this.inputFileName.getText()));   // TODO !!IMPORTANT!! need to pick the crs
 
+        if(readers.isEmpty())
+        {
+            JOptionPane.showMessageDialog(this, "Packaging", "File contains no recognized file store types.", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
+        // TODO handle multiple readers?
+        try(final TileStoreReader tileStoreReader = readers.iterator().next())
+        {
 
+            final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
 
-//
-//            // TODO: Figure out what the file selection is and create a reader
-//            final TileStoreReader tileStoreReader = new TmsReader(crsProfile, files[0].toPath());
-//
-//            final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
-//
-//            if(zoomLevels.size() == 0)
-//            {
-//                System.err.println("Input tile store contains no zoom levels");
-//                return;
-//            }
-//
-//            final Range<Integer> zoomLevelRange = new Range<>(zoomLevels, Integer::compare);
-//
-//            final List<TileHandle> tiles = tileStoreReader.stream(zoomLevelRange.getMinimum()).collect(Collectors.toList());
-//
-//            final Range<Integer> columnRange = new Range<>(tiles, tile -> tile.getColumn(), Integer::compare);
-//            final Range<Integer>    rowRange = new Range<>(tiles, tile -> tile.getRow(),    Integer::compare);
-//
-//            final int minZoomLevelMatrixWidth  = columnRange.getMaximum() - columnRange.getMinimum() + 1;
-//            final int minZoomLevelMatrixHeight =    rowRange.getMaximum() -    rowRange.getMinimum() + 1;
-//
-//            // Create a new geopackage writer with things like table name and description
-//            final GeoPackageWriter gpkgWriter = new GeoPackageWriter(gpkgFile,
-//                                                                     crsProfile.getCoordinateReferenceSystem(),
-//                                                                     opts.get(Setting.TileSetName),
-//                                                                     opts.get(Setting.TileSetName),
-//                                                                     opts.get(Setting.TileSetDescription),
-//                                                                     tileStoreReader.getBounds(),
-//                                                                     new ZoomTimesTwo(zoomLevelRange.getMinimum(),
-//                                                                                      zoomLevelRange.getMaximum(),
-//                                                                                      minZoomLevelMatrixWidth,
-//                                                                                      minZoomLevelMatrixHeight),
-//                                                                     new MimeType("image/png"),
-//                                                                     null);
+            if(zoomLevels.size() == 0)
+            {
+                JOptionPane.showMessageDialog(this, "Packaging", "Input tile store contains no zoom levels", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
-        //final Packager packager = new Packager(tileStoreReader, tileStoreWriter);
+            final Range<Integer> zoomLevelRange = new Range<>(zoomLevels, Integer::compare);
+
+            final List<TileHandle> tiles = tileStoreReader.stream(zoomLevelRange.getMinimum()).collect(Collectors.toList());
+
+            final Range<Integer> columnRange = new Range<>(tiles, tile -> tile.getColumn(), Integer::compare);
+            final Range<Integer>    rowRange = new Range<>(tiles, tile -> tile.getRow(),    Integer::compare);
+
+            final int minZoomLevelMatrixWidth  = columnRange.getMaximum() - columnRange.getMinimum() + 1;
+            final int minZoomLevelMatrixHeight =    rowRange.getMaximum() -    rowRange.getMinimum() + 1;
+
+            final File gpkgFile = new File(this.outputFileName.getText());  // TODO !!IMPORTANT!! append the user prefs for output directory
+
+            try(final TileStoreWriter tileStoreWriter = new GeoPackageWriter(gpkgFile,
+                                                                             tileStoreReader.getCoordinateReferenceSystem(),
+                                                                             this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
+                                                                             this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
+                                                                             this.tileSetDescription.getText(),
+                                                                             tileStoreReader.getBounds(),
+                                                                             new ZoomTimesTwo(zoomLevelRange.getMinimum(),
+                                                                                              zoomLevelRange.getMaximum(),
+                                                                                              minZoomLevelMatrixWidth,
+                                                                                              minZoomLevelMatrixHeight),
+                                                                             new MimeType("image/png"),                     // TODO use user prefs
+                                                                             null))                                         // TODO use user prefs
+            {
+                final Packager packager = new Packager(tileStoreReader, tileStoreWriter);
+                packager.execute(); // TODO monitor errors/progress
+            }
+        }
     }
 }

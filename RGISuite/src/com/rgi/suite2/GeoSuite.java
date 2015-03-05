@@ -196,7 +196,7 @@ public class GeoSuite
                                                                                                   }
                                                                                                   catch(final TileStoreException ex)
                                                                                                   {
-                                                                                                      JOptionPane.showMessageDialog(null, "Map View", "Unable to view file selection: " + ex.getMessage(), JOptionPane.OK_OPTION);
+                                                                                                      JOptionPane.showMessageDialog(null, "Map View", "Unable to view file selection: " + ex.getMessage(), JOptionPane.ERROR_MESSAGE);
                                                                                                       ex.printStackTrace();
                                                                                                   }
                                                                                               }
