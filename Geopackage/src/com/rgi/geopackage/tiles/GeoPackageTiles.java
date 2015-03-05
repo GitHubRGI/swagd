@@ -257,12 +257,34 @@ public class GeoPackageTiles
                                     matchingSpatialReferenceSystem);
     }
 
+    /**
+     * Gets all entries in the GeoPackage's contents table with the "tiles"
+     * data_type
+     *
+     * @param connection
+     *            Open JDBC {@link Connection} to an SQLite database
+     * @return Returns a collection of {@link TileSet}s
+     * @throws SQLException
+     *             Throws if the database is malformed or if there's any other kind of SQL error
+     */
     public static Collection<TileSet> getTileSets(final Connection connection) throws SQLException
     {
         return GeoPackageTiles.getTileSets(connection, null);
 
     }
 
+    /**
+     * Gets all entries in the GeoPackage's contents table with the "tiles"
+     * data_type that also match the supplied coordinate reference system
+     *
+     * @param connection
+     *            Open JDBC {@link Connection} to an SQLite database
+     * @param coordinateReferenceSystem
+     *            Results must reference this coordinate reference system.  Results are unfiltered if this parameter is null
+     * @return Returns a collection of {@link TileSet}s
+     * @throws SQLException
+     *             Throws if the database is malformed or if there's any other kind of SQL error
+     */
     public static Collection<TileSet> getTileSets(final Connection connection, final CoordinateReferenceSystem coordinateReferenceSystem) throws SQLException
     {
         return GeoPackageCore.getContent(connection,
