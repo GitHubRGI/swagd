@@ -125,7 +125,7 @@ public class PackageWindow extends JFrame
                                                     });
     }
 
-    protected void buildNavPane()
+    private void buildNavPane()
     {
         // Navigation buttons go here.  These will either cancel and return
         // to the main window or continue on to build the geopackage.
@@ -177,39 +177,21 @@ public class PackageWindow extends JFrame
 
     private void makePackage()
     {
-//        // TODO: Create new geopackage or append to existing one
-//        // Get file/directory from settings
-//        final File[] files = opts.getFiles(Setting.FileSelection);
-//        // Create a new geopackage file
-//        final File gpkgFile = new File(opts.get(Setting.OutputFileName));
-//
-//        if(gpkgFile.exists())
-//        {
-//            if(!gpkgFile.delete())
-//            {
-//                this.fireError(new Exception("Unable to overwrite existing geopackage file: " + gpkgFile.getAbsolutePath()));
-//            }
-//        }
-//
-//      try
-//      {
-//            CrsProfile crsProfile = new SphericalMercatorCrsProfile(); // TODO: this should be the default.
-//            switch (opts.get(Setting.CrsProfile))
-//            {
-//                case "SphericalMercator":
-//                case "WebMercator":
-//                    crsProfile = new SphericalMercatorCrsProfile();
-//                    break;
-//                case "WorldMercator":
-//                    crsProfile = new EllipsoidalMercatorCrsProfile();
-//                    break;
-//                case "ScaledWorldMercator":
-//                case "Geodetic":
-//                case "Raster":
-//                default:
-//                    // TODO: need to clean up this mess
-//                    this.fireError(new Exception("Unsupported output profile or no profile supplied."));
-//            }
+        // TODO: Create new geopackage or append to existing one
+        // Get file/directory from settings
+        final File[] files = opts.getFiles(Setting.FileSelection);
+        // Create a new geopackage file
+        final File gpkgFile = new File(opts.get(Setting.OutputFileName));
+
+        if(gpkgFile.exists())
+        {
+            if(!gpkgFile.delete())
+            {
+                this.fireError(new Exception("Unable to overwrite existing geopackage file: " + gpkgFile.getAbsolutePath()));
+            }
+        }
+
+
 //
 //            // TODO: Figure out what the file selection is and create a reader
 //            final TileStoreReader tileStoreReader = new TmsReader(crsProfile, files[0].toPath());
