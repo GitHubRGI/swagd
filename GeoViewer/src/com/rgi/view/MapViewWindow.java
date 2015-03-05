@@ -23,7 +23,7 @@ import java.awt.Frame;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 
 import javax.swing.JButton;
@@ -66,19 +66,9 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
      * @param location The file that should be viewed in the map viewer.
      * @throws TileStoreException Thrown when the file is not supported for viewing.
      */
-    public MapViewWindow(final File location) throws TileStoreException
+    public MapViewWindow(final Collection<TileStoreReader> tileStoreReaders) throws TileStoreException
     {
-        this("Tile Viewer", location);
-    }
-
-    /**
-     * @param title Title of the map view window.  Usually a file name or tiles table name.
-     * @param location The file that should be viewed in the map viewer.
-     * @throws TileStoreException Thrown when the file is not supported for viewing.
-     */
-    public MapViewWindow(final String title, final File location) throws TileStoreException
-    {
-        super(title);
+        super("Tile Viewer");
 
         this.treeMap   = new JMapViewerTree("Visualized tile set");
         this.tileStore = this.pickTileStore(location);
