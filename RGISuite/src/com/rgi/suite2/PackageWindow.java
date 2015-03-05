@@ -18,8 +18,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 
-import com.rgi.packager.Packager;
-
 /**
  * Gather additional information during Packaging workflow.
  *
@@ -37,6 +35,9 @@ public class PackageWindow extends JFrame
     private final JTextField tileSetDescription;
     private final JTextField outputFileName;
 
+    /**
+     * Constructor
+     */
     public PackageWindow()
     {
         this.setTitle("Packaging Settings");
@@ -177,19 +178,9 @@ public class PackageWindow extends JFrame
 
     private void makePackage()
     {
-        // TODO: Create new geopackage or append to existing one
-        // Get file/directory from settings
-        final File[] files = opts.getFiles(Setting.FileSelection);
-        // Create a new geopackage file
-        final File gpkgFile = new File(opts.get(Setting.OutputFileName));
+        final File gpkgFile = new File(this.outputFileName.getText());
 
-        if(gpkgFile.exists())
-        {
-            if(!gpkgFile.delete())
-            {
-                this.fireError(new Exception("Unable to overwrite existing geopackage file: " + gpkgFile.getAbsolutePath()));
-            }
-        }
+
 
 
 //
@@ -228,6 +219,6 @@ public class PackageWindow extends JFrame
 //                                                                     new MimeType("image/png"),
 //                                                                     null);
 
-        final Packager packager = new Packager(tileStoreReader, tileStoreWriter);
+        //final Packager packager = new Packager(tileStoreReader, tileStoreWriter);
     }
 }

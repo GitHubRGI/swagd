@@ -71,15 +71,9 @@ abstract class TmsTileStore
         this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
     }
 
-    protected static Path tmsPath(final Path path, final int... tmsSubDirectories)
+    public void close()
     {
-        // TODO use Stream.collect ?
-        Path newPath = path.normalize();
-        for(final int tmsSubdirectory : tmsSubDirectories)
-        {
-            newPath = newPath.resolve(String.valueOf(tmsSubdirectory));
-        }
-        return newPath;
+        // Nothing to do here.  This method exists for child classes that need to implement AutoClosable
     }
 
     public String getName()
@@ -122,6 +116,17 @@ abstract class TmsTileStore
                                lowerLeft.getY(),
                                upperRight.getX(),
                                upperRight.getY());
+    }
+
+    protected static Path tmsPath(final Path path, final int... tmsSubDirectories)
+    {
+        // TODO use Stream.collect ?
+        Path newPath = path.normalize();
+        for(final int tmsSubdirectory : tmsSubDirectories)
+        {
+            newPath = newPath.resolve(String.valueOf(tmsSubdirectory));
+        }
+        return newPath;
     }
 
     protected final CrsProfile profile;

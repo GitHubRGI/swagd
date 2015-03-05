@@ -55,8 +55,14 @@ import com.rgi.common.tile.store.TileStoreReader;
 public class MapViewWindow extends JFrame implements JMapViewerEventListener
 {
     com.rgi.common.coordinate.Coordinate<Double> center = new com.rgi.common.coordinate.Coordinate<>(0.0, 0.0);
+
     private int minZoomLevel = 0;
+
+    @Deprecated
     TileStoreReader tileStore;
+
+    final Collection<TileStoreReader> tileStoreReaders;
+
     JLabel currentZoomLevelValue = new JLabel("");
     JLabel unitsPerPixelXLabel   = new JLabel("Units/PixelX: ");
     JLabel unitsPerPixelYLabel   = new JLabel("Units/PixelY: ");
@@ -64,15 +70,24 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     JLabel unitsPerPixelYValue   = new JLabel("");
 
     /**
-     * @param location The file that should be viewed in the map viewer.
+     * @param tileStoreReaders
+     *             Tile stores to display
      * @throws TileStoreException Thrown when the file is not supported for viewing.
      */
     public MapViewWindow(final Collection<TileStoreReader> tileStoreReaders) throws TileStoreException
     {
         super("Tile Viewer");
 
+        if(tileStoreReaders == null || tileStoreReaders.isEmpty())
+        {
+            throw new IllegalArgumentException("Tile store reader collection may not be null or empty");
+        }
+
+        this.tileStoreReaders = tileStoreReaders;
+
         this.treeMap   = new JMapViewerTree("Visualized tile set");
-        this.tileStore = this.pickTileStore(location);
+
+        this.tileStore = tileStoreReaders.iterator().next();    // TODO: THIS IS BAD! TEMPORARY FIX FOR OLD SINGLE STORE ASSUMPTIONS
 
         this.addWindowListener(new WindowAdapter()
                               {
@@ -89,9 +104,12 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         this.setExtendedState(Frame.MAXIMIZED_BOTH);
 
         new DefaultMapController(this.treeMap.getViewer()).setMovementMouseButton(MouseEvent.BUTTON1);
-        
-        this.treeMap.getViewer().setTileLoader(new TileStoreLoader(this.tileStore, this.treeMap.getViewer()));
-        
+
+        for(final TileStoreReader tileStoreReader : this.tileStoreReaders)
+        {
+            this.treeMap.getViewer().setTileLoader(new TileStoreLoader(tileStoreReader, this.treeMap.getViewer()));
+        }
+
         //Set the initial display position
         setInitialDisplayPosition();
         
@@ -237,42 +255,8 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         }
     }
 
-//    private TileStoreReader pickTileStore(final File location)
-//    {
-//        this.cleanUpResources();
-//
-//        if(location.isDirectory()) // TMS or WMTS based directory create a TMS tile store
-//        {
-//            return new TmsReader(new SphericalMercatorCrsProfile(), location.toPath());   // TODO: we need a way of selecting the profile/CRS
-//        }
-//
-//        if(location.getName().toLowerCase().endsWith(".gpkg"))
-//        {
-//            try(final GeoPackage gpkg = new GeoPackage(location, OpenMode.Open))
-//            {
-//                final Collection<TileSet> tileSets = gpkg.tiles().getTileSets();
-//
-//                if(tileSets.size() > 0)
-//                {
-//                    final String tableName = tileSets.iterator().next().getTableName(); // TODO this just picks the first one
-//
-//                    final GeoPackageReader reader = new GeoPackageReader(location, tableName);
-//
-//                    this.resource = reader;
-//
-//                    return reader;
-//                }
-//            }
-//            catch(final Exception e)
-//            {
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        throw new RuntimeException("Tile store unable to be generated.");
-//    }
-
-    private JMapViewer map(){
+    private JMapViewer map()
+    {
         return this.treeMap.getViewer();
     }
     

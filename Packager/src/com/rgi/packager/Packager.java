@@ -62,20 +62,9 @@ public class Packager implements MonitorableTask, TaskMonitor
 
     public void execute()
     {
-
-
-            //this.resource = gpkgWriter;
-
-            // Create a new PackageJob task
-            final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(this.createPackageJob())));
-            jobWaiter.setDaemon(true);
-            jobWaiter.start();
-//        }
-//        catch(ClassNotFoundException | IOException | SQLException | ConformanceException | TileStoreException | MimeTypeParseException ex)
-//        {
-//            this.fireError(ex);
-//        }
-
+        final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(this.createPackageJob())));
+        jobWaiter.setDaemon(true);
+        jobWaiter.start();
     }
 
     private Runnable createPackageJob()
