@@ -18,6 +18,7 @@
 
 package com.rgi.geopackage;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
@@ -47,6 +48,7 @@ import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.GlobalGeodeticCrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
@@ -4413,7 +4415,177 @@ public class GeoPackageTilesAPITest
             }
         }
     }
+    
+    /**
+     * Tests if a tileCoordinate can be converted to the correct CRS Coordinate
+     * @throws ClassNotFoundException throws
+     * @throws SQLException throws
+     * @throws ConformanceException throws
+     * @throws IOException throws
+     */
+    @Test
+    public void tileToCrsCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    {
+        File testFile = this.getRandomFile(5);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            BoundingBox bBox         =  new BoundingBox(0, 0.0, 180.0,90.0);
+            int         row          = 3;
+            int         column       = 5;
+            int         zoomLevel    = 4;
+            int         matrixWidth  = 6;
+            int         matrixHeight = 4;
+            TileMatrix  tileMatrix   = createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
+            
+            CrsCoordinate crsCoordReturned = gpkg.tiles().tileToCrsCoordinate(gpkg.tiles().getTileSet(tileMatrix.getTableName()), column, row, zoomLevel);
+            CrsCoordinate crsCoordExpected = new CrsCoordinate(bBox.getMinX() + column*(bBox.getWidth()/matrixWidth),
+                                                               bBox.getMaxY() - row*  (bBox.getHeight()/matrixHeight),
+                                                               new GlobalGeodeticCrsProfile().getCoordinateReferenceSystem());
+            
+            assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if a tileCoordinate can be converted to the correct CRS Coordinate
+     * @throws ClassNotFoundException throws
+     * @throws SQLException throws
+     * @throws ConformanceException throws
+     * @throws IOException throws
+     */
+    @Test
+    public void tileToCrsCoordinate2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    {
+        File testFile = this.getRandomFile(5);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            SphericalMercatorCrsProfile spherMercator = new SphericalMercatorCrsProfile();
+            BoundingBox bBox         =  new BoundingBox(spherMercator.getBounds().getMinX()/2, 
+                                                        spherMercator.getBounds().getMinY()/3,
+                                                        spherMercator.getBounds().getMaxX(), 
+                                                        spherMercator.getBounds().getMaxY()/2);
+            int         row          = 5;
+            int         column       = 1;
+            int         zoomLevel    = 4;
+            int         matrixWidth  = 13;
+            int         matrixHeight = 8;
+            
+            SpatialReferenceSystem srs = gpkg.core().addSpatialReferenceSystem(spherMercator.getName(), 
+                                                                               spherMercator.getCoordinateReferenceSystem().getIdentifier(), 
+                                                                               spherMercator.getCoordinateReferenceSystem().getAuthority(), 
+                                                                               spherMercator.getCoordinateReferenceSystem().getIdentifier(), 
+                                                                               spherMercator.getWellKnownText(),
+                                                                               spherMercator.getDescription());
+            
+            TileMatrix  tileMatrix   = createTileSetAndTileMatrix(gpkg, srs, bBox, zoomLevel, matrixWidth, matrixHeight, 256, 256, "tableName");
+            
+            CrsCoordinate crsCoordExpected =  new CrsCoordinate(bBox.getMinX() + column*(bBox.getWidth()/matrixWidth),
+                                                                bBox.getMaxY() - row*  (bBox.getHeight()/matrixHeight),
+                                                                spherMercator.getCoordinateReferenceSystem());
 
+            CrsCoordinate crsCoordReturned = gpkg.tiles().tileToCrsCoordinate(gpkg.tiles().getTileSet(tileMatrix.getTableName()), column, row, zoomLevel);
+            
+            
+            assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if a tileCoordinate can be converted to the correct CRS Coordinate
+     * @throws ClassNotFoundException throws
+     * @throws SQLException throws
+     * @throws ConformanceException throws
+     * @throws IOException throws
+     */
+    @Test
+    public void tileToCrsCoordinate3() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    {
+        File testFile = this.getRandomFile(5);
+        
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            BoundingBox bBox         =  new BoundingBox(-22.1258, -15.325, 43.125, 78.248);
+            int         row          = 2;
+            int         column       = 7;
+            int         zoomLevel    = 4;
+            int         matrixWidth  = 13;
+            int         matrixHeight = 8;
+            TileMatrix  tileMatrix   = createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
+            
+            CrsCoordinate crsCoordReturned = gpkg.tiles().tileToCrsCoordinate(gpkg.tiles().getTileSet(tileMatrix.getTableName()), column, row, zoomLevel);
+            CrsCoordinate crsCoordExpected = new CrsCoordinate(bBox.getMinX() + column*(bBox.getWidth()/matrixWidth),
+                                                               bBox.getMaxY() - row*  (bBox.getHeight()/matrixHeight),
+                                                               new GlobalGeodeticCrsProfile().getCoordinateReferenceSystem());
+            
+            assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    private void assertCoordinatesEqual(CrsCoordinate crsCoordReturned, CrsCoordinate crsCoordExpected)
+    {
+        assertEquals(String.format("The coordinate returned was not the values expected.\n"
+                                   + "Actual Coordinate: (%f, %f) Crs: %s %d\nReturned Coordinate: (%f, %f) Crs: %s %d",
+                                   crsCoordReturned.getX(), 
+                                   crsCoordReturned.getY(), 
+                                   crsCoordReturned.getCoordinateReferenceSystem().getAuthority(), 
+                                   crsCoordReturned.getCoordinateReferenceSystem().getIdentifier(),
+                                   crsCoordExpected.getX(),
+                                   crsCoordReturned.getY(),
+                                   crsCoordReturned.getCoordinateReferenceSystem().getAuthority(),
+                                   crsCoordReturned.getCoordinateReferenceSystem().getIdentifier()),
+                      crsCoordExpected, 
+                      crsCoordReturned);
+    }
+    
+    private void deleteFile(File testFile)
+    {
+        if(testFile.exists())
+        {
+            if(!testFile.delete())
+            {
+                throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+            }
+        }
+    }
+    
+    private static TileMatrix createTileSetAndTileMatrix(final GeoPackage gpkg, final BoundingBox bBox, final int zoomLevel, final int matrixWidth, final int matrixHeight) throws SQLException
+    {
+        return createTileSetAndTileMatrix(gpkg, gpkg.core().getSpatialReferenceSystem(4326), bBox, zoomLevel, matrixWidth, matrixHeight, 256, 256, "tableName");
+    }
+    
+    private static TileMatrix createTileSetAndTileMatrix(final GeoPackage gpkg, final SpatialReferenceSystem srs, final BoundingBox bBox, final int zoomLevel, final int matrixWidth, final int matrixHeight, final int tileWidth, final int tileHeight, final String identifierTableName) throws SQLException
+    {
+      //create a tileSet
+        final TileSet tileSet = gpkg.tiles()
+                                    .addTileSet(identifierTableName,
+                                                identifierTableName,
+                                                "description",
+                                                bBox,
+                                                srs);
+        //create matrix
+        return  gpkg.tiles().addTileMatrix(tileSet,
+                                           zoomLevel,
+                                           matrixWidth,
+                                           matrixHeight,
+                                           tileWidth,
+                                           tileHeight,
+                                           bBox.getWidth()  / matrixWidth / tileWidth,
+                                           bBox.getHeight() / matrixHeight / tileHeight);
+    }
 
     private static byte[] createImageBytes() throws IOException
     {
