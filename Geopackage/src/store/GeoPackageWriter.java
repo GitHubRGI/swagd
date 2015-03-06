@@ -213,11 +213,13 @@ public class GeoPackageWriter implements TileStoreWriter
 
         try
         {
+            TileMatrixDimensions dimensions     = this.tileScheme.dimensions(zoomLevel);
+            Coordinate<Integer>  tileCoordinate = corner.transform(GeoPackageTiles.Origin, column, row, dimensions);
             return this.geoPackage
                        .tiles()
                        .tileToCrsCoordinate(this.tileSet,
-                                            column,
-                                            row,
+                                            tileCoordinate.getX() + corner.getHorizontal(),
+                                            tileCoordinate.getY() + GeoPackageTiles.Origin.getVertical() - corner.getVertical(),
                                             zoomLevel);
         }
         catch(final SQLException ex)

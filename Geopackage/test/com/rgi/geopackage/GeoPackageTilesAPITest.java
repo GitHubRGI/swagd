@@ -4535,6 +4535,109 @@ public class GeoPackageTilesAPITest
         }
     }
     
+    /**
+     * Tests if an IllegalArgumentException when appropriate
+     * @throws ClassNotFoundException throws
+     * @throws SQLException throws
+     * @throws ConformanceException throws
+     * @throws IOException throws
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void tileToCrsCoordinateIllegalArgumentException() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    {
+        File testFile = this.getRandomFile(9);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            gpkg.tiles().tileToCrsCoordinate(null, 0, 0, 0);
+            fail("Expected an IllegalArgumentException when giving a null value for tileSet");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if an IllegalArgumentException when appropriate
+     * @throws ClassNotFoundException throws
+     * @throws SQLException throws
+     * @throws ConformanceException throws
+     * @throws IOException throws
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void tileToCrsCoordinateIllegalArgumentException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    {
+        File testFile = this.getRandomFile(9);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+           TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+                                                     "identifier",
+                                                     "description",
+                                                     new BoundingBox(0.0,0.0,0.0,0.0),
+                                                     gpkg.core().getSpatialReferenceSystem(4326));
+            gpkg.tiles().tileToCrsCoordinate(tileSet, -1, 0, 0);
+            fail("Expected an IllegalArgumentException when giving a negative value for column");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if an IllegalArgumentException when appropriate
+     * @throws ClassNotFoundException throws
+     * @throws SQLException throws
+     * @throws ConformanceException throws
+     * @throws IOException throws
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void tileToCrsCoordinateIllegalArgumentException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    {
+        File testFile = this.getRandomFile(9);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+           TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+                                                     "identifier",
+                                                     "description",
+                                                     new BoundingBox(0.0,0.0,0.0,0.0),
+                                                     gpkg.core().getSpatialReferenceSystem(4326));
+            gpkg.tiles().tileToCrsCoordinate(tileSet, 0, -1, 0);
+            fail("Expected an IllegalArgumentException when giving a negative value for row");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
+    /**
+     * Tests if an IllegalArgumentException when appropriate
+     * @throws ClassNotFoundException throws
+     * @throws SQLException throws
+     * @throws ConformanceException throws
+     * @throws IOException throws
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void tileToCrsCoordinateIllegalArgumentException4() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    {
+        File testFile = this.getRandomFile(9);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+           TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+                                                     "identifier",
+                                                     "description",
+                                                     new BoundingBox(0.0,0.0,0.0,0.0),
+                                                     gpkg.core().getSpatialReferenceSystem(4326));
+            gpkg.tiles().tileToCrsCoordinate(tileSet, 0, 0, 0);
+            fail("Expected an IllegalArgumentException when giving a zoom that does not have a Tile Matrix associated with it.");
+        }
+        finally
+        {
+            deleteFile(testFile);
+        }
+    }
+    
     private void assertCoordinatesEqual(CrsCoordinate crsCoordReturned, CrsCoordinate crsCoordExpected)
     {
         assertEquals(String.format("The coordinate returned was not the values expected.\n"
