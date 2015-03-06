@@ -90,9 +90,10 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     {
         super(title);
 
-        this.treeMap   = new JMapViewerTree("Visualized tile set");
+        
         this.tileStore = this.pickTileStore(location);
-
+        this.treeMap   = new JMapViewerTree(this.tileStore.getName());
+        
         this.addWindowListener(new WindowAdapter()
                               {
                                   @Override
@@ -128,15 +129,23 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         JLabel currentZoomLevelLabel = new JLabel("Zoom Level: ");
         updateZoomParameters();
         
+        //add data Hierarchy
+        final JCheckBox dataHierarchyLayers = new JCheckBox("Data Hierarchy visible");
+        addDataHierarchy(dataHierarchyLayers);
+        
         //create panels and add components
         final JPanel panel = new JPanel();
         final JPanel panelTop = new JPanel();
+        final JPanel panelBottom = new JPanel();
         
-        this.add(panel, BorderLayout.CENTER);
-        this.add(panelTop, BorderLayout.NORTH);
+        this.add(panel, BorderLayout.NORTH);
+        panel.setLayout(new BorderLayout());
+        panel.add(panelTop, BorderLayout.NORTH);
+        panel.add(panelBottom, BorderLayout.SOUTH);
         
         
-        panelTop.add(showTileGrid);
+        panelBottom.add(showTileGrid);
+        panelBottom.add(dataHierarchyLayers);
         panelTop.add(backToCenterButton);
         panelTop.add(currentZoomLevelLabel);
         panelTop.add(this.currentZoomLevelValue);
@@ -146,6 +155,17 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         panelTop.add(this.unitsPerPixelYValue);
 
         this.add(this.treeMap, BorderLayout.CENTER);
+    }
+
+    private void addDataHierarchy(JCheckBox dataHierarchyLayers)
+    {
+        dataHierarchyLayers.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MapViewWindow.this.treeMap.setTreeVisible(dataHierarchyLayers.isSelected());
+            }
+        });
+        
     }
 
     private void addCenterButton(JButton backToCenterButton)
