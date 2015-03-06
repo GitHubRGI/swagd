@@ -48,6 +48,39 @@ import com.rgi.geopackage.verification.ConformanceException;
 public class TileStoreUtility
 {
     /**
+     * Determines if the type of tile store that would be created for this file
+     * will require its coordinate reference system to be explicitly specified.
+     *
+     * @param file
+     *             File or directory that contains one or more sets of tiles
+     * @return <code>true</code> if the type of tile store that would be
+     *             created for this file will require its coordinate reference
+     *             system to be explicitly specified.
+     * @throws IOException
+     *             If the specified file or folder contains no recognized tile
+     *             store type.
+     */
+    public static boolean requriesCrsHint(final File file) throws IOException
+    {
+        if(file == null)
+        {
+            throw new IllegalArgumentException("File may not be null");
+        }
+
+        if(isTms(file)) // TODO: do we need to do some verification that this folder structure is actually TMS?
+        {
+            return true;
+        }
+
+        if(isGeoPackage(file))
+        {
+            return false;
+        }
+
+        throw new IOException("File contains no recognized file store types.");
+    }
+
+    /**
      * @param files
      *             Files containing one or more tile stores
      * @param coordinateReferenceSystem
@@ -56,7 +89,6 @@ public class TileStoreUtility
      *             underlying store knows its own coordinate reference system.
      * @return A {@link Collection} of {@link TileStoreReader}s.
      */
-
     public static Collection<TileStoreReader> getStores(final CoordinateReferenceSystem coordinateReferenceSystem, final File... files)
     {
         final List<TileStoreReader> readers = new LinkedList<>();
@@ -74,12 +106,12 @@ public class TileStoreUtility
     {
         if(file != null && file.canRead())
         {
-            if(file.isDirectory()) // TODO: do we need to do some verification that this folder structure is actually TMS?
+            if(isTms(file)) // TODO: do we need to do some verification that this folder structure is actually TMS?
             {
                 return Arrays.asList(new TmsReader(coordinateReferenceSystem, file.toPath()));
             }
 
-            if(file.getName().toLowerCase().endsWith(".gpkg"))
+            if(isGeoPackage(file))
             {
                 try(final GeoPackage gpkg = new GeoPackage(file, OpenMode.Open))
                 {
@@ -107,5 +139,15 @@ public class TileStoreUtility
         }
 
         return Collections.emptyList();
+    }
+
+    private static boolean isTms(final File file)
+    {
+        return file.isDirectory(); // TODO: do we need to do some verification that this folder structure is actually TMS?
+    }
+
+    private static boolean isGeoPackage(final File file)
+    {
+        return file.getName().toLowerCase().endsWith(".gpkg"); // TODO: should this operate on something other than file extension?
     }
 }

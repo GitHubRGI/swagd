@@ -15,7 +15,9 @@ import java.util.stream.Collectors;
 
 import javax.activation.MimeType;
 import javax.swing.AbstractAction;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -27,6 +29,8 @@ import store.GeoPackageWriter;
 import utility.TileStoreUtility;
 
 import com.rgi.common.Range;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreReader;
@@ -48,6 +52,7 @@ public class PackageWindow extends JFrame
     private final JPanel contentPane;
 
     private final JTextField inputFileName;
+    private final JComboBox  inputCrs;
     private final JTextField tileSetName;
     private final JTextField tileSetDescription;
     private final JTextField outputFileName;
@@ -65,9 +70,12 @@ public class PackageWindow extends JFrame
         this.contentPane = new JPanel(new GridBagLayout());
         this.navPane     = new JPanel(new GridBagLayout());
 
+        this.inputFileName      = new JTextField();
+        this.inputCrs           = new JComboBox<>(new DefaultComboBoxModel<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
+                                                                                              .stream()
+                                                                                              .toArray(CoordinateReferenceSystem[]::new)));
         this.tileSetName        = new JTextField();
         this.tileSetDescription = new JTextField();
-        this.inputFileName      = new JTextField();
         this.outputFileName     = new JTextField();
 
         this.buildContentPane();
@@ -79,6 +87,8 @@ public class PackageWindow extends JFrame
 
     private void buildContentPane()
     {
+
+
         final JButton inputFileNameButton = new JButton("\u2026");
 
         inputFileNameButton.addActionListener(e -> { final JFileChooser fileChooser = new JFileChooser();
@@ -91,6 +101,8 @@ public class PackageWindow extends JFrame
                                                       if(option == JFileChooser.APPROVE_OPTION)
                                                       {
                                                           this.inputFileName.setText(fileChooser.getSelectedFile().getPath());
+
+                                                          // SET READER / INPUT CRS (BOTH IF HINT NEEDED OR REAL)
                                                       }
                                                     });
 
@@ -180,7 +192,6 @@ public class PackageWindow extends JFrame
         // TODO handle multiple readers?
         try(final TileStoreReader tileStoreReader = readers.iterator().next())
         {
-
             final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
 
             if(zoomLevels.size() == 0)
