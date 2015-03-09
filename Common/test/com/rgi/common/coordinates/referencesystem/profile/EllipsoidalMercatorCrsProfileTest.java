@@ -18,6 +18,7 @@
 
 package com.rgi.common.coordinates.referencesystem.profile;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -32,12 +33,14 @@ import org.junit.Test;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsProfile;
+import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
  * @author Jenifer Cochran
  *
  */
-//@SuppressWarnings({"static-method", "javadoc"})
+@SuppressWarnings({"static-method", "javadoc"})
 public class EllipsoidalMercatorCrsProfileTest
 {
     /**
@@ -60,19 +63,35 @@ public class EllipsoidalMercatorCrsProfileTest
     }
     
 //Working on debugging errors
+    @Test
+    public void tileToCrsCoordinateBackToTileCoordinate()
+    {
+        EllipsoidalMercatorCrsProfile ellipsoidalCrs = new EllipsoidalMercatorCrsProfile();
+        TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(4, 4);
+        Coordinate<Integer> tileCoordinateExpected = new Coordinate<>(2,3);
+        
+        CrsCoordinate crsCoordinate = ellipsoidalCrs.tileToCrsCoordinate(tileCoordinateExpected.getX(), tileCoordinateExpected.getY(), ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.UpperLeft);
+        Coordinate<Integer> tileCoordinateReturned = ellipsoidalCrs.crsToTileCoordinate(crsCoordinate,  ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.UpperLeft);
+        
+        assertEquals(tileCoordinateExpected, tileCoordinateReturned);
+    }
+    
+    //working on debugging errors
 //    @Test
-//    public void tileToCrsCoordinateBackToTileCoordinate()
+//    public void tileToCrsCoordinateBackToTileCoordinate2()
 //    {
 //        EllipsoidalMercatorCrsProfile ellipsoidalCrs = new EllipsoidalMercatorCrsProfile();
 //        TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(4, 4);
-//        Coordinate<Integer> tileCoordinateExpected = new Coordinate<>(2,3);
-//        CrsCoordinate crsCoordinate = ellipsoidalCrs.tileToCrsCoordinate(tileCoordinateExpected.getX(), tileCoordinateExpected.getY(), ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.UpperLeft);
-//        System.out.println(String.format("x: %f, y: %f", crsCoordinate.getX(),  crsCoordinate.getY()));
-//        Coordinate<Double> geodetic = ellipsoidalCrs.toGlobalGeodetic(crsCoordinate);
-//        System.out.println(String.format("geodetic x: %f, y: %f", geodetic.getX(),  geodetic.getY()));
-//        Coordinate<Integer> tileCoordinateReturned = ellipsoidalCrs.crsToTileCoordinate(crsCoordinate,  ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.UpperLeft);
-//        
-//        assertEquals(tileCoordinateExpected, tileCoordinateReturned);
+//        for(int row = 0; row < matrixDimensions.getHeight(); row++)
+//        {
+//            for(int column = 0; column < matrixDimensions.getWidth(); column++)
+//            {
+//                Coordinate<Integer> tileCoordinateExpected = new Coordinate<>(column, row);
+//                CrsCoordinate crsCoordinate = ellipsoidalCrs.tileToCrsCoordinate(tileCoordinateExpected.getX(), tileCoordinateExpected.getY(), ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.UpperLeft);
+//                Coordinate<Integer> tileCoordinateReturned = ellipsoidalCrs.crsToTileCoordinate(crsCoordinate,  ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.UpperLeft);
+//                assertEquals(tileCoordinateExpected, tileCoordinateReturned);
+//            }
+//        }
 //    }
     
     /**
