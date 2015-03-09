@@ -51,6 +51,7 @@ import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.common.util.FileUtility;
 
 /**
  * <a href="http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification">TMS</a>
@@ -353,7 +354,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                 .filter(file -> file.isDirectory())
                                 .map(file -> { try
                                                {
-                                                   return Integer.parseInt(withoutExtension(file));
+                                                   return Integer.parseInt(FileUtility.nameWithoutExtension(file));
                                                }
                                                catch(final NumberFormatException ex)
                                                {
@@ -481,7 +482,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
             final Iterable<Integer> tmsNames = Stream.of(directory.listFiles())
                                                      .map(file -> { try
                                                                     {
-                                                                        return Integer.parseInt(withoutExtension(file));
+                                                                        return Integer.parseInt(FileUtility.nameWithoutExtension(file));
                                                                     }
                                                                     catch(final NumberFormatException ex)
                                                                     {
@@ -510,7 +511,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         return files == null ? Stream.empty()
                              : Stream.of(files)
                                      .filter(file -> file.isFile() &&
-                                                     withoutExtension(file).equals(String.valueOf(row)) &&
+                                                     FileUtility.nameWithoutExtension(file).equals(String.valueOf(row)) &&
                                                      fileIsImage(file));
     }
 
@@ -541,11 +542,6 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         {
             return false;
         }
-    }
-
-    private static String withoutExtension(final File file)
-    {
-        return file.getName().replaceFirst("[.][^.]+$", "");
     }
 
     private Set<Integer> zoomLevels = null;

@@ -152,7 +152,7 @@ public class GeoSuite
                                  @Override
                                  public void actionPerformed(final ActionEvent event)
                                  {
-                                     final JFrame frame = new PackageWindow();
+                                     final JFrame frame = new PackageWindow(GeoSuite.this.settings);
                                      frame.pack();
                                      frame.setVisible(true);
                                  }
