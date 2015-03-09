@@ -32,13 +32,16 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.DefaultMapController;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.JMapViewerTree;
-//import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
-//import org.openstreetmap.gui.jmapviewer.TileStoreTileSource;
+import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
+import org.openstreetmap.gui.jmapviewer.checkBoxTree.CheckBoxNodeData;
 import org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent;
 import org.openstreetmap.gui.jmapviewer.interfaces.JMapViewerEventListener;
 
@@ -68,6 +71,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     JLabel unitsPerPixelYLabel   = new JLabel("Units/PixelY: ");
     JLabel unitsPerPixelXValue   = new JLabel("");
     JLabel unitsPerPixelYValue   = new JLabel("");
+    boolean treeSelected = false;
 
     /**
      * @param tileStoreReaders
@@ -131,6 +135,10 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         final JCheckBox dataHierarchyLayers = new JCheckBox("Data Hierarchy visible");
         addDataHierarchy(dataHierarchyLayers);
         
+        //create listener for tree checkbox
+        createTreeListener(this.treeMap);
+        
+
         //create panels and add components
         final JPanel panel = new JPanel();
         final JPanel panelTop = new JPanel();
@@ -155,6 +163,52 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         this.add(this.treeMap, BorderLayout.CENTER);
     }
 
+    private void createTreeListener(@SuppressWarnings("unused") JMapViewerTree tree)
+    {
+        this.treeMap.getTree().getModel().addTreeModelListener(new TreeModelListener(){
+
+            @Override
+            public void treeNodesChanged(TreeModelEvent e)
+            {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) MapViewWindow.this.treeMap
+                        .getTree().getLastSelectedPathComponent();
+
+                if (node.equals(MapViewWindow.this.treeMap.getTree().rootNode()))
+                {
+                    MapViewWindow.this.treeMap.getViewer().setVisible(data(node).isSelected());
+                    MapViewWindow.this.treeMap.setTreeVisible(true);
+                    repaint();
+                }
+            }
+
+            @Override
+            public void treeNodesInserted(TreeModelEvent e)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+
+            @Override
+            public void treeNodesRemoved(TreeModelEvent e)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+
+            @Override
+            public void treeStructureChanged(TreeModelEvent e)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+            
+        });
+    }
+    
+    private static CheckBoxNodeData data(DefaultMutableTreeNode node){
+        return node==null?null:(CheckBoxNodeData)node.getUserObject();
+    }
+
     private void addDataHierarchy(JCheckBox dataHierarchyLayers)
     {
         dataHierarchyLayers.addActionListener(e -> MapViewWindow.this.treeMap.setTreeVisible(dataHierarchyLayers.isSelected()));
@@ -170,7 +224,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
             {
                 MapViewWindow.this.treeMap.getViewer().setDisplayPosition(new Coordinate(MapViewWindow.this.center.getY(),
                                                                                          MapViewWindow.this.center.getX()),
-                                                                          MapViewWindow.this.minZoomLevel);
+                                                                                         MapViewWindow.this.minZoomLevel);
                 updateZoomParameters();
             }   
         });
