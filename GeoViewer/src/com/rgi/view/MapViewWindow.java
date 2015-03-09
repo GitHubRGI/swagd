@@ -157,13 +157,8 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
     private void addDataHierarchy(JCheckBox dataHierarchyLayers)
     {
-        dataHierarchyLayers.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MapViewWindow.this.treeMap.setTreeVisible(dataHierarchyLayers.isSelected());
-            }
-        });
-        
+        dataHierarchyLayers.addActionListener(e -> MapViewWindow.this.treeMap.setTreeVisible(dataHierarchyLayers.isSelected()));
+
     }
 
     private void addCenterButton(JButton backToCenterButton)

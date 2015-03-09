@@ -24,7 +24,7 @@ package com.rgi.common.coordinate;
  * @author Luke Lambert
  *
  */
-public class CoordinateReferenceSystem
+public class CoordinateReferenceSystem implements Comparable<CoordinateReferenceSystem>
 {
     /**
      * Constructor
@@ -89,6 +89,25 @@ public class CoordinateReferenceSystem
     public int hashCode()
     {
         return this.authority.hashCode() ^ this.identifier;
+    }
+
+    @Override
+    public int compareTo(final CoordinateReferenceSystem other)
+    {
+        final int EQUAL = 0;
+
+        if(other == null)
+        {
+            throw new NullPointerException();
+        }
+
+        final int comparison = this.authority.compareTo(other.authority);
+        if(comparison != EQUAL)
+        {
+            return comparison;
+        }
+
+        return Integer.compare(this.identifier, other.identifier);
     }
 
     private final String authority;

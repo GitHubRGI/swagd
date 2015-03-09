@@ -48,36 +48,56 @@ import com.rgi.geopackage.verification.ConformanceException;
 public class TileStoreUtility
 {
     /**
-     * Determines if the type of tile store that would be created for this file
-     * will require its coordinate reference system to be explicitly specified.
+     * Describes the traits of a tile store without having to construct one.
+     *
+     * @author Luke Lambert
+     *
+     */
+    public static class TileStoreTraits
+    {
+        /**
+         * Constructor
+         *
+         * @param knowsCrs
+         *         Indicates if the referenced {@link TileStoreReader} contains
+         *         metadata specifying its coordinate reference system.
+         */
+        public TileStoreTraits(final boolean knowsCrs)
+        {
+            this.knowsCrs = knowsCrs;
+        }
+
+        /**
+         * @return the knowsCrs
+         */
+        public boolean knowsCrs()
+        {
+            return this.knowsCrs;
+        }
+
+        private final boolean knowsCrs;
+    }
+
+    /**
+     * Describes the traits {@link File} represents a tile store
      *
      * @param file
-     *             File or directory that contains one or more sets of tiles
-     * @return <code>true</code> if the type of tile store that would be
-     *             created for this file will require its coordinate reference
-     *             system to be explicitly specified.
-     * @throws IOException
-     *             If the specified file or folder contains no recognized tile
-     *             store type.
+     *             File or directory that may represents a tile store
+     * @return Returns a {@link TileStoreTraits} object, or null if the file
+     *             isn't a recognized tile store
      */
-    public static boolean requriesCrsHint(final File file) throws IOException
+    public static TileStoreTraits getTraits(final File file)
     {
-        if(file == null)
+        if(isTms(file))
         {
-            throw new IllegalArgumentException("File may not be null");
+            return TmsTraits;
+        }
+        else if(isGeoPackage(file))
+        {
+            return GeoPackageTraits;
         }
 
-        if(isTms(file)) // TODO: do we need to do some verification that this folder structure is actually TMS?
-        {
-            return true;
-        }
-
-        if(isGeoPackage(file))
-        {
-            return false;
-        }
-
-        throw new IOException("File contains no recognized file store types.");
+        return null; // file is not a recognized tile store
     }
 
     /**
@@ -150,4 +170,7 @@ public class TileStoreUtility
     {
         return file.getName().toLowerCase().endsWith(".gpkg"); // TODO: should this operate on something other than file extension?
     }
+
+    private static final TileStoreTraits TmsTraits        = new TileStoreTraits(false);
+    private static final TileStoreTraits GeoPackageTraits = new TileStoreTraits(true);
 }

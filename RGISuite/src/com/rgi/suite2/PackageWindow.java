@@ -8,7 +8,9 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,15 +29,20 @@ import javax.swing.JTextField;
 
 import store.GeoPackageWriter;
 import utility.TileStoreUtility;
+import utility.TileStoreUtility.TileStoreTraits;
 
 import com.rgi.common.Range;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileHandle;
+import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
+import com.rgi.common.util.FileUtility;
 import com.rgi.packager.Packager;
+
 
 /**
  * Gather additional information for packaging, and package
@@ -48,35 +55,36 @@ public class PackageWindow extends JFrame
 {
     private static final long serialVersionUID = -3488202344008846021L;
 
-    private final JPanel navPane;
-    private final JPanel contentPane;
+    private final Settings settings;
 
-    private final JTextField inputFileName;
-    private final JComboBox  inputCrs;
-    private final JTextField tileSetName;
-    private final JTextField tileSetDescription;
-    private final JTextField outputFileName;
+    private final JPanel contentPane = new JPanel(new GridBagLayout());
+    private final JPanel navPane     = new JPanel(new GridBagLayout());
+
+    private final JTextField inputFileName      = new JTextField();
+    private final JTextField tileSetName        = new JTextField();
+    private final JTextField tileSetDescription = new JTextField();
+    private final JTextField outputFileName     = new JTextField();
+
+    private final JComboBox<CoordinateReferenceSystem> inputCrs = new JComboBox<>(new DefaultComboBoxModel<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
+                                                                                                                              .stream()
+                                                                                                                              .sorted()
+                                                                                                                              .toArray(CoordinateReferenceSystem[]::new)));
+
+    private static final String LastInputLocationSettingName = "package.lastInputLocation";
 
     /**
      * Constructor
+     * @param settings
+     *             Settings used for
      */
-    public PackageWindow()
+    public PackageWindow(final Settings settings)
     {
         this.setTitle("Packaging Settings");
         this.setLayout(new BorderLayout());
-        this.setPreferredSize(new Dimension(400, 200));
+        this.setPreferredSize(new Dimension(600, 240));
         this.setResizable(false);
 
-        this.contentPane = new JPanel(new GridBagLayout());
-        this.navPane     = new JPanel(new GridBagLayout());
-
-        this.inputFileName      = new JTextField();
-        this.inputCrs           = new JComboBox<>(new DefaultComboBoxModel<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
-                                                                                              .stream()
-                                                                                              .toArray(CoordinateReferenceSystem[]::new)));
-        this.tileSetName        = new JTextField();
-        this.tileSetDescription = new JTextField();
-        this.outputFileName     = new JTextField();
+        this.settings = settings;
 
         this.buildContentPane();
         this.buildNavPane();
@@ -87,23 +95,36 @@ public class PackageWindow extends JFrame
 
     private void buildContentPane()
     {
-
-
         final JButton inputFileNameButton = new JButton("\u2026");
 
-        inputFileNameButton.addActionListener(e -> { final JFileChooser fileChooser = new JFileChooser();
+        this.inputFileName.setEnabled(false);
+        this.inputCrs     .setEnabled(false);
 
-                                                      fileChooser.setMultiSelectionEnabled(false);
-                                                      fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        inputFileNameButton.addActionListener(e -> { final String startDirectory = PackageWindow.this.settings.get(LastInputLocationSettingName, SettingsWindow.DefaultOutputLocation);
 
-                                                      final int option = fileChooser.showOpenDialog(this.contentPane);
+                                                     final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
-                                                      if(option == JFileChooser.APPROVE_OPTION)
-                                                      {
-                                                          this.inputFileName.setText(fileChooser.getSelectedFile().getPath());
+                                                     fileChooser.setMultiSelectionEnabled(false);
+                                                     fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-                                                          // SET READER / INPUT CRS (BOTH IF HINT NEEDED OR REAL)
-                                                      }
+                                                     final int option = fileChooser.showOpenDialog(this.contentPane);
+
+                                                     if(option == JFileChooser.APPROVE_OPTION)
+                                                     {
+                                                         final File file = fileChooser.getSelectedFile();
+
+                                                         try
+                                                         {
+                                                             PackageWindow.this.inputFileChanged(file);
+                                                         }
+                                                         catch(final Exception ex)
+                                                         {
+                                                             JOptionPane.showMessageDialog(this,
+                                                                                           ex.getMessage(),
+                                                                                           "Packaging",
+                                                                                           JOptionPane.ERROR_MESSAGE);
+                                                         }
+                                                     }
                                                     });
 
         final int    anchor = GridBagConstraints.WEST;
@@ -115,17 +136,21 @@ public class PackageWindow extends JFrame
         this.contentPane.add(this.inputFileName,                  new GridBagConstraints(1, 0, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
         this.contentPane.add(inputFileNameButton,                 new GridBagConstraints(2, 0, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
 
+        // Input CRS
+        this.contentPane.add(new JLabel("Input CRS:"),            new GridBagConstraints(0, 1, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.contentPane.add(this.inputCrs,                       new GridBagConstraints(1, 1, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+
         // Tile set name
-        this.contentPane.add(new JLabel("Tile Set Name:"),        new GridBagConstraints(0, 1, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
-        this.contentPane.add(this.tileSetName,                    new GridBagConstraints(1, 1, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+        this.contentPane.add(new JLabel("Tile Set Name:"),        new GridBagConstraints(0, 2, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.contentPane.add(this.tileSetName,                    new GridBagConstraints(1, 2, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
 
         // Tile set description
-        this.contentPane.add(new JLabel("Tile Set Description:"), new GridBagConstraints(0, 2, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
-        this.contentPane.add(this.tileSetDescription,             new GridBagConstraints(1, 2, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+        this.contentPane.add(new JLabel("Tile Set Description:"), new GridBagConstraints(0, 3, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.contentPane.add(this.tileSetDescription,             new GridBagConstraints(1, 3, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
 
         // Output file name
-        this.contentPane.add(new JLabel("Output File Name:"),     new GridBagConstraints(0, 3, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
-        this.contentPane.add(this.outputFileName,                 new GridBagConstraints(1, 3, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+        this.contentPane.add(new JLabel("Output File Name:"),     new GridBagConstraints(0, 4, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.contentPane.add(this.outputFileName,                 new GridBagConstraints(1, 4, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
     }
 
     private void buildNavPane()
@@ -185,32 +210,17 @@ public class PackageWindow extends JFrame
 
         if(readers.isEmpty())
         {
-            JOptionPane.showMessageDialog(this, "Packaging", "File contains no recognized file store types.", JOptionPane.WARNING_MESSAGE);
-            return;
+            throw new TileStoreException("File contains no recognized file store types.");
         }
 
         // TODO handle multiple readers?
         try(final TileStoreReader tileStoreReader = readers.iterator().next())
         {
-            final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
+            final File gpkgFile = new File(this.outputFileName.getText());
 
-            if(zoomLevels.size() == 0)
-            {
-                JOptionPane.showMessageDialog(this, "Packaging", "Input tile store contains no zoom levels", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+            final TileScheme tileScheme = PackageWindow.getRelativeZoomTimesTwoTileScheme(tileStoreReader);
 
-            final Range<Integer> zoomLevelRange = new Range<>(zoomLevels, Integer::compare);
-
-            final List<TileHandle> tiles = tileStoreReader.stream(zoomLevelRange.getMinimum()).collect(Collectors.toList());
-
-            final Range<Integer> columnRange = new Range<>(tiles, tile -> tile.getColumn(), Integer::compare);
-            final Range<Integer>    rowRange = new Range<>(tiles, tile -> tile.getRow(),    Integer::compare);
-
-            final int minZoomLevelMatrixWidth  = columnRange.getMaximum() - columnRange.getMinimum() + 1;
-            final int minZoomLevelMatrixHeight =    rowRange.getMaximum() -    rowRange.getMinimum() + 1;
-
-            final File gpkgFile = new File(this.outputFileName.getText());  // TODO !!IMPORTANT!! append the user prefs for output directory
+            final MimeType mimeType = new MimeType("image/" + this.settings.get(SettingsWindow.OutputImageFormatSettingName, SettingsWindow.DefaultOutputCrs)); // TODO get from UI?
 
             try(final TileStoreWriter tileStoreWriter = new GeoPackageWriter(gpkgFile,
                                                                              tileStoreReader.getCoordinateReferenceSystem(),
@@ -218,16 +228,95 @@ public class PackageWindow extends JFrame
                                                                              this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
                                                                              this.tileSetDescription.getText(),
                                                                              tileStoreReader.getBounds(),
-                                                                             new ZoomTimesTwo(zoomLevelRange.getMinimum(),
-                                                                                              zoomLevelRange.getMaximum(),
-                                                                                              minZoomLevelMatrixWidth,
-                                                                                              minZoomLevelMatrixHeight),
-                                                                             new MimeType("image/png"),                     // TODO use user prefs
-                                                                             null))                                         // TODO use user prefs
+                                                                             tileScheme,
+                                                                             mimeType,
+                                                                             null))                         // TODO use user preferences
             {
                 final Packager packager = new Packager(tileStoreReader, tileStoreWriter);
-                packager.execute(); // TODO monitor errors/progress
+                packager.execute();   // TODO monitor errors/progress
             }
         }
+    }
+
+    private void inputFileChanged(final File file) throws TileStoreException
+    {
+        this.settings.set(LastInputLocationSettingName, file.getParent());
+        this.settings.save();
+
+        final TileStoreTraits traits = TileStoreUtility.getTraits(file);
+
+        if(traits == null)
+        {
+            throw new TileStoreException(String.format("%s is not a recognized tile store format.",
+                                                       file.isDirectory() ? "Folder" : "File"));
+        }
+
+        this.inputCrs.setEnabled(!traits.knowsCrs());
+
+        this.outputFileName.setText(FileUtility.appendForUnique(String.format("%s%c%s.gpkg",
+                                                                              this.settings.get(SettingsWindow.OutputLocationSettingName, SettingsWindow.DefaultOutputLocation),
+                                                                              File.separatorChar,
+                                                                              FileUtility.nameWithoutExtension(file))));
+
+        this.inputFileName.setText(file.getPath());
+
+        String name = FileUtility.nameWithoutExtension(file);
+
+        if(traits.knowsCrs())
+        {
+            final Collection<TileStoreReader> readers = TileStoreUtility.getStores(null, file);
+
+            if(readers.isEmpty())
+            {
+                throw new TileStoreException(String.format("%s contains no tile sets.",
+                                                           file.isDirectory() ? "Folder" : "File"));
+            }
+
+            // TODO handle multiple readers?
+            // TODO store TileStoreReaders so we don't recreate them later?
+            try(final TileStoreReader tileStoreReader = readers.iterator().next())
+            {
+                // TODO if the store contains an unrecognized CRS the combo box won't change
+                this.inputCrs.setSelectedItem(tileStoreReader.getCoordinateReferenceSystem());
+
+                name = tileStoreReader.getName();
+            }
+            catch(final Exception ex)
+            {
+               // Only thrown by the automatic .close() call of the TileStoreReader
+            }
+        }
+
+        this.tileSetName.setText(name);
+        this.tileSetDescription.setText(String.format("Tile store %s (%s) packaged by %s at %s",
+                                                      name,
+                                                      file.getName(),
+                                                      System.getProperty("user.name"),
+                                                      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(new Date())));
+    }
+
+    private static TileScheme getRelativeZoomTimesTwoTileScheme(final TileStoreReader tileStoreReader) throws TileStoreException
+    {
+        final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
+
+        if(zoomLevels.size() == 0)
+        {
+            throw new TileStoreException("Input tile store contains no zoom levels");
+        }
+
+        final Range<Integer> zoomLevelRange = new Range<>(zoomLevels, Integer::compare);
+
+        final List<TileHandle> tiles = tileStoreReader.stream(zoomLevelRange.getMinimum()).collect(Collectors.toList());
+
+        final Range<Integer> columnRange = new Range<>(tiles, tile -> tile.getColumn(), Integer::compare);
+        final Range<Integer>    rowRange = new Range<>(tiles, tile -> tile.getRow(),    Integer::compare);
+
+        final int minZoomLevelMatrixWidth  = columnRange.getMaximum() - columnRange.getMinimum() + 1;
+        final int minZoomLevelMatrixHeight =    rowRange.getMaximum() -    rowRange.getMinimum() + 1;
+
+        return new ZoomTimesTwo(zoomLevelRange.getMinimum(),
+                                zoomLevelRange.getMaximum(),
+                                minZoomLevelMatrixWidth,
+                                minZoomLevelMatrixHeight);
     }
 }

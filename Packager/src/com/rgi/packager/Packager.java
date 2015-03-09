@@ -52,6 +52,14 @@ public class Packager implements MonitorableTask, TaskMonitor
     private final TileStoreReader tileStoreReader;
     private final TileStoreWriter tileStoreWriter;
 
+    /**
+     * Constructor
+     *
+     * @param tileStoreReader
+     *             Input tile store
+     * @param tileStoreWriter
+     *             Destination tile store
+     */
     public Packager(final TileStoreReader tileStoreReader, final TileStoreWriter tileStoreWriter)
     {
         this.tileStoreReader = tileStoreReader;
@@ -60,6 +68,9 @@ public class Packager implements MonitorableTask, TaskMonitor
 
     private final Set<TaskMonitor> monitors = new HashSet<>();
 
+    /**
+     * Starts the packaging job
+     */
     public void execute()
     {
         final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(this.createPackageJob())));
