@@ -166,20 +166,20 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         this.add(this.treeMap, BorderLayout.CENTER);
     }
 
-    private void createTreeListener(@SuppressWarnings("unused") JMapViewerTree tree)
+    private void createTreeListener(JMapViewerTree tree)
     {
-        this.treeMap.getTree().getModel().addTreeModelListener(new TreeModelListener(){
+        tree.getTree().getModel().addTreeModelListener(new TreeModelListener(){
 
             @Override
             public void treeNodesChanged(TreeModelEvent e)
             {
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) MapViewWindow.this.treeMap
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree
                         .getTree().getLastSelectedPathComponent();
 
-                if (node.equals(MapViewWindow.this.treeMap.getTree().rootNode()))
+                if (node.equals(tree.getTree().rootNode()))
                 {
-                    MapViewWindow.this.treeMap.getViewer().setVisible(data(node).isSelected());
-                    MapViewWindow.this.treeMap.setTreeVisible(true);
+                    tree.getViewer().setVisible(data(node).isSelected());
+                    tree.setTreeVisible(true);
                     repaint();
                 }
             }
