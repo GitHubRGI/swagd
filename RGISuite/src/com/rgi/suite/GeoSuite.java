@@ -138,7 +138,9 @@ public class GeoSuite
                                        @Override
                                        public void actionPerformed(final ActionEvent event)
                                        {
-                                           //final JFrame frame = new
+                                           final JFrame frame = new TilerWindow(GeoSuite.this.settings);
+                                           frame.pack();
+                                           frame.setVisible(true);
                                        }
                                    });
 
