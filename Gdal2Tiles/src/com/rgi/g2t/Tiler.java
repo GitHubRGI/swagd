@@ -42,11 +42,11 @@ public class Tiler implements MonitorableTask, TaskMonitor
     private int     jobCount  = 0;
     private int     completed = 0;
 
-    final File[]              files;
-    final TileStoreWriter     tileWriter;
-    final TileStoreReader     tileReader;
-    final Dimensions<Integer> tileDimensions;
-    final Color               noDataColor;
+    final private File[]              files;
+    final private TileStoreWriter     tileWriter;
+    final private TileStoreReader     tileReader;
+    final private Dimensions<Integer> tileDimensions;
+    final private Color               noDataColor;
 
     public Tiler(final File[]              files,
                  final TileStoreWriter     tileWriter,
