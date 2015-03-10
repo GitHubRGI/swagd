@@ -32,12 +32,16 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.DefaultMapController;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.JMapViewerTree;
 import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
+import org.openstreetmap.gui.jmapviewer.checkBoxTree.CheckBoxNodeData;
 import org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent;
 import org.openstreetmap.gui.jmapviewer.interfaces.JMapViewerEventListener;
 
@@ -130,7 +134,11 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
         //add data Hierarchy
         final JCheckBox dataHierarchyLayers = new JCheckBox("Data Hierarchy visible");
+
         this.addDataHierarchy(dataHierarchyLayers);
+
+        //create listener for tree checkbox
+        this.createTreeListener(this.treeMap);
 
         //create panels and add components
         final JPanel panel = new JPanel();
@@ -156,20 +164,66 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         this.add(this.treeMap, BorderLayout.CENTER);
     }
 
+    private void createTreeListener(final JMapViewerTree tree)
+    {
+        tree.getTree().getModel().addTreeModelListener(new TreeModelListener(){
+
+            @Override
+            public void treeNodesChanged(final TreeModelEvent e)
+            {
+                final DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree
+                        .getTree().getLastSelectedPathComponent();
+
+                if (node.equals(tree.getTree().rootNode()))
+                {
+                    tree.getViewer().setVisible(data(node).isSelected());
+                    tree.setTreeVisible(true);
+                    MapViewWindow.this.repaint();
+                }
+            }
+
+            @Override
+            public void treeNodesInserted(final TreeModelEvent e)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void treeNodesRemoved(final TreeModelEvent e)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void treeStructureChanged(final TreeModelEvent e)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+        });
+    }
+
+    private static CheckBoxNodeData data(final DefaultMutableTreeNode node)
+    {
+        return node==null?null:(CheckBoxNodeData)node.getUserObject();
+    }
+
     private void addDataHierarchy(final JCheckBox dataHierarchyLayers)
     {
         dataHierarchyLayers.addActionListener(e -> MapViewWindow.this.treeMap.setTreeVisible(dataHierarchyLayers.isSelected()));
-
     }
 
     private void addCenterButton(final JButton backToCenterButton)
     {
-        backToCenterButton.addActionListener(e -> {
-            MapViewWindow.this.treeMap.getViewer().setDisplayPosition(new Coordinate(MapViewWindow.this.center.getY(),
-                                                                                     MapViewWindow.this.center.getX()),
-                                                                      MapViewWindow.this.minZoomLevel);
-            MapViewWindow.this.updateZoomParameters();
-        });
+        backToCenterButton.addActionListener(e -> { MapViewWindow.this.treeMap.getViewer()
+                                                                              .setDisplayPosition(new Coordinate(MapViewWindow.this.center.getY(),
+                                                                                                                 MapViewWindow.this.center.getX()),
+                                                                                                  MapViewWindow.this.minZoomLevel);
+                                                    MapViewWindow.this.updateZoomParameters();
+                                                  });
     }
 
     private void addCheckboxForTileGridLines(final JCheckBox showTileGrid)
