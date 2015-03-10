@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.activation.MimeType;
-import javax.swing.JOptionPane;
 
 import store.GeoPackageWriter;
 import utility.TileStoreUtility;
@@ -48,21 +47,10 @@ public class PackagerWindow extends TileStoreCreationWindow
     public PackagerWindow(final Settings settings)
     {
         super("Packaging", settings, LastInputLocationSettingName);
-
-        this.okButton.addActionListener(e -> { try
-                                               {
-                                                   PackagerWindow.this.makePackage();
-                                                   PackagerWindow.this.closeFrame();
-                                               }
-                                               catch(final Exception ex)
-                                               {
-                                                   ex.printStackTrace();
-                                                   JOptionPane.showMessageDialog(PackagerWindow.this, this.processName, "An error has occurred: " + ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-                                               }
-                                             });
     }
 
-    private void makePackage() throws Exception
+    @Override
+    protected void execute() throws Exception
     {
         final Collection<TileStoreReader> readers = TileStoreUtility.getStores(null, new File(this.inputFileName.getText()));   // TODO !!IMPORTANT!! need to pick the crs
 
@@ -99,9 +87,6 @@ public class PackagerWindow extends TileStoreCreationWindow
     @Override
     protected void inputFileChanged(final File file) throws TileStoreException
     {
-        this.settings.set(LastInputLocationSettingName, file.getParent());
-        this.settings.save();
-
         final TileStoreTraits traits = TileStoreUtility.getTraits(file);
 
         if(traits == null)
@@ -110,7 +95,7 @@ public class PackagerWindow extends TileStoreCreationWindow
                                                        file.isDirectory() ? "Folder" : "File"));
         }
 
-        this.inputCrs.setEnabled(!traits.knowsCrs());
+        this.inputCrs.setEditable(!traits.knowsCrs());
 
         this.outputFileName.setText(FileUtility.appendForUnique(String.format("%s%c%s.gpkg",
                                                                               this.settings.get(SettingsWindow.OutputLocationSettingName, SettingsWindow.DefaultOutputLocation),

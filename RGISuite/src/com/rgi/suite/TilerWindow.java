@@ -1,13 +1,17 @@
 package com.rgi.suite;
 
 import java.io.File;
-import java.util.Collection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-import utility.TileStoreUtility;
-import utility.TileStoreUtility.TileStoreTraits;
+import org.gdal.gdal.Dataset;
+import org.gdal.gdal.gdal;
+import org.gdal.gdalconst.gdalconstConstants;
+import org.gdal.osr.SpatialReference;
+import org.gdal.osr.osr;
 
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.util.FileUtility;
 
 
@@ -34,60 +38,75 @@ public class TilerWindow extends TileStoreCreationWindow
     }
 
     @Override
+    protected void execute() throws Exception
+    {
+        //final Tiler tiler = new Tiler();
+        //tiler.execute();
+    }
+
+    @Override
     protected void inputFileChanged(final File file) throws TileStoreException
     {
-        this.settings.set(LastInputLocationSettingName, file.getParent());
-        this.settings.save();
-
-        final TileStoreTraits traits = TileStoreUtility.getTraits(file);
-
-        if(traits == null)
-        {
-            throw new TileStoreException(String.format("%s is not a recognized tile store format.",
-                                                       file.isDirectory() ? "Folder" : "File"));
-        }
-
-        this.inputCrs.setEnabled(!traits.knowsCrs());
-
-//        this.outputFileName.setText(FileUtility.appendForUnique(String.format("%s%c%s.gpkg",
-//                                                                              this.settings.get(SettingsWindow.OutputLocationSettingName, SettingsWindow.DefaultOutputLocation),
-//                                                                              File.separatorChar,
-//                                                                              FileUtility.nameWithoutExtension(file))));
-
         this.inputFileName.setText(file.getPath());
 
-        String name = FileUtility.nameWithoutExtension(file);
+        final CoordinateReferenceSystem crs = TilerWindow.getCrs(file);
 
-        if(traits.knowsCrs())
+        this.inputCrs.setEditable(crs == null);
+
+        if(crs != null)
         {
-            final Collection<TileStoreReader> readers = TileStoreUtility.getStores(null, file);
-
-            if(readers.isEmpty())
-            {
-                throw new TileStoreException(String.format("%s contains no tile sets.",
-                                                           file.isDirectory() ? "Folder" : "File"));
-            }
-
-            // TODO handle multiple readers?
-            // TODO store TileStoreReaders so we don't recreate them later?
-            try(final TileStoreReader tileStoreReader = readers.iterator().next())
-            {
-                // TODO if the store contains an unrecognized CRS the combo box won't change
-                this.inputCrs.setSelectedItem(tileStoreReader.getCoordinateReferenceSystem());
-
-                name = tileStoreReader.getName();
-            }
-            catch(final Exception ex)
-            {
-               // Only thrown by the automatic .close() call of the TileStoreReader
-            }
+            this.inputCrs.setSelectedItem(crs); // TODO if the store contains an unrecognized CRS the combo box won't change
         }
 
-//        this.tileSetName.setText(name);
-//        this.tileSetDescription.setText(String.format("Tile store %s (%s) packaged by %s at %s",
-//                                                      name,
-//                                                      file.getName(),
-//                                                      System.getProperty("user.name"),
-//                                                      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(new Date())));
+        this.outputFileName.setText(FileUtility.appendForUnique(String.format("%s%c%s.gpkg",
+                                                                              this.settings.get(SettingsWindow.OutputLocationSettingName, SettingsWindow.DefaultOutputLocation),
+                                                                              File.separatorChar,
+                                                                              FileUtility.nameWithoutExtension(file))));
+
+        final String name = FileUtility.nameWithoutExtension(file);
+
+        this.tileSetName.setText(name);
+        this.tileSetDescription.setText(String.format("Tile store %s (%s) packaged by %s at %s",
+                                                      name,
+                                                      file.getName(),
+                                                      System.getProperty("user.name"),
+                                                      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(new Date())));
+    }
+
+    private static CoordinateReferenceSystem getCrs(final File file) throws RuntimeException
+    {
+        osr.UseExceptions(); // TODO only do this once
+        gdal.AllRegister();  // TODO only do this once
+
+        final Dataset dataset = gdal.Open(file.getAbsolutePath(),
+                                          gdalconstConstants.GA_ReadOnly);
+
+        if(dataset == null)
+        {
+            return null;
+        }
+
+        final SpatialReference srs = new SpatialReference(dataset.GetProjection());
+
+        gdal.GDALDestroyDriverManager(); // TODO only do this once
+
+        final String attributePath = "PROJCS|GEOGCS|AUTHORITY";
+
+        final String authority  = srs.GetAttrValue(attributePath, 0);
+        final String identifier = srs.GetAttrValue(attributePath, 1);
+
+        if(authority == null || identifier == null)
+        {
+            return null;    // Failed to get the attribute value for some reason, see: http://gdal.org/java/org/gdal/osr/SpatialReference.html#GetAttrValue(java.lang.String,%20int)
+        }
+
+        try
+        {
+            return new CoordinateReferenceSystem(authority, Integer.parseInt(identifier));
+        }
+        catch(final NumberFormatException ex)
+        {
+            return null;    // The authority identifier in the WKT wasn't an integer
+        }
     }
 }
