@@ -167,9 +167,7 @@ public class SettingsWindow extends JFrame
         gbc.weightx = 1;
         this.contentPane.add(this.outputImageType, gbc);
 
-        this.outputImageType.addItemListener(e -> {
-            this.outputQualitySpinner.setEnabled("JPG".equals(this.outputImageType.getSelectedItem()));
-        });
+        this.outputImageType.addItemListener(e -> { this.outputQualitySpinner.setEnabled("JPG".equals(this.outputImageType.getSelectedItem())); });
 
         final int imageQuality = this.settings.get(OutputImageQualitySettingName, Integer::parseInt, DefaultOutputImageQuality);
 

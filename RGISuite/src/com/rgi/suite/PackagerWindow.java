@@ -4,20 +4,10 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import javax.activation.MimeType;
-
-import store.GeoPackageWriter;
 import utility.TileStoreUtility;
 import utility.TileStoreUtility.TileStoreTraits;
 
-import com.rgi.common.Range;
-import com.rgi.common.tile.scheme.TileScheme;
-import com.rgi.common.tile.scheme.ZoomTimesTwo;
-import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
@@ -50,38 +40,10 @@ public class PackagerWindow extends TileStoreCreationWindow
     }
 
     @Override
-    protected void execute() throws Exception
+    protected void execute(final TileStoreReader tileStoreReader, final TileStoreWriter tileStoreWriter) throws Exception
     {
-        final Collection<TileStoreReader> readers = TileStoreUtility.getStores(null, new File(this.inputFileName.getText()));   // TODO !!IMPORTANT!! need to pick the crs
-
-        if(readers.isEmpty())
-        {
-            throw new TileStoreException("File contains no recognized file store types.");
-        }
-
-        // TODO handle multiple readers?
-        try(final TileStoreReader tileStoreReader = readers.iterator().next())
-        {
-            final File gpkgFile = new File(this.outputFileName.getText());
-
-            final TileScheme tileScheme = PackagerWindow.getRelativeZoomTimesTwoTileScheme(tileStoreReader);
-
-            final MimeType mimeType = new MimeType("image/" + this.settings.get(SettingsWindow.OutputImageFormatSettingName, SettingsWindow.DefaultOutputCrs)); // TODO get from UI?
-
-            try(final TileStoreWriter tileStoreWriter = new GeoPackageWriter(gpkgFile,
-                                                                             tileStoreReader.getCoordinateReferenceSystem(),
-                                                                             this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
-                                                                             this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
-                                                                             this.tileSetDescription.getText(),
-                                                                             tileStoreReader.getBounds(),
-                                                                             tileScheme,
-                                                                             mimeType,
-                                                                             null))                         // TODO use user preferences
-            {
-                final Packager packager = new Packager(tileStoreReader, tileStoreWriter);
-                packager.execute();   // TODO monitor errors/progress
-            }
-        }
+        final Packager packager = new Packager(tileStoreReader, tileStoreWriter);
+        packager.execute();   // TODO monitor errors/progress
     }
 
     @Override
@@ -137,30 +99,5 @@ public class PackagerWindow extends TileStoreCreationWindow
                                                       file.getName(),
                                                       System.getProperty("user.name"),
                                                       new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(new Date())));
-    }
-
-    private static TileScheme getRelativeZoomTimesTwoTileScheme(final TileStoreReader tileStoreReader) throws TileStoreException
-    {
-        final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
-
-        if(zoomLevels.size() == 0)
-        {
-            throw new TileStoreException("Input tile store contains no zoom levels");
-        }
-
-        final Range<Integer> zoomLevelRange = new Range<>(zoomLevels, Integer::compare);
-
-        final List<TileHandle> tiles = tileStoreReader.stream(zoomLevelRange.getMinimum()).collect(Collectors.toList());
-
-        final Range<Integer> columnRange = new Range<>(tiles, tile -> tile.getColumn(), Integer::compare);
-        final Range<Integer>    rowRange = new Range<>(tiles, tile -> tile.getRow(),    Integer::compare);
-
-        final int minZoomLevelMatrixWidth  = columnRange.getMaximum() - columnRange.getMinimum() + 1;
-        final int minZoomLevelMatrixHeight =    rowRange.getMaximum() -    rowRange.getMinimum() + 1;
-
-        return new ZoomTimesTwo(zoomLevelRange.getMinimum(),
-                                zoomLevelRange.getMaximum(),
-                                minZoomLevelMatrixWidth,
-                                minZoomLevelMatrixHeight);
     }
 }

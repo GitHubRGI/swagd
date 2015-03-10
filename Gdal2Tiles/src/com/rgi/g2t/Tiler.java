@@ -32,8 +32,6 @@ import java.util.concurrent.TimeUnit;
 import com.rgi.common.Dimensions;
 import com.rgi.common.task.MonitorableTask;
 import com.rgi.common.task.TaskMonitor;
-import com.rgi.common.tile.scheme.TileScheme;
-import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 
 /**
@@ -47,20 +45,19 @@ public class Tiler implements MonitorableTask, TaskMonitor
     private int     jobCount  = 0;
     private int     completed = 0;
 
-    final private File[]              files;
+    final private File                file;
     final private TileStoreWriter     tileWriter;
-    final private TileStoreReader     tileReader;
+    //final private TileStoreReader     tileReader;
     final private Dimensions<Integer> tileDimensions;
     final private Color               noDataColor;
 
-    public Tiler(final File[]              files,
+    public Tiler(final File                file,
                  final TileStoreWriter     tileWriter,
-                 final TileStoreReader     tileReader,
                  final Dimensions<Integer> tileDimensions,
                  final Color               noDataColor)
     {
-        this.files          = files;
-        this.tileReader     = tileReader;
+        this.file           = file;
+        //this.tileReader     = tileReader;
         this.tileWriter     = tileWriter;
         this.tileDimensions = tileDimensions;
         this.noDataColor    = noDataColor;
@@ -88,6 +85,19 @@ public class Tiler implements MonitorableTask, TaskMonitor
         {
             this.fireCancelled();
         }
+    }
+
+    public void execute()
+    {
+        final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(new TileJob(this.file,
+                                                                                           //this.tileReader,
+                                                                                           this.tileWriter,
+                                                                                           this.tileDimensions,
+                                                                                           this.noDataColor,
+                                                                                           this))));
+
+        jobWaiter.setDaemon(true);
+        jobWaiter.start();
     }
 
     private static void sanityCheckGdalInstallation()
@@ -133,41 +143,6 @@ public class Tiler implements MonitorableTask, TaskMonitor
         for(final TaskMonitor monitor : this.monitors)
         {
             monitor.finished();
-        }
-    }
-
-    public void execute()
-    {
-        for(final File file : this.files)
-        {
-//            try
-//            {
-//                final String imageFormat = Settings.Type.valueOf(opts.get(Setting.TileType)).name();
-//                final Path outputFolder = new File(opts.get(Setting.TileFolder)).toPath();
-//
-//                if(!outputFolder.toFile().exists())
-//                {
-//                    outputFolder.toFile().mkdir();
-//                }
-//
-//
-//                final TileStoreWriter tileWriter = new TmsWriter(crsProfile, outputFolder, new MimeType("image", imageFormat));
-//                final TileStoreReader tileReader = new TmsReader(crsProfile, outputFolder);
-
-                final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(new TileJob(file,
-                                                                                                   this.tileReader,
-                                                                                                   this.tileWriter,
-                                                                                                   this.tileDimensions,
-                                                                                                   this.noDataColor,
-                                                                                                   this))));
-
-                jobWaiter.setDaemon(true);
-                jobWaiter.start();
-//            }
-//            catch(final MimeTypeParseException ex)
-//            {
-//                System.err.println("Unable to create tile store for input file " + file.getName() + " " + ex.getMessage());
-//            }
         }
     }
 
