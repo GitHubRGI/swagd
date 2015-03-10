@@ -38,6 +38,7 @@ import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.verification.ConformanceException;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * Common tile store utilities
@@ -140,7 +141,9 @@ public class TileStoreUtility
                               .stream()
                               .map(tileSet -> { try
                                                 {
-                                                    return new GeoPackageReader(file, tileSet.getTableName());
+                                                    return new GeoPackageReader(file,
+                                                                                tileSet.getTableName(),
+                                                                                VerificationLevel.None);    // Verification has already been done when the GeoPackage was originally opened
                                                 }
                                                 catch(final ClassNotFoundException | SQLException | ConformanceException | IOException ex)
                                                 {

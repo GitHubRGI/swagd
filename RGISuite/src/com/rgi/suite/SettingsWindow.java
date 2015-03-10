@@ -48,21 +48,21 @@ public class SettingsWindow extends JFrame
     private static String[] imageTypes = new String[] { "JPG", "PNG" }; // TODO enum?
     private static String[] crsTypes = new String[] {"EPSG:3857", "EPSG:3395", "EPSG:4326"}; // TODO enum?
 
-    public static final String OutputLocationSettingName     = "outputLocation";
-    public static final String TileWidthSettingName          = "tileWidth";
-    public static final String TileHeightSettingName         = "tileHeight";
-    public static final String OutputImageFormatSettingName  = "outputImageFormat";
-    public static final String OutputImageQualitySettingName = "outputImageQuality";
-    public static final String NoDataColorSettingName        = "noDataColor";
-    public static final String OutputCrsSettingName          = "outputCrs";
+    protected static final String OutputLocationSettingName     = "outputLocation";
+    protected static final String TileWidthSettingName          = "tileWidth";
+    protected static final String TileHeightSettingName         = "tileHeight";
+    protected static final String OutputImageFormatSettingName  = "outputImageFormat";
+    protected static final String OutputImageQualitySettingName = "outputImageQuality";
+    protected static final String NoDataColorSettingName        = "noDataColor";
+    protected static final String OutputCrsSettingName          = "outputCrs";
 
-    public static final String DefaultOutputLocation     = System.getProperty("user.home");
-    public static final int    DefaultTileWidth          = 256;
-    public static final int    DefaultTileHeight         = 256;
-    public static final String DefaultOutputImageFormat  = imageTypes[0];
-    public static final int    DefaultOutputImageQuality = 70;
-    public static final Color  DefaultNoDataColor        = new Color(0, 0, 0, 0);
-    public static final String DefaultOutputCrs          = crsTypes[0];
+    protected static final String DefaultOutputLocation     = System.getProperty("user.home");
+    protected static final int    DefaultTileWidth          = 256;
+    protected static final int    DefaultTileHeight         = 256;
+    protected static final String DefaultOutputImageFormat  = imageTypes[0];
+    protected static final int    DefaultOutputImageQuality = 70;
+    protected static final Color  DefaultNoDataColor        = new Color(0, 0, 0, 0);
+    protected static final String DefaultOutputCrs          = crsTypes[0];
 
     private JTextField        tileOutputPathField;
     private JComboBox<String> outputCrs;

@@ -54,24 +54,26 @@ import com.rgi.common.tile.store.TileStoreReader;
  * View a supported tile store within a map viewer.
  *
  * @author Steven D. Lander
+ * @author Luke D. Lambert
+ * @author Jenifer Cochran
+ *
  */
 public class MapViewWindow extends JFrame implements JMapViewerEventListener
 {
-    com.rgi.common.coordinate.Coordinate<Double> center = new com.rgi.common.coordinate.Coordinate<>(0.0, 0.0);
+    private com.rgi.common.coordinate.Coordinate<Double> center = new com.rgi.common.coordinate.Coordinate<>(0.0, 0.0);
 
     private int minZoomLevel = 0;
 
     @Deprecated
-    TileStoreReader tileStore;
+    private final TileStoreReader tileStore;
 
-    final Collection<TileStoreReader> tileStoreReaders;
+    private final Collection<TileStoreReader> tileStoreReaders;
 
-    JLabel currentZoomLevelValue = new JLabel("");
-    JLabel unitsPerPixelXLabel   = new JLabel("Units/PixelX: ");
-    JLabel unitsPerPixelYLabel   = new JLabel("Units/PixelY: ");
-    JLabel unitsPerPixelXValue   = new JLabel("");
-    JLabel unitsPerPixelYValue   = new JLabel("");
-    boolean treeSelected = false;
+    private final JLabel currentZoomLevelValue = new JLabel("");
+    private final JLabel unitsPerPixelXLabel   = new JLabel("Units/PixelX: ");
+    private final JLabel unitsPerPixelYLabel   = new JLabel("Units/PixelY: ");
+    private final JLabel unitsPerPixelXValue   = new JLabel("");
+    private final JLabel unitsPerPixelYValue   = new JLabel("");
 
     /**
      * @param tileStoreReaders
