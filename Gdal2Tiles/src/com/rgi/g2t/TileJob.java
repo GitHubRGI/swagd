@@ -70,14 +70,14 @@ public class TileJob implements Runnable
     //private int workUnits = 0;
 
     public TileJob(final File                file,
-                   final TileStoreReader     tileStoreReader,
+                   //final TileStoreReader     tileStoreReader,
                    final TileStoreWriter     tileStoreWriter,
                    final Dimensions<Integer> tileDimensions,
                    final Color               noDataColor,
                    final TaskMonitor         monitor)
     {
         this.file            = file;
-        this.tileStoreReader = tileStoreReader;
+        this.tileStoreReader = null;//tileStoreReader;
         this.tileStoreWriter = tileStoreWriter;
         this.tileDimensions  = tileDimensions;
         this.monitor         = monitor;
