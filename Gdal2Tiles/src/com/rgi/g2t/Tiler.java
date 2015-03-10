@@ -35,6 +35,10 @@ import com.rgi.common.task.TaskMonitor;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 
+/**
+ * @author Luke Lambert
+ *
+ */
 public class Tiler implements MonitorableTask, TaskMonitor
 {
     ExecutorService executor  = Executors.newSingleThreadExecutor();

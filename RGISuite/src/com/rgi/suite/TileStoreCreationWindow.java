@@ -20,7 +20,6 @@ import javax.swing.JTextField;
 
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.tile.store.TileStoreException;
 
 
 /**
@@ -88,11 +87,25 @@ public abstract class TileStoreCreationWindow extends JFrame
         this.add(this.navPane,     BorderLayout.SOUTH);
     }
 
-    protected abstract void inputFileChanged(final File file) throws TileStoreException;
+    protected abstract void inputFileChanged(final File file) throws Exception;
+
+    protected abstract void execute() throws Exception;
 
     private void buildNavPane()
     {
         this.cancelButton.addActionListener(e -> { TileStoreCreationWindow.this.closeFrame(); });
+
+        this.okButton.addActionListener(e -> { try
+                                               {
+                                                   TileStoreCreationWindow.this.execute();
+                                                   TileStoreCreationWindow.this.closeFrame();
+                                               }
+                                               catch(final Exception ex)
+                                               {
+                                                   ex.printStackTrace();
+                                                   JOptionPane.showMessageDialog(TileStoreCreationWindow.this, this.processName, "An error has occurred: " + ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+                                               }
+                                             });
 
         // Add buttons to pane
         final Insets insets = new Insets(10, 10, 10, 10);
