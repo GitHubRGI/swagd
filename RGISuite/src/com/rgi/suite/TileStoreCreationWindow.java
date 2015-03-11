@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.activation.MimeType;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -51,8 +53,11 @@ public abstract class TileStoreCreationWindow extends JFrame
 
     protected final Settings settings;
 
-    protected final JPanel contentPane = new JPanel(new GridBagLayout());
-    protected final JPanel navPane     = new JPanel(new GridBagLayout());
+    protected final JPanel contentPanel;
+    protected final JPanel navigationPanel = new JPanel(new GridBagLayout());
+
+    protected final JPanel inputPanel  = new JPanel(new GridBagLayout());
+    protected final JPanel outputPanel = new JPanel(new GridBagLayout());
 
     protected final JTextField inputFileName      = new JTextField();
     protected final JTextField tileSetName        = new JTextField();
@@ -90,24 +95,27 @@ public abstract class TileStoreCreationWindow extends JFrame
 
         this.setTitle(processName + " Settings");
         this.setLayout(new BorderLayout());
-        this.setPreferredSize(new Dimension(600, 300));
+        this.setPreferredSize(new Dimension(600, 330));
         this.setResizable(false);
 
         this.settings = settings;
         this.lastInputLocationSettingName = lastInputLocationSettingName;
 
-        this.buildContentPane();
-        this.buildNavPane();
+        this.contentPanel = new JPanel();
+        this.contentPanel.setLayout(new BoxLayout(this.contentPanel, BoxLayout.PAGE_AXIS));
 
-        this.add(this.contentPane, BorderLayout.CENTER);
-        this.add(this.navPane,     BorderLayout.SOUTH);
+        this.buildContentPanel();
+        this.buildNavigationPanel();
+
+        this.add(this.contentPanel,   BorderLayout.CENTER);
+        this.add(this.navigationPanel,BorderLayout.SOUTH);
     }
 
     protected abstract void inputFileChanged(final File file) throws Exception;
 
     protected abstract void execute(final TileStoreReader tileStoreReader, final TileStoreWriter tileStoreWriter) throws Exception;
 
-    private void buildNavPane()
+    private void buildNavigationPanel()
     {
         this.cancelButton.addActionListener(e -> { TileStoreCreationWindow.this.closeFrame(); });
 
@@ -119,7 +127,10 @@ public abstract class TileStoreCreationWindow extends JFrame
                                                catch(final Exception ex)
                                                {
                                                    ex.printStackTrace();
-                                                   JOptionPane.showMessageDialog(TileStoreCreationWindow.this, this.processName, "An error has occurred: " + ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+                                                   JOptionPane.showMessageDialog(TileStoreCreationWindow.this,
+                                                                                 "An error has occurred: " + ex.getMessage(),
+                                                                                 this.processName,
+                                                                                 JOptionPane.ERROR_MESSAGE);
                                                }
                                              });
 
@@ -127,8 +138,8 @@ public abstract class TileStoreCreationWindow extends JFrame
         final Insets insets = new Insets(10, 10, 10, 10);
         final int    fill   = GridBagConstraints.NONE;
 
-        this.navPane.add(this.okButton,     new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.EAST, fill, insets, 0, 0));
-        this.navPane.add(this.cancelButton, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.EAST, fill, insets, 0, 0));
+        this.navigationPanel.add(this.okButton,     new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.EAST, fill, insets, 0, 0));
+        this.navigationPanel.add(this.cancelButton, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.EAST, fill, insets, 0, 0));
     }
 
     protected String getLastInputLocation()
@@ -161,12 +172,15 @@ public abstract class TileStoreCreationWindow extends JFrame
         }
     }
 
-    private void buildContentPane()
+    private void buildContentPanel()
     {
-        final JButton inputFileNameButton = new JButton("\u2026");
-
         this.inputFileName.setEditable(false);
         this.inputCrs     .setEditable(false);
+
+        this.inputPanel .setBorder(BorderFactory.createTitledBorder("Input"));
+        this.outputPanel.setBorder(BorderFactory.createTitledBorder("Output"));
+
+        final JButton inputFileNameButton = new JButton("\u2026");
 
         inputFileNameButton.addActionListener(e -> { final String startDirectory = TileStoreCreationWindow.this.settings.get(this.lastInputLocationSettingName, SettingsWindow.DefaultOutputLocation);
 
@@ -175,7 +189,7 @@ public abstract class TileStoreCreationWindow extends JFrame
                                                      fileChooser.setMultiSelectionEnabled(false);
                                                      fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-                                                     final int option = fileChooser.showOpenDialog(this.contentPane);
+                                                     final int option = fileChooser.showOpenDialog(TileStoreCreationWindow.this);
 
                                                      if(option == JFileChooser.APPROVE_OPTION)
                                                      {
@@ -198,6 +212,28 @@ public abstract class TileStoreCreationWindow extends JFrame
                                                      }
                                                    });
 
+        final JButton outputFileNameButton = new JButton("\u2026");
+
+        outputFileNameButton.addActionListener(e -> { final String startDirectory = TileStoreCreationWindow.this.settings.get(SettingsWindow.OutputLocationSettingName, SettingsWindow.DefaultOutputLocation);
+
+                                                      final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
+
+                                                      fileChooser.setMultiSelectionEnabled(false);
+                                                      fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+
+                                                      final int option = fileChooser.showOpenDialog(TileStoreCreationWindow.this);
+
+                                                      if(option == JFileChooser.APPROVE_OPTION)
+                                                      {
+                                                          final File file = fileChooser.getSelectedFile();
+
+                                                          this.settings.set(SettingsWindow.OutputLocationSettingName, file.getParent());
+                                                          this.settings.save();
+
+                                                          this.outputFileName.setText(fileChooser.getSelectedFile().getPath());
+                                                      }
+                                                    });
+
         this.outputStoreType.addActionListener(e -> { TileStoreCreationWindow.this.outputStoreTypeChanged(); });
 
         final int    anchor = GridBagConstraints.WEST;
@@ -205,29 +241,33 @@ public abstract class TileStoreCreationWindow extends JFrame
         final Insets insets = new Insets(5, 5, 5, 5);
 
         // Input tile store file
-        this.contentPane.add(new JLabel("Input file:"),         new GridBagConstraints(0, 0, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
-        this.contentPane.add(this.inputFileName,                new GridBagConstraints(1, 0, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
-        this.contentPane.add(inputFileNameButton,               new GridBagConstraints(2, 0, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.inputPanel.add(new JLabel("File:"),             new GridBagConstraints(0, 0, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.inputPanel.add(this.inputFileName,              new GridBagConstraints(1, 0, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+        this.inputPanel.add(inputFileNameButton,             new GridBagConstraints(2, 0, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
 
         // Input CRS
-        this.contentPane.add(new JLabel("Input CRS:"),          new GridBagConstraints(0, 1, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
-        this.contentPane.add(this.inputCrs,                     new GridBagConstraints(1, 1, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+        this.inputPanel.add(new JLabel("Reference system:"), new GridBagConstraints(0, 1, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.inputPanel.add(this.inputCrs,                   new GridBagConstraints(1, 1, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
 
         // Output tile store type
-        this.contentPane.add(new JLabel("Output store type:"),  new GridBagConstraints(0, 2, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
-        this.contentPane.add(this.outputStoreType,              new GridBagConstraints(1, 2, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+        this.outputPanel.add(new JLabel("Format:"),          new GridBagConstraints(0, 2, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.outputPanel.add(this.outputStoreType,           new GridBagConstraints(1, 2, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
 
         // Tile set name
-        this.contentPane.add(new JLabel("Output name:"),        new GridBagConstraints(0, 3, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
-        this.contentPane.add(this.tileSetName,                  new GridBagConstraints(1, 3, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+        this.outputPanel.add(new JLabel("Name:"),            new GridBagConstraints(0, 3, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.outputPanel.add(this.tileSetName,               new GridBagConstraints(1, 3, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
 
         // Tile set description
-        this.contentPane.add(new JLabel("Output description:"), new GridBagConstraints(0, 4, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
-        this.contentPane.add(this.tileSetDescription,           new GridBagConstraints(1, 4, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+        this.outputPanel.add(new JLabel("Description:"),     new GridBagConstraints(0, 4, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.outputPanel.add(this.tileSetDescription,        new GridBagConstraints(1, 4, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
 
         // Output file name
-        this.contentPane.add(new JLabel("Output filename:"),    new GridBagConstraints(0, 5, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
-        this.contentPane.add(this.outputFileName,               new GridBagConstraints(1, 5, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+        this.outputPanel.add(new JLabel("File:"),            new GridBagConstraints(0, 5, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+        this.outputPanel.add(this.outputFileName,            new GridBagConstraints(1, 5, 1, 1, 1, 1, anchor, fill, insets, 0, 0));
+        this.outputPanel.add(outputFileNameButton,           new GridBagConstraints(2, 5, 1, 1, 0, 1, anchor, fill, insets, 0, 0));
+
+        this.contentPanel.add(this.inputPanel);
+        this.contentPanel.add(this.outputPanel);
     }
 
     private void execute() throws Exception
@@ -276,7 +316,8 @@ public abstract class TileStoreCreationWindow extends JFrame
 
     private Collection<TileStoreReader> getReaders() throws TileStoreException
     {
-        final Collection<TileStoreReader> readers = TileStoreUtility.getStores(null, new File(this.inputFileName.getText()));   // TODO !!IMPORTANT!! need to pick the crs
+        final Collection<TileStoreReader> readers = TileStoreUtility.getStores((CoordinateReferenceSystem)this.inputCrs.getSelectedItem(),
+                                                                               new File(this.inputFileName.getText()));
 
         if(readers.isEmpty())
         {

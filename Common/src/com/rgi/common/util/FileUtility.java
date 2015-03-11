@@ -46,18 +46,34 @@ public class FileUtility
     /**
      * Appends a number to a filename if the original name already exists.
      *
-     * @param fileName
+     * @param filename
      *             Desired file name
      * @return A file name with a number appended before the extension if the
      *             original was already a file.
      */
-    public static String appendForUnique(final String fileName)
+    public static String appendForUnique(final String filename)
     {
-        String newFileName = fileName;
+        String newFileName = filename;
 
-        for(int x = 0; new File(newFileName).exists(); ++x)
+        for(int x = 1; new File(newFileName).exists(); ++x)
         {
-            newFileName = fileName.replaceFirst("[.][^.]+$", String.format(" (%d).", x));
+            final int index = filename.lastIndexOf(".");
+
+            if(index == -1)
+            {
+                newFileName = String.format("%s (%d)", filename, x);
+            }
+            else if(index == 0)
+            {
+                newFileName = String.format("(%d)%s", x, filename);
+            }
+            else
+            {
+                newFileName = String.format("%s (%d)%s",
+                                            filename.substring(0, index),
+                                            x,
+                                            filename.substring(index));
+            }
         }
 
         return newFileName;

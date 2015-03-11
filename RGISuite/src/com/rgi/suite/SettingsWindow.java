@@ -45,7 +45,7 @@ public class SettingsWindow extends JFrame
 {
     private static final long serialVersionUID = 4509050309011262891L;
 
-    private static String[] imageTypes = new String[] { "JPG", "PNG" }; // TODO enum?
+    private static String[] imageTypes = new String[] { "JEPG", "PNG" }; // TODO enum?
     private static String[] crsTypes = new String[] {"EPSG:3857", "EPSG:3395", "EPSG:4326"}; // TODO enum?
 
     protected static final String OutputLocationSettingName     = "outputLocation";

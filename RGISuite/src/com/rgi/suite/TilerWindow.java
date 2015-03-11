@@ -99,7 +99,7 @@ public class TilerWindow extends TileStoreCreationWindow
         //
         //gdal.GDALDestroyDriverManager(); // TODO only do this once
         //
-        //final String attributePath = "PROJCS|GEOGCS|AUTHORITY";
+        //final String attributePath = "PROJCS|GEOGCS|AUTHORITY";   // https://gis.stackexchange.com/questions/20298/
         //
         //final String authority  = srs.GetAttrValue(attributePath, 0);
         //final String identifier = srs.GetAttrValue(attributePath, 1);

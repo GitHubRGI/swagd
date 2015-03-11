@@ -106,15 +106,40 @@ public class GeoPackageWriter implements TileStoreWriter
                             final MimeType                  imageOutputFormat,
                             final ImageWriteParam           imageWriteOptions) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
+
+        if(coordinateReferenceSystem == null)
+        {
+            throw new IllegalArgumentException("Coordinate reference system cannot be null");
+        }
+
+        if(imageOutputFormat == null)
+        {
+            throw new IllegalArgumentException("Image output format may not be null");
+        }
+
+        if(!MimeTypeUtility.contains(GeoPackageWriter.SupportedImageFormats, imageOutputFormat))
+        {
+            throw new IllegalArgumentException(String.format("Image output type '%s' is inappropriate for this tile store. Valid formats are: %s",
+                                                             imageOutputFormat.toString(),
+                                                             GeoPackageWriter.SupportedImageFormats
+                                                                             .stream()
+                                                                             .map(mimeType -> mimeType.toString())
+                                                                             .collect(Collectors.joining(", ", "'", "'"))));
+        }
+
+        try
+        {
+            this.imageWriter = ImageIO.getImageWritersByMIMEType(imageOutputFormat.toString()).next();
+        }
+        catch(final NoSuchElementException ex)
+        {
+            throw new IllegalArgumentException(String.format("Mime type '%s' is not a supported for image writing by your Java environment", imageOutputFormat.toString()));
+        }
+
         this.geoPackage = new GeoPackage(geoPackageFile, OpenMode.OpenOrCreate);
 
         try
         {
-            if(coordinateReferenceSystem == null)
-            {
-                throw new IllegalArgumentException("Coordinate reference system cannot be null");
-            }
-
             if(this.geoPackage.tiles().getTileSet(tileSetTableName) != null)
             {
                 throw new IllegalArgumentException("Tile set table name must be unique in this GeoPackage");
@@ -135,32 +160,6 @@ public class GeoPackageWriter implements TileStoreWriter
                                                       tileSetDescription,
                                                       tileSetBounds,
                                                       spatialReferenceSystem);
-
-
-
-            if(imageOutputFormat == null)
-            {
-                throw new IllegalArgumentException("Image output format may not be null");
-            }
-
-            if(!MimeTypeUtility.contains(GeoPackageWriter.SupportedImageFormats, imageOutputFormat))
-            {
-                throw new IllegalArgumentException(String.format("Image output type '%s' is inappropriate for this tile store. Valid formats are: %s",
-                                                                 imageOutputFormat.toString(),
-                                                                 GeoPackageWriter.SupportedImageFormats
-                                                                                 .stream()
-                                                                                 .map(mimeType -> mimeType.toString())
-                                                                                 .collect(Collectors.joining(", ", "'", "'"))));
-            }
-
-            try
-            {
-                this.imageWriter = ImageIO.getImageWritersByMIMEType(imageOutputFormat.toString()).next();
-            }
-            catch(final NoSuchElementException ex)
-            {
-                throw new IllegalArgumentException(String.format("Mime type '%s' is not a supported for image writing by your Java environment", imageOutputFormat.toString()));
-            }
 
             this.imageWriteOptions = imageWriteOptions; // May be null
 
@@ -213,8 +212,8 @@ public class GeoPackageWriter implements TileStoreWriter
 
         try
         {
-            TileMatrixDimensions dimensions     = this.tileScheme.dimensions(zoomLevel);
-            Coordinate<Integer>  tileCoordinate = corner.transform(GeoPackageTiles.Origin, column, row, dimensions);
+            final TileMatrixDimensions dimensions     = this.tileScheme.dimensions(zoomLevel);
+            final Coordinate<Integer>  tileCoordinate = corner.transform(GeoPackageTiles.Origin, column, row, dimensions);
             return this.geoPackage
                        .tiles()
                        .tileToCrsCoordinate(this.tileSet,
