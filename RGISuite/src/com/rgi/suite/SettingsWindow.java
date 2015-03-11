@@ -23,69 +23,92 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.util.Properties;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
-import com.rgi.common.task.Settings;
-import com.rgi.common.task.Settings.Profile;
-import com.rgi.common.task.Settings.Setting;
-import com.rgi.common.task.Settings.Type;
-import com.rgi.common.task.Task;
-import com.rgi.common.tile.TileOrigin;
-import com.rgi.suite.ApplicationContext.Window;
+public class SettingsWindow extends JFrame
+{
+    private static final long serialVersionUID = 4509050309011262891L;
 
-public class SettingsWindow extends AbstractWindow {
-    private JTextField tileOutputPathField;
-    private JComboBox<TileOrigin> tileOriginChoice;
-    private JComboBox<Settings.Profile> outputProfileChoice;
-    private JSpinner tileHeightSpinner;
-    private JSpinner tileWidthSpinner;
-    private JSpinner outputQualitySpinner;
-    private JComboBox<Settings.Type> outputImageType;
-    private SwatchButton nullDataColorButton;
+    private static String[] imageTypes = new String[] { "JEPG", "PNG" }; // TODO enum?
+    private static String[] crsTypes = new String[] {"EPSG:3857", "EPSG:3395", "EPSG:4326"}; // TODO enum?
 
-    public SettingsWindow(ApplicationContext context) {
-        super(context);
-    }
+    protected static final String OutputLocationSettingName     = "outputLocation";
+    protected static final String TileWidthSettingName          = "tileWidth";
+    protected static final String TileHeightSettingName         = "tileHeight";
+    protected static final String OutputImageFormatSettingName  = "outputImageFormat";
+    protected static final String OutputImageQualitySettingName = "outputImageQuality";
+    protected static final String NoDataColorSettingName        = "noDataColor";
+    protected static final String OutputCrsSettingName          = "outputCrs";
 
-    @Override
-    public void activate() {
-        this.load(this.context.getSettings());
-    }
+    protected static final String DefaultOutputLocation     = System.getProperty("user.home");
+    protected static final int    DefaultTileWidth          = 256;
+    protected static final int    DefaultTileHeight         = 256;
+    protected static final String DefaultOutputImageFormat  = imageTypes[0];
+    protected static final int    DefaultOutputImageQuality = 70;
+    protected static final Color  DefaultNoDataColor        = new Color(0, 0, 0, 0);
+    protected static final String DefaultOutputCrs          = crsTypes[0];
 
-    @Override
-    protected void buildContentPane() {
+    private JTextField        tileOutputPathField;
+    private JComboBox<String> outputCrs;
+    private JSpinner          tileHeightSpinner;
+    private JSpinner          tileWidthSpinner;
+    private JSpinner          outputQualitySpinner;
+    private JComboBox<String> outputImageType;
+    private SwatchButton      nullDataColorButton;
+
+    private final JPanel   contentPane;
+    private final Settings settings;
+
+    public SettingsWindow(final Settings settings)
+    {
+        this.setTitle("Settings");
+
+        this.settings = settings;
+
         this.contentPane = new JPanel(new GridBagLayout());
 
-        GridBagConstraints gbc = new GridBagConstraints();
+        this.buildContentPane();
+
+        this.add(this.contentPane);
+
+        //this.load(this.context.getSettings());
+    }
+
+    protected void buildContentPane()
+    {
+        // Settings input
+        final GridBagConstraints gbc = new GridBagConstraints();
         gbc.weightx = 1;
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.BOTH;
 
-        this.tileOutputPathField = new JTextField();
-        JButton tileOutputPathButton = new JButton("\u2026");
-        Insets i = tileOutputPathButton.getMargin();
+        this.tileOutputPathField = new JTextField(this.settings.get(OutputLocationSettingName, DefaultOutputLocation));
+        final JButton tileOutputPathButton = new JButton("\u2026");
+        final Insets i = tileOutputPathButton.getMargin();
 
         if(i == null)
         {
             throw new RuntimeException("JButton::getMargin returned null");
         }
 
-        Insets j = new Insets(i.top, 1, i.bottom, 1);
-        tileOutputPathButton.setMargin(j);
+        tileOutputPathButton.setMargin(new Insets(i.top, 1, i.bottom, 1));
         gbc.gridy = 0;
         gbc.weightx = 0;
         this.contentPane.add(new JLabel("Tiles Folder:"), gbc);
@@ -93,26 +116,25 @@ public class SettingsWindow extends AbstractWindow {
         this.contentPane.add(this.tileOutputPathField, gbc);
         gbc.weightx = 0;
         this.contentPane.add(tileOutputPathButton, gbc);
-        tileOutputPathButton.addActionListener(e -> {
-            JFileChooser fc = new JFileChooser();
-            fc.setMultiSelectionEnabled(false);
-            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int option = fc.showOpenDialog(this.contentPane);
-            if (option == JFileChooser.APPROVE_OPTION) {
-                this.tileOutputPathField.setText(fc.getSelectedFile().getPath());
-            }
-        });
+        tileOutputPathButton.addActionListener(e -> { final JFileChooser fileChooser = new JFileChooser(new File(this.tileOutputPathField.getText()));
 
-        this.tileOriginChoice = new JComboBox<>();
-        this.tileOriginChoice.setModel(new DefaultComboBoxModel<>(TileOrigin.values()));
-        ++gbc.gridy;
-        gbc.weightx = 0;
-        this.contentPane.add(new JLabel("Tile Origin:"), gbc);
-        gbc.gridwidth = 2;
-        gbc.weightx = 1;
-        this.contentPane.add(this.tileOriginChoice, gbc);
+                                                      fileChooser.setMultiSelectionEnabled(false);
+                                                      fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-        this.tileWidthSpinner = new JSpinner(new SpinnerNumberModel(256, 128, 2048, 128));
+                                                      final int option = fileChooser.showOpenDialog(this.contentPane);
+
+                                                      if(option == JFileChooser.APPROVE_OPTION)
+                                                      {
+                                                          this.tileOutputPathField.setText(fileChooser.getSelectedFile().getPath());
+                                                      }
+                                                    });
+
+        final int tileWidth = this.settings.get(TileWidthSettingName, Integer::parseInt, DefaultTileWidth);
+
+        this.tileWidthSpinner = new JSpinner(new SpinnerNumberModel(tileWidth,
+                                                                    128,
+                                                                    2048,
+                                                                    128));
         ++gbc.gridy;
         gbc.gridwidth = 1;
         gbc.weightx = 0;
@@ -121,7 +143,12 @@ public class SettingsWindow extends AbstractWindow {
         gbc.weightx = 1;
         this.contentPane.add(this.tileWidthSpinner, gbc);
 
-        this.tileHeightSpinner = new JSpinner(new SpinnerNumberModel(256, 128, 2048, 128));
+        final int tileHeight = this.settings.get(TileHeightSettingName, Integer::parseInt, DefaultTileHeight);
+
+        this.tileHeightSpinner = new JSpinner(new SpinnerNumberModel(tileHeight,
+                                                                     128,
+                                                                     2048,
+                                                                     128));
         ++gbc.gridy;
         gbc.gridwidth = 1;
         gbc.weightx = 0;
@@ -130,8 +157,8 @@ public class SettingsWindow extends AbstractWindow {
         gbc.weightx = 1;
         this.contentPane.add(this.tileHeightSpinner, gbc);
 
-        this.outputImageType = new JComboBox<>(new DefaultComboBoxModel<>(Settings.Type.values()));
-        this.outputImageType.setSelectedItem(Type.PNG);
+        this.outputImageType = new JComboBox<>(new DefaultComboBoxModel<>(imageTypes));
+        this.outputImageType.setSelectedItem(this.settings.get(OutputImageFormatSettingName, DefaultOutputImageFormat));
         ++gbc.gridy;
         gbc.gridwidth = 1;
         gbc.weightx = 0;
@@ -140,7 +167,14 @@ public class SettingsWindow extends AbstractWindow {
         gbc.weightx = 1;
         this.contentPane.add(this.outputImageType, gbc);
 
-        this.outputQualitySpinner = new JSpinner(new SpinnerNumberModel(70, 10, 100, 1));
+        this.outputImageType.addItemListener(e -> { this.outputQualitySpinner.setEnabled("JPG".equals(this.outputImageType.getSelectedItem())); });
+
+        final int imageQuality = this.settings.get(OutputImageQualitySettingName, Integer::parseInt, DefaultOutputImageQuality);
+
+        this.outputQualitySpinner = new JSpinner(new SpinnerNumberModel(imageQuality,
+                                                                        10,
+                                                                        100,
+                                                                        1));
         this.outputQualitySpinner.setEnabled(false);
         ++gbc.gridy;
         gbc.gridwidth = 1;
@@ -150,12 +184,10 @@ public class SettingsWindow extends AbstractWindow {
         gbc.weightx = 1;
         this.contentPane.add(this.outputQualitySpinner, gbc);
 
-        this.outputImageType.addItemListener(e -> {
-            this.outputQualitySpinner.setEnabled(Type.JPG.equals(this.outputImageType.getSelectedItem()));
-        });
-
         this.nullDataColorButton = new SwatchButton("...");
-        this.nullDataColorButton.setColor((Color) Settings.Setting.NoDataColor.getDefaultValue());
+        this.nullDataColorButton.setColor(this.settings.get(NoDataColorSettingName,
+                                                            SettingsWindow::colorFromString,
+                                                            DefaultNoDataColor));
         ++gbc.gridy;
         gbc.gridwidth = 1;
         gbc.weightx = 0;
@@ -163,109 +195,118 @@ public class SettingsWindow extends AbstractWindow {
         gbc.gridwidth = 2;
         gbc.weightx = 1;
         this.contentPane.add(this.nullDataColorButton, gbc);
-        this.nullDataColorButton.addActionListener(e -> {
-            Color c = JColorChooser.showDialog(this.contentPane, "Choose No Data color...", this.nullDataColorButton.getColor());
-            if (c != null) {
-                this.nullDataColorButton.setColor(c);
-            }
-        });
+        this.nullDataColorButton.addActionListener(e -> { final Color c = JColorChooser.showDialog(this.contentPane,
+                                                                                                   "Choose No Data color...",
+                                                                                                   this.nullDataColorButton.getColor());
+
+                                                          if(c != null)
+                                                          {
+                                                              this.nullDataColorButton.setColor(c);
+                                                          }
+                                                        });
 
         ++gbc.gridy;
         gbc.gridwidth = 1;
         gbc.weightx = 0;
-        this.outputProfileChoice = new JComboBox<>(new DefaultComboBoxModel<>(
-                Settings.Profile.values()));
+        this.outputCrs = new JComboBox<>(new DefaultComboBoxModel<>(SettingsWindow.crsTypes));
+        this.outputCrs.setSelectedItem(this.settings.get(OutputCrsSettingName, DefaultOutputCrs));
         this.contentPane.add(new JLabel("Output Profile: "), gbc);
         gbc.gridwidth = 2;
         gbc.weightx = 1;
-        this.contentPane.add(this.outputProfileChoice, gbc);
-    }
+        this.contentPane.add(this.outputCrs, gbc);
 
-    @Override
-    protected void buildNavPane() {
-        this.navPane = new JPanel(new GridBagLayout());
-
-        Properties props = this.context.getProperties();
-
+        // OK/Cancel buttons
         // save settings
-        JButton okButton = new JButton(new PropertiesAction(props, "ok") {
-            /**
-             * Generated serial
-             */
-            private static final long serialVersionUID = -2265844182174484489L;
+        final JButton okButton = new JButton(new AbstractAction()
+                                             {
+                                                 private static final long serialVersionUID = -2265844182174484489L;
 
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                Settings settings = SettingsWindow.this.context.getSettings();
-                try {
-                    SettingsWindow.this.apply(settings);
-                    settings.save();
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(SettingsWindow.this.contentPane, "Unable to save settings!");
-                    e.printStackTrace();
-                }
-                SettingsWindow.this.closeSettings();
-            }
-        });
-        okButton.setHideActionText(true);
+                                                 @Override
+                                                 public void actionPerformed(final ActionEvent event)
+                                                 {
+                                                     SettingsWindow.this.apply();
+                                                     SettingsWindow.this.settings.save();
+                                                     SettingsWindow.this.closeFrame();
+                                                 }
+                                             });
+        okButton.setText("OK");
+        //okButton.setHideActionText(true);
         okButton.setMargin(new Insets(0, 0, 0, 0));
 
         // cancel settings editing
-        JButton cancelButton = new JButton(new PropertiesAction(props, "cancel") {
-            /**
-             * Generated serial
-             */
-            private static final long serialVersionUID = -4389758606354266920L;
+        final JButton cancelButton = new JButton(new AbstractAction()
+                                                 {
+                                                     private static final long serialVersionUID = -4389758606354266920L;
 
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                SettingsWindow.this.closeSettings();
-            }
-        });
-        cancelButton.setHideActionText(true);
+                                                     @Override
+                                                     public void actionPerformed(final ActionEvent event)
+                                                     {
+                                                         SettingsWindow.this.closeFrame();
+                                                     }
+                                                 });
+
+        cancelButton.setText("Cancel");
+        //cancelButton.setHideActionText(true);
         cancelButton.setMargin(new Insets(0, 0, 0, 0));
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(10, 10, 10, 10);
-        this.navPane.add(cancelButton, gbc);
-        gbc.anchor = GridBagConstraints.EAST;
-        this.navPane.add(okButton, gbc);
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+
+        ++gbc.gridy;
+        //gbc.insets = new Insets(10, 10, 10, 10);
+        this.contentPane.add(cancelButton, gbc);
+        //gbc.anchor = GridBagConstraints.EAST;
+        ++gbc.gridy;
+        this.contentPane.add(okButton, gbc);
     }
 
-    private void closeSettings() {
-        Task task = this.context.getActiveTask();
-        if (task == null) {
-            this.context.transitionTo(Window.MAIN);
-        } else {
-            this.context.transitionTo(Window.FILECHOOSER);
+    public static Color colorFromString(final String string)
+    {
+        final Pattern colorPattern = Pattern.compile("(\\d+),(\\d+),(\\d+),(\\d+)");
+
+        final Matcher colorMatcher = colorPattern.matcher(string);
+
+        if(colorMatcher.matches())
+        {
+            try
+            {
+                return new Color(Integer.parseInt(colorMatcher.group(1)),
+                                 Integer.parseInt(colorMatcher.group(2)),
+                                 Integer.parseInt(colorMatcher.group(3)),
+                                 Integer.parseInt(colorMatcher.group(4)));
+            }
+            catch(final IllegalArgumentException ex)
+            {
+                // Do nothing, fall through to return null
+            }
         }
+
+        return null;
     }
 
-    public void load(Settings settings) {
-        this.tileOutputPathField.setText(settings.get(Setting.TileFolder)); // where am I going to write files to
-        this.nullDataColorButton.setColor(settings.getColor(Setting.NoDataColor));
-        Integer quality = Integer.parseInt(settings.get(Setting.Quality));
-        ((SpinnerNumberModel) this.outputQualitySpinner.getModel()).setValue(quality);
-        int tileHeight = Integer.parseInt(settings.get(Setting.TileHeight));
-        ((SpinnerNumberModel) this.tileHeightSpinner.getModel()).setValue(tileHeight);
-        int tileWidth = Integer.parseInt(settings.get(Setting.TileWidth));
-        ((SpinnerNumberModel) this.tileWidthSpinner.getModel()).setValue(tileWidth);
-        try {
-            this.tileOriginChoice.setSelectedItem(TileOrigin.valueOf(settings.get(Setting.TileOrigin)));
-        } catch (Exception e) {
-            this.tileOriginChoice.setSelectedItem(Setting.TileOrigin.getDefaultValue());
-        }
-        this.outputProfileChoice.setSelectedItem(Profile.valueOf(settings.get(Setting.CrsProfile)));
+    public static String colorToString(final Color color)
+    {
+        return color == null ? null
+                             : String.format("%d,%d,%d,%d",
+                                             color.getRed(),
+                                             color.getGreen(),
+                                             color.getBlue(),
+                                             color.getAlpha());
     }
 
-    public void apply(Settings settings) throws IOException {
-        settings.set(Setting.TileFolder, this.tileOutputPathField.getText());
-        settings.set(Setting.NoDataColor, this.nullDataColorButton.getColor());
-        settings.set(Setting.Quality, this.outputQualitySpinner.getValue().toString());
-        settings.set(Setting.TileHeight, this.tileHeightSpinner.getValue().toString());
-        settings.set(Setting.TileWidth, this.tileWidthSpinner.getValue().toString());
-        settings.set(Setting.TileOrigin, ((TileOrigin) this.tileOriginChoice.getSelectedItem()).name());
-        settings.set(Setting.CrsProfile, ((Profile) this.outputProfileChoice.getSelectedItem()).name());
+    private void closeFrame()
+    {
+        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+    }
+
+    private void apply()
+    {
+        this.settings.set(OutputLocationSettingName,     this.tileOutputPathField.getText());
+        this.settings.set(TileWidthSettingName,          this.tileWidthSpinner.getValue().toString());
+        this.settings.set(TileHeightSettingName,         this.tileHeightSpinner.getValue().toString());
+        this.settings.set(OutputImageFormatSettingName,  (String)this.outputImageType.getSelectedItem());
+        this.settings.set(OutputImageQualitySettingName, this.outputQualitySpinner.getValue().toString());
+        this.settings.set(NoDataColorSettingName,        this.nullDataColorButton.getColor(), SettingsWindow::colorToString);
+        this.settings.set(OutputCrsSettingName,          (String)this.outputCrs.getSelectedItem());
     }
 }

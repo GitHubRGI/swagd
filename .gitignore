@@ -50,3 +50,5 @@ local.properties
 
 # Ignore coverity scan folder
 cov-int
+
+RGISuite/settings.txt

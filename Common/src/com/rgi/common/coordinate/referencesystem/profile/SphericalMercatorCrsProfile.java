@@ -41,16 +41,16 @@ public class SphericalMercatorCrsProfile extends ProportionalCrsProfile
     @Override
     public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate)
     {
-        /*Formula was obtain from: http://pubs.usgs.gov/pp/1395/report.pdf
+        /* Formula was obtain from: http://pubs.usgs.gov/pp/1395/report.pdf
          * The formula is documented on page 44 with a label of (7-4)
-         * which reads
+         * which reads:
          * latitude in degrees = Pi/2 - 2*arctan(e^(-y/R))
-         * 
+         *
          * Where:
          *    y is the coordinate in meters
          *    e = 2.7182818... the base of natural logarithms
-         *    R is the Earth Equatorial Radius 
-         *    Pi is the mathematical constant, the ratio of a circle's circumference to its diameter 
+         *    R is the Earth Equatorial Radius
+         *    Pi is the mathematical constant, the ratio of a circle's circumference to its diameter
         */
         return new Coordinate<>(Math.toDegrees(coordinate.getX() / EarthEquatorialRadius),
                                 Math.toDegrees(Math.PI / 2 - 2 * Math.atan(Math.exp(-coordinate.getY() / EarthEquatorialRadius))));

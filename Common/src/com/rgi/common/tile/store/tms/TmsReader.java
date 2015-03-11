@@ -46,12 +46,12 @@ import com.rgi.common.Range;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.common.util.FileUtility;
 
 /**
  * <a href="http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification">TMS</a>
@@ -65,14 +65,16 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     /**
      * Constructor
      *
-     * @param profile
-     *             The tile profile this tile store is using
+     * @param coordinateReferenceSystem
+     *             The coordinate reference system of this tile store. TMS's
+     *             lack of metadata means the coordinate reference system
+     *             cannot be inferred.
      * @param location
      *             The location of this tile store on-disk
      */
-    public TmsReader(final CrsProfile profile, final Path location)
+    public TmsReader(final CoordinateReferenceSystem coordinateReferenceSystem, final Path location)
     {
-        super(profile, location);
+        super(coordinateReferenceSystem, location);
 
         if(!location.toFile().canRead())
         {
@@ -184,12 +186,6 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
     public Stream<TileHandle> stream(final int zoomLevel)
     {
         return this.stream(tmsPath(this.location, zoomLevel));
-    }
-
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem()
-    {
-        return this.profile.getCoordinateReferenceSystem();
     }
 
     @Override
@@ -358,7 +354,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                 .filter(file -> file.isDirectory())
                                 .map(file -> { try
                                                {
-                                                   return Integer.parseInt(withoutExtension(file));
+                                                   return Integer.parseInt(FileUtility.nameWithoutExtension(file));
                                                }
                                                catch(final NumberFormatException ex)
                                                {
@@ -423,48 +419,25 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                @Override
                                public CrsCoordinate getCrsCoordinate() throws TileStoreException
                                {
-                                   // TODO: figure out why this more appropriate version was causing tests to fail//because GeoPackage Writer had errors
                                    return TmsReader.this.tileToCrsCoordinate(column,
                                                                              row,
                                                                              zoomLevel,
                                                                              TmsTileStore.Origin);
-
-//                                   return TmsReader.this.profile.tileToCrsCoordinate(column,
-//                                                                                     row,
-//                                                                                     TmsReader.this.profile.getBounds(),
-//                                                                                     this.matrix,
-//                                                                                     TmsTileStore.Origin);
                                }
 
                                @Override
                                public CrsCoordinate getCrsCoordinate(final TileOrigin corner) throws TileStoreException
                                {
-                                    //TODO: figure out why this more appropriate version was causing tests to fail //because GeoPackage Writer had errors
                                    return TmsReader.this.tileToCrsCoordinate(column,
                                                                              row,
                                                                              zoomLevel,
                                                                              TmsTileStore.Origin);
-
-//                                   return TmsReader.this.profile.tileToCrsCoordinate(column + corner.getHorizontal(),
-//                                                                                     row    + corner.getVertical(),
-//                                                                                     TmsReader.this.profile.getBounds(),
-//                                                                                     this.matrix,
-//                                                                                     TmsTileStore.Origin);
                                }
 
                                @Override
                                public BoundingBox getBounds() throws TileStoreException
                                {
-                                   // TODO: figure out why this more appropriate version was causing tests to fail //because GeoPackage Writer had errors
                                    return TmsReader.this.getTileBoundingBox(column, row, zoomLevel);
-
-//                                   final Coordinate<Double> lowerLeft  = this.getCrsCoordinate(TileOrigin.LowerLeft);
-//                                   final Coordinate<Double> upperRight = this.getCrsCoordinate(TileOrigin.UpperRight);
-//
-//                                   return new BoundingBox(lowerLeft.getX(),
-//                                                          lowerLeft.getY(),
-//                                                          upperRight.getX(),
-//                                                          upperRight.getY());
                                }
 
                                @Override
@@ -509,7 +482,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
             final Iterable<Integer> tmsNames = Stream.of(directory.listFiles())
                                                      .map(file -> { try
                                                                     {
-                                                                        return Integer.parseInt(withoutExtension(file));
+                                                                        return Integer.parseInt(FileUtility.nameWithoutExtension(file));
                                                                     }
                                                                     catch(final NumberFormatException ex)
                                                                     {
@@ -538,7 +511,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         return files == null ? Stream.empty()
                              : Stream.of(files)
                                      .filter(file -> file.isFile() &&
-                                                     withoutExtension(file).equals(String.valueOf(row)) &&
+                                                     FileUtility.nameWithoutExtension(file).equals(String.valueOf(row)) &&
                                                      fileIsImage(file));
     }
 
@@ -569,11 +542,6 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         {
             return false;
         }
-    }
-
-    private static String withoutExtension(final File file)
-    {
-        return file.getName().replaceFirst("[.][^.]+$", "");
     }
 
     private Set<Integer> zoomLevels = null;

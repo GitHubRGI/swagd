@@ -248,9 +248,7 @@ public class GeoPackageTiles
      *            refer to
      * @return Returns a collection of {@link TileSet}s
      * @throws SQLException
-     *             throws if the method
-     *             {@link GeoPackageCore#getContent(String, com.rgi.geopackage.core.ContentFactory, SpatialReferenceSystem)
-     *             getContent} throws
+     *             Throws if there's an SQL error
      */
     public Collection<TileSet> getTileSets(final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
     {

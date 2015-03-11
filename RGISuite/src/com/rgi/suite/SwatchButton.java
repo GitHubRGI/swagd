@@ -24,44 +24,51 @@ import java.awt.Rectangle;
 
 import javax.swing.JButton;
 
-public class SwatchButton extends JButton {
-    /**
-     * Generated serial
-     */
-    private static final long serialVersionUID = -4668559044616232318L;
-    private Color color = null;
+public class SwatchButton extends JButton
+{
 
-    public SwatchButton(String label) {
+    private static final long serialVersionUID = -4668559044616232318L;
+    private Color             color            = null;
+
+    public SwatchButton(final String label)
+    {
         super(label);
     }
 
-    public void setColor(Color color) {
+    public void setColor(final Color color)
+    {
         this.color = color;
     }
 
-    public Color getColor() {
+    public Color getColor()
+    {
         return this.color;
     }
 
     @Override
-    public void paintComponent(Graphics g) {
+    public void paintComponent(final Graphics g)
+    {
         super.paintComponent(g);
-        Rectangle r = g.getClipBounds();
+        final Rectangle r = g.getClipBounds();
         g.setColor(Color.white);
         g.fillRect(r.x, r.y, r.width, r.height);
         boolean check = false;
         g.setColor(Color.lightGray);
-        for (int x = r.x; x < r.width; x += 5) {
+        for(int x = r.x; x < r.width; x += 5)
+        {
             boolean rowcheck = check;
             check = !check;
-            for (int y = r.y; y < r.height; y += 5) {
+            for(int y = r.y; y < r.height; y += 5)
+            {
                 rowcheck = !rowcheck;
-                if (rowcheck) {
+                if(rowcheck)
+                {
                     g.fillRect(x, y, 5, 5);
                 }
             }
         }
-        if (this.color != null) {
+        if(this.color != null)
+        {
             g.setColor(this.color);
             g.fillRect(r.x, r.y, r.width, r.height);
         }
