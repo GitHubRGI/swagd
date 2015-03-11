@@ -22,11 +22,16 @@ import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
 
 /**
+ * Convenience class for getting GDAL error messages
+ *
  * @author Luke Lambert
  *
  */
 public class GdalError
 {
+    /**
+     * Constructor
+     */
     public GdalError()
     {
         this.message = gdal.GetLastErrorMsg();
@@ -43,6 +48,9 @@ public class GdalError
                              this.message);
     }
 
+    /**
+     * @return The last GDAL error as a string
+     */
     public static String lastError()
     {
        return (new GdalError()).toString();
@@ -72,6 +80,14 @@ public class GdalError
         return this.type;
     }
 
+    /**
+     * Maps a GDAL error constant to a human readable string
+     *
+     * @param number
+     *             GDAL error constant
+     * @return A string containing the human readable equivalent of the error
+     *             number
+     */
     public static String gdalErrorNumberToString(final int number)
     {
         // Having this as an if-else is ridiculous, but Java says that
@@ -124,6 +140,14 @@ public class GdalError
         }
     }
 
+    /**
+     * Maps GDAL error types to human readable strings
+     *
+     * @param type
+     *             GDAL error type constant
+     * @return A string containing the human readable equivalent of the error
+     *             type
+     */
     public static String gdalErrorTypeToString(final int type)
     {
         if(type == gdalconstConstants.CE_Debug)

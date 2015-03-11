@@ -49,8 +49,10 @@ public class TmsReaderTest
     public void breakConstructorProfile()
     {
         final Path tmsDir = TmsUtility.createTMSFolderMercator(this.tempFolder, 4);
-        @SuppressWarnings("unused")
-        final TmsReader reader = new TmsReader(null, tmsDir);
+        try(final TmsReader reader = new TmsReader(null, tmsDir))
+        {
+            // constructor should throw
+        }
     }
 
     /**
@@ -60,8 +62,10 @@ public class TmsReaderTest
     @Test(expected = IllegalArgumentException.class)
     public void breakConstructorLocation()
     {
-        @SuppressWarnings("unused")
-        final TmsReader reader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), null);
+        try(final TmsReader reader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), null))
+        {
+            // constructor should throw
+        }
     }
 
     /**
@@ -75,8 +79,10 @@ public class TmsReaderTest
     public void verifyMercBoundsCalcLeft() throws TileStoreException
     {
         final Path tmsDir = TmsUtility.createTMSFolderMercator(this.tempFolder, 4);
-        final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), tmsDir);
-        assertTrue(tmsReader.getBounds().getMinX() == -20037508.342789244);
+        try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), tmsDir))
+        {
+            assertTrue(tmsReader.getBounds().getMinX() == -20037508.342789244);
+        }
     }
 
     /**
@@ -90,8 +96,10 @@ public class TmsReaderTest
     public void verifyMercBoundsCalcRight() throws TileStoreException
     {
         final Path tmsDir = TmsUtility.createTMSFolderMercator(this.tempFolder, 4);
-        final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), tmsDir);
-        assertTrue(tmsReader.getBounds().getMaxX() == 20037508.342789244);
+        try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), tmsDir))
+        {
+            assertTrue(tmsReader.getBounds().getMaxX() == 20037508.342789244);
+        }
     }
 
     /**
@@ -105,8 +113,10 @@ public class TmsReaderTest
     public void verifyMercBoundsCalcTop() throws TileStoreException
     {
         final Path tmsDir = TmsUtility.createTMSFolderMercator(this.tempFolder, 4);
-        final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), tmsDir);
-        assertTrue(tmsReader.getBounds().getMaxY() == 20037508.342789244);
+        try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), tmsDir))
+        {
+            assertTrue(tmsReader.getBounds().getMaxY() == 20037508.342789244);
+        }
     }
 
     /**
@@ -120,8 +130,10 @@ public class TmsReaderTest
     public void verifyMercBoundsCalcBottom() throws TileStoreException
     {
         final Path tmsDir = TmsUtility.createTMSFolderMercator(this.tempFolder, 4);
-        final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), tmsDir);
-        assertTrue(tmsReader.getBounds().getMinY() == -20037508.342789244);
+        try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), tmsDir))
+        {
+            assertTrue(tmsReader.getBounds().getMinY() == -20037508.342789244);
+        }
     }
 
     /**
@@ -135,8 +147,10 @@ public class TmsReaderTest
     public void verifyGeodBoundsCalcLeft() throws TileStoreException
     {
         final Path tmsDir = TmsUtility.createTMSFolderGeodetic(this.tempFolder, 4);
-        final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 4326), tmsDir);
-        assertTrue(tmsReader.getBounds().getMinX() == -180.0);
+        try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 4326), tmsDir))
+        {
+            assertTrue(tmsReader.getBounds().getMinX() == -180.0);
+        }
     }
 
     /**
@@ -150,8 +164,10 @@ public class TmsReaderTest
     public void verifyGeodBoundsCalcRight() throws TileStoreException
     {
         final Path tmsDir = TmsUtility.createTMSFolderGeodetic(this.tempFolder, 4);
-        final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 4326), tmsDir);
-        assertTrue(tmsReader.getBounds().getMaxX() == 180.0);
+        try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 4326), tmsDir))
+        {
+            assertTrue(tmsReader.getBounds().getMaxX() == 180.0);
+        }
     }
 
     /**
@@ -165,8 +181,10 @@ public class TmsReaderTest
     public void verifyGeodBoundsCalcTop() throws TileStoreException
     {
         final Path tmsDir = TmsUtility.createTMSFolderGeodetic(this.tempFolder, 4);
-        final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 4326), tmsDir);
-        assertTrue(tmsReader.getBounds().getMaxY() == 90.0);
+        try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 4326), tmsDir))
+        {
+            assertTrue(tmsReader.getBounds().getMaxY() == 90.0);
+        }
     }
 
     /**
@@ -180,8 +198,10 @@ public class TmsReaderTest
     public void verifyGeodBoundsCalcBottom() throws TileStoreException
     {
         final Path tmsDir = TmsUtility.createTMSFolderGeodetic(this.tempFolder, 4);
-        final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 4326), tmsDir);
-        assertTrue(tmsReader.getBounds().getMinY() == -90.0);
+        try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 4326), tmsDir))
+        {
+            assertTrue(tmsReader.getBounds().getMinY() == -90.0);
+        }
     }
 
     @Test
@@ -191,10 +211,10 @@ public class TmsReaderTest
 
         final CoordinateReferenceSystem crs = new CoordinateReferenceSystem("EPSG", 3857);
 
-        final TmsReader reader = new TmsReader(crs, tmsDir);
-
-        final BoundingBox bounds = reader.stream(0).findFirst().get().getBounds();
-
-        assertTrue(CrsProfileFactory.create(crs).getBounds().equals(bounds));
+        try(final TmsReader reader = new TmsReader(crs, tmsDir))
+        {
+            final BoundingBox bounds = reader.stream(0).findFirst().get().getBounds();
+            assertTrue(CrsProfileFactory.create(crs).getBounds().equals(bounds));
+        }
     }
 }

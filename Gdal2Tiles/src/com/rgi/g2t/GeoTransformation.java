@@ -75,20 +75,24 @@ public class GeoTransformation
         return this.pixelDimensions;
     }
 
-    public Coordinate<Double> getBottomRight(final double rasterHeight, final double rasterWidth)
-    {
-        return new Coordinate<>(this.affineTransform[0] + this.affineTransform[1] * rasterWidth,
-                                this.affineTransform[3] + this.affineTransform[5] * rasterHeight);
-    }
-
+    /**
+     * @param dataset
+     *             GDAL {@link Dataset}
+     * @return Returns the geographic bounds of a dataset based on the geotransformation
+     */
     public BoundingBox getBounds(final Dataset dataset)
     {
         return new BoundingBox(this.affineTransform[0],
-                               this.affineTransform[3] + this.affineTransform[5] * dataset.getRasterYSize(),
                                this.affineTransform[0] + this.affineTransform[1] * dataset.getRasterXSize(),
+                               this.affineTransform[3] + this.affineTransform[5] * dataset.getRasterYSize(),
                                this.affineTransform[3]);
     }
 
+    /**
+     * The 'identity' transformation
+     *
+     * I * V = V
+     */
     public static final GeoTransformation Identity = new GeoTransformation(new double[] {0.0, 1.0, 0.0, 0.0, 0.0, 1.0});
 
     private final double[]           affineTransform;

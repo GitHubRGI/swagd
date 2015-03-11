@@ -24,25 +24,41 @@ import java.awt.Rectangle;
 
 import javax.swing.JButton;
 
+/**
+ * @author Duff Means
+ *
+ */
 public class SwatchButton extends JButton
 {
-
     private static final long serialVersionUID = -4668559044616232318L;
-    private Color             color            = null;
 
+    private Color color = null;
+
+    /**
+     * Creates a button with text.
+     *
+     * @param label
+     *             the text of the button
+     */
     public SwatchButton(final String label)
     {
         super(label);
     }
 
-    public void setColor(final Color color)
-    {
-        this.color = color;
-    }
-
+    /**
+     * @return the color
+     */
     public Color getColor()
     {
         return this.color;
+    }
+
+    /**
+     * @param color the color to set
+     */
+    public void setColor(final Color color)
+    {
+        this.color = color;
     }
 
     @Override
@@ -67,6 +83,7 @@ public class SwatchButton extends JButton
                 }
             }
         }
+
         if(this.color != null)
         {
             g.setColor(this.color);
