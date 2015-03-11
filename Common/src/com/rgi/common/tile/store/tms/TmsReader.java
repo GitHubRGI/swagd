@@ -431,7 +431,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
                                    return TmsReader.this.tileToCrsCoordinate(column,
                                                                              row,
                                                                              zoomLevel,
-                                                                             TmsTileStore.Origin);
+                                                                             corner);
                                }
 
                                @Override
