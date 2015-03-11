@@ -73,9 +73,12 @@ public class Packager implements MonitorableTask, TaskMonitor
      */
     public void execute()
     {
-        final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(this.createPackageJob())));
-        jobWaiter.setDaemon(true);
-        jobWaiter.start();
+        //final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(this.createPackageJob())));
+        //jobWaiter.setDaemon(true);
+        //jobWaiter.start();
+
+        // TODO *temporary* make this run on the main thread
+        this.createPackageJob().run();
     }
 
     private Runnable createPackageJob()

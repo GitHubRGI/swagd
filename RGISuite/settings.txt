@@ -1,8 +1,8 @@
-outputLocation=C:\Users\corp
+outputLocation=C:\Users\corp\Desktop\sample data\geopackage
 noDataColor=0,0,0,0
 lastViewDirectory=C:\Users\corp\Desktop\sample data\geopackage
-outputImageFormat=JPG
-package.lastInputLocation=C:\Users\corp\Desktop\sample data\geopackage
+outputImageFormat=JPEG
+package.lastInputLocation=C:\Users\corp\Desktop\sample data\tms
 tiling.lastInputLocation=C:\Users\corp\Desktop\sample data\tif
 tileWidth=256
 outputImageQuality=70
