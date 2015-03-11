@@ -158,7 +158,7 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor
                 final TileStoreReader tileReader = new TmsReader(crsProfile, outputFolder);
 
                 //final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createTileJob(file, tileReader, tileWriter, opts, this))));
-                final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createGdalTileJob(tileWriter, tileReader.getTileScheme(), crsProfile, outputFolder, new MimeType("image", imageFormat), opts))));
+                final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createGdalTileJob(tileWriter, tileReader.getTileScheme(), crsProfile, file.toPath(), new MimeType("image", imageFormat), opts))));
                 jobWaiter.setDaemon(true);
                 jobWaiter.start();
             }
@@ -270,6 +270,7 @@ public class Tiler extends AbstractTask implements MonitorableTask, TaskMonitor
         {
             this.setProgress(0);
         }
+        this.fireFinished();
     }
 
     @Override
