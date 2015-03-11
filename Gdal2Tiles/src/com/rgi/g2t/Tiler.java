@@ -22,11 +22,8 @@ import java.awt.Color;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.rgi.common.Dimensions;
@@ -35,13 +32,14 @@ import com.rgi.common.task.TaskMonitor;
 import com.rgi.common.tile.store.TileStoreWriter;
 
 /**
+ * @author Duff Means
  * @author Luke Lambert
  *
  */
 public class Tiler implements MonitorableTask, TaskMonitor
 {
     ExecutorService executor  = Executors.newSingleThreadExecutor();
-    private int     jobTotal  = 0;
+    private final int     jobTotal  = 0;
     private int     jobCount  = 0;
     private int     completed = 0;
 
@@ -51,6 +49,18 @@ public class Tiler implements MonitorableTask, TaskMonitor
     final private Dimensions<Integer> tileDimensions;
     final private Color               noDataColor;
 
+    /**
+     * Constructor
+     *
+     * @param file
+     *             Source image
+     * @param tileWriter
+     *             Destination tile store
+     * @param tileDimensions
+     *             Desired tile pixel width and height
+     * @param noDataColor
+     *             Default tile color
+     */
     public Tiler(final File                file,
                  final TileStoreWriter     tileWriter,
                  final Dimensions<Integer> tileDimensions,
@@ -87,17 +97,29 @@ public class Tiler implements MonitorableTask, TaskMonitor
         }
     }
 
+    /**
+     * Creates the tiles
+     */
     public void execute()
     {
-        final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(new TileJob(this.file,
-                                                                                           //this.tileReader,
-                                                                                           this.tileWriter,
-                                                                                           this.tileDimensions,
-                                                                                           this.noDataColor,
-                                                                                           this))));
+        //final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(new TileJob(this.file,
+        //                                                                                   //this.tileReader,
+        //                                                                                   this.tileWriter,
+        //                                                                                   this.tileDimensions,
+        //                                                                                   this.noDataColor,
+        //                                                                                   this))));
+        //
+        //jobWaiter.setDaemon(true);
+        //jobWaiter.start();
 
-        jobWaiter.setDaemon(true);
-        jobWaiter.start();
+        // TODO this is *temporarily* synchronous
+        final TileJob tileJob = new TileJob(this.file,
+                                      //this.tileReader,
+                                      this.tileWriter,
+                                      this.tileDimensions,
+                                      this.noDataColor,
+                                      this);
+        tileJob.run();
     }
 
     private static void sanityCheckGdalInstallation()
@@ -130,6 +152,7 @@ public class Tiler implements MonitorableTask, TaskMonitor
         }
     }
 
+    @SuppressWarnings("unused")
     private void fireError(final Exception e)
     {
         for(final TaskMonitor monitor : this.monitors)
@@ -146,44 +169,44 @@ public class Tiler implements MonitorableTask, TaskMonitor
         }
     }
 
-    private class JobWaiter implements Runnable
-    {
-        private final Future<?> job;
-
-        public JobWaiter(final Future<?> job)
-        {
-            ++Tiler.this.jobTotal;
-            this.job = job;
-        }
-
-        @Override
-        public void run()
-        {
-            try
-            {
-                this.job.get();
-            }
-            catch(final InterruptedException ie)
-            {
-                // unlikely, but we still need to handle it
-                System.err.println("Tiling job was interrupted.");
-                ie.printStackTrace();
-                Tiler.this.fireError(ie);
-            }
-            catch(final ExecutionException ee)
-            {
-                System.err.println("Tiling job failed with exception: " + ee.getMessage());
-                ee.printStackTrace();
-                Tiler.this.fireError(ee);
-            }
-            catch(final CancellationException ce)
-            {
-                System.err.println("Tiling job was cancelled.");
-                ce.printStackTrace();
-                Tiler.this.fireError(ce);
-            }
-        }
-    }
+//    private class JobWaiter implements Runnable
+//    {
+//        private final Future<?> job;
+//
+//        public JobWaiter(final Future<?> job)
+//        {
+//            ++Tiler.this.jobTotal;
+//            this.job = job;
+//        }
+//
+//        @Override
+//        public void run()
+//        {
+//            try
+//            {
+//                this.job.get();
+//            }
+//            catch(final InterruptedException ie)
+//            {
+//                // unlikely, but we still need to handle it
+//                System.err.println("Tiling job was interrupted.");
+//                ie.printStackTrace();
+//                Tiler.this.fireError(ie);
+//            }
+//            catch(final ExecutionException ee)
+//            {
+//                System.err.println("Tiling job failed with exception: " + ee.getMessage());
+//                ee.printStackTrace();
+//                Tiler.this.fireError(ee);
+//            }
+//            catch(final CancellationException ce)
+//            {
+//                System.err.println("Tiling job was cancelled.");
+//                ce.printStackTrace();
+//                Tiler.this.fireError(ce);
+//            }
+//        }
+//    }
 
     @Override
     public void setMaximum(final int max)

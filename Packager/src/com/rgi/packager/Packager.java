@@ -20,11 +20,8 @@ package com.rgi.packager;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.rgi.common.task.MonitorableTask;
@@ -45,7 +42,7 @@ public class Packager implements MonitorableTask, TaskMonitor
 {
     private final ExecutorService executor  = Executors.newSingleThreadExecutor();
 
-    private int jobTotal  = 0;
+    private final int jobTotal  = 0;
     private int jobCount  = 0;
     private int completed = 0;
 
@@ -164,6 +161,7 @@ public class Packager implements MonitorableTask, TaskMonitor
         }
     }
 
+    @SuppressWarnings("unused")
     private void fireError(final Exception e)
     {
         for(final TaskMonitor monitor : this.monitors)
@@ -180,44 +178,44 @@ public class Packager implements MonitorableTask, TaskMonitor
         }
     }
 
-    private class JobWaiter implements Runnable
-    {
-        private final Future<?> job;
-
-        public JobWaiter(final Future<?> job)
-        {
-            ++Packager.this.jobTotal;
-            this.job = job;
-        }
-
-        @Override
-        public void run()
-        {
-            try
-            {
-                this.job.get();
-            }
-            catch(final InterruptedException ie)
-            {
-                // unlikely, but we still need to handle it
-                System.err.println("Packaging job was interrupted.");
-                ie.printStackTrace();
-                Packager.this.fireError(ie);
-            }
-            catch(final ExecutionException ee)
-            {
-                System.err.println("Packaging job failed with exception: " + ee.getMessage());
-                ee.printStackTrace();
-                Packager.this.fireError(ee);
-            }
-            catch(final CancellationException ce)
-            {
-                System.err.println("Packaging job was cancelled.");
-                ce.printStackTrace();
-                Packager.this.fireError(ce);
-            }
-        }
-    }
+//    private class JobWaiter implements Runnable
+//    {
+//        private final Future<?> job;
+//
+//        public JobWaiter(final Future<?> job)
+//        {
+//            ++Packager.this.jobTotal;
+//            this.job = job;
+//        }
+//
+//        @Override
+//        public void run()
+//        {
+//            try
+//            {
+//                this.job.get();
+//            }
+//            catch(final InterruptedException ie)
+//            {
+//                // unlikely, but we still need to handle it
+//                System.err.println("Packaging job was interrupted.");
+//                ie.printStackTrace();
+//                Packager.this.fireError(ie);
+//            }
+//            catch(final ExecutionException ee)
+//            {
+//                System.err.println("Packaging job failed with exception: " + ee.getMessage());
+//                ee.printStackTrace();
+//                Packager.this.fireError(ee);
+//            }
+//            catch(final CancellationException ce)
+//            {
+//                System.err.println("Packaging job was cancelled.");
+//                ce.printStackTrace();
+//                Packager.this.fireError(ce);
+//            }
+//        }
+//    }
 
     @Override
     public void setMaximum(final int max)

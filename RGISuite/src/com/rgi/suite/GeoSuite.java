@@ -81,6 +81,7 @@ public class GeoSuite
         SwingUtilities.invokeLater(() -> this.startGui());
     }
 
+    @SuppressWarnings("deprecation")
     private void startGui()
     {
         final JPanel contentPanel = new JPanel(new CardLayout());

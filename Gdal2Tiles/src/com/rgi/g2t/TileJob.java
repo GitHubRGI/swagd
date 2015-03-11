@@ -69,6 +69,20 @@ public class TileJob implements Runnable
     //private double workTotal = 0;
     //private int workUnits = 0;
 
+    /**
+     * Constructor
+     *
+     * @param file
+     *             Source image
+     * @param tileStoreWriter
+     *             Destination tile store
+     * @param tileDimensions
+     *             Desired tile pixel width and height
+     * @param noDataColor
+     *             Default tile color
+     * @param monitor
+     *             Process monitor
+     */
     public TileJob(final File                file,
                    //final TileStoreReader     tileStoreReader,
                    final TileStoreWriter     tileStoreWriter,

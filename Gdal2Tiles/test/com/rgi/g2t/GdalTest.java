@@ -19,6 +19,7 @@
 
 package com.rgi.g2t;
 
+@SuppressWarnings("javadoc")
 public class GdalTest {
     // TODO
 }

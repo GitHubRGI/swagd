@@ -26,10 +26,15 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
+/**
+ * @author Duff Means
+ *
+ */
 @SuppressWarnings("serial")
+@Deprecated
 public abstract class PropertiesAction extends AbstractAction
 {
-    protected PropertiesAction(Properties p, String key)
+    protected PropertiesAction(final Properties p, final String key)
     {
         this.setString   (p, key + ".name",  Action.NAME);
         this.setKeyStroke(p, key + ".accel", Action.ACCELERATOR_KEY);
@@ -39,30 +44,30 @@ public abstract class PropertiesAction extends AbstractAction
         this.setIcon     (p, key + ".large", Action.LARGE_ICON_KEY);
     }
 
-    private void setString(Properties p, String property, String key)
+    private void setString(final Properties p, final String property, final String key)
     {
-        String value = p.getProperty(property);
+        final String value = p.getProperty(property);
         if(value != null)
         {
             this.putValue(key, value);
         }
     }
 
-    private void setKeyStroke(Properties p, String property, String key)
+    private void setKeyStroke(final Properties p, final String property, final String key)
     {
-        String value = p.getProperty(property);
+        final String value = p.getProperty(property);
         if(value != null)
         {
             this.putValue(key, KeyStroke.getKeyStroke(value));
         }
     }
 
-    private void setIcon(Properties p, String property, String key)
+    private void setIcon(final Properties p, final String property, final String key)
     {
-        String value = p.getProperty(property);
+        final String value = p.getProperty(property);
         if(value != null)
         {
-            URL resource = this.getClass().getResource("/" + value);
+            final URL resource = this.getClass().getResource("/" + value);
             if(resource != null)
             {
                 this.putValue(key, new ImageIcon(resource));

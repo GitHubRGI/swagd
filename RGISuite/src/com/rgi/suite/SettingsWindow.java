@@ -41,6 +41,12 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
+/**
+ * Window for settings manipulation
+ *
+ * @author LukeLambert
+ *
+ */
 public class SettingsWindow extends JFrame
 {
     private static final long serialVersionUID = 4509050309011262891L;
@@ -75,6 +81,12 @@ public class SettingsWindow extends JFrame
     private final JPanel   contentPane;
     private final Settings settings;
 
+    /**
+     * Constructor
+     *
+     * @param settings
+     *             Object that provides access to the settings reader/writer
+     */
     public SettingsWindow(final Settings settings)
     {
         this.setTitle("Settings");
@@ -260,7 +272,7 @@ public class SettingsWindow extends JFrame
         this.contentPane.add(okButton, gbc);
     }
 
-    public static Color colorFromString(final String string)
+    protected static Color colorFromString(final String string)
     {
         final Pattern colorPattern = Pattern.compile("(\\d+),(\\d+),(\\d+),(\\d+)");
 
@@ -284,7 +296,7 @@ public class SettingsWindow extends JFrame
         return null;
     }
 
-    public static String colorToString(final Color color)
+    protected static String colorToString(final Color color)
     {
         return color == null ? null
                              : String.format("%d,%d,%d,%d",

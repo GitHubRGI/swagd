@@ -42,6 +42,16 @@ import com.rgi.common.tile.store.TileStoreReader;
  */
 public class TileStoreLoader implements TileLoader
 {
+    /**
+     * Constructor
+     *
+     * @param tileStore
+     *             Tile store reader
+     * @param listener
+     *             Callback mechanism to report tile loader status
+     * @throws TileStoreException
+     *             Thrown when there's an error in the underlying tile store implementation
+     */
     public TileStoreLoader(final TileStoreReader tileStore, final TileLoaderListener listener) throws TileStoreException
     {
         this.tileStore  = tileStore;
@@ -129,12 +139,12 @@ public class TileStoreLoader implements TileLoader
                    .tileToCrsCoordinate(tile.getXtile(),
                                         tile.getYtile(),
                                         this.crsProfile.getBounds(),
-                                        tileScheme.dimensions(tile.getZoom()),
-                                        origin);
+                                        TileScheme.dimensions(tile.getZoom()),
+                                        Origin);
     }
 
-    public final static TileOrigin origin     = TileOrigin.UpperLeft;           // Tile origin for JMapViewer
-    public final static TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);  // Tile scheme for JMapViewer: http://wiki.openstreetmap.org/wiki/Slippy_Map
+    private final static TileOrigin Origin     = TileOrigin.UpperLeft;           // Tile Origin for JMapViewer
+    private final static TileScheme TileScheme = new ZoomTimesTwo(0, 31, 1, 1);  // Tile scheme for JMapViewer: http://wiki.openstreetmap.org/wiki/Slippy_Map
 
     private final TileLoaderListener listener;
     private final TileStoreReader    tileStore;
