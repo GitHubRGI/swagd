@@ -15,8 +15,6 @@ public class TileStoreRadioButton extends JRadioButton
      */
     private static final long serialVersionUID = 1L;
     TileStoreReader store;
-    String text;
-    JRadioButton button;
     
     /**
      * Creates a RadioButton that has the TileStoreReader information attached to it
@@ -26,9 +24,6 @@ public class TileStoreRadioButton extends JRadioButton
     {
         super(store.getName());
         this.store  = store;
-        this.text   = store.getName();
-        //this.button = new JRadioButton(this.text);
-        
     }
     
     /**
@@ -37,13 +32,5 @@ public class TileStoreRadioButton extends JRadioButton
     public TileStoreReader getTileStore()
     {
         return this.store;
-    }
-    
-    /**
-     * @return JRadioButton 
-     */
-    public JRadioButton getButton()
-    {
-        return this.button;
     }
 }
