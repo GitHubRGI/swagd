@@ -18,6 +18,7 @@
 
 package com.rgi.view;
 
+@SuppressWarnings("javadoc")
 public class ViewerTest {
     // TODO
 }

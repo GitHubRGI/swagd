@@ -24,14 +24,6 @@ public class Dimensions <T extends Number>
     }
 
     /**
-     * @return The height
-     */
-    public T getHeight()
-    {
-        return this.height;
-    }
-
-    /**
      * @return The width
      */
     public T getWidth()
@@ -39,6 +31,14 @@ public class Dimensions <T extends Number>
         return this.width;
     }
 
-    private final T height;
+    /**
+     * @return The height
+     */
+    public T getHeight()
+    {
+        return this.height;
+    }
+
     private final T width;
+    private final T height;
 }

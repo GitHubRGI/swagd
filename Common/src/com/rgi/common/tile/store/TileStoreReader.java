@@ -34,7 +34,7 @@ import com.rgi.common.tile.scheme.TileScheme;
  * @author Luke Lambert
  *
  */
-public interface TileStoreReader
+public interface TileStoreReader extends AutoCloseable
 {
     /**
      * Gets the geographic bounds

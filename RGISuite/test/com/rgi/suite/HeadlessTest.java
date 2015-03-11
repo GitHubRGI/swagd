@@ -18,6 +18,7 @@
 
 package com.rgi.suite;
 
+@SuppressWarnings("javadoc")
 public class HeadlessTest {
     // TODO
 }

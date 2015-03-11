@@ -58,12 +58,14 @@ import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileMatrixSet;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
+import com.rgi.geopackage.verification.Severity;
+import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
  *
  */
-public class GeoPackageReader implements AutoCloseable, TileStoreReader
+public class GeoPackageReader implements TileStoreReader
 {
     /**
      * @param geoPackageFile
@@ -86,6 +88,38 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
      */
     public GeoPackageReader(final File geoPackageFile, final String tileSetTableName) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
+        this(geoPackageFile, tileSetTableName, VerificationLevel.Fast);
+    }
+
+    /**
+     * @param geoPackageFile
+     *            Handle to a new or existing GeoPackage file
+     * @param tileSetTableName
+     *            Name for the new tile set's table in the GeoPackage database
+     * @param verificationLevel
+     *             Controls the level of verification testing performed on this
+     *             GeoPackage.  If verificationLevel is not None
+     *             {@link GeoPackage#verify()} is called automatically and will throw if
+     *             there are any conformance violations with the severity
+     *             {@link Severity#Error}.  Throwing from this method means
+     *             that it won't be possible to instantiate a GeoPackage object
+     *             based on an SQLite "GeoPackage" file with severe errors.
+     * @throws ClassNotFoundException
+     *             when the SQLite JDBC driver cannot be found
+     * @throws ConformanceException
+     *             when the verifyConformance parameter is true, and if there
+     *             are any conformance violations with the severity
+     *             Severity.Error
+     * @throws IOException
+     *             when openMode is set to OpenMode.Create, and the file already
+     *             exists, openMode is set to OpenMode.Open, and the file does
+     *             not exist, or if there is a file read error
+     * @throws SQLException
+     *             in various cases where interaction with the JDBC connection
+     *             fails
+     */
+    public GeoPackageReader(final File geoPackageFile, final String tileSetTableName, final VerificationLevel verificationLevel) throws ClassNotFoundException, ConformanceException, IOException, SQLException
+    {
         if(geoPackageFile == null)
         {
             throw new IllegalArgumentException("GeoPackage file may not be null");
@@ -96,11 +130,11 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
             throw new IllegalArgumentException("Tile set may not be null or empty");
         }
 
-        this.geoPackage = new GeoPackage(geoPackageFile, OpenMode.Open);
+        this.geoPackage = new GeoPackage(geoPackageFile, verificationLevel, OpenMode.Open);
 
         try
         {
-            this.tileSet    = this.geoPackage.tiles().getTileSet(tileSetTableName);
+            this.tileSet = this.geoPackage.tiles().getTileSet(tileSetTableName);
 
             if(this.tileSet == null)
             {
@@ -116,7 +150,7 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
 
             this.crsProfile = CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId());
 
-            this.zoomLevels    = this.geoPackage.tiles().getTileZoomLevels(this.tileSet);
+            this.zoomLevels = this.geoPackage.tiles().getTileZoomLevels(this.tileSet);
 
             this.tileMatrixSet = this.geoPackage.tiles().getTileMatrixSet(this.tileSet);
 
@@ -215,6 +249,12 @@ public class GeoPackageReader implements AutoCloseable, TileStoreReader
                                          coordinate,
                                          this.crsProfile.getPrecision(),
                                          zoomLevel));
+        }
+        catch(final IllegalArgumentException ex)
+        {
+            return null;//this is to catch an IAE if the crsCoordinate
+                        //Requested is outside the bounds of the GeoPackage
+                        //Tiles BoundingBox
         }
         catch(final SQLException ex)
         {

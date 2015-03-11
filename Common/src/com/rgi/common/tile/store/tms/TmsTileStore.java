@@ -22,8 +22,10 @@ import java.nio.file.Path;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.Coordinate;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
@@ -42,16 +44,16 @@ abstract class TmsTileStore
     /**
      * Constructor
      *
-     * @param profile
-     *             The tile profile this tile store is using
+     * @param coordinateReferenceSystem
+     *             The coordinate reference system of this tile store
      * @param location
      *             The location of this tile store on-disk
      */
-    protected TmsTileStore(final CrsProfile profile, final Path location)
+    protected TmsTileStore(final CoordinateReferenceSystem coordinateReferenceSystem, final Path location)
     {
-        if(profile == null)
+        if(coordinateReferenceSystem == null)
         {
-            throw new IllegalArgumentException("Tile profile cannot be null");
+            throw new IllegalArgumentException("Coordinate reference may not be null");
         }
 
         if(location == null)
@@ -64,21 +66,15 @@ abstract class TmsTileStore
             throw new IllegalArgumentException("Location must specify a directory");
         }
 
-        this.profile  = profile;
+        this.profile  = CrsProfileFactory.create(coordinateReferenceSystem);
         this.location = location;
 
         this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
     }
 
-    protected static Path tmsPath(final Path path, final int... tmsSubDirectories)
+    public void close()
     {
-        // TODO use Stream.collect ?
-        Path newPath = path.normalize();
-        for(final int tmsSubdirectory : tmsSubDirectories)
-        {
-            newPath = newPath.resolve(String.valueOf(tmsSubdirectory));
-        }
-        return newPath;
+        // Nothing to do here.  This method exists for child classes that need to implement AutoClosable
     }
 
     public String getName()
@@ -96,6 +92,11 @@ abstract class TmsTileStore
     public TileScheme getTileScheme()
     {
         return this.tileScheme;
+    }
+
+    public CoordinateReferenceSystem getCoordinateReferenceSystem()
+    {
+        return this.profile.getCoordinateReferenceSystem();
     }
 
     public CrsCoordinate tileToCrsCoordinate(final int column, final int row, final int zoomLevel, final TileOrigin corner)
@@ -121,6 +122,17 @@ abstract class TmsTileStore
                                lowerLeft.getY(),
                                upperRight.getX(),
                                upperRight.getY());
+    }
+
+    protected static Path tmsPath(final Path path, final int... tmsSubDirectories)
+    {
+        // TODO use Stream.collect ?
+        Path newPath = path.normalize();
+        for(final int tmsSubdirectory : tmsSubDirectories)
+        {
+            newPath = newPath.resolve(String.valueOf(tmsSubdirectory));
+        }
+        return newPath;
     }
 
     protected final CrsProfile profile;

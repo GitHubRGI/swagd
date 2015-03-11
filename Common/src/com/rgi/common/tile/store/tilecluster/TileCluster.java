@@ -22,6 +22,7 @@ import java.io.File;
 import java.nio.file.Path;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
@@ -85,6 +86,11 @@ abstract class TileCluster
         this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
     }
 
+    public void close()
+    {
+        // Nothing to do here.  This method exists for child classes that need to implement AutoClosable
+    }
+
     @SuppressWarnings("static-method")  // Needs to be used as an override in child classes that implement TileStoreReader/TileStoreWriter
     public BoundingBox getBounds()
     {
@@ -92,7 +98,7 @@ abstract class TileCluster
         throw new RuntimeException("Not implemented");
     }
 
-        public String getName()
+    public String getName()
     {
         return String.format("%s%c%s",
                              this.location,
@@ -104,6 +110,16 @@ abstract class TileCluster
     public TileOrigin getTileOrigin()
     {
         return TileCluster.Origin;
+    }
+
+    public TileScheme getTileScheme()
+    {
+        return this.tileScheme;
+    }
+
+    public CoordinateReferenceSystem getCoordinateReferenceSystem()
+    {
+        return this.crsProfile.getCoordinateReferenceSystem();
     }
 
     protected ClusterAddress getClusterAddress(final int column, final int row, final int zoomLevel)
