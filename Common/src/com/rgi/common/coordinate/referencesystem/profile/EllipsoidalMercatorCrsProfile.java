@@ -67,7 +67,6 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
                                          -Math.PI * scaledEarthPolarRadius,
                                           Math.PI * this.scaledEarthEquatorialRadius,
                                           Math.PI * scaledEarthPolarRadius);
-        //this.latLongBounds = new BoundingBox(-180.0, -85.0840590501, 180.0, 85.0840590501);
     }
 
     @Override
@@ -101,7 +100,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
         }
 
-        if(!BoundsUtility.contains(this.crsBounds, coordinate, tileOrigin))
+        if(!BoundsUtility.contains(roundBounds(this.crsBounds, this.getPrecision()), roundCoordinate(coordinate, this.getPrecision()), tileOrigin))
         {
             throw new IllegalArgumentException("Coordinate is outside the crsBounds of this coordinate reference system");
         }
@@ -121,6 +120,17 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     
    
     
+    private static BoundingBox roundBounds(BoundingBox bounds, int precision)
+    {
+        Coordinate<Double> lowerLeftGeodetic  = roundCoordinate(bounds.getBottomLeft(), precision);
+        Coordinate<Double> upperRightGeodetic = roundCoordinate(bounds.getTopRight()  , precision);
+        
+        return new BoundingBox((lowerLeftGeodetic.getX()), 
+                               (lowerLeftGeodetic.getY()), 
+                               (upperRightGeodetic.getX()), 
+                               (upperRightGeodetic.getY()));
+    }
+
     @Override
     public CrsCoordinate tileToCrsCoordinate(final int                  column,
                                              final int                  row,
@@ -191,13 +201,14 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     
     private BoundingBox getBoundsInLatitudeLongitude(BoundingBox bounds)
     {
-        Coordinate<Double> lowerLeftRounded  = this.roundedCrsCoordinateToGlobalGeodetic(bounds.getBottomLeft(), getPrecision());
-        Coordinate<Double> upperRightRounded = this.roundedCrsCoordinateToGlobalGeodetic(bounds.getTopRight(), getPrecision());
+        GlobalGeodeticCrsProfile geodeticCrs    = new GlobalGeodeticCrsProfile();
+        Coordinate<Double> lowerLeftGeodetic  = roundCoordinate(toGlobalGeodetic(bounds.getBottomLeft()), geodeticCrs.getPrecision());
+        Coordinate<Double> upperRightGeodetic = roundCoordinate(toGlobalGeodetic(bounds.getTopRight()), geodeticCrs.getPrecision());
         
-       return new BoundingBox(toLongitude(lowerLeftRounded.getX()), 
-                              toLatitude (lowerLeftRounded.getY()), 
-                              toLongitude(upperRightRounded.getX()), 
-                              toLatitude (upperRightRounded.getY()));
+       return new BoundingBox(lowerLeftGeodetic.getX(), 
+                              lowerLeftGeodetic.getY(), 
+                              upperRightGeodetic.getX(), 
+                              upperRightGeodetic.getY());
     }
 
     
@@ -345,76 +356,12 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         return yRadians;
     }
     
-   /** Converts a row tile Coordinate (with a {@link TileOrigin#UpperLeft}) to the latitude in radians using the inverse
-    * mapping equation
-    * <p>
-    * <h1><b>Formula for latitude: </b></h1><p>
-    * <body><pre>Latitude(in radian) ={@link Math#asin(double)}(limit s(1), s(2), s(3)...)</body></pre>
-    * <h2><b>where</b></h2>
-    * <h3><b>Recursion formula:</b></h3>
-    *         <body>
-    *         <pre>
-    *                       /         /          2*row  + 1    \  \
-    *         s(1)   = tanh| {@link Math#PI} |   1   -  -------------   |  |
-    *                       \         \           256*2^n      /  /
-    *         </pre>
-    *         <pre>
-    *         
-    *         P(k) =       ({@link Eccentricity}*{@link inverseHyperbolicTangent}({@link Eccentricity}*s(k)))
-    *                {@link Math#E}^
-    *                
-    *          for k = 1,2,3....
-    *         </pre>
-    *         <pre>
-    *                     [1 + s(1)]*P(k)^2   -  [ 1 - s(1)]
-    *          s(k+1) =   ---------------------------------- 
-    *                     [1 + s(1)]*P(k)^2   +  [ 1 - s(1)]
-    *                     
-    *          for k = 1, 2, 3... 
-    *          </pre>
-    *          </body>
-    *         <p>
-    * 
-     * @param row the vertical integer value that has a TileOrigin of UpperLeft
-     * @param numberOfTiles the number of tiles at this zoom level that contains the row given
-     * @return the latitude in radians for that given row value
-     */
-    //still debugging old formula
-//    private static double inverseMappingConversionRowtoLatitude(int row, double tileCrsHeight)
-//    {
-//        //calculate s(1)
-//        double firstElement = Math.tanh(Math.PI*(1 - ((2*row+1)/(tileCrsHeight))));
-//        //arbitrary value to initialize the difference
-//        double difference = Integer.MAX_VALUE;
-//        //Start with k = 1
-//        double kElement = firstElement;
-//        //summation
-//        
-//        for(int k = 1; Math.abs(difference) >= .000000001 && k <= 1000; k++)
-//        {
-//             double PofK          = Math.exp(Eccentricity*atanh(Eccentricity*kElement));
-//             double first         = (1 + firstElement)*Math.pow(PofK, 2);
-//             double second        =  1 - firstElement;
-//             double kPlus1Element = (first - second)/(first + second);
-//             //difference of previous sum and the sum with the next element
-//             //see if they converge at a certain value
-//             difference = kElement - kPlus1Element;
-//             
-//             kElement             = kPlus1Element; //set the k element to the next
-//        }
-//        return Math.asin(kElement);
-//    }
-
     private Coordinate<Double> roundedCrsCoordinateToGlobalGeodetic(CrsCoordinate coordinate)
     {
-        Coordinate<Double> roundedCoordinate = new Coordinate<>(roundCoordinate(coordinate, this.getPrecision()));
-        return toGlobalGeodetic(roundedCoordinate);
+        Coordinate<Double> geodeticCoordinate = toGlobalGeodetic(coordinate);
+        return new Coordinate<>(roundCoordinate(geodeticCoordinate, 7));
     }
     
-    private Coordinate<Double> roundedCrsCoordinateToGlobalGeodetic(Coordinate<Double> coordinate, int precision)
-    {
-        return toGlobalGeodetic(new Coordinate<>(roundCoordinate(coordinate, precision)));
-    }
     
     private static Coordinate<Double> roundCoordinate(Coordinate<Double> value, int percision)
     {
