@@ -648,7 +648,6 @@ public class GdalTileJob implements Runnable {
 				//System.out.println("check");
 			}
 		}
-		// Create a for loop for tile x, counting down
 	}
 	
 	private void scaleQueryToTileSize(final Dataset queryDataset, final Dataset tileDataInMemory) throws TilingException
