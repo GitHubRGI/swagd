@@ -3332,7 +3332,7 @@ public class GeoPackageTilesAPITest
 
             final Coordinate<Integer> relativeCoord = gpkg.tiles().crsToTileCoordinate(tileSet, crsMercatorCoord, CrsProfileFactory.create(globalMercator).getPrecision(), zoomLevel);
 
-            Assert.assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordiante.  "
+            Assert.assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordinate.  "
                                     + "    \nExpected Row: 0, Expected Column: 0.\nActual Row: %d, Actual Column: %d.",
                                     relativeCoord.getY(),
                                     relativeCoord.getX()),
@@ -3409,7 +3409,7 @@ public class GeoPackageTilesAPITest
 
             final Coordinate<Integer> relativeCoord = gpkg.tiles().crsToTileCoordinate(tileSet, crsMercatorCoord, CrsProfileFactory.create(globalMercator).getPrecision(), zoomLevel);
 
-            Assert.assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordiante.  "
+            Assert.assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordinate.  "
                                     + "    \nExpected Row: 0, Expected Column: 1.\nActual Row: %d, Actual Column: %d.",
                                     relativeCoord.getY(),
                                     relativeCoord.getX()),
@@ -3486,7 +3486,7 @@ public class GeoPackageTilesAPITest
 
             final Coordinate<Integer> relativeCoord = gpkg.tiles().crsToTileCoordinate(tileSet, crsMercatorCoord, CrsProfileFactory.create(globalMercator).getPrecision(), zoomLevel);
 
-            Assert.assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordiante.  "
+            Assert.assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordinate.  "
                                     + "    \nExpected Row: 1, Expected Column: 0.\nActual Row: %d, Actual Column: %d.",
                                     relativeCoord.getY(),
                                     relativeCoord.getX()),
@@ -3562,7 +3562,7 @@ public class GeoPackageTilesAPITest
 
             final Coordinate<Integer> relativeCoord = gpkg.tiles().crsToTileCoordinate(tileSet, crsMercatorCoord, CrsProfileFactory.create(globalMercator).getPrecision(), zoomLevel);
 
-            Assert.assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordiante.  "
+            Assert.assertTrue(String.format("The GeoPackage did not return the expected row and column from the conversion crs to relative tile coordinate.  "
                                     + "    \nExpected Row: 1, Expected Column: 1.\nActual Row: %d, Actual Column: %d.",
                                     relativeCoord.getY(),
                                     relativeCoord.getX()),
@@ -4040,7 +4040,7 @@ public class GeoPackageTilesAPITest
     }
 
     /**
-     * Test if a crsCoordinate can be translated to a tile coordiante
+     * Test if a crsCoordinate can be translated to a tile coordinate
      *
      * @throws SQLException
      *             throws if an SQLException occurs
@@ -4053,7 +4053,7 @@ public class GeoPackageTilesAPITest
      */
 
     @Test
-    public void crsToRelativeTileCoordianteEdgeCase7()throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    public void crsToRelativeTileCoordinateEdgeCase7()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final int zoomLevel = 0;
         final CrsCoordinate        coordinate = new CrsCoordinate((GlobalGeodeticCrsProfile.Bounds.getMinX()+(2*(GlobalGeodeticCrsProfile.Bounds.getWidth()))  / 8),
