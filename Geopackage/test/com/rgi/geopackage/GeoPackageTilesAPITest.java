@@ -188,7 +188,7 @@ public class GeoPackageTilesAPITest
     }
 
    /**
-     * Tests if the Geopackage will throw an IllegalArgumentException
+     * Tests if the GeoPackage will throw an IllegalArgumentException
      * If it gives tries to create a TileSet with a null SRS value
      * @throws Exception throws when exception occurs
      */
@@ -1009,7 +1009,7 @@ public class GeoPackageTilesAPITest
             final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 18, 20, 20, 2,2, 1, 1);
             gpkg.tiles().addTile(tileSet, tileMatrix, 0, 0, new byte[] {1, 2, 3, 4});
 
-            Assert.fail("Geopackage should throw a IllegalArgumentExceptionException when Tile Matrix Table "
+            Assert.fail("GeoPackage should throw a IllegalArgumentExceptionException when Tile Matrix Table "
                + "does not contain a record for the zoom level of a tile in the Pyramid User Data Table.");
 
         }
@@ -1048,7 +1048,7 @@ public class GeoPackageTilesAPITest
             final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 2, 2, 2, 1, 1);
             gpkg.tiles().addTile(tileSet, tileMatrix, 0, 10, new byte[] {1, 2, 3, 4});
 
-            Assert.fail("Geopackage should throw a IllegalArgumentException when tile_row "
+            Assert.fail("GeoPackage should throw a IllegalArgumentException when tile_row "
                + "is larger than matrix_height - 1 when zoom levels are equal.");
         }
         finally
@@ -1086,7 +1086,7 @@ public class GeoPackageTilesAPITest
             final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 2, 2, 2, 1, 1);
             gpkg.tiles().addTile(tileSet, tileMatrix, 0, -1, new byte[] {1, 2, 3, 4});
 
-            Assert.fail("Geopackage should throw a IllegalArgumentException when tile_row "
+            Assert.fail("GeoPackage should throw a IllegalArgumentException when tile_row "
                + "is less than 0.");
         }
         finally
@@ -1123,7 +1123,7 @@ public class GeoPackageTilesAPITest
             final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 2, 2, 2, 1, 1);
             gpkg.tiles().addTile(tileSet,tileMatrix, 10, 0, new byte[] {1, 2, 3, 4});
 
-            Assert.fail("Geopackage should throw a IllegalArgumentException when tile_column "
+            Assert.fail("GeoPackage should throw a IllegalArgumentException when tile_column "
                + "is larger than matrix_width -1.");
 
         }
@@ -1161,7 +1161,7 @@ public class GeoPackageTilesAPITest
             final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet, 0, 2, 2, 2, 2, 1, 1);
             gpkg.tiles().addTile(tileSet, tileMatrix, -1, 0, new byte[] {1, 2, 3, 4});
 
-            Assert.fail("Geopackage should throw a IllegalArgumentException when tile_column "
+            Assert.fail("GeoPackage should throw a IllegalArgumentException when tile_column "
                + "is less than 0.");
         }
         finally
@@ -1177,7 +1177,7 @@ public class GeoPackageTilesAPITest
     }
 
     /**
-     * Geopackage throws an SQLException when opening a Geopackage since it does not contain the default tables
+     * GeoPackage throws an SQLException when opening a GeoPackage since it does not contain the default tables
      * inside after bypassing the verifier.
      *
      * @throws Exception throws if an exception occurs
@@ -2423,7 +2423,7 @@ public class GeoPackageTilesAPITest
     }
 
     /**
-     * Tests if a Geopackage Tiles would throw an IllegalArgumentException when
+     * Tests if a GeoPackage Tiles would throw an IllegalArgumentException when
      * attempting to add a Tile Matrix corresponding to the same tile set and
      * zoom level but have differing other fields
      *
@@ -2703,7 +2703,7 @@ public class GeoPackageTilesAPITest
             final double pixelYSize = tileSet.getBoundingBox().getHeight()/matrixHeight/tileHeight;
             gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
 
-            fail("Expected GeopackageTiles to throw an IllegalArgtumentException when pixelXSize != boundingBoxHeight/matrixHeight/tileHeight.");
+            fail("Expected GeoPackageTiles to throw an IllegalArgtumentException when pixelXSize != boundingBoxHeight/matrixHeight/tileHeight.");
         }
         finally
         {
@@ -2752,7 +2752,7 @@ public class GeoPackageTilesAPITest
             final double pixelYSize = 500.23123;//invalid pixel y size
             gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
 
-            fail("Expected GeopackageTiles to throw an IllegalArgtumentException when pixelXSize != boundingBoxWidth/matrixWidth/tileWidth.");
+            fail("Expected GeoPackageTiles to throw an IllegalArgtumentException when pixelXSize != boundingBoxWidth/matrixWidth/tileWidth.");
         }
         finally
         {
@@ -4415,7 +4415,7 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     /**
      * Tests if a tileCoordinate can be converted to the correct CRS Coordinate
      * @throws ClassNotFoundException throws
@@ -4426,31 +4426,31 @@ public class GeoPackageTilesAPITest
     @Test
     public void tileToCrsCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
-        File testFile = this.getRandomFile(5);
-        
+        final File testFile = this.getRandomFile(5);
+
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            BoundingBox bBox         =  new BoundingBox(0, 0.0, 180.0,90.0);
-            int         row          = 3;
-            int         column       = 5;
-            int         zoomLevel    = 4;
-            int         matrixWidth  = 6;
-            int         matrixHeight = 4;
-            TileMatrix  tileMatrix   = createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
-            
-            CrsCoordinate crsCoordReturned = gpkg.tiles().tileToCrsCoordinate(gpkg.tiles().getTileSet(tileMatrix.getTableName()), column, row, zoomLevel);
-            CrsCoordinate crsCoordExpected = new CrsCoordinate(bBox.getMinX() + column*(bBox.getWidth()/matrixWidth),
+            final BoundingBox bBox         =  new BoundingBox(0, 0.0, 180.0,90.0);
+            final int         row          = 3;
+            final int         column       = 5;
+            final int         zoomLevel    = 4;
+            final int         matrixWidth  = 6;
+            final int         matrixHeight = 4;
+            final TileMatrix  tileMatrix   = createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
+
+            final CrsCoordinate crsCoordReturned = gpkg.tiles().tileToCrsCoordinate(gpkg.tiles().getTileSet(tileMatrix.getTableName()), column, row, zoomLevel);
+            final CrsCoordinate crsCoordExpected = new CrsCoordinate(bBox.getMinX() + column*(bBox.getWidth()/matrixWidth),
                                                                bBox.getMaxY() - row*  (bBox.getHeight()/matrixHeight),
                                                                new GlobalGeodeticCrsProfile().getCoordinateReferenceSystem());
-            
-            assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
+
+            this.assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
         }
         finally
         {
-            deleteFile(testFile);
+            this.deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if a tileCoordinate can be converted to the correct CRS Coordinate
      * @throws ClassNotFoundException throws
@@ -4461,45 +4461,45 @@ public class GeoPackageTilesAPITest
     @Test
     public void tileToCrsCoordinate2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
-        File testFile = this.getRandomFile(5);
-        
+        final File testFile = this.getRandomFile(5);
+
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            SphericalMercatorCrsProfile spherMercator = new SphericalMercatorCrsProfile();
-            BoundingBox bBox         =  new BoundingBox(spherMercator.getBounds().getMinX()/2, 
+            final SphericalMercatorCrsProfile spherMercator = new SphericalMercatorCrsProfile();
+            final BoundingBox bBox         =  new BoundingBox(spherMercator.getBounds().getMinX()/2,
                                                         spherMercator.getBounds().getMinY()/3,
-                                                        spherMercator.getBounds().getMaxX(), 
+                                                        spherMercator.getBounds().getMaxX(),
                                                         spherMercator.getBounds().getMaxY()/2);
-            int         row          = 5;
-            int         column       = 1;
-            int         zoomLevel    = 4;
-            int         matrixWidth  = 13;
-            int         matrixHeight = 8;
-            
-            SpatialReferenceSystem srs = gpkg.core().addSpatialReferenceSystem(spherMercator.getName(), 
-                                                                               spherMercator.getCoordinateReferenceSystem().getIdentifier(), 
-                                                                               spherMercator.getCoordinateReferenceSystem().getAuthority(), 
-                                                                               spherMercator.getCoordinateReferenceSystem().getIdentifier(), 
+            final int         row          = 5;
+            final int         column       = 1;
+            final int         zoomLevel    = 4;
+            final int         matrixWidth  = 13;
+            final int         matrixHeight = 8;
+
+            final SpatialReferenceSystem srs = gpkg.core().addSpatialReferenceSystem(spherMercator.getName(),
+                                                                               spherMercator.getCoordinateReferenceSystem().getIdentifier(),
+                                                                               spherMercator.getCoordinateReferenceSystem().getAuthority(),
+                                                                               spherMercator.getCoordinateReferenceSystem().getIdentifier(),
                                                                                spherMercator.getWellKnownText(),
                                                                                spherMercator.getDescription());
-            
-            TileMatrix  tileMatrix   = createTileSetAndTileMatrix(gpkg, srs, bBox, zoomLevel, matrixWidth, matrixHeight, 256, 256, "tableName");
-            
-            CrsCoordinate crsCoordExpected =  new CrsCoordinate(bBox.getMinX() + column*(bBox.getWidth()/matrixWidth),
+
+            final TileMatrix  tileMatrix   = createTileSetAndTileMatrix(gpkg, srs, bBox, zoomLevel, matrixWidth, matrixHeight, 256, 256, "tableName");
+
+            final CrsCoordinate crsCoordExpected =  new CrsCoordinate(bBox.getMinX() + column*(bBox.getWidth()/matrixWidth),
                                                                 bBox.getMaxY() - row*  (bBox.getHeight()/matrixHeight),
                                                                 spherMercator.getCoordinateReferenceSystem());
 
-            CrsCoordinate crsCoordReturned = gpkg.tiles().tileToCrsCoordinate(gpkg.tiles().getTileSet(tileMatrix.getTableName()), column, row, zoomLevel);
-            
-            
-            assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
+            final CrsCoordinate crsCoordReturned = gpkg.tiles().tileToCrsCoordinate(gpkg.tiles().getTileSet(tileMatrix.getTableName()), column, row, zoomLevel);
+
+
+            this.assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
         }
         finally
         {
-            deleteFile(testFile);
+            this.deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if a tileCoordinate can be converted to the correct CRS Coordinate
      * @throws ClassNotFoundException throws
@@ -4510,31 +4510,31 @@ public class GeoPackageTilesAPITest
     @Test
     public void tileToCrsCoordinate3() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
-        File testFile = this.getRandomFile(5);
-        
+        final File testFile = this.getRandomFile(5);
+
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            BoundingBox bBox         =  new BoundingBox(-22.1258, -15.325, 43.125, 78.248);
-            int         row          = 2;
-            int         column       = 7;
-            int         zoomLevel    = 4;
-            int         matrixWidth  = 13;
-            int         matrixHeight = 8;
-            TileMatrix  tileMatrix   = createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
-            
-            CrsCoordinate crsCoordReturned = gpkg.tiles().tileToCrsCoordinate(gpkg.tiles().getTileSet(tileMatrix.getTableName()), column, row, zoomLevel);
-            CrsCoordinate crsCoordExpected = new CrsCoordinate(bBox.getMinX() + column*(bBox.getWidth()/matrixWidth),
+            final BoundingBox bBox         =  new BoundingBox(-22.1258, -15.325, 43.125, 78.248);
+            final int         row          = 2;
+            final int         column       = 7;
+            final int         zoomLevel    = 4;
+            final int         matrixWidth  = 13;
+            final int         matrixHeight = 8;
+            final TileMatrix  tileMatrix   = createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
+
+            final CrsCoordinate crsCoordReturned = gpkg.tiles().tileToCrsCoordinate(gpkg.tiles().getTileSet(tileMatrix.getTableName()), column, row, zoomLevel);
+            final CrsCoordinate crsCoordExpected = new CrsCoordinate(bBox.getMinX() + column*(bBox.getWidth()/matrixWidth),
                                                                bBox.getMaxY() - row*  (bBox.getHeight()/matrixHeight),
                                                                new GlobalGeodeticCrsProfile().getCoordinateReferenceSystem());
-            
-            assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
+
+            this.assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
         }
         finally
         {
-            deleteFile(testFile);
+            this.deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if an IllegalArgumentException when appropriate
      * @throws ClassNotFoundException throws
@@ -4545,7 +4545,7 @@ public class GeoPackageTilesAPITest
     @Test(expected = IllegalArgumentException.class)
     public void tileToCrsCoordinateIllegalArgumentException() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
-        File testFile = this.getRandomFile(9);
+        final File testFile = this.getRandomFile(9);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             gpkg.tiles().tileToCrsCoordinate(null, 0, 0, 0);
@@ -4553,10 +4553,10 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            this.deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if an IllegalArgumentException when appropriate
      * @throws ClassNotFoundException throws
@@ -4567,10 +4567,10 @@ public class GeoPackageTilesAPITest
     @Test(expected = IllegalArgumentException.class)
     public void tileToCrsCoordinateIllegalArgumentException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
-        File testFile = this.getRandomFile(9);
+        final File testFile = this.getRandomFile(9);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-           TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+           final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                      "identifier",
                                                      "description",
                                                      new BoundingBox(0.0,0.0,0.0,0.0),
@@ -4580,10 +4580,10 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            this.deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if an IllegalArgumentException when appropriate
      * @throws ClassNotFoundException throws
@@ -4594,10 +4594,10 @@ public class GeoPackageTilesAPITest
     @Test(expected = IllegalArgumentException.class)
     public void tileToCrsCoordinateIllegalArgumentException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
-        File testFile = this.getRandomFile(9);
+        final File testFile = this.getRandomFile(9);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-           TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+           final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                      "identifier",
                                                      "description",
                                                      new BoundingBox(0.0,0.0,0.0,0.0),
@@ -4607,10 +4607,10 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            this.deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if an IllegalArgumentException when appropriate
      * @throws ClassNotFoundException throws
@@ -4621,10 +4621,10 @@ public class GeoPackageTilesAPITest
     @Test(expected = IllegalArgumentException.class)
     public void tileToCrsCoordinateIllegalArgumentException4() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
-        File testFile = this.getRandomFile(9);
+        final File testFile = this.getRandomFile(9);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-           TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+           final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                      "identifier",
                                                      "description",
                                                      new BoundingBox(0.0,0.0,0.0,0.0),
@@ -4634,27 +4634,27 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            this.deleteFile(testFile);
         }
     }
-    
-    private void assertCoordinatesEqual(CrsCoordinate crsCoordReturned, CrsCoordinate crsCoordExpected)
+
+    private void assertCoordinatesEqual(final CrsCoordinate crsCoordReturned, final CrsCoordinate crsCoordExpected)
     {
         assertEquals(String.format("The coordinate returned was not the values expected.\n"
                                    + "Actual Coordinate: (%f, %f) Crs: %s %d\nReturned Coordinate: (%f, %f) Crs: %s %d",
-                                   crsCoordReturned.getX(), 
-                                   crsCoordReturned.getY(), 
-                                   crsCoordReturned.getCoordinateReferenceSystem().getAuthority(), 
+                                   crsCoordReturned.getX(),
+                                   crsCoordReturned.getY(),
+                                   crsCoordReturned.getCoordinateReferenceSystem().getAuthority(),
                                    crsCoordReturned.getCoordinateReferenceSystem().getIdentifier(),
                                    crsCoordExpected.getX(),
                                    crsCoordReturned.getY(),
                                    crsCoordReturned.getCoordinateReferenceSystem().getAuthority(),
                                    crsCoordReturned.getCoordinateReferenceSystem().getIdentifier()),
-                      crsCoordExpected, 
+                      crsCoordExpected,
                       crsCoordReturned);
     }
-    
-    private void deleteFile(File testFile)
+
+    private void deleteFile(final File testFile)
     {
         if(testFile.exists())
         {
@@ -4664,12 +4664,12 @@ public class GeoPackageTilesAPITest
             }
         }
     }
-    
+
     private static TileMatrix createTileSetAndTileMatrix(final GeoPackage gpkg, final BoundingBox bBox, final int zoomLevel, final int matrixWidth, final int matrixHeight) throws SQLException
     {
         return createTileSetAndTileMatrix(gpkg, gpkg.core().getSpatialReferenceSystem(4326), bBox, zoomLevel, matrixWidth, matrixHeight, 256, 256, "tableName");
     }
-    
+
     private static TileMatrix createTileSetAndTileMatrix(final GeoPackage gpkg, final SpatialReferenceSystem srs, final BoundingBox bBox, final int zoomLevel, final int matrixWidth, final int matrixHeight, final int tileWidth, final int tileHeight, final String identifierTableName) throws SQLException
     {
       //create a tileSet

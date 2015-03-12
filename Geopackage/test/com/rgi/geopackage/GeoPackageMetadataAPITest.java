@@ -21,9 +21,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -705,7 +707,7 @@ public class GeoPackageMetadataAPITest
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
             final Collection<MetadataReference> shouldBeEmpty = gpkg.metadata().getMetadataReferences();
-            assertTrue("Geopackage returned an non empty collection when there are no entries in the metadata table.",
+            assertTrue("GeoPackage returned an non empty collection when there are no entries in the metadata table.",
                        shouldBeEmpty.isEmpty());
             //first reference values
             final ReferenceScope referenceScope   = ReferenceScope.GeoPackage;
@@ -738,7 +740,7 @@ public class GeoPackageMetadataAPITest
 
             final Collection<MetadataReference> returnedReferences = gpkg.metadata().getMetadataReferences();
 
-            assertTrue("Geopackage did not return all or the expected entries in the metadataReference table",
+            assertTrue("GeoPackage did not return all or the expected entries in the metadataReference table",
                        returnedReferences.size() == 2 &&
                        returnedReferences.stream().allMatch(returned -> expectedReferences.stream().anyMatch(expected -> this.metadataReferencesEqual(expected, returned))));
         }

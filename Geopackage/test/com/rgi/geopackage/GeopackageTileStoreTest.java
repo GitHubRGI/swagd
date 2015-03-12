@@ -76,7 +76,7 @@ import com.rgi.geopackage.verification.ConformanceException;
  *
  */
 @SuppressWarnings("javadoc")
-public class GeopackageTileStoreTest
+public class GeoPackageTileStoreTest
 {
     private static final double Epsilon = 0.00000001;
     private final Random randomGenerator = new Random();
@@ -247,7 +247,7 @@ public class GeopackageTileStoreTest
             final int matrixWidth  = 3;
             final int matrixHeight = 3;
 
-            final TileMatrix tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
+            final TileMatrix tileMatrix = GeoPackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
             final TileSet    tileSet    = gpkg.tiles().getTileSet(tileMatrix.getTableName());
 
             //add tiles
@@ -357,7 +357,7 @@ public class GeopackageTileStoreTest
             final int matrixWidth  = 3;
             final int matrixHeight = 3;
 
-            final TileMatrix tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg,  bBox, zoomLevel, matrixWidth, matrixHeight);
+            final TileMatrix tileMatrix = GeoPackageTileStoreTest.createTileSetAndTileMatrix(gpkg,  bBox, zoomLevel, matrixWidth, matrixHeight);
             final TileSet    tileSet = gpkg.tiles().getTileSet(tileMatrix.getTableName());
 
             final int column = 0;
@@ -404,7 +404,7 @@ public class GeopackageTileStoreTest
             final int matrixWidth  = 3;
             final int matrixHeight = 3;
 
-            final TileMatrix             tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
+            final TileMatrix             tileMatrix = GeoPackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
             final TileSet                tileSet    = gpkg.tiles().getTileSet(tileMatrix.getTableName());
 
             //add tiles
@@ -450,7 +450,7 @@ public class GeopackageTileStoreTest
             final int matrixWidth  = 3;
             final int matrixHeight = 3;
 
-            final TileMatrix tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
+            final TileMatrix tileMatrix = GeoPackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
             final TileSet    tileSet    = gpkg.tiles().getTileSet(tileMatrix.getTableName());
 
             //add tiles
@@ -796,7 +796,7 @@ public class GeopackageTileStoreTest
             final int zoomLevel    = 9;
 
             // Create matrix
-            final TileMatrix tileMatrix = GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
+            final TileMatrix tileMatrix = GeoPackageTileStoreTest.createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
             final TileSet    tileSet    = gpkg.tiles().getTileSet(tileMatrix.getTableName());
 
 
@@ -1801,7 +1801,7 @@ public class GeopackageTileStoreTest
                                                                            spherical.getWellKnownText(),
                                                                            spherical.getDescription());
 
-        GeopackageTileStoreTest.createTileSetAndTileMatrix(gpkg, srs, tileSetBounds, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, tileSetName);
+        GeoPackageTileStoreTest.createTileSetAndTileMatrix(gpkg, srs, tileSetBounds, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, tileSetName);
 
         try(GeoPackageWriter writer = new GeoPackageWriter(testFile,
                                                            spherical.getCoordinateReferenceSystem(),

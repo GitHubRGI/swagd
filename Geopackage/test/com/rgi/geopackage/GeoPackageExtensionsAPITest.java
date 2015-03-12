@@ -393,7 +393,7 @@ public class GeoPackageExtensionsAPITest
     }
 
     /**
-     * Tests if Geopackage will throw an IllegalArgumentException when trying to
+     * Tests if GeoPackage will throw an IllegalArgumentException when trying to
      * add an extension with an emptry string for extension name.
      *
      * @throws FileAlreadyExistsException
@@ -409,7 +409,7 @@ public class GeoPackageExtensionsAPITest
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
             gpkg.extensions().addExtension(null, null, "", "Definition", Scope.ReadWrite);
-            fail("Expected Geopackage to throw an IllegalArgumentException when trying to add an extension with an emptry string for extension name.");
+            fail("Expected GeoPackage to throw an IllegalArgumentException when trying to add an extension with an emptry string for extension name.");
         }
         finally
         {

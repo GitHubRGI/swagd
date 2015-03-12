@@ -214,17 +214,17 @@ public class MetadataVerifier extends Verifier
         if(this.hasMetadataReferenceTable)
         {
             //check reference_scope column that has 'geopackage'
-            final List<MetadataReference> invalidGeopackageValue = this.metadataReferenceValues.stream()
+            final List<MetadataReference> invalidGeoPackageValue = this.metadataReferenceValues.stream()
                                                                                          .filter(columnValue -> columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()))
                                                                                          .filter(columnValue -> columnValue.column_name != null)
                                                                                          .collect(Collectors.toList());
 
             Assert.assertTrue(String.format("The following column_name value(s) from gpkg_metadata_reference table are invalid.  "
                                             + "They have a reference_scope = 'geopackage' and a non-null value in column_name: %s.",
-                                            invalidGeopackageValue.stream()
+                                            invalidGeoPackageValue.stream()
                                                                   .map(columnValue -> columnValue.column_name)
                                                                   .collect(Collectors.joining(", "))),
-                              invalidGeopackageValue.isEmpty());
+                              invalidGeoPackageValue.isEmpty());
 
             //get table_name values from the gpkg_contents table
             final String query = "SELECT table_name FROM gpkg_contents;";
