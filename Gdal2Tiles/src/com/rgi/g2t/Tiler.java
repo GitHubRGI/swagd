@@ -169,108 +169,44 @@ public class Tiler implements MonitorableTask, TaskMonitor
         }
     }
 
-    @Override
-    public void execute(final Settings opts)
-    {
-        final Profile profile = Settings.Profile.valueOf(opts.get(Setting.CrsProfile));
-        // split the job up into individual files, process those files one at a time
-        final File[] files = opts.getFiles(Setting.FileSelection);
-
-        if(files == null)
-        {
-            return;
-        }
-
-        for(final File file : files)
-        {
-            try
-            {
-                final String imageFormat = Settings.Type.valueOf(opts.get(Setting.TileType)).name();
-                final Path outputFolder = new File(opts.get(Setting.TileFolder)).toPath();
-
-                if(!outputFolder.toFile().exists())
-                {
-                    outputFolder.toFile().mkdir();
-                }
-
-                final CrsProfile crsProfile = CrsProfileFactory.create("EPSG", profile.getID());
-
-                final TileStoreWriter tileWriter = new TmsWriter(crsProfile, outputFolder, new MimeType("image", imageFormat));
-                final TileStoreReader tileReader = new TmsReader(crsProfile, outputFolder);
-
-                //final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createTileJob(file, tileReader, tileWriter, opts, this))));
-                final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(Tiler.createGdalTileJob(tileWriter, tileReader.getTileScheme(), crsProfile, file.toPath(), new MimeType("image", imageFormat), opts))));
-                jobWaiter.setDaemon(true);
-                jobWaiter.start();
-            }
-            catch(final MimeTypeParseException ex)
-            {
-                System.err.println("Unable to create tile store for input file " + file.getName() + " " + ex.getMessage());
-            }
-        }
-    }
-
-    private static Runnable createTileJob(final File            file,
-                                          final TileStoreReader tileStoreReader,
-                                          final TileStoreWriter tileStoreWriter,
-                                          final Settings        opts,
-                                          final TaskMonitor     monitor)
-    {
-        return new TileJob(file,
-                           tileStoreReader,
-                           tileStoreWriter,
-                           opts,
-                           monitor);
-    }
-    
-    private static Runnable createGdalTileJob(final TileStoreWriter writer,
-                                              final TileScheme tileScheme,
-                                              final CrsProfile crsProfile,
-                                              final Path location,
-                                              final MimeType imageOutputFormat,
-                                              final Settings settings)
-    {
-        return new GdalTileJob(writer, tileScheme, crsProfile, location, imageOutputFormat, settings);
-    }
-
-    private class JobWaiter implements Runnable
-    {
-        private final Future<?> job;
-
-        public JobWaiter(final Future<?> job)
-        {
-            ++Tiler.this.jobTotal;
-            this.job = job;
-        }
-
-        @Override
-        public void run()
-        {
-            try
-            {
-                this.job.get();
-            }
-            catch(final InterruptedException ie)
-            {
-                // unlikely, but we still need to handle it
-                System.err.println("Tiling job was interrupted.");
-                ie.printStackTrace();
-                Tiler.this.fireError(ie);
-            }
-            catch(final ExecutionException ee)
-            {
-                System.err.println("Tiling job failed with exception: " + ee.getMessage());
-                ee.printStackTrace();
-                Tiler.this.fireError(ee);
-            }
-            catch(final CancellationException ce)
-            {
-                System.err.println("Tiling job was cancelled.");
-                ce.printStackTrace();
-                Tiler.this.fireError(ce);
-            }
-        }
-    }
+//    private class JobWaiter implements Runnable
+//    {
+//        private final Future<?> job;
+//
+//        public JobWaiter(final Future<?> job)
+//        {
+//            ++Tiler.this.jobTotal;
+//            this.job = job;
+//        }
+//
+//        @Override
+//        public void run()
+//        {
+//            try
+//            {
+//                this.job.get();
+//            }
+//            catch(final InterruptedException ie)
+//            {
+//                // unlikely, but we still need to handle it
+//                System.err.println("Tiling job was interrupted.");
+//                ie.printStackTrace();
+//                Tiler.this.fireError(ie);
+//            }
+//            catch(final ExecutionException ee)
+//            {
+//                System.err.println("Tiling job failed with exception: " + ee.getMessage());
+//                ee.printStackTrace();
+//                Tiler.this.fireError(ee);
+//            }
+//            catch(final CancellationException ce)
+//            {
+//                System.err.println("Tiling job was cancelled.");
+//                ce.printStackTrace();
+//                Tiler.this.fireError(ce);
+//            }
+//        }
+//    }
 
     @Override
     public void setMaximum(final int max)
@@ -311,7 +247,6 @@ public class Tiler implements MonitorableTask, TaskMonitor
         {
             this.setProgress(0);
         }
-        this.fireFinished();
     }
 
     @Override
