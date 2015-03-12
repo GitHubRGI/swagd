@@ -20,7 +20,7 @@
         <jacoco.report.gdal2tiles>Gdal2Tiles/target/site/jacoco/jacoco.xml</jacoco.report.gdal2tiles>
         <jacoco.report.geoviewer>GeoViewer/target/site/jacoco/jacoco.xml</jacoco.report.geoviewer>
         <jacoco.report.integrationtest>IntegrationTest/target/site/jacoco/jacoco.xml</jacoco.report.integrationtest>
-        <jacoco.report.tile2gpkg>Geopackage/target/site/jacoco/jacoco.xml</jacoco.report.tile2gpkg>
+        <jacoco.report.tile2gpkg>GeoPackage/target/site/jacoco/jacoco.xml</jacoco.report.tile2gpkg>
         <jacoco.report.packager>Packager/target/site/jacoco/jacoco.xml</jacoco.report.packager>
         <jacoco.report.rgisuite>RGISuite/target/site/jacoco/jacoco.xml</jacoco.report.rgisuite>
     </properties>
@@ -30,7 +30,7 @@
         <module>Gdal2Tiles</module>
         <module>GeoViewer</module>
         <module>IntegrationTest</module>
-        <module>Geopackage</module>
+        <module>GeoPackage</module>
         <module>Packager</module>
         <module>RGISuite</module>
     </modules>

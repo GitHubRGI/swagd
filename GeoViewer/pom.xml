@@ -22,8 +22,8 @@
           <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
-          <groupId>Geopackage</groupId>
-          <artifactId>Geopackage</artifactId>
+          <groupId>GeoPackage</groupId>
+          <artifactId>GeoPackage</artifactId>
           <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
