@@ -80,7 +80,7 @@ public class EllipsoidalMercatorCrsProfileTest
     @Test
     public void tileToCrsCoordinateBackToTileCoordinate2()
     {
-        TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(8, 12);
+        TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(17, 13);
         for(int row = 0; row < matrixDimensions.getHeight(); row++)
         {
             for(int column = 0; column < matrixDimensions.getWidth(); column++)
@@ -92,6 +92,7 @@ public class EllipsoidalMercatorCrsProfileTest
             }
         }
     }
+    
     
     @Test
     public void tileToCrsCoordinateBackToTileCoordinate3()

@@ -75,8 +75,10 @@ public abstract class ProportionalCrsProfile implements CrsProfile
         final double normalizedSrsTileCoordinateX = Math.abs(coordinate.getX() - tileCorner.getX());
         final double normalizedSrsTileCoordinateY = Math.abs(coordinate.getY() - tileCorner.getY());
 
-        final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileCrsWidth);
-        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileCrsHeight);
+        int divisor = 1000000000;//round to integer extent
+        
+        final int tileX = (int)Math.floor(Math.round((normalizedSrsTileCoordinateX / tileCrsWidth)*divisor)/divisor);
+        final int tileY = (int)Math.floor(Math.round((normalizedSrsTileCoordinateY / tileCrsHeight)*divisor)/divisor);
 
 
         return new Coordinate<>(tileX, tileY);
