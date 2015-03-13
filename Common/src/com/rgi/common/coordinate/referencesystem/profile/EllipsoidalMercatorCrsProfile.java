@@ -60,13 +60,13 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         this.scaledEarthEquatorialRadius      = UnscaledEarthEquatorialRadius * earthEquatorialRadiusScaleFactor;
         this.earthEquatorialCircumfrence      = 2.0 * Math.PI * this.scaledEarthEquatorialRadius;
 
-        final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; // TODO IS THIS RIGHT? Verify!
+        //final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; // TODO IS THIS RIGHT? Verify!
         //final double earthPolarCircumfrence = 2.0 * Math.PI * scaledEarthPolarRadius;
-
+        
         this.crsBounds = new BoundingBox(-Math.PI * this.scaledEarthEquatorialRadius,
-                                         -Math.PI * scaledEarthPolarRadius,
+                                         -Math.PI * this.scaledEarthEquatorialRadius, //according to memo #12 if map level-0 tile is square in shape, then the extreme y values have to match y = +/- Math.PI*scaledEarthEquatorialRadius
                                           Math.PI * this.scaledEarthEquatorialRadius,
-                                          Math.PI * scaledEarthPolarRadius);
+                                          Math.PI * this.scaledEarthEquatorialRadius); //NOTE above comment (old value use to be Math.PI*scaledEarthPolarRadius)
     }
 
     @Override
@@ -100,13 +100,14 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
         }
 
-        if(!BoundsUtility.contains(roundBounds(this.crsBounds, this.getPrecision()), roundCoordinate(coordinate, this.getPrecision()), tileOrigin))
-        {
-            throw new IllegalArgumentException("Coordinate is outside the crsBounds of this coordinate reference system");
+        if(!BoundsUtility.contains(roundBounds(bounds, this.getPrecision()), roundCoordinate(coordinate, this.getPrecision()), tileOrigin))//Rounded bc we want to keep the as many decimal places of the 
+        {                                                                                                                                  //crs coord for the conversion (which may be slightly off 
+            throw new IllegalArgumentException("Coordinate is outside the crsBounds of this coordinate reference system");                 //(9 decimal places) due to converting back and forth from lat long)
         }
-        //round the coordinate to level or precision
-        Coordinate<Double> geodeticCoordinate   = roundedCrsCoordinateToGlobalGeodetic(coordinate);
+        
+        //Convert to Geodetic (latitude and longitude) in order to do tiling
         BoundingBox        geodeticBounds       = this.getBoundsInLatitudeLongitude(bounds);
+        Coordinate<Double> geodeticCoordinate   = toGlobalGeodetic(coordinate);
         
         GlobalGeodeticCrsProfile globalGeodetic = new GlobalGeodeticCrsProfile();
         Coordinate<Integer>      tileCoordinate = globalGeodetic.crsToTileCoordinate(new CrsCoordinate(geodeticCoordinate, 
@@ -114,7 +115,6 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
                                                                                      geodeticBounds, 
                                                                                      dimensions, 
                                                                                      tileOrigin);
-
         return tileCoordinate;
     }
     
@@ -122,13 +122,13 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     
     private static BoundingBox roundBounds(BoundingBox bounds, int precision)
     {
-        Coordinate<Double> lowerLeftGeodetic  = roundCoordinate(bounds.getBottomLeft(), precision);
-        Coordinate<Double> upperRightGeodetic = roundCoordinate(bounds.getTopRight()  , precision);
+        Coordinate<Double> lowerLeft  = roundCoordinate(bounds.getBottomLeft(), precision);
+        Coordinate<Double> upperRight = roundCoordinate(bounds.getTopRight()  , precision);
         
-        return new BoundingBox((lowerLeftGeodetic.getX()), 
-                               (lowerLeftGeodetic.getY()), 
-                               (upperRightGeodetic.getX()), 
-                               (upperRightGeodetic.getY()));
+        return new BoundingBox((lowerLeft.getX()), 
+                               (lowerLeft.getY()), 
+                               (upperRight.getX()), 
+                               (upperRight.getY()));
     }
 
     @Override
@@ -201,9 +201,8 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     
     private BoundingBox getBoundsInLatitudeLongitude(BoundingBox bounds)
     {
-        GlobalGeodeticCrsProfile geodeticCrs    = new GlobalGeodeticCrsProfile();
-        Coordinate<Double> lowerLeftGeodetic  = roundCoordinate(toGlobalGeodetic(bounds.getBottomLeft()), geodeticCrs.getPrecision());
-        Coordinate<Double> upperRightGeodetic = roundCoordinate(toGlobalGeodetic(bounds.getTopRight()), geodeticCrs.getPrecision());
+        Coordinate<Double> lowerLeftGeodetic  = toGlobalGeodetic(bounds.getBottomLeft());
+        Coordinate<Double> upperRightGeodetic = toGlobalGeodetic(bounds.getTopRight());
         
        return new BoundingBox(lowerLeftGeodetic.getX(), 
                               lowerLeftGeodetic.getY(), 
@@ -337,7 +336,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         // Arbitrary initializations of next and difference
         double next = 0;
         double difference = Double.MAX_VALUE;
-        final double epsilon = 0.0000000001;
+        final double epsilon = 0.00000000000000000001;
 
         // This will loop until the conversion factor is to the level of
         // accuracy determined by the conversion factor difference
@@ -355,13 +354,6 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
 
         return yRadians;
     }
-    
-    private Coordinate<Double> roundedCrsCoordinateToGlobalGeodetic(CrsCoordinate coordinate)
-    {
-        Coordinate<Double> geodeticCoordinate = toGlobalGeodetic(coordinate);
-        return new Coordinate<>(roundCoordinate(geodeticCoordinate, 7));
-    }
-    
     
     private static Coordinate<Double> roundCoordinate(Coordinate<Double> value, int percision)
     {
@@ -427,6 +419,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     /**
      * Used to unify calculations for scaled and unscaled ellipsoidal mercator projections
      */
+    @SuppressWarnings("unused")
     private final double earthEquatorialRadiusScaleFactor;
 
     /**
