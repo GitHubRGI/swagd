@@ -437,10 +437,7 @@ public class SphericalMercatorCrsProfileTest
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 9 y: 0",
-                                 newCoordinate.getX(),
-                                 newCoordinate.getY()),
-                  newCoordinate.getX() == 9 && newCoordinate.getY() == 0);
+        assertTileCoordinate(9, 0, newCoordinate);
     }
 
     /**
@@ -480,10 +477,7 @@ public class SphericalMercatorCrsProfileTest
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
         final Coordinate<Integer>         newCoordinate  = sphericalCrs.crsToTileCoordinate(crsCoordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 0",
-                                  newCoordinate.getX(),
-                                  newCoordinate.getY()),
-                   newCoordinate.getX() == 0 && newCoordinate.getY() == 0);
+        assertTileCoordinate(0, 0, newCoordinate);
     }
 
     /**
@@ -546,10 +540,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 4 y: 1",
-                                 newCoordinate.getX(),
-                                 newCoordinate.getY()),
-                  newCoordinate.getX() == 4 && newCoordinate.getY() == 1);
+        assertTileCoordinate(4, 1, newCoordinate);
     }
 
     /**
@@ -573,10 +564,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 4 y: 1",
-                                 newCoordinate.getX(),
-                                 newCoordinate.getY()),
-                  newCoordinate.getX() == 4 && newCoordinate.getY() == 1);
+        assertTileCoordinate(4, 1, newCoordinate);
     }
 
     /**
@@ -598,10 +586,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 2 y: 1",
-                                 newCoordinate.getX(),
-                                 newCoordinate.getY()),
-                  newCoordinate.getX() == 2 && newCoordinate.getY() == 1);
+        assertTileCoordinate(2, 1, newCoordinate);
     }
 
     /**
@@ -621,10 +606,7 @@ public class SphericalMercatorCrsProfileTest
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 3 y: 2",
-                                 newCoordinate.getX(),
-                                 newCoordinate.getY()),
-                  newCoordinate.getX() == 3 && newCoordinate.getY() == 2);
+        assertTileCoordinate(3, 2, newCoordinate);
     }
 
     /**
@@ -684,10 +666,7 @@ public class SphericalMercatorCrsProfileTest
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
         final Coordinate<Integer>         newCoordinate  = sphericalCrs.crsToTileCoordinate(crsCoordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 0",
-                                  newCoordinate.getX(),
-                                  newCoordinate.getY()),
-                   newCoordinate.getX() == 0 && newCoordinate.getY() == 0);
+        assertTileCoordinate(0, 0, newCoordinate);
     }
 
     /**
@@ -730,10 +709,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 4 y: 1",
-                                 newCoordinate.getX(),
-                                 newCoordinate.getY()),
-                  newCoordinate.getX() == 4 && newCoordinate.getY() == 1);
+        assertTileCoordinate(4, 1, newCoordinate);
     }
 
     /**
@@ -757,10 +733,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 1 y: 4",
-                                 newCoordinate.getX(),
-                                 newCoordinate.getY()),
-                  newCoordinate.getX() == 1 && newCoordinate.getY() == 4);
+        assertTileCoordinate(1, 4, newCoordinate);
     }
 
     /**
@@ -782,10 +755,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 2 y: 1",
-                                 newCoordinate.getX(),
-                                 newCoordinate.getY()),
-                  newCoordinate.getX() == 2 && newCoordinate.getY() == 1);
+        assertTileCoordinate(2, 1, newCoordinate);
     }
 
     /**
@@ -805,10 +775,7 @@ public class SphericalMercatorCrsProfileTest
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 3 y: 2",
-                                 newCoordinate.getX(),
-                                 newCoordinate.getY()),
-                  newCoordinate.getX() == 3 && newCoordinate.getY() == 2);
+        assertTileCoordinate(3, 2, newCoordinate);
     }
 
     /**
@@ -888,10 +855,7 @@ public class SphericalMercatorCrsProfileTest
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
         final Coordinate<Integer>         newCoordinate  = sphericalCrs.crsToTileCoordinate(crsCoordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 0",
-                                  newCoordinate.getX(),
-                                  newCoordinate.getY()),
-                   newCoordinate.getX() == 0 && newCoordinate.getY() == 0);
+        assertTileCoordinate(0, 0, newCoordinate);
     }
 
     /**
@@ -914,10 +878,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 4 y: 1",
-                                 newCoordinate.getX(),
-                                 newCoordinate.getY()),
-                  newCoordinate.getX() == 4 && newCoordinate.getY() == 1);
+        assertTileCoordinate(4, 1, newCoordinate);
     }
 
     /**
@@ -941,10 +902,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 1 y: 4",
-                                 newCoordinate.getX(),
-                                 newCoordinate.getY()),
-                  newCoordinate.getX() == 1 && newCoordinate.getY() == 4);
+        assertTileCoordinate(1, 4, newCoordinate);
     }
 
     /**
@@ -966,10 +924,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 2 y: 1",
-                                 newCoordinate.getX(),
-                                 newCoordinate.getY()),
-                  newCoordinate.getX() == 2 && newCoordinate.getY() == 1);
+        assertTileCoordinate(2, 1, newCoordinate);
     }
 
     /**
@@ -987,15 +942,10 @@ public class SphericalMercatorCrsProfileTest
         final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getX(), originalTileCoordinate.getY(), sphericalCrs.getBounds(), dimensions, origin);
         final Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, sphericalCrs.getBounds(), dimensions, origin);
 
-        assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
-                                    + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
-                                   originalTileCoordinate.getX(),
-                                   originalTileCoordinate.getY(),
-                                   returnedTileCoordinate.getX(),
-                                   returnedTileCoordinate.getY(),
-                                   returnedCrsCoordiante.getX(),
-                                   returnedCrsCoordiante.getY()), originalTileCoordinate, returnedTileCoordinate);
+        this.assertCoordinates( originalTileCoordinate, returnedTileCoordinate,  returnedCrsCoordiante);
     }
+    
+    
 
     /**
      * Tests if tile is in upperRight and can be transformed from tile coordinate to crs back to
@@ -1012,14 +962,7 @@ public class SphericalMercatorCrsProfileTest
         final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getX(), originalTileCoordinate.getY(), sphericalCrs.getBounds(), dimensions, origin);
         final Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, sphericalCrs.getBounds(), dimensions, origin);
 
-        assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
-                                    + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
-                                   originalTileCoordinate.getX(),
-                                   originalTileCoordinate.getY(),
-                                   returnedTileCoordinate.getX(),
-                                   returnedTileCoordinate.getY(),
-                                   returnedCrsCoordiante.getX(),
-                                   returnedCrsCoordiante.getY()), originalTileCoordinate, returnedTileCoordinate);
+        this.assertCoordinates( originalTileCoordinate, returnedTileCoordinate,  returnedCrsCoordiante);
 
     }
 
@@ -1038,16 +981,7 @@ public class SphericalMercatorCrsProfileTest
         final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getX(), originalTileCoordinate.getY(), sphericalCrs.getBounds(), dimensions, origin);
         final Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, sphericalCrs.getBounds(), dimensions, origin);
 
-        assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
-                                    + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
-                                   originalTileCoordinate.getX(),
-                                   originalTileCoordinate.getY(),
-                                   returnedTileCoordinate.getX(),
-                                   returnedTileCoordinate.getY(),
-                                   returnedCrsCoordiante.getX(),
-                                   returnedCrsCoordiante.getY()),
-                    originalTileCoordinate,
-                    returnedTileCoordinate);
+        this.assertCoordinates( originalTileCoordinate, returnedTileCoordinate,  returnedCrsCoordiante);
 
     }
 
@@ -1067,16 +1001,7 @@ public class SphericalMercatorCrsProfileTest
         final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getX(), originalTileCoordinate.getY(), sphericalCrs.getBounds(), dimensions, origin);
         final Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, sphericalCrs.getBounds(), dimensions, origin);
 
-        assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
-                                    + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
-                                   originalTileCoordinate.getX(),
-                                   originalTileCoordinate.getY(),
-                                   returnedTileCoordinate.getX(),
-                                   returnedTileCoordinate.getY(),
-                                   returnedCrsCoordiante.getX(),
-                                   returnedCrsCoordiante.getY()),
-                    originalTileCoordinate,
-                    returnedTileCoordinate);
+        this.assertCoordinates( originalTileCoordinate, returnedTileCoordinate,  returnedCrsCoordiante);
 
     }
 
@@ -1095,16 +1020,29 @@ public class SphericalMercatorCrsProfileTest
         final CrsCoordinate       returnedCrsCoordiante  = sphericalCrs.tileToCrsCoordinate(originalTileCoordinate.getX(), originalTileCoordinate.getY(), sphericalCrs.getBounds(), dimensions, origin);
         final Coordinate<Integer> returnedTileCoordinate = sphericalCrs.crsToTileCoordinate(returnedCrsCoordiante, sphericalCrs.getBounds(), dimensions, origin);
 
+        this.assertCoordinates( originalTileCoordinate, returnedTileCoordinate,  returnedCrsCoordiante);
+    }
+    
+    private void assertCoordinates(Coordinate<Integer> originalTileCoordinate, Coordinate<Integer> returnedTileCoordinate, CrsCoordinate returnedCrsCoordiante)
+    {
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
-                                    + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
-                                   originalTileCoordinate.getX(),
-                                   originalTileCoordinate.getY(),
-                                   returnedTileCoordinate.getX(),
-                                   returnedTileCoordinate.getY(),
-                                   returnedCrsCoordiante.getX(),
-                                   returnedCrsCoordiante.getY()),
-                    originalTileCoordinate,
-                    returnedTileCoordinate);
+                + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
+               originalTileCoordinate.getX(),
+               originalTileCoordinate.getY(),
+               returnedTileCoordinate.getX(),
+               returnedTileCoordinate.getY(),
+               returnedCrsCoordiante.getX(),
+               returnedCrsCoordiante.getY()), originalTileCoordinate, returnedTileCoordinate);
+    }
+    
+    private void assertTileCoordinate(int x, int y, Coordinate<Integer> newCoordinate)
+    {
+        assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: %d y: %d",
+                newCoordinate.getX(),
+                newCoordinate.getY(),
+                x,
+                y),
+                newCoordinate.getX() == x && newCoordinate.getY() == y);
     }
 
     private static final double Epsilon = 0.0000001;
