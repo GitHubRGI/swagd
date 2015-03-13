@@ -37,6 +37,7 @@ public class PackagerWindow extends TileStoreCreationWindow
     public PackagerWindow(final Settings settings)
     {
         super("Packaging", settings, LastInputLocationSettingName);
+        this.buildUi();
     }
 
     @Override
