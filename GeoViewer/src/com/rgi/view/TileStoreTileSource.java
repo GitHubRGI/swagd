@@ -24,6 +24,14 @@ import java.io.IOException;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileSource;
 
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.coordinate.referencesystem.profile.GlobalGeodeticCrsProfile;
+import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileScheme;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 
@@ -32,13 +40,18 @@ import com.rgi.common.tile.store.TileStoreReader;
  *
  * @author Steven D. Lander
  */
-public class TileStoreTileSource implements TileSource
+public class TileStoreTileSource implements TileSource 
 {
     private final TileStoreReader tileStore;
 
     private final int minimumZoomLevel;
     private final int maximumZoomLevel;
-
+    @SuppressWarnings("unused")
+    private final CrsProfile crsProfile;
+    private final GlobalGeodeticCrsProfile globalGeodeticCrs = new GlobalGeodeticCrsProfile();
+    private final CoordinateReferenceSystem globalGeodetic   = this.globalGeodeticCrs.getCoordinateReferenceSystem();
+    private final static TileOrigin Origin     = TileOrigin.UpperLeft;           // Tile Origin for JMapViewer
+    private final static TileScheme TileScheme = new ZoomTimesTwo(0, 31, 1, 1);  // Tile scheme for JMapViewer: http://wiki.openstreetmap.org/wiki/Slippy_Map
     /**
      * @param tileStore The tile store that will be viewed.
      * @throws TileStoreException Thrown when the tile store is not supported or is invalid.
@@ -49,6 +62,8 @@ public class TileStoreTileSource implements TileSource
 
         this.minimumZoomLevel = tileStore.getZoomLevels().stream().min(Integer::compare).orElse(-1);
         this.maximumZoomLevel = tileStore.getZoomLevels().stream().max(Integer::compare).orElse(-1);
+        
+        this.crsProfile = CrsProfileFactory.create(this.tileStore.getCoordinateReferenceSystem());
     }
 
     @Override
@@ -155,63 +170,72 @@ public class TileStoreTileSource implements TileSource
     public double getDistance(final double la1, final double lo1, final double la2, final double lo2)
     {
         // TODO Auto-generated method stub
-        return 0;
+        double distance = Math.sqrt((lo1-lo2)*(lo1-lo2) + (la1-la2)*(la1-la2));
+        return distance;
     }
-
+    //this is pixel
     @Override
-    public int LonToX(final double aLongitude, final int aZoomlevel)
+    public int LonToX(double arg0, int arg1)
     {
         // TODO Auto-generated method stub
         return 0;
     }
-
+//this is pixel
     @Override
-    public int LatToY(final double aLat, final int aZoomlevel)
+    public int LatToY(double aLat, final int aZoomlevel)
     {
-        // TODO Auto-generated method stub
+        //TODO
         return 0;
     }
-
+//this is pixel
     @Override
     public double XToLon(final int aX, final int aZoomlevel)
     {
         // TODO Auto-generated method stub
         return 0;
     }
-
+    
+    
+//this is pixel
     @Override
-    public double YToLat(final int aY, final int aZoomlevel)
+    public double YToLat(int aY, final int aZoomlevel)
     {
         // TODO Auto-generated method stub
         return 0;
     }
+   
 
     @Override
     public double lonToTileX(final double lon, final int zoom)
     {
-        // TODO Auto-generated method stub
-        return 0;
+        CrsCoordinate crsCoordinate = new CrsCoordinate(lon, 0, this.globalGeodetic);
+        int tileX = this.globalGeodeticCrs.crsToTileCoordinate(crsCoordinate, this.globalGeodeticCrs.getBounds(), TileStoreTileSource.TileScheme.dimensions(zoom) , TileStoreTileSource.Origin).getX();
+        return tileX;
     }
 
     @Override
     public double latToTileY(final double lat, final int zoom)
     {
-        // TODO Auto-generated method stub
-        return 0;
+        CrsCoordinate crsCoordinate = new CrsCoordinate(lat, 0, this.globalGeodetic);
+        int tileY = this.globalGeodeticCrs.crsToTileCoordinate(crsCoordinate, this.globalGeodeticCrs.getBounds(), TileStoreTileSource.TileScheme.dimensions(zoom) , TileStoreTileSource.Origin).getY();
+        return tileY;
     }
 
     @Override
     public double tileXToLon(final int x, final int zoom)
     {
-        // TODO Auto-generated method stub
-        return 0;
+        
+        double longitude = this.globalGeodeticCrs.tileToCrsCoordinate(x, 0, this.globalGeodeticCrs.getBounds(), TileStoreTileSource.TileScheme.dimensions(zoom) , TileStoreTileSource.Origin).getX();
+        
+        return longitude;
     }
 
     @Override
     public double tileYToLat(final int y, final int zoom)
     {
         // TODO Auto-generated method stub
-        return 0;
+        double latitude = this.globalGeodeticCrs.tileToCrsCoordinate(0, y, this.globalGeodeticCrs.getBounds(), TileStoreTileSource.TileScheme.dimensions(zoom) , TileStoreTileSource.Origin).getY();
+        return latitude;
     }
 
     @Override
@@ -219,4 +243,5 @@ public class TileStoreTileSource implements TileSource
     {
         return this.tileStore.getName();
     }
+    
 }
