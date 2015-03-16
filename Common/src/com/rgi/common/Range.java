@@ -19,6 +19,7 @@
 package com.rgi.common;
 
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -121,8 +122,10 @@ public class Range <T>
         {
             throw new IllegalArgumentException("Iterable may not be null");
         }
-
-        if(!iterable.iterator().hasNext())
+        
+        Iterator<T> iterator = iterable.iterator();
+        
+        if(!iterator.hasNext())
         {
             throw new IllegalArgumentException("Iterable may not be empty");
         }
@@ -134,9 +137,11 @@ public class Range <T>
 
         T min = null;
         T max = null;
-
-        for(final T value : iterable)
+        
+        while(iterator.hasNext())
         {
+            T value = iterator.next();
+            
             if(min == null || comparator.compare(value, min) < 0)
             {
                 min = value;
