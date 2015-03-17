@@ -36,7 +36,7 @@ import com.rgi.common.Range;
 @SuppressWarnings({"javadoc", "static-method"})
 public class RangeTest
 {
-    Comparator<Number> numberComparartor = new Comparator<Number>()
+    Comparator<Number> numberComparator = new Comparator<Number>()
             {
                 @Override
                 public int compare(Number o1, Number o2)
@@ -61,7 +61,7 @@ public class RangeTest
     public void verifyRange2()
     {
         List<Double>  listValues = new ArrayList<>(Arrays.asList(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0));
-        Range<Double> range      = new Range<>(listValues, this.numberComparartor);
+        Range<Double> range      = new Range<>(listValues, this.numberComparator);
         assertRangeValues(range, 0.0, 12.0);
     }
     
@@ -71,7 +71,7 @@ public class RangeTest
         List<Double> listValues =  Arrays.asList(2.0, 0.0, 1.0, 5.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0);
         try(Stream<Double> stream = StreamSupport.stream(listValues.spliterator(), false);)
         {
-            Range<Double> range = new Range<>(stream, this.numberComparartor);
+            Range<Double> range = new Range<>(stream, this.numberComparator);
             assertRangeValues(range, 0.0, 12.0);
         }
     }
@@ -91,7 +91,7 @@ public class RangeTest
         double expectedMin = -12.5;
         double expectedMax = 1.15;
         
-        Range<Double> range = new Range<>(listValues, function, this.numberComparartor);
+        Range<Double> range = new Range<>(listValues, function, this.numberComparator);
         
         assertRangeValues(range, expectedMin, expectedMax);
     }
@@ -111,7 +111,7 @@ public class RangeTest
         int expectedMin = -2;
         int expectedMax = 12;
         
-        Range<Number> range = new Range<>(listValues, function, this.numberComparartor);
+        Range<Number> range = new Range<>(listValues, function, this.numberComparator);
         
         assertRangeValues(expectedMin, expectedMax, range);
     }
@@ -129,7 +129,7 @@ public class RangeTest
                 return (int) Math.floor(t.doubleValue());
             }};
             
-        new Range<>(null, function, this.numberComparartor);
+        new Range<>(null, function, this.numberComparator);
         fail("Expected Range to throw an IllegalArgumentException when the Iterable is null");
     }
     
@@ -146,7 +146,7 @@ public class RangeTest
                 return (int) Math.floor(t.doubleValue());
             }};
             
-        new Range<>(listValues, function, this.numberComparartor);
+        new Range<>(listValues, function, this.numberComparator);
         fail("Expected Range to throw an IllegalArgumentException when the Iterable is empty");
     }
     
@@ -157,7 +157,7 @@ public class RangeTest
         List<Number>  listValues = new ArrayList<>(Arrays.asList(10.0, 100, -12));
         Function<Number, Integer> function = null;
             
-        new Range<>(listValues, function, this.numberComparartor);
+        new Range<>(listValues, function, this.numberComparator);
         fail("Expected Range to throw an IllegalArgumentException when the Function is null");
     }
     
@@ -182,7 +182,7 @@ public class RangeTest
     public void illegalArgumentException5()
     {
         List<Number>  listValues = new ArrayList<>();
-        new Range<>(listValues, this.numberComparartor);
+        new Range<>(listValues, this.numberComparator);
         fail("Expected Range to throw an IllegalArgumentException when the Iterable is empty");
     }
     
@@ -199,7 +199,7 @@ public class RangeTest
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException7()
     {
-        new Range<>((Iterable<Number>)null, this.numberComparartor);
+        new Range<>((Iterable<Number>)null, this.numberComparator);
         fail("Expected Range to throw an IllegalArgumentException when the Iterable is empty");
     }
     
