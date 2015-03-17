@@ -177,6 +177,14 @@ public class RangeTest
         fail("Expected Range to throw an IllegalArgumentException when the Iterable is empty");
     }
     
+    @SuppressWarnings("unused")
+    @Test(expected = IllegalArgumentException.class)
+    public void illegalArgumentException7()
+    {
+        new Range<>((Iterable<Number>)null, this.numberComparartor);
+        fail("Expected Range to throw an IllegalArgumentException when the Iterable is empty");
+    }
+    
     private void assertRangeValues(Range<Double> range, double expectedMinimum, double expectedMaximum)
     {
         assertTrue(String.format("The range did not return the expected values.\nActual: %s.\nExpected: [%s, %s].",
