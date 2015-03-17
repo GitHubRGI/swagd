@@ -41,9 +41,9 @@ import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 public class TmsTileStoreReaderAdapter extends TileStoreReaderAdapter
 {
     private final JComboBox<CoordinateReferenceSystem> crsComboBox = new JComboBox<>(new DefaultComboBoxModel<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
-                                                                                                                                .stream()
-                                                                                                                                .sorted()
-                                                                                                                                .toArray(CoordinateReferenceSystem[]::new)));
+                                                                                                                                 .stream()
+                                                                                                                                 .sorted()
+                                                                                                                                 .toArray(CoordinateReferenceSystem[]::new)));
 
     public TmsTileStoreReaderAdapter(final File file) throws AdapterMismatchException
     {

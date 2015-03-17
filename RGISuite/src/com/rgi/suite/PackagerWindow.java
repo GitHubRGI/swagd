@@ -44,32 +44,32 @@ import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
  */
 public class PackagerWindow extends JFrame
 {
-private static final long serialVersionUID = -3488202344008846021L;
+    private static final long serialVersionUID = -3488202344008846021L;
 
-    protected final Settings settings;
+    private final Settings settings;
 
-    protected TileStoreReaderAdapter tileStoreReaderAdapter = null;
-    protected TileStoreWriterAdapter tileStoreWriterAdapter = null;
+    private TileStoreReaderAdapter tileStoreReaderAdapter = null;
+    private TileStoreWriterAdapter tileStoreWriterAdapter = null;
 
-    protected final static Collection<Class<? extends TileStoreReaderAdapter>> KnownTileStoreReaderAdapters = Arrays.asList(TmsTileStoreReaderAdapter.class, GeoPackageTileStoreReaderAdapter.class);
+    private final static Collection<Class<? extends TileStoreReaderAdapter>> KnownTileStoreReaderAdapters = Arrays.asList(TmsTileStoreReaderAdapter.class, GeoPackageTileStoreReaderAdapter.class);
 
     protected final JPanel contentPanel = new JPanel();
 
     // Input stuff
-    protected final JPanel     inputPanel          = new JPanel(new GridBagLayout());
-    protected final JTextField inputFileName       = new JTextField();
-    protected final JButton    inputFileNameButton = new JButton("\u2026");
+    private final JPanel     inputPanel          = new JPanel(new GridBagLayout());
+    private final JTextField inputFileName       = new JTextField();
+    private final JButton    inputFileNameButton = new JButton("\u2026");
 
     // Output stuff
-    protected final JPanel outputPanel = new JPanel(new GridBagLayout());
-    protected final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>(new DefaultComboBoxModel<>());
+    private final JPanel outputPanel = new JPanel(new GridBagLayout());
+    private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>(new DefaultComboBoxModel<>());
 
     // Navigation stuff
-    protected final JPanel  navigationPanel = new JPanel(new GridBagLayout());
-    protected final JButton okButton        = new JButton("OK");
-    protected final JButton cancelButton    = new JButton("Cancel");
+    private final JPanel  navigationPanel = new JPanel(new GridBagLayout());
+    private final JButton okButton        = new JButton("OK");
+    private final JButton cancelButton    = new JButton("Cancel");
 
-    protected final String processName = "Packaging";
+    private final String processName = "Packaging";
 
     private static final String LastInputLocationSettingName = "package.lastInputLocation";
 
@@ -164,16 +164,7 @@ private static final long serialVersionUID = -3488202344008846021L;
         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }
 
-    @SuppressWarnings("serial")
-    protected class SimpleGridBagConstraints extends GridBagConstraints
-    {
-        public SimpleGridBagConstraints(final int gridX, final int gridY, final boolean stretch)
-        {
-            super(gridX, gridY, 1, 1, stretch ? 1 : 0, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
-        }
-    }
-
-    protected void warn(final String message)
+    private void warn(final String message)
     {
         JOptionPane.showMessageDialog(this,
                                       message,
@@ -181,7 +172,7 @@ private static final long serialVersionUID = -3488202344008846021L;
                                       JOptionPane.WARNING_MESSAGE);
     }
 
-    protected void error(final String message)
+    private void error(final String message)
     {
         JOptionPane.showMessageDialog(this,
                                       message,
@@ -189,12 +180,21 @@ private static final long serialVersionUID = -3488202344008846021L;
                                       JOptionPane.ERROR_MESSAGE);
     }
 
+    @SuppressWarnings("serial")
+    private class SimpleGridBagConstraints extends GridBagConstraints
+    {
+        public SimpleGridBagConstraints(final int gridX, final int gridY, final boolean stretch)
+        {
+            super(gridX, gridY, 1, 1, stretch ? 1 : 0, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
+        }
+    }
+
     private void buildInputContent()
     {
         this.inputPanel.removeAll();
 
-        this.inputPanel.add(new JLabel("File:"), new SimpleGridBagConstraints(0, 0, false));
-        this.inputPanel.add(this.inputFileName,  new SimpleGridBagConstraints(1, 0, true));
+        this.inputPanel.add(new JLabel("File:"),      new SimpleGridBagConstraints(0, 0, false));
+        this.inputPanel.add(this.inputFileName,       new SimpleGridBagConstraints(1, 0, true));
         this.inputPanel.add(this.inputFileNameButton, new SimpleGridBagConstraints(2, 0, false));
 
         if(this.tileStoreReaderAdapter != null)

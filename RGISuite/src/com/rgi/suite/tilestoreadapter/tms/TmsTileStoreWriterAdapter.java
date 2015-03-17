@@ -32,9 +32,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
 
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
@@ -49,19 +47,19 @@ public class TmsTileStoreWriterAdapter extends TileStoreWriterAdapter
 {
     private String name = "";
 
-    private final JSpinner            compressionQualitySpinner    = new JSpinner(new SpinnerNumberModel(1.0, 0.0, 1.0, 0.1));
-    private final JTextField          directoryText                = new JTextField();
-    private final JButton             outputFileNameButton         = new JButton("\u2026");
-    private final JComboBox<String>   imageCompressionTypeComboBox = new JComboBox<>(new DefaultComboBoxModel<>());
-    private final JComboBox<MimeType> imageFormatComboBox          = new JComboBox<>(new DefaultComboBoxModel<>(TmsWriter.SupportedImageFormats
-                                                                                                                         .stream()
-                                                                                                                         .sorted((a, b) -> a.toString().compareTo(b.toString()))
-                                                                                                                         .toArray(MimeType[]::new)));
+    private final JComboBox<Float>    compressionQuality   = new JComboBox<>(new DefaultComboBoxModel<>());
+    private final JTextField          directory            = new JTextField();
+    private final JButton             outputFilename       = new JButton("\u2026");
+    private final JComboBox<String>   imageCompressionType = new JComboBox<>(new DefaultComboBoxModel<>());
+    private final JComboBox<MimeType> imageFormat          = new JComboBox<>(new DefaultComboBoxModel<>(TmsWriter.SupportedImageFormats
+                                                                                                                 .stream()
+                                                                                                                 .sorted((a, b) -> a.toString().compareTo(b.toString()))
+                                                                                                                 .toArray(MimeType[]::new)));
 
-    private final Collection<Collection<JComponent>> writerParameterControls = Arrays.asList(Arrays.asList(new JLabel("Image format:"),        this.imageFormatComboBox),
-                                                                                             Arrays.asList(new JLabel("Compression type:"),    this.imageCompressionTypeComboBox),
-                                                                                             Arrays.asList(new JLabel("Compression quality:"), this.compressionQualitySpinner),
-                                                                                             Arrays.asList(new JLabel("Directory:"),           this.directoryText, this.outputFileNameButton));
+    private final Collection<Collection<JComponent>> writerParameterControls = Arrays.asList(Arrays.asList(new JLabel("Image format:"),        this.imageFormat),
+                                                                                             Arrays.asList(new JLabel("Compression type:"),    this.imageCompressionType),
+                                                                                             Arrays.asList(new JLabel("Compression quality:"), this.compressionQuality),
+                                                                                             Arrays.asList(new JLabel("Directory:"),           this.directory, this.outputFilename));
 
     public TmsTileStoreWriterAdapter(final Settings settings)
     {
@@ -69,50 +67,42 @@ public class TmsTileStoreWriterAdapter extends TileStoreWriterAdapter
 
         // TODO save values of controls to settings
 
-        this.outputFileNameButton.addActionListener(e -> { final String startDirectory = this.settings.get(SettingsWindow.OutputLocationSettingName, SettingsWindow.DefaultOutputLocation);
+        this.outputFilename.addActionListener(e -> { final String startDirectory = this.settings.get(SettingsWindow.OutputLocationSettingName, SettingsWindow.DefaultOutputLocation);
 
-                                                           final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
+                                                     final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
-                                                           fileChooser.setMultiSelectionEnabled(false);
-                                                           fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                                                     fileChooser.setMultiSelectionEnabled(false);
+                                                     fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-                                                           final int option = fileChooser.showOpenDialog(null);
+                                                     final int option = fileChooser.showOpenDialog(null);
 
-                                                           if(option == JFileChooser.APPROVE_OPTION)
-                                                           {
-                                                               final File file = fileChooser.getSelectedFile();
+                                                     if(option == JFileChooser.APPROVE_OPTION)
+                                                     {
+                                                         final File file = fileChooser.getSelectedFile();
 
-                                                               this.settings.set(SettingsWindow.OutputLocationSettingName, file.getParent());
-                                                               this.settings.save();
+                                                         this.settings.set(SettingsWindow.OutputLocationSettingName, file.getParent());
+                                                         this.settings.save();
 
-                                                               final String directory = String.format("%s%c%s%c",
-                                                                                                      fileChooser.getSelectedFile().getPath(),
-                                                                                                      File.separatorChar,
-                                                                                                      this.name,
-                                                                                                      File.separatorChar);
+                                                         final String directory = String.format("%s%c%s%c",
+                                                                                                fileChooser.getSelectedFile().getPath(),
+                                                                                                File.separatorChar,
+                                                                                                this.name,
+                                                                                                File.separatorChar);
 
-                                                               this.directoryText.setText(directory);
-                                                           }
-                                                         });
+                                                         this.directory.setText(directory);
+                                                     }
+                                                   });
 
-        this.imageFormatComboBox.addActionListener(e -> { final MimeType mimeType = (MimeType)this.imageFormatComboBox.getSelectedItem();
+        this.imageFormat.addActionListener(e -> { this.imageFormatChanged(); });
 
-                                                          this.imageCompressionTypeComboBox.removeAllItems();
+        this.imageCompressionType.addActionListener(e -> { this.imageCompressionTypeChanged(); });
 
-                                                          final String[] compressionTypes = getImageWriteParameterCompressionTypes(mimeType);
-
-                                                          this.imageCompressionTypeComboBox.setEnabled(compressionTypes.length > 0);
-
-                                                          addAllItems(this.imageCompressionTypeComboBox,
-                                                                      compressionTypes);
-                                                        });
-
-        this.imageFormatComboBox.setSelectedItem(TmsWriter.SupportedImageFormats.stream()
-                                                                                .filter(mimeType -> mimeType.toString()
-                                                                                                            .toLowerCase()
-                                                                                                            .equals("image/png"))
-                                                                                .findFirst()
-                                                                                .get());
+        this.imageFormat.setSelectedItem(TmsWriter.SupportedImageFormats.stream()
+                                                  .filter(mimeType -> mimeType.toString()
+                                                                              .toLowerCase()
+                                                                              .equals("image/png"))
+                                                  .findFirst()
+                                                  .get());
     }
 
     @Override
@@ -133,7 +123,7 @@ public class TmsTileStoreWriterAdapter extends TileStoreWriterAdapter
                                                        File.separatorChar,
                                                        this.name);
 
-            this.directoryText.setText(FileUtility.appendForUnique(directoryName) + File.separatorChar);
+            this.directory.setText(FileUtility.appendForUnique(directoryName) + File.separatorChar);
         }
     }
 
@@ -146,53 +136,97 @@ public class TmsTileStoreWriterAdapter extends TileStoreWriterAdapter
     @Override
     public TileStoreWriter getTileStoreWriter(final TileStoreReader tileStoreReader) throws TileStoreException
     {
-        final MimeType mimeType = (MimeType)this.imageFormatComboBox.getSelectedItem();
+        final MimeType mimeType = (MimeType)this.imageFormat.getSelectedItem();
 
         return new TmsWriter(tileStoreReader.getCoordinateReferenceSystem(),
-                             new File(this.directoryText.getText()).toPath(),
+                             new File(this.directory.getText()).toPath(),
                              mimeType,
-                             this.getImageWriteParameter(mimeType));
+                             this.getImageWriteParameter());
     }
 
-    private static String[] getImageWriteParameterCompressionTypes(final MimeType mimeType)
+    private void imageFormatChanged()
     {
+        this.imageCompressionType.removeAllItems();
+
         try
         {
-            return ImageIO.getImageWritersByMIMEType(mimeType.toString())
-                          .next()   // Use the first
-                          .getDefaultWriteParam()
-                          .getCompressionTypes();
+            final ImageWriter imageWriter = this.getImageWriter();
+
+            addAllItems(this.imageCompressionType,
+                        imageWriter.getDefaultWriteParam().getCompressionTypes());
+
+            this.imageCompressionType.setEnabled(true);
         }
         catch(final NoSuchElementException | UnsupportedOperationException ex)
         {
-            return new String[] {};
+            this.imageCompressionType.setEnabled(false);
+            this.compressionQuality.setEnabled(false);
         }
     }
 
-    // TODO this is duplicated in GeoPackageTileStoreWriterAdapter
-    private ImageWriteParam getImageWriteParameter(final MimeType mimeType)
+    private void imageCompressionTypeChanged()
     {
-        try
-        {
-            final ImageWriter imageWriter = ImageIO.getImageWritersByMIMEType(mimeType.toString()).next();
+        final String compressionType = (String)this.imageCompressionType.getSelectedItem();
 
-            final ImageWriteParam imageWriteParameter = imageWriter.getDefaultWriteParam();
+        this.compressionQuality.removeAllItems();
+
+        if(compressionType != null)
+        {
+            final ImageWriteParam imageWriteParameter = this.getImageWriter().getDefaultWriteParam();
 
             if(imageWriteParameter.canWriteCompressed())
             {
                 imageWriteParameter.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                imageWriteParameter.setCompressionType((String)this.imageCompressionTypeComboBox.getSelectedItem());
-                imageWriteParameter.setCompressionQuality(((Double)this.compressionQualitySpinner.getValue()).floatValue());
+                imageWriteParameter.setCompressionType(compressionType);
+
+                final float[] qualityValues = imageWriteParameter.getCompressionQualityValues();
+
+                this.compressionQuality.setEnabled(qualityValues != null && qualityValues.length > 0);
+
+                if(qualityValues != null)
+                {
+                    for(final float value : qualityValues)
+                    {
+                        this.compressionQuality.addItem(value);
+                    }
+
+                    this.compressionQuality.setSelectedIndex(this.compressionQuality.getItemCount()-1);
+                }
+            }
+        }
+    }
+
+    private ImageWriter getImageWriter()
+    {
+        final MimeType mimeType = (MimeType)this.imageFormat.getSelectedItem();
+
+        return ImageIO.getImageWritersByMIMEType(mimeType.toString()).next();
+    }
+
+    private ImageWriteParam getImageWriteParameter()
+    {
+        final ImageWriteParam imageWriteParameter = this.getImageWriter().getDefaultWriteParam();
+
+        final String compressionType         = (String)this.imageCompressionType.getSelectedItem();
+        final Float  compressionQualityValue = (Float)this.compressionQuality.getSelectedItem();
+
+        if(compressionType != null && imageWriteParameter.canWriteCompressed())
+        {
+            imageWriteParameter.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            imageWriteParameter.setCompressionType(compressionType);
+
+            if(compressionQualityValue != null)
+            {
+                imageWriteParameter.setCompressionQuality(compressionQualityValue);
             }
 
             return imageWriteParameter;
         }
-        catch(final NoSuchElementException ex)
-        {
-            throw new IllegalArgumentException(String.format("Mime type '%s' is not a supported for image writing by your Java environment", mimeType.toString()));
-        }
+
+        return null;
     }
 
+    @SafeVarargs
     private static <T> void addAllItems(final JComboBox<T> comboBox, final T... items)
     {
         for(final T item : items)

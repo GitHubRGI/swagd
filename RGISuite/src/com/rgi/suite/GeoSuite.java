@@ -139,9 +139,8 @@ public class GeoSuite
                                        @Override
                                        public void actionPerformed(final ActionEvent event)
                                        {
-//                                           final JFrame frame = new TilerWindow(GeoSuite.this.settings);
-//                                           frame.pack();
-//                                           frame.setVisible(true);
+                                           final JFrame frame = new TilerWindow(GeoSuite.this.settings);
+                                           frame.setVisible(true);
                                        }
                                    });
 
@@ -149,17 +148,16 @@ public class GeoSuite
         tileButton.setMargin(new Insets(0, 0, 0, 0));
 
         final JButton gpkgButton = new JButton(new PropertiesAction(props, "gpkg")
-                             {
-                                 private static final long serialVersionUID = -1836754318915912580L;
+                                   {
+                                       private static final long serialVersionUID = -1836754318915912580L;
 
-                                 @Override
-                                 public void actionPerformed(final ActionEvent event)
-                                 {
-                                     final JFrame frame = new PackagerWindow(GeoSuite.this.settings);
-                                     frame.pack();
-                                     frame.setVisible(true);
-                                 }
-                             });
+                                       @Override
+                                       public void actionPerformed(final ActionEvent event)
+                                       {
+                                           final JFrame frame = new PackagerWindow(GeoSuite.this.settings);
+                                           frame.setVisible(true);
+                                       }
+                                   });
 
         gpkgButton.setHideActionText(true);
         gpkgButton.setMargin(new Insets(0, 0, 0, 0));
@@ -194,7 +192,6 @@ public class GeoSuite
                                                                                                   try
                                                                                                   {
                                                                                                       final JFrame frame = new MapViewWindow(readers);
-                                                                                                      frame.pack();
                                                                                                       frame.setVisible(true);
                                                                                                   }
                                                                                                   catch(final TileStoreException ex)

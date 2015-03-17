@@ -114,11 +114,11 @@ public class Tiler implements MonitorableTask, TaskMonitor
 
         // TODO this is *temporarily* synchronous
         final TileJob tileJob = new TileJob(this.file,
-                                      //this.tileReader,
-                                      this.tileWriter,
-                                      this.tileDimensions,
-                                      this.noDataColor,
-                                      this);
+                                            //this.tileReader,
+                                            this.tileWriter,
+                                            this.tileDimensions,
+                                            this.noDataColor,
+                                            this);
         tileJob.run();
     }
 
