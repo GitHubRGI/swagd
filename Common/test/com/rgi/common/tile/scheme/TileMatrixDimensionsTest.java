@@ -103,5 +103,4 @@ public class TileMatrixDimensionsTest
                   dimensions.contains(column, row) == expectedOutcome);
     }
     
-
 }
