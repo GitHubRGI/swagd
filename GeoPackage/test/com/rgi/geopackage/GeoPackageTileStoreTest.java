@@ -109,7 +109,7 @@ public class GeoPackageTileStoreTest
      */
 
     @Test(expected = IllegalArgumentException.class)
-    public void geopackageReaderIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    public void geopackageReaderIllegalArgumentException() throws TileStoreException, SQLException
     {
         final File testFile = this.getRandomFile(9);
 
@@ -143,7 +143,7 @@ public class GeoPackageTileStoreTest
      *             if an error occurs from reading or writing a Tile or File
      */
     @Test(expected = IllegalArgumentException.class)
-    public void geopackageReaderIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    public void geopackageReaderIllegalArgumentException2() throws TileStoreException, SQLException
     {
         final File testFile = this.getRandomFile(9);
 
@@ -170,9 +170,10 @@ public class GeoPackageTileStoreTest
      * @throws SQLException
      * @throws ConformanceException
      * @throws IOException
+     * @throws TileStoreException
      */
-    @Test(expected = IllegalArgumentException.class)
-    public void geopackageReaderIllegalArgumentException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    @Test(expected = TileStoreException.class)
+    public void geopackageReaderIllegalArgumentException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(11);
 
@@ -309,22 +310,22 @@ public class GeoPackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    
+
     @Test
     public void getImage() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
     {
-        File testFile = this.getRandomFile(11);
-        
+        final File testFile = this.getRandomFile(11);
+
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            TileSet tileSet = gpkg.tiles().addTileSet("tableName", 
+            final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
                                                       "description",
                                                       new BoundingBox(0.0,0.0,0.0,0.0),
                                                       gpkg.core().getSpatialReferenceSystem(4326));
             try(GeoPackageReader reader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
-                BufferedImage tile = reader.getTile(0, 0, 0);
+                final BufferedImage tile = reader.getTile(0, 0, 0);
                 assertTrue("Expected getTile to return null when the tile does not exist at that coordinate.",tile == null);
             }
         }
@@ -332,7 +333,7 @@ public class GeoPackageTileStoreTest
         {
             deleteFile(testFile);
         }
-        
+
     }
 
     /**
@@ -580,7 +581,7 @@ public class GeoPackageTileStoreTest
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
                 final CrsCoordinate coordinate = new CrsCoordinate(0, 2, "EPSG", 3857);
-                BufferedImage tile = gpkgReader.getTile(coordinate, 4);
+                final BufferedImage tile = gpkgReader.getTile(coordinate, 4);
                 assertTrue("Expected the reader to return null if the tile doesn't exist.",tile == null);
             }
         }
@@ -598,9 +599,10 @@ public class GeoPackageTileStoreTest
      * @throws FileNotFoundException
      * @throws SQLException
      * @throws ConformanceException
+     * @throws TileStoreException
      */
     @Test
-    public void getCoordinateReferenceSystem() throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    public void getCoordinateReferenceSystem() throws SQLException, ClassNotFoundException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(7);
 
@@ -696,9 +698,10 @@ public class GeoPackageTileStoreTest
      * @throws SQLException
      * @throws ConformanceException
      * @throws IOException
+     * @throws TileStoreException
      */
     @Test
-    public void geoPackageReaderGetTileScheme() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    public void geoPackageReaderGetTileScheme() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(10);
 
@@ -747,9 +750,10 @@ public class GeoPackageTileStoreTest
      * @throws SQLException
      * @throws ConformanceException
      * @throws IOException
+     * @throws TileStoreException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void geopackageReaderGetTileScheme2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    public void geopackageReaderGetTileScheme2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(8);
         try(GeoPackage gpkg = new GeoPackage(testFile))
@@ -783,7 +787,7 @@ public class GeoPackageTileStoreTest
      * @throws TileStoreException
      */
     @Test
-    public void getStreamofTileHandles() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    public void getStreamofTileHandles() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(12);
 
@@ -840,7 +844,7 @@ public class GeoPackageTileStoreTest
      * @throws TileStoreException
      */
     @Test
-    public void getStreamOfTileHandlesByZoom() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    public void getStreamOfTileHandlesByZoom() throws ClassNotFoundException, SQLException, ConformanceException, IOException, TileStoreException
     {
         final File testFile = this.getRandomFile(6);
         try(final GeoPackage gpkg = new GeoPackage(testFile))
@@ -1422,7 +1426,7 @@ public class GeoPackageTileStoreTest
      * @throws TileStoreException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    public void addTileIllegalArgumentException() throws SQLException, MimeTypeParseException, TileStoreException
     {
         final File testFile = this.getRandomFile(6);
 
@@ -1457,7 +1461,7 @@ public class GeoPackageTileStoreTest
      * @throws TileStoreException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    public void addTileIllegalArgumentException2() throws SQLException, MimeTypeParseException, TileStoreException
     {
         final File testFile = this.getRandomFile(6);
 
@@ -1492,7 +1496,7 @@ public class GeoPackageTileStoreTest
      * @throws TileStoreException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileIllegalArgumentException3() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    public void addTileIllegalArgumentException3() throws SQLException, MimeTypeParseException, TileStoreException
     {
         final File testFile = this.getRandomFile(6);
 
@@ -1528,7 +1532,7 @@ public class GeoPackageTileStoreTest
      * @throws TileStoreException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addTileIllegalArgumentException4() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    public void addTileIllegalArgumentException4() throws SQLException, MimeTypeParseException, TileStoreException
     {
         final File testFile = this.getRandomFile(6);
 
@@ -1561,9 +1565,10 @@ public class GeoPackageTileStoreTest
      * @throws SQLException
      * @throws ConformanceException
      * @throws MimeTypeParseException
+     * @throws TileStoreException
      */
-    @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException
+    @Test(expected = TileStoreException.class)
+    public void geoPackageWriterIllegalArgumentException()  throws TileStoreException, SQLException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -1598,7 +1603,7 @@ public class GeoPackageTileStoreTest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException
+    public void geoPackageWriterIllegalArgumentException2()  throws TileStoreException, SQLException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -1632,7 +1637,7 @@ public class GeoPackageTileStoreTest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterIllegalArgumentException3() throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    public void geoPackageWriterIllegalArgumentException3()  throws TileStoreException, SQLException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -1667,7 +1672,7 @@ public class GeoPackageTileStoreTest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterIllegalArgumentException4() throws SQLException, ClassNotFoundException, ConformanceException, IOException, MimeTypeParseException
+    public void geoPackageWriterIllegalArgumentException4() throws TileStoreException, SQLException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -1701,7 +1706,7 @@ public class GeoPackageTileStoreTest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterIllegalArgumentException5() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException
+    public void geoPackageWriterIllegalArgumentException5()  throws TileStoreException, SQLException, MimeTypeParseException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -1733,9 +1738,10 @@ public class GeoPackageTileStoreTest
      * @throws SQLException
      * @throws ConformanceException
      * @throws MimeTypeParseException
+     * @throws TileStoreException
      */
-    @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterIllegalArgumentException6() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException
+    @Test(expected = TileStoreException.class)
+    public void geoPackageWriterIllegalArgumentException6() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
     {
         final File testFile = this.getRandomFile(8);
 
@@ -1776,42 +1782,43 @@ public class GeoPackageTileStoreTest
      * @throws ConformanceException
      * @throws IOException
      * @throws MimeTypeParseException
+     * @throws TileStoreException
      */
-    @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterIllegalArgumentException7() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException
+    @Test(expected = TileStoreException.class)
+    public void geoPackageWriterIllegalArgumentException7() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
     {
         final File testFile = this.getRandomFile(9);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-        final SphericalMercatorCrsProfile spherical = new SphericalMercatorCrsProfile();
-        final BoundingBox tileSetBounds = new BoundingBox(SphericalMercatorCrsProfile.Bounds.getMinX()/4,
-                                                    SphericalMercatorCrsProfile.Bounds.getMinY()/2,
-                                                    SphericalMercatorCrsProfile.Bounds.getMaxX()/10,
-                                                    SphericalMercatorCrsProfile.Bounds.getMaxY()/8);
-        final String tileSetName = "tableName";
-        final int zoomLevel = 6;
-        final int tileWidth = 256;
-        final int tileHeight = 256;
-        final int matrixWidth = 10;
-        final int matrixHeight = 6;
-        final SpatialReferenceSystem srs = gpkg.core().addSpatialReferenceSystem(spherical.getName(),
-                                                                           spherical.getCoordinateReferenceSystem().getIdentifier(),
-                                                                           spherical.getCoordinateReferenceSystem().getAuthority(),
-                                                                           spherical.getCoordinateReferenceSystem().getIdentifier(),
-                                                                           spherical.getWellKnownText(),
-                                                                           spherical.getDescription());
+            final SphericalMercatorCrsProfile spherical = new SphericalMercatorCrsProfile();
+            final BoundingBox tileSetBounds = new BoundingBox(SphericalMercatorCrsProfile.Bounds.getMinX()/4,
+                                                        SphericalMercatorCrsProfile.Bounds.getMinY()/2,
+                                                        SphericalMercatorCrsProfile.Bounds.getMaxX()/10,
+                                                        SphericalMercatorCrsProfile.Bounds.getMaxY()/8);
+            final String tileSetName = "tableName";
+            final int zoomLevel = 6;
+            final int tileWidth = 256;
+            final int tileHeight = 256;
+            final int matrixWidth = 10;
+            final int matrixHeight = 6;
+            final SpatialReferenceSystem srs = gpkg.core().addSpatialReferenceSystem(spherical.getName(),
+                                                                               spherical.getCoordinateReferenceSystem().getIdentifier(),
+                                                                               spherical.getCoordinateReferenceSystem().getAuthority(),
+                                                                               spherical.getCoordinateReferenceSystem().getIdentifier(),
+                                                                               spherical.getWellKnownText(),
+                                                                               spherical.getDescription());
 
-        GeoPackageTileStoreTest.createTileSetAndTileMatrix(gpkg, srs, tileSetBounds, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, tileSetName);
+            GeoPackageTileStoreTest.createTileSetAndTileMatrix(gpkg, srs, tileSetBounds, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, tileSetName);
 
-        try(GeoPackageWriter writer = new GeoPackageWriter(testFile,
-                                                           spherical.getCoordinateReferenceSystem(),
-                                                           tileSetName,
-                                                           tileSetName,
-                                                           "description",
-                                                           tileSetBounds,
-                                                           new ZoomTimesTwo(5, 8, 5, 3),
-                                                           new MimeType("image/png"),
-                                                           null);)
+            try(GeoPackageWriter writer = new GeoPackageWriter(testFile,
+                                                               spherical.getCoordinateReferenceSystem(),
+                                                               tileSetName,
+                                                               tileSetName,
+                                                               "description",
+                                                               tileSetBounds,
+                                                               new ZoomTimesTwo(5, 8, 5, 3),
+                                                               new MimeType("image/png"),
+                                                               null);)
             {
                 fail("Expected GeoPackageWriter to throw when the tileSet already exists in the GeoPackage");
             }
@@ -1821,48 +1828,45 @@ public class GeoPackageTileStoreTest
            deleteFile(testFile);
        }
     }
-    
+
     /**
      * Tests if geoPackage writer transform a crs coordinate
      * to a tile Coordinate
-     * @throws ClassNotFoundException
      * @throws SQLException
-     * @throws ConformanceException
-     * @throws IOException
      * @throws MimeTypeParseException
      * @throws TileStoreException
      */
     @Test
-    public void gpkgWriterCrsTileCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    public void gpkgWriterCrsTileCoordinate() throws SQLException, MimeTypeParseException, TileStoreException
     {
-        File testFile = this.getRandomFile(13);
-        
-        CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
-        BoundingBox bBox =  new BoundingBox(0.0,0.0,90.0,180.0);
-        TileScheme tileScheme = new ZoomTimesTwo(1, 10, 2, 3);
-        try(GeoPackageWriter writer = new GeoPackageWriter(testFile, 
+        final File testFile = this.getRandomFile(13);
+
+        final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
+        final BoundingBox bBox =  new BoundingBox(0.0,0.0,90.0,180.0);
+        final TileScheme tileScheme = new ZoomTimesTwo(1, 10, 2, 3);
+        try(GeoPackageWriter writer = new GeoPackageWriter(testFile,
                                                            coordinateReferenceSystem,
-                                                           "tileSetTableName", 
-                                                           "tileSetIdentifier", 
-                                                           "tileSetDescription", 
-                                                           bBox, 
-                                                           new ZoomTimesTwo(1, 10, 2, 3), 
-                                                           new MimeType("image/png"), 
+                                                           "tileSetTableName",
+                                                           "tileSetIdentifier",
+                                                           "tileSetDescription",
+                                                           bBox,
+                                                           new ZoomTimesTwo(1, 10, 2, 3),
+                                                           new MimeType("image/png"),
                                                            null))
         {
-           
-            GlobalGeodeticCrsProfile geodeticCrsProfile = new GlobalGeodeticCrsProfile();
-            int zoomLevel = 4;
-            int row       = 4;
-            int column    = 7;
+
+            final GlobalGeodeticCrsProfile geodeticCrsProfile = new GlobalGeodeticCrsProfile();
+            final int zoomLevel = 4;
+            final int row       = 4;
+            final int column    = 7;
             writer.addTile(column, row, zoomLevel, createBufferedImage(BufferedImage.TYPE_BYTE_GRAY));
-            Coordinate<Integer> expectedTileCoordinate = new Coordinate<>(column, row);
-            CrsCoordinate       crsCoordinate          = geodeticCrsProfile.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoomLevel ), GeoPackageTiles.Origin);
-            Coordinate<Integer> tileCoordinate         = writer.crsToTileCoordinate(crsCoordinate, zoomLevel);
-            
+            final Coordinate<Integer> expectedTileCoordinate = new Coordinate<>(column, row);
+            final CrsCoordinate       crsCoordinate          = geodeticCrsProfile.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoomLevel ), GeoPackageTiles.Origin);
+            final Coordinate<Integer> tileCoordinate         = writer.crsToTileCoordinate(crsCoordinate, zoomLevel);
+
             assertEquals("The coordinate returned was not as expected.",expectedTileCoordinate, tileCoordinate);
-            
-            
+
+
         }
         finally
         {
@@ -1881,35 +1885,35 @@ public class GeoPackageTileStoreTest
      * @throws TileStoreException
      */
     @Test
-    public void gpkgWriterCrsTileCoordinate2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    public void gpkgWriterCrsTileCoordinate2() throws SQLException, MimeTypeParseException, TileStoreException
     {
-        File testFile = this.getRandomFile(13);
-        SphericalMercatorCrsProfile sphericalMercator = new SphericalMercatorCrsProfile();
-        CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
-        BoundingBox bBox =  new BoundingBox(sphericalMercator.getBounds().getMinX()/2,
+        final File testFile = this.getRandomFile(13);
+        final SphericalMercatorCrsProfile sphericalMercator = new SphericalMercatorCrsProfile();
+        final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
+        final BoundingBox bBox =  new BoundingBox(sphericalMercator.getBounds().getMinX()/2,
                                             sphericalMercator.getBounds().getMinY()/5,
                                             sphericalMercator.getBounds().getMaxX()/3,
                                             sphericalMercator.getBounds().getMaxY()/4);
-        TileScheme tileScheme = new ZoomTimesTwo(1, 10, 2, 3);
-        try(GeoPackageWriter writer = new GeoPackageWriter(testFile, 
+        final TileScheme tileScheme = new ZoomTimesTwo(1, 10, 2, 3);
+        try(GeoPackageWriter writer = new GeoPackageWriter(testFile,
                                                            coordinateReferenceSystem,
-                                                           "tileSetTableName", 
-                                                           "tileSetIdentifier", 
-                                                           "tileSetDescription", 
-                                                           bBox, 
-                                                           new ZoomTimesTwo(1, 10, 2, 3), 
-                                                           new MimeType("image/png"), 
+                                                           "tileSetTableName",
+                                                           "tileSetIdentifier",
+                                                           "tileSetDescription",
+                                                           bBox,
+                                                           new ZoomTimesTwo(1, 10, 2, 3),
+                                                           new MimeType("image/png"),
                                                            null))
         {
-            
-            int zoomLevel = 4;
-            int row       = 4;
-            int column    = 7;
+
+            final int zoomLevel = 4;
+            final int row       = 4;
+            final int column    = 7;
             writer.addTile(column, row, zoomLevel, createBufferedImage(BufferedImage.TYPE_BYTE_GRAY));
-            Coordinate<Integer> expectedTileCoordinate = new Coordinate<>(column, row);
-            CrsCoordinate       crsCoordinate          = sphericalMercator.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoomLevel ), GeoPackageTiles.Origin);
-            Coordinate<Integer> tileCoordinate         = writer.crsToTileCoordinate(crsCoordinate, zoomLevel);
-            
+            final Coordinate<Integer> expectedTileCoordinate = new Coordinate<>(column, row);
+            final CrsCoordinate       crsCoordinate          = sphericalMercator.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoomLevel ), GeoPackageTiles.Origin);
+            final Coordinate<Integer> tileCoordinate         = writer.crsToTileCoordinate(crsCoordinate, zoomLevel);
+
             assertEquals("The coordinate returned was not as expected.",expectedTileCoordinate, tileCoordinate);
         }
         finally
@@ -1917,7 +1921,7 @@ public class GeoPackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if the correct CRS coordinate is returned for GeoPackageWriter depending on the origin
      * @throws ClassNotFoundException
@@ -1928,40 +1932,40 @@ public class GeoPackageTileStoreTest
      * @throws TileStoreException
      */
     @Test
-    public void geoPackageWriterTileToCrsCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    public void geoPackageWriterTileToCrsCoordinate() throws SQLException, MimeTypeParseException, TileStoreException
     {
-        
-        File                        testFile                  = this.getRandomFile(13);
-        SphericalMercatorCrsProfile sphericalMercator         = new SphericalMercatorCrsProfile();
-        CoordinateReferenceSystem   coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
-        BoundingBox                 bBox                      =  new BoundingBox(sphericalMercator.getBounds().getMinX()/2,
+
+        final File                        testFile                  = this.getRandomFile(13);
+        final SphericalMercatorCrsProfile sphericalMercator         = new SphericalMercatorCrsProfile();
+        final CoordinateReferenceSystem   coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
+        final BoundingBox                 bBox                      =  new BoundingBox(sphericalMercator.getBounds().getMinX()/2,
                                                                                  sphericalMercator.getBounds().getMinY()/5,
                                                                                  sphericalMercator.getBounds().getMaxX()/3,
                                                                                  sphericalMercator.getBounds().getMaxY()/4);
-       
-        TileScheme tileScheme = new ZoomTimesTwo(1, 10, 2, 3);
-        int        zoomLevel = 4;
-        int        row = 4;
-        int        column = 7;
-        TileOrigin origin = TileOrigin.UpperRight;
+
+        final TileScheme tileScheme = new ZoomTimesTwo(1, 10, 2, 3);
+        final int        zoomLevel = 4;
+        final int        row = 4;
+        final int        column = 7;
+        final TileOrigin origin = TileOrigin.UpperRight;
         try
         {
-            testTileToCrsCoordinate(testFile, 
-                                    sphericalMercator, 
-                                    bBox, 
-                                    row,
+            testTileToCrsCoordinate(testFile,
+                                    sphericalMercator,
+                                    bBox,
                                     column,
-                                    zoomLevel, 
-                                    origin, 
+                                    row,
+                                    zoomLevel,
+                                    origin,
                                     tileScheme,
                                     coordinateReferenceSystem);
-        } 
+        }
         finally
         {
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if the correct CRS coordinate is returned for GeoPackageWriter depending on the origin
      * @throws ClassNotFoundException
@@ -1972,31 +1976,31 @@ public class GeoPackageTileStoreTest
      * @throws TileStoreException
      */
     @Test
-    public void geoPackageWriterTileToCrsCoordinate2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    public void geoPackageWriterTileToCrsCoordinate2() throws SQLException, MimeTypeParseException, TileStoreException
     {
-        File                        testFile                  = this.getRandomFile(13);
-        SphericalMercatorCrsProfile sphericalMercator         = new SphericalMercatorCrsProfile();
-        CoordinateReferenceSystem   coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
-        BoundingBox                 bBox                      = new BoundingBox(sphericalMercator.getBounds().getMinX()/3,
+        final File                        testFile                  = this.getRandomFile(13);
+        final SphericalMercatorCrsProfile sphericalMercator         = new SphericalMercatorCrsProfile();
+        final CoordinateReferenceSystem   coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
+        final BoundingBox                 bBox                      = new BoundingBox(sphericalMercator.getBounds().getMinX()/3,
                                                                                 sphericalMercator.getBounds().getMinY()/2,
                                                                                 sphericalMercator.getBounds().getMaxX()/4,
                                                                                 sphericalMercator.getBounds().getMaxY()/5);
-        TileScheme tileScheme = new ZoomTimesTwo(1, 10, 3, 5);
+        final TileScheme tileScheme = new ZoomTimesTwo(1, 10, 3, 5);
         try
         {
-            int        zoomLevel = 5;
-            int        row       = 0;
-            int        column    = 0;
-            TileOrigin origin    = TileOrigin.LowerRight;
-            
-            testTileToCrsCoordinate(testFile, 
-                                    sphericalMercator, 
-                                    bBox, 
-                                    row, 
-                                    column, 
-                                    zoomLevel, 
-                                    origin, 
-                                    tileScheme, 
+            final int        zoomLevel = 5;
+            final int        row       = 0;
+            final int        column    = 0;
+            final TileOrigin origin    = TileOrigin.LowerRight;
+
+            testTileToCrsCoordinate(testFile,
+                                    sphericalMercator,
+                                    bBox,
+                                    column,
+                                    row,
+                                    zoomLevel,
+                                    origin,
+                                    tileScheme,
                                     coordinateReferenceSystem);
         }
         finally
@@ -2004,7 +2008,7 @@ public class GeoPackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if the correct CRS coordinate is returned for GeoPackageWriter depending on the origin
      * @throws ClassNotFoundException
@@ -2015,31 +2019,31 @@ public class GeoPackageTileStoreTest
      * @throws TileStoreException
      */
     @Test
-    public void geoPackageWriterTileToCrsCoordinate3() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    public void geoPackageWriterTileToCrsCoordinate3() throws SQLException, MimeTypeParseException, TileStoreException
     {
-        File                        testFile                  = this.getRandomFile(13);
-        GlobalGeodeticCrsProfile    globalGeodetic            = new GlobalGeodeticCrsProfile();
-        CoordinateReferenceSystem   coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
-        BoundingBox                 bBox                      = new BoundingBox(globalGeodetic.getBounds().getMinX()/2,
+        final File                        testFile                  = this.getRandomFile(13);
+        final GlobalGeodeticCrsProfile    globalGeodetic            = new GlobalGeodeticCrsProfile();
+        final CoordinateReferenceSystem   coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
+        final BoundingBox                 bBox                      = new BoundingBox(globalGeodetic.getBounds().getMinX()/2,
                                                                                 globalGeodetic.getBounds().getMinY()/3,
                                                                                 globalGeodetic.getBounds().getMaxX()/4,
                                                                                 globalGeodetic.getBounds().getMaxY()/5);
-        TileScheme tileScheme = new ZoomTimesTwo(1, 10, 3, 5);
+        final TileScheme tileScheme = new ZoomTimesTwo(1, 10, 3, 5);
         try
         {
-            int        zoomLevel = 7;
-            int        row       = 2;
-            int        column    = 5;
-            TileOrigin origin    = TileOrigin.LowerLeft;
-            
-            testTileToCrsCoordinate(testFile, 
-                                    globalGeodetic, 
-                                    bBox, 
-                                    row, 
-                                    column, 
-                                    zoomLevel, 
-                                    origin, 
-                                    tileScheme, 
+            final int        zoomLevel = 7;
+            final int        row       = 2;
+            final int        column    = 5;
+            final TileOrigin origin    = TileOrigin.LowerLeft;
+
+            testTileToCrsCoordinate(testFile,
+                                    globalGeodetic,
+                                    bBox,
+                                    column,
+                                    row,
+                                    zoomLevel,
+                                    origin,
+                                    tileScheme,
                                     coordinateReferenceSystem);
         }
         finally
@@ -2047,7 +2051,7 @@ public class GeoPackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if the correct CRS coordinate is returned for GeoPackageWriter depending on the origin
      * @throws ClassNotFoundException
@@ -2058,31 +2062,31 @@ public class GeoPackageTileStoreTest
      * @throws TileStoreException
      */
     @Test
-    public void geoPackageWriterTileToCrsCoordinate4() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    public void geoPackageWriterTileToCrsCoordinate4() throws SQLException, MimeTypeParseException, TileStoreException
     {
-        File                        testFile                  = this.getRandomFile(13);
-        GlobalGeodeticCrsProfile    globalGeodetic            = new GlobalGeodeticCrsProfile();
-        CoordinateReferenceSystem   coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
-        BoundingBox                 bBox                      = new BoundingBox(globalGeodetic.getBounds().getMinX()/5,
+        final File                        testFile                  = this.getRandomFile(13);
+        final GlobalGeodeticCrsProfile    globalGeodetic            = new GlobalGeodeticCrsProfile();
+        final CoordinateReferenceSystem   coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
+        final BoundingBox                 bBox                      = new BoundingBox(globalGeodetic.getBounds().getMinX()/5,
                                                                                 globalGeodetic.getBounds().getMinY()/4,
                                                                                 globalGeodetic.getBounds().getMaxX()/3,
                                                                                 globalGeodetic.getBounds().getMaxY()/2);
-        TileScheme tileScheme = new ZoomTimesTwo(1, 10, 3, 5);
+        final TileScheme tileScheme = new ZoomTimesTwo(1, 10, 3, 5);
         try
         {
-            int        zoomLevel = 7;
-            int        row       = 3;
-            int        column    = 9;
-            TileOrigin origin    = TileOrigin.UpperLeft;
-            
-            testTileToCrsCoordinate(testFile, 
-                                    globalGeodetic, 
-                                    bBox, 
-                                    row, 
-                                    column, 
-                                    zoomLevel, 
-                                    origin, 
-                                    tileScheme, 
+            final int        zoomLevel = 7;
+            final int        row       = 3;
+            final int        column    = 9;
+            final TileOrigin origin    = TileOrigin.UpperLeft;
+
+            testTileToCrsCoordinate(testFile,
+                                    globalGeodetic,
+                                    bBox,
+                                    column,
+                                    row,
+                                    zoomLevel,
+                                    origin,
+                                    tileScheme,
                                     coordinateReferenceSystem);
         }
         finally
@@ -2090,19 +2094,19 @@ public class GeoPackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    
+
     /**
      * Tests if an Illegal ARgument exception is thrown when passing in a null value
      * for TileOrigin to tileToCrsCoordinate
      */
     @Test(expected = IllegalArgumentException.class)
-    public void geoPackageWriterTileToCrsCoordinateIllegalArgumentException() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    public void geoPackageWriterTileToCrsCoordinateIllegalArgumentException() throws SQLException, MimeTypeParseException, TileStoreException
     {
-        File testFile = this.getRandomFile(8);
-        
-        CoordinateReferenceSystem crs = new CoordinateReferenceSystem("EPSG", 4326);
-        BoundingBox bBox =  new BoundingBox(0.0,0.0,0.0,0.0);
-        TileScheme tileScheme = new ZoomTimesTwo(0, 10, 2, 4);
+        final File testFile = this.getRandomFile(8);
+
+        final CoordinateReferenceSystem crs = new CoordinateReferenceSystem("EPSG", 4326);
+        final BoundingBox bBox =  new BoundingBox(0.0,0.0,0.0,0.0);
+        final TileScheme tileScheme = new ZoomTimesTwo(0, 10, 2, 4);
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile, crs, "tableName","identifier", "description", bBox, tileScheme, new MimeType("image/png"), null))
         {
             gpkgWriter.tileToCrsCoordinate(1, 1, 1, null);
@@ -2113,42 +2117,42 @@ public class GeoPackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    
+
     @Test
-    public void gpkgWriterGetTileBoundingBox() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    public void gpkgWriterGetTileBoundingBox() throws SQLException, MimeTypeParseException, TileStoreException
     {
-        File testFile = this.getRandomFile(8);
-        
-        CoordinateReferenceSystem crs            = new CoordinateReferenceSystem("EPSG", 4326);
-        GlobalGeodeticCrsProfile  globalGeodetic = new GlobalGeodeticCrsProfile();
-        BoundingBox               bBox           = new BoundingBox(globalGeodetic.getBounds().getMinX()/5,
+        final File testFile = this.getRandomFile(8);
+
+        final CoordinateReferenceSystem crs            = new CoordinateReferenceSystem("EPSG", 4326);
+        final GlobalGeodeticCrsProfile  globalGeodetic = new GlobalGeodeticCrsProfile();
+        final BoundingBox               bBox           = new BoundingBox(globalGeodetic.getBounds().getMinX()/5,
                                                                    globalGeodetic.getBounds().getMinY()/4,
                                                                    globalGeodetic.getBounds().getMaxX()/3,
                                                                    globalGeodetic.getBounds().getMaxY()/2);
-        TileScheme tileScheme = new ZoomTimesTwo(0, 10, 2, 4);
-        
-        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile, 
-                                                               crs, 
-                                                               "tablename", 
-                                                               "identifier", 
-                                                               "description", 
-                                                               bBox, 
-                                                               tileScheme, 
+        final TileScheme tileScheme = new ZoomTimesTwo(0, 10, 2, 4);
+
+        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
+                                                               crs,
+                                                               "tablename",
+                                                               "identifier",
+                                                               "description",
+                                                               bBox,
+                                                               tileScheme,
                                                                new MimeType("image/png"),
                                                                null))
         {
-            int column = 2;
-            int row = 3;
-            int zoom = 5;
+            final int column = 2;
+            final int row = 3;
+            final int zoom = 5;
             gpkgWriter.addTile(column, row, zoom, createBufferedImage(BufferedImage.TYPE_3BYTE_BGR));
-            
-            BoundingBox tileBBoxReturned = gpkgWriter.getTileBoundingBox(column, row, zoom);
-            CrsCoordinate upperLeftCorner = globalGeodetic.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoom), TileOrigin.UpperLeft);
-            CrsCoordinate lowerRightCorner = globalGeodetic.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoom), TileOrigin.LowerRight);
-            
-            CrsCoordinate upperLeftReturned = new CrsCoordinate(tileBBoxReturned.getTopLeft(), globalGeodetic.getCoordinateReferenceSystem());
-            CrsCoordinate lowerRightReturned = new CrsCoordinate(tileBBoxReturned.getBottomRight(), globalGeodetic.getCoordinateReferenceSystem());
-            
+
+            final BoundingBox tileBBoxReturned = gpkgWriter.getTileBoundingBox(column, row, zoom);
+            final CrsCoordinate upperLeftCorner = globalGeodetic.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoom), TileOrigin.UpperLeft);
+            final CrsCoordinate lowerRightCorner = globalGeodetic.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoom), TileOrigin.LowerRight);
+
+            final CrsCoordinate upperLeftReturned = new CrsCoordinate(tileBBoxReturned.getTopLeft(), globalGeodetic.getCoordinateReferenceSystem());
+            final CrsCoordinate lowerRightReturned = new CrsCoordinate(tileBBoxReturned.getBottomRight(), globalGeodetic.getCoordinateReferenceSystem());
+
             assertCrsCoordinatesEqual(upperLeftReturned, upperLeftCorner);
             assertCrsCoordinatesEqual(lowerRightReturned, lowerRightCorner);
         }
@@ -2170,7 +2174,7 @@ public class GeoPackageTileStoreTest
      * @throws TileStoreException
      */
     @Test
-    public void addTileCrsCoordinate() throws ClassNotFoundException, ConformanceException, IOException, SQLException, MimeTypeParseException, TileStoreException
+    public void addTileCrsCoordinate() throws SQLException, MimeTypeParseException, TileStoreException
     {
         final File testFile = this.getRandomFile(9);
         try
@@ -2213,36 +2217,43 @@ public class GeoPackageTileStoreTest
             deleteFile(testFile);
         }
     }
-    
-    
-    private static void testTileToCrsCoordinate(File testFile, CrsProfile profile, BoundingBox bBox, int row, int column, int zoomLevel,
-            TileOrigin origin, TileScheme tileScheme, CoordinateReferenceSystem coordinateReferenceSystem) throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+
+
+    private static void testTileToCrsCoordinate(final File                      testFile,
+                                                final CrsProfile                profile,
+                                                final BoundingBox               bBox,
+                                                final int                       column,
+                                                final int                       row,
+                                                final int                       zoomLevel,
+                                                final TileOrigin                origin,
+                                                final TileScheme                tileScheme,
+                                                final CoordinateReferenceSystem coordinateReferenceSystem) throws SQLException, MimeTypeParseException, TileStoreException
     {
-        try(GeoPackageWriter writer = new GeoPackageWriter(testFile, 
+        try(GeoPackageWriter writer = new GeoPackageWriter(testFile,
                                                            coordinateReferenceSystem,
-                                                           "tileSetTableName", 
-                                                           "tileSetIdentifier", 
-                                                           "tileSetDescription", 
-                                                           bBox, 
-                                                           tileScheme, 
-                                                           new MimeType("image/png"), 
+                                                           "tileSetTableName",
+                                                           "tileSetIdentifier",
+                                                           "tileSetDescription",
+                                                           bBox,
+                                                           tileScheme,
+                                                           new MimeType("image/png"),
                                                            null))
         {
             writer.addTile(column, row, zoomLevel, createBufferedImage(BufferedImage.TYPE_BYTE_GRAY));
-            CrsCoordinate expectedCrsCoordinate = profile.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoomLevel), origin);
-            CrsCoordinate returnedCrsCoordinate = writer.tileToCrsCoordinate(column, row, zoomLevel, origin);
-            
+            final CrsCoordinate expectedCrsCoordinate = profile.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoomLevel), origin);
+            final CrsCoordinate returnedCrsCoordinate = writer.tileToCrsCoordinate(column, row, zoomLevel, origin);
+
             assertCrsCoordinatesEqual(expectedCrsCoordinate, returnedCrsCoordinate);
         }
     }
-    
-    private static void assertCrsCoordinatesEqual(CrsCoordinate crsCoordReturned, CrsCoordinate crsCoordExpected)
+
+    private static void assertCrsCoordinatesEqual(final CrsCoordinate crsCoordReturned, final CrsCoordinate crsCoordExpected)
     {
         assertTrue(String.format("The coordinate returned was not the values expected.\n"
                                    + "Actual Coordinate: (%f, %f) Crs: %s %d\nReturned Coordinate: (%f, %f) Crs: %s %d",
-                                   crsCoordReturned.getX(), 
-                                   crsCoordReturned.getY(), 
-                                   crsCoordReturned.getCoordinateReferenceSystem().getAuthority(), 
+                                   crsCoordReturned.getX(),
+                                   crsCoordReturned.getY(),
+                                   crsCoordReturned.getCoordinateReferenceSystem().getAuthority(),
                                    crsCoordReturned.getCoordinateReferenceSystem().getIdentifier(),
                                    crsCoordExpected.getX(),
                                    crsCoordReturned.getY(),
@@ -2250,7 +2261,7 @@ public class GeoPackageTileStoreTest
                                    crsCoordReturned.getCoordinateReferenceSystem().getIdentifier()),
                       isEqual(crsCoordExpected, crsCoordReturned) && crsCoordExpected.getCoordinateReferenceSystem().equals(crsCoordReturned.getCoordinateReferenceSystem()));
     }
-    
+
     private static boolean isEqual(final Coordinate<Double> coordinateExpected, final Coordinate<Double> coordinateReturned)
     {
         final boolean xEqual = Math.abs(coordinateExpected.getX() - coordinateReturned.getX()) <= Epsilon;

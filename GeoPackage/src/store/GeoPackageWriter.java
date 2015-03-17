@@ -81,19 +81,8 @@ public class GeoPackageWriter implements TileStoreWriter
      * @param imageWriteOptions
      *            Controls details of the image writing process. If null, a
      *            default ImageWriteParam used instead
-     * @throws ClassNotFoundException
-     *             when the SQLite JDBC driver cannot be found
-     * @throws IOException
-     *             when openMode is set to OpenMode.Create, and the file already
-     *             exists, openMode is set to OpenMode.Open, and the file does
-     *             not exist, or if there is a file read error
-     * @throws SQLException
-     *             in various cases where interaction with the JDBC connection
-     *             fails
-     * @throws ConformanceException
-     *             when the verifyConformance parameter is true, and if there
-     *             are any conformance violations with the severity
-     *             Severity.Error
+     * @throws TileStoreException
+     *             if there's an error in constructing the underlying tile store implementation
      *
      */
     public GeoPackageWriter(final File                      geoPackageFile,
@@ -104,7 +93,7 @@ public class GeoPackageWriter implements TileStoreWriter
                             final BoundingBox               tileSetBounds,
                             final TileScheme                tileScheme,
                             final MimeType                  imageOutputFormat,
-                            final ImageWriteParam           imageWriteOptions) throws ClassNotFoundException, ConformanceException, IOException, SQLException
+                            final ImageWriteParam           imageWriteOptions) throws TileStoreException
     {
 
         if(coordinateReferenceSystem == null)
@@ -136,7 +125,14 @@ public class GeoPackageWriter implements TileStoreWriter
             throw new IllegalArgumentException(String.format("Mime type '%s' is not a supported for image writing by your Java environment", imageOutputFormat.toString()));
         }
 
-        this.geoPackage = new GeoPackage(geoPackageFile, OpenMode.OpenOrCreate);
+        try
+        {
+            this.geoPackage = new GeoPackage(geoPackageFile, OpenMode.OpenOrCreate);
+        }
+        catch(final ClassNotFoundException | ConformanceException | IOException | SQLException ex)
+        {
+            throw new TileStoreException(ex);
+        }
 
         try
         {
@@ -171,10 +167,18 @@ public class GeoPackageWriter implements TileStoreWriter
                                            .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
                                                                      tileMatrix -> tileMatrix));
         }
-        catch(final IllegalArgumentException | SQLException ex)
+        catch(final Exception ex)
         {
-            this.geoPackage.close();
-            throw ex;
+            try
+            {
+                this.geoPackage.close();
+            }
+            catch(final SQLException ex1)
+            {
+                ex1.printStackTrace();
+            }
+
+            throw new TileStoreException(ex);
         }
     }
 
@@ -363,5 +367,5 @@ public class GeoPackageWriter implements TileStoreWriter
     private final ImageWriteParam          imageWriteOptions;
     private final TileScheme               tileScheme;
 
-    private static final Set<MimeType> SupportedImageFormats = MimeTypeUtility.createMimeTypeSet("image/jpeg", "image/png");
+    public static final Set<MimeType> SupportedImageFormats = MimeTypeUtility.createMimeTypeSet("image/jpeg", "image/png");
 }

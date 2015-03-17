@@ -7,13 +7,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import javax.activation.MimeType;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
@@ -27,19 +24,15 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import store.GeoPackageWriter;
-import utility.TileStoreUtility;
-
-import com.rgi.common.Range;
-import com.rgi.common.coordinate.CoordinateReferenceSystem;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.tile.scheme.TileScheme;
-import com.rgi.common.tile.scheme.ZoomTimesTwo;
-import com.rgi.common.tile.store.TileHandle;
-import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
-import com.rgi.common.tile.store.tms.TmsWriter;
+import com.rgi.suite.tilestoreadapter.AdapterMismatchException;
+import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
+import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
+import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreReaderAdapter;
+import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreWriterAdapter;
+import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreReaderAdapter;
+import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
 
 
 /**
@@ -55,28 +48,26 @@ public abstract class TileStoreCreationWindow extends JFrame
 
     protected final Settings settings;
 
-    protected final JPanel contentPanel;
-    protected final JPanel navigationPanel = new JPanel(new GridBagLayout());
+    protected TileStoreReaderAdapter tileStoreReaderAdapter = null;
+    protected TileStoreWriterAdapter tileStoreWriterAdapter = null;
 
-    protected final JPanel inputPanel  = new JPanel(new GridBagLayout());
+    protected final static Collection<Class<? extends TileStoreReaderAdapter>> KnownTileStoreReaderAdapters = Arrays.asList(TmsTileStoreReaderAdapter.class, GeoPackageTileStoreReaderAdapter.class);
+
+    protected final JPanel contentPanel = new JPanel();
+
+    // Input stuff
+    protected final JPanel     inputPanel          = new JPanel(new GridBagLayout());
+    protected final JTextField inputFileName       = new JTextField();
+    protected final JButton    inputFileNameButton = new JButton("\u2026");
+
+    // Output stuff
     protected final JPanel outputPanel = new JPanel(new GridBagLayout());
+    protected final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>(new DefaultComboBoxModel<>());
 
-    protected final JTextField inputFileName      = new JTextField();
-    protected final JTextField tileSetName        = new JTextField();
-    protected final JTextField tileSetDescription = new JTextField();
-    protected final JTextField outputFileName     = new JTextField();
-    protected final JButton    okButton           = new JButton("OK");
-    protected final JButton    cancelButton       = new JButton("Cancel");
-
-    protected final JComboBox<CoordinateReferenceSystem> inputCrs = new JComboBox<>(new DefaultComboBoxModel<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
-                                                                                                                                .stream()
-                                                                                                                                .sorted()
-                                                                                                                                .toArray(CoordinateReferenceSystem[]::new)));
-
-    protected static final String[] StoreTypes = new String[]{ "GeoPackage", "TMS" };
-
-    // TODO: stop using strings for this combo box type
-    protected final JComboBox<String> outputStoreType = new JComboBox<>(new DefaultComboBoxModel<>(StoreTypes));
+    // Navigation stuff
+    protected final JPanel  navigationPanel = new JPanel(new GridBagLayout());
+    protected final JButton okButton        = new JButton("OK");
+    protected final JButton cancelButton    = new JButton("Cancel");
 
     protected final String lastInputLocationSettingName;
     protected final String processName;
@@ -97,20 +88,80 @@ public abstract class TileStoreCreationWindow extends JFrame
 
         this.setTitle(processName + " Settings");
         this.setLayout(new BorderLayout());
-        this.setPreferredSize(new Dimension(600, 330));
         this.setResizable(false);
 
         this.settings = settings;
         this.lastInputLocationSettingName = lastInputLocationSettingName;
 
-        this.contentPanel = new JPanel();
+        this.outputStoreType.addItem(new GeoPackageTileStoreWriterAdapter(settings));
+        this.outputStoreType.addItem(new TmsTileStoreWriterAdapter       (settings));
+
         this.contentPanel.setLayout(new BoxLayout(this.contentPanel, BoxLayout.PAGE_AXIS));
 
         this.add(this.contentPanel,   BorderLayout.CENTER);
         this.add(this.navigationPanel,BorderLayout.SOUTH);
-    }
 
-    protected abstract void inputFileChanged(final File file) throws Exception;
+        // Input stuff
+        this.inputFileName.setEditable(false);
+
+        this.inputPanel .setBorder(BorderFactory.createTitledBorder("Input"));
+
+        this.inputFileNameButton.addActionListener(e -> { final String startDirectory = TileStoreCreationWindow.this.settings.get(this.lastInputLocationSettingName, SettingsWindow.DefaultOutputLocation);
+
+                                                          final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
+
+                                                          fileChooser.setMultiSelectionEnabled(false);
+                                                          fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+
+                                                          final int option = fileChooser.showOpenDialog(TileStoreCreationWindow.this);
+
+                                                          if(option == JFileChooser.APPROVE_OPTION)
+                                                          {
+                                                              final File file = fileChooser.getSelectedFile();
+
+                                                              try
+                                                              {
+                                                                  this.tileStoreReaderAdapter = this.getReaderAdapter(file);
+
+                                                                  this.inputFileName.setText(file.getAbsolutePath());
+
+                                                                  this.settings.set(this.lastInputLocationSettingName, file.getParent());
+                                                                  this.settings.save();
+
+                                                                  this.buildInputContent();
+                                                                  this.tileStoreWriterAdapter.hint(file);
+                                                              }
+                                                              catch(final Exception ex)
+                                                              {
+                                                                  this.error(ex.getMessage());
+                                                              }
+                                                          }
+                                                        });
+
+        this.contentPanel.add(this.inputPanel);
+
+        this.buildInputContent();
+
+        // Output Stuff
+        this.outputPanel.setBorder(BorderFactory.createTitledBorder("Output"));
+
+        this.outputStoreType.addActionListener(e -> { this.buildOutputContent();
+                                                      try
+                                                      {
+                                                          this.tileStoreWriterAdapter.hint(new File(this.inputFileName.getText()));
+                                                      }
+                                                      catch(final Exception ex)
+                                                      {
+                                                          ex.printStackTrace();
+                                                      }
+                                                    });
+
+        this.buildOutputContent();
+
+        this.contentPanel.add(this.outputPanel);
+
+        this.buildNavigationPanel();
+    }
 
     protected abstract void execute(final TileStoreReader tileStoreReader, final TileStoreWriter tileStoreWriter) throws Exception;
 
@@ -124,72 +175,6 @@ public abstract class TileStoreCreationWindow extends JFrame
         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }
 
-    protected void outputStoreTypeChanged()
-    {
-        // TODO eventually we won't be using strings to pick the output type
-        final String outputType = (String)this.outputStoreType.getSelectedItem();
-
-        if(outputType.equals(StoreTypes[0]))    // GeoPackage
-        {
-            this.tileSetName       .setEnabled(true);
-            this.tileSetDescription.setEnabled(true);
-        }
-        else if(outputType.equals(StoreTypes[1]))   // TMS
-        {
-            this.tileSetName       .setEnabled(false);
-            this.tileSetDescription.setEnabled(false);
-
-            this.tileSetName       .setText("");
-            this.tileSetDescription.setText("");
-        }
-    }
-
-    protected class OutputGridRow
-    {
-        /**
-         * @param label
-         *         Parameter label
-         * @param value
-         *         Parameter value
-         * @param control
-         *         Additional parameter control
-         */
-        public OutputGridRow(final JLabel label, final JComponent value, final JComponent control)
-        {
-            this.label = label;
-            this.value = value;
-            this.control = control;
-        }
-
-        /**
-         * @return the label
-         */
-        public JLabel getLabel()
-        {
-            return this.label;
-        }
-
-        /**
-         * @return the value
-         */
-        public JComponent getValue()
-        {
-            return this.value;
-        }
-
-        /**
-         * @return the control
-         */
-        public JComponent getControl()
-        {
-            return this.control;
-        }
-
-        private final JLabel     label;
-        private final JComponent value;
-        private final JComponent control;
-    }
-
     @SuppressWarnings("serial")
     protected class SimpleGridBagConstraints extends GridBagConstraints
     {
@@ -199,121 +184,114 @@ public abstract class TileStoreCreationWindow extends JFrame
         }
     }
 
-    protected void buildUi()
+    protected void warn(final String message)
     {
-        this.buildContentPanel();
-        this.buildNavigationPanel();
+        JOptionPane.showMessageDialog(this,
+                                      message,
+                                      this.processName,
+                                      JOptionPane.WARNING_MESSAGE);
     }
 
-    private void buildContentPanel()
+    protected void error(final String message)
     {
-        this.buildInputContent();
-        this.buildOutputContent();
+        JOptionPane.showMessageDialog(this,
+                                      message,
+                                      this.processName,
+                                      JOptionPane.ERROR_MESSAGE);
     }
 
     private void buildInputContent()
     {
-        this.inputFileName.setEditable(false);
-        this.inputCrs     .setEditable(false);
+        this.inputPanel.removeAll();
 
-        this.inputPanel .setBorder(BorderFactory.createTitledBorder("Input"));
-
-        final JButton inputFileNameButton = new JButton("\u2026");
-
-        inputFileNameButton.addActionListener(e -> { final String startDirectory = TileStoreCreationWindow.this.settings.get(this.lastInputLocationSettingName, SettingsWindow.DefaultOutputLocation);
-
-                                                     final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
-
-                                                     fileChooser.setMultiSelectionEnabled(false);
-                                                     fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-
-                                                     final int option = fileChooser.showOpenDialog(TileStoreCreationWindow.this);
-
-                                                     if(option == JFileChooser.APPROVE_OPTION)
-                                                     {
-                                                         final File file = fileChooser.getSelectedFile();
-
-                                                         this.settings.set(this.lastInputLocationSettingName, file.getParent());
-                                                         this.settings.save();
-
-                                                         try
-                                                         {
-                                                             TileStoreCreationWindow.this.inputFileChanged(file);
-                                                         }
-                                                         catch(final Exception ex)
-                                                         {
-                                                             JOptionPane.showMessageDialog(this,
-                                                                                           ex.getMessage(),
-                                                                                           this.processName,
-                                                                                           JOptionPane.ERROR_MESSAGE);
-                                                         }
-                                                     }
-                                                   });
-
-        // Input tile store file
         this.inputPanel.add(new JLabel("File:"), new SimpleGridBagConstraints(0, 0, false));
         this.inputPanel.add(this.inputFileName,  new SimpleGridBagConstraints(1, 0, true));
-        this.inputPanel.add(inputFileNameButton, new SimpleGridBagConstraints(2, 0, false));
+        this.inputPanel.add(this.inputFileNameButton, new SimpleGridBagConstraints(2, 0, false));
 
-        // Input CRS
-        this.inputPanel.add(new JLabel("Reference system:"), new SimpleGridBagConstraints(0, 1, false));
-        this.inputPanel.add(this.inputCrs,                   new SimpleGridBagConstraints(1, 1, true));
+        if(this.tileStoreReaderAdapter != null)
+        {
+            int rowCount = 1;
+            for(final Collection<JComponent> row : this.tileStoreReaderAdapter.getReaderParameterControls())
+            {
+                int columnCount = 0;
+                for(final JComponent column : row)
+                {
+                    if(columnCount == 1) // TODO; This is a HACK
+                    {
+                        column.setPreferredSize(new Dimension(220, 25));
+                    }
 
-        this.contentPanel.add(this.inputPanel);
+                    this.inputPanel.add(column, new SimpleGridBagConstraints(columnCount, rowCount, columnCount == 1)); // TODO; last parameter is similarly a hack for that second column
+
+                    ++columnCount;
+                }
+
+                ++rowCount;
+            }
+
+            this.revalidate();
+            this.outputPanel.repaint();
+            this.pack();
+        }
+    }
+
+    private TileStoreReaderAdapter getReaderAdapter(final File file)
+    {
+        for(final Class<? extends TileStoreReaderAdapter> readerClass : KnownTileStoreReaderAdapters)
+        {
+            try
+            {
+                return readerClass.getConstructor(File.class).newInstance(file);
+            }
+            catch(final NoSuchMethodException | SecurityException | IllegalAccessException | InstantiationException ex)
+            {
+                ex.printStackTrace();
+            }
+            catch(final InvocationTargetException ex)
+            {
+                if(ex.getTargetException() instanceof AdapterMismatchException)
+                {
+                    continue;
+                }
+            }
+        }
+
+        this.warn("Selected file doesn't contain a recognized tile store type.");
+        return null;
     }
 
     private void buildOutputContent()
     {
-        this.outputPanel.setBorder(BorderFactory.createTitledBorder("Output"));
-
-        this.outputStoreType.addActionListener(e -> { TileStoreCreationWindow.this.outputStoreTypeChanged(); });
+        this.outputPanel.removeAll();
 
         // Output tile store type
         this.outputPanel.add(new JLabel("Format:"), new SimpleGridBagConstraints(0, 0, false));
         this.outputPanel.add(this.outputStoreType,  new SimpleGridBagConstraints(1, 0, true));
 
-        int rowCount = 1;
-        for(final OutputGridRow row : this.getOutputParameters())
-        {
-            this.outputPanel.add(row.getLabel(), new SimpleGridBagConstraints(0, rowCount, false));
-            this.outputPanel.add(row.getValue(), new SimpleGridBagConstraints(1, rowCount, true));
+        this.tileStoreWriterAdapter = (TileStoreWriterAdapter)this.outputStoreType.getSelectedItem();
 
-            if(row.getControl() != null)
+        int rowCount = 1;
+        for(final Collection<JComponent> row : this.tileStoreWriterAdapter.getWriterParameterControls())
+        {
+            int columnCount = 0;
+            for(final JComponent column : row)
             {
-                this.outputPanel.add(row.getControl(), new SimpleGridBagConstraints(2, rowCount, false));
+                if(columnCount == 1) // TODO; This is a HACK
+                {
+                    column.setPreferredSize(new Dimension(220, 25));
+                }
+
+                this.outputPanel.add(column, new SimpleGridBagConstraints(columnCount, rowCount, columnCount == 1)); // TODO; last parameter is similarly a hack for that second column
+
+                ++columnCount;
             }
+
             ++rowCount;
         }
-        this.contentPanel.add(this.outputPanel);
-    }
 
-    protected Collection<OutputGridRow> getOutputParameters()
-    {
-        final JButton outputFileNameButton = new JButton("\u2026");
-
-        outputFileNameButton.addActionListener(e -> { final String startDirectory = TileStoreCreationWindow.this.settings.get(SettingsWindow.OutputLocationSettingName, SettingsWindow.DefaultOutputLocation);
-
-                                                      final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
-
-                                                      fileChooser.setMultiSelectionEnabled(false);
-                                                      fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-
-                                                      final int option = fileChooser.showOpenDialog(TileStoreCreationWindow.this);
-
-                                                      if(option == JFileChooser.APPROVE_OPTION)
-                                                      {
-                                                          final File file = fileChooser.getSelectedFile();
-
-                                                          this.settings.set(SettingsWindow.OutputLocationSettingName, file.getParent());
-                                                          this.settings.save();
-
-                                                          this.outputFileName.setText(fileChooser.getSelectedFile().getPath());
-                                                      }
-                                                    });
-
-        return Arrays.asList(new OutputGridRow(new JLabel("Name:"),        this.tileSetName,        null),
-                             new OutputGridRow(new JLabel("Description:"), this.tileSetDescription, null),
-                             new OutputGridRow(new JLabel("File:"),        this.outputFileName,     outputFileNameButton));
+        this.revalidate();
+        this.outputPanel.repaint();
+        this.pack();
     }
 
     private void buildNavigationPanel()
@@ -322,16 +300,15 @@ public abstract class TileStoreCreationWindow extends JFrame
 
         this.okButton.addActionListener(e -> { try
                                                {
-                                                   TileStoreCreationWindow.this.execute();
-                                                   TileStoreCreationWindow.this.closeFrame();
+                                                   this.okButton.setEnabled(false);
+                                                   this.execute();
+                                                   this.closeFrame();
                                                }
                                                catch(final Exception ex)
                                                {
+                                                   this.okButton.setEnabled(true);
                                                    ex.printStackTrace();
-                                                   JOptionPane.showMessageDialog(TileStoreCreationWindow.this,
-                                                                                 "An error has occurred: " + ex.getMessage(),
-                                                                                 this.processName,
-                                                                                 JOptionPane.ERROR_MESSAGE);
+                                                   this.error("An error has occurred: " + ex.getMessage());
                                                }
                                              });
 
@@ -345,83 +322,18 @@ public abstract class TileStoreCreationWindow extends JFrame
 
     private void execute() throws Exception
     {
-        final File file = new File(this.outputFileName.getText());
-
-        // TODO handle multiple readers?
-        try(final TileStoreReader tileStoreReader = this.getReaders().iterator().next())
+        if(this.tileStoreReaderAdapter == null)
         {
-            final MimeType mimeType = new MimeType("image/" + this.settings.get(SettingsWindow.OutputImageFormatSettingName, SettingsWindow.DefaultOutputCrs)); // TODO get from UI?
+            this.warn("Please select an input file.");
+            return;
+        }
 
-            // TODO eventually we won't be using strings to pick the output type
-            final String outputType = (String)this.outputStoreType.getSelectedItem();
-
-            if(outputType.equals(StoreTypes[0]))    // GeoPackage
+        try(final TileStoreReader tileStoreReader = this.tileStoreReaderAdapter.getTileStoreReader())
+        {
+            try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
             {
-
-
-                final TileScheme tileScheme = getRelativeZoomTimesTwoTileScheme(tileStoreReader);
-
-                try(final TileStoreWriter tileStoreWriter = new GeoPackageWriter(file,
-                                                                                 tileStoreReader.getCoordinateReferenceSystem(),
-                                                                                 this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
-                                                                                 this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
-                                                                                 this.tileSetDescription.getText(),
-                                                                                 tileStoreReader.getBounds(),
-                                                                                 tileScheme,
-                                                                                 mimeType,
-                                                                                 null))                         // TODO use user preferences
-                {
-                    this.execute(tileStoreReader, tileStoreWriter);
-                }
-            }
-            else if(outputType.equals(StoreTypes[1]))   // TMS
-            {
-                try(TileStoreWriter tileStoreWriter = new TmsWriter((CoordinateReferenceSystem)this.inputCrs.getSelectedItem(),
-                                                                    file.toPath(),
-                                                                    mimeType,
-                                                                    null))     // TODO image write params
-                {
-                    this.execute(tileStoreReader, tileStoreWriter);
-                }
+                this.execute(tileStoreReader, tileStoreWriter);
             }
         }
-    }
-
-    private Collection<TileStoreReader> getReaders() throws TileStoreException
-    {
-        final Collection<TileStoreReader> readers = TileStoreUtility.getStores((CoordinateReferenceSystem)this.inputCrs.getSelectedItem(),
-                                                                               new File(this.inputFileName.getText()));
-
-        if(readers.isEmpty())
-        {
-            throw new TileStoreException("File contains no recognized file store types.");
-        }
-
-        return readers;
-    }
-
-    private static TileScheme getRelativeZoomTimesTwoTileScheme(final TileStoreReader tileStoreReader) throws TileStoreException
-    {
-        final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
-
-        if(zoomLevels.size() == 0)
-        {
-            throw new TileStoreException("Input tile store contains no zoom levels");
-        }
-
-        final Range<Integer> zoomLevelRange = new Range<>(zoomLevels, Integer::compare);
-
-        final List<TileHandle> tiles = tileStoreReader.stream(zoomLevelRange.getMinimum()).collect(Collectors.toList());
-
-        final Range<Integer> columnRange = new Range<>(tiles, tile -> tile.getColumn(), Integer::compare);
-        final Range<Integer>    rowRange = new Range<>(tiles, tile -> tile.getRow(),    Integer::compare);
-
-        final int minZoomLevelMatrixWidth  = columnRange.getMaximum() - columnRange.getMinimum() + 1;
-        final int minZoomLevelMatrixHeight =    rowRange.getMaximum() -    rowRange.getMinimum() + 1;
-
-        return new ZoomTimesTwo(zoomLevelRange.getMinimum(),
-                                zoomLevelRange.getMaximum(),
-                                minZoomLevelMatrixWidth,
-                                minZoomLevelMatrixHeight);
     }
 }

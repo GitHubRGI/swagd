@@ -383,7 +383,7 @@ public class TmsWriterTest
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void writerConstructorIllegalArgumentException3() throws MimeTypeParseException, IOException
     {
         final Path badPath  = this.tempFolder.newFile().toPath();

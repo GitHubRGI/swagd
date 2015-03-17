@@ -108,8 +108,7 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
             throw new IllegalArgumentException(String.format("Mime type '%s' is not a supported for image writing by your Java environment", imageOutputFormat.toString()));
         }
 
-        this.imageWriteOptions = imageWriteOptions != null ? imageWriteOptions
-                                                           : this.imageWriter.getDefaultWriteParam();
+        this.imageWriteOptions = imageWriteOptions;
     }
 
     @Override
@@ -177,7 +176,33 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
             try(final ImageOutputStream fileOutputStream = ImageIO.createImageOutputStream(tilePath.toFile()))
             {
                 this.imageWriter.setOutput(fileOutputStream);
-                this.imageWriter.write(null, new IIOImage(image, null, null), this.imageWriteOptions);
+
+                try
+                {
+                    this.imageWriter.write(null, new IIOImage(image, null, null), this.imageWriteOptions);
+                }
+                catch(final IOException ex)
+                {
+                    if(this.imageWriteOptions == null || !this.imageWriteOptions.canWriteCompressed())
+                    {
+                        throw ex;   // If this isn't an issue caused by compression options being set, rethrow the exception
+                    }
+
+//                    final String compressionType    = this.imageWriteOptions.getCompressionType();
+//                    final float  compressionQuality = this.imageWriteOptions.getCompressionQuality();
+//                    final int    compressionMode    = this.imageWriteOptions.getCompressionMode();
+//
+//                    this.imageWriteOptions.unsetCompression();
+//                    this.imageWriteOptions.setCompressionMode(ImageWriteParam.MODE_DEFAULT);
+
+                    this.imageWriter.write(null, new IIOImage(image, null, null), null);
+
+//                    // Restore compression state for the next image write
+//                    this.imageWriteOptions.setCompressionType   (compressionType);
+//                    this.imageWriteOptions.setCompressionQuality(compressionQuality);
+//                    this.imageWriteOptions.setCompressionMode   (compressionMode);
+                }
+
                 fileOutputStream.flush();
             }
         }
@@ -197,5 +222,5 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
     private final ImageWriter     imageWriter;
     private final ImageWriteParam imageWriteOptions;
 
-    private static final Set<MimeType> SupportedImageFormats = MimeTypeUtility.createMimeTypeSet(ImageIO.getReaderMIMETypes());
+    public static final Set<MimeType> SupportedImageFormats = MimeTypeUtility.createMimeTypeSet(ImageIO.getReaderMIMETypes());
 }

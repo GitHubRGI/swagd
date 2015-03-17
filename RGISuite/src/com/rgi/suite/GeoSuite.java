@@ -139,9 +139,9 @@ public class GeoSuite
                                        @Override
                                        public void actionPerformed(final ActionEvent event)
                                        {
-                                           final JFrame frame = new TilerWindow(GeoSuite.this.settings);
-                                           frame.pack();
-                                           frame.setVisible(true);
+//                                           final JFrame frame = new TilerWindow(GeoSuite.this.settings);
+//                                           frame.pack();
+//                                           frame.setVisible(true);
                                        }
                                    });
 
@@ -204,11 +204,6 @@ public class GeoSuite
                                                                                                   }
                                                                                               }
                                                                                           }
-                                                                                          // else if(JFileChooser.CANCEL_SELECTION.equals(event.getActionCommand()))
-                                                                                          // {
-                                                                                          //     this.context.setActiveTask(null);
-                                                                                          // }
-                                                                                          // this.context.transitionTo(Window.MAIN);
                                                                                         });
 
                                            fileChooser.showOpenDialog(suiteWindow);

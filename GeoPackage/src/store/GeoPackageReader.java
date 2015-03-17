@@ -57,7 +57,6 @@ import com.rgi.geopackage.tiles.Tile;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileMatrixSet;
 import com.rgi.geopackage.tiles.TileSet;
-import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.VerificationLevel;
 
@@ -72,21 +71,10 @@ public class GeoPackageReader implements TileStoreReader
      *            Handle to a new or existing GeoPackage file
      * @param tileSetTableName
      *            Name for the new tile set's table in the GeoPackage database
-     * @throws ClassNotFoundException
-     *             when the SQLite JDBC driver cannot be found
-     * @throws ConformanceException
-     *             when the verifyConformance parameter is true, and if there
-     *             are any conformance violations with the severity
-     *             Severity.Error
-     * @throws IOException
-     *             when openMode is set to OpenMode.Create, and the file already
-     *             exists, openMode is set to OpenMode.Open, and the file does
-     *             not exist, or if there is a file read error
-     * @throws SQLException
-     *             in various cases where interaction with the JDBC connection
-     *             fails
+     * @throws TileStoreException
+     *             if there's an error in constructing the underlying tile store implementation
      */
-    public GeoPackageReader(final File geoPackageFile, final String tileSetTableName) throws ClassNotFoundException, ConformanceException, IOException, SQLException
+    public GeoPackageReader(final File geoPackageFile, final String tileSetTableName) throws TileStoreException
     {
         this(geoPackageFile, tileSetTableName, VerificationLevel.Fast);
     }
@@ -104,21 +92,10 @@ public class GeoPackageReader implements TileStoreReader
      *             {@link Severity#Error}.  Throwing from this method means
      *             that it won't be possible to instantiate a GeoPackage object
      *             based on an SQLite "GeoPackage" file with severe errors.
-     * @throws ClassNotFoundException
-     *             when the SQLite JDBC driver cannot be found
-     * @throws ConformanceException
-     *             when the verifyConformance parameter is true, and if there
-     *             are any conformance violations with the severity
-     *             Severity.Error
-     * @throws IOException
-     *             when openMode is set to OpenMode.Create, and the file already
-     *             exists, openMode is set to OpenMode.Open, and the file does
-     *             not exist, or if there is a file read error
-     * @throws SQLException
-     *             in various cases where interaction with the JDBC connection
-     *             fails
+     * @throws TileStoreException
+     *             if there's an error in constructing the underlying tile store implementation
      */
-    public GeoPackageReader(final File geoPackageFile, final String tileSetTableName, final VerificationLevel verificationLevel) throws ClassNotFoundException, ConformanceException, IOException, SQLException
+    public GeoPackageReader(final File geoPackageFile, final String tileSetTableName, final VerificationLevel verificationLevel) throws TileStoreException
     {
         if(geoPackageFile == null)
         {
@@ -130,7 +107,14 @@ public class GeoPackageReader implements TileStoreReader
             throw new IllegalArgumentException("Tile set may not be null or empty");
         }
 
-        this.geoPackage = new GeoPackage(geoPackageFile, verificationLevel, OpenMode.Open);
+        try
+        {
+            this.geoPackage = new GeoPackage(geoPackageFile, verificationLevel, OpenMode.Open);
+        }
+        catch(final Exception ex)
+        {
+            throw new TileStoreException(ex);
+        }
 
         try
         {
@@ -170,10 +154,17 @@ public class GeoPackageReader implements TileStoreReader
                                                                                               new Range<>(GeoPackageReader.this.tileMatrices.keySet(), Integer::compare)));
                                            };
         }
-        catch(final IllegalArgumentException | SQLException ex)
+        catch(final Exception ex)
         {
-            this.close();
-            throw ex;
+            try
+            {
+                this.close();
+            }
+            catch(final SQLException ex1)
+            {
+                ex1.printStackTrace();
+            }
+            throw new TileStoreException(ex);
         }
     }
 

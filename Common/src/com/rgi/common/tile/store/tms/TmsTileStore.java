@@ -63,7 +63,10 @@ abstract class TmsTileStore
 
         if(!location.toFile().isDirectory())
         {
-            throw new IllegalArgumentException("Location must specify a directory");
+            if(!location.toFile().mkdir())
+            {
+                throw new RuntimeException("Unable to create directory: " + location.toFile().getAbsolutePath());
+            }
         }
 
         this.profile  = CrsProfileFactory.create(coordinateReferenceSystem);
