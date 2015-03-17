@@ -188,19 +188,7 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
                         throw ex;   // If this isn't an issue caused by compression options being set, rethrow the exception
                     }
 
-//                    final String compressionType    = this.imageWriteOptions.getCompressionType();
-//                    final float  compressionQuality = this.imageWriteOptions.getCompressionQuality();
-//                    final int    compressionMode    = this.imageWriteOptions.getCompressionMode();
-//
-//                    this.imageWriteOptions.unsetCompression();
-//                    this.imageWriteOptions.setCompressionMode(ImageWriteParam.MODE_DEFAULT);
-
                     this.imageWriter.write(null, new IIOImage(image, null, null), null);
-
-//                    // Restore compression state for the next image write
-//                    this.imageWriteOptions.setCompressionType   (compressionType);
-//                    this.imageWriteOptions.setCompressionQuality(compressionQuality);
-//                    this.imageWriteOptions.setCompressionMode   (compressionMode);
                 }
 
                 fileOutputStream.flush();

@@ -108,7 +108,7 @@ public class GeoSuite
         c.add(navPanel,     BorderLayout.SOUTH);
 
         suiteWindow.setTitle("RGI Tiling and Packaging Suite");
-        suiteWindow.setSize(640, 480);
+        suiteWindow.setSize(540, 240);
         suiteWindow.setResizable(false);
         suiteWindow.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -140,6 +140,7 @@ public class GeoSuite
                                        public void actionPerformed(final ActionEvent event)
                                        {
                                            final JFrame frame = new TilerWindow(GeoSuite.this.settings);
+                                           frame.setLocationRelativeTo(null);
                                            frame.setVisible(true);
                                        }
                                    });
@@ -155,6 +156,7 @@ public class GeoSuite
                                        public void actionPerformed(final ActionEvent event)
                                        {
                                            final JFrame frame = new PackagerWindow(GeoSuite.this.settings);
+                                           frame.setLocationRelativeTo(null);
                                            frame.setVisible(true);
                                        }
                                    });
@@ -171,7 +173,7 @@ public class GeoSuite
                                        @Override
                                        public void actionPerformed(final ActionEvent event)
                                        {
-                                           final String startDirectory = GeoSuite.this.settings.get(LastFileSelectionSettingName, SettingsWindow.DefaultOutputLocation);
+                                           final String startDirectory = GeoSuite.this.settings.get(LastFileSelectionSettingName, System.getProperty("user.home"));
 
                                            final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
@@ -192,6 +194,7 @@ public class GeoSuite
                                                                                                   try
                                                                                                   {
                                                                                                       final JFrame frame = new MapViewWindow(readers);
+                                                                                                      frame.setLocationRelativeTo(null);
                                                                                                       frame.setVisible(true);
                                                                                                   }
                                                                                                   catch(final TileStoreException ex)
@@ -217,34 +220,7 @@ public class GeoSuite
 
         contentPanel.add(mainButtonPanel);
 
-        // Settings panel / button
-        final JPanel settingsNavPanel = new JPanel(new GridBagLayout());
-
-        final JButton settingsButton = new JButton(new PropertiesAction(props, "pref")
-                                             {
-                                                 private static final long serialVersionUID = 5258278444574348376L;
-
-                                                 @Override
-                                                 public void actionPerformed(final ActionEvent event)
-                                                 {
-                                                     final JFrame frame = new SettingsWindow(GeoSuite.this.settings);
-                                                     frame.pack();
-                                                     frame.setVisible(true);
-                                                 }
-                                             });
-
-        settingsButton.setHideActionText(true);
-        settingsButton.setMargin(new Insets(0, 0, 0, 0));
-        final GridBagConstraints settingsGridBagConstraints = new GridBagConstraints();
-        settingsGridBagConstraints.anchor = GridBagConstraints.EAST;
-        settingsGridBagConstraints.weightx = 1.0;
-        settingsGridBagConstraints.insets = new Insets(10, 10, 10, 10);
-
-        settingsNavPanel.add(settingsButton, settingsGridBagConstraints);
-
-        navPanel.add(settingsNavPanel);
-
-
+        suiteWindow.setLocationRelativeTo(null);
         suiteWindow.setVisible(true);
     }
 

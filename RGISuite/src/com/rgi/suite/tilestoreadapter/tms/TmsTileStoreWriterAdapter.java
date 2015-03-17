@@ -40,11 +40,14 @@ import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.tile.store.tms.TmsWriter;
 import com.rgi.common.util.FileUtility;
 import com.rgi.suite.Settings;
-import com.rgi.suite.SettingsWindow;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
 
 public class TmsTileStoreWriterAdapter extends TileStoreWriterAdapter
 {
+    private static final String TmsOutputLocationSettingName = "ui.tms.outputLocation";
+
+    private static final String DefaultTmsOutputLocation = System.getProperty("user.home");
+
     private String name = "";
 
     private final JComboBox<Float>    compressionQuality   = new JComboBox<>(new DefaultComboBoxModel<>());
@@ -67,7 +70,7 @@ public class TmsTileStoreWriterAdapter extends TileStoreWriterAdapter
 
         // TODO save values of controls to settings
 
-        this.outputFilename.addActionListener(e -> { final String startDirectory = this.settings.get(SettingsWindow.OutputLocationSettingName, SettingsWindow.DefaultOutputLocation);
+        this.outputFilename.addActionListener(e -> { final String startDirectory = this.settings.get(TmsOutputLocationSettingName, DefaultTmsOutputLocation);
 
                                                      final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
@@ -80,7 +83,7 @@ public class TmsTileStoreWriterAdapter extends TileStoreWriterAdapter
                                                      {
                                                          final File file = fileChooser.getSelectedFile();
 
-                                                         this.settings.set(SettingsWindow.OutputLocationSettingName, file.getParent());
+                                                         this.settings.set(TmsOutputLocationSettingName, file.getParent());
                                                          this.settings.save();
 
                                                          final String directory = String.format("%s%c%s%c",
@@ -119,7 +122,7 @@ public class TmsTileStoreWriterAdapter extends TileStoreWriterAdapter
             this.name = FileUtility.nameWithoutExtension(inputFile);
 
             final String directoryName = String.format("%s%c%s",
-                                                       this.settings.get(SettingsWindow.OutputLocationSettingName, SettingsWindow.DefaultOutputLocation),
+                                                       this.settings.get(TmsOutputLocationSettingName, DefaultTmsOutputLocation),
                                                        File.separatorChar,
                                                        this.name);
 

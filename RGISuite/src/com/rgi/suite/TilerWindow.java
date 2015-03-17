@@ -9,6 +9,8 @@ import java.awt.Insets;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractSpinnerModel;
 import javax.swing.BorderFactory;
@@ -40,7 +42,10 @@ import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
  */
 public class TilerWindow extends JFrame
 {
-    private static final long serialVersionUID = -3488202344008846021L;
+    private static final long   serialVersionUID      = -3488202344008846021L;
+    private static final String TileWidthSettingName  = "ui.tiler.tileWidth";
+    private static final String TileHeightSettingName = "ui.tiler.tileHeight";
+    private static final String ClearColorSettingName = "ui.tiler.clearColor";
 
     private final Settings settings;
 
@@ -101,7 +106,7 @@ public class TilerWindow extends JFrame
 
         this.inputPanel .setBorder(BorderFactory.createTitledBorder("Input"));
 
-        this.inputFileNameButton.addActionListener(e -> { final String startDirectory = this.settings.get(LastInputLocationSettingName, SettingsWindow.DefaultOutputLocation);
+        this.inputFileNameButton.addActionListener(e -> { final String startDirectory = this.settings.get(LastInputLocationSettingName, System.getProperty("user.home"));
 
                                                           final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
@@ -149,23 +154,23 @@ public class TilerWindow extends JFrame
                                                       }
                                                     });
 
-        this.tileWidthSpinner = new JSpinner(new PowerOfTwoSpinner(this.settings.get(SettingsWindow.TileWidthSettingName,
+        this.tileWidthSpinner = new JSpinner(new PowerOfTwoSpinner(this.settings.get(TileWidthSettingName,
                                                                                      Integer::parseInt,
-                                                                                     SettingsWindow.DefaultTileWidth),
+                                                                                     256),
                                                             128,
                                                             2048));
 
-        this.tileHeightSpinner = new JSpinner(new PowerOfTwoSpinner(this.settings.get(SettingsWindow.TileHeightSettingName,
+        this.tileHeightSpinner = new JSpinner(new PowerOfTwoSpinner(this.settings.get(TileHeightSettingName,
                                                                                       Integer::parseInt,
-                                                                                      SettingsWindow.DefaultTileHeight),
+                                                                                      256),
                                                              128,
                                                              2048));
 
 
         this.clearColorButton = new SwatchButton("");
-        this.clearColorButton.setColor(this.settings.get(SettingsWindow.NoDataColorSettingName,
-                                                         SettingsWindow::colorFromString,
-                                                         SettingsWindow.DefaultNoDataColor));
+        this.clearColorButton.setColor(this.settings.get(ClearColorSettingName,
+                                                         string -> colorFromString(string),
+                                                         new Color(0, 0, 0, 0)));
 
         this.clearColorButton.addActionListener(e -> { final Color color = JColorChooser.showDialog(this,
                                                                                                     "Choose No Data color...",
@@ -174,7 +179,7 @@ public class TilerWindow extends JFrame
                                                        if(color != null)
                                                        {
                                                            this.clearColorButton.setColor(color);
-                                                           this.settings.set(SettingsWindow.NoDataColorSettingName, SettingsWindow.colorToString(color));
+                                                           this.settings.set(ClearColorSettingName, colorToString(color));
                                                            this.settings.save();
                                                        }
                                                      });
@@ -192,13 +197,13 @@ public class TilerWindow extends JFrame
         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }
 
-    private void warn(final String message)
-    {
-        JOptionPane.showMessageDialog(this,
-                                      message,
-                                      this.processName,
-                                      JOptionPane.WARNING_MESSAGE);
-    }
+//    private void warn(final String message)
+//    {
+//        JOptionPane.showMessageDialog(this,
+//                                      message,
+//                                      this.processName,
+//                                      JOptionPane.WARNING_MESSAGE);
+//    }
 
     private void error(final String message)
     {
@@ -306,8 +311,8 @@ public class TilerWindow extends JFrame
         final Color color = this.clearColorButton.getColor();
 
         // Save UI values - TODO put these in the event handlers
-        this.settings.set(SettingsWindow.TileWidthSettingName,  Integer.toString(tileWidth));
-        this.settings.set(SettingsWindow.TileHeightSettingName, Integer.toString(tileHeight));
+        this.settings.set(TileWidthSettingName,  Integer.toString(tileWidth));
+        this.settings.set(TileHeightSettingName, Integer.toString(tileHeight));
 
         this.settings.save();
 
@@ -409,5 +414,39 @@ public class TilerWindow extends JFrame
         //{
         //    return null;    // The authority identifier in the WKT wasn't an integer
         //}
+    }
+
+    private static Color colorFromString(final String string)
+    {
+        final Pattern colorPattern = Pattern.compile("(\\d+),(\\d+),(\\d+),(\\d+)");
+
+        final Matcher colorMatcher = colorPattern.matcher(string);
+
+        if(colorMatcher.matches())
+        {
+            try
+            {
+                return new Color(Integer.parseInt(colorMatcher.group(1)),
+                                 Integer.parseInt(colorMatcher.group(2)),
+                                 Integer.parseInt(colorMatcher.group(3)),
+                                 Integer.parseInt(colorMatcher.group(4)));
+            }
+            catch(final IllegalArgumentException ex)
+            {
+                // Do nothing, fall through to return null
+            }
+        }
+
+        return null;
+    }
+
+    private static String colorToString(final Color color)
+    {
+        return color == null ? null
+                             : String.format("%d,%d,%d,%d",
+                                             color.getRed(),
+                                             color.getGreen(),
+                                             color.getBlue(),
+                                             color.getAlpha());
     }
 }

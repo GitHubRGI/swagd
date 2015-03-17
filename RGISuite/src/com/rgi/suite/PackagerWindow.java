@@ -100,7 +100,7 @@ public class PackagerWindow extends JFrame
 
         this.inputPanel .setBorder(BorderFactory.createTitledBorder("Input"));
 
-        this.inputFileNameButton.addActionListener(e -> { final String startDirectory = this.settings.get(LastInputLocationSettingName, SettingsWindow.DefaultOutputLocation);
+        this.inputFileNameButton.addActionListener(e -> { final String startDirectory = this.settings.get(LastInputLocationSettingName, System.getProperty("user.home"));
 
                                                           final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 

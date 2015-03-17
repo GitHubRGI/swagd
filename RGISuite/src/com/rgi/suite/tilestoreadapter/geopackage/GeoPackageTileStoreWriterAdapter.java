@@ -53,11 +53,14 @@ import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.FileUtility;
 import com.rgi.suite.Settings;
-import com.rgi.suite.SettingsWindow;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
 
 public class GeoPackageTileStoreWriterAdapter extends TileStoreWriterAdapter
 {
+    private static final String GeoPackageOutputLocationSettingName = "ui.gpkg.outputLocation";
+
+    private static final String DefaultGeoPackageOutputLocation = System.getProperty("user.home");
+
     private final JSpinner            compressionQualitySpinner = new JSpinner(new SpinnerNumberModel(1.0, 0.0, 1.0, 0.1));
     private final JTextField          tileSetNameText           = new JTextField();
     private final JTextField          tileSetDescriptionText    = new JTextField();
@@ -80,7 +83,7 @@ public class GeoPackageTileStoreWriterAdapter extends TileStoreWriterAdapter
 
         // TODO save values of controls to settings
 
-        this.outputFileNameButton.addActionListener(e -> { final String startDirectory = this.settings.get(SettingsWindow.OutputLocationSettingName, SettingsWindow.DefaultOutputLocation);
+        this.outputFileNameButton.addActionListener(e -> { final String startDirectory = this.settings.get(GeoPackageOutputLocationSettingName, DefaultGeoPackageOutputLocation);
 
                                                            final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
@@ -93,7 +96,7 @@ public class GeoPackageTileStoreWriterAdapter extends TileStoreWriterAdapter
                                                            {
                                                                final File file = fileChooser.getSelectedFile();
 
-                                                               this.settings.set(SettingsWindow.OutputLocationSettingName, file.getParent());
+                                                               this.settings.set(GeoPackageOutputLocationSettingName, file.getParent());
                                                                this.settings.save();
 
                                                                this.filenameText.setText(fileChooser.getSelectedFile().getPath());
@@ -113,7 +116,7 @@ public class GeoPackageTileStoreWriterAdapter extends TileStoreWriterAdapter
         final String name = FileUtility.nameWithoutExtension(inputFile);
 
         this.filenameText.setText(FileUtility.appendForUnique(String.format("%s%c%s.gpkg",
-                                                                            this.settings.get(SettingsWindow.OutputLocationSettingName, SettingsWindow.DefaultOutputLocation),
+                                                                            this.settings.get(GeoPackageOutputLocationSettingName, DefaultGeoPackageOutputLocation),
                                                                             File.separatorChar,
                                                                             name)));
         this.tileSetNameText.setText(name);
