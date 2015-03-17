@@ -35,12 +35,19 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.stream.IntStream;
+import java.util.zip.DataFormatException;
 
 import org.gdal.gdal.Band;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
+import org.gdal.osr.SpatialReference;
+
+import com.rgi.common.BoundingBox;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.g2t.TilingException;
 
 /**
  * @author Luke Lambert
@@ -219,5 +226,71 @@ public class GdalUtility
         {
             throw new IllegalArgumentException("Unsupported band data type");
         }
+    }
+    
+    /**
+     * Gets the GDAL {@link SpatialReference} from the input {@link Dataset}
+     * 
+     * @param dataset A GDAL {@link Dataset}
+     * @return Returns a GDAL {@link SpatialReference} that the input dataset has
+     * @throws TilingException Thrown when the input Dataset has no spatial reference
+     */
+    public static SpatialReference getDatasetSrs(final Dataset dataset) throws DataFormatException
+    {
+		final SpatialReference srs = new SpatialReference();
+		// Get the well-known-text of this dataset
+		String wkt = dataset.GetProjection();
+		if (wkt.isEmpty() && dataset.GetGCPCount() != 0)
+		{
+			// If the wkt is empty and there are GCPs...
+			wkt = dataset.GetGCPProjection();
+		}
+		if (!wkt.isEmpty())
+		{
+			// Initialize the srs from the non-empt wkt string
+			srs.ImportFromWkt(wkt);
+			return srs;
+		}
+		throw new DataFormatException("Cannot get source file spatial reference system.");
+    }
+    
+    public static SpatialReference getSpatialReferenceFromCrs(final CoordinateReferenceSystem crs)
+    {
+    	final SpatialReference srs = new SpatialReference();
+    	srs.ImportFromEPSG(crs.getIdentifier());
+    	return srs;
+    }
+    
+    public static boolean datasetHasGeoReference(final Dataset dataset)
+    {
+		final double[] emptyGeoReference = { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
+		// Compare dataset geotransform to an empty geotransform and ensure there are no GCPs
+		//return Arrays.equals(dataset.GetGeoTransform(), emptyGeoReference) && dataset.GetGCPCount() == 0;
+		return Arrays.equals(dataset.GetGeoTransform(), emptyGeoReference) || dataset.GetGCPCount() != 0;
+    }
+    
+    public static BoundingBox getBoundsForDataset(final Dataset dataset) throws DataFormatException
+    {
+		final double[] outputGeotransform = dataset.GetGeoTransform();
+		// Report error in case rotation/skew is in geotransform (only for raster profile)
+		if (outputGeotransform[2] != 0 && outputGeotransform[4] != 0)
+		{
+			throw new DataFormatException("Georeference of the raster contains rotation or skew. " +
+										  "Such raster is not supported.  Please use gdalwarp first.");
+		}
+		final double minX = outputGeotransform[0];
+		final double maxX = outputGeotransform[0] + dataset.GetRasterXSize() * outputGeotransform[1];
+		final double maxY = outputGeotransform[3];
+		final double minY = outputGeotransform[3] - dataset.GetRasterYSize() * outputGeotransform[1];
+		return new BoundingBox(minX, minY, maxX, maxY);
+    }
+    
+    public static CoordinateReferenceSystem getCoordinateReferenceSystemFromSpatialReference(final SpatialReference srs)
+    {
+        // Passing null to GetAuthorityName and Code will query the root node of the WKT, not
+        // sure if this is what we want
+        final String authority = srs.GetAuthorityName(null);
+        final String identifier = srs.GetAuthorityCode(null);
+        return new CoordinateReferenceSystem(authority, Integer.valueOf(identifier));
     }
 }
