@@ -43,6 +43,7 @@ public class BoundsUtilityTest
     public void verifyContainsTrue()
     {
         Map<TileOrigin, Coordinate<Double>> cornerCoordinates = new HashMap<>();
+        
         cornerCoordinates.put(TileOrigin.LowerLeft,  this.bounds.getBottomLeft());
         cornerCoordinates.put(TileOrigin.UpperLeft,  this.bounds.getTopLeft());
         cornerCoordinates.put(TileOrigin.LowerRight, this.bounds.getBottomRight());
