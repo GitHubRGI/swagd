@@ -166,7 +166,7 @@ public class FileUtilityTest
         
     }
     
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException2()
     {
         FileUtility.appendForUnique(null);
