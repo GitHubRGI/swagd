@@ -24,23 +24,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.activation.MimeType;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.swing.DefaultComboBoxModel;
+import javax.activation.MimeTypeParseException;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
 
 import store.GeoPackageWriter;
 
@@ -53,29 +46,25 @@ import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.FileUtility;
 import com.rgi.suite.Settings;
-import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
+import com.rgi.suite.tilestoreadapter.ImageFormatTileStoreAdapter;
 
-public class GeoPackageTileStoreWriterAdapter extends TileStoreWriterAdapter
+public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
 {
     private static final String GeoPackageOutputLocationSettingName = "ui.gpkg.outputLocation";
 
     private static final String DefaultGeoPackageOutputLocation = System.getProperty("user.home");
 
-    private final JSpinner            compressionQualitySpinner = new JSpinner(new SpinnerNumberModel(1.0, 0.0, 1.0, 0.1));
-    private final JTextField          tileSetNameText           = new JTextField();
-    private final JTextField          tileSetDescriptionText    = new JTextField();
-    private final JTextField          filenameText              = new JTextField();
-    private final JButton             outputFileNameButton      = new JButton("\u2026");
-    private final JComboBox<MimeType> imageFormatComboBox       = new JComboBox<>(new DefaultComboBoxModel<>(GeoPackageWriter.SupportedImageFormats
-                                                                                                                             .stream()
-                                                                                                                             .sorted((a, b) -> a.toString().compareTo(b.toString()))
-                                                                                                                             .toArray(MimeType[]::new)));
+    private final JTextField tileSetName            = new JTextField();
+    private final JTextField tileSetDescription     = new JTextField();
+    private final JTextField filename               = new JTextField();
+    private final JButton    outputFileNameSelector = new JButton("\u2026");
 
-    private final Collection<Collection<JComponent>> writerParameterControls = Arrays.asList(Arrays.asList(new JLabel("Image format:"),         this.imageFormatComboBox),
-                                                                                             Arrays.asList(new JLabel("Compression quality:"),  this.compressionQualitySpinner),
-                                                                                             Arrays.asList(new JLabel("Tile set name:"),        this.tileSetNameText),
-                                                                                             Arrays.asList(new JLabel("Tile set description:"), this.tileSetDescriptionText),
-                                                                                             Arrays.asList(new JLabel("File name:"),            this.filenameText, this.outputFileNameButton));
+    private final Collection<Collection<JComponent>> writerParameterControls = Arrays.asList(Arrays.asList(new JLabel("Image format:"),         this.imageFormat),
+                                                                                             Arrays.asList(new JLabel("Compression type:"),     this.imageCompressionType),
+                                                                                             Arrays.asList(new JLabel("Compression quality:"),  this.compressionQuality),
+                                                                                             Arrays.asList(new JLabel("Tile set name:"),        this.tileSetName),
+                                                                                             Arrays.asList(new JLabel("Tile set description:"), this.tileSetDescription),
+                                                                                             Arrays.asList(new JLabel("File name:"),            this.filename, this.outputFileNameSelector));
 
     public GeoPackageTileStoreWriterAdapter(final Settings settings)
     {
@@ -83,25 +72,25 @@ public class GeoPackageTileStoreWriterAdapter extends TileStoreWriterAdapter
 
         // TODO save values of controls to settings
 
-        this.outputFileNameButton.addActionListener(e -> { final String startDirectory = this.settings.get(GeoPackageOutputLocationSettingName, DefaultGeoPackageOutputLocation);
+        this.outputFileNameSelector.addActionListener(e -> { final String startDirectory = this.settings.get(GeoPackageOutputLocationSettingName, DefaultGeoPackageOutputLocation);
 
-                                                           final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
+                                                             final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
-                                                           fileChooser.setMultiSelectionEnabled(false);
-                                                           fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                                                             fileChooser.setMultiSelectionEnabled(false);
+                                                             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-                                                           final int option = fileChooser.showOpenDialog(null);
+                                                             final int option = fileChooser.showOpenDialog(null);
 
-                                                           if(option == JFileChooser.APPROVE_OPTION)
-                                                           {
-                                                               final File file = fileChooser.getSelectedFile();
+                                                             if(option == JFileChooser.APPROVE_OPTION)
+                                                             {
+                                                                 final File file = fileChooser.getSelectedFile();
 
-                                                               this.settings.set(GeoPackageOutputLocationSettingName, file.getParent());
-                                                               this.settings.save();
+                                                                 this.settings.set(GeoPackageOutputLocationSettingName, file.getParent());
+                                                                 this.settings.save();
 
-                                                               this.filenameText.setText(fileChooser.getSelectedFile().getPath());
-                                                           }
-                                                         });
+                                                                 this.filename.setText(fileChooser.getSelectedFile().getPath());
+                                                             }
+                                                           });
     }
 
     @Override
@@ -111,19 +100,39 @@ public class GeoPackageTileStoreWriterAdapter extends TileStoreWriterAdapter
     }
 
     @Override
+    protected Collection<MimeType> getSupportedImageFormats()
+    {
+        return GeoPackageWriter.SupportedImageFormats;
+    }
+
+    @Override
+    protected MimeType getInitialImageFormat()
+    {
+        try
+        {
+            return new MimeType("image/png");
+        }
+        catch(final MimeTypeParseException ex)
+        {
+            // This can't happen so long as GeoPackages support PNGs
+            return null;
+        }
+    }
+
+    @Override
     public void hint(final File inputFile) throws TileStoreException
     {
         final String name = FileUtility.nameWithoutExtension(inputFile);
 
-        this.filenameText.setText(FileUtility.appendForUnique(String.format("%s%c%s.gpkg",
-                                                                            this.settings.get(GeoPackageOutputLocationSettingName, DefaultGeoPackageOutputLocation),
-                                                                            File.separatorChar,
-                                                                            name)));
-        this.tileSetNameText.setText(name);
-        this.tileSetDescriptionText.setText(String.format("Tile store %s packaged by %s at %s",
-                                                          name,
-                                                          System.getProperty("user.name"),
-                                                          new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(new Date())));
+        this.filename.setText(FileUtility.appendForUnique(String.format("%s%c%s.gpkg",
+                                                                        this.settings.get(GeoPackageOutputLocationSettingName, DefaultGeoPackageOutputLocation),
+                                                                        File.separatorChar,
+                                                                        name)));
+        this.tileSetName.setText(name);
+        this.tileSetDescription.setText(String.format("Tile store %s packaged by %s at %s",
+                                                      name,
+                                                      System.getProperty("user.name"),
+                                                      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(new Date())));
     }
 
     @Override
@@ -135,17 +144,17 @@ public class GeoPackageTileStoreWriterAdapter extends TileStoreWriterAdapter
     @Override
     public TileStoreWriter getTileStoreWriter(final TileStoreReader tileStoreReader) throws TileStoreException
     {
-        final MimeType mimeType = (MimeType)this.imageFormatComboBox.getSelectedItem();
+        final MimeType mimeType = (MimeType)this.imageFormat.getSelectedItem();
 
-        return new GeoPackageWriter(new File(this.filenameText.getText()),
+        return new GeoPackageWriter(new File(this.filename.getText()),
                                     tileStoreReader.getCoordinateReferenceSystem(),
-                                    this.tileSetNameText.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
-                                    this.tileSetNameText.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
-                                    this.tileSetDescriptionText.getText(),
+                                    this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
+                                    this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
+                                    this.tileSetDescription.getText(),
                                     tileStoreReader.getBounds(),
                                     getRelativeZoomTimesTwoTileScheme(tileStoreReader),
                                     mimeType,
-                                    this.getImageWriteParameter(mimeType));
+                                    this.getImageWriteParameter());
     }
 
     private static TileScheme getRelativeZoomTimesTwoTileScheme(final TileStoreReader tileStoreReader) throws TileStoreException
@@ -171,25 +180,5 @@ public class GeoPackageTileStoreWriterAdapter extends TileStoreWriterAdapter
                                 zoomLevelRange.getMaximum(),
                                 minZoomLevelMatrixWidth,
                                 minZoomLevelMatrixHeight);
-    }
-
-    // TODO this is duplicated in TmsTileStoreWriterAdapter
-    private ImageWriteParam getImageWriteParameter(final MimeType mimeType)
-    {
-        try
-        {
-            final ImageWriter imageWriter = ImageIO.getImageWritersByMIMEType(mimeType.toString()).next();
-
-            final ImageWriteParam imageWriteParameter = imageWriter.getDefaultWriteParam();
-
-            imageWriteParameter.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            imageWriteParameter.setCompressionQuality(((Double)this.compressionQualitySpinner.getValue()).floatValue());
-
-            return imageWriteParameter;
-        }
-        catch(final NoSuchElementException ex)
-        {
-            throw new IllegalArgumentException(String.format("Mime type '%s' is not a supported for image writing by your Java environment", mimeType.toString()));
-        }
     }
 }
