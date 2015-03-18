@@ -53,6 +53,11 @@ public class FileUtility
      */
     public static String appendForUnique(final String filename)
     {
+        if(filename == null)
+        {
+            throw new IllegalArgumentException("Filename may not be null");
+        }
+        
         String newFileName = filename;
 
         for(int x = 1; new File(newFileName).exists(); ++x)
