@@ -23,11 +23,13 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListSelectionModel;
 
 import store.GeoPackageReader;
 
@@ -72,21 +74,38 @@ public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
         final private TileSet tileSet;
     }
 
-    private final JComboBox<TileSetAdapter> tileSetComboBox;
+    private final JList<TileSetAdapter> tileSets;
+    private final JLabel selectCount = new JLabel();
 
-    public GeoPackageTileStoreReaderAdapter(final File file) throws AdapterMismatchException
+    public GeoPackageTileStoreReaderAdapter(final File file, final boolean allowMultipleReaders) throws AdapterMismatchException
     {
-        super(file);
+        super(file, allowMultipleReaders);
 
         try(final GeoPackage gpkg = new GeoPackage(file, VerificationLevel.Fast, OpenMode.Open))
         {
-            final TileSetAdapter[] tileSets = gpkg.tiles()
-                                                  .getTileSets()
-                                                  .stream()
-                                                  .map(tileSet -> new TileSetAdapter(tileSet))
-                                                  .toArray(TileSetAdapter[]::new);
+            this.tileSets = new JList<>(gpkg.tiles()
+                                            .getTileSets()
+                                            .stream()
+                                            .map(tileSet -> new TileSetAdapter(tileSet))
+                                            .toArray(TileSetAdapter[]::new));
 
-            this.tileSetComboBox = new JComboBox<>(new DefaultComboBoxModel<>(tileSets));
+            this.tileSets.addListSelectionListener(e -> this.selectCount.setText(String.format("%d/%d selected",
+                                                                                               this.tileSets.getSelectedValuesList().size(),
+                                                                                               this.tileSets.getModel().getSize())));
+
+            if(allowMultipleReaders)
+            {
+                this.tileSets.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+                this.tileSets.setSelectionInterval(0, this.tileSets.getModel().getSize()-1);
+            }
+            else
+            {
+                this.tileSets.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                if(this.tileSets.getModel().getSize() > 0)
+                {
+                    this.tileSets.setSelectedIndex(0);
+                }
+            }
         }
         catch(ClassNotFoundException | SQLException | ConformanceException | IOException ex)
         {
@@ -97,15 +116,46 @@ public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
     @Override
     public Collection<Collection<JComponent>> getReaderParameterControls()
     {
-        return Arrays.asList(Arrays.asList(new JLabel("Tile set:"),
-                                           this.tileSetComboBox));
+        final Collection<JComponent> components = this.allowMultipleReaders ? Arrays.asList(new JLabel("Tile set(s):"), this.tileSets, this.selectCount)
+                                                                            : Arrays.asList(new JLabel("Tile set:"),    this.tileSets);
+        return Arrays.asList(components);
     }
 
     @Override
     public TileStoreReader getTileStoreReader() throws TileStoreException
     {
+        final TileSetAdapter selected = this.tileSets.getSelectedValue();
+
+        if(selected == null)
+        {
+            throw new TileStoreException("No tile store selected");
+        }
+
         return new GeoPackageReader(this.file,
-                                    ((TileSetAdapter)this.tileSetComboBox.getSelectedItem()).getTileSet().getTableName(),
+                                    selected.getTileSet().getTableName(),
                                     VerificationLevel.None);    // Verification has already taken place in the constructor (with VerificationLevel.Fast)
+    }
+
+    @Override
+    public Collection<TileStoreReader> getTileStoreReaders() throws TileStoreException
+    {
+        return this.tileSets
+                   .getSelectedValuesList()
+                   .stream()
+                   .map(tileSetAdapter -> { try
+                                            {
+                                                return new GeoPackageReader(this.file,
+                                                                            tileSetAdapter.getTileSet().getTableName(),
+                                                                            VerificationLevel.None);    // Verification has already taken place in the constructor (with VerificationLevel.Fast)
+                                            }
+                                            catch(final TileStoreException ex)
+                                            {
+                                                ex.printStackTrace();   // TODO what should we really do here ?
+                                                return null;
+                                            }
+                                           })
+                   .filter(Objects::nonNull)
+                   .collect(Collectors.toList());
+
     }
 }

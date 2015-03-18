@@ -25,24 +25,21 @@ import javax.activation.MimeType;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 
 import com.rgi.suite.Settings;
 
 public abstract class ImageFormatTileStoreAdapter extends TileStoreWriterAdapter
 {
-    protected final JComboBox<Float>    compressionQuality   = new JComboBox<>(new DefaultComboBoxModel<>());
-    protected final JComboBox<String>   imageCompressionType = new JComboBox<>(new DefaultComboBoxModel<>());
+    protected final JComboBox<Float>    compressionQuality   = new JComboBox<>();
+    protected final JComboBox<String>   imageCompressionType = new JComboBox<>();
     protected final JComboBox<MimeType> imageFormat;
 
     public ImageFormatTileStoreAdapter(final Settings settings)
     {
         super(settings);
 
-
-
-        this.imageFormat = new JComboBox<>(new DefaultComboBoxModel<>());
+        this.imageFormat = new JComboBox<>();
 
         this.imageFormat.addActionListener(e -> { this.imageFormatChanged(); });
 

@@ -7,13 +7,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collection;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -24,16 +21,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import utility.TileStoreUtility;
+
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.packager.Packager;
-import com.rgi.suite.tilestoreadapter.AdapterMismatchException;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
-import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreReaderAdapter;
 import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreWriterAdapter;
-import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreReaderAdapter;
 import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
+
 
 
 /**
@@ -51,8 +48,6 @@ public class PackagerWindow extends JFrame
     private TileStoreReaderAdapter tileStoreReaderAdapter = null;
     private TileStoreWriterAdapter tileStoreWriterAdapter = null;
 
-    private final static Collection<Class<? extends TileStoreReaderAdapter>> KnownTileStoreReaderAdapters = Arrays.asList(TmsTileStoreReaderAdapter.class, GeoPackageTileStoreReaderAdapter.class);
-
     protected final JPanel contentPanel = new JPanel();
 
     // Input stuff
@@ -62,7 +57,7 @@ public class PackagerWindow extends JFrame
 
     // Output stuff
     private final JPanel outputPanel = new JPanel(new GridBagLayout());
-    private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>(new DefaultComboBoxModel<>());
+    private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>();
 
     // Navigation stuff
     private final JPanel  navigationPanel = new JPanel(new GridBagLayout());
@@ -115,15 +110,23 @@ public class PackagerWindow extends JFrame
 
                                                               try
                                                               {
-                                                                  this.tileStoreReaderAdapter = this.getReaderAdapter(file);
+                                                                  final TileStoreReaderAdapter adapter = TileStoreUtility.getTileStoreReaderAdapter(false, file);
 
-                                                                  this.inputFileName.setText(file.getAbsolutePath());
+                                                                  if(adapter == null)
+                                                                  {
+                                                                      this.warn("Selected file doesn't contain a recognized tile store type.");
+                                                                  }
+                                                                  else
+                                                                  {
+                                                                      this.tileStoreReaderAdapter = adapter;
+                                                                      this.inputFileName.setText(file.getAbsolutePath());
 
-                                                                  this.settings.set(LastInputLocationSettingName, file.getParent());
-                                                                  this.settings.save();
+                                                                      this.settings.set(LastInputLocationSettingName, file.getParent());
+                                                                      this.settings.save();
 
-                                                                  this.buildInputContent();
-                                                                  this.tileStoreWriterAdapter.hint(file);
+                                                                      this.buildInputContent();
+                                                                      this.tileStoreWriterAdapter.hint(file);
+                                                                  }
                                                               }
                                                               catch(final Exception ex)
                                                               {
@@ -180,15 +183,6 @@ public class PackagerWindow extends JFrame
                                       JOptionPane.ERROR_MESSAGE);
     }
 
-    @SuppressWarnings("serial")
-    private class SimpleGridBagConstraints extends GridBagConstraints
-    {
-        public SimpleGridBagConstraints(final int gridX, final int gridY, final boolean stretch)
-        {
-            super(gridX, gridY, 1, 1, stretch ? 1 : 0, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
-        }
-    }
-
     private void buildInputContent()
     {
         this.inputPanel.removeAll();
@@ -222,31 +216,6 @@ public class PackagerWindow extends JFrame
             this.outputPanel.repaint();
             this.pack();
         }
-    }
-
-    private TileStoreReaderAdapter getReaderAdapter(final File file)
-    {
-        for(final Class<? extends TileStoreReaderAdapter> readerClass : KnownTileStoreReaderAdapters)
-        {
-            try
-            {
-                return readerClass.getConstructor(File.class).newInstance(file);
-            }
-            catch(final NoSuchMethodException | SecurityException | IllegalAccessException | InstantiationException ex)
-            {
-                ex.printStackTrace();
-            }
-            catch(final InvocationTargetException ex)
-            {
-                if(ex.getTargetException() instanceof AdapterMismatchException)
-                {
-                    continue;
-                }
-            }
-        }
-
-        this.warn("Selected file doesn't contain a recognized tile store type.");
-        return null;
     }
 
     private void buildOutputContent()

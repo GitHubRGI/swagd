@@ -22,13 +22,13 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.tms.TmsReader;
 import com.rgi.suite.tilestoreadapter.AdapterMismatchException;
@@ -40,14 +40,14 @@ import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
  */
 public class TmsTileStoreReaderAdapter extends TileStoreReaderAdapter
 {
-    private final JComboBox<CoordinateReferenceSystem> crsComboBox = new JComboBox<>(new DefaultComboBoxModel<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
-                                                                                                                                 .stream()
-                                                                                                                                 .sorted()
-                                                                                                                                 .toArray(CoordinateReferenceSystem[]::new)));
+    private final JComboBox<CoordinateReferenceSystem> crsComboBox = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
+                                                                                                      .stream()
+                                                                                                      .sorted()
+                                                                                                      .toArray(CoordinateReferenceSystem[]::new));
 
-    public TmsTileStoreReaderAdapter(final File file) throws AdapterMismatchException
+    public TmsTileStoreReaderAdapter(final File file, final boolean allowMultipleReaders) throws AdapterMismatchException
     {
-        super(file);
+        super(file, allowMultipleReaders);
 
         if(!file.isDirectory())
         {
@@ -66,6 +66,12 @@ public class TmsTileStoreReaderAdapter extends TileStoreReaderAdapter
     public TileStoreReader getTileStoreReader()
     {
         return new TmsReader((CoordinateReferenceSystem)this.crsComboBox.getSelectedItem(), this.file.toPath());
+    }
+
+    @Override
+    public Collection<TileStoreReader> getTileStoreReaders() throws TileStoreException
+    {
+        return Arrays.asList(this.getTileStoreReader());
     }
 
 }

@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractSpinnerModel;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
@@ -58,13 +57,13 @@ public class TilerWindow extends JFrame
     private final JTextField inputFileName       = new JTextField();
     private final JButton    inputFileNameButton = new JButton("\u2026");
 
-    private final JComboBox<CoordinateReferenceSystem> crsComboBox = new JComboBox<>(new DefaultComboBoxModel<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
-                                                                                                                                 .stream()
-                                                                                                                                 .sorted()
-                                                                                                                                 .toArray(CoordinateReferenceSystem[]::new)));
+    private final JComboBox<CoordinateReferenceSystem> crsComboBox = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
+                                                                                                      .stream()
+                                                                                                      .sorted()
+                                                                                                      .toArray(CoordinateReferenceSystem[]::new));
     // Output stuff
     private final JPanel outputPanel = new JPanel(new GridBagLayout());
-    private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>(new DefaultComboBoxModel<>());
+    private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>();
 
     // Navigation stuff
     private final JPanel  navigationPanel = new JPanel(new GridBagLayout());
@@ -211,15 +210,6 @@ public class TilerWindow extends JFrame
                                       message,
                                       this.processName,
                                       JOptionPane.ERROR_MESSAGE);
-    }
-
-    @SuppressWarnings("serial")
-    protected class SimpleGridBagConstraints extends GridBagConstraints
-    {
-        public SimpleGridBagConstraints(final int gridX, final int gridY, final boolean stretch)
-        {
-            super(gridX, gridY, 1, 1, stretch ? 1 : 0, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
-        }
     }
 
     private void buildInputContent()

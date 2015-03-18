@@ -32,19 +32,30 @@ import com.rgi.common.tile.store.TileStoreReader;
  */
 public abstract class TileStoreReaderAdapter
 {
-    public TileStoreReaderAdapter(final File file)
+    public TileStoreReaderAdapter(final File file, final boolean allowMultipleReaders)
     {
         if(file == null)
         {
             throw new IllegalArgumentException("File may not be null");
         }
 
-        this.file = file;
+        this.file                 = file;
+        this.allowMultipleReaders = allowMultipleReaders;
+    }
+
+    /**
+     * @return the file
+     */
+    public File getFile()
+    {
+        return this.file;
     }
 
     public abstract Collection<Collection<JComponent>> getReaderParameterControls();
 
-    public abstract TileStoreReader getTileStoreReader() throws TileStoreException;
+    public abstract TileStoreReader             getTileStoreReader()  throws TileStoreException;
+    public abstract Collection<TileStoreReader> getTileStoreReaders() throws TileStoreException;
 
-    protected final File file;
+    protected final File    file;
+    protected final boolean allowMultipleReaders;
 }

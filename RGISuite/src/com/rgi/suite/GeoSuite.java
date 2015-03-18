@@ -30,7 +30,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.Properties;
 
 import javax.swing.JButton;
@@ -42,11 +41,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import utility.TileStoreUtility;
-
-import com.rgi.common.coordinate.CoordinateReferenceSystem;
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
-import com.rgi.view.MapViewWindow;
 
 /**
  * Entry point for the program.
@@ -168,12 +162,12 @@ public class GeoSuite
                                    {
                                        private static final long serialVersionUID = 1882624675173160883L;
 
-                                       private static final String LastFileSelectionSettingName = "lastViewDirectory";
+                                       private static final String LastLocationSettingName = "ui.viewer.lastLocation";
 
                                        @Override
                                        public void actionPerformed(final ActionEvent event)
                                        {
-                                           final String startDirectory = GeoSuite.this.settings.get(LastFileSelectionSettingName, System.getProperty("user.home"));
+                                           final String startDirectory = GeoSuite.this.settings.get(LastLocationSettingName, System.getProperty("user.home"));
 
                                            final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
@@ -186,22 +180,26 @@ public class GeoSuite
 
                                                                                               if(files.length > 0)
                                                                                               {
-                                                                                                  GeoSuite.this.settings.set(LastFileSelectionSettingName, files[0].getParent());
+                                                                                                  GeoSuite.this.settings.set(LastLocationSettingName, files[0].getParent());
                                                                                                   GeoSuite.this.settings.save();
 
-                                                                                                  final Collection<TileStoreReader> readers = TileStoreUtility.getStores(new CoordinateReferenceSystem("EPSG", 3857), files);   // TODO: !!Importat!! figure out a way of getting the right CRS
+                                                                                                  final JFrame frame = new TileReadersOptionWindow(TileStoreUtility.getTileStoreReaderAdapters(true, files));
+                                                                                                  frame.setLocationRelativeTo(null);
+                                                                                                  frame.setVisible(true);
 
-                                                                                                  try
-                                                                                                  {
-                                                                                                      final JFrame frame = new MapViewWindow(readers);
-                                                                                                      frame.setLocationRelativeTo(null);
-                                                                                                      frame.setVisible(true);
-                                                                                                  }
-                                                                                                  catch(final TileStoreException ex)
-                                                                                                  {
-                                                                                                      JOptionPane.showMessageDialog(null, "Map View", "Unable to view file selection: " + ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-                                                                                                      ex.printStackTrace();
-                                                                                                  }
+//                                                                                                  final Collection<TileStoreReader> readers = TileStoreUtility.getStores(new CoordinateReferenceSystem("EPSG", 3857), files);   // TODO: !!Important!! figure out a way of getting the right CRS
+//
+//                                                                                                  try
+//                                                                                                  {
+//                                                                                                      final JFrame frame = new MapViewWindow(readers);
+//                                                                                                      frame.setLocationRelativeTo(null);
+//                                                                                                      frame.setVisible(true);
+//                                                                                                  }
+//                                                                                                  catch(final TileStoreException ex)
+//                                                                                                  {
+//                                                                                                      JOptionPane.showMessageDialog(null, "Map View", "Unable to view file selection: " + ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+//                                                                                                      ex.printStackTrace();
+//                                                                                                  }
                                                                                               }
                                                                                           }
                                                                                         });

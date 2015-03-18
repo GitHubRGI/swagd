@@ -19,27 +19,17 @@
 package utility;
 
 import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import store.GeoPackageReader;
-
-import com.rgi.common.coordinate.CoordinateReferenceSystem;
-import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
-import com.rgi.common.tile.store.tms.TmsReader;
-import com.rgi.geopackage.GeoPackage;
-import com.rgi.geopackage.GeoPackage.OpenMode;
-import com.rgi.geopackage.verification.ConformanceException;
-import com.rgi.geopackage.verification.VerificationLevel;
+import com.rgi.suite.tilestoreadapter.AdapterMismatchException;
+import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
+import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreReaderAdapter;
+import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreReaderAdapter;
 
 /**
  * Common tile store utilities
@@ -52,61 +42,38 @@ public class TileStoreUtility
     /**
      * @param files
      *             Files containing one or more tile stores
-     * @param coordinateReferenceSystem
-     *             Hint to tile stores that don't contain metadata indicating
-     *             what coordinate reference system they're in.  Ignored if the
-     *             underlying store knows its own coordinate reference system.
      * @return A {@link Collection} of {@link TileStoreReader}s.
      */
-    public static Collection<TileStoreReader> getStores(final CoordinateReferenceSystem coordinateReferenceSystem, final File... files)
+    public static Collection<TileStoreReaderAdapter> getTileStoreReaderAdapters(final boolean allowMultipleReaders, final File... files)
     {
-        final List<TileStoreReader> readers = new LinkedList<>();
-
-        for(final File file : files)
-        {
-            readers.addAll(getStores(coordinateReferenceSystem, file));
-        }
-
-        return readers;
+        return Stream.of(files)
+                     .map(file -> getTileStoreReaderAdapter(allowMultipleReaders, file))
+                     .collect(Collectors.toList());
     }
 
-    @SuppressWarnings("resource")
-    private static Collection<TileStoreReader> getStores(final CoordinateReferenceSystem coordinateReferenceSystem, final File file)
+    public static TileStoreReaderAdapter getTileStoreReaderAdapter(final boolean allowMultipleReaders, final File file)
     {
-        if(file != null && file.canRead())
+        for(final Class<? extends TileStoreReaderAdapter> readerClass : KnownTileStoreReaderAdapters)
         {
-            if(file.isDirectory()) // TODO: do we need to do some verification that this folder structure is actually TMS?
+            try
             {
-                return Arrays.asList(new TmsReader(coordinateReferenceSystem, file.toPath()));
+                return readerClass.getConstructor(File.class, boolean.class).newInstance(file, allowMultipleReaders);
             }
-
-            try(final GeoPackage gpkg = new GeoPackage(file, VerificationLevel.Fast, OpenMode.Open))
+            catch(final InvocationTargetException ex)
             {
-               return gpkg.tiles()
-                          .getTileSets()
-                          .stream()
-                          .map(tileSet -> { try
-                                            {
-                                                return new GeoPackageReader(file,
-                                                                            tileSet.getTableName(),
-                                                                            VerificationLevel.None);    // Verification has already been done when the GeoPackage was originally opened
-                                            }
-                                            catch(final TileStoreException ex)
-                                            {
-                                                ex.printStackTrace();
-                                                return null;
-                                            }
-                                          })
-                          .filter(Objects::nonNull)
-                          .collect(Collectors.toCollection(ArrayList<TileStoreReader>::new));
+                if(ex.getTargetException() instanceof AdapterMismatchException)
+                {
+                    continue;
+                }
             }
-            catch(final ClassNotFoundException | SQLException | ConformanceException | IOException ex)
+            catch(final NoSuchMethodException | SecurityException | IllegalAccessException | InstantiationException ex)
             {
                 ex.printStackTrace();
-                // If we've gotten here, it's probably not a GeoPackage
             }
         }
 
-        return Collections.emptyList();
+        return null;
     }
+
+    private final static Collection<Class<? extends TileStoreReaderAdapter>> KnownTileStoreReaderAdapters = Arrays.asList(TmsTileStoreReaderAdapter.class, GeoPackageTileStoreReaderAdapter.class);
 }
