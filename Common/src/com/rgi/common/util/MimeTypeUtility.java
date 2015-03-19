@@ -44,6 +44,11 @@ public class MimeTypeUtility
      */
     public static Set<MimeType> createMimeTypeSet(final String... types)
     {
+        if(types == null)
+        {
+            throw new IllegalArgumentException("The mime type strings cannot be null.");
+        }
+
         final Set<MimeType> imageFormats = new HashSet<>();
 
         for(final String type : types)
@@ -52,7 +57,7 @@ public class MimeTypeUtility
             {
                 imageFormats.add(new MimeType(type));
             }
-            catch(final MimeTypeParseException ex)
+            catch(final MimeTypeParseException | NullPointerException ex)
             {
                 ex.printStackTrace();   // This method was specifically created to avoid checked exceptions
             }
@@ -71,6 +76,16 @@ public class MimeTypeUtility
      */
     public static boolean contains(final Collection<MimeType> mimeTypes, final MimeType mimeType)
     {
-        return mimeTypes.stream().anyMatch(allowedImageOutputFormat-> allowedImageOutputFormat.match(mimeType));
+        if(mimeTypes == null)
+        {
+            throw new IllegalArgumentException("The collection of mimeTypes cannot be null.");
+        }
+
+        if(mimeType == null)
+        {
+            throw new IllegalArgumentException("mimeType cannot be null.");
+        }
+
+        return mimeTypes.stream().filter(format -> format != null).anyMatch(allowedImageOutputFormat-> allowedImageOutputFormat.match(mimeType));
     }
 }

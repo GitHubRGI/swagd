@@ -126,7 +126,7 @@ public class ImageUtility
     {
         if(imageData == null)
         {
-            throw new IllegalArgumentException("Output format may not be null");
+            throw new IllegalArgumentException("Image data may not be null");
         }
 
         try(ByteArrayInputStream imageInputStream = new ByteArrayInputStream(imageData))
