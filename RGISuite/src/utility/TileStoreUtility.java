@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.suite.tilestoreadapter.AdapterMismatchException;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
+import com.rgi.suite.tilestoreadapter.UnknownTileStoreReaderAdapter;
 import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreReaderAdapter;
 import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreReaderAdapter;
 
@@ -72,7 +73,7 @@ public class TileStoreUtility
             }
         }
 
-        return null;
+        return new UnknownTileStoreReaderAdapter(file, allowMultipleReaders);
     }
 
     private final static Collection<Class<? extends TileStoreReaderAdapter>> KnownTileStoreReaderAdapters = Arrays.asList(TmsTileStoreReaderAdapter.class, GeoPackageTileStoreReaderAdapter.class);

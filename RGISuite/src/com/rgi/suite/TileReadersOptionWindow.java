@@ -2,10 +2,10 @@ package com.rgi.suite;
 
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
+import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -75,24 +75,26 @@ public class TileReadersOptionWindow extends NavigationWindow
 
     public Collection<TileStoreReader> getReaders()
     {
-        return this.readerAdapters.stream()
-                                  .map(adapter -> { try
-                                                    {
-                                                        return adapter.getTileStoreReader();
-                                                    }
-                                                    catch(final TileStoreException ex)
-                                                    {
-                                                        JOptionPane.showMessageDialog(this,
-                                                                                      String.format("There was an error opening %s: %s",
-                                                                                                    adapter.getFile().getName(),
-                                                                                                    ex.getMessage()),
-                                                                                      "Open Failed",
-                                                                                      JOptionPane.ERROR_MESSAGE);
-                                                        return null;
-                                                    }
-                                                  })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toList());
+        final List<TileStoreReader> readers = new ArrayList<>();
+
+        this.readerAdapters
+            .stream()
+            .forEach(adapter -> { try
+                                  {
+                                      readers.addAll(adapter.getTileStoreReaders());
+                                  }
+                                  catch(final TileStoreException ex)
+                                  {
+                                      JOptionPane.showMessageDialog(this,
+                                                                    String.format("There was an error opening %s: %s",
+                                                                                  adapter.getFile().getName(),
+                                                                                  ex.getMessage()),
+                                                                    "Open Failed",
+                                                                    JOptionPane.ERROR_MESSAGE);
+                                  }
+                                });
+
+        return readers;
     }
 
 

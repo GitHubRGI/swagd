@@ -97,7 +97,7 @@ public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
 
             this.scrollPane = new JScrollPane(this.tileSets);
 
-            this.scrollPane.setSize(250, 25*this.tileSets.getModel().getSize());
+            //this.scrollPane.setSize(220, 50);
 
             if(allowMultipleReaders)
             {
