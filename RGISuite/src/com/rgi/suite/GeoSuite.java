@@ -42,6 +42,9 @@ import javax.swing.WindowConstants;
 
 import utility.TileStoreUtility;
 
+import com.rgi.common.tile.store.TileStoreException;
+import com.rgi.view.MapViewWindow;
+
 /**
  * Entry point for the program.
  *
@@ -183,23 +186,21 @@ public class GeoSuite
                                                                                                   GeoSuite.this.settings.set(LastLocationSettingName, files[0].getParent());
                                                                                                   GeoSuite.this.settings.save();
 
-                                                                                                  final JFrame frame = new TileReadersOptionWindow(TileStoreUtility.getTileStoreReaderAdapters(true, files));
+                                                                                                  final JFrame frame = new TileReadersOptionWindow(TileStoreUtility.getTileStoreReaderAdapters(true, files),
+                                                                                                                                                   readers -> { try
+                                                                                                                                                                {
+                                                                                                                                                                    final JFrame viewWindow = new MapViewWindow(readers);
+                                                                                                                                                                    viewWindow.setLocationRelativeTo(null);
+                                                                                                                                                                    viewWindow.setVisible(true);
+                                                                                                                                                                }
+                                                                                                                                                                catch(final TileStoreException ex)
+                                                                                                                                                                {
+                                                                                                                                                                    JOptionPane.showMessageDialog(null, "Map View", "Unable to view file selection: " + ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+                                                                                                                                                                    ex.printStackTrace();
+                                                                                                                                                                }
+                                                                                                                                                              });
                                                                                                   frame.setLocationRelativeTo(null);
                                                                                                   frame.setVisible(true);
-
-//                                                                                                  final Collection<TileStoreReader> readers = TileStoreUtility.getStores(new CoordinateReferenceSystem("EPSG", 3857), files);   // TODO: !!Important!! figure out a way of getting the right CRS
-//
-//                                                                                                  try
-//                                                                                                  {
-//                                                                                                      final JFrame frame = new MapViewWindow(readers);
-//                                                                                                      frame.setLocationRelativeTo(null);
-//                                                                                                      frame.setVisible(true);
-//                                                                                                  }
-//                                                                                                  catch(final TileStoreException ex)
-//                                                                                                  {
-//                                                                                                      JOptionPane.showMessageDialog(null, "Map View", "Unable to view file selection: " + ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-//                                                                                                      ex.printStackTrace();
-//                                                                                                  }
                                                                                               }
                                                                                           }
                                                                                         });

@@ -1,46 +1,41 @@
 package com.rgi.suite;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
 
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 
-public class TileReadersOptionWindow extends JFrame
+public class TileReadersOptionWindow extends NavigationWindow
 {
-    final JScrollPane contentPane = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    private final Collection<TileStoreReaderAdapter>    readerAdapters;
+    private final Consumer<Collection<TileStoreReader>> readerConsumer;
 
-    final Collection<TileStoreReaderAdapter> readerAdapters;
-
-    public TileReadersOptionWindow(final Collection<TileStoreReaderAdapter> readerAdapters)
+    public TileReadersOptionWindow(final Collection<TileStoreReaderAdapter> readerAdapters, final Consumer<Collection<TileStoreReader>> readerConsumer)
     {
         if(readerAdapters == null || readerAdapters.size() < 1)
         {
             throw new IllegalArgumentException("Adapter collection may not be null or empty");
         }
 
-        this.setTitle("File");
-        this.setLayout(new BorderLayout());
+        this.setTitle("File Options");
         this.setResizable(false);
 
-        this.readerAdapters = readerAdapters;
+        this.contentPanel.setLayout(new BoxLayout(this.contentPanel, BoxLayout.PAGE_AXIS));
 
-        this.add(this.contentPane, BorderLayout.CENTER);
-
-        this.contentPane.setMaximumSize(new Dimension(10000, 600));
+        this.readerAdapters  = readerAdapters;
+        this.readerConsumer = readerConsumer;
 
         for(final TileStoreReaderAdapter adapter : this.readerAdapters)
         {
@@ -70,7 +65,7 @@ public class TileReadersOptionWindow extends JFrame
                     ++rowCount;
                 }
 
-                this.add(readerPanel);
+                this.contentPanel.add(readerPanel);
             }
         }
 
@@ -101,4 +96,9 @@ public class TileReadersOptionWindow extends JFrame
     }
 
 
+    @Override
+    protected void execute() throws Exception
+    {
+        this.readerConsumer.accept(this.getReaders());
+    }
 }
