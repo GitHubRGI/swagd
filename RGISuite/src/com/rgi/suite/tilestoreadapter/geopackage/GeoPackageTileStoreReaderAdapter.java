@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
 import store.GeoPackageReader;
@@ -75,6 +76,7 @@ public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
     }
 
     private final JList<TileSetAdapter> tileSets;
+    private final JScrollPane           scrollPane;
     private final JLabel selectCount = new JLabel();
 
     public GeoPackageTileStoreReaderAdapter(final File file, final boolean allowMultipleReaders) throws AdapterMismatchException
@@ -92,6 +94,10 @@ public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
             this.tileSets.addListSelectionListener(e -> this.selectCount.setText(String.format("%d/%d selected",
                                                                                                this.tileSets.getSelectedValuesList().size(),
                                                                                                this.tileSets.getModel().getSize())));
+
+            this.scrollPane = new JScrollPane(this.tileSets);
+
+            this.scrollPane.setSize(250, 25*this.tileSets.getModel().getSize());
 
             if(allowMultipleReaders)
             {
@@ -116,8 +122,8 @@ public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
     @Override
     public Collection<Collection<JComponent>> getReaderParameterControls()
     {
-        final Collection<JComponent> components = this.allowMultipleReaders ? Arrays.asList(new JLabel("Tile set(s):"), this.tileSets, this.selectCount)
-                                                                            : Arrays.asList(new JLabel("Tile set:"),    this.tileSets);
+        final Collection<JComponent> components = this.allowMultipleReaders ? Arrays.asList(new JLabel("Tile set(s):"), this.scrollPane, this.selectCount)
+                                                                            : Arrays.asList(new JLabel("Tile set:"),    this.scrollPane);
         return Arrays.asList(components);
     }
 
