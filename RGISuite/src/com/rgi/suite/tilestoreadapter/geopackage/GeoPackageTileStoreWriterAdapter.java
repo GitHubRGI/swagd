@@ -128,7 +128,10 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
 
         name = name.replaceAll("^gpkg_", "");
 
-        name = name.replaceAll("^[0-9]", "_");
+        if(name.startsWith("[0-9]"))
+        {
+            name = "_" + name;
+        }
 
 
         this.filename.setText(FileUtility.appendForUnique(String.format("%s%c%s.gpkg",
