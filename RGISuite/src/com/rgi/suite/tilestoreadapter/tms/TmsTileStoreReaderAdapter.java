@@ -56,6 +56,12 @@ public class TmsTileStoreReaderAdapter extends TileStoreReaderAdapter
     }
 
     @Override
+    public boolean needsInput()
+    {
+        return true;
+    }
+
+    @Override
     public Collection<Collection<JComponent>> getReaderParameterControls()
     {
         return Arrays.asList(Arrays.asList(new JLabel("Reference System:"),

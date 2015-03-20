@@ -53,6 +53,8 @@ public abstract class TileStoreReaderAdapter
 
     public abstract Collection<Collection<JComponent>> getReaderParameterControls();
 
+    public abstract boolean needsInput();
+
     public abstract TileStoreReader             getTileStoreReader()  throws TileStoreException;
     public abstract Collection<TileStoreReader> getTileStoreReaders() throws TileStoreException;
 

@@ -80,7 +80,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     private final JLabel unitsPerPixelYLabel   = new JLabel("Units/PixelY: ");
     private final JLabel unitsPerPixelXValue   = new JLabel("");
     private final JLabel unitsPerPixelYValue   = new JLabel("");
-    private final ButtonGroup mainGroup = new ButtonGroup();
+    private final ButtonGroup mainGroup        = new ButtonGroup();
 
     /**
      * @param tileStoreReaders
@@ -91,9 +91,9 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     {
         super("Tile Viewer");
 
-        if(tileStoreReaders == null || tileStoreReaders.isEmpty())
+        if(tileStoreReaders == null)
         {
-            throw new IllegalArgumentException("Tile store reader collection may not be null or empty");
+            throw new IllegalArgumentException("Tile store reader collection may not be null");
         }
 
         this.tileStoreReaders = tileStoreReaders;

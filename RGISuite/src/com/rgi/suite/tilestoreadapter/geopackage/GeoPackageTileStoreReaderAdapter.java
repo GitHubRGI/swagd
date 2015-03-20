@@ -120,6 +120,12 @@ public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
     }
 
     @Override
+    public boolean needsInput()
+    {
+        return this.tileSets.getModel().getSize() > 1;
+    }
+
+    @Override
     public Collection<Collection<JComponent>> getReaderParameterControls()
     {
         final Collection<JComponent> components = this.allowMultipleReaders ? Arrays.asList(new JLabel("Tile set(s):"), this.scrollPane, this.selectCount)

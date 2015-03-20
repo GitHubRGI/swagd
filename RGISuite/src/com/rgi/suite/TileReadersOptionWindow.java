@@ -22,6 +22,8 @@ public class TileReadersOptionWindow extends NavigationWindow
     private final Collection<TileStoreReaderAdapter>    readerAdapters;
     private final Consumer<Collection<TileStoreReader>> readerConsumer;
 
+    private boolean needsInput = false;
+
     public TileReadersOptionWindow(final Collection<TileStoreReaderAdapter> readerAdapters, final Consumer<Collection<TileStoreReader>> readerConsumer)
     {
         if(readerAdapters == null || readerAdapters.size() < 1)
@@ -41,6 +43,8 @@ public class TileReadersOptionWindow extends NavigationWindow
         {
             if(adapter != null)
             {
+                this.needsInput |= adapter.needsInput();
+
                 final JPanel readerPanel = new JPanel(new GridBagLayout());
 
                 readerPanel.setBorder(BorderFactory.createTitledBorder(adapter.getFile().getName()));
@@ -71,6 +75,11 @@ public class TileReadersOptionWindow extends NavigationWindow
 
         //this.contentPane.revalidate();
         this.pack();
+    }
+
+    public boolean needsInput()
+    {
+        return this.needsInput;
     }
 
     public Collection<TileStoreReader> getReaders()

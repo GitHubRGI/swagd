@@ -19,9 +19,12 @@
 package com.rgi.suite.tilestoreadapter;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
@@ -34,24 +37,26 @@ public class UnknownTileStoreReaderAdapter extends TileStoreReaderAdapter
     }
 
     @Override
+    public boolean needsInput()
+    {
+        return true;
+    }
+
+    @Override
     public Collection<Collection<JComponent>> getReaderParameterControls()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return Arrays.asList(Arrays.asList(new JLabel(""), new JLabel("File not a recognized type of tile store")));
     }
 
     @Override
     public TileStoreReader getTileStoreReader() throws TileStoreException
     {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public Collection<TileStoreReader> getTileStoreReaders() throws TileStoreException
     {
-        // TODO Auto-generated method stub
-        return null;
+        return Collections.emptyList();
     }
-
 }
