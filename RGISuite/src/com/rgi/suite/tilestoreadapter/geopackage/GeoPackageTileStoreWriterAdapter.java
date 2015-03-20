@@ -122,7 +122,17 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
     @Override
     public void hint(final File inputFile) throws TileStoreException
     {
-        final String name = FileUtility.nameWithoutExtension(inputFile);
+        String name = FileUtility.nameWithoutExtension(inputFile);
+
+        name = name.replaceAll("[^_a-zA-Z0-9]", "_");
+
+        name = name.replaceAll("^gpkg_", "");
+
+        if(name.startsWith("[0-9]"))
+        {
+            name = "_" + name;
+        }
+
 
         this.filename.setText(FileUtility.appendForUnique(String.format("%s%c%s.gpkg",
                                                                         this.settings.get(GeoPackageOutputLocationSettingName, DefaultGeoPackageOutputLocation),
