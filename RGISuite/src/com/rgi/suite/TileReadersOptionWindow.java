@@ -56,8 +56,13 @@ public class TileReadersOptionWindow extends NavigationWindow
                     int columnCount = 0;
                     for(final JComponent column : row)
                     {
-                        if(columnCount == 1) // TODO; This is a HACK
+                        final Dimension dimension = column.getPreferredSize();
+
+                        if(columnCount == 1 &&
+                           (dimension.getWidth()  < 1 ||
+                            dimension.getHeight() < 1)) // TODO; This is a HACK
                         {
+
                             column.setPreferredSize(new Dimension(220, 25));
                         }
 
@@ -108,7 +113,7 @@ public class TileReadersOptionWindow extends NavigationWindow
 
 
     @Override
-    protected void execute() throws Exception
+    public void execute()
     {
         this.readerConsumer.accept(this.getReaders());
     }

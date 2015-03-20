@@ -18,6 +18,7 @@
 
 package com.rgi.suite.tilestoreadapter.geopackage;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -95,9 +96,11 @@ public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
                                                                                                this.tileSets.getSelectedValuesList().size(),
                                                                                                this.tileSets.getModel().getSize())));
 
+            final int scrollLines = Math.min(4, this.tileSets.getModel().getSize());
+
             this.scrollPane = new JScrollPane(this.tileSets);
 
-            //this.scrollPane.setSize(220, 50);
+            this.scrollPane.setPreferredSize(new Dimension(220, scrollLines * 15));
 
             if(allowMultipleReaders)
             {

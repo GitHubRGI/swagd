@@ -186,21 +186,29 @@ public class GeoSuite
                                                                                                   GeoSuite.this.settings.set(LastLocationSettingName, files[0].getParent());
                                                                                                   GeoSuite.this.settings.save();
 
-                                                                                                  final JFrame frame = new TileReadersOptionWindow(TileStoreUtility.getTileStoreReaderAdapters(true, files),
-                                                                                                                                                   readers -> { try
-                                                                                                                                                                {
-                                                                                                                                                                    final JFrame viewWindow = new MapViewWindow(readers);
-                                                                                                                                                                    viewWindow.setLocationRelativeTo(null);
-                                                                                                                                                                    viewWindow.setVisible(true);
-                                                                                                                                                                }
-                                                                                                                                                                catch(final TileStoreException ex)
-                                                                                                                                                                {
-                                                                                                                                                                    JOptionPane.showMessageDialog(null, "Map View", "Unable to view file selection: " + ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-                                                                                                                                                                    ex.printStackTrace();
-                                                                                                                                                                }
-                                                                                                                                                              });
-                                                                                                  frame.setLocationRelativeTo(null);
-                                                                                                  frame.setVisible(true);
+                                                                                                  final TileReadersOptionWindow tileReadersOptionWindow = new TileReadersOptionWindow(TileStoreUtility.getTileStoreReaderAdapters(true, files),
+                                                                                                                                                                                      readers -> { try
+                                                                                                                                                                                                   {
+                                                                                                                                                                                                       final JFrame viewWindow = new MapViewWindow(readers);
+                                                                                                                                                                                                       viewWindow.setLocationRelativeTo(null);
+                                                                                                                                                                                                       viewWindow.setVisible(true);
+                                                                                                                                                                                                   }
+                                                                                                                                                                                                   catch(final TileStoreException ex)
+                                                                                                                                                                                                   {
+                                                                                                                                                                                                       JOptionPane.showMessageDialog(null, "Map View", "Unable to view file selection: " + ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+                                                                                                                                                                                                       ex.printStackTrace();
+                                                                                                                                                                                                   }
+                                                                                                                                                                                                 });
+
+                                                                                                  if(tileReadersOptionWindow.needsInput())
+                                                                                                  {
+                                                                                                      tileReadersOptionWindow.setLocationRelativeTo(null);
+                                                                                                      tileReadersOptionWindow.setVisible(true);
+                                                                                                  }
+                                                                                                  else
+                                                                                                  {
+                                                                                                      tileReadersOptionWindow.execute();
+                                                                                                  }
                                                                                               }
                                                                                           }
                                                                                         });
