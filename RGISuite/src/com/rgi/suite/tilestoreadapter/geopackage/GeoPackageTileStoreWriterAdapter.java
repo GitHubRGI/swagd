@@ -124,15 +124,12 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
     {
         String name = FileUtility.nameWithoutExtension(inputFile);
 
-        if(!name.matches("^[_a-zA-Z]\\w*"))
-        {
-            name = name.replaceAll("[^_a-zA-Z0-9]", "_");
-        }
+        name = name.replaceAll("[^_a-zA-Z0-9]", "_");
 
-        if(name.startsWith("gpkg_"))
-        {
-            name = name.replaceFirst("gpkg_", "");
-        }
+        name = name.replaceAll("^gpkg_", "");
+
+        name = name.replaceAll("^[0-9]", "_");
+
 
         this.filename.setText(FileUtility.appendForUnique(String.format("%s%c%s.gpkg",
                                                                         this.settings.get(GeoPackageOutputLocationSettingName, DefaultGeoPackageOutputLocation),
