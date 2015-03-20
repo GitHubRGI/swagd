@@ -35,7 +35,9 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.IntStream;
 import java.util.zip.DataFormatException;
 
@@ -46,7 +48,14 @@ import org.gdal.gdalconst.gdalconstConstants;
 import org.gdal.osr.SpatialReference;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.Range;
+import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
+import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.g2t.TilingException;
 
 /**
@@ -292,5 +301,24 @@ public class GdalUtility
         final String authority = srs.GetAuthorityName(null);
         final String identifier = srs.GetAuthorityCode(null);
         return new CoordinateReferenceSystem(authority, Integer.valueOf(identifier));
+    }
+    
+    public static List<Range<Coordinate<Integer>>> calculateTileRangesForAllZooms(final BoundingBox bounds,
+    																			  final CrsProfile crsProfile,
+    																			  final TileScheme tileScheme,
+    																			  final TileOrigin tileOrigin)
+    {
+    	List<Range<Coordinate<Integer>>> tileRangesByZoom = new ArrayList<Range<Coordinate<Integer>>>();
+    	// Get the crs coordinates of the bounds
+    	final CrsCoordinate topLeft = new CrsCoordinate(bounds.getTopLeft(), crsProfile.getCoordinateReferenceSystem());
+    	final CrsCoordinate bottomRight = new CrsCoordinate(bounds.getBottomRight(), crsProfile.getCoordinateReferenceSystem());
+    	IntStream.range(0, 32).forEach(zoom ->
+    	{
+    		final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
+			final Coordinate<Integer> topLeftTile = crsProfile.crsToTileCoordinate(topLeft, crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
+			final Coordinate<Integer> bottomRightTile = crsProfile.crsToTileCoordinate(bottomRight, crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
+			tileRangesByZoom.add(zoom, new Range<Coordinate<Integer>>(topLeftTile, bottomRightTile));
+    	});
+    	return tileRangesByZoom;
     }
 }

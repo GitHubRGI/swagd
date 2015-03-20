@@ -21,6 +21,7 @@ import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.scheme.TileScheme;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
@@ -113,8 +114,11 @@ public class RawImageTileReader implements TileStoreReader {
 
 	@Override
 	public Stream<TileHandle> stream(int zoomLevel) throws TileStoreException {
-		// TODO Auto-generated method stub
-		return null;
+		// This will only ask for the lowest-level-integer zoom, a.k.a., the zoom with the highest
+		// numeric value
+		// 1. Get the minimal zoom for this raw image
+		// 2. Create the list of tiles that would exist at this level
+		final TileScheme tileScheme = new ZoomTimesTwo(zoomLevel, zoomLevel, 1, 1);
 	}
 
 	@Override
