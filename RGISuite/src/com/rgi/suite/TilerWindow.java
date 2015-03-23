@@ -57,8 +57,6 @@ public class TilerWindow extends NavigationWindow
     private final JPanel outputPanel = new JPanel(new GridBagLayout());
     private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>();
 
-    private final String processName = "Tiling";
-
     private static final String LastInputLocationSettingName = "tiling.lastInputLocation";
 
     private final JSpinner     tileWidthSpinner;
@@ -73,7 +71,7 @@ public class TilerWindow extends NavigationWindow
      */
     public TilerWindow(final Settings settings)
     {
-        this.setTitle(this.processName + " Settings");
+        this.setTitle(this.processName() + " Settings");
         this.setResizable(false);
 
         this.settings = settings;
@@ -113,7 +111,7 @@ public class TilerWindow extends NavigationWindow
                                                               }
                                                               catch(final Exception ex)
                                                               {
-                                                                  this.error(this.processName, ex.getMessage());
+                                                                  this.error(ex.getMessage());
                                                               }
                                                           }
                                                         });
@@ -228,7 +226,14 @@ public class TilerWindow extends NavigationWindow
     }
 
     @Override
-    protected void execute() throws Exception
+    protected String processName()
+    {
+        return "Packaging";
+    }
+
+
+    @Override
+    protected boolean execute() throws Exception
     {
         final int tileWidth  = (int)this.tileWidthSpinner .getValue();
         final int tileHeight = (int)this.tileHeightSpinner.getValue();
@@ -247,6 +252,8 @@ public class TilerWindow extends NavigationWindow
 //                                                       tileHeight),
 //                                      color);
 //        tiler.execute();
+
+        return false;
     }
 
 

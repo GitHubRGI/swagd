@@ -18,6 +18,8 @@
 
 package com.rgi.suite;
 
+import java.awt.Cursor;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.io.File;
@@ -28,10 +30,13 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
 import utility.TileStoreUtility;
 
@@ -48,7 +53,7 @@ import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
 /**
  * Gather additional information for packaging, and package
  *
- * @author Luke D. Lambert
+ * @author Luke Lambert
  *
  */
 public class PackagerWindow extends NavigationWindow
@@ -69,8 +74,6 @@ public class PackagerWindow extends NavigationWindow
     private final JPanel outputPanel = new JPanel(new GridBagLayout());
     private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>();
 
-    private final String processName = "Packaging";
-
     private static final String LastInputLocationSettingName = "package.lastInputLocation";
 
     /**
@@ -81,7 +84,7 @@ public class PackagerWindow extends NavigationWindow
      */
     public PackagerWindow(final Settings settings)
     {
-        this.setTitle(this.processName + " Settings");
+        this.setTitle(this.processName() + " Settings");
 
         this.setResizable(false);
 
@@ -112,11 +115,13 @@ public class PackagerWindow extends NavigationWindow
 
                                                               try
                                                               {
+                                                                  this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
                                                                   final TileStoreReaderAdapter adapter = TileStoreUtility.getTileStoreReaderAdapter(false, file);
 
                                                                   if(adapter == null)
                                                                   {
-                                                                      this.warn(this.processName, "Selected file doesn't contain a recognized tile store type.");
+                                                                      this.warn("Selected file doesn't contain a recognized tile store type.");
                                                                   }
                                                                   else
                                                                   {
@@ -132,7 +137,11 @@ public class PackagerWindow extends NavigationWindow
                                                               }
                                                               catch(final Exception ex)
                                                               {
-                                                                  this.error(this.processName, ex.getMessage());
+                                                                  this.error(ex.getMessage());
+                                                              }
+                                                              finally
+                                                              {
+                                                                  this.setCursor(Cursor.getDefaultCursor());
                                                               }
                                                           }
                                                         });
@@ -232,12 +241,38 @@ public class PackagerWindow extends NavigationWindow
     }
 
     @Override
-    protected void execute() throws Exception
+    protected String processName()
     {
+        return "Packaging";
+    }
+
+    @Override
+    protected boolean execute() throws Exception
+    {
+        final JDialog modalProgressDialog = new JDialog(this, this.processName() + "...", ModalityType.DOCUMENT_MODAL);
+
+        modalProgressDialog.add(new JLabel("foo"));
+
+        modalProgressDialog.setVisible(true);
+
+        modalProgressDialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+        final JProgressBar progressBar = new JProgressBar(0, 9);
+        progressBar.setStringPainted(true);
+
+        final SwingWorker<Void, Void> task = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception
+            {
+                // TODO Auto-generated method stub
+                return null;
+            }};
+
         if(this.tileStoreReaderAdapter == null)
         {
-            this.warn(this.processName, "Please select an input file.");
-            return;
+            this.warn("Please select an input file.");
+            return false;
         }
 
         try(final TileStoreReader tileStoreReader = this.tileStoreReaderAdapter.getTileStoreReader())
@@ -248,5 +283,7 @@ public class PackagerWindow extends NavigationWindow
                 packager.execute();   // TODO monitor errors/progress
             }
         }
+
+        return true;
     }
 }

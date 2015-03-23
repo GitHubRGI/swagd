@@ -29,6 +29,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+
 public abstract class NavigationWindow extends JFrame
 {
     protected final JPanel contentPanel = new JPanel();
@@ -49,15 +50,16 @@ public abstract class NavigationWindow extends JFrame
 
         this.okButton.addActionListener(e -> { try
                                                {
-                                                   this.okButton.setEnabled(false);
-                                                   this.execute();
-                                                   this.closeFrame();
+                                                   if(this.execute())
+                                                   {
+                                                       this.closeFrame();
+                                                   }
                                                }
                                                catch(final Exception ex)
                                                {
                                                    this.okButton.setEnabled(true);
                                                    ex.printStackTrace();
-                                                   this.error("Error", "An error has occurred: " + ex.getMessage());
+                                                   this.error("An error has occurred: " + ex.getMessage());
                                                }
                                              });
 
@@ -69,21 +71,23 @@ public abstract class NavigationWindow extends JFrame
         this.navigationPanel.add(this.cancelButton, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.EAST, fill, insets, 0, 0));
     }
 
-    protected abstract void execute() throws Exception;
+    protected abstract boolean execute() throws Exception;
 
-    protected void warn(final String title, final String message)
+    protected abstract String processName();
+
+    protected void warn(final String message)
     {
         JOptionPane.showMessageDialog(this,
                                       message,
-                                      title,
+                                      this.processName(),
                                       JOptionPane.WARNING_MESSAGE);
     }
 
-    protected void error(final String title, final String message)
+    protected void error(final String message)
     {
         JOptionPane.showMessageDialog(this,
                                       message,
-                                      title,
+                                      this.processName(),
                                       JOptionPane.ERROR_MESSAGE);
     }
 

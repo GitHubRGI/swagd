@@ -32,7 +32,6 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.task.TaskMonitor;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
@@ -42,20 +41,20 @@ import com.rgi.common.tile.store.TileStoreWriter;
  *
  */
 public class GdalTileJob implements Runnable {
-	
+
 	private final TileStoreWriter writer;
 	private final CrsProfile crsProfile;
 	private final File file;
 	private final Path outputFolder;
 	private final Dimensions<Integer> tileDimensions;
-	private final TaskMonitor monitor;
+	//private final TaskMonitor monitor;
 	private final Color noDataColor;
-	
+
 	private final int tileSize = 256;
 	private final String resamplingAlgorithm = "average";
-	private final int gdalGeoQuerySize = 4 * tileSize;
+	private final int gdalGeoQuerySize = 4 * this.tileSize;
 	private final TemporaryFolder tempFolder = new TemporaryFolder();
-	
+
 	/**
 	 * @param file
 	 * @param writer
@@ -66,13 +65,13 @@ public class GdalTileJob implements Runnable {
 	public GdalTileJob(final File file,
 					   final TileStoreWriter writer,
 					   final Dimensions<Integer> tileDimensions,
-					   final Color noDataColor,
-					   final TaskMonitor monitor)
+					   final Color noDataColor/*,
+					   final TaskMonitor monitor*/)
 	{
 		this.file = file;
 		this.writer = writer;
 		this.tileDimensions = tileDimensions;
-		this.monitor = monitor;
+		//this.monitor = monitor;
 		this.noDataColor = noDataColor;
 		this.crsProfile = CrsProfileFactory.create(writer.getCoordinateReferenceSystem());
 		this.outputFolder = Paths.get("/data/tiles/swagd");
@@ -103,7 +102,7 @@ public class GdalTileJob implements Runnable {
 				final int minZoom = this.minimalZoomForPixelSize(outputDataset, outputBounds, ranges);
 				this.generateOverviewTiles();
 			}
-			catch(TileStoreException ex1)
+			catch(final TileStoreException ex1)
 			{
 				ex1.printStackTrace();
 			}
@@ -114,7 +113,7 @@ public class GdalTileJob implements Runnable {
 			ex1.printStackTrace();
 		}
 	}
-	
+
 	private Dataset openInput() throws TilingException
 	{
 		osr.UseExceptions();
@@ -134,8 +133,11 @@ public class GdalTileJob implements Runnable {
 		}
 		final SpatialReference inputSrs = this.openInputSrs(dataset);
 		// We cannot tile an image with no geo referencing information
-		if (this.datasetHasNoGeoReference(dataset)) throw new TilingException("Input raster image has no georeference.");
-		
+		if (this.datasetHasNoGeoReference(dataset))
+        {
+            throw new TilingException("Input raster image has no georeference.");
+        }
+
 		return dataset;
 	}
 
@@ -158,7 +160,7 @@ public class GdalTileJob implements Runnable {
 		//return this.correctNoData(outputDataset, this.getNoDataValues(inputDataset));
 		return this.correctNoDataSimple(outputDataset);
 	}
-	
+
 	private SpatialReference openInputSrs(final Dataset dataset) throws TilingException
 	{
 		final SpatialReference srs = new SpatialReference();
@@ -177,7 +179,7 @@ public class GdalTileJob implements Runnable {
 		}
 		throw new TilingException("Cannot get source file spatial reference system.");
 	}
-	
+
 	private SpatialReference openOutputSrs(final int identifier)
 	{
 		final SpatialReference srs = new SpatialReference();
@@ -185,7 +187,7 @@ public class GdalTileJob implements Runnable {
 		srs.ImportFromEPSG(identifier);
 		return srs;
 	}
-	
+
 	private boolean datasetHasNoGeoReference(final Dataset dataset)
 	{
 		// Specify what an empty georeference is
@@ -193,15 +195,15 @@ public class GdalTileJob implements Runnable {
 		// Compare dataset geotransform to an empty geotransform and ensure there are no GCPs
 		return Arrays.equals(dataset.GetGeoTransform(), emptyGeoReference) && dataset.GetGCPCount() == 0;
 	}
-	
+
 	private Double[] getNoDataValues(final Dataset dataset)
 	{
 		// Initialize a new double array of size 3
-		Double[] noDataValues = new Double[3];
+		final Double[] noDataValues = new Double[3];
 		// Get the nodata value for each band
 		IntStream.range(1,  dataset.GetRasterCount() + 1).forEach(band ->
 		{
-			Double[] noDataValue = new Double[1];
+			final Double[] noDataValue = new Double[1];
 			dataset.GetRasterBand(band).GetNoDataValue(noDataValue);
 			if (noDataValue.length != 0 && noDataValue[0] != null)
 			{
@@ -223,13 +225,13 @@ public class GdalTileJob implements Runnable {
 		}
 		return noDataValues;
 	}
-	
+
 	private Dataset correctNoDataSimple(final Dataset dataset)
 	{
 		boolean datasetHasAlphaBand = false;
 		// Iterate through the bands to see if any are tagged alpha
 		final int[] bands = IntStream.range(1, dataset.GetRasterCount()).toArray();
-		for (int nBand : bands)
+		for (final int nBand : bands)
 		{
 			final Band band = dataset.GetRasterBand(nBand);
 			if (band.GetColorInterpretation() == gdalconstConstants.GCI_AlphaBand)
@@ -258,11 +260,11 @@ public class GdalTileJob implements Runnable {
 		dataset.GetRasterBand(dataset.GetRasterCount()).SetColorInterpretation(gdalconstConstants.GCI_AlphaBand);
 		return dataset;
 	}
-	
+
 	private int getAlphaBandIndex(final Dataset dataset) throws TilingException
 	{
 		final int[] bands = IntStream.range(1, dataset.GetRasterCount()).toArray();
-		for (int nBand : bands)
+		for (final int nBand : bands)
 		{
 			final Band band = dataset.GetRasterBand(nBand);
 			if (band.GetColorInterpretation() == gdalconstConstants.GCI_AlphaBand)
@@ -345,7 +347,7 @@ public class GdalTileJob implements Runnable {
 		}
 		return this.correctNoDataMono(dataset);
 	}
-	
+
 	private Dataset correctNoDataMono(final Dataset dataset) throws TilingException
 	{
 		// Correction of AutoCreateWarpedVRT images for Mono and RGB files without NODATA
@@ -396,7 +398,7 @@ public class GdalTileJob implements Runnable {
 		}
 	}
 	*/
-	
+
 	private void saveXmlToDisk(final Document xml, final File location) throws TilingException
 	{
 		// Write the tempfile changes to disk
@@ -404,27 +406,27 @@ public class GdalTileJob implements Runnable {
 		{
 			// normalize
 			xml.normalize();
-			TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
+			final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			final Transformer transformer = transformerFactory.newTransformer();
 			// Create a tempfile
-			StreamResult result = new StreamResult(location);
-			DOMSource source = new DOMSource(xml);
+			final StreamResult result = new StreamResult(location);
+			final DOMSource source = new DOMSource(xml);
 			// Apply the transformer
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.transform(source, result);
 		}
-		catch(TransformerException ex1)
+		catch(final TransformerException ex1)
 		{
 			ex1.printStackTrace();
 			throw new TilingException("Error saving modified VRT to disk.");
 		}
-		catch(Exception ex1)
+		catch(final Exception ex1)
 		{
 			ex1.printStackTrace();
 			throw new TilingException("Generic exception caught during XML transformation.");
 		}
 	}
-	
+
 	private int getRasterBandCount(final Dataset dataset, final Band alphaBand)
 	{
 		// TODO: The bitwise calc functionality needs to be verified from the python functionality
@@ -435,7 +437,7 @@ public class GdalTileJob implements Runnable {
 		}
 		return dataset.GetRasterCount();
 	}
-	
+
 	private BoundingBox getOutputBounds(final Dataset dataset) throws TilingException
 	{
 		final double[] outputGeotransform = dataset.GetGeoTransform();
@@ -451,7 +453,7 @@ public class GdalTileJob implements Runnable {
 		final double minY = outputGeotransform[3] - dataset.GetRasterYSize() * outputGeotransform[1];
 		return new BoundingBox(minX, minY, maxX, maxY);
 	}
-	
+
 	private List<Range<Coordinate<Integer>>> calculateTileRangesForAllZooms(final BoundingBox outputBounds)
 	{
 		final List<Range<Coordinate<Integer>>> tilesRangeByZoom = new ArrayList<Range<Coordinate<Integer>>>();
@@ -468,7 +470,7 @@ public class GdalTileJob implements Runnable {
 		});
 		return tilesRangeByZoom;
 	}
-	
+
 	private int minimalZoomForPixelSize(final Dataset dataset, final BoundingBox outputBounds, final List<Range<Coordinate<Integer>>> tileRanges) throws TileStoreException
 	{
 		final double pixelSize = dataset.GetGeoTransform()[1];
@@ -477,14 +479,14 @@ public class GdalTileJob implements Runnable {
 		{
 			return this.zoomLevelForPixelSize(zoomPixelSize, outputBounds, tileRanges);
 		}
-		catch(NumberFormatException nfe)
+		catch(final NumberFormatException nfe)
 		{
 			System.out.println("Could not determine minimal zoom, defaulting to 0.");
 		}
 		// In the worst case, zoom level zero will have only one tile...
 		return 0;
 	}
-	
+
 	private int maximalZoomForPixelSize(final Dataset dataset, final BoundingBox outputBounds, final List<Range<Coordinate<Integer>>> tileRanges) throws TileStoreException, TilingException
 	{
 		// default resolution, get the closest possible zoom level up on the raster resolution
@@ -493,17 +495,17 @@ public class GdalTileJob implements Runnable {
 		{
 			return this.zoomLevelForPixelSize(zoomPixelSize, outputBounds, tileRanges);
 		}
-		catch(NumberFormatException nfe)
+		catch(final NumberFormatException nfe)
 		{
 			// A default base level would be bad in all cases
 			throw new TilingException("Could not determine output raster base zoom level.");
 		}
 	}
-	
+
 	private int zoomLevelForPixelSize(final double zoomPixelSize, final BoundingBox outputBounds, final List<Range<Coordinate<Integer>>> tileRanges) throws TileStoreException
 	{
-		int[] zooms = IntStream.range(0, 31).toArray();
-		for(int zoom : zooms)
+		final int[] zooms = IntStream.range(0, 31).toArray();
+		for(final int zoom : zooms)
 		{
 			// Get the tile coordinates of the top-left and bottom-right tiles
 			final Coordinate<Integer> topLeftTile = this.writer.crsToTileCoordinate(new CrsCoordinate(outputBounds.getTopLeft(), this.crsProfile.getCoordinateReferenceSystem()), zoom);
@@ -524,8 +526,8 @@ public class GdalTileJob implements Runnable {
 			// bounding box is made with minx, miny, maxx, maxy
 			final double width = (new BoundingBox(topLeftCrsFull.getX(), bottomRightCrsFull.getY(), bottomRightCrsFull.getX(), topLeftCrsFull.getY())).getWidth();
 			// get how many tiles wide this zoom will be so that number can be multiplied by tile size
-			int zoomTilesWide = tileRanges.get(zoom).getMaximum().getX() - tileRanges.get(zoom).getMinimum().getX() + 1;
-			double zoomResolution = width / (zoomTilesWide * this.tileSize);
+			final int zoomTilesWide = tileRanges.get(zoom).getMaximum().getX() - tileRanges.get(zoom).getMinimum().getX() + 1;
+			final double zoomResolution = width / (zoomTilesWide * this.tileSize);
 			if (zoomPixelSize > zoomResolution)
 			{
 				return zoom == 0 ? 0 : zoom - 1;
@@ -533,7 +535,7 @@ public class GdalTileJob implements Runnable {
 		}
 		throw new NumberFormatException("Could not determine zoom level for pixel size: " + String.valueOf(zoomPixelSize));
 	}
-	
+
 	private void generateBaseTiles(final Dataset dataset, final Range<Coordinate<Integer>> baseZoomRange, final int baseZoom) throws TilingException
 	{
 		// Create a tile folder name
@@ -618,23 +620,29 @@ public class GdalTileJob implements Runnable {
 					readYSize = dataset.GetRasterYSize() - readY;
 				}
 				// Create the tile in memory (member var of the memory driver does not seem to work...)
-				Dataset tileDataInMemory = gdal.GetDriverByName("MEM").Create("", this.tileSize, this.tileSize, tileBandCount);
+				final Dataset tileDataInMemory = gdal.GetDriverByName("MEM").Create("", this.tileSize, this.tileSize, tileBandCount);
 				// Create a list of the bands to query on the raster
 				// Create the array containing the results of the read raster query
-				int[] bandList = IntStream.range(1, dataBandCount + 1).toArray();
-				byte[] regularArrayOut = new byte[writeXSize * writeYSize * dataBandCount];
+				final int[] bandList = IntStream.range(1, dataBandCount + 1).toArray();
+				final byte[] regularArrayOut = new byte[writeXSize * writeYSize * dataBandCount];
 				// Read dat raster using a Byte array type (GDT_Byte)
-				int foo = dataset.ReadRaster(readX, readY, readXSize, readYSize, writeXSize, writeYSize, gdalconstConstants.GDT_Byte, regularArrayOut, bandList);
-				if (foo == gdalconstConstants.CE_Failure) System.out.println("fail");
-				if (foo == gdalconstConstants.CE_None) System.out.println("none");
+				final int foo = dataset.ReadRaster(readX, readY, readXSize, readYSize, writeXSize, writeYSize, gdalconstConstants.GDT_Byte, regularArrayOut, bandList);
+				if (foo == gdalconstConstants.CE_Failure)
+                {
+                    System.out.println("fail");
+                }
+				if (foo == gdalconstConstants.CE_None)
+                {
+                    System.out.println("none");
+                }
 				// Create the alpha array out for just one band
-				byte[] alphaRegularArrayOut = new byte[writeXSize * writeYSize];
+				final byte[] alphaRegularArrayOut = new byte[writeXSize * writeYSize];
 				// Get alpha as well
 				//this.getAlphaBand(dataset).ReadRaster(readX, readY, readXSize, readYSize, writeXSize, writeYSize, gdalconstConstants.GDT_Byte, alphaRegularArrayOut);
 				dataset.GetRasterBand(dataset.GetRasterCount()).ReadRaster(readX, readY, readXSize, readYSize, writeXSize, writeYSize, gdalconstConstants.GDT_Byte, alphaRegularArrayOut);
 				// TODO: logic goes here in the case that the querysize == tile size (gdalconstConstants.GRA_NearestNeighbour) (write directly)
 				// Time to start writing the tile
-				Dataset querySizeDataInMemory = gdal.GetDriverByName("MEM").Create("", this.gdalGeoQuerySize, this.gdalGeoQuerySize, tileBandCount);
+				final Dataset querySizeDataInMemory = gdal.GetDriverByName("MEM").Create("", this.gdalGeoQuerySize, this.gdalGeoQuerySize, tileBandCount);
 				// Python bindings use a call with just 6 params, I am just guessing at which of the many java overloads is needed here....
 				//querySizeDataInMemory.WriteRaster(readX, readY, writeX, writeY, writeXSize, writeYSize, gdalconstConstants.GDT_Byte, regularArrayOut, bandList);
 				querySizeDataInMemory.WriteRaster(writeX, writeY, writeXSize, writeYSize, writeXSize, writeYSize, gdalconstConstants.GDT_Byte, regularArrayOut, bandList);
@@ -649,14 +657,14 @@ public class GdalTileJob implements Runnable {
 			}
 		}
 	}
-	
+
 	private void scaleQueryToTileSize(final Dataset queryDataset, final Dataset tileDataInMemory) throws TilingException
 	{
 		final int querySize = queryDataset.GetRasterXSize();
 		final int tileSize = tileDataInMemory.GetRasterXSize();
 		final int tileBands = tileDataInMemory.GetRasterCount();
 		// This is *just* for the average resampling algorithm only (gdalconstConstants.GRA_Average)
-		for (int band : IntStream.range(1, tileBands+1).toArray())
+		for (final int band : IntStream.range(1, tileBands+1).toArray())
 		{
 			final int resolution = gdal.RegenerateOverview(queryDataset.GetRasterBand(band), tileDataInMemory.GetRasterBand(band), "average");
 			if (resolution != 0)
@@ -666,7 +674,7 @@ public class GdalTileJob implements Runnable {
 		}
 		// TODO: Implement for all other algorithms
 	}
-	
+
 	private void generateOverviewTiles()
 	{
 		// TODO:

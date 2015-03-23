@@ -18,14 +18,6 @@
 
 package com.rgi.packager;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import com.rgi.common.task.MonitorableTask;
-import com.rgi.common.task.TaskMonitor;
 import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
@@ -38,13 +30,13 @@ import com.rgi.common.tile.store.TileStoreWriter;
  * @author Luke D. Lambert
  *
  */
-public class Packager implements MonitorableTask, TaskMonitor
+public class Packager
 {
-    private final ExecutorService executor  = Executors.newSingleThreadExecutor();
-
-    private final int jobTotal  = 0;
-    private int jobCount  = 0;
-    private int completed = 0;
+//    private final ExecutorService executor  = Executors.newSingleThreadExecutor();
+//
+//    private final int jobTotal  = 0;
+//    private final int jobCount  = 0;
+//    private final int completed = 0;
 
     private final TileStoreReader tileStoreReader;
     private final TileStoreWriter tileStoreWriter;
@@ -62,8 +54,6 @@ public class Packager implements MonitorableTask, TaskMonitor
         this.tileStoreReader = tileStoreReader;
         this.tileStoreWriter = tileStoreWriter;
     }
-
-    private final Set<TaskMonitor> monitors = new HashSet<>();
 
     /**
      * Starts the packaging job
@@ -120,63 +110,63 @@ public class Packager implements MonitorableTask, TaskMonitor
                        }
                        finally
                        {
-                           this.fireFinished();
+                           //this.fireFinished();
                        }
                      };
     }
 
-    @Override
-    public void addMonitor(final TaskMonitor monitor)
-    {
-        this.monitors.add(monitor);
-    }
-
-    @Override
-    public void requestCancel()
-    {
-        this.executor.shutdownNow();
-        try
-        {
-            this.executor.awaitTermination(60, TimeUnit.SECONDS);
-        }
-        catch(final InterruptedException ie)
-        {
-            this.fireCancelled();
-        }
-    }
-
-    private void fireCancelled()
-    {
-        for(final TaskMonitor monitor : this.monitors)
-        {
-            monitor.cancelled();
-        }
-    }
-
-    private void fireProgressUpdate()
-    {
-        for(final TaskMonitor monitor : this.monitors)
-        {
-            monitor.setProgress(this.completed);
-        }
-    }
-
-    @SuppressWarnings("unused")
-    private void fireError(final Exception e)
-    {
-        for(final TaskMonitor monitor : this.monitors)
-        {
-            monitor.setError(e);
-        }
-    }
-
-    private void fireFinished()
-    {
-        for(final TaskMonitor monitor : this.monitors)
-        {
-            monitor.finished();
-        }
-    }
+//    @Override
+//    public void addMonitor(final TaskMonitor monitor)
+//    {
+//        this.monitors.add(monitor);
+//    }
+//
+//    @Override
+//    public void requestCancel()
+//    {
+//        this.executor.shutdownNow();
+//        try
+//        {
+//            this.executor.awaitTermination(60, TimeUnit.SECONDS);
+//        }
+//        catch(final InterruptedException ie)
+//        {
+//            this.fireCancelled();
+//        }
+//    }
+//
+//    private void fireCancelled()
+//    {
+//        for(final TaskMonitor monitor : this.monitors)
+//        {
+//            monitor.cancelled();
+//        }
+//    }
+//
+//    private void fireProgressUpdate()
+//    {
+//        for(final TaskMonitor monitor : this.monitors)
+//        {
+//            monitor.setProgress(this.completed);
+//        }
+//    }
+//
+//    @SuppressWarnings("unused")
+//    private void fireError(final Exception e)
+//    {
+//        for(final TaskMonitor monitor : this.monitors)
+//        {
+//            monitor.setError(e);
+//        }
+//    }
+//
+//    private void fireFinished()
+//    {
+//        for(final TaskMonitor monitor : this.monitors)
+//        {
+//            monitor.finished();
+//        }
+//    }
 
 //    private class JobWaiter implements Runnable
 //    {
@@ -216,50 +206,50 @@ public class Packager implements MonitorableTask, TaskMonitor
 //            }
 //        }
 //    }
-
-    @Override
-    public void setMaximum(final int max)
-    {
-        // updates the progress bar to exit indeterminate mode
-        for(final TaskMonitor monitor : this.monitors)
-        {
-            monitor.setMaximum(100);
-        }
-    }
-
-    @Override
-    public void setProgress(final int value)
-    {
-        System.out.println("progress updated: " + value);
-        // when called by a tilejob, reports a number from 0-100.
-        final double perJob = 100.0 / this.jobTotal;
-        this.completed = (int)((this.jobCount * perJob) + ((value / 100.0) * perJob));
-        this.fireProgressUpdate();
-    }
-
-    @Override
-    public void cancelled()
-    {
-        // not used
-    }
-
-    @Override
-    public void finished()
-    {
-        ++this.jobCount;
-        if(this.jobCount == this.jobTotal)
-        {
-            this.fireFinished();
-        }
-        else
-        {
-            this.setProgress(0);
-        }
-    }
-
-    @Override
-    public void setError(final Exception e)
-    {
-        // this shouldn't be used
-    }
+//
+//    @Override
+//    public void setMaximum(final int max)
+//    {
+//        // updates the progress bar to exit indeterminate mode
+//        for(final TaskMonitor monitor : this.monitors)
+//        {
+//            monitor.setMaximum(100);
+//        }
+//    }
+//
+//    @Override
+//    public void setProgress(final int value)
+//    {
+//        System.out.println("progress updated: " + value);
+//        // when called by a tilejob, reports a number from 0-100.
+//        final double perJob = 100.0 / this.jobTotal;
+//        this.completed = (int)((this.jobCount * perJob) + ((value / 100.0) * perJob));
+//        this.fireProgressUpdate();
+//    }
+//
+//    @Override
+//    public void cancelled()
+//    {
+//        // not used
+//    }
+//
+//    @Override
+//    public void finished()
+//    {
+//        ++this.jobCount;
+//        if(this.jobCount == this.jobTotal)
+//        {
+//            this.fireFinished();
+//        }
+//        else
+//        {
+//            this.setProgress(0);
+//        }
+//    }
+//
+//    @Override
+//    public void setError(final Exception e)
+//    {
+//        // this shouldn't be used
+//    }
 }

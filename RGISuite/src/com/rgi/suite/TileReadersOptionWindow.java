@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import com.rgi.common.tile.store.TileStoreException;
@@ -99,12 +98,9 @@ public class TileReadersOptionWindow extends NavigationWindow
                                   }
                                   catch(final TileStoreException ex)
                                   {
-                                      JOptionPane.showMessageDialog(this,
-                                                                    String.format("There was an error opening %s: %s",
-                                                                                  adapter.getFile().getName(),
-                                                                                  ex.getMessage()),
-                                                                    "Open Failed",
-                                                                    JOptionPane.ERROR_MESSAGE);
+                                      this.error(String.format("There was an error opening %s: %s",
+                                                               adapter.getFile().getName(),
+                                                               ex.getMessage()));
                                   }
                                 });
 
@@ -113,8 +109,15 @@ public class TileReadersOptionWindow extends NavigationWindow
 
 
     @Override
-    public void execute()
+    protected String processName()
+    {
+        return "File Options";
+    }
+
+    @Override
+    public boolean execute()
     {
         this.readerConsumer.accept(this.getReaders());
+        return true;
     }
 }
