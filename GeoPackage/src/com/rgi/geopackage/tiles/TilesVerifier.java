@@ -1,19 +1,24 @@
-/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+/* The MIT License (MIT)
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>,
- *  or write to the Free Software Foundation, Inc., 59 Temple Place -
- *  Suite 330, Boston, MA 02111-1307, USA.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.rgi.geopackage.tiles;
@@ -434,7 +439,7 @@ public class TilesVerifier extends Verifier
                               this.hasTileMatrixSetTable);
 
             this.verifyTable(TilesVerifier.TileMatrixSetTableDefinition);
-            
+
         }
     }
 
@@ -1275,32 +1280,32 @@ public class TilesVerifier extends Verifier
                 }
             }
             //TODO this test will be moved in a later release to its own individual test, this is not necessarily part of this requirement (wording is below requirement 37 but this is closest to what we are checking).
-            for(String pyramidTable: this.allPyramidUserDataTables)
+            for(final String pyramidTable: this.allPyramidUserDataTables)
             {
-                 String query1 = String.format("SELECT MIN(tile_column), MIN(tile_row), MAX(tile_row), MAX(tile_column) FROM %s WHERE zoom_level = (SELECT MIN(zoom_level) FROM %s);", pyramidTable, pyramidTable);
-                 
+                 final String query1 = String.format("SELECT MIN(tile_column), MIN(tile_row), MAX(tile_row), MAX(tile_column) FROM %s WHERE zoom_level = (SELECT MIN(zoom_level) FROM %s);", pyramidTable, pyramidTable);
+
                  try(Statement stmt1              = this.getSqliteConnection().createStatement();
                      ResultSet minXMaxXMinYMaxYRS = stmt1.executeQuery(query1))
                  {
-                      int minX = minXMaxXMinYMaxYRS.getInt("MIN(tile_column)");//this should always be 0
-                      int minY = minXMaxXMinYMaxYRS.getInt("MIN(tile_row)");   //this should always be 0
-                      int maxX = minXMaxXMinYMaxYRS.getInt("MAX(tile_column)");
-                      int maxY = minXMaxXMinYMaxYRS.getInt("MAX(tile_row)");
-                      
-                      String query2 = String.format("SELECT matrix_width, matrix_height, zoom_level FROM %s WHERE zoom_level = (SELECT MIN(zoom_level) FROM %s)", GeoPackageTiles.MatrixTableName, pyramidTable);
+                      final int minX = minXMaxXMinYMaxYRS.getInt("MIN(tile_column)");//this should always be 0
+                      final int minY = minXMaxXMinYMaxYRS.getInt("MIN(tile_row)");   //this should always be 0
+                      final int maxX = minXMaxXMinYMaxYRS.getInt("MAX(tile_column)");
+                      final int maxY = minXMaxXMinYMaxYRS.getInt("MAX(tile_row)");
+
+                      final String query2 = String.format("SELECT matrix_width, matrix_height, zoom_level FROM %s WHERE zoom_level = (SELECT MIN(zoom_level) FROM %s)", GeoPackageTiles.MatrixTableName, pyramidTable);
                       try(Statement stmt2        = this.getSqliteConnection().createStatement();
                           ResultSet dimensionsRS = stmt2.executeQuery(query2))
                       {
                           while(dimensionsRS.next())
                           {
-                              int matrixWidth  = dimensionsRS.getInt("matrix_width");
-                              int matrixHeight = dimensionsRS.getInt("matrix_height");
-                              int zoomLevel    = dimensionsRS.getInt("zoom_level");
-                              
+                              final int matrixWidth  = dimensionsRS.getInt("matrix_width");
+                              final int matrixHeight = dimensionsRS.getInt("matrix_height");
+                              final int zoomLevel    = dimensionsRS.getInt("zoom_level");
+
                               Assert.assertTrue(String.format("The BoundingBox in gpkg_tile_matrix_set does not define the minimum bounding box for all content in the table %s.\n "
                                                                   + "\tActual Values:   MIN(tile_column): %4d,  MIN(tile_row): %4d, MAX(tile_column): %4d,                   MAX(tile_row): %4d\n "
                                                                   + "\tExpected values: MIN(tile_column):    0,  MIN(tile_row):    0, MAX(tile_column): %4d (matrix_width -1), MAX(tile_row): %4d (matrix_height -1),"
-                                                                  + "\n\tExpected values based on the Tile Matrix given at the MIN(zoom_level) %d.", 
+                                                                  + "\n\tExpected values based on the Tile Matrix given at the MIN(zoom_level) %d.",
                                                               pyramidTable,
                                                               minX,
                                                               minY,
@@ -1309,9 +1314,9 @@ public class TilesVerifier extends Verifier
                                                               matrixWidth  - 1,
                                                               matrixHeight - 1,
                                                               zoomLevel),
-                                                minX == 0 && 
-                                                minY == 0 && 
-                                                maxX == (matrixWidth - 1) && 
+                                                minX == 0 &&
+                                                minY == 0 &&
+                                                maxX == (matrixWidth - 1) &&
                                                 maxY == (matrixHeight - 1));
                           }
                       }
