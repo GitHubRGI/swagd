@@ -19,7 +19,6 @@
 package com.rgi.suite;
 
 import java.awt.Cursor;
-import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.io.File;
@@ -30,13 +29,10 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JTextField;
-import javax.swing.SwingWorker;
 
 import utility.TileStoreUtility;
 
@@ -249,26 +245,6 @@ public class PackagerWindow extends NavigationWindow
     @Override
     protected boolean execute() throws Exception
     {
-        final JDialog modalProgressDialog = new JDialog(this, this.processName() + "...", ModalityType.DOCUMENT_MODAL);
-
-        modalProgressDialog.add(new JLabel("foo"));
-
-        modalProgressDialog.setVisible(true);
-
-        modalProgressDialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
-        final JProgressBar progressBar = new JProgressBar(0, 9);
-        progressBar.setStringPainted(true);
-
-        final SwingWorker<Void, Void> task = new SwingWorker<Void, Void>() {
-
-            @Override
-            protected Void doInBackground() throws Exception
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }};
-
         if(this.tileStoreReaderAdapter == null)
         {
             this.warn("Please select an input file.");
@@ -279,8 +255,15 @@ public class PackagerWindow extends NavigationWindow
         {
             try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
             {
-                final Packager packager = new Packager(tileStoreReader, tileStoreWriter);
-                packager.execute();   // TODO monitor errors/progress
+                final ProgressDialog progress = new ProgressDialog(this,
+                                                             this.processName() + "...",
+                                                             taskMonitor -> { final Packager packager = new Packager(taskMonitor,
+                                                                                                                     tileStoreReader,
+                                                                                                                     tileStoreWriter);
+                                                                              return packager.execute();
+                                                                            });
+
+                progress.setVisible(true);
             }
         }
 

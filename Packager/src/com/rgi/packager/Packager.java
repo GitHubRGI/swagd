@@ -18,6 +18,7 @@
 
 package com.rgi.packager;
 
+import com.rgi.common.TaskMonitor;
 import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
@@ -32,12 +33,7 @@ import com.rgi.common.tile.store.TileStoreWriter;
  */
 public class Packager
 {
-//    private final ExecutorService executor  = Executors.newSingleThreadExecutor();
-//
-//    private final int jobTotal  = 0;
-//    private final int jobCount  = 0;
-//    private final int completed = 0;
-
+    private final TaskMonitor     taskMonitor;
     private final TileStoreReader tileStoreReader;
     private final TileStoreWriter tileStoreWriter;
 
@@ -49,8 +45,12 @@ public class Packager
      * @param tileStoreWriter
      *             Destination tile store
      */
-    public Packager(final TileStoreReader tileStoreReader, final TileStoreWriter tileStoreWriter)
+    public Packager(final TaskMonitor     taskMonitor,
+                    final TileStoreReader tileStoreReader,
+                    final TileStoreWriter tileStoreWriter)
     {
+        this.taskMonitor     = taskMonitor;
+
         this.tileStoreReader = tileStoreReader;
         this.tileStoreWriter = tileStoreWriter;
     }
@@ -58,69 +58,46 @@ public class Packager
     /**
      * Starts the packaging job
      */
-    public void execute()
+    public boolean execute()
     {
-        //final Thread jobWaiter = new Thread(new JobWaiter(this.executor.submit(this.createPackageJob())));
-        //jobWaiter.setDaemon(true);
-        //jobWaiter.start();
+        int tileCount = 0;
 
-        // TODO *temporary* make this run on the main thread
-        this.createPackageJob().run();
+        try
+        {
+            this.taskMonitor.setMaximum((int)this.tileStoreReader.countTiles());
+
+            for(final TileHandle tileHandle : (Iterable<TileHandle>)this.tileStoreReader.stream()::iterator)
+            {
+                try
+                {
+                    this.tileStoreWriter.addTile(tileHandle.getCrsCoordinate(this.tileStoreWriter.getTileOrigin()),
+                                                 tileHandle.getZoomLevel(),
+                                                 tileHandle.getImage());
+
+                    this.taskMonitor.setProgress(++tileCount);
+                }
+                catch(final TileStoreException | IllegalArgumentException ex)
+                {
+                    // TODO: report this somewhere else?
+                    System.err.printf("Tile z: %d, x: %d, y: %d failed to get copied into the package: %s\n",
+                                      tileHandle.getZoomLevel(),
+                                      tileHandle.getColumn(),
+                                      tileHandle.getRow(),
+                                      ex.getMessage());
+                }
+            }
+        }
+        catch(final TileStoreException ex)
+        {
+            this.taskMonitor.setError(ex);
+            return false;
+        }
+
+        this.taskMonitor.finished();
+        return true;
     }
 
-    private Runnable createPackageJob()
-    {
-        return () -> { int tileCount = 0;
 
-                       try
-                       {
-                           for(final TileHandle tileHandle : (Iterable<TileHandle>)this.tileStoreReader.stream()::iterator)
-                           {
-                               try
-                               {
-                                   this.tileStoreWriter.addTile(tileHandle.getCrsCoordinate(this.tileStoreWriter.getTileOrigin()),
-                                                                tileHandle.getZoomLevel(),
-                                                                tileHandle.getImage());
-                                   ++tileCount;
-                               }
-                               catch(final TileStoreException | IllegalArgumentException ex)
-                               {
-                                   // TODO: report this somewhere else?
-                                   System.err.printf("Tile z: %d, x: %d, y: %d failed to get copied into the package: %s\n",
-                                                     tileHandle.getZoomLevel(),
-                                                     tileHandle.getColumn(),
-                                                     tileHandle.getRow(),
-                                                     ex.getMessage());
-                               }
-                           }
-                       }
-                       catch(final TileStoreException ex)
-                       {
-                           // TODO Auto-generated catch block
-                           ex.printStackTrace();
-                       }
-
-                       try
-                       {
-                           System.out.printf("Packaged %d of %d tiles.\n", tileCount, this.tileStoreReader.countTiles());
-                       }
-                       catch(final TileStoreException ex)
-                       {
-                           System.out.printf("Copied %d tiles.\n", tileCount);
-                       }
-                       finally
-                       {
-                           //this.fireFinished();
-                       }
-                     };
-    }
-
-//    @Override
-//    public void addMonitor(final TaskMonitor monitor)
-//    {
-//        this.monitors.add(monitor);
-//    }
-//
 //    @Override
 //    public void requestCancel()
 //    {
@@ -143,31 +120,6 @@ public class Packager
 //        }
 //    }
 //
-//    private void fireProgressUpdate()
-//    {
-//        for(final TaskMonitor monitor : this.monitors)
-//        {
-//            monitor.setProgress(this.completed);
-//        }
-//    }
-//
-//    @SuppressWarnings("unused")
-//    private void fireError(final Exception e)
-//    {
-//        for(final TaskMonitor monitor : this.monitors)
-//        {
-//            monitor.setError(e);
-//        }
-//    }
-//
-//    private void fireFinished()
-//    {
-//        for(final TaskMonitor monitor : this.monitors)
-//        {
-//            monitor.finished();
-//        }
-//    }
-
 //    private class JobWaiter implements Runnable
 //    {
 //        private final Future<?> job;
@@ -205,51 +157,5 @@ public class Packager
 //                Packager.this.fireError(ce);
 //            }
 //        }
-//    }
-//
-//    @Override
-//    public void setMaximum(final int max)
-//    {
-//        // updates the progress bar to exit indeterminate mode
-//        for(final TaskMonitor monitor : this.monitors)
-//        {
-//            monitor.setMaximum(100);
-//        }
-//    }
-//
-//    @Override
-//    public void setProgress(final int value)
-//    {
-//        System.out.println("progress updated: " + value);
-//        // when called by a tilejob, reports a number from 0-100.
-//        final double perJob = 100.0 / this.jobTotal;
-//        this.completed = (int)((this.jobCount * perJob) + ((value / 100.0) * perJob));
-//        this.fireProgressUpdate();
-//    }
-//
-//    @Override
-//    public void cancelled()
-//    {
-//        // not used
-//    }
-//
-//    @Override
-//    public void finished()
-//    {
-//        ++this.jobCount;
-//        if(this.jobCount == this.jobTotal)
-//        {
-//            this.fireFinished();
-//        }
-//        else
-//        {
-//            this.setProgress(0);
-//        }
-//    }
-//
-//    @Override
-//    public void setError(final Exception e)
-//    {
-//        // this shouldn't be used
 //    }
 }
