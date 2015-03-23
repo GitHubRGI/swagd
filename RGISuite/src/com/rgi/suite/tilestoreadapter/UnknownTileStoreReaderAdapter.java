@@ -19,45 +19,44 @@
 package com.rgi.suite.tilestoreadapter;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 
-/**
- * @author Luke Lambert
- *
- */
-public abstract class TileStoreReaderAdapter
+public class UnknownTileStoreReaderAdapter extends TileStoreReaderAdapter
 {
-    public TileStoreReaderAdapter(final File file, final boolean allowMultipleReaders)
+    public UnknownTileStoreReaderAdapter(final File file, final boolean allowMultipleReaders)
     {
-        if(file == null)
-        {
-            throw new IllegalArgumentException("File may not be null");
-        }
-
-        this.file                 = file;
-        this.allowMultipleReaders = allowMultipleReaders;
+        super(file, allowMultipleReaders);
     }
 
-    /**
-     * @return the file
-     */
-    public File getFile()
+    @Override
+    public boolean needsInput()
     {
-        return this.file;
+        return true;
     }
 
-    public abstract Collection<Collection<JComponent>> getReaderParameterControls();
+    @Override
+    public Collection<Collection<JComponent>> getReaderParameterControls()
+    {
+        return Arrays.asList(Arrays.asList(new JLabel(""), new JLabel("File not a recognized type of tile store")));
+    }
 
-    public abstract boolean needsInput();
+    @Override
+    public TileStoreReader getTileStoreReader() throws TileStoreException
+    {
+        return null;
+    }
 
-    public abstract TileStoreReader             getTileStoreReader()  throws TileStoreException;
-    public abstract Collection<TileStoreReader> getTileStoreReaders() throws TileStoreException;
-
-    protected final File    file;
-    protected final boolean allowMultipleReaders;
+    @Override
+    public Collection<TileStoreReader> getTileStoreReaders() throws TileStoreException
+    {
+        return Collections.emptyList();
+    }
 }

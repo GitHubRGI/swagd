@@ -82,6 +82,12 @@ public class TileStoreLoader implements TileLoader
 
                     // TODO do we need to move the .setImage call into the synchronized block?
                 }
+//
+//                System.out.printf("%s %d,%d,%d\n",
+//                                  TileStoreLoader.this.tileStore.getName(),
+//                                  tile.getZoom(),
+//                                  tile.getXtile(),
+//                                  tile.getYtile());
 
                 try
                 {

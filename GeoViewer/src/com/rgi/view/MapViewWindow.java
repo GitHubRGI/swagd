@@ -80,7 +80,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     private final JLabel unitsPerPixelYLabel   = new JLabel("Units/PixelY: ");
     private final JLabel unitsPerPixelXValue   = new JLabel("");
     private final JLabel unitsPerPixelYValue   = new JLabel("");
-    private ButtonGroup mainGroup = new ButtonGroup();
+    private final ButtonGroup mainGroup        = new ButtonGroup();
 
     /**
      * @param tileStoreReaders
@@ -91,9 +91,9 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     {
         super("Tile Viewer");
 
-        if(tileStoreReaders == null || tileStoreReaders.isEmpty())
+        if(tileStoreReaders == null)
         {
-            throw new IllegalArgumentException("Tile store reader collection may not be null or empty");
+            throw new IllegalArgumentException("Tile store reader collection may not be null");
         }
 
         this.tileStoreReaders = tileStoreReaders;
@@ -144,7 +144,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         final JPanel northPanel = new JPanel();
         final JPanel panelTop = new JPanel();
         final JPanel panelBottom = new JPanel();
-        
+
         //West Panel
         final JPanel westPanel = new JPanel();
 
@@ -164,7 +164,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         panelTop.add(this.unitsPerPixelXValue);
         panelTop.add(this.unitsPerPixelYLabel);
         panelTop.add(this.unitsPerPixelYValue);
-        repaint();
+        this.repaint();
 
     }
 
@@ -207,10 +207,10 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         try
         {
             this.viewer.setTileLoader(new TileStoreLoader(this.getSelectedStore(), this.viewer));
-           // this.viewer.setTileSource(new TileStoreTileSource(this.tileStore)); 
-            
+           // this.viewer.setTileSource(new TileStoreTileSource(this.tileStore));
+
         }
-        catch (TileStoreException e)
+        catch (final TileStoreException e)
         {
             e.printStackTrace();
         }
@@ -233,7 +233,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
                     try
                     {
                         MapViewWindow.this.viewer.setTileLoader(new TileStoreLoader(button.getTileStore(), MapViewWindow.this.viewer));
-                       // this.viewer.setTileSource(new TileStoreTileSource(this.tileStore)); 
+                       // this.viewer.setTileSource(new TileStoreTileSource(this.tileStore));
                         MapViewWindow.this.setInitialDisplayPosition(button.getTileStore());
 
                     }
@@ -254,15 +254,15 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         });
 
     }
-    
+
     private TileStoreReader getSelectedStore()
     {
-        Enumeration<AbstractButton> selectedTileStore = this.mainGroup.getElements();
-        
+        final Enumeration<AbstractButton> selectedTileStore = this.mainGroup.getElements();
+
        while(selectedTileStore.hasMoreElements())
        {
-           TileStoreRadioButton button = (TileStoreRadioButton) selectedTileStore.nextElement();
-           
+           final TileStoreRadioButton button = (TileStoreRadioButton) selectedTileStore.nextElement();
+
            if(button.isSelected())
            {
                return button.store;
@@ -293,7 +293,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
             final Double unitsPerPixelValueXCalculation = boundsWidth /(tileSizeX * matrixWidth);
             final Double unitsPerPixelValueYCalculation = boundsHeight/(tileSizeY * matrixHeight);
-            
+
             //if calculations are equal only display one scale
             if(isEqual(unitsPerPixelValueXCalculation, unitsPerPixelValueYCalculation))
             {
@@ -315,7 +315,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
             }
 
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             this.unitsPerPixelXValue.setText("Unable To Calculate at this zoom level");
 
@@ -369,13 +369,18 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         try
         {
             MapViewWindow.this.center = profile.toGlobalGeodetic(store.getBounds().getCenter());
-            MapViewWindow.this.minZoomLevel = Collections.min(store.getZoomLevels());
 
-            MapViewWindow.this.viewer
-                              .setDisplayPosition(new Coordinate(this.center.getY(),
-                                                                 this.center.getX()),
-                                                                 this.minZoomLevel);
-            this.updateZoomParameters();
+            if(!store.getZoomLevels().isEmpty())    // TODO attn Jen: error message?
+            {
+
+                MapViewWindow.this.minZoomLevel = Collections.min(store.getZoomLevels());
+
+                MapViewWindow.this.viewer
+                                  .setDisplayPosition(new Coordinate(this.center.getY(),
+                                                                     this.center.getX()),
+                                                                     this.minZoomLevel);
+                this.updateZoomParameters();
+            }
         }
         catch(final TileStoreException ex)
         {

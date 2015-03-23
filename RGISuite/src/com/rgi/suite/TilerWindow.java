@@ -1,12 +1,8 @@
 package com.rgi.suite;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.Collection;
 import java.util.regex.Matcher;
@@ -15,15 +11,12 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractSpinnerModel;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -40,7 +33,7 @@ import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
  * @author Luke D. Lambert
  *
  */
-public class TilerWindow extends JFrame
+public class TilerWindow extends NavigationWindow
 {
     private static final long   serialVersionUID      = -3488202344008846021L;
     private static final String TileWidthSettingName  = "ui.tiler.tileWidth";
@@ -51,25 +44,18 @@ public class TilerWindow extends JFrame
 
     private TileStoreWriterAdapter tileStoreWriterAdapter = null;
 
-    protected final JPanel contentPanel = new JPanel();
-
     // Input stuff
     private final JPanel     inputPanel          = new JPanel(new GridBagLayout());
     private final JTextField inputFileName       = new JTextField();
     private final JButton    inputFileNameButton = new JButton("\u2026");
 
-    private final JComboBox<CoordinateReferenceSystem> crsComboBox = new JComboBox<>(new DefaultComboBoxModel<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
-                                                                                                                                 .stream()
-                                                                                                                                 .sorted()
-                                                                                                                                 .toArray(CoordinateReferenceSystem[]::new)));
+    private final JComboBox<CoordinateReferenceSystem> crsComboBox = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
+                                                                                                      .stream()
+                                                                                                      .sorted()
+                                                                                                      .toArray(CoordinateReferenceSystem[]::new));
     // Output stuff
     private final JPanel outputPanel = new JPanel(new GridBagLayout());
-    private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>(new DefaultComboBoxModel<>());
-
-    // Navigation stuff
-    private final JPanel  navigationPanel = new JPanel(new GridBagLayout());
-    private final JButton okButton        = new JButton("OK");
-    private final JButton cancelButton    = new JButton("Cancel");
+    private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>();
 
     private final String processName = "Tiling";
 
@@ -88,7 +74,6 @@ public class TilerWindow extends JFrame
     public TilerWindow(final Settings settings)
     {
         this.setTitle(this.processName + " Settings");
-        this.setLayout(new BorderLayout());
         this.setResizable(false);
 
         this.settings = settings;
@@ -97,9 +82,6 @@ public class TilerWindow extends JFrame
         this.outputStoreType.addItem(new TmsTileStoreWriterAdapter       (settings));
 
         this.contentPanel.setLayout(new BoxLayout(this.contentPanel, BoxLayout.PAGE_AXIS));
-
-        this.add(this.contentPanel,   BorderLayout.CENTER);
-        this.add(this.navigationPanel,BorderLayout.SOUTH);
 
         // Input stuff
         this.inputFileName.setEditable(false);
@@ -131,7 +113,7 @@ public class TilerWindow extends JFrame
                                                               }
                                                               catch(final Exception ex)
                                                               {
-                                                                  this.error(ex.getMessage());
+                                                                  this.error(this.processName, ex.getMessage());
                                                               }
                                                           }
                                                         });
@@ -187,39 +169,7 @@ public class TilerWindow extends JFrame
 
         this.contentPanel.add(this.outputPanel);
 
-        this.buildNavigationPanel();
-
         this.pack();
-    }
-
-    private void closeFrame()
-    {
-        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-    }
-
-//    private void warn(final String message)
-//    {
-//        JOptionPane.showMessageDialog(this,
-//                                      message,
-//                                      this.processName,
-//                                      JOptionPane.WARNING_MESSAGE);
-//    }
-
-    private void error(final String message)
-    {
-        JOptionPane.showMessageDialog(this,
-                                      message,
-                                      this.processName,
-                                      JOptionPane.ERROR_MESSAGE);
-    }
-
-    @SuppressWarnings("serial")
-    protected class SimpleGridBagConstraints extends GridBagConstraints
-    {
-        public SimpleGridBagConstraints(final int gridX, final int gridY, final boolean stretch)
-        {
-            super(gridX, gridY, 1, 1, stretch ? 1 : 0, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
-        }
     }
 
     private void buildInputContent()
@@ -277,33 +227,8 @@ public class TilerWindow extends JFrame
         this.pack();
     }
 
-    private void buildNavigationPanel()
-    {
-        this.cancelButton.addActionListener(e -> { this.closeFrame(); });
-
-        this.okButton.addActionListener(e -> { try
-                                               {
-                                                   this.okButton.setEnabled(false);
-                                                   this.execute();
-                                                   this.closeFrame();
-                                               }
-                                               catch(final Exception ex)
-                                               {
-                                                   this.okButton.setEnabled(true);
-                                                   ex.printStackTrace();
-                                                   this.error("An error has occurred: " + ex.getMessage());
-                                               }
-                                             });
-
-        // Add buttons to pane
-        final Insets insets = new Insets(10, 10, 10, 10);
-        final int    fill   = GridBagConstraints.NONE;
-
-        this.navigationPanel.add(this.okButton,     new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.EAST, fill, insets, 0, 0));
-        this.navigationPanel.add(this.cancelButton, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.EAST, fill, insets, 0, 0));
-    }
-
-    private void execute() throws Exception
+    @Override
+    protected void execute() throws Exception
     {
         final int tileWidth  = (int)this.tileWidthSpinner .getValue();
         final int tileHeight = (int)this.tileHeightSpinner.getValue();

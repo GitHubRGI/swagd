@@ -1,39 +1,48 @@
+/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>,
+ *  or write to the Free Software Foundation, Inc., 59 Temple Place -
+ *  Suite 330, Boston, MA 02111-1307, USA.
+ */
+
 package com.rgi.suite;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.WindowEvent;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collection;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import utility.TileStoreUtility;
 
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.packager.Packager;
-import com.rgi.suite.tilestoreadapter.AdapterMismatchException;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
-import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreReaderAdapter;
 import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreWriterAdapter;
-import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreReaderAdapter;
 import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
+
 
 
 /**
@@ -42,7 +51,7 @@ import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
  * @author Luke D. Lambert
  *
  */
-public class PackagerWindow extends JFrame
+public class PackagerWindow extends NavigationWindow
 {
     private static final long serialVersionUID = -3488202344008846021L;
 
@@ -51,10 +60,6 @@ public class PackagerWindow extends JFrame
     private TileStoreReaderAdapter tileStoreReaderAdapter = null;
     private TileStoreWriterAdapter tileStoreWriterAdapter = null;
 
-    private final static Collection<Class<? extends TileStoreReaderAdapter>> KnownTileStoreReaderAdapters = Arrays.asList(TmsTileStoreReaderAdapter.class, GeoPackageTileStoreReaderAdapter.class);
-
-    protected final JPanel contentPanel = new JPanel();
-
     // Input stuff
     private final JPanel     inputPanel          = new JPanel(new GridBagLayout());
     private final JTextField inputFileName       = new JTextField();
@@ -62,12 +67,7 @@ public class PackagerWindow extends JFrame
 
     // Output stuff
     private final JPanel outputPanel = new JPanel(new GridBagLayout());
-    private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>(new DefaultComboBoxModel<>());
-
-    // Navigation stuff
-    private final JPanel  navigationPanel = new JPanel(new GridBagLayout());
-    private final JButton okButton        = new JButton("OK");
-    private final JButton cancelButton    = new JButton("Cancel");
+    private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>();
 
     private final String processName = "Packaging";
 
@@ -82,7 +82,7 @@ public class PackagerWindow extends JFrame
     public PackagerWindow(final Settings settings)
     {
         this.setTitle(this.processName + " Settings");
-        this.setLayout(new BorderLayout());
+
         this.setResizable(false);
 
         this.settings = settings;
@@ -91,9 +91,6 @@ public class PackagerWindow extends JFrame
         this.outputStoreType.addItem(new TmsTileStoreWriterAdapter       (settings));
 
         this.contentPanel.setLayout(new BoxLayout(this.contentPanel, BoxLayout.PAGE_AXIS));
-
-        this.add(this.contentPanel,   BorderLayout.CENTER);
-        this.add(this.navigationPanel,BorderLayout.SOUTH);
 
         // Input stuff
         this.inputFileName.setEditable(false);
@@ -115,19 +112,27 @@ public class PackagerWindow extends JFrame
 
                                                               try
                                                               {
-                                                                  this.tileStoreReaderAdapter = this.getReaderAdapter(file);
+                                                                  final TileStoreReaderAdapter adapter = TileStoreUtility.getTileStoreReaderAdapter(false, file);
 
-                                                                  this.inputFileName.setText(file.getAbsolutePath());
+                                                                  if(adapter == null)
+                                                                  {
+                                                                      this.warn(this.processName, "Selected file doesn't contain a recognized tile store type.");
+                                                                  }
+                                                                  else
+                                                                  {
+                                                                      this.tileStoreReaderAdapter = adapter;
+                                                                      this.inputFileName.setText(file.getAbsolutePath());
 
-                                                                  this.settings.set(LastInputLocationSettingName, file.getParent());
-                                                                  this.settings.save();
+                                                                      this.settings.set(LastInputLocationSettingName, file.getParent());
+                                                                      this.settings.save();
 
-                                                                  this.buildInputContent();
-                                                                  this.tileStoreWriterAdapter.hint(file);
+                                                                      this.buildInputContent();
+                                                                      this.tileStoreWriterAdapter.hint(file);
+                                                                  }
                                                               }
                                                               catch(final Exception ex)
                                                               {
-                                                                  this.error(ex.getMessage());
+                                                                  this.error(this.processName, ex.getMessage());
                                                               }
                                                           }
                                                         });
@@ -154,39 +159,7 @@ public class PackagerWindow extends JFrame
 
         this.contentPanel.add(this.outputPanel);
 
-        this.buildNavigationPanel();
-
         this.pack();
-    }
-
-    private void closeFrame()
-    {
-        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-    }
-
-    private void warn(final String message)
-    {
-        JOptionPane.showMessageDialog(this,
-                                      message,
-                                      this.processName,
-                                      JOptionPane.WARNING_MESSAGE);
-    }
-
-    private void error(final String message)
-    {
-        JOptionPane.showMessageDialog(this,
-                                      message,
-                                      this.processName,
-                                      JOptionPane.ERROR_MESSAGE);
-    }
-
-    @SuppressWarnings("serial")
-    private class SimpleGridBagConstraints extends GridBagConstraints
-    {
-        public SimpleGridBagConstraints(final int gridX, final int gridY, final boolean stretch)
-        {
-            super(gridX, gridY, 1, 1, stretch ? 1 : 0, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
-        }
     }
 
     private void buildInputContent()
@@ -224,31 +197,6 @@ public class PackagerWindow extends JFrame
         }
     }
 
-    private TileStoreReaderAdapter getReaderAdapter(final File file)
-    {
-        for(final Class<? extends TileStoreReaderAdapter> readerClass : KnownTileStoreReaderAdapters)
-        {
-            try
-            {
-                return readerClass.getConstructor(File.class).newInstance(file);
-            }
-            catch(final NoSuchMethodException | SecurityException | IllegalAccessException | InstantiationException ex)
-            {
-                ex.printStackTrace();
-            }
-            catch(final InvocationTargetException ex)
-            {
-                if(ex.getTargetException() instanceof AdapterMismatchException)
-                {
-                    continue;
-                }
-            }
-        }
-
-        this.warn("Selected file doesn't contain a recognized tile store type.");
-        return null;
-    }
-
     private void buildOutputContent()
     {
         this.outputPanel.removeAll();
@@ -283,37 +231,12 @@ public class PackagerWindow extends JFrame
         this.pack();
     }
 
-    private void buildNavigationPanel()
-    {
-        this.cancelButton.addActionListener(e -> { this.closeFrame(); });
-
-        this.okButton.addActionListener(e -> { try
-                                               {
-                                                   this.okButton.setEnabled(false);
-                                                   this.execute();
-                                                   this.closeFrame();
-                                               }
-                                               catch(final Exception ex)
-                                               {
-                                                   this.okButton.setEnabled(true);
-                                                   ex.printStackTrace();
-                                                   this.error("An error has occurred: " + ex.getMessage());
-                                               }
-                                             });
-
-        // Add buttons to pane
-        final Insets insets = new Insets(10, 10, 10, 10);
-        final int    fill   = GridBagConstraints.NONE;
-
-        this.navigationPanel.add(this.okButton,     new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.EAST, fill, insets, 0, 0));
-        this.navigationPanel.add(this.cancelButton, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.EAST, fill, insets, 0, 0));
-    }
-
-    private void execute() throws Exception
+    @Override
+    protected void execute() throws Exception
     {
         if(this.tileStoreReaderAdapter == null)
         {
-            this.warn("Please select an input file.");
+            this.warn(this.processName, "Please select an input file.");
             return;
         }
 
