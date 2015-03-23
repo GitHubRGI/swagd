@@ -1,19 +1,24 @@
-/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+/* The MIT License (MIT)
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>,
- *  or write to the Free Software Foundation, Inc., 59 Temple Place -
- *  Suite 330, Boston, MA 02111-1307, USA.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package com.rgi.common.tile.scheme;
 
@@ -29,22 +34,22 @@ import org.junit.Test;
 @SuppressWarnings({"javadoc", "static-method"})
 public class TileMatrixDimensionsTest
 {
-    
+
     @Test
     public void verifyTileMatrixDimensions()
     {
-        int height = 12;
-        int width  = 77;
-        TileMatrixDimensions dimensions = new TileMatrixDimensions(width, height);
-        assertTrue(String.format("TileMatrixDimensions did not return the expected values.\nActual: (%d, %d).\nReturned: (%d, %d).", 
-                                  dimensions.getWidth(), 
-                                  dimensions.getHeight(), 
-                                  width, 
+        final int height = 12;
+        final int width  = 77;
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(width, height);
+        assertTrue(String.format("TileMatrixDimensions did not return the expected values.\nActual: (%d, %d).\nReturned: (%d, %d).",
+                                  dimensions.getWidth(),
+                                  dimensions.getHeight(),
+                                  width,
                                   height),
-                   dimensions.getHeight() == height && 
+                   dimensions.getHeight() == height &&
                    dimensions.getWidth()  == width);
     }
-    
+
     @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException()
@@ -52,7 +57,7 @@ public class TileMatrixDimensionsTest
         new TileMatrixDimensions(0, 10);
         fail("Expected an IllegalArgumentException to be thrown when width is less than or equal to 0.");
     }
-    
+
     @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException2()
@@ -60,47 +65,47 @@ public class TileMatrixDimensionsTest
         new TileMatrixDimensions(10, 0);
         fail("Expected an IllegalArgumentException to be thrown when height is less than or equal to 0.");
     }
-    
+
     @Test
     public void containsTrue()
     {
-        int height = 12;
-        int width  = 77;
-        
-        TileMatrixDimensions dimensions = new TileMatrixDimensions(width, height);
-        
-        assertContains(dimensions, width - 1, height - 1, true); //test top 
-         
-        assertContains(dimensions, 0, 0, true);  //bottom 
-        
-        assertContains(dimensions, width/2, height/2, true); //middle
+        final int height = 12;
+        final int width  = 77;
+
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(width, height);
+
+        this.assertContains(dimensions, width - 1, height - 1, true); //test top
+
+        this.assertContains(dimensions, 0, 0, true);  //bottom
+
+        this.assertContains(dimensions, width/2, height/2, true); //middle
     }
-    
+
     @Test
     public void containsFalse()
     {
-        int height = 12;
-        int width  = 77;
-        
-        TileMatrixDimensions dimensions = new TileMatrixDimensions(width, height); 
-        
-        assertContains(dimensions, -1, 0, false);  //test left
-        
-        assertContains(dimensions, 0, -1, false);  //test down
-        
-        assertContains(dimensions, width - 1, height, false); //test up
-        
-        assertContains(dimensions, width, height - 1, false); //test right
+        final int height = 12;
+        final int width  = 77;
+
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(width, height);
+
+        this.assertContains(dimensions, -1, 0, false);  //test left
+
+        this.assertContains(dimensions, 0, -1, false);  //test down
+
+        this.assertContains(dimensions, width - 1, height, false); //test up
+
+        this.assertContains(dimensions, width, height - 1, false); //test right
     }
-    
-    private void assertContains(TileMatrixDimensions dimensions, int column, int row, boolean expectedOutcome)
+
+    private void assertContains(final TileMatrixDimensions dimensions, final int column, final int row, final boolean expectedOutcome)
     {
-        assertTrue(String.format("Expected the method contains to return true for the following values.\nDimensions: (%d, %d)\nTile Coordinate(%d, %d).", 
-                                  dimensions.getWidth(), 
-                                  dimensions.getHeight(), 
+        assertTrue(String.format("Expected the method contains to return true for the following values.\nDimensions: (%d, %d)\nTile Coordinate(%d, %d).",
+                                  dimensions.getWidth(),
+                                  dimensions.getHeight(),
                                   column,
                                   row),
                   dimensions.contains(column, row) == expectedOutcome);
     }
-    
+
 }

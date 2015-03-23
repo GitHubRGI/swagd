@@ -1,19 +1,24 @@
-/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+/* The MIT License (MIT)
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>,
- *  or write to the Free Software Foundation, Inc., 59 Temple Place -
- *  Suite 330, Boston, MA 02111-1307, USA.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.rgi.common.coordinate.referencesystem.profile;
@@ -62,7 +67,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
 
         //final double scaledEarthPolarRadius = UnscaledEarthPolarRadius * this.earthEquatorialRadiusScaleFactor; // TODO IS THIS RIGHT? Verify!
         //final double earthPolarCircumfrence = 2.0 * Math.PI * scaledEarthPolarRadius;
-        
+
         this.crsBounds = new BoundingBox(-Math.PI * this.scaledEarthEquatorialRadius,
                                          -Math.PI * this.scaledEarthEquatorialRadius, //according to memo #12 if map level-0 tile is square in shape, then the extreme y values have to match y = +/- Math.PI*scaledEarthEquatorialRadius
                                           Math.PI * this.scaledEarthEquatorialRadius,
@@ -100,34 +105,34 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
         }
 
-        if(!BoundsUtility.contains(roundBounds(bounds, this.getPrecision()), roundCoordinate(coordinate, this.getPrecision()), tileOrigin))//Rounded bc we want to keep the as many decimal places of the 
-        {                                                                                                                                  //crs coord for the conversion (which may be slightly off 
+        if(!BoundsUtility.contains(roundBounds(bounds, this.getPrecision()), roundCoordinate(coordinate, this.getPrecision()), tileOrigin))//Rounded bc we want to keep the as many decimal places of the
+        {                                                                                                                                  //crs coord for the conversion (which may be slightly off
             throw new IllegalArgumentException("Coordinate is outside the crsBounds of this coordinate reference system");                 //(9 decimal places) due to converting back and forth from lat long)
         }
-        
+
         //Convert to Geodetic (latitude and longitude) in order to do tiling
-        BoundingBox        geodeticBounds       = this.getBoundsInLatitudeLongitude(bounds);
-        Coordinate<Double> geodeticCoordinate   = toGlobalGeodetic(coordinate);
-        
-        GlobalGeodeticCrsProfile globalGeodetic = new GlobalGeodeticCrsProfile();
-        Coordinate<Integer>      tileCoordinate = globalGeodetic.crsToTileCoordinate(new CrsCoordinate(geodeticCoordinate, 
-                                                                                                       globalGeodetic.getCoordinateReferenceSystem()), 
-                                                                                     geodeticBounds, 
-                                                                                     dimensions, 
+        final BoundingBox        geodeticBounds       = this.getBoundsInLatitudeLongitude(bounds);
+        final Coordinate<Double> geodeticCoordinate   = this.toGlobalGeodetic(coordinate);
+
+        final GlobalGeodeticCrsProfile globalGeodetic = new GlobalGeodeticCrsProfile();
+        final Coordinate<Integer>      tileCoordinate = globalGeodetic.crsToTileCoordinate(new CrsCoordinate(geodeticCoordinate,
+                                                                                                       globalGeodetic.getCoordinateReferenceSystem()),
+                                                                                     geodeticBounds,
+                                                                                     dimensions,
                                                                                      tileOrigin);
         return tileCoordinate;
     }
-    
-   
-    
-    private static BoundingBox roundBounds(BoundingBox bounds, int precision)
+
+
+
+    private static BoundingBox roundBounds(final BoundingBox bounds, final int precision)
     {
-        Coordinate<Double> lowerLeft  = roundCoordinate(bounds.getBottomLeft(), precision);
-        Coordinate<Double> upperRight = roundCoordinate(bounds.getTopRight()  , precision);
-        
-        return new BoundingBox((lowerLeft.getX()), 
-                               (lowerLeft.getY()), 
-                               (upperRight.getX()), 
+        final Coordinate<Double> lowerLeft  = roundCoordinate(bounds.getBottomLeft(), precision);
+        final Coordinate<Double> upperRight = roundCoordinate(bounds.getTopRight()  , precision);
+
+        return new BoundingBox((lowerLeft.getX()),
+                               (lowerLeft.getY()),
+                               (upperRight.getX()),
                                (upperRight.getY()));
     }
 
@@ -157,13 +162,13 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         {
             throw new IllegalArgumentException("Origin may not be null");
         }
-        
-        GlobalGeodeticCrsProfile geodeticCrs    = new GlobalGeodeticCrsProfile();
-        BoundingBox              geodeticBounds = this.getBoundsInLatitudeLongitude(bounds);
-        
-        CrsCoordinate      geodeticCoordinate = geodeticCrs.tileToCrsCoordinate(column, row, geodeticBounds, dimensions, tileOrigin);
-        Coordinate<Double> metersCoordinate   = fromGlobalGeodetic(geodeticCoordinate);
-        
+
+        final GlobalGeodeticCrsProfile geodeticCrs    = new GlobalGeodeticCrsProfile();
+        final BoundingBox              geodeticBounds = this.getBoundsInLatitudeLongitude(bounds);
+
+        final CrsCoordinate      geodeticCoordinate = geodeticCrs.tileToCrsCoordinate(column, row, geodeticBounds, dimensions, tileOrigin);
+        final Coordinate<Double> metersCoordinate   = this.fromGlobalGeodetic(geodeticCoordinate);
+
         return new CrsCoordinate(metersCoordinate.getX(),
                                  metersCoordinate.getY(),
                                  this.getCoordinateReferenceSystem());
@@ -198,19 +203,19 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
     {
         return this.crsBounds;
     }
-    
-    private BoundingBox getBoundsInLatitudeLongitude(BoundingBox bounds)
+
+    private BoundingBox getBoundsInLatitudeLongitude(final BoundingBox bounds)
     {
-        Coordinate<Double> lowerLeftGeodetic  = toGlobalGeodetic(bounds.getBottomLeft());
-        Coordinate<Double> upperRightGeodetic = toGlobalGeodetic(bounds.getTopRight());
-        
-       return new BoundingBox(lowerLeftGeodetic.getX(), 
-                              lowerLeftGeodetic.getY(), 
-                              upperRightGeodetic.getX(), 
+        final Coordinate<Double> lowerLeftGeodetic  = this.toGlobalGeodetic(bounds.getBottomLeft());
+        final Coordinate<Double> upperRightGeodetic = this.toGlobalGeodetic(bounds.getTopRight());
+
+       return new BoundingBox(lowerLeftGeodetic.getX(),
+                              lowerLeftGeodetic.getY(),
+                              upperRightGeodetic.getX(),
                               upperRightGeodetic.getY());
     }
 
-    
+
 
     @Override
     public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate)
@@ -354,13 +359,13 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
 
         return yRadians;
     }
-    
-    private static Coordinate<Double> roundCoordinate(Coordinate<Double> value, int percision)
+
+    private static Coordinate<Double> roundCoordinate(final Coordinate<Double> value, final int percision)
     {
-        double divisor = Math.pow(10, percision);
+        final double divisor = Math.pow(10, percision);
         return new Coordinate<>(Math.round(value.getX()*divisor)/divisor, Math.round(value.getY()*divisor)/divisor);
     }
-    
+
     /**
      * Datum's (WGS 84) spheroid's semi-major axis (radius of earth) in meters
      */
@@ -426,7 +431,7 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
      * Scaled earth radius.  Use this for all calculations that use the radius of the earth.
      */
     private final double scaledEarthEquatorialRadius;
-    
+
     private final BoundingBox crsBounds;
 
     /**
@@ -437,5 +442,5 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
 
     private final CoordinateReferenceSystem coordinateReferenceSystem;
 
-    
+
 }

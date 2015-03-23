@@ -1,19 +1,24 @@
-/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+/* The MIT License (MIT)
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>,
- *  or write to the Free Software Foundation, Inc., 59 Temple Place -
- *  Suite 330, Boston, MA 02111-1307, USA.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.rgi.common.test;
@@ -36,165 +41,132 @@ import com.rgi.common.Range;
 @SuppressWarnings({"javadoc", "static-method"})
 public class RangeTest
 {
-    Comparator<Number> numberComparator = new Comparator<Number>()
-            {
-                @Override
-                public int compare(Number o1, Number o2)
-                {
-                    Double value1 = o1.doubleValue();
-                    Double value2 = o2.doubleValue();
-                    return value1.compareTo(value2);
-                }
-            };
+    Comparator<Number> numberComparator = (o1, o2) ->
+    {
+        final Double value1 = o1.doubleValue();
+        final Double value2 = o2.doubleValue();
+        return value1.compareTo(value2);
+    };
 
     @Test
     public void verifyRange()
     {
-        double minimum = 80.0;
-        double maximum = 100.0;
-        Range<Double> range = new Range<>(minimum, maximum);
-        
-        assertRangeValues(range, minimum, maximum);
+        final double minimum = 80.0;
+        final double maximum = 100.0;
+        final Range<Double> range = new Range<>(minimum, maximum);
+
+        this.assertRangeValues(range, minimum, maximum);
     }
-    
+
     @Test
     public void verifyRange2()
     {
-        List<Double>  listValues = new ArrayList<>(Arrays.asList(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0));
-        Range<Double> range      = new Range<>(listValues, this.numberComparator);
-        assertRangeValues(range, 0.0, 12.0);
+        final List<Double>  listValues = new ArrayList<>(Arrays.asList(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0));
+        final Range<Double> range      = new Range<>(listValues, this.numberComparator);
+        this.assertRangeValues(range, 0.0, 12.0);
     }
-    
+
     @Test
     public void verifyRange3()
     {
-        List<Double> listValues =  Arrays.asList(2.0, 0.0, 1.0, 5.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0);
+        final List<Double> listValues =  Arrays.asList(2.0, 0.0, 1.0, 5.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0);
         try(Stream<Double> stream = StreamSupport.stream(listValues.spliterator(), false);)
         {
-            Range<Double> range = new Range<>(stream, this.numberComparator);
-            assertRangeValues(range, 0.0, 12.0);
+            final Range<Double> range = new Range<>(stream, this.numberComparator);
+            this.assertRangeValues(range, 0.0, 12.0);
         }
     }
-    
+
     @Test
     public void verifyRange4()
     {
-        List<Double>  listValues = new ArrayList<>(Arrays.asList(11.0, 12.5, -1.0, -1.15, -1.0, -1.15, 2.0, 5.0, 10.0, 12.5, 12.5));
-        Function<Double, Double> function = new Function<Double, Double>(){
+        final List<Double>  listValues = new ArrayList<>(Arrays.asList(11.0, 12.5, -1.0, -1.15, -1.0, -1.15, 2.0, 5.0, 10.0, 12.5, 12.5));
+        final Function<Double, Double> function = t -> t*-1.0;
 
-            @Override
-            public Double apply(Double t)
-            {
-                return t*-1.0;
-            }};
-            
-        double expectedMin = -12.5;
-        double expectedMax = 1.15;
-        
-        Range<Double> range = new Range<>(listValues, function, this.numberComparator);
-        
-        assertRangeValues(range, expectedMin, expectedMax);
+        final double expectedMin = -12.5;
+        final double expectedMax = 1.15;
+
+        final Range<Double> range = new Range<>(listValues, function, this.numberComparator);
+
+        this.assertRangeValues(range, expectedMin, expectedMax);
     }
-    
+
     @Test
     public void verifyRange5()
     {
-        List<Number>  listValues = new ArrayList<>(Arrays.asList(11, 12.5, -1.0, -1.15, -1.0, -1.15, 2.0, 5.0, 10.0, 12.5, 12.5, 7.82912381));
-        Function<Number, Integer> function = new Function<Number, Integer>(){
+        final List<Number>  listValues = new ArrayList<>(Arrays.asList(11, 12.5, -1.0, -1.15, -1.0, -1.15, 2.0, 5.0, 10.0, 12.5, 12.5, 7.82912381));
+        final Function<Number, Integer> function = t -> (int) Math.floor(t.doubleValue());
 
-            @Override
-            public Integer apply(Number t)
-            {
-                return (int) Math.floor(t.doubleValue());
-            }};
-            
-        int expectedMin = -2;
-        int expectedMax = 12;
-        
-        Range<Number> range = new Range<>(listValues, function, this.numberComparator);
-        
-        assertRangeValues(expectedMin, expectedMax, range);
+        final int expectedMin = -2;
+        final int expectedMax = 12;
+
+        final Range<Number> range = new Range<>(listValues, function, this.numberComparator);
+
+        this.assertRangeValues(expectedMin, expectedMax, range);
     }
-    
+
     @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException()
     {
-        List<Number>  listValues = new ArrayList<>(Arrays.asList(11.0, 12.5, -1.0, -1.15, -1.0, -1.15, 2.0, 5.0, 10.0, 12.5, 12.5));
-        Function<Number, Integer> function = new Function<Number, Integer>(){
+        final List<Number>  listValues = new ArrayList<>(Arrays.asList(11.0, 12.5, -1.0, -1.15, -1.0, -1.15, 2.0, 5.0, 10.0, 12.5, 12.5));
+        final Function<Number, Integer> function = t -> (int) Math.floor(t.doubleValue());
 
-            @Override
-            public Integer apply(Number t)
-            {
-                return (int) Math.floor(t.doubleValue());
-            }};
-            
         new Range<>(null, function, this.numberComparator);
         fail("Expected Range to throw an IllegalArgumentException when the Iterable is null");
     }
-    
+
     @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException2()
     {
-        List<Number>  listValues = new ArrayList<>();
-        Function<Number, Integer> function = new Function<Number, Integer>(){
+        final List<Number>  listValues = new ArrayList<>();
+        final Function<Number, Integer> function = t -> (int) Math.floor(t.doubleValue());
 
-            @Override
-            public Integer apply(Number t)
-            {
-                return (int) Math.floor(t.doubleValue());
-            }};
-            
         new Range<>(listValues, function, this.numberComparator);
         fail("Expected Range to throw an IllegalArgumentException when the Iterable is empty");
     }
-    
+
     @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException3()
     {
-        List<Number>  listValues = new ArrayList<>(Arrays.asList(10.0, 100, -12));
-        Function<Number, Integer> function = null;
-            
+        final List<Number>  listValues = new ArrayList<>(Arrays.asList(10.0, 100, -12));
+        final Function<Number, Integer> function = null;
+
         new Range<>(listValues, function, this.numberComparator);
         fail("Expected Range to throw an IllegalArgumentException when the Function is null");
     }
-    
+
     @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException4()
     {
-        List<Number>  listValues = new ArrayList<>(Arrays.asList(10.0, 100, -12));
-        Function<Number, Integer> function = new Function<Number, Integer>(){
-            @Override
-            public Integer apply(Number t)
-            {
-                return (int) Math.floor(t.doubleValue());
-            }};
-            
+        final List<Number>  listValues = new ArrayList<>(Arrays.asList(10.0, 100, -12));
+        final Function<Number, Integer> function = t -> (int) Math.floor(t.doubleValue());
+
         new Range<>(listValues, function, null);
         fail("Expected Range to throw an IllegalArgumentException when the Comparator is null");
     }
-    
+
     @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException5()
     {
-        List<Number>  listValues = new ArrayList<>();
+        final List<Number>  listValues = new ArrayList<>();
         new Range<>(listValues, this.numberComparator);
         fail("Expected Range to throw an IllegalArgumentException when the Iterable is empty");
     }
-    
+
     @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException6()
     {
-        List<Number>  listValues = new ArrayList<>(Arrays.asList(12, 2.74, 8.0));
+        final List<Number>  listValues = new ArrayList<>(Arrays.asList(12, 2.74, 8.0));
         new Range<>(listValues, null);
         fail("Expected Range to throw an IllegalArgumentException when the Iterable is empty");
     }
-    
+
     @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException7()
@@ -202,25 +174,25 @@ public class RangeTest
         new Range<>((Iterable<Number>)null, this.numberComparator);
         fail("Expected Range to throw an IllegalArgumentException when the Iterable is empty");
     }
-    
-    private void assertRangeValues(Range<Double> range, double expectedMinimum, double expectedMaximum)
+
+    private void assertRangeValues(final Range<Double> range, final double expectedMinimum, final double expectedMaximum)
     {
         assertTrue(String.format("The range did not return the expected values.\nActual: %s.\nExpected: [%s, %s].",
-                                 range.toString(), 
-                                 expectedMinimum, 
+                                 range.toString(),
+                                 expectedMinimum,
                                  expectedMaximum),
-                   range.getMinimum() == expectedMinimum   && 
+                   range.getMinimum() == expectedMinimum   &&
                    range.getMaximum() == expectedMaximum);
     }
-    
-    private void assertRangeValues(Number expectedMinimum, Number expectedMaximum, Range<Number> range)
+
+    private void assertRangeValues(final Number expectedMinimum, final Number expectedMaximum, final Range<Number> range)
     {
         assertTrue(String.format("The range did not return the expected values.\nActual: %s.\nExpected: [%s, %s].",
-                                 range.toString(), 
-                                 expectedMinimum, 
+                                 range.toString(),
+                                 expectedMinimum,
                                  expectedMaximum),
-                   range.getMinimum() == expectedMinimum   && 
+                   range.getMinimum() == expectedMinimum   &&
                    range.getMaximum() == expectedMaximum);
     }
-    
+
 }
