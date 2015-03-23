@@ -1,19 +1,24 @@
-/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+/* The MIT License (MIT)
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>,
- *  or write to the Free Software Foundation, Inc., 59 Temple Place -
- *  Suite 330, Boston, MA 02111-1307, USA.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.rgi.common.coordinates.referencesystem.profile;
@@ -58,92 +63,92 @@ public class EllipsoidalMercatorCrsProfileTest
        private double longitude;
        private double metersX;
        private double metersY;
-       
+
        @Override
        public String toString()
        {
         return String.format("Latitude: %f, Longitude: %f, MetersX: %f, MetersY: %f", this.latitude, this.longitude, this.metersX, this.metersY);
-           
+
        }
     }
-    
+
     @Test
     public void tileToCrsCoordinateBackToTileCoordinate()
     {
-        
-        TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(4, 4);
-        Coordinate<Integer> tileCoordinateExpected = new Coordinate<>(2,3);
-        
-        CrsCoordinate crsCoordinate = this.ellipsoidalCrs.tileToCrsCoordinate(tileCoordinateExpected.getX(), tileCoordinateExpected.getY(), this.ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.UpperLeft);
-        Coordinate<Integer> tileCoordinateReturned = this.ellipsoidalCrs.crsToTileCoordinate(crsCoordinate,  this.ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.UpperLeft);
-        
+
+        final TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(4, 4);
+        final Coordinate<Integer> tileCoordinateExpected = new Coordinate<>(2,3);
+
+        final CrsCoordinate crsCoordinate = this.ellipsoidalCrs.tileToCrsCoordinate(tileCoordinateExpected.getX(), tileCoordinateExpected.getY(), this.ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.UpperLeft);
+        final Coordinate<Integer> tileCoordinateReturned = this.ellipsoidalCrs.crsToTileCoordinate(crsCoordinate,  this.ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.UpperLeft);
+
         assertEquals(tileCoordinateExpected, tileCoordinateReturned);
     }
-    
+
     @Test
     public void tileToCrsCoordinateBackToTileCoordinate2()
     {
-        TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(17, 13);
-        
+        final TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(17, 13);
+
         for(int row = 0; row < matrixDimensions.getHeight(); row++)
         {
             for(int column = 0; column < matrixDimensions.getWidth(); column++)
             {
-                Coordinate<Integer> tileCoordinateExpected = new Coordinate<>(column, row);
-                CrsCoordinate crsCoordinate = this.ellipsoidalCrs.tileToCrsCoordinate(tileCoordinateExpected.getX(), tileCoordinateExpected.getY(), this.ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.LowerLeft);
-                Coordinate<Integer> tileCoordinateReturned = this.ellipsoidalCrs.crsToTileCoordinate(crsCoordinate,  this.ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.LowerLeft);
+                final Coordinate<Integer> tileCoordinateExpected = new Coordinate<>(column, row);
+                final CrsCoordinate crsCoordinate = this.ellipsoidalCrs.tileToCrsCoordinate(tileCoordinateExpected.getX(), tileCoordinateExpected.getY(), this.ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.LowerLeft);
+                final Coordinate<Integer> tileCoordinateReturned = this.ellipsoidalCrs.crsToTileCoordinate(crsCoordinate,  this.ellipsoidalCrs.getBounds(), matrixDimensions, TileOrigin.LowerLeft);
                 assertEquals(tileCoordinateExpected, tileCoordinateReturned);
             }
         }
     }
-    
-    
+
+
     @Test
     public void tileToCrsCoordinateBackToTileCoordinate3()
     {
-        TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(19, 76);
-        BoundingBox bounds = new BoundingBox(this.ellipsoidalCrs.getBounds().getMinX()/2, this.ellipsoidalCrs.getBounds().getMinY()/3, this.ellipsoidalCrs.getBounds().getMaxX()/4, this.ellipsoidalCrs.getBounds().getMaxY()/5);
-        
-        List<TileOrigin> originList = Arrays.asList(TileOrigin.LowerLeft, TileOrigin.LowerRight,TileOrigin.UpperLeft, TileOrigin.UpperRight);
-        
-        for(TileOrigin origin: originList)
+        final TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(19, 76);
+        final BoundingBox bounds = new BoundingBox(this.ellipsoidalCrs.getBounds().getMinX()/2, this.ellipsoidalCrs.getBounds().getMinY()/3, this.ellipsoidalCrs.getBounds().getMaxX()/4, this.ellipsoidalCrs.getBounds().getMaxY()/5);
+
+        final List<TileOrigin> originList = Arrays.asList(TileOrigin.LowerLeft, TileOrigin.LowerRight,TileOrigin.UpperLeft, TileOrigin.UpperRight);
+
+        for(final TileOrigin origin: originList)
         {
             for(int row = 0; row < matrixDimensions.getHeight(); row++)
             {
                 for(int column = 0; column < matrixDimensions.getWidth(); column++)
                 {
-                    Coordinate<Integer> tileCoordinateExpected = new Coordinate<>(column, row);
-                    CrsCoordinate crsCoordinate = this.ellipsoidalCrs.tileToCrsCoordinate(tileCoordinateExpected.getX(), tileCoordinateExpected.getY(), bounds, matrixDimensions, origin);
-                    Coordinate<Integer> tileCoordinateReturned = this.ellipsoidalCrs.crsToTileCoordinate(crsCoordinate,  bounds, matrixDimensions, origin);
+                    final Coordinate<Integer> tileCoordinateExpected = new Coordinate<>(column, row);
+                    final CrsCoordinate crsCoordinate = this.ellipsoidalCrs.tileToCrsCoordinate(tileCoordinateExpected.getX(), tileCoordinateExpected.getY(), bounds, matrixDimensions, origin);
+                    final Coordinate<Integer> tileCoordinateReturned = this.ellipsoidalCrs.crsToTileCoordinate(crsCoordinate,  bounds, matrixDimensions, origin);
                     assertEquals(tileCoordinateExpected, tileCoordinateReturned);
                 }
             }
         }
     }
-    
+
     @Test
     public void crsToTileCoordinateBackToCrsCoordinate()
     {
-        BoundingBox bounds = new BoundingBox(0,637137*Math.PI, 3189068.5*Math.PI, 3189068.5*Math.PI);
-        TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(8, 6);
-        TileOrigin origin = TileOrigin.UpperLeft;
-        
+        final BoundingBox bounds = new BoundingBox(0,637137*Math.PI, 3189068.5*Math.PI, 3189068.5*Math.PI);
+        final TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(8, 6);
+        final TileOrigin origin = TileOrigin.UpperLeft;
+
         this.calculateAndAssertCrsCoordinateEqual(bounds, matrixDimensions, origin, bounds.getTopLeft());
     }
 
     @Test
     public void tileCoordinateToCrsCoordinateConsistancyTest()
     {
-        BoundingBox bounds = new BoundingBox(0,637137*Math.PI, 3189068.5*Math.PI, 3189068.5*Math.PI);
-        TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(8, 6);
-        List<TileOrigin> originList = Arrays.asList(TileOrigin.LowerLeft, TileOrigin.LowerRight,TileOrigin.UpperLeft, TileOrigin.UpperRight);
-        
-        for(TileOrigin origin: originList)
+        final BoundingBox bounds = new BoundingBox(0,637137*Math.PI, 3189068.5*Math.PI, 3189068.5*Math.PI);
+        final TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(8, 6);
+        final List<TileOrigin> originList = Arrays.asList(TileOrigin.LowerLeft, TileOrigin.LowerRight,TileOrigin.UpperLeft, TileOrigin.UpperRight);
+
+        for(final TileOrigin origin: originList)
         {
-            ArrayList<CrsCoordinate> crsList  = getListOfCrsCoordinates(bounds, matrixDimensions, origin);
-            
-            ArrayList<CrsCoordinate> crsList2 = getListOfCrsCoordinates(bounds, matrixDimensions, origin);
-            
+            final ArrayList<CrsCoordinate> crsList  = this.getListOfCrsCoordinates(bounds, matrixDimensions, origin);
+
+            final ArrayList<CrsCoordinate> crsList2 = this.getListOfCrsCoordinates(bounds, matrixDimensions, origin);
+
             for(int i = 0; i < crsList.size() || i < crsList2.size(); i++)
             {
                assertTrue(crsList.get(i).equals(crsList.get(i)));
@@ -160,7 +165,7 @@ public class EllipsoidalMercatorCrsProfileTest
         this.ellipsoidalCrs.crsToTileCoordinate(null, this.ellipsoidalCrs.getBounds(), new TileMatrixDimensions(10, 10), TileOrigin.LowerLeft);
         fail("Expected an IllegalArgumentException when passing a null value for CrsCoordinate");
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException2()
     {
@@ -173,14 +178,14 @@ public class EllipsoidalMercatorCrsProfileTest
         this.ellipsoidalCrs.crsToTileCoordinate(new CrsCoordinate(0.0,0.0, this.ellipsoidalCrs.getCoordinateReferenceSystem()), this.ellipsoidalCrs.getBounds(), null, TileOrigin.UpperLeft);
         fail("Expected an IllegalArgumentException when passing a null value for the TileMatrixDimensions");
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException4()
     {
         this.ellipsoidalCrs.crsToTileCoordinate(new CrsCoordinate(0.0,0.0, this.ellipsoidalCrs.getCoordinateReferenceSystem()), this.ellipsoidalCrs.getBounds(), new TileMatrixDimensions(10,10), null);
         fail("Expected an IllegalArgumentException when passing a null value for the TileOrigin");
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException5()
     {
@@ -193,47 +198,47 @@ public class EllipsoidalMercatorCrsProfileTest
         this.ellipsoidalCrs.tileToCrsCoordinate(0, 0, this.ellipsoidalCrs.getBounds(),  null, TileOrigin.LowerLeft);
         fail("Expected an IllegalArgumentException when passing a null value for the tileMatrixDimensions");
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException7()
     {
         this.ellipsoidalCrs.tileToCrsCoordinate(0, 0, this.ellipsoidalCrs.getBounds(),  new TileMatrixDimensions(10,10), null);
         fail("Expected an IllegalArgumentException when passing a null value for the TileOrigin");
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException8()
     {
         this.ellipsoidalCrs.crsToTileCoordinate(new CrsCoordinate(0.0,0.0, (new GlobalGeodeticCrsProfile()).getCoordinateReferenceSystem()), this.ellipsoidalCrs.getBounds(), new TileMatrixDimensions(10,10), TileOrigin.LowerLeft);
         fail("Expected an IllegalArgumentException to occur when passing a different coordinateReferenceSystem than the profile");
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException9()
     {
-        Coordinate<Double> coordinateBeyondBounds = new Coordinate<>(this.ellipsoidalCrs.getBounds().getBottomRight().getX(), this.ellipsoidalCrs.getBounds().getBottomRight().getY() +1);
+        final Coordinate<Double> coordinateBeyondBounds = new Coordinate<>(this.ellipsoidalCrs.getBounds().getBottomRight().getX(), this.ellipsoidalCrs.getBounds().getBottomRight().getY() +1);
         this.ellipsoidalCrs.crsToTileCoordinate(new CrsCoordinate(coordinateBeyondBounds, this.ellipsoidalCrs.getCoordinateReferenceSystem()), this.ellipsoidalCrs.getBounds(), new TileMatrixDimensions(10,10), TileOrigin.LowerLeft);
         fail("Expected an IllegalArgumentException to occur when passing a different coordinateReferenceSystem than the profile");
     }
-   
+
     /**
      * Tests 100 points the NGA uses to verify if the conversion from the crsProfile to global
      * geodetic passes edge cases, flipped x and y values, and other various parts of the world
      * to ensure that the formula used is correct.
      * @throws FileNotFoundException throws if the File object cannot find the file
-     * 
+     *
      */
     @Test
     public void toGlobalGeodetic() throws FileNotFoundException
     {
-        File coordinatePointsFile = new File("EllipsoidalMercatorCoordinatePoints.csv");
+        final File coordinatePointsFile = new File("EllipsoidalMercatorCoordinatePoints.csv");
         try(Scanner scanner = new Scanner(coordinatePointsFile))
         {
             scanner.useDelimiter("\n");
-            
-            ArrayList<LatLongMetersYMetersX> coordinatesList = readValuesFromFile(scanner);
-            
-            List<LatLongMetersYMetersX> inccorrectCoordinates =  coordinatesList.stream()
+
+            final ArrayList<LatLongMetersYMetersX> coordinatesList = this.readValuesFromFile(scanner);
+
+            final List<LatLongMetersYMetersX> inccorrectCoordinates =  coordinatesList.stream()
                                                                                 .filter(coordinate -> !verifyCoordinateConversion(coordinate))
                                                                                 .collect(Collectors.toList());
             assertTrue(String.format("Number of incorrect coordinates: %d out of 100\n"
@@ -246,32 +251,32 @@ public class EllipsoidalMercatorCrsProfileTest
                        coordinatesList.stream().allMatch(coordinate -> verifyCoordinateConversion(coordinate)));
         }
     }
-    
-    private static boolean verifyCoordinateConversion(LatLongMetersYMetersX coordinate)
+
+    private static boolean verifyCoordinateConversion(final LatLongMetersYMetersX coordinate)
     {
-        CrsCoordinate                 metersCoordinate   = new CrsCoordinate(coordinate.metersX, coordinate.metersY, "epsg", 3395);
-        EllipsoidalMercatorCrsProfile ellipsoidalCrs     = new EllipsoidalMercatorCrsProfile();
-        Coordinate<Double>            coordinateReturned = ellipsoidalCrs.toGlobalGeodetic(metersCoordinate);
-        Coordinate<Double>            coordinateExpected = new Coordinate<>(coordinate.longitude, coordinate.latitude);
+        final CrsCoordinate                 metersCoordinate   = new CrsCoordinate(coordinate.metersX, coordinate.metersY, "epsg", 3395);
+        final EllipsoidalMercatorCrsProfile ellipsoidalCrs     = new EllipsoidalMercatorCrsProfile();
+        final Coordinate<Double>            coordinateReturned = ellipsoidalCrs.toGlobalGeodetic(metersCoordinate);
+        final Coordinate<Double>            coordinateExpected = new Coordinate<>(coordinate.longitude, coordinate.latitude);
         return isEqual(coordinateExpected, coordinateReturned);
     }
-    
-    private static boolean isEqual(Coordinate<Double> coordinateExpected, Coordinate<Double> coordinateReturned)
+
+    private static boolean isEqual(final Coordinate<Double> coordinateExpected, final Coordinate<Double> coordinateReturned)
     {
-        boolean xEqual = Math.abs(coordinateExpected.getX() - coordinateReturned.getX()) < Epsilon;
-        boolean yEqual = Math.abs(coordinateExpected.getY() - coordinateReturned.getY()) < Epsilon;
+        final boolean xEqual = Math.abs(coordinateExpected.getX() - coordinateReturned.getX()) < Epsilon;
+        final boolean yEqual = Math.abs(coordinateExpected.getY() - coordinateReturned.getY()) < Epsilon;
         return xEqual && yEqual;
     }
 
-    private ArrayList<LatLongMetersYMetersX> readValuesFromFile(Scanner scanner)
+    private ArrayList<LatLongMetersYMetersX> readValuesFromFile(final Scanner scanner)
     {
-        ArrayList<LatLongMetersYMetersX> coordinatesList = new ArrayList<>();
+        final ArrayList<LatLongMetersYMetersX> coordinatesList = new ArrayList<>();
         while(scanner.hasNext())
         {
-            String line = scanner.next();
-            String[] values = line.split(",", 4);
-            
-            LatLongMetersYMetersX coordinate = new LatLongMetersYMetersX();
+            final String line = scanner.next();
+            final String[] values = line.split(",", 4);
+
+            final LatLongMetersYMetersX coordinate = new LatLongMetersYMetersX();
             coordinate.latitude  = Double.parseDouble(values[0]);
             coordinate.longitude = Double.parseDouble(values[1]);
             coordinate.metersY   = Double.parseDouble(values[2]);
@@ -280,35 +285,35 @@ public class EllipsoidalMercatorCrsProfileTest
         }
         return coordinatesList;
     }
-    
-    private ArrayList<CrsCoordinate> getListOfCrsCoordinates(BoundingBox bounds, TileMatrixDimensions matrixDimensions, TileOrigin origin)
+
+    private ArrayList<CrsCoordinate> getListOfCrsCoordinates(final BoundingBox bounds, final TileMatrixDimensions matrixDimensions, final TileOrigin origin)
     {
-        ArrayList<CrsCoordinate> crsCoordinateList = new ArrayList<>();
+        final ArrayList<CrsCoordinate> crsCoordinateList = new ArrayList<>();
         for(int row = 0; row < matrixDimensions.getHeight(); row++)
         {
             for(int column = 0; column < matrixDimensions.getWidth(); column++)
             {
-                CrsCoordinate crsCoordinateReturned = this.ellipsoidalCrs.tileToCrsCoordinate(column, row, bounds, matrixDimensions, origin);
+                final CrsCoordinate crsCoordinateReturned = this.ellipsoidalCrs.tileToCrsCoordinate(column, row, bounds, matrixDimensions, origin);
                 crsCoordinateList.add(crsCoordinateReturned);
             }
         }
         return crsCoordinateList;
     }
 
-    private static void assertCrsCoordinatesEqual(CrsCoordinate crsCoordinate, CrsCoordinate crsCoordinateReturned)
+    private static void assertCrsCoordinatesEqual(final CrsCoordinate crsCoordinate, final CrsCoordinate crsCoordinateReturned)
     {
         assertTrue(isEqual(crsCoordinate,crsCoordinateReturned) && crsCoordinate.getCoordinateReferenceSystem().equals(crsCoordinate.getCoordinateReferenceSystem()));
     }
-    
-    private void calculateAndAssertCrsCoordinateEqual(BoundingBox bounds, TileMatrixDimensions matrixDimensions, TileOrigin origin, Coordinate<Double> coordinate)
+
+    private void calculateAndAssertCrsCoordinateEqual(final BoundingBox bounds, final TileMatrixDimensions matrixDimensions, final TileOrigin origin, final Coordinate<Double> coordinate)
     {
-        CrsCoordinate crsCoordinate = new CrsCoordinate(coordinate, this.ellipsoidalCrs.getCoordinateReferenceSystem()); 
-        Coordinate<Integer> tileCoordinate = this.ellipsoidalCrs.crsToTileCoordinate(crsCoordinate, bounds, matrixDimensions, origin);
-        CrsCoordinate crsCoordinateReturned = this.ellipsoidalCrs.tileToCrsCoordinate(tileCoordinate.getX(), tileCoordinate.getY(), bounds, matrixDimensions, origin);
-        
+        final CrsCoordinate crsCoordinate = new CrsCoordinate(coordinate, this.ellipsoidalCrs.getCoordinateReferenceSystem());
+        final Coordinate<Integer> tileCoordinate = this.ellipsoidalCrs.crsToTileCoordinate(crsCoordinate, bounds, matrixDimensions, origin);
+        final CrsCoordinate crsCoordinateReturned = this.ellipsoidalCrs.tileToCrsCoordinate(tileCoordinate.getX(), tileCoordinate.getY(), bounds, matrixDimensions, origin);
+
         EllipsoidalMercatorCrsProfileTest.assertCrsCoordinatesEqual(crsCoordinate, crsCoordinateReturned);
     }
 
-    
+
     private static final double Epsilon = 0.0000001;
 }

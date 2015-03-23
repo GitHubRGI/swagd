@@ -1,19 +1,24 @@
-/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+/* The MIT License (MIT)
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>,
- *  or write to the Free Software Foundation, Inc., 59 Temple Place -
- *  Suite 330, Boston, MA 02111-1307, USA.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.rgi.view;
@@ -40,7 +45,7 @@ import com.rgi.common.tile.store.TileStoreReader;
  *
  * @author Steven D. Lander
  */
-public class TileStoreTileSource implements TileSource 
+public class TileStoreTileSource implements TileSource
 {
     private final TileStoreReader tileStore;
 
@@ -62,7 +67,7 @@ public class TileStoreTileSource implements TileSource
 
         this.minimumZoomLevel = tileStore.getZoomLevels().stream().min(Integer::compare).orElse(-1);
         this.maximumZoomLevel = tileStore.getZoomLevels().stream().max(Integer::compare).orElse(-1);
-        
+
         this.crsProfile = CrsProfileFactory.create(this.tileStore.getCoordinateReferenceSystem());
     }
 
@@ -170,19 +175,19 @@ public class TileStoreTileSource implements TileSource
     public double getDistance(final double la1, final double lo1, final double la2, final double lo2)
     {
         // TODO Auto-generated method stub
-        double distance = Math.sqrt((lo1-lo2)*(lo1-lo2) + (la1-la2)*(la1-la2));
+        final double distance = Math.sqrt((lo1-lo2)*(lo1-lo2) + (la1-la2)*(la1-la2));
         return distance;
     }
     //this is pixel
     @Override
-    public int LonToX(double arg0, int arg1)
+    public int LonToX(final double arg0, final int arg1)
     {
         // TODO Auto-generated method stub
         return 0;
     }
 //this is pixel
     @Override
-    public int LatToY(double aLat, final int aZoomlevel)
+    public int LatToY(final double aLat, final int aZoomlevel)
     {
         //TODO
         return 0;
@@ -194,39 +199,39 @@ public class TileStoreTileSource implements TileSource
         // TODO Auto-generated method stub
         return 0;
     }
-    
-    
+
+
 //this is pixel
     @Override
-    public double YToLat(int aY, final int aZoomlevel)
+    public double YToLat(final int aY, final int aZoomlevel)
     {
         // TODO Auto-generated method stub
         return 0;
     }
-   
+
 
     @Override
     public double lonToTileX(final double lon, final int zoom)
     {
-        CrsCoordinate crsCoordinate = new CrsCoordinate(lon, 0, this.globalGeodetic);
-        int tileX = this.globalGeodeticCrs.crsToTileCoordinate(crsCoordinate, this.globalGeodeticCrs.getBounds(), TileStoreTileSource.TileScheme.dimensions(zoom) , TileStoreTileSource.Origin).getX();
+        final CrsCoordinate crsCoordinate = new CrsCoordinate(lon, 0, this.globalGeodetic);
+        final int tileX = this.globalGeodeticCrs.crsToTileCoordinate(crsCoordinate, this.globalGeodeticCrs.getBounds(), TileStoreTileSource.TileScheme.dimensions(zoom) , TileStoreTileSource.Origin).getX();
         return tileX;
     }
 
     @Override
     public double latToTileY(final double lat, final int zoom)
     {
-        CrsCoordinate crsCoordinate = new CrsCoordinate(lat, 0, this.globalGeodetic);
-        int tileY = this.globalGeodeticCrs.crsToTileCoordinate(crsCoordinate, this.globalGeodeticCrs.getBounds(), TileStoreTileSource.TileScheme.dimensions(zoom) , TileStoreTileSource.Origin).getY();
+        final CrsCoordinate crsCoordinate = new CrsCoordinate(lat, 0, this.globalGeodetic);
+        final int tileY = this.globalGeodeticCrs.crsToTileCoordinate(crsCoordinate, this.globalGeodeticCrs.getBounds(), TileStoreTileSource.TileScheme.dimensions(zoom) , TileStoreTileSource.Origin).getY();
         return tileY;
     }
 
     @Override
     public double tileXToLon(final int x, final int zoom)
     {
-        
-        double longitude = this.globalGeodeticCrs.tileToCrsCoordinate(x, 0, this.globalGeodeticCrs.getBounds(), TileStoreTileSource.TileScheme.dimensions(zoom) , TileStoreTileSource.Origin).getX();
-        
+
+        final double longitude = this.globalGeodeticCrs.tileToCrsCoordinate(x, 0, this.globalGeodeticCrs.getBounds(), TileStoreTileSource.TileScheme.dimensions(zoom) , TileStoreTileSource.Origin).getX();
+
         return longitude;
     }
 
@@ -234,7 +239,7 @@ public class TileStoreTileSource implements TileSource
     public double tileYToLat(final int y, final int zoom)
     {
         // TODO Auto-generated method stub
-        double latitude = this.globalGeodeticCrs.tileToCrsCoordinate(0, y, this.globalGeodeticCrs.getBounds(), TileStoreTileSource.TileScheme.dimensions(zoom) , TileStoreTileSource.Origin).getY();
+        final double latitude = this.globalGeodeticCrs.tileToCrsCoordinate(0, y, this.globalGeodeticCrs.getBounds(), TileStoreTileSource.TileScheme.dimensions(zoom) , TileStoreTileSource.Origin).getY();
         return latitude;
     }
 
@@ -243,5 +248,5 @@ public class TileStoreTileSource implements TileSource
     {
         return this.tileStore.getName();
     }
-    
+
 }

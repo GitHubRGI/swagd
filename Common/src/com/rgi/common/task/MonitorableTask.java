@@ -21,24 +21,11 @@
  * SOFTWARE.
  */
 
-package com.rgi.common.tile.scheme;
+package com.rgi.common.task;
 
-/**
- * Mechanism to describe the number of tiles in a tile set, at a given zoom
- * level
- *
- * @author Luke Lambert
- *
- */
-public interface TileScheme
-{
-    /**
-     * Calculates the height and width of the tile matrix for a given zoom level
-     *
-     * @param zoomLevel
-     *             Zoom level
-     * @return Returns a {@link TileMatrixDimensions} specifying the width and
-     *             height of a tile matrix at the given zoom level
-     */
-    public abstract TileMatrixDimensions dimensions(final int zoomLevel);
+@SuppressWarnings("javadoc")
+public interface MonitorableTask {
+    // A task that can be monitored while running.
+  public void addMonitor(TaskMonitor monitor);
+  public void requestCancel();
 }

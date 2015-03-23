@@ -1,19 +1,24 @@
-/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+/* The MIT License (MIT)
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>,
- *  or write to the Free Software Foundation, Inc., 59 Temple Place -
- *  Suite 330, Boston, MA 02111-1307, USA.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package com.rgi.common.util.test;
 
@@ -34,15 +39,15 @@ import com.rgi.common.util.FileUtility;
 @SuppressWarnings({"static-method", "javadoc"})
 public class FileUtilityTest
 {
-    
+
     @Test
     public void nameWithoutExtensionVerify()
     {
-        File   file                     = new File("directory/nameOfFile.txt");
-        String fileNameWithoutExtension = FileUtility.nameWithoutExtension(file);
-        assertStringsEqual(fileNameWithoutExtension, "nameOfFile");
+        final File   file                     = new File("directory/nameOfFile.txt");
+        final String fileNameWithoutExtension = FileUtility.nameWithoutExtension(file);
+        this.assertStringsEqual(fileNameWithoutExtension, "nameOfFile");
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException()
     {
@@ -50,138 +55,138 @@ public class FileUtilityTest
         fail("Expected FileUtility method nameWithoutExtension(File file) to "
              + "throw an IllegalArgumentException when passed a null value for File.");
     }
-    
+
     @Test
     public void appendForUniqueVerify()
     {
-        File fileExists = new File("TestFileName"); 
+        final File fileExists = new File("TestFileName");
         try
         {
             fileExists.createNewFile();
-            
-            String returnedFileName = FileUtility.appendForUnique(fileExists.getName());
-            String expectedFileName  = "TestFileName (1)";//expect append to only one time
-            
-            assertStringsEqual(expectedFileName, returnedFileName);
-        } catch (IOException e)
+
+            final String returnedFileName = FileUtility.appendForUnique(fileExists.getName());
+            final String expectedFileName  = "TestFileName (1)";//expect append to only one time
+
+            this.assertStringsEqual(expectedFileName, returnedFileName);
+        } catch (final IOException e)
         {
-            deleteFile(fileExists);
+            this.deleteFile(fileExists);
             e.printStackTrace();
         }
         finally
         {
-            deleteFile(fileExists);
+            this.deleteFile(fileExists);
         }
     }
-    
+
     @Test
     public void appendForUniqueVerify2()
     {
-        File fileExists  = new File("TestFileName");
-        File fileExists2 = new File("TestFileName (1)");
+        final File fileExists  = new File("TestFileName");
+        final File fileExists2 = new File("TestFileName (1)");
         try
         {
             //create two files
             fileExists.createNewFile();
             fileExists2.createNewFile();
             //get unique name
-            String returnedFileName = FileUtility.appendForUnique(fileExists.getName());
+            final String returnedFileName = FileUtility.appendForUnique(fileExists.getName());
             //expected name
-            String expectedFileName  = "TestFileName (2)"; //expect append two times
+            final String expectedFileName  = "TestFileName (2)"; //expect append two times
             //verify equals
-            assertStringsEqual(expectedFileName, returnedFileName);
-        } 
-        catch (IOException e)
+            this.assertStringsEqual(expectedFileName, returnedFileName);
+        }
+        catch (final IOException e)
         {
-            deleteFile(fileExists);
-            deleteFile(fileExists2);
+            this.deleteFile(fileExists);
+            this.deleteFile(fileExists2);
             e.printStackTrace();
         }
         finally
         {
-            deleteFile(fileExists);
-            deleteFile(fileExists2);
+            this.deleteFile(fileExists);
+            this.deleteFile(fileExists2);
         }
     }
 
     @Test
     public void appendForUniqueVerify3()
     {
-        File fileExists = new File("FileName.something.extension.gpkg");//test with multiple "."'s
-        
+        final File fileExists = new File("FileName.something.extension.gpkg");//test with multiple "."'s
+
         try
         {
             fileExists.createNewFile();
-            
-            String returnedFileName = FileUtility.appendForUnique(fileExists.getName());
-            String expectedFileName = "FileName.something.extension (1).gpkg";
-            
-            assertStringsEqual(expectedFileName, returnedFileName);
+
+            final String returnedFileName = FileUtility.appendForUnique(fileExists.getName());
+            final String expectedFileName = "FileName.something.extension (1).gpkg";
+
+            this.assertStringsEqual(expectedFileName, returnedFileName);
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
-            deleteFile(fileExists);
+            this.deleteFile(fileExists);
             e.printStackTrace();
         }
         finally
         {
-            deleteFile(fileExists);
+            this.deleteFile(fileExists);
         }
     }
-    
+
     @Test
     public void appendForUniqueVerify4()
     {
-        File fileExists = new File(".gpkg"); //test if . is at the beginning
-        
+        final File fileExists = new File(".gpkg"); //test if . is at the beginning
+
         try
         {
             fileExists.createNewFile();
-            
-            String returnedFileName = FileUtility.appendForUnique(fileExists.getName());
-            String expectedFileName = "(1).gpkg";
-            
-            assertStringsEqual(expectedFileName, returnedFileName);
+
+            final String returnedFileName = FileUtility.appendForUnique(fileExists.getName());
+            final String expectedFileName = "(1).gpkg";
+
+            this.assertStringsEqual(expectedFileName, returnedFileName);
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
             e.printStackTrace();
             fail();
         }
         finally
         {
-            deleteFile(fileExists);
+            this.deleteFile(fileExists);
         }
     }
-    
+
     @Test
     public void appendForUniqueVerify5()
     {
-        File fileDoesNotExist = new File("returnTheSame.FileName"); //test if it will return the same name without alteration
-            
-        String returnedFileName = FileUtility.appendForUnique(fileDoesNotExist.getName());
-        String expectedFileName = fileDoesNotExist.getName();
-        
-        assertStringsEqual(expectedFileName, returnedFileName);
-        
+        final File fileDoesNotExist = new File("returnTheSame.FileName"); //test if it will return the same name without alteration
+
+        final String returnedFileName = FileUtility.appendForUnique(fileDoesNotExist.getName());
+        final String expectedFileName = fileDoesNotExist.getName();
+
+        this.assertStringsEqual(expectedFileName, returnedFileName);
+
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException2()
     {
         FileUtility.appendForUnique(null);
         fail("Expected FileUtility method appendForUnique(String) to throw an IllegalArgumentException when passing a null value for String.");
     }
-    
-    private void assertStringsEqual(String expected, String returned)
+
+    private void assertStringsEqual(final String expected, final String returned)
     {
         assertTrue(String.format("The appendForUnique did not return the expected value.\nExpected: %s.  Returned: %s",
-                                 expected, 
+                                 expected,
                                  returned),
                    expected.equals(returned));
     }
-    
-    private void deleteFile(File fileExists)
+
+    private void deleteFile(final File fileExists)
     {
         if(fileExists.exists())
         {
