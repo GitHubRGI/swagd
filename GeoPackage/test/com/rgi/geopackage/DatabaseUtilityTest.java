@@ -1,19 +1,24 @@
-/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+/* The MIT License (MIT)
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>,
- *  or write to the Free Software Foundation, Inc., 59 Temple Place -
- *  Suite 330, Boston, MA 02111-1307, USA.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.rgi.geopackage;
@@ -47,7 +52,7 @@ public class DatabaseUtilityTest
 
     /**
      * Tests if the DatabaseUtility will return the expected application Id.
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws Exception
@@ -76,7 +81,7 @@ public class DatabaseUtilityTest
     /**
      * Tests if the application Id can be set correctly through the
      * DatabaseUtility
-     * 
+     *
      * @throws SQLException
      *             throws if an SQLException occurs
      * @throws Exception
@@ -173,7 +178,7 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does not exists with the tableOrViewExists method.
-     * 
+     *
      * @throws Exception
      *             throws when an Exception occurs
      */
@@ -200,7 +205,7 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tableOrViewExists method.
-     * 
+     *
      * @throws Exception
      *             throws when an Exception occurs
      */
@@ -229,7 +234,7 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tableOrViewExists method.
-     * 
+     *
      * @throws Exception
      *             throws when an Exception occurs
      */
@@ -257,7 +262,7 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility would throw an
      * IllegalArgumentException when given a null connection.
-     * 
+     *
      * @throws Exception
      *             throws when an Exception occurs
      */
@@ -271,7 +276,7 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility would throw an
      * IllegalArgumentException when given a closed connection.
-     * 
+     *
      * @throws Exception
      *             throws when an Exception occurs
      */
@@ -300,7 +305,7 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tablesOrViewsExists method.
-     * 
+     *
      * @throws Exception
      *             throws when an Exception occurs
      */
@@ -330,7 +335,7 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tablesOrViewsExists method.
-     * 
+     *
      * @throws Exception
      *             throws when an Exception occurs
      */
@@ -359,7 +364,7 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tablesOrViewsExists method.
-     * 
+     *
      * @throws Exception
      *             throws when an Exception occurs
      */
@@ -392,7 +397,7 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility would throw an exception when
      * receiving a file that is less than 100 bytes.
-     * 
+     *
      * @throws Exception
      *             throws when an Exception occurs
      */
@@ -420,7 +425,7 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility gets correct sqlite version of a
      * file.
-     * 
+     *
      * @throws Exception
      *             throws when an Exception occurs
      */
@@ -450,7 +455,7 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility would throw an exception when
      * receiving a file that is null.
-     * 
+     *
      * @throws IOException
      *             throws when DatabaseUtility cannot read sqliteVersion from a
      *             file
@@ -465,7 +470,7 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility would throw an exception when
      * receiving a file that is null.
-     * 
+     *
      * @throws IOException
      *             throws when DatabaseUtility cannot read sqliteVersion from a
      *             file
