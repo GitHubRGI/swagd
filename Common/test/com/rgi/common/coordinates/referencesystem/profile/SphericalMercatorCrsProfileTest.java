@@ -1,19 +1,24 @@
-/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+/* The MIT License (MIT)
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>,
- *  or write to the Free Software Foundation, Inc., 59 Temple Place -
- *  Suite 330, Boston, MA 02111-1307, USA.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.rgi.common.coordinates.referencesystem.profile;
@@ -437,7 +442,7 @@ public class SphericalMercatorCrsProfileTest
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(9, 0, newCoordinate);
+        this.assertTileCoordinate(9, 0, newCoordinate);
     }
 
     /**
@@ -477,7 +482,7 @@ public class SphericalMercatorCrsProfileTest
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
         final Coordinate<Integer>         newCoordinate  = sphericalCrs.crsToTileCoordinate(crsCoordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(0, 0, newCoordinate);
+        this.assertTileCoordinate(0, 0, newCoordinate);
     }
 
     /**
@@ -540,7 +545,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(4, 1, newCoordinate);
+        this.assertTileCoordinate(4, 1, newCoordinate);
     }
 
     /**
@@ -564,7 +569,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(4, 1, newCoordinate);
+        this.assertTileCoordinate(4, 1, newCoordinate);
     }
 
     /**
@@ -586,7 +591,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(2, 1, newCoordinate);
+        this.assertTileCoordinate(2, 1, newCoordinate);
     }
 
     /**
@@ -606,7 +611,7 @@ public class SphericalMercatorCrsProfileTest
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(3, 2, newCoordinate);
+        this.assertTileCoordinate(3, 2, newCoordinate);
     }
 
     /**
@@ -666,7 +671,7 @@ public class SphericalMercatorCrsProfileTest
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
         final Coordinate<Integer>         newCoordinate  = sphericalCrs.crsToTileCoordinate(crsCoordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(0, 0, newCoordinate);
+        this.assertTileCoordinate(0, 0, newCoordinate);
     }
 
     /**
@@ -709,7 +714,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(4, 1, newCoordinate);
+        this.assertTileCoordinate(4, 1, newCoordinate);
     }
 
     /**
@@ -733,7 +738,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(1, 4, newCoordinate);
+        this.assertTileCoordinate(1, 4, newCoordinate);
     }
 
     /**
@@ -755,7 +760,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(2, 1, newCoordinate);
+        this.assertTileCoordinate(2, 1, newCoordinate);
     }
 
     /**
@@ -775,7 +780,7 @@ public class SphericalMercatorCrsProfileTest
         final SphericalMercatorCrsProfile sphericalCrs = new SphericalMercatorCrsProfile();
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(3, 2, newCoordinate);
+        this.assertTileCoordinate(3, 2, newCoordinate);
     }
 
     /**
@@ -855,7 +860,7 @@ public class SphericalMercatorCrsProfileTest
         final SphericalMercatorCrsProfile sphericalCrs   = new SphericalMercatorCrsProfile();
         final Coordinate<Integer>         newCoordinate  = sphericalCrs.crsToTileCoordinate(crsCoordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(0, 0, newCoordinate);
+        this.assertTileCoordinate(0, 0, newCoordinate);
     }
 
     /**
@@ -878,7 +883,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(4, 1, newCoordinate);
+        this.assertTileCoordinate(4, 1, newCoordinate);
     }
 
     /**
@@ -902,7 +907,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(1, 4, newCoordinate);
+        this.assertTileCoordinate(1, 4, newCoordinate);
     }
 
     /**
@@ -924,7 +929,7 @@ public class SphericalMercatorCrsProfileTest
 
         final Coordinate<Integer> newCoordinate = sphericalCrs.crsToTileCoordinate(coordinate, sphericalCrs.getBounds(), dimensions, tileOrigin);
 
-        assertTileCoordinate(2, 1, newCoordinate);
+        this.assertTileCoordinate(2, 1, newCoordinate);
     }
 
     /**
@@ -944,8 +949,8 @@ public class SphericalMercatorCrsProfileTest
 
         this.assertCoordinates( originalTileCoordinate, returnedTileCoordinate,  returnedCrsCoordiante);
     }
-    
-    
+
+
 
     /**
      * Tests if tile is in upperRight and can be transformed from tile coordinate to crs back to
@@ -1022,8 +1027,8 @@ public class SphericalMercatorCrsProfileTest
 
         this.assertCoordinates( originalTileCoordinate, returnedTileCoordinate,  returnedCrsCoordiante);
     }
-    
-    private void assertCoordinates(Coordinate<Integer> originalTileCoordinate, Coordinate<Integer> returnedTileCoordinate, CrsCoordinate returnedCrsCoordiante)
+
+    private void assertCoordinates(final Coordinate<Integer> originalTileCoordinate, final Coordinate<Integer> returnedTileCoordinate, final CrsCoordinate returnedCrsCoordiante)
     {
         assertEquals(String.format("The tile coordinate did not return as expected.\nExpected Tile Coordinate: (x,y)-> (%d,%d)"
                 + "\nActual Tile Coordinate: (x,y)-> (%d,%d)\nActual CrsCoordinate: (x,y)->(%f, %f)",
@@ -1034,8 +1039,8 @@ public class SphericalMercatorCrsProfileTest
                returnedCrsCoordiante.getX(),
                returnedCrsCoordiante.getY()), originalTileCoordinate, returnedTileCoordinate);
     }
-    
-    private void assertTileCoordinate(int x, int y, Coordinate<Integer> newCoordinate)
+
+    private void assertTileCoordinate(final int x, final int y, final Coordinate<Integer> newCoordinate)
     {
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: %d y: %d",
                 newCoordinate.getX(),
