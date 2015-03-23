@@ -1,19 +1,24 @@
-/*  Copyright (C) 2014 Reinventing Geospatial, Inc
+/* The MIT License (MIT)
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>,
- *  or write to the Free Software Foundation, Inc., 59 Temple Place -
- *  Suite 330, Boston, MA 02111-1307, USA.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.rgi.view;
@@ -31,41 +36,41 @@ import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import com.rgi.common.tile.store.TileStoreReader;
 //This is a work in progress do not rely on this code
 @SuppressWarnings("javadoc")
-public class JMapTree extends JPanel 
+public class JMapTree extends JPanel
 {
     /** Serial Version UID */
     private static final long serialVersionUID = 3050203054402323972L;
 
-    private JMapViewer map;
-    private RadioButtonTree tree;
-    private JPanel treePanel;
-    private JSplitPane splitPane;
+    private final JMapViewer map;
+    private final RadioButtonTree tree;
+    private final JPanel treePanel;
+    private final JSplitPane splitPane;
 
-    public JMapTree(List<TileStoreReader> stores, JMapViewer map){
+    public JMapTree(final List<TileStoreReader> stores, final JMapViewer map){
         this(stores, false, map);
     }
-    public JMapTree(List<TileStoreReader> stores, boolean treeVisible, JMapViewer map){
+    public JMapTree(final List<TileStoreReader> stores, final boolean treeVisible, final JMapViewer map){
         super();
         this.splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        
+
         this.map = map;
         this.tree = new RadioButtonTree(stores, this.map);
         this.treePanel = new JPanel();
 //        this.treePanel.setLayout(new BorderLayout());
 //        this.treePanel.add(this.tree, BorderLayout.CENTER);
 //        this.treePanel.add(new JLabel("<html><center>Use right mouse button to<br />show/hide texts</center></html>"), BorderLayout.SOUTH);
-        
+
 
 //        this.splitPane.setOneTouchExpandable(true);
 //        this.splitPane.setDividerLocation(150);
-        
+
         //Provide minimum sizes for the two components in the split pane
 //        Dimension minimumSize = new Dimension(100, 50);
         //tree.setMinimumSize(minimumSize);
 //        this.map.setMinimumSize(minimumSize);
-        createRefresh();
-        setLayout(new BorderLayout());
-        setTreeVisible(treeVisible);
+        this.createRefresh();
+        this.setLayout(new BorderLayout());
+        this.setTreeVisible(treeVisible);
     }
     public JMapViewer getViewer(){
         return this.map;
@@ -73,38 +78,41 @@ public class JMapTree extends JPanel
     public RadioButtonTree getTree(){
         return this.tree;
     }
-    
-    public void addLayer(TileStoreReader store)
+
+    public void addLayer(final TileStoreReader store)
     {
         this.tree.addLayer(store);
     }
-    
-    public void setTreeVisible(boolean visible){
-        removeAll();
-        revalidate();
+
+    public void setTreeVisible(final boolean visible){
+        this.removeAll();
+        this.revalidate();
         if(visible){
             this.splitPane.setLeftComponent(this.treePanel);
             this.splitPane.setRightComponent(this.map);
-            add(this.splitPane, BorderLayout.CENTER);
-        }else add(this.map, BorderLayout.CENTER);
-        repaint();
+            this.add(this.splitPane, BorderLayout.CENTER);
+        } else
+        {
+            this.add(this.map, BorderLayout.CENTER);
+        }
+        this.repaint();
     }
     private void createRefresh(){
         this.tree.getModel().addTreeModelListener(new TreeModelListener() {
             @Override
             public void treeNodesChanged(final TreeModelEvent e) {
-                repaint();
+                JMapTree.this.repaint();
             }
             @Override
-            public void treeNodesInserted(TreeModelEvent arg0) {
+            public void treeNodesInserted(final TreeModelEvent arg0) {
                 // TODO Auto-generated method stub
             }
             @Override
-            public void treeNodesRemoved(TreeModelEvent arg0) {
+            public void treeNodesRemoved(final TreeModelEvent arg0) {
                 // TODO Auto-generated method stub
             }
             @Override
-            public void treeStructureChanged(TreeModelEvent arg0) {
+            public void treeStructureChanged(final TreeModelEvent arg0) {
                 // TODO Auto-generated method stub
             }
         });
