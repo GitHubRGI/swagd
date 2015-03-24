@@ -62,7 +62,6 @@ public abstract class NavigationWindow extends JFrame
                                                }
                                                catch(final Exception ex)
                                                {
-                                                   this.okButton.setEnabled(true);
                                                    ex.printStackTrace();
                                                    this.error("An error has occurred: " + ex.getMessage());
                                                }

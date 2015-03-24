@@ -256,21 +256,99 @@ public class PackagerWindow extends NavigationWindow
             return false;
         }
 
-        try(final TileStoreReader tileStoreReader = this.tileStoreReaderAdapter.getTileStoreReader())
-        {
-            try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
-            {
-                final ProgressDialog progress = new ProgressDialog(this,
-                                                             this.processName() + "...",
-                                                             taskMonitor -> { final Packager packager = new Packager(taskMonitor,
-                                                                                                                     tileStoreReader,
-                                                                                                                     tileStoreWriter);
-                                                                              return packager.execute();
-                                                                            });
+//        final JProgressBar progressBar = new JProgressBar();
+//
+//        progressBar.setSize(200, 15);
+//
+//        final JDialog progressDialog = new JDialog(this, this.processName() + "...", ModalityType.DOCUMENT_MODAL);
+//
+//        progressDialog.setLayout(new FlowLayout(FlowLayout.CENTER));
+//
+//        progressDialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+//
+//        progressBar.setStringPainted(true);
+//
+//        progressBar.setMinimum(0);
+//
+//        progressDialog.add(progressBar);
+//        progressDialog.pack();
+//
+//        final SwingWorker<Void, Void> task = new SwingWorker<Void, Void>()
+//                                             {
+//                                                 @Override
+//                                                 protected Void doInBackground() throws Exception
+//                                                 {
+//                                                     try(final TileStoreReader tileStoreReader = PackagerWindow.this.tileStoreReaderAdapter.getTileStoreReader())
+//                                                     {
+//                                                         try(final TileStoreWriter tileStoreWriter = PackagerWindow.this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
+//                                                         {
+//                                                             (new Packager(new TaskMonitor()
+//                                                                           {
+//                                                                               @Override
+//                                                                               public void setProgress(final int value)
+//                                                                               {
+//                                                                                   progressBar.setValue(value);
+//                                                                                   progressBar.setString(String.format("%d/%d",
+//                                                                                                                       value,
+//                                                                                                                       progressBar.getMaximum()));
+//                                                                               }
+//
+//                                                                               @Override
+//                                                                               public void setMaximum(final int max)
+//                                                                               {
+//                                                                                   progressBar.setMaximum(max);
+//                                                                               }
+//                                                                           },
+//                                                                           tileStoreReader,
+//                                                                           tileStoreWriter)).execute();
+//                                                         }
+//                                                     }
+//
+//                                                     return null;
+//                                                 }
+//
+//                                                 @Override
+//                                                 protected void done()
+//                                                 {
+//                                                     try
+//                                                     {
+//                                                         this.get();
+//                                                     }
+//                                                     catch(final ExecutionException e)
+//                                                     {
+//                                                         e.getCause().printStackTrace();
+//                                                         final String msg = String.format("Unexpected problem: %s",
+//                                                                                         e.getCause().toString());
+//                                                         JOptionPane.showMessageDialog(progressDialog,
+//                                                                                       msg,
+//                                                                                       "Error",
+//                                                                                       JOptionPane.ERROR_MESSAGE);
+//                                                     }
+//                                                     catch(final InterruptedException e)
+//                                                     {
+//                                                         // Process e here
+//                                                     }
+//
+//                                                     progressDialog.dispose();
+//                                                 }
+//                                             };
+//
+//        task.execute();
+//        progressDialog.setVisible(true);
 
-                progress.setVisible(true);
-            }
-        }
+        ProgressDialog.trackProgress(this,
+                                     this.processName() + "...",
+                                     taskMonitor -> { try(final TileStoreReader tileStoreReader = PackagerWindow.this.tileStoreReaderAdapter.getTileStoreReader())
+                                                      {
+                                                          try(final TileStoreWriter tileStoreWriter = PackagerWindow.this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
+                                                          {
+                                                              (new Packager(taskMonitor,
+                                                                            tileStoreReader,
+                                                                            tileStoreWriter)).execute();
+                                                              return null;
+                                                          }
+                                                      }
+                                                    });
 
         return true;
     }

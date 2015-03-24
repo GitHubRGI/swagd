@@ -62,104 +62,31 @@ public class Packager
     /**
      * Starts the packaging job
      */
-    public boolean execute()
+    public void execute() throws TileStoreException
     {
         int tileCount = 0;
 
-        try
+        this.taskMonitor.setMaximum((int)this.tileStoreReader.countTiles());
+
+        for(final TileHandle tileHandle : (Iterable<TileHandle>)this.tileStoreReader.stream()::iterator)
         {
-            this.taskMonitor.setMaximum((int)this.tileStoreReader.countTiles());
-
-            for(final TileHandle tileHandle : (Iterable<TileHandle>)this.tileStoreReader.stream()::iterator)
+            try
             {
-                try
-                {
-                    this.tileStoreWriter.addTile(tileHandle.getCrsCoordinate(this.tileStoreWriter.getTileOrigin()),
-                                                 tileHandle.getZoomLevel(),
-                                                 tileHandle.getImage());
+                this.tileStoreWriter.addTile(tileHandle.getCrsCoordinate(this.tileStoreWriter.getTileOrigin()),
+                                             tileHandle.getZoomLevel(),
+                                             tileHandle.getImage());
 
-                    this.taskMonitor.setProgress(++tileCount);
-                }
-                catch(final TileStoreException | IllegalArgumentException ex)
-                {
-                    // TODO: report this somewhere else?
-                    System.err.printf("Tile z: %d, x: %d, y: %d failed to get copied into the package: %s\n",
-                                      tileHandle.getZoomLevel(),
-                                      tileHandle.getColumn(),
-                                      tileHandle.getRow(),
-                                      ex.getMessage());
-                }
+                this.taskMonitor.setProgress(++tileCount);
+            }
+            catch(final TileStoreException | IllegalArgumentException ex)
+            {
+                // TODO: report this somewhere else?
+                System.err.printf("Tile z: %d, x: %d, y: %d failed to get copied into the package: %s\n",
+                                  tileHandle.getZoomLevel(),
+                                  tileHandle.getColumn(),
+                                  tileHandle.getRow(),
+                                  ex.getMessage());
             }
         }
-        catch(final TileStoreException ex)
-        {
-            this.taskMonitor.setError(ex);
-            return false;
-        }
-
-        this.taskMonitor.finished();
-        return true;
     }
-
-
-//    @Override
-//    public void requestCancel()
-//    {
-//        this.executor.shutdownNow();
-//        try
-//        {
-//            this.executor.awaitTermination(60, TimeUnit.SECONDS);
-//        }
-//        catch(final InterruptedException ie)
-//        {
-//            this.fireCancelled();
-//        }
-//    }
-//
-//    private void fireCancelled()
-//    {
-//        for(final TaskMonitor monitor : this.monitors)
-//        {
-//            monitor.cancelled();
-//        }
-//    }
-//
-//    private class JobWaiter implements Runnable
-//    {
-//        private final Future<?> job;
-//
-//        public JobWaiter(final Future<?> job)
-//        {
-//            ++Packager.this.jobTotal;
-//            this.job = job;
-//        }
-//
-//        @Override
-//        public void run()
-//        {
-//            try
-//            {
-//                this.job.get();
-//            }
-//            catch(final InterruptedException ie)
-//            {
-//                // unlikely, but we still need to handle it
-//                System.err.println("Packaging job was interrupted.");
-//                ie.printStackTrace();
-//                Packager.this.fireError(ie);
-//            }
-//            catch(final ExecutionException ee)
-//            {
-//                System.err.println("Packaging job failed with exception: " + ee.getMessage());
-//                ee.printStackTrace();
-//                Packager.this.fireError(ee);
-//            }
-//            catch(final CancellationException ce)
-//            {
-//                System.err.println("Packaging job was cancelled.");
-//                ce.printStackTrace();
-//                Packager.this.fireError(ce);
-//            }
-//        }
-//    }
 }

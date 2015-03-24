@@ -21,16 +21,33 @@
  * SOFTWARE.
  */
 
-package com.rgi.common;
+package utility;
+
+import java.util.function.Function;
 
 /**
- * @author Duff Means
+ * @author Luke.Lambert
  *
+ * @param <T>
+ *
+ * @see <a
+ *      href="https://stackoverflow.com/a/27252163/16434">https://stackoverflow.com/a/27252163/16434</a>
  */
-public interface TaskMonitor
+@FunctionalInterface
+public interface ThrowingFunction<T, R> extends Function<T, R>
 {
-    public void setMaximum(final int max);
+    @Override
+    public default R apply(final T t)
+    {
+        try
+        {
+            return applyThrows(t);
+        }
+        catch(final Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 
-    public void setProgress(final int value);
+    public R applyThrows(T t) throws Exception;
 }
-
