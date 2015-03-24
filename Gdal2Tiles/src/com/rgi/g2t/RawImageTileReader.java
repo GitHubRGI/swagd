@@ -13,7 +13,6 @@ import javax.naming.OperationNotSupportedException;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
-import org.gdal.osr.SpatialReference;
 import org.gdal.osr.osr;
 
 import utility.GdalUtility;
@@ -37,7 +36,7 @@ import com.rgi.common.tile.store.TileStoreReader;
  * @author Steven D. Lander
  * 
  * Not an actual {@link TileStoreReader} per se, but has some attributes that make GUI building easier.
- * Only getCrs, getBounds, and Stream(int) are implemented.
+ * Only getCrs, getZoomLevels, getBounds, and Stream(int) are implemented.
  *
  */
 public class RawImageTileReader implements TileStoreReader {
@@ -47,6 +46,12 @@ public class RawImageTileReader implements TileStoreReader {
 	private final TileOrigin tileOrigin = TileOrigin.LowerLeft;
 	private final int tileSize = 256;
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param rawImage A raster image
+	 * @throws TileStoreException Thrown when GDAL could not get the correct coordinate reference system of the input raster
+	 */
 	public RawImageTileReader(final File rawImage) throws TileStoreException
 	{
 		this.rawImage = rawImage;
@@ -64,6 +69,12 @@ public class RawImageTileReader implements TileStoreReader {
 		gdal.AllRegister();
 	}
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param coordinateReferenceSystem The coordinate reference system of the input raster (specifically)
+	 * @param rawImage A raster image
+	 */
 	public RawImageTileReader(final CoordinateReferenceSystem coordinateReferenceSystem, final File rawImage)
 	{
 		this.rawImage = rawImage;
@@ -116,7 +127,9 @@ public class RawImageTileReader implements TileStoreReader {
 
 	@Override
 	public Set<Integer> getZoomLevels() throws TileStoreException {
+		// Open the dataset
 		final Dataset dataset = gdal.Open(this.rawImage.toPath().toString(), gdalconstConstants.GA_ReadOnly);
+		// Return the Set of zoom levels, with a LowerLeft origin and 256 pixel square tile size
 		return GdalUtility.getZoomLevelsForDataset(dataset, this.tileOrigin, this.tileSize);
 	}
 
@@ -127,29 +140,42 @@ public class RawImageTileReader implements TileStoreReader {
 
 	@Override
 	public Stream<TileHandle> stream(int zoomLevel) throws TileStoreException {
+		// Create a new tile scheme
+		// zoomLevel should be the minZoom of the raw image (lowest integer zoom)
+		// this zoom should only have one tile
 		final TileScheme tileScheme = new ZoomTimesTwo(zoomLevel, zoomLevel, 1, 1);
 		final Dataset dataset = gdal.Open(this.rawImage.toPath().toString(), gdalconstConstants.GA_ReadOnly);
 		final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(dataset);
+		// Calculate the tile ranges for all the zoom levels (0-32)
 		final List<Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRangesForAllZooms(this.getBounds(),
 																									   crsProfile,
 																									   tileScheme,
 																									   TileOrigin.LowerLeft);
+		// Pick out the zoom level range for this particular zoom
 		final Range<Coordinate<Integer>> zoomInfo = tileRanges.get(zoomLevel);
+		// Get the coordinate information
 		final Coordinate<Integer> topLeftCoordinate = zoomInfo.getMinimum();
 		final Coordinate<Integer> bottomRightCoordinate = zoomInfo.getMaximum();
+		// Parse each coordinate into min/max tiles for X/Y
 		final int zoomMinXTile = topLeftCoordinate.getX();
 		final int zoomMaxXTile = bottomRightCoordinate.getX();
 		final int zoomMinYTile = bottomRightCoordinate.getY();
 		final int zoomMaxYTile = topLeftCoordinate.getY();
+		// Create a tile handle list that we can append to
 		List<TileHandle> tileHandles = new ArrayList<TileHandle>();
 		for (int tileY = zoomMaxYTile; tileY >= zoomMinYTile; tileY--)
 		{
+			// Iterate through all Y's
 			for (int tileX = zoomMinXTile; tileX <= zoomMaxXTile; tileX++)
 			{
+				// Iterate through all X's
+				// Create a raw image handle with the z/x/y
 				final RawImageTileHandle rawImageTileHandle = new RawImageTileHandle(zoomLevel, tileX, tileY);
+				// Add to the list
 				tileHandles.add(rawImageTileHandle);
 			}
 		}
+		// Return the entire tile handle list as a stream
 		return tileHandles.stream();
 	}
 
@@ -158,15 +184,16 @@ public class RawImageTileReader implements TileStoreReader {
 	{
 		if (this.coordinateReferenceSystem != null)
 		{
+			// Return the one from the constructor if it exists
 			return this.coordinateReferenceSystem;
 		}
 		else
 		{
+			// Open the dataset
 			final Dataset dataset = gdal.Open(this.rawImage.toPath().toString(), gdalconstConstants.GA_ReadOnly);
 			try
 			{
-				final SpatialReference srs = GdalUtility.getDatasetSrs(dataset);
-				return GdalUtility.getCoordinateReferenceSystemFromSpatialReference(srs);
+				return GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSrs(dataset));
 			}
 			catch(DataFormatException ex)
 			{
@@ -193,6 +220,7 @@ public class RawImageTileReader implements TileStoreReader {
 
 	@Override
 	public TileScheme getTileScheme() {
+		System.err.println("GetTileScheme is not implemented in RawImageTileReader.");
 		return null;
 	}
 	

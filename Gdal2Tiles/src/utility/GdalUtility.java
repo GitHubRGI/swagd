@@ -64,7 +64,7 @@ import com.rgi.common.tile.store.TileStoreException;
 
 /**
  * @author Luke Lambert
- *
+ * @author Steven D. Lander
  */
 public class GdalUtility
 {
@@ -249,7 +249,7 @@ public class GdalUtility
      * 
      * @param dataset A GDAL {@link Dataset}
      * @return Returns a GDAL {@link SpatialReference} that the input dataset has
-     * @throws DataFormatException 
+     * @throws DataFormatException  Thrown when GDAL has exhausted all means to get the WKT and failed.
      */
     public static SpatialReference getDatasetSrs(final Dataset dataset) throws DataFormatException
     {
@@ -271,32 +271,40 @@ public class GdalUtility
     }
     
     /**
-     * @param crs
-     * @return
+     * Given a {@link CoordinateReferenceSystem}, return a {@link SpatialReference}
+     * 
+     * @param crs An input {@link CoordinateReferenceSystem}
+     * @return A {@link SpatialReference} built from the input CRS WKT
      */
     public static SpatialReference getSpatialReferenceFromCrs(final CoordinateReferenceSystem crs)
     {
     	final SpatialReference srs = new SpatialReference();
-    	srs.ImportFromEPSG(crs.getIdentifier());
+    	srs.ImportFromWkt(CrsProfileFactory.create(crs).getWellKnownText());
     	return srs;
     }
     
     /**
-     * @param dataset
-     * @return
+     * Determine if an input dataset has a georeference
+     * 
+     * @param dataset An input {@link Dataset}
+     * @return A boolean where true means the dataset has a georeference and false otherwise
      */
     public static boolean datasetHasGeoReference(final Dataset dataset)
     {
 		final double[] emptyGeoReference = { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
 		// Compare dataset geotransform to an empty geotransform and ensure there are no GCPs
+		// below is the negation of HasGeoReference
 		//return Arrays.equals(dataset.GetGeoTransform(), emptyGeoReference) && dataset.GetGCPCount() == 0;
 		return Arrays.equals(dataset.GetGeoTransform(), emptyGeoReference) || dataset.GetGCPCount() != 0;
     }
     
     /**
-     * @param dataset
-     * @return
-     * @throws DataFormatException
+     * Get the bounding box for an input {@link Dataset}
+     * 
+     * @param dataset An input {@link Dataset}
+     * @return A {@link BoundingBox} built from the bounds of the input {@link Dataset}
+     * @throws DataFormatException Thrown when the input dataset contains rotation or skew.  Fix
+     * 							   the input raster with the gdalwarp utility manually.
      */
     public static BoundingBox getBoundsForDataset(final Dataset dataset) throws DataFormatException
     {
@@ -314,6 +322,13 @@ public class GdalUtility
 		return new BoundingBox(minX, minY, maxX, maxY);
     }
     
+    /**
+     * Build a {@link CoordinateReferenceSystem} from an input {@link SpatialReference}
+     * 
+     * @param srs An input {@link SpatialReference} from which a {@link CoordinateReferenceSystem} will be built
+     * @return A {@link CoordinateReferenceSystem} built from the input {@link SpatialReference} using the 
+     * 		   authority name and code.
+     */
     public static CoordinateReferenceSystem getCoordinateReferenceSystemFromSpatialReference(final SpatialReference srs)
     {
         // Passing null to GetAuthorityName and Code will query the root node of the WKT, not
@@ -324,9 +339,11 @@ public class GdalUtility
     }
     
     /**
-     * @param dataset
-     * @return
-     * @throws TileStoreException
+     * Build a {@link CrsProfile} from an input {@link Dataset}
+     * 
+     * @param dataset An input {@link Dataset}
+     * @return A {@link CrsProfile} built from the input {@link Dataset}
+     * @throws TileStoreException Thrown when a {@link CrsProfile} could not be built from the input {@link Dataset}
      */
     public static CrsProfile getCrsProfileForDataset(final Dataset dataset) throws TileStoreException
     {
@@ -341,11 +358,14 @@ public class GdalUtility
     }
     
     /**
-     * @param bounds
-     * @param crsProfile
-     * @param tileScheme
-     * @param tileOrigin
-     * @return
+     * Calculate all the tile ranges for the data in the input {@link BoundingBox} for all zoom levels.
+     * 
+     * @param bounds A {@link BoundingBox} describing the data area
+     * @param crsProfile A {@link CrsProfile} for the input area
+     * @param tileScheme A {@link TileScheme} representing the way in which the tiles should be arranged
+     * @param tileOrigin A {@link TileOrigin} that represents which corner tiling begins from
+     * @return A list of zoom-level-numbered indices containing tile coordinate info for the topLeft and bottomRight
+     * 		   corners of the grid
      */
     public static List<Range<Coordinate<Integer>>> calculateTileRangesForAllZooms(final BoundingBox bounds,
     																			  final CrsProfile crsProfile,
@@ -367,19 +387,21 @@ public class GdalUtility
     }
     
     /**
-     * @param dataset
-     * @param tileRanges
-     * @param tileOrigin
-     * @param tileScheme
-     * @param tileSize
-     * @return
-     * @throws TileStoreException
+     * Get the lowest-integer zoom level for the input {@link Dataset}
+     * 
+     * @param dataset An input {@link Dataset}
+     * @param tileRanges The calculated list of tile numbers and zooms
+     * @param tileOrigin The {@link TileOrigin} of the tile grid
+     * @param tileScheme The {@link TileScheme} of the tile grid
+     * @param tileSize The width and height of the tile size in pixels
+     * @return The zoom level for this dataset that produces only one tile.  Defaults to 0 if
+     * 		   an error occurs
      */
     public static int minimalZoomForDataset(final Dataset dataset,
-    										  final List<Range<Coordinate<Integer>>> tileRanges,
-    										  final TileOrigin tileOrigin,
-    										  final TileScheme tileScheme,
-    										  final int tileSize) throws TileStoreException
+    										final List<Range<Coordinate<Integer>>> tileRanges,
+    										final TileOrigin tileOrigin,
+    										final TileScheme tileScheme,
+    										final int tileSize)
     {
     	final double pixelSize = dataset.GetGeoTransform()[1];
     	final double zoomPixelSize = (pixelSize * Math.max(dataset.GetRasterXSize(), dataset.GetRasterYSize()) / tileSize);
@@ -397,13 +419,15 @@ public class GdalUtility
     }
     
     /**
-     * @param dataset
-     * @param tileRanges
-     * @param tileOrigin
-     * @param tileScheme
-     * @param tileSize
-     * @return
-     * @throws TileStoreException
+     * Get the highest-integer zoom level for the input {@link Dataset}
+     * 
+     * @param dataset An input {@link Dataset}
+     * @param tileRanges The calculated list of tile numbers and zooms
+     * @param tileOrigin The {@link TileOrigin} of the tile grid
+     * @param tileScheme The {@link TileScheme} of the tile grid
+     * @param tileSize The width and height of the tile size in pixels
+     * @return The zoom level for this dataset that is closest to the actual resolution
+     * @throws TileStoreException 
      */
     public static int maximalZoomForDataset(final Dataset dataset,
     										final List<Range<Coordinate<Integer>>> tileRanges,
@@ -424,11 +448,13 @@ public class GdalUtility
     }
     
     /**
-     * @param dataset
-     * @param tileOrigin
-     * @param tileSize
-     * @return
-     * @throws TileStoreException
+     * Return a {@link Set} of all the zoom levels in the input {@link Dataset}
+     * 
+     * @param dataset An input {@link Dataset}
+     * @param tileOrigin The {@link TileOrigin} of the tile grid
+     * @param tileSize the width and height of the tile size in pixels
+     * @return A set of integers for all the zoom levels in the input dataset
+     * @throws TileStoreException Thrown if the input dataset bounds could not be retrieved
      */
     public static Set<Integer> getZoomLevelsForDataset(final Dataset dataset, final TileOrigin tileOrigin, final int tileSize) throws TileStoreException
     {
@@ -450,15 +476,17 @@ public class GdalUtility
     }
     
     /**
-     * @param zoomPixelSize
-     * @param tileRanges
-     * @param dataset
-     * @param crsProfile
-     * @param tileScheme
-     * @param tileOrigin
-     * @param tileSize
-     * @return
-     * @throws TileStoreException
+     * Return the appropriate zoom level based on the input pixel resolution
+     * 
+     * @param zoomPixelSize The pixel resolution of the zoom level
+     * @param tileRanges The calculated list of tile numbers and zooms
+     * @param dataset An input {@link Dataset}
+     * @param crsProfile A {@link CrsProfile} for the input area
+     * @param tileScheme The {@link TileScheme} of the tile grid
+     * @param tileOrigin The {@link TileOrigin} of the tile grid
+     * @param tileSize the width and height of the tile size in pixels
+     * @return The integer zoom matched to the pixel resolution
+     * @throws TileStoreException Thrown when the bounds of the dataset could not be determined
      */
     public static int zoomLevelForPixelSize(final double zoomPixelSize,
     										final List<Range<Coordinate<Integer>>> tileRanges,
