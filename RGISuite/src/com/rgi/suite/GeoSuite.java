@@ -45,9 +45,13 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import utility.PropertiesAction;
 import utility.TileStoreUtility;
 
 import com.rgi.common.tile.store.TileStoreException;
+import com.rgi.suite.uielements.windows.PackagerWindow;
+import com.rgi.suite.uielements.windows.TileReadersOptionWindow;
+import com.rgi.suite.uielements.windows.TilerWindow;
 import com.rgi.view.MapViewWindow;
 
 /**
