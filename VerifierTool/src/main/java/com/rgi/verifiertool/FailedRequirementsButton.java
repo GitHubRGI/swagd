@@ -22,64 +22,39 @@
  */
 package com.rgi.verifiertool;
 
-import java.awt.Color;
+import java.util.Collection;
+
+import javax.swing.JButton;
+
+import com.rgi.geopackage.verification.VerificationIssue;
 
 /**
  * @author Jenifer Cochran
  *
  */
-public enum PassingLevel
+public class FailedRequirementsButton extends JButton
 {
     /**
-     * Set the font to green if GeoPackage passes verifier
+     *
      */
-    Pass(Color.GREEN, "Passed"),
+    private static final long serialVersionUID = 1L;
+    private final Collection<VerificationIssue> failedRequirements;
     /**
-     * Set the font to yellow if GeoPackage has warnings but no errors in verifier
+     * @param text message on the button
+     * @param failedRequirements the requirements that the GeoPackage Failed
      */
-    Warning(Color.orange, "Warning"),
-    /**
-     * Set the font to red if GeoPackage has failing requirements
-     */
-    Fail(Color.RED, "Failed");
-    private Color color;
-    private String text;
-
-    PassingLevel(final Color color, final String text)
+    public FailedRequirementsButton(final String text, final Collection<VerificationIssue> failedRequirements)
     {
-        this.setColor(color);
-        this.setText(text);
+        super(text);
+        this.failedRequirements = failedRequirements;
     }
 
     /**
-     * @return get text of level (Pass, Failed, Warning)
+     * @return the failed requirements associated with this button
      */
-    public String getText()
+    public Collection<VerificationIssue> getFailedRequirements()
     {
-        return this.text;
+        return this.failedRequirements;
     }
 
-    /**
-     * @param text set message of level (Pass, failed, warning)
-     */
-    public void setText(final String text)
-    {
-        this.text = text;
-    }
-
-    /**
-     * @return set color of the passing level (red-> error, orange-> warning, green-> passed)
-     */
-    public Color getColor()
-    {
-        return this.color;
-    }
-
-    /**
-     * @param color set color of the passing level (red-> error, orange-> warning, green-> passed)
-     */
-    public void setColor(final Color color)
-    {
-        this.color = color;
-    }
 }
