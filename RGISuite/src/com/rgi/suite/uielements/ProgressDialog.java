@@ -55,6 +55,7 @@ public class ProgressDialog
 
         progressDialog.add(progressBar);
         progressDialog.pack();
+        progressDialog.setLocationRelativeTo(owner);
 
         final SwingWorker<R, Void> task = new SwingWorker<R, Void>()
                                           {
