@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.rgi.suite;
+package com.rgi.suite.uielements;
 
 import java.awt.Color;
 import java.awt.Graphics;

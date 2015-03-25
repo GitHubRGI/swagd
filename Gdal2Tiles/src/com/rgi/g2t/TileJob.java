@@ -45,7 +45,6 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.task.TaskMonitor;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
@@ -69,8 +68,8 @@ public class TileJob implements Runnable
     private final TileStoreReader tileStoreReader;
     private final TileStoreWriter tileStoreWriter;
 
-    @SuppressWarnings("unused")
-    private final TaskMonitor monitor;
+//    @SuppressWarnings("unused")
+//    private final TaskMonitor monitor;
     //private double workTotal = 0;
     //private int workUnits = 0;
 
@@ -92,14 +91,14 @@ public class TileJob implements Runnable
                    //final TileStoreReader     tileStoreReader,
                    final TileStoreWriter     tileStoreWriter,
                    final Dimensions<Integer> tileDimensions,
-                   final Color               noDataColor,
-                   final TaskMonitor         monitor)
+                   final Color               noDataColor/*,
+                   final TaskMonitor         monitor*/)
     {
         this.file            = file;
         this.tileStoreReader = null;//tileStoreReader;
         this.tileStoreWriter = tileStoreWriter;
         this.tileDimensions  = tileDimensions;
-        this.monitor         = monitor;
+        //this.monitor         = monitor;
         this.noDataColor     = noDataColor;
         this.crsProfile      = CrsProfileFactory.create(tileStoreWriter.getCoordinateReferenceSystem());
     }

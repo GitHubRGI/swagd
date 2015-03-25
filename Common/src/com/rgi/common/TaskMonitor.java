@@ -21,11 +21,16 @@
  * SOFTWARE.
  */
 
-package com.rgi.common.task;
+package com.rgi.common;
 
-@SuppressWarnings("javadoc")
-public interface MonitorableTask {
-    // A task that can be monitored while running.
-  public void addMonitor(TaskMonitor monitor);
-  public void requestCancel();
+/**
+ * @author Duff Means
+ *
+ */
+public interface TaskMonitor
+{
+    public void setMaximum(final int max);
+
+    public void setProgress(final int value);
 }
+

@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.suite;
+package utility;
 
 import java.net.URL;
 import java.util.Properties;

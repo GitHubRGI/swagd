@@ -21,18 +21,33 @@
  * SOFTWARE.
  */
 
-package com.rgi.common.task;
+package utility;
 
-@SuppressWarnings("javadoc")
-public interface TaskMonitor
+import java.util.function.Function;
+
+/**
+ * @author Luke.Lambert
+ *
+ * @param <T>
+ *
+ * @see <a
+ *      href="https://stackoverflow.com/a/27252163/16434">https://stackoverflow.com/a/27252163/16434</a>
+ */
+@FunctionalInterface
+public interface ThrowingFunction<T, R> extends Function<T, R>
 {
-    public void setMaximum(int max);
+    @Override
+    public default R apply(final T t)
+    {
+        try
+        {
+            return applyThrows(t);
+        }
+        catch(final Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 
-    public void setProgress(int value);
-
-    public void cancelled();
-
-    public void finished();
-
-    public void setError(Exception e);
+    public R applyThrows(T t) throws Exception;
 }
