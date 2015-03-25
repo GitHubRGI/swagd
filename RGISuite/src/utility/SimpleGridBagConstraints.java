@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.suite;
+package utility;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;

@@ -20,7 +20,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.rgi.suite;
+
+package com.rgi.suite.uielements.windows;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -30,7 +31,6 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.AbstractSpinnerModel;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -43,11 +43,16 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 
+import utility.SimpleGridBagConstraints;
+
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.suite.Settings;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
 import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreWriterAdapter;
 import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
+import com.rgi.suite.uielements.PowerOfTwoSpinnerModel;
+import com.rgi.suite.uielements.SwatchButton;
 
 /**
  * Gather additional information for tiling, and tile
@@ -79,8 +84,6 @@ public class TilerWindow extends NavigationWindow
     private final JPanel outputPanel = new JPanel(new GridBagLayout());
     private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>();
 
-    private final String processName = "Tiling";
-
     private static final String LastInputLocationSettingName = "tiling.lastInputLocation";
 
     private final JSpinner     tileWidthSpinner;
@@ -95,7 +98,7 @@ public class TilerWindow extends NavigationWindow
      */
     public TilerWindow(final Settings settings)
     {
-        this.setTitle(this.processName + " Settings");
+        this.setTitle(this.processName() + " Settings");
         this.setResizable(false);
 
         this.settings = settings;
@@ -135,7 +138,7 @@ public class TilerWindow extends NavigationWindow
                                                               }
                                                               catch(final Exception ex)
                                                               {
-                                                                  this.error(this.processName, ex.getMessage());
+                                                                  this.error(ex.getMessage());
                                                               }
                                                           }
                                                         });
@@ -158,15 +161,15 @@ public class TilerWindow extends NavigationWindow
                                                       }
                                                     });
 
-        this.tileWidthSpinner = new JSpinner(new PowerOfTwoSpinner(this.settings.get(TileWidthSettingName,
-                                                                                     Integer::parseInt,
-                                                                                     256),
+        this.tileWidthSpinner = new JSpinner(new PowerOfTwoSpinnerModel(this.settings.get(TileWidthSettingName,
+                                                                                          Integer::parseInt,
+                                                                                          256),
                                                             128,
                                                             2048));
 
-        this.tileHeightSpinner = new JSpinner(new PowerOfTwoSpinner(this.settings.get(TileHeightSettingName,
-                                                                                      Integer::parseInt,
-                                                                                      256),
+        this.tileHeightSpinner = new JSpinner(new PowerOfTwoSpinnerModel(this.settings.get(TileHeightSettingName,
+                                                                                           Integer::parseInt,
+                                                                                           256),
                                                              128,
                                                              2048));
 
@@ -250,7 +253,13 @@ public class TilerWindow extends NavigationWindow
     }
 
     @Override
-    protected void execute() throws Exception
+    protected String processName()
+    {
+        return "Packaging";
+    }
+
+    @Override
+    protected boolean execute() throws Exception
     {
         final int tileWidth  = (int)this.tileWidthSpinner .getValue();
         final int tileHeight = (int)this.tileHeightSpinner.getValue();
@@ -262,71 +271,38 @@ public class TilerWindow extends NavigationWindow
         this.settings.set(TileHeightSettingName, Integer.toString(tileHeight));
         this.settings.save();
 
-//        final Tiler tiler = new Tiler(new File(this.inputFileName.getText()),
-//                                      this.tileStoreWriterAdapter.getTileStoreWriter(),
-//                                      new Dimensions<>(tileWidth,
-//                                                       tileHeight),
-//                                      color);
-//        tiler.execute();
-    }
-
-
-    @SuppressWarnings("serial")
-    private class PowerOfTwoSpinner extends AbstractSpinnerModel
-    {
-        private final int binaryLogOfMinimum;
-        private final int binaryLogOfMaximum;
-
-        private int binaryLogOfValue;
-
-        public PowerOfTwoSpinner(final int initial, final int minimum, final int maximum)
+        if(this.inputFileName.getText().isEmpty())
         {
-            this.binaryLogOfMinimum = this.binaryLog(minimum);
-            this.binaryLogOfMaximum = this.binaryLog(maximum);
-
-            this.setValue(initial);
+            this.warn("Please select an input file.");
+            return false;
         }
 
-        @Override
-        public Object getValue()
-        {
-            return (int)Math.pow(2, this.binaryLogOfValue);
-        }
 
-        @Override
-        public void setValue(final Object value)
-        {
-            this.binaryLogOfValue = this.binaryLog((int)value);
-            this.fireStateChanged();
-        }
+        // TODO waiting on Lander's new tiler code
 
-        @Override
-        public Object getNextValue()
-        {
-            final Object foo = this.binaryLogOfValue >= this.binaryLogOfMaximum ? null
-                                                                    : (int)Math.pow(2, this.binaryLogOfValue+1);
+        // This spawns a modal dialog and blocks this thread
+//        ProgressDialog.trackProgress(this,
+//                                     this.processName() + "...",
+//                                     taskMonitor -> { try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
+//                                                      {
+//                                                          (new Tiler(taskMonitor,
+//                                                                     new File(this.inputFileName.getText()),
+//                                                                     tileStoreWriter,
+//                                                                     new Dimensions<>(tileWidth,
+//                                                                                      tileHeight),
+//                                                                     color)).execute();
+//                                                          return null;
+//                                                      }
+//                                                    });
 
-            return foo;
-        }
-
-        @Override
-        public Object getPreviousValue()
-        {
-            return this.binaryLogOfValue <= this.binaryLogOfMinimum ? null
-                                                                    : (int)Math.pow(2, this.binaryLogOfValue-1);
-        }
-
-        private int binaryLog(final int val)
-        {
-            return (int)(Math.log(val) / Math.log(2));
-        }
+        return true;
     }
 
     private static CoordinateReferenceSystem getCrs(@SuppressWarnings("unused") final File file) throws RuntimeException
     {
         return null;
 
-        // TODO requires GDAL to work for this project
+        // TODO use Lander's GDAL utilities once they're ready
         //osr.UseExceptions(); // TODO only do this once
         //gdal.AllRegister();  // TODO only do this once
         //

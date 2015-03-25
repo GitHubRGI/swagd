@@ -21,8 +21,9 @@
  * SOFTWARE.
  */
 
-package com.rgi.suite;
+package com.rgi.suite.uielements.windows;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.io.File;
@@ -38,22 +39,25 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import utility.SimpleGridBagConstraints;
 import utility.TileStoreUtility;
 
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.packager.Packager;
+import com.rgi.suite.Settings;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
 import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreWriterAdapter;
 import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
+import com.rgi.suite.uielements.ProgressDialog;
 
 
 
 /**
  * Gather additional information for packaging, and package
  *
- * @author Luke D. Lambert
+ * @author Luke Lambert
  *
  */
 public class PackagerWindow extends NavigationWindow
@@ -74,8 +78,6 @@ public class PackagerWindow extends NavigationWindow
     private final JPanel outputPanel = new JPanel(new GridBagLayout());
     private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>();
 
-    private final String processName = "Packaging";
-
     private static final String LastInputLocationSettingName = "package.lastInputLocation";
 
     /**
@@ -86,7 +88,7 @@ public class PackagerWindow extends NavigationWindow
      */
     public PackagerWindow(final Settings settings)
     {
-        this.setTitle(this.processName + " Settings");
+        this.setTitle(this.processName() + " Settings");
 
         this.setResizable(false);
 
@@ -117,11 +119,13 @@ public class PackagerWindow extends NavigationWindow
 
                                                               try
                                                               {
+                                                                  this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
                                                                   final TileStoreReaderAdapter adapter = TileStoreUtility.getTileStoreReaderAdapter(false, file);
 
                                                                   if(adapter == null)
                                                                   {
-                                                                      this.warn(this.processName, "Selected file doesn't contain a recognized tile store type.");
+                                                                      this.warn("Selected file doesn't contain a recognized tile store type.");
                                                                   }
                                                                   else
                                                                   {
@@ -137,7 +141,11 @@ public class PackagerWindow extends NavigationWindow
                                                               }
                                                               catch(final Exception ex)
                                                               {
-                                                                  this.error(this.processName, ex.getMessage());
+                                                                  this.error(ex.getMessage());
+                                                              }
+                                                              finally
+                                                              {
+                                                                  this.setCursor(Cursor.getDefaultCursor());
                                                               }
                                                           }
                                                         });
@@ -237,21 +245,35 @@ public class PackagerWindow extends NavigationWindow
     }
 
     @Override
-    protected void execute() throws Exception
+    protected String processName()
+    {
+        return "Packaging";
+    }
+
+    @Override
+    protected boolean execute() throws Exception
     {
         if(this.tileStoreReaderAdapter == null)
         {
-            this.warn(this.processName, "Please select an input file.");
-            return;
+            this.warn("Please select an input file.");
+            return false;
         }
 
-        try(final TileStoreReader tileStoreReader = this.tileStoreReaderAdapter.getTileStoreReader())
-        {
-            try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
-            {
-                final Packager packager = new Packager(tileStoreReader, tileStoreWriter);
-                packager.execute();   // TODO monitor errors/progress
-            }
-        }
+        // This spawns a modal dialog and blocks this thread
+        ProgressDialog.trackProgress(this,
+                                     this.processName() + "...",
+                                     taskMonitor -> { try(final TileStoreReader tileStoreReader = this.tileStoreReaderAdapter.getTileStoreReader())
+                                                      {
+                                                          try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
+                                                          {
+                                                              (new Packager(taskMonitor,
+                                                                            tileStoreReader,
+                                                                            tileStoreWriter)).execute();
+                                                              return null;
+                                                          }
+                                                      }
+                                                    });
+
+        return true;
     }
 }

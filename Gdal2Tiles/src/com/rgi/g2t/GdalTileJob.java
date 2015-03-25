@@ -54,7 +54,6 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.task.TaskMonitor;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
@@ -70,7 +69,7 @@ public class GdalTileJob implements Runnable {
 	private final File file;
 	private final Path outputFolder;
 	private final Dimensions<Integer> tileDimensions;
-	private final TaskMonitor monitor;
+	//private final TaskMonitor monitor;
 	private final Color noDataColor;
 
 	private final int tileSize = 256;
@@ -88,13 +87,13 @@ public class GdalTileJob implements Runnable {
 	public GdalTileJob(final File file,
 					   final TileStoreWriter writer,
 					   final Dimensions<Integer> tileDimensions,
-					   final Color noDataColor,
-					   final TaskMonitor monitor)
+					   final Color noDataColor/*,
+					   final TaskMonitor monitor*/)
 	{
 		this.file = file;
 		this.writer = writer;
 		this.tileDimensions = tileDimensions;
-		this.monitor = monitor;
+		//this.monitor = monitor;
 		this.noDataColor = noDataColor;
 		this.crsProfile = CrsProfileFactory.create(writer.getCoordinateReferenceSystem());
 		this.outputFolder = Paths.get("/data/tiles/swagd");
