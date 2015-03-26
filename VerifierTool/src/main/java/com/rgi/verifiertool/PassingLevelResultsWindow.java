@@ -70,6 +70,7 @@ public class PassingLevelResultsWindow extends JFrame
 
         this.setSize(500, 200);
         this.setTitle(String.format("Verification for file %s", file.getName()));
+        this.setLocationRelativeTo(null);//sets the window to center
     }
 
     private void buildPassFailPanel(final File file)

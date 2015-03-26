@@ -59,9 +59,12 @@ public class FailedRequirementsWindow extends JFrame
        mainPanel.setLayout(new BorderLayout());
 
        JTextArea errorMessages = new JTextArea(this.getMessage());
+       errorMessages.setLineWrap(true);
+       errorMessages.setWrapStyleWord(true);
        JScrollPane scrollPane = new JScrollPane(errorMessages);
        mainPanel.add(scrollPane, BorderLayout.CENTER);
        this.setSize(500, 500);
+       this.setLocationRelativeTo(null);//centers the window
        this.setVisible(true);
     }
 
@@ -69,7 +72,7 @@ public class FailedRequirementsWindow extends JFrame
     {
         return this.failedRequirements.stream()
                                              .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
-                                             .map(failedRequirement -> String.format("(%s) Requirement %d: \"%s\"\n%s\n",
+                                             .map(failedRequirement -> String.format("(%s) Requirement %d: \"%s\"\n%s\n\n",
                                                                                         failedRequirement.getRequirement().severity(),
                                                                                         failedRequirement.getRequirement().number(),
                                                                                         failedRequirement.getRequirement().text(),

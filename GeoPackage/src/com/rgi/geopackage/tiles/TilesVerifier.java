@@ -207,7 +207,7 @@ public class TilesVerifier extends Verifier
      * @throws SQLException throws if an SQLException occurs
      */
     @Requirement(number = 34,
-                 text = "In a GeoPackage that contains a tile pyramid user data table"
+                 text = "In a GeoPackage that contains a tile pyramid user data table "
                          + "that contains tile data, by default, zoom level pixel sizes for that "
                          + "table SHALL vary by a factor of 2 between zoom levels in tile matrix metadata table.",
                  severity = Severity.Warning)
@@ -293,15 +293,14 @@ public class TilesVerifier extends Verifier
                                                                                      .filter(tileData -> !validPixelValues(tileData, boundingBox))
                                                                                      .collect(Collectors.toList());
 
-                                Assert.assertTrue(String.format("Based on the bounding box given in the Tile Matrix Set for tiles table %s, "
-                                                                           + "tile_height, "
-                                                                           + "tile_width, "
-                                                                           + "matrix_width, and "
-                                                                           + "matrix_height, "
-                                                                + "the following pixel values are invalid.\n%s",
+                                Assert.assertTrue(String.format("\nNote: This next message is an additional concern that is related to this requirement but not the requirement itself."+
+                                                                "\nThe pixel_x_size and pixel_y_size should satisfy these two equations:"
+                                                                + "\n\tpixel_x_wize = (bounding box width  / matrix_width)  / tile_width "
+                                                                + "AND \n\tpixel_y_size = (bounding box height / matrix_height)/ tile_height.  "
+                                                                + "\nBased on these two equations, the following pixel values are invalid for the table '%s'.:\n%s ",
                                                                 tableName,
                                                                 invalidPixelValues.stream()
-                                                                                  .map(tileData -> String.format("Invalid pixel_x_size: %f, Invalid pixel_y_size: %f at zoom_level %d",
+                                                                                  .map(tileData -> String.format("\tInvalid pixel_x_size: %f, Invalid pixel_y_size: %f at zoom_level %d",
                                                                                                                  tileData.pixelXSize,
                                                                                                                  tileData.pixelYSize,
                                                                                                                  tileData.zoomLevel))
