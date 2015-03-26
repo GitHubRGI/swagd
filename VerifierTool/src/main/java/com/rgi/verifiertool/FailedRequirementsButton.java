@@ -24,7 +24,7 @@ package com.rgi.verifiertool;
 
 import java.util.Collection;
 
-import javax.swing.JButton;
+import javafx.scene.control.Button;
 
 import com.rgi.geopackage.verification.VerificationIssue;
 
@@ -32,12 +32,8 @@ import com.rgi.geopackage.verification.VerificationIssue;
  * @author Jenifer Cochran
  *
  */
-public class FailedRequirementsButton extends JButton
+public class FailedRequirementsButton extends Button
 {
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
     private final Collection<VerificationIssue> failedRequirements;
     /**
      * @param text message on the button

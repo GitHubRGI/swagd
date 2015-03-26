@@ -23,14 +23,14 @@
 
 package com.rgi.verifiertool;
 
-import java.awt.BorderLayout;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
+import javafx.stage.Stage;
 
 import com.rgi.geopackage.verification.VerificationIssue;
 
@@ -38,34 +38,33 @@ import com.rgi.geopackage.verification.VerificationIssue;
  * @author Jenifer Cochran
  *
  */
-public class FailedRequirementsWindow extends JFrame
+public class FailedRequirementsWindow extends Stage
 {
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
     private final Collection<VerificationIssue> failedRequirements;
 
     /**
      * @param failedRequirements failed requirements to display
+     * @param Component The component that was failing
      */
-    public FailedRequirementsWindow(final Collection<VerificationIssue> failedRequirements)
+    public FailedRequirementsWindow(final Collection<VerificationIssue> failedRequirements, final String Component)
     {
-        // TODO Auto-generated constructor stub
+       super();
+       this.setTitle(String.format("Failed Requirements for %s", Component));
+       Scene scene = new Scene(new Group());
+       //set the failed requirements passed in
        this.failedRequirements = failedRequirements;
-       JPanel mainPanel = new JPanel();
-       this.add(mainPanel);
-       mainPanel.setSize(500, 500);
-       mainPanel.setLayout(new BorderLayout());
-
-       JTextArea errorMessages = new JTextArea(this.getMessage());
-       errorMessages.setLineWrap(true);
-       errorMessages.setWrapStyleWord(true);
-       JScrollPane scrollPane = new JScrollPane(errorMessages);
-       mainPanel.add(scrollPane, BorderLayout.CENTER);
-       this.setSize(500, 500);
-       this.setLocationRelativeTo(null);//centers the window
-       this.setVisible(true);
+       TextArea errorMessages = new TextArea(this.getMessage());
+       //allow the text to wrap
+       errorMessages.setWrapText(true);
+       //create a scroll to scan through error messages
+       ScrollPane scrollPane = new ScrollPane(errorMessages);
+       //allow the pane to resize to main window
+       scrollPane.setFitToHeight(true);
+       scrollPane.setFitToWidth(true);
+       //create the window set up
+       scene.setRoot(scrollPane);
+       this.setScene(scene);
+       this.show();
     }
 
     private String getMessage()

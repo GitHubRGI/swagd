@@ -22,7 +22,8 @@
  */
 package com.rgi.verifiertool;
 
-import java.awt.Color;
+import javafx.scene.paint.Color;
+
 
 /**
  * @author Jenifer Cochran
@@ -37,7 +38,7 @@ public enum PassingLevel
     /**
      * Set the font to yellow if GeoPackage has warnings but no errors in verifier
      */
-    Warning(Color.orange, "Warning"),
+    Warning(Color.ORANGE, "Warning"),
     /**
      * Set the font to red if GeoPackage has failing requirements
      */

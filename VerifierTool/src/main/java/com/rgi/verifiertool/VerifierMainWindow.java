@@ -39,7 +39,6 @@ import javafx.stage.Stage;
  */
 public class VerifierMainWindow extends Application
 {
-
     /**
      * Launch the application.
      * @param args incoming arguments
@@ -53,14 +52,16 @@ public class VerifierMainWindow extends Application
     @Override
     public void start(final Stage primaryStage) throws Exception
     {
+        //Set the window up
         Group root = new Group();
         Scene scene = new Scene(root, 551, 400);
         primaryStage.setTitle("GeoPackage Verifier Tool");
-        final Text dragHereMessage = new Text("Drag GeoPackage File Here.");
+        final Text dragHereMessage = new Text("Drag GeoPackage Files Here.");
         dragHereMessage.setX(200.0);
         dragHereMessage.setY(200.0);
         root.getChildren().add(dragHereMessage);
 
+        //create the even that drags the file over
         scene.setOnDragOver(event ->
         {
             Dragboard db = event.getDragboard();
@@ -92,6 +93,7 @@ public class VerifierMainWindow extends Application
             event.consume();
         });
 
+        //show the window
         primaryStage.setScene(scene);
         primaryStage.show();
     }
