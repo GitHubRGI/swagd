@@ -269,7 +269,6 @@ public class TilerWindow extends NavigationWindow
         // Save UI values - TODO put these in the event handlers
         this.settings.set(TileWidthSettingName,  Integer.toString(tileWidth));
         this.settings.set(TileHeightSettingName, Integer.toString(tileHeight));
-
         this.settings.save();
 
         if(this.inputFileName.getText().isEmpty())
