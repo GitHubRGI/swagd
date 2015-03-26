@@ -171,6 +171,8 @@ public interface TileStoreReader extends AutoCloseable
 
     /**
      * @return the Tile Scheme which can calculate the number of tiles at a particular zoom level
+     * @throws TileStoreException 
+     *			   Wraps errors thrown by the tile store reader implementation
      */
-    public TileScheme getTileScheme();
+    public TileScheme getTileScheme() throws TileStoreException;
 }

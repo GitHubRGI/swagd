@@ -50,6 +50,7 @@ import org.gdal.gdalconst.gdalconstConstants;
 import org.gdal.osr.SpatialReference;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.Dimensions;
 import com.rgi.common.Range;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
@@ -291,11 +292,11 @@ public class GdalUtility
      */
     public static boolean datasetHasGeoReference(final Dataset dataset)
     {
-		final double[] emptyGeoReference = { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
-		// Compare dataset geotransform to an empty geotransform and ensure there are no GCPs
+		final double[] identityTransform = { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
+		// Compare dataset geotransform to an empty identity transform and ensure there are no GCPs
 		// below is the negation of HasGeoReference
 		//return Arrays.equals(dataset.GetGeoTransform(), emptyGeoReference) && dataset.GetGCPCount() == 0;
-		return Arrays.equals(dataset.GetGeoTransform(), emptyGeoReference) || dataset.GetGCPCount() != 0;
+		return Arrays.equals(dataset.GetGeoTransform(), identityTransform) || dataset.GetGCPCount() != 0;
     }
     
     /**
@@ -310,6 +311,8 @@ public class GdalUtility
     {
 		final double[] outputGeotransform = dataset.GetGeoTransform();
 		// Report error in case rotation/skew is in geotransform (only for raster profile)
+		// gdal2tiles.py only checks for (ogt[2], ogt[4]) != (0,0), it does not seem to care if only
+		// one has a value
 		if (outputGeotransform[2] != 0 && outputGeotransform[4] != 0)
 		{
 			throw new DataFormatException("Georeference of the raster contains rotation or skew. " +
@@ -393,7 +396,7 @@ public class GdalUtility
      * @param tileRanges The calculated list of tile numbers and zooms
      * @param tileOrigin The {@link TileOrigin} of the tile grid
      * @param tileScheme The {@link TileScheme} of the tile grid
-     * @param tileSize The width and height of the tile size in pixels
+     * @param tileSize A {@link Dimensions} Integer object that describes what the tiles should look like
      * @return The zoom level for this dataset that produces only one tile.  Defaults to 0 if
      * 		   an error occurs
      */
@@ -401,10 +404,20 @@ public class GdalUtility
     										final List<Range<Coordinate<Integer>>> tileRanges,
     										final TileOrigin tileOrigin,
     										final TileScheme tileScheme,
-    										final int tileSize)
+    										final Dimensions<Integer> tileSize)
     {
     	final double pixelSize = dataset.GetGeoTransform()[1];
-    	final double zoomPixelSize = (pixelSize * Math.max(dataset.GetRasterXSize(), dataset.GetRasterYSize()) / tileSize);
+    	final double zoomPixelSize;
+    	if (tileSize.getWidth() == tileSize.getHeight())
+    	{
+    		zoomPixelSize = (pixelSize * Math.max(dataset.GetRasterXSize(), dataset.GetRasterYSize()) / tileSize.getWidth());
+    	}
+    	else
+    	{
+    		// Pixel resolution of the dimension with the most units per pixel will be used to calculate the zoom
+    		final int largestResolution = tileSize.getWidth() > tileSize.getHeight() ? tileSize.getWidth() : tileSize.getHeight();
+    		zoomPixelSize = (pixelSize * Math.max(dataset.GetRasterXSize(), dataset.GetRasterYSize()) / largestResolution);
+    	}
     	try
     	{
     		final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(dataset);
@@ -425,15 +438,15 @@ public class GdalUtility
      * @param tileRanges The calculated list of tile numbers and zooms
      * @param tileOrigin The {@link TileOrigin} of the tile grid
      * @param tileScheme The {@link TileScheme} of the tile grid
-     * @param tileSize The width and height of the tile size in pixels
+     * @param tileSize A {@link Dimensions} Integer object that describes what the tiles should look like
      * @return The zoom level for this dataset that is closest to the actual resolution
-     * @throws TileStoreException 
+     * @throws TileStoreException Thrown when the 
      */
     public static int maximalZoomForDataset(final Dataset dataset,
     										final List<Range<Coordinate<Integer>>> tileRanges,
     										final TileOrigin tileOrigin,
     										final TileScheme tileScheme,
-    										final int tileSize) throws TileStoreException
+    										final Dimensions<Integer> tileSize) throws TileStoreException
     {
     	final double zoomPixelSize = dataset.GetGeoTransform()[1];
     	try
@@ -443,7 +456,7 @@ public class GdalUtility
     	}
     	catch (TileStoreException e)
     	{
-    		throw new TileStoreException("Could not determine minimal zoom, defaulting to 0.");
+    		throw new TileStoreException("Could not determine maximal zoom for input raster pixel size (dataset.GetGeoTransform()[1]).");
     	}
     }
     
@@ -452,11 +465,11 @@ public class GdalUtility
      * 
      * @param dataset An input {@link Dataset}
      * @param tileOrigin The {@link TileOrigin} of the tile grid
-     * @param tileSize the width and height of the tile size in pixels
+     * @param tileSize A {@link Dimensions} Integer object that describes what the tiles should look like
      * @return A set of integers for all the zoom levels in the input dataset
      * @throws TileStoreException Thrown if the input dataset bounds could not be retrieved
      */
-    public static Set<Integer> getZoomLevelsForDataset(final Dataset dataset, final TileOrigin tileOrigin, final int tileSize) throws TileStoreException
+    public static Set<Integer> getZoomLevelsForDataset(final Dataset dataset, final TileOrigin tileOrigin, final Dimensions<Integer> tileSize) throws TileStoreException
     {
     	// World extent tile scheme
     	final TileScheme tileScheme = new ZoomTimesTwo(0, 32, 1, 1);
@@ -484,7 +497,7 @@ public class GdalUtility
      * @param crsProfile A {@link CrsProfile} for the input area
      * @param tileScheme The {@link TileScheme} of the tile grid
      * @param tileOrigin The {@link TileOrigin} of the tile grid
-     * @param tileSize the width and height of the tile size in pixels
+     * @param tileSize A {@link Dimensions} Integer object that describes what the tiles should look like
      * @return The integer zoom matched to the pixel resolution
      * @throws TileStoreException Thrown when the bounds of the dataset could not be determined
      */
@@ -494,12 +507,12 @@ public class GdalUtility
     										final CrsProfile crsProfile,
     										final TileScheme tileScheme,
     										final TileOrigin tileOrigin,
-    										final int tileSize) throws TileStoreException
+    										final Dimensions<Integer> tileSize) throws TileStoreException
     {
     	try
     	{
     		final BoundingBox boundingBox = GdalUtility.getBoundsForDataset(dataset);
-    		int[] zooms = IntStream.range(0, 31).toArray();
+    		int[] zooms = IntStream.range(0, 32).toArray();
             for(int zoom : zooms)
             {
                	final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
@@ -513,29 +526,75 @@ public class GdalUtility
                																			   tileMatrixDimensions,
                																			   tileOrigin);
                	// Convert tile coordinates to crs coordinates: this will give us correct units-of-measure-per-pixel
+               	// Calculate the offset necessary based on the tile origin
+               	final int topLeftTileX;
+               	final int topLeftTileY;
+               	final int bottomRightTileX;
+               	final int bottomRightTileY;
+               	switch (tileOrigin)
+               	{
+               		case UpperRight:
+               			topLeftTileX = topLeftTile.getX() + 1;
+               			topLeftTileY = topLeftTile.getY();
+               			bottomRightTileX = bottomRightTile.getX();
+               			bottomRightTileY = bottomRightTile.getY() + 1;
+               			break;
+               		case LowerRight:
+               			topLeftTileX = topLeftTile.getX() + 1;
+               			topLeftTileY = topLeftTile.getY() + 1;
+               			bottomRightTileX = bottomRightTile.getX();
+               			bottomRightTileY = bottomRightTile.getY();
+               			break;
+               		case UpperLeft:
+               			topLeftTileX = topLeftTile.getX();
+               			topLeftTileY = topLeftTile.getY();
+               			bottomRightTileX = bottomRightTile.getX() + 1;
+               			bottomRightTileY = bottomRightTile.getY() + 1;
+               			break;
+               		case LowerLeft:
+               			// Merge LL with default
+               		default:
+               			topLeftTileX = topLeftTile.getX();
+               			topLeftTileY = topLeftTile.getY() + 1;
+               			bottomRightTileX = bottomRightTile.getX() + 1;
+               			bottomRightTileY = bottomRightTile.getY();
+               			break;
+               	}
                	// This is tile data *plus* padding to the full tile grid
-               	final CrsCoordinate topLeftCrsFull = crsProfile.tileToCrsCoordinate(topLeftTile.getX(),
-                                                                                    topLeftTile.getY() + 1,
+               	final CrsCoordinate topLeftCrsFull = crsProfile.tileToCrsCoordinate(topLeftTileX,
+                                                                                    topLeftTileY,
                                                                                     crsProfile.getBounds(),
                                                                                     tileMatrixDimensions,
                                                                                     tileOrigin);
-                final CrsCoordinate bottomRightCrsFull = crsProfile.tileToCrsCoordinate(bottomRightTile.getX() + 1,
-                                                                                   		bottomRightTile.getY(),
+                final CrsCoordinate bottomRightCrsFull = crsProfile.tileToCrsCoordinate(bottomRightTileX,
+                                                                                   		bottomRightTileY,
                                                                                         crsProfile.getBounds(),
                                                                                         tileMatrixDimensions,
                                                                                         tileOrigin);
-                // bounding box is made with minx, miny, maxx, maxy
-                final double width = (new BoundingBox(topLeftCrsFull.getX(), bottomRightCrsFull.getY(), bottomRightCrsFull.getX(), topLeftCrsFull.getY())).getWidth();
                 // get how many tiles wide this zoom will be so that number can be multiplied by tile size
                 int zoomTilesWide = tileRanges.get(zoom).getMaximum().getX() - tileRanges.get(zoom).getMinimum().getX() + 1;
-                double zoomResolution = width / (zoomTilesWide * tileSize);
+                final double zoomResolution;
+                if (tileSize.getWidth() == tileSize.getHeight() || tileSize.getWidth() > tileSize.getHeight())
+                {
+                	//final double width = (new BoundingBox(topLeftCrsFull.getX(), bottomRightCrsFull.getY(), bottomRightCrsFull.getX(), topLeftCrsFull.getY())).getWidth();
+                	final double width = bottomRightCrsFull.getX() - topLeftCrsFull.getX();
+                	zoomResolution = width / (zoomTilesWide * tileSize.getWidth());
+                }
+                else
+                {
+                	final double height = topLeftCrsFull.getY() - bottomRightCrsFull.getY();
+                	zoomResolution = height / (zoomTilesWide * tileSize.getHeight());
+                }
+                // bounding box is made with minx, miny, maxx, maxy
                 if (zoomPixelSize > zoomResolution)
                 {
-                	// TODO: It could be that this only figures out the size of the image does not
+                	// It could be that this only figures out the size of the image does not
                 	// check if the image lies on tile boundaries.  In that case, a small image could
                 	// produce two tiles if it lies on the bounds of the tile grid.
-                	// Possibly return two zoom levels up to be sure?
-                	return zoom == 0 ? 0 : zoom - 1;
+                	// Return two zoom levels up to be sure?
+                	return zoom == 0 || zoom == 1 ? 0 : zoom - 2;
+                	// just one level up, previous way of doing it that couldnt guarantee just 1 tile
+                	//return zoom == 0 ? 0 : zoom - 1;
                 }
         }
             throw new NumberFormatException("Could not determine zoom level for pixel size: " + String.valueOf(zoomPixelSize));
@@ -545,4 +604,23 @@ public class GdalUtility
     		throw new TileStoreException(dfe);
     	}
    	}
+    
+    /**
+     * Warp an input {@link Dataset} into a different spatial reference system. Does
+     * not correct for NODATA values.
+     * 
+     * @param dataset An input {@link Dataset}
+     * @param srs A {@link SpatialReference} that the return dataset should conform to
+     * @return A {@link Dataset} in the input {@link SpatialReference} requested
+     * @throws DataFormatException Thrown when the AutoCreateWarpedVRT method returns null
+     */
+    public static Dataset warpDatasetToSrs(final Dataset dataset, final SpatialReference srs) throws DataFormatException
+    {
+    	final Dataset output = gdal.AutoCreateWarpedVRT(dataset);
+    	if (output == null)
+    	{
+    		throw new DataFormatException();
+    	}
+    	return output;
+    }
 }

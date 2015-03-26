@@ -31,6 +31,7 @@ import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileHandle;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.common.util.FileUtility;
 
 /**
  * @author Steven D. Lander
@@ -44,17 +45,35 @@ public class RawImageTileReader implements TileStoreReader {
 	private final File rawImage;
 	private final CoordinateReferenceSystem coordinateReferenceSystem;
 	private final TileOrigin tileOrigin = TileOrigin.LowerLeft;
-	private final int tileSize = 256;
+	private final Dimensions<Integer> tileSize;
+	private final Dataset dataset;
 	
 	/**
 	 * Constructor
 	 * 
 	 * @param rawImage A raster image
-	 * @throws TileStoreException Thrown when GDAL could not get the correct coordinate reference system of the input raster
+	 * @param tileSize A {@link Dimensions} that describes what an individual tile looks like
+	 * @throws TileStoreException Thrown when GDAL could not get the correct {@link CoordinateReferenceSystem}
+	 * 							  of the input raster OR if the raw image could not be loaded as a {@link Dataset}
 	 */
-	public RawImageTileReader(final File rawImage) throws TileStoreException
+	public RawImageTileReader(final File rawImage, final Dimensions<Integer> tileSize) throws TileStoreException
 	{
-		this.rawImage = rawImage;
+		if (rawImage != null)
+		{
+			this.rawImage = rawImage;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Raw image must be a valid file on disk.");
+		}
+		if (tileSize != null)
+		{
+			this.tileSize = tileSize;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Tile size must be specified.");
+		}
 		final Dataset dataset = gdal.Open(this.rawImage.toPath().toString(), gdalconstConstants.GA_ReadOnly);
 		try
 		{
@@ -64,6 +83,14 @@ public class RawImageTileReader implements TileStoreReader {
 		{
 			throw new TileStoreException(dfe);
 		}
+		if (dataset != null)
+		{
+			this.dataset = dataset;
+		}
+		else
+		{
+			throw new TileStoreException("Could not open the raw image as a dataset in GDAL.");
+		}
 		osr.UseExceptions();
 		// Register gdal extensions
 		gdal.AllRegister();
@@ -72,13 +99,54 @@ public class RawImageTileReader implements TileStoreReader {
 	/**
 	 * Constructor
 	 * 
-	 * @param coordinateReferenceSystem The coordinate reference system of the input raster (specifically)
-	 * @param rawImage A raster image
+	 * @param coordinateReferenceSystem The {@link CoordinateReferenceSystem} the tiles should be output in
+	 * @param rawImage A raster image {@link File}
+	 * @param tileSize A {@link Dimensions} that describes what an individual tile looks like
+	 * @throws TileStoreException Thrown when GDAL could not get the correct {@link CoordinateReferenceSystem}
+	 * 							  of the input raster OR if the raw image could not be loaded as a {@link Dataset}
 	 */
-	public RawImageTileReader(final CoordinateReferenceSystem coordinateReferenceSystem, final File rawImage)
+	public RawImageTileReader(final CoordinateReferenceSystem coordinateReferenceSystem, final File rawImage, final Dimensions<Integer> tileSize) throws TileStoreException
 	{
-		this.rawImage = rawImage;
-		this.coordinateReferenceSystem = coordinateReferenceSystem;
+		if (coordinateReferenceSystem == null)
+		{
+			this.coordinateReferenceSystem = coordinateReferenceSystem;
+		}
+		else
+		{
+			throw new IllegalArgumentException("A target CoordinateReferenceSystem must be specified.");
+		}
+		if (rawImage != null)
+		{
+			this.rawImage = rawImage;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Raw image must be a valid file on disk.");
+		}
+		if (tileSize != null)
+		{
+			this.tileSize = tileSize;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Tile size must be specified.");
+		}
+		final Dataset dataset = gdal.Open(this.rawImage.toPath().toString(), gdalconstConstants.GA_ReadOnly);
+		if (dataset != null)
+		{
+			try
+			{
+				this.dataset = GdalUtility.warpDatasetToSrs(dataset, GdalUtility.getSpatialReferenceFromCrs(this.coordinateReferenceSystem));
+			}
+			catch (DataFormatException dfe)
+			{
+				throw new TileStoreException(dfe);
+			}
+		}
+		else
+		{
+			throw new TileStoreException("Could not open the raw image as a dataset in GDAL.");
+		}
 		osr.UseExceptions();
 		// Register gdal extensions
 		gdal.AllRegister();
@@ -86,16 +154,16 @@ public class RawImageTileReader implements TileStoreReader {
 	
 	@Override
 	public void close() throws Exception {
-		throw new OperationNotSupportedException();
+		gdal.GDALDestroyDriverManager();
+		this.dataset.delete();
 	}
 
 	@Override
 	public BoundingBox getBounds() throws TileStoreException {
 		// Input dataset should be in the SRS the user wants
-		final Dataset dataset = gdal.Open(this.rawImage.toPath().toString(), gdalconstConstants.GA_ReadOnly);
 		try
 		{
-			return GdalUtility.getBoundsForDataset(dataset);
+			return GdalUtility.getBoundsForDataset(this.dataset);
 		}
 		catch(DataFormatException ex)
 		{
@@ -127,10 +195,8 @@ public class RawImageTileReader implements TileStoreReader {
 
 	@Override
 	public Set<Integer> getZoomLevels() throws TileStoreException {
-		// Open the dataset
-		final Dataset dataset = gdal.Open(this.rawImage.toPath().toString(), gdalconstConstants.GA_ReadOnly);
 		// Return the Set of zoom levels, with a LowerLeft origin and 256 pixel square tile size
-		return GdalUtility.getZoomLevelsForDataset(dataset, this.tileOrigin, this.tileSize);
+		return GdalUtility.getZoomLevelsForDataset(this.dataset, this.tileOrigin, this.tileSize);
 	}
 
 	@Override
@@ -144,9 +210,8 @@ public class RawImageTileReader implements TileStoreReader {
 		// zoomLevel should be the minZoom of the raw image (lowest integer zoom)
 		// this zoom should only have one tile
 		final TileScheme tileScheme = new ZoomTimesTwo(zoomLevel, zoomLevel, 1, 1);
-		final Dataset dataset = gdal.Open(this.rawImage.toPath().toString(), gdalconstConstants.GA_ReadOnly);
-		final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(dataset);
-		// Calculate the tile ranges for all the zoom levels (0-32)
+		final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(this.dataset);
+		// Calculate the tile ranges for all the zoom levels (0-31)
 		final List<Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRangesForAllZooms(this.getBounds(),
 																									   crsProfile,
 																									   tileScheme,
@@ -189,11 +254,9 @@ public class RawImageTileReader implements TileStoreReader {
 		}
 		else
 		{
-			// Open the dataset
-			final Dataset dataset = gdal.Open(this.rawImage.toPath().toString(), gdalconstConstants.GA_ReadOnly);
 			try
 			{
-				return GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSrs(dataset));
+				return GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSrs(this.dataset));
 			}
 			catch(DataFormatException ex)
 			{
@@ -205,7 +268,7 @@ public class RawImageTileReader implements TileStoreReader {
 	
 	@Override
 	public String getName() {
-		return "";
+		return FileUtility.nameWithoutExtension(this.rawImage);
 	}
 
 	@Override
@@ -215,13 +278,12 @@ public class RawImageTileReader implements TileStoreReader {
 
 	@Override
 	public Dimensions<Integer> getImageDimensions() throws TileStoreException {
-		throw new TileStoreException(new OperationNotSupportedException());
+		return this.tileSize;
 	}
 
 	@Override
-	public TileScheme getTileScheme() {
-		System.err.println("GetTileScheme is not implemented in RawImageTileReader.");
-		return null;
+	public TileScheme getTileScheme() throws TileStoreException {
+		throw new TileStoreException(new OperationNotSupportedException());
 	}
 	
 	private class RawImageTileHandle implements TileHandle
