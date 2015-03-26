@@ -71,7 +71,7 @@ public class FailedRequirementsWindow extends Stage
     {
         return this.failedRequirements.stream()
                                              .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
-                                             .map(failedRequirement -> String.format("(%s) Requirement %d: \"%s\"\n%s\n\n",
+                                             .map(failedRequirement -> String.format("(%s) Requirement %d: \"%s\"\n\n\t%s\n\n\n",
                                                                                         failedRequirement.getRequirement().severity(),
                                                                                         failedRequirement.getRequirement().number(),
                                                                                         failedRequirement.getRequirement().text(),

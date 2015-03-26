@@ -28,6 +28,7 @@ import java.io.File;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.text.Text;
@@ -59,7 +60,9 @@ public class VerifierMainWindow extends Application
         final Text dragHereMessage = new Text("Drag GeoPackage Files Here.");
         dragHereMessage.setX(200.0);
         dragHereMessage.setY(200.0);
-        root.getChildren().add(dragHereMessage);
+        ProgressIndicator progress = new ProgressIndicator();
+        progress.setVisible(false);
+        root.getChildren().addAll(dragHereMessage, progress);
 
         //create the even that drags the file over
         scene.setOnDragOver(event ->
@@ -82,6 +85,8 @@ public class VerifierMainWindow extends Application
             if (db.hasFiles())
             {
                 success = true;
+                progress.setVisible(true);
+                primaryStage.show();
                 String filePath = null;
                 for (File file : db.getFiles())
                 {
@@ -90,6 +95,8 @@ public class VerifierMainWindow extends Application
                 }
             }
             event.setDropCompleted(success);
+            progress.setVisible(false);
+            primaryStage.show();
             event.consume();
         });
 

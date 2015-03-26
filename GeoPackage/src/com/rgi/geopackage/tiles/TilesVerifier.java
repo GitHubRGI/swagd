@@ -1301,8 +1301,9 @@ public class TilesVerifier extends Verifier
                               final int matrixHeight = dimensionsRS.getInt("matrix_height");
                               final int zoomLevel    = dimensionsRS.getInt("zoom_level");
 
-                              Assert.assertTrue(String.format("The BoundingBox in gpkg_tile_matrix_set does not define the minimum bounding box for all content in the table %s.\n "
-                                                                  + "\tActual Values:   MIN(tile_column): %4d,  MIN(tile_row): %4d, MAX(tile_column): %4d,                   MAX(tile_row): %4d\n "
+                              Assert.assertTrue(String.format("\nNote: This next message is an additional concern that is related to this requirement but not the requirement itself.  "+
+                                                                  "The BoundingBox in gpkg_tile_matrix_set does not define the minimum bounding box for all content in the table %s.\n "
+                                                                  + "\tActual Values:   MIN(tile_column): %4d,   MIN(tile_row): %4d,  MAX(tile_column): %4d,                   MAX(tile_row): %4d\n "
                                                                   + "\tExpected values: MIN(tile_column):    0,  MIN(tile_row):    0, MAX(tile_column): %4d (matrix_width -1), MAX(tile_row): %4d (matrix_height -1),"
                                                                   + "\n\tExpected values based on the Tile Matrix given at the MIN(zoom_level) %d.",
                                                               pyramidTable,

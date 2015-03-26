@@ -34,8 +34,8 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import com.rgi.geopackage.GeoPackage;
@@ -52,6 +52,7 @@ import com.rgi.geopackage.verification.VerificationLevel;
 public class PassingLevelResultsWindow extends Stage
 {
     GridPane gridPanel = new GridPane();
+    private final int fontSize = 18;
 
     /**
      * @param file GeoPackage File to verify
@@ -70,19 +71,15 @@ public class PassingLevelResultsWindow extends Stage
         final Label schemaLabel       = new Label("GeoPackage Schema...");
         final Label metadataLabel     = new Label("GeoPackage Metadata...");
         this.gridPanel.setHgap(2);
-        this.gridPanel.setVgap(5);
+        this.gridPanel.setVgap(1);
 
-        ColumnConstraints columnLeft = new ColumnConstraints();
-        ColumnConstraints columnCenter = new ColumnConstraints();
-        ColumnConstraints columnRight = new ColumnConstraints();
-
-        columnLeft.setHgrow(Priority.ALWAYS);
-        columnCenter.setHgrow(Priority.ALWAYS);
-        columnRight.setHgrow(Priority.ALWAYS);
+        ColumnConstraints columnLeft = new ColumnConstraints(230);
+        ColumnConstraints columnCenter = new ColumnConstraints(90);
+        ColumnConstraints columnRight = new ColumnConstraints(40);
 
         this.gridPanel.getColumnConstraints().addAll(columnLeft, columnCenter, columnRight);
 
-
+        //Verify GeoPackage and display results
         try(GeoPackage gpkg = new GeoPackage(file, VerificationLevel.None, OpenMode.Open))
         {
             final Collection<VerificationIssue> coreFailedRequirements       = gpkg.core().getVerificationIssues(file, VerificationLevel.Full);
@@ -113,7 +110,7 @@ public class PassingLevelResultsWindow extends Stage
 
        // this.setVisible(true);
         BorderPane root = new BorderPane();
-        Scene scene = new Scene(root, 400, 140, Color.WHITE);
+        Scene scene = new Scene(root, 450, 140, Color.WHITE);
         root.setCenter(this.gridPanel);
         this.setScene(scene);
         this.show();
@@ -126,10 +123,13 @@ public class PassingLevelResultsWindow extends Stage
         PassingLevel passingLevel = getPassingLevel(failedRequirements);
         //Create Label of Which Part of GeoPackage Tested
         this.gridPanel.add(coreLabel, 0, row);
+        coreLabel.setFont(new Font(this.fontSize));
         //Get The results and put it on the label
         Label result = new Label(passingLevel.getText());
         //Set the result in appropriate colored text
         result.setTextFill(passingLevel.getColor());
+        result.setStyle("-fx-font-weight: bold");
+        result.setFont(new Font(this.fontSize ));
         GridPane.setHalignment(result, HPos.LEFT);
         this.gridPanel.add(result, 1, row);
 
