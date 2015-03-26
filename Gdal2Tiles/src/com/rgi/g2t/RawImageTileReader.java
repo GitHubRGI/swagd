@@ -66,6 +66,8 @@ public class RawImageTileReader implements TileStoreReader {
 		{
 			throw new IllegalArgumentException("Tile size must be specified.");
 		}
+		this.rawImage = rawImage;
+		this.tileSize = tileSize;
 		final Dataset dataset = gdal.Open(this.rawImage.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 		try
 		{
@@ -79,8 +81,6 @@ public class RawImageTileReader implements TileStoreReader {
 		{
 			throw new TileStoreException("Could not open the raw image as a dataset in GDAL.");
 		}
-		this.rawImage = rawImage;
-		this.tileSize = tileSize;
 		this.dataset = dataset;
 		osr.UseExceptions();
 		// Register gdal extensions
