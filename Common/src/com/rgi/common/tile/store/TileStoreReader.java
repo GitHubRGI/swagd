@@ -136,8 +136,10 @@ public interface TileStoreReader extends AutoCloseable
 
     /**
      * @return returns the tile store's coordinate reference system
+     * @throws TileStoreException
+     * 			   Wraps errors thrown by the tile store reader implementation
      */
-    public CoordinateReferenceSystem getCoordinateReferenceSystem();
+    public CoordinateReferenceSystem getCoordinateReferenceSystem() throws TileStoreException;
 
     /**
      * Tile source name

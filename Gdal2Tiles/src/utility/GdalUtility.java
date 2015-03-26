@@ -313,7 +313,7 @@ public class GdalUtility
 		// Report error in case rotation/skew is in geotransform (only for raster profile)
 		// gdal2tiles.py only checks for (ogt[2], ogt[4]) != (0,0), it does not seem to care if only
 		// one has a value
-		if (outputGeotransform[2] != 0 && outputGeotransform[4] != 0)
+		if (outputGeotransform[2] != 0 || outputGeotransform[4] != 0)
 		{
 			throw new DataFormatException("Georeference of the raster contains rotation or skew. " +
 										  "Such raster is not supported.  Please use gdalwarp first.");
@@ -382,9 +382,9 @@ public class GdalUtility
     	IntStream.range(0, 32).forEach(zoom ->
     	{
     		final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
-			final Coordinate<Integer> topLeftTile = crsProfile.crsToTileCoordinate(topLeft, crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
-			final Coordinate<Integer> bottomRightTile = crsProfile.crsToTileCoordinate(bottomRight, crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
-			tileRangesByZoom.add(zoom, new Range<Coordinate<Integer>>(topLeftTile, bottomRightTile));
+    		final Coordinate<Integer> topLeftTile = crsProfile.crsToTileCoordinate(topLeft, crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
+    		final Coordinate<Integer> bottomRightTile = crsProfile.crsToTileCoordinate(bottomRight, crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
+    		tileRangesByZoom.add(zoom, new Range<Coordinate<Integer>>(topLeftTile, bottomRightTile));
     	});
     	return tileRangesByZoom;
     }
@@ -472,7 +472,7 @@ public class GdalUtility
     public static Set<Integer> getZoomLevelsForDataset(final Dataset dataset, final TileOrigin tileOrigin, final Dimensions<Integer> tileSize) throws TileStoreException
     {
     	// World extent tile scheme
-    	final TileScheme tileScheme = new ZoomTimesTwo(0, 32, 1, 1);
+    	final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
     	try
     	{
 			final BoundingBox datasetBounds = GdalUtility.getBoundsForDataset(dataset);
@@ -526,51 +526,19 @@ public class GdalUtility
                																			   tileMatrixDimensions,
                																			   tileOrigin);
                	// Convert tile coordinates to crs coordinates: this will give us correct units-of-measure-per-pixel
-               	// Calculate the offset necessary based on the tile origin
-               	final int topLeftTileX;
-               	final int topLeftTileY;
-               	final int bottomRightTileX;
-               	final int bottomRightTileY;
-               	switch (tileOrigin)
-               	{
-               		case UpperRight:
-               			topLeftTileX = topLeftTile.getX() + 1;
-               			topLeftTileY = topLeftTile.getY();
-               			bottomRightTileX = bottomRightTile.getX();
-               			bottomRightTileY = bottomRightTile.getY() + 1;
-               			break;
-               		case LowerRight:
-               			topLeftTileX = topLeftTile.getX() + 1;
-               			topLeftTileY = topLeftTile.getY() + 1;
-               			bottomRightTileX = bottomRightTile.getX();
-               			bottomRightTileY = bottomRightTile.getY();
-               			break;
-               		case UpperLeft:
-               			topLeftTileX = topLeftTile.getX();
-               			topLeftTileY = topLeftTile.getY();
-               			bottomRightTileX = bottomRightTile.getX() + 1;
-               			bottomRightTileY = bottomRightTile.getY() + 1;
-               			break;
-               		case LowerLeft:
-               			// Merge LL with default
-               		default:
-               			topLeftTileX = topLeftTile.getX();
-               			topLeftTileY = topLeftTile.getY() + 1;
-               			bottomRightTileX = bottomRightTile.getX() + 1;
-               			bottomRightTileY = bottomRightTile.getY();
-               			break;
-               	}
                	// This is tile data *plus* padding to the full tile grid
-               	final CrsCoordinate topLeftCrsFull = crsProfile.tileToCrsCoordinate(topLeftTileX,
-                                                                                    topLeftTileY,
+               	final Coordinate<Integer> topLeftCoord = tileOrigin.transform(TileOrigin.UpperLeft, topLeftTile.getX(), topLeftTile.getY(), tileMatrixDimensions);
+               	final Coordinate<Integer> bottomRightCoord = tileOrigin.transform(TileOrigin.LowerRight, bottomRightTile.getX(), bottomRightTile.getY(), tileMatrixDimensions);
+               	final CrsCoordinate topLeftCrsFull = crsProfile.tileToCrsCoordinate(topLeftCoord.getX(),
+                                                                                    topLeftCoord.getY(),
                                                                                     crsProfile.getBounds(),
                                                                                     tileMatrixDimensions,
-                                                                                    tileOrigin);
-                final CrsCoordinate bottomRightCrsFull = crsProfile.tileToCrsCoordinate(bottomRightTileX,
-                                                                                   		bottomRightTileY,
+                                                                                    TileOrigin.UpperLeft);
+                final CrsCoordinate bottomRightCrsFull = crsProfile.tileToCrsCoordinate(bottomRightCoord.getX(),
+                                                                                   		bottomRightCoord.getY(),
                                                                                         crsProfile.getBounds(),
                                                                                         tileMatrixDimensions,
-                                                                                        tileOrigin);
+                                                                                        TileOrigin.LowerRight);
                 // get how many tiles wide this zoom will be so that number can be multiplied by tile size
                 int zoomTilesWide = tileRanges.get(zoom).getMaximum().getX() - tileRanges.get(zoom).getMinimum().getX() + 1;
                 final double zoomResolution;

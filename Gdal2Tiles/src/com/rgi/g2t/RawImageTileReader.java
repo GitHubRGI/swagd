@@ -58,23 +58,15 @@ public class RawImageTileReader implements TileStoreReader {
 	 */
 	public RawImageTileReader(final File rawImage, final Dimensions<Integer> tileSize) throws TileStoreException
 	{
-		if (rawImage != null)
-		{
-			this.rawImage = rawImage;
-		}
-		else
+		if (rawImage == null)
 		{
 			throw new IllegalArgumentException("Raw image must be a valid file on disk.");
 		}
-		if (tileSize != null)
-		{
-			this.tileSize = tileSize;
-		}
-		else
+		if (tileSize == null)
 		{
 			throw new IllegalArgumentException("Tile size must be specified.");
 		}
-		final Dataset dataset = gdal.Open(this.rawImage.toPath().toString(), gdalconstConstants.GA_ReadOnly);
+		final Dataset dataset = gdal.Open(this.rawImage.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 		try
 		{
 			this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSrs(dataset));
@@ -83,14 +75,13 @@ public class RawImageTileReader implements TileStoreReader {
 		{
 			throw new TileStoreException(dfe);
 		}
-		if (dataset != null)
-		{
-			this.dataset = dataset;
-		}
-		else
+		if (dataset == null)
 		{
 			throw new TileStoreException("Could not open the raw image as a dataset in GDAL.");
 		}
+		this.rawImage = rawImage;
+		this.tileSize = tileSize;
+		this.dataset = dataset;
 		osr.UseExceptions();
 		// Register gdal extensions
 		gdal.AllRegister();
@@ -109,43 +100,31 @@ public class RawImageTileReader implements TileStoreReader {
 	{
 		if (coordinateReferenceSystem == null)
 		{
-			this.coordinateReferenceSystem = coordinateReferenceSystem;
-		}
-		else
-		{
 			throw new IllegalArgumentException("A target CoordinateReferenceSystem must be specified.");
 		}
-		if (rawImage != null)
-		{
-			this.rawImage = rawImage;
-		}
-		else
+		if (rawImage == null)
 		{
 			throw new IllegalArgumentException("Raw image must be a valid file on disk.");
 		}
-		if (tileSize != null)
-		{
-			this.tileSize = tileSize;
-		}
-		else
+		if (tileSize == null)
 		{
 			throw new IllegalArgumentException("Tile size must be specified.");
 		}
-		final Dataset dataset = gdal.Open(this.rawImage.toPath().toString(), gdalconstConstants.GA_ReadOnly);
-		if (dataset != null)
-		{
-			try
-			{
-				this.dataset = GdalUtility.warpDatasetToSrs(dataset, GdalUtility.getSpatialReferenceFromCrs(this.coordinateReferenceSystem));
-			}
-			catch (DataFormatException dfe)
-			{
-				throw new TileStoreException(dfe);
-			}
-		}
-		else
+		this.coordinateReferenceSystem = coordinateReferenceSystem;
+		this.rawImage = rawImage;
+		this.tileSize = tileSize;
+		final Dataset dataset = gdal.Open(this.rawImage.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
+		if (dataset == null)
 		{
 			throw new TileStoreException("Could not open the raw image as a dataset in GDAL.");
+		}
+		try
+		{
+			this.dataset = GdalUtility.warpDatasetToSrs(dataset, GdalUtility.getSpatialReferenceFromCrs(this.coordinateReferenceSystem));
+		}
+		catch (DataFormatException dfe)
+		{
+			throw new TileStoreException(dfe);
 		}
 		osr.UseExceptions();
 		// Register gdal extensions
@@ -167,7 +146,7 @@ public class RawImageTileReader implements TileStoreReader {
 		}
 		catch(DataFormatException ex)
 		{
-			throw new TileStoreException("Cannot get bounds for this dataset.");
+			throw new TileStoreException(ex);
 		}
 	}
 
@@ -195,7 +174,7 @@ public class RawImageTileReader implements TileStoreReader {
 
 	@Override
 	public Set<Integer> getZoomLevels() throws TileStoreException {
-		// Return the Set of zoom levels, with a LowerLeft origin and 256 pixel square tile size
+		// Return the Set of zoom levels, with a LowerLeft origin
 		return GdalUtility.getZoomLevelsForDataset(this.dataset, this.tileOrigin, this.tileSize);
 	}
 
@@ -228,10 +207,10 @@ public class RawImageTileReader implements TileStoreReader {
 		final int zoomMaxYTile = topLeftCoordinate.getY();
 		// Create a tile handle list that we can append to
 		List<TileHandle> tileHandles = new ArrayList<TileHandle>();
-		for (int tileY = zoomMaxYTile; tileY >= zoomMinYTile; tileY--)
+		for (int tileY = zoomMaxYTile; tileY >= zoomMinYTile; --tileY)
 		{
 			// Iterate through all Y's
-			for (int tileX = zoomMinXTile; tileX <= zoomMaxXTile; tileX++)
+			for (int tileX = zoomMinXTile; tileX <= zoomMaxXTile; ++tileX)
 			{
 				// Iterate through all X's
 				// Create a raw image handle with the z/x/y
@@ -245,7 +224,7 @@ public class RawImageTileReader implements TileStoreReader {
 	}
 
 	@Override
-	public CoordinateReferenceSystem getCoordinateReferenceSystem()
+	public CoordinateReferenceSystem getCoordinateReferenceSystem() throws TileStoreException
 	{
 		if (this.coordinateReferenceSystem != null)
 		{
@@ -260,8 +239,7 @@ public class RawImageTileReader implements TileStoreReader {
 			}
 			catch(DataFormatException ex)
 			{
-				System.err.println("Could not get Coordinate Reference System for this dataset.");
-				return null;
+				throw new TileStoreException(ex);
 			}
 		}
 	}
