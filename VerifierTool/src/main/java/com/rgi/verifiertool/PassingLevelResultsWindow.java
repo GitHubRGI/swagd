@@ -70,6 +70,7 @@ public class PassingLevelResultsWindow extends Stage
         final Label extensionsLabel   = new Label("GeoPackage Extensions...");
         final Label schemaLabel       = new Label("GeoPackage Schema...");
         final Label metadataLabel     = new Label("GeoPackage Metadata...");
+
         this.gridPanel.setHgap(2);
         this.gridPanel.setVgap(1);
 
@@ -77,6 +78,7 @@ public class PassingLevelResultsWindow extends Stage
         ColumnConstraints columnCenter = new ColumnConstraints(90);
         ColumnConstraints columnRight = new ColumnConstraints(40);
 
+        this.setResizable(false);
         this.gridPanel.getColumnConstraints().addAll(columnLeft, columnCenter, columnRight);
 
         //Verify GeoPackage and display results

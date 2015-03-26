@@ -29,7 +29,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -335,9 +334,6 @@ public class TilesVerifier extends Verifier
         Assert.assertTrue("Test skipped when verification level is not set to " + VerificationLevel.Full,
                           this.verificationLevel == VerificationLevel.Full);
 
-        final Collection<ImageReader> jpegImageReaders = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/jpeg"));
-        final Collection<ImageReader> pngImageReaders  = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/png"));
-
         for (final String tableName : this.allPyramidUserDataTables)
         {
             final String selectTileDataQuery = String.format("SELECT tile_data, id FROM %s;", tableName);
@@ -345,40 +341,31 @@ public class TilesVerifier extends Verifier
             try (Statement stmt              = this.getSqliteConnection().createStatement();
                  ResultSet tileDataResultSet = stmt.executeQuery(selectTileDataQuery))
             {
+                Set<String> errorMessage = new HashSet<>();
+               ResultSetStream.getStream(tileDataResultSet).forEach(resultSet -> { try
+                                                                                   {
+                                                                                       final int    tileId   = resultSet.getInt("id");
+                                                                                       final byte[] tileData = resultSet.getBytes("tile_data");
 
-                final Map<Integer, byte[]> allTileData =  ResultSetStream.getStream(tileDataResultSet)
-                                                                         .map(resultSet -> { try
-                                                                                             {
-                                                                                                 final int    tileId   = resultSet.getInt("id");
-                                                                                                 final byte[] tileData = resultSet.getBytes("tile_data");
-                                                                                                 return new AbstractMap.SimpleImmutableEntry<>(tileId, tileData);
-                                                                                             }
-                                                                                             catch (final Exception ex1)
-                                                                                             {
-                                                                                                 return null;
-                                                                                             }
-                                                                                           })
-                                                                         .filter(Objects::nonNull)
-                                                                         .collect(Collectors.toMap(entry -> entry.getKey(),
-                                                                                                   entry -> entry.getValue()));
+                                                                                       String message = TilesVerifier.verifyData(tileId, tileData);
+                                                                                       if (!message.isEmpty())
+                                                                                       {
+                                                                                           errorMessage.add(message);
+                                                                                       }
+
+                                                                                    }
+                                                                                   catch (final Exception ex1)
+                                                                                   {
+                                                                                       errorMessage.add(ex1.getMessage());
+                                                                                   }
+                                                                                 });
+
+               Assert.assertTrue(String.format("The following tileId's in table '%s' are not in the correct image format:\n\t\t%s.",
+                                               tableName,
+                                               errorMessage.stream().collect(Collectors.joining("\n"))),
+                                 errorMessage.isEmpty());
 
 
-                for(final Integer imageID : allTileData.keySet())
-                {
-                    try(ByteArrayInputStream        byteArray  = new ByteArrayInputStream(allTileData.get(imageID));
-                        MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(byteArray))
-                    {
-                       Assert.assertTrue(String.format("The tile id: %d in the table: %s is not in the correct format.  The image must be of MIME type image/jpeg or image/png.",
-                                                       imageID,
-                                                       tableName),
-                                         TilesVerifier.canReadImage(pngImageReaders, cacheImage) ||
-                                         TilesVerifier.canReadImage(jpegImageReaders, cacheImage));
-                    }
-                    catch(final IOException ex)
-                    {
-                        Assert.fail(ex.getMessage());
-                    }
-                }
             }
             catch (final SQLException ex)
             {
@@ -386,6 +373,29 @@ public class TilesVerifier extends Verifier
             }
         }
     }
+
+    private static String verifyData(final int tileId, final byte[] tileData)
+    {
+        final Collection<ImageReader> jpegImageReaders = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/jpeg"));
+        final Collection<ImageReader> pngImageReaders  = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/png"));
+
+        try(ByteArrayInputStream        byteArray  = new ByteArrayInputStream(tileData);
+            MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(byteArray))
+        {
+            if(TilesVerifier.canReadImage(pngImageReaders, cacheImage) ||TilesVerifier.canReadImage(jpegImageReaders, cacheImage))
+            {
+                return "";
+            }
+
+           return String.format("tile id: %d", tileId);
+
+        }
+        catch(final IOException ex)
+        {
+            return  ex.getMessage();
+        }
+    }
+
 
     /**
      * Requirement 36
