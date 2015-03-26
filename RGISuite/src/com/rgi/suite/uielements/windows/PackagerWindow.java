@@ -52,8 +52,6 @@ import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreWriterAdapte
 import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
 import com.rgi.suite.uielements.ProgressDialog;
 
-
-
 /**
  * Gather additional information for packaging, and package
  *
@@ -191,8 +189,13 @@ public class PackagerWindow extends NavigationWindow
                 int columnCount = 0;
                 for(final JComponent column : row)
                 {
-                    if(columnCount == 1) // TODO; This is a HACK
+                    final Dimension dimension = column.getPreferredSize();
+
+                    if(columnCount == 1 &&
+                       (dimension.getWidth()  < 1 ||
+                        dimension.getHeight() < 1)) // TODO; This is a HACK
                     {
+
                         column.setPreferredSize(new Dimension(220, 25));
                     }
 
