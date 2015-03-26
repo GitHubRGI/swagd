@@ -54,6 +54,7 @@ import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
 import com.rgi.suite.uielements.PowerOfTwoSpinnerModel;
 import com.rgi.suite.uielements.SwatchButton;
 
+
 /**
  * Gather additional information for tiling, and tile
  *
@@ -72,11 +73,12 @@ public class TilerWindow extends NavigationWindow
     private TileStoreWriterAdapter tileStoreWriterAdapter = null;
 
     // Input stuff
-    private final JPanel     inputPanel          = new JPanel(new GridBagLayout());
-    private final JTextField inputFileName       = new JTextField();
-    private final JButton    inputFileNameButton = new JButton("\u2026");
+    private final JPanel     inputPanel            = new JPanel(new GridBagLayout());
+    private final JTextField inputFileName         = new JTextField();
+    private final JButton    inputFileNameButton   = new JButton("\u2026");
+    private final JLabel     nativeReferenceSystem = new JLabel();
 
-    private final JComboBox<CoordinateReferenceSystem> crsComboBox = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
+    private final JComboBox<CoordinateReferenceSystem> referenceSystems = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
                                                                                                       .stream()
                                                                                                       .sorted()
                                                                                                       .toArray(CoordinateReferenceSystem[]::new));
@@ -118,7 +120,7 @@ public class TilerWindow extends NavigationWindow
                                                           final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
                                                           fileChooser.setMultiSelectionEnabled(false);
-                                                          fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                                                          fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
                                                           final int option = fileChooser.showOpenDialog(this);
 
@@ -133,7 +135,10 @@ public class TilerWindow extends NavigationWindow
                                                                   this.settings.set(LastInputLocationSettingName, file.getParent());
                                                                   this.settings.save();
 
-                                                                  this.buildInputContent();
+//                                                                //CoordinateReferenceSystem crs = GdalUtility.getCRS(file);
+                                                                  //this.nativeReferenceSystem.setText(crs.toString());
+                                                                  //this.referenceSystems.setSelectedItem(crs);   // TODO double check that selecting an equivalent object (like this) works, rather than looking up the matching object in the combobox, and then selecting that
+
                                                                   this.tileStoreWriterAdapter.hint(file);
                                                               }
                                                               catch(final Exception ex)
@@ -205,8 +210,11 @@ public class TilerWindow extends NavigationWindow
         this.inputPanel.add(this.inputFileName,       new SimpleGridBagConstraints(1, 0, true));
         this.inputPanel.add(this.inputFileNameButton, new SimpleGridBagConstraints(2, 0, false));
 
-        this.inputPanel.add(new JLabel("Reference System:"), new SimpleGridBagConstraints(0, 1, false));
-        this.inputPanel.add(this.crsComboBox,                new SimpleGridBagConstraints(1, 1, true));
+        this.inputPanel.add(new JLabel("Native eference System:"), new SimpleGridBagConstraints(0, 1, false));
+        this.inputPanel.add(this.referenceSystems,           new SimpleGridBagConstraints(1, 1, true));
+
+        this.inputPanel.add(new JLabel("Reference System:"), new SimpleGridBagConstraints(0, 2, false));
+        this.inputPanel.add(this.referenceSystems,           new SimpleGridBagConstraints(1, 2, true));
     }
 
     private void buildOutputContent()
