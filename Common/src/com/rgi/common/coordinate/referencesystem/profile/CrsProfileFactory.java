@@ -83,17 +83,17 @@ public class CrsProfileFactory
     /**
      * Global Geodetic Coordinate Reference System (EPSG:4326)
      */
-    public static final CoordinateReferenceSystem GlobalGeodetic = new CoordinateReferenceSystem("EPSG", 4326);
+    public static final CoordinateReferenceSystem GlobalGeodetic = new CoordinateReferenceSystem("WGS 84", "EPSG", 4326);
 
     /**
      * Spherical Mercator Coordinate Reference System (EPSG:3857)
      */
-    public static final CoordinateReferenceSystem SphericalMercator = new CoordinateReferenceSystem("EPSG", 3857);
+    public static final CoordinateReferenceSystem SphericalMercator = new CoordinateReferenceSystem("WGS84 / Web Mercator", "EPSG", 3857);
 
     /**
      * Ellipsoidal Mercator Coordinate Reference System (EPSG:3395)
      */
-    public static final CoordinateReferenceSystem EllipsoidalMercator = new CoordinateReferenceSystem("EPSG", 3395);
+    public static final CoordinateReferenceSystem EllipsoidalMercator = new CoordinateReferenceSystem("WGS 84 / World Mercator", "EPSG", 3395);
 
     private static final Map<CoordinateReferenceSystem, CrsProfile> profileMap;
 
@@ -110,9 +110,9 @@ public class CrsProfileFactory
         profileMap.put(SphericalMercator,   SphericalMercatorCrsProfile);
         profileMap.put(EllipsoidalMercator, EllipsoidalMercatorCrsProfile);
 
-        profileMap.put(new CoordinateReferenceSystem("EPSG",  900913), SphericalMercatorCrsProfile);
-        profileMap.put(new CoordinateReferenceSystem("EPSG",    3785), SphericalMercatorCrsProfile);
-        profileMap.put(new CoordinateReferenceSystem("OSGEO",   4100), SphericalMercatorCrsProfile);
+        profileMap.put(new CoordinateReferenceSystem("WGS 84 / Pseudo-Mercator",             "EPSG",  900913), SphericalMercatorCrsProfile);
+        profileMap.put(new CoordinateReferenceSystem("Popular Visualisation CRS / Mercator", "EPSG",  3785),   SphericalMercatorCrsProfile);
+        profileMap.put(new CoordinateReferenceSystem(                                        "OSGEO", 4100),   SphericalMercatorCrsProfile);
 
         // "EPSG:9804": // Mercator (variant A)
         // "EPSG:9805": // Mercator (variant B)

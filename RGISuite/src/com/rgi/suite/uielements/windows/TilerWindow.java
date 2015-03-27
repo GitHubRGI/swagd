@@ -43,15 +43,24 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 
+import org.gdal.osr.SpatialReference;
+
+import utility.GdalUtility;
 import utility.SimpleGridBagConstraints;
 
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.common.tile.store.TileStoreWriter;
+import com.rgi.g2t.RawImageTileReader;
+import com.rgi.g2t.Tiler;
 import com.rgi.suite.Settings;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
 import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreWriterAdapter;
 import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
 import com.rgi.suite.uielements.PowerOfTwoSpinnerModel;
+import com.rgi.suite.uielements.ProgressDialog;
 import com.rgi.suite.uielements.SwatchButton;
 
 
@@ -111,7 +120,7 @@ public class TilerWindow extends NavigationWindow
         this.contentPanel.setLayout(new BoxLayout(this.contentPanel, BoxLayout.PAGE_AXIS));
 
         // Input stuff
-        this.inputFileName.setEditable(false);
+        //this.inputFileName.setEditable(false);
 
         this.inputPanel .setBorder(BorderFactory.createTitledBorder("Input"));
 
@@ -135,9 +144,27 @@ public class TilerWindow extends NavigationWindow
                                                                   this.settings.set(LastInputLocationSettingName, file.getParent());
                                                                   this.settings.save();
 
-//                                                                //CoordinateReferenceSystem crs = GdalUtility.getCRS(file);
-                                                                  //this.nativeReferenceSystem.setText(crs.toString());
-                                                                  //this.referenceSystems.setSelectedItem(crs);   // TODO double check that selecting an equivalent object (like this) works, rather than looking up the matching object in the combobox, and then selecting that
+                                                                  final SpatialReference srs = GdalUtility.getDatasetSrs(file);
+
+                                                                  final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(srs);
+
+                                                                  String crsName;
+
+                                                                  if(crs != null)
+                                                                  {
+                                                                      crsName = crs.toString();
+                                                                  }
+                                                                  else
+                                                                  {
+                                                                      crsName = GdalUtility.getName(srs);
+                                                                      if(crsName == null)
+                                                                      {
+                                                                          crsName = "<none specified>";
+                                                                      }
+                                                                  }
+
+                                                                  this.nativeReferenceSystem.setText(crsName);
+                                                                  this.referenceSystems.setSelectedItem(crs);   // TODO double check that selecting an equivalent object (like this) works, rather than looking up the matching object in the combobox, and then selecting that
 
                                                                   this.tileStoreWriterAdapter.hint(file);
                                                               }
@@ -169,17 +196,18 @@ public class TilerWindow extends NavigationWindow
         this.tileWidthSpinner = new JSpinner(new PowerOfTwoSpinnerModel(this.settings.get(TileWidthSettingName,
                                                                                           Integer::parseInt,
                                                                                           256),
-                                                            128,
-                                                            2048));
+                                                                        128,
+                                                                        2048));
 
         this.tileHeightSpinner = new JSpinner(new PowerOfTwoSpinnerModel(this.settings.get(TileHeightSettingName,
                                                                                            Integer::parseInt,
                                                                                            256),
-                                                             128,
-                                                             2048));
+                                                                         128,
+                                                                         2048));
 
 
         this.clearColorButton = new SwatchButton("");
+        this.clearColorButton.setPreferredSize(new Dimension(220, 20));
         this.clearColorButton.setColor(this.settings.get(ClearColorSettingName,
                                                          string -> colorFromString(string),
                                                          new Color(0, 0, 0, 0)));
@@ -210,11 +238,11 @@ public class TilerWindow extends NavigationWindow
         this.inputPanel.add(this.inputFileName,       new SimpleGridBagConstraints(1, 0, true));
         this.inputPanel.add(this.inputFileNameButton, new SimpleGridBagConstraints(2, 0, false));
 
-        this.inputPanel.add(new JLabel("Native eference System:"), new SimpleGridBagConstraints(0, 1, false));
-        this.inputPanel.add(this.referenceSystems,           new SimpleGridBagConstraints(1, 1, true));
+        this.inputPanel.add(new JLabel("Native reference System:"), new SimpleGridBagConstraints(0, 1, false));
+        this.inputPanel.add(this.nativeReferenceSystem,            new SimpleGridBagConstraints(1, 1, true));
 
-        this.inputPanel.add(new JLabel("Reference System:"), new SimpleGridBagConstraints(0, 2, false));
-        this.inputPanel.add(this.referenceSystems,           new SimpleGridBagConstraints(1, 2, true));
+        this.inputPanel.add(new JLabel("Output reference System:"), new SimpleGridBagConstraints(0, 2, false));
+        this.inputPanel.add(this.referenceSystems,                  new SimpleGridBagConstraints(1, 2, true));
     }
 
     private void buildOutputContent()
@@ -272,9 +300,12 @@ public class TilerWindow extends NavigationWindow
         final int tileWidth  = (int)this.tileWidthSpinner .getValue();
         final int tileHeight = (int)this.tileHeightSpinner.getValue();
 
+        final Dimensions<Integer> tileDimensions = new Dimensions<>(tileWidth, tileHeight);
+
+        final CoordinateReferenceSystem crs = (CoordinateReferenceSystem)this.referenceSystems.getSelectedItem();
+
         final Color color = this.clearColorButton.getColor();
 
-        // Save UI values - TODO put these in the event handlers
         this.settings.set(TileWidthSettingName,  Integer.toString(tileWidth));
         this.settings.set(TileHeightSettingName, Integer.toString(tileHeight));
         this.settings.save();
@@ -285,65 +316,35 @@ public class TilerWindow extends NavigationWindow
             return false;
         }
 
+        if(this.referenceSystems.getSelectedItem() == null)
+        {
+            this.warn("Please select an output reference system");
+            return false;
+        }
+
 
         // TODO waiting on Lander's new tiler code
 
         // This spawns a modal dialog and blocks this thread
-//        ProgressDialog.trackProgress(this,
-//                                     this.processName() + "...",
-//                                     taskMonitor -> { try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
-//                                                      {
-//                                                          (new Tiler(taskMonitor,
-//                                                                     new File(this.inputFileName.getText()),
-//                                                                     tileStoreWriter,
-//                                                                     new Dimensions<>(tileWidth,
-//                                                                                      tileHeight),
-//                                                                     color)).execute();
-//                                                          return null;
-//                                                      }
-//                                                    });
+        ProgressDialog.trackProgress(this,
+                                     this.processName() + "...",
+                                     taskMonitor -> { final File file = new File(this.inputFileName.getText());
+
+                                                      try(final TileStoreReader tileStoreReader = new RawImageTileReader(file, tileDimensions, crs))
+                                                      {
+                                                          try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
+                                                          {
+                                                              (new Tiler(file,
+                                                                         tileStoreWriter,
+                                                                         tileDimensions,
+                                                                         color,
+                                                                         taskMonitor)).execute();
+                                                              return null;
+                                                          }
+                                                      }
+                                                    });
 
         return true;
-    }
-
-    private static CoordinateReferenceSystem getCrs(@SuppressWarnings("unused") final File file) throws RuntimeException
-    {
-        return null;
-
-        // TODO use Lander's GDAL utilities once they're ready
-        //osr.UseExceptions(); // TODO only do this once
-        //gdal.AllRegister();  // TODO only do this once
-        //
-        //final Dataset dataset = gdal.Open(file.getAbsolutePath(),
-        //                                  gdalconstConstants.GA_ReadOnly);
-        //
-        //if(dataset == null)
-        //{
-        //    return null;
-        //}
-        //
-        //final SpatialReference srs = new SpatialReference(dataset.GetProjection());
-        //
-        //gdal.GDALDestroyDriverManager(); // TODO only do this once
-        //
-        //final String attributePath = "PROJCS|GEOGCS|AUTHORITY";   // https://gis.stackexchange.com/questions/20298/
-        //
-        //final String authority  = srs.GetAttrValue(attributePath, 0);
-        //final String identifier = srs.GetAttrValue(attributePath, 1);
-        //
-        //if(authority == null || identifier == null)
-        //{
-        //    return null;    // Failed to get the attribute value for some reason, see: http://gdal.org/java/org/gdal/osr/SpatialReference.html#GetAttrValue(java.lang.String,%20int)
-        //}
-        //
-        //try
-        //{
-        //    return new CoordinateReferenceSystem(authority, Integer.parseInt(identifier));
-        //}
-        //catch(final NumberFormatException ex)
-        //{
-        //    return null;    // The authority identifier in the WKT wasn't an integer
-        //}
     }
 
     private static Color colorFromString(final String string)

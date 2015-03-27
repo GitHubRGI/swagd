@@ -89,14 +89,14 @@ public class RawImageTileReader implements TileStoreReader {
 
     /**
      * Constructor
-     *
-     * @param coordinateReferenceSystem The {@link CoordinateReferenceSystem} the tiles should be output in
      * @param rawImage A raster image {@link File}
      * @param tileSize A {@link Dimensions} that describes what an individual tile looks like
+     * @param coordinateReferenceSystem The {@link CoordinateReferenceSystem} the tiles should be output in
+     *
      * @throws TileStoreException Thrown when GDAL could not get the correct {@link CoordinateReferenceSystem}
      *                               of the input raster OR if the raw image could not be loaded as a {@link Dataset}
      */
-    public RawImageTileReader(final CoordinateReferenceSystem coordinateReferenceSystem, final File rawImage, final Dimensions<Integer> tileSize) throws TileStoreException
+    public RawImageTileReader(final File rawImage, final Dimensions<Integer> tileSize, final CoordinateReferenceSystem coordinateReferenceSystem) throws TileStoreException
     {
         if (coordinateReferenceSystem == null)
         {

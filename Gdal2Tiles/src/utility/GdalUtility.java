@@ -34,10 +34,12 @@ import java.awt.image.DataBufferShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -48,6 +50,7 @@ import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.gdal.osr.SpatialReference;
+import org.gdal.osr.osr;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
@@ -254,6 +257,11 @@ public class GdalUtility
      */
     public static SpatialReference getDatasetSrs(final Dataset dataset) throws DataFormatException
     {
+        if(dataset == null)
+        {
+            throw new IllegalArgumentException("Dataset may not be null.");
+        }
+
         final SpatialReference srs = new SpatialReference();
         // Get the well-known-text of this dataset
         String wkt = dataset.GetProjection();
@@ -269,6 +277,25 @@ public class GdalUtility
             return srs;
         }
         throw new DataFormatException("Cannot get source file spatial reference system.");
+    }
+
+    public static SpatialReference getDatasetSrs(final File file) throws DataFormatException
+    {
+        osr.UseExceptions();
+        // Register gdal for use
+        gdal.AllRegister();
+
+        final Dataset dataset = gdal.Open(file.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
+
+        try
+        {
+            return GdalUtility.getDatasetSrs(dataset);
+        }
+        finally
+        {
+            dataset.delete();
+            //gdal.GDALDestroyDriverManager(); Causes fatal error: exception access violation
+        }
     }
 
     /**
@@ -336,9 +363,31 @@ public class GdalUtility
     {
         // Passing null to GetAuthorityName and Code will query the root node of the WKT, not
         // sure if this is what we want
-        final String authority = srs.GetAuthorityName(null);
+        final String authority  = srs.GetAuthorityName(null);
         final String identifier = srs.GetAuthorityCode(null);
-        return new CoordinateReferenceSystem(authority, Integer.valueOf(identifier));
+
+//        final String attributePath = "PROJCS|GEOGCS|AUTHORITY";   // https://gis.stackexchange.com/questions/20298/
+//
+//        final String authority  = srs.GetAttrValue(attributePath, 0);
+//        final String identifier = srs.GetAttrValue(attributePath, 1);
+
+        if(authority  == null || authority .isEmpty() ||
+           identifier == null || identifier.isEmpty())
+        {
+            return null;
+        }
+
+        return new CoordinateReferenceSystem(getName(srs), authority, Integer.valueOf(identifier));
+    }
+
+    public static String getName(final SpatialReference srs)
+    {
+        return Arrays.asList("PROJCS", "GEOGCS", "GEOCCS")  // These are all of the top level strings according to http://portal.opengeospatial.org/files/?artifact_id=25355.  They must all be followed by a name attribute.
+                     .stream()
+                     .map(srsType -> srs.GetAttrValue(srsType, 0))
+                     .filter(Objects::nonNull)
+                     .findFirst()
+                     .orElse(null);
     }
 
     /**

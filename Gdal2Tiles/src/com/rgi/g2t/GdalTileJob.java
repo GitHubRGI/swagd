@@ -50,6 +50,7 @@ import org.w3c.dom.Document;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
 import com.rgi.common.Range;
+import com.rgi.common.TaskMonitor;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
@@ -64,18 +65,18 @@ import com.rgi.common.tile.store.TileStoreWriter;
  */
 public class GdalTileJob implements Runnable {
 
-    private final TileStoreWriter writer;
-    private final CrsProfile crsProfile;
-    private final File file;
-    private final Path outputFolder;
+    private final TileStoreWriter     writer;
+    private final CrsProfile          crsProfile;
+    private final File                file;
+    private final Path                outputFolder;
     private final Dimensions<Integer> tileDimensions;
-    //private final TaskMonitor monitor;
-    private final Color noDataColor;
+    private final Color               noDataColor;
+    private final TaskMonitor         monitor;
 
-    private final int tileSize = 256;
-    private final String resamplingAlgorithm = "average";
-    private final int gdalGeoQuerySize = 4 * this.tileSize;
-    private final TemporaryFolder tempFolder = new TemporaryFolder();
+    private final int             tileSize            = 256;
+    private final String          resamplingAlgorithm = "average";
+    private final int             gdalGeoQuerySize    = 4 * this.tileSize;
+    private final TemporaryFolder tempFolder          = new TemporaryFolder();
 
     /**
      * @param file
@@ -87,16 +88,16 @@ public class GdalTileJob implements Runnable {
     public GdalTileJob(final File file,
                        final TileStoreWriter writer,
                        final Dimensions<Integer> tileDimensions,
-                       final Color noDataColor/*,
-                       final TaskMonitor monitor*/)
+                       final Color noDataColor,
+                       final TaskMonitor monitor)
     {
-        this.file = file;
-        this.writer = writer;
+        this.file           = file;
+        this.writer         = writer;
         this.tileDimensions = tileDimensions;
-        //this.monitor = monitor;
-        this.noDataColor = noDataColor;
-        this.crsProfile = CrsProfileFactory.create(writer.getCoordinateReferenceSystem());
-        this.outputFolder = Paths.get("/data/tiles/swagd");
+        this.monitor        = monitor;
+        this.noDataColor    = noDataColor;
+        this.crsProfile     = CrsProfileFactory.create(writer.getCoordinateReferenceSystem());
+        this.outputFolder   = Paths.get("/data/tiles/swagd");
     }
 
     @Override
