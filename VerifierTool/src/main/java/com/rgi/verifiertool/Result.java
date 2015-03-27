@@ -3,6 +3,7 @@ package com.rgi.verifiertool;
 import java.util.Collection;
 
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 
 import com.rgi.geopackage.verification.VerificationIssue;
 
@@ -12,17 +13,22 @@ import com.rgi.geopackage.verification.VerificationIssue;
  */
 public class Result
 {
-        Label  label;
+        Label  geoPackageLabel;
         PassingLevel passingLevel;
         Collection<VerificationIssue> failedMessages;
         FailedRequirementsButton button;
+        Label passingLabel;
+        ProgressIndicator indicator;
 
-        Result(final Label label, final PassingLevel passingLevel, final Collection<VerificationIssue> failedMessages, final FailedRequirementsButton button)
+        Result(final Label label, final PassingLevel passingLevel, final FailedRequirementsButton button)
         {
-            this.label = label;
+            this.geoPackageLabel = label;
             this.passingLevel = passingLevel;
-            this.failedMessages = failedMessages;
+            this.failedMessages = button.getFailedRequirements();
             this.button = button;
+            this.passingLabel = new Label();
+            this.indicator = new ProgressIndicator();
+            this.passingLabel.setGraphic(this.indicator);
         }
 
 }

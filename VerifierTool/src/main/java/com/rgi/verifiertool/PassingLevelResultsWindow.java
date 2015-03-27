@@ -24,14 +24,15 @@
 package com.rgi.verifiertool;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import javafx.concurrent.Task;
-import javafx.geometry.HPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -54,29 +55,18 @@ public class PassingLevelResultsWindow extends Stage
     GridPane gridPanel = new GridPane();
     private final int fontSize = 18;
     File file;
-    ProgressIndicator indicatorCore  = new ProgressIndicator();
-    ProgressIndicator indicatorTiles = new ProgressIndicator();
-    ProgressIndicator indicatorExtensions = new ProgressIndicator();
-    ProgressIndicator indicatorSchema = new ProgressIndicator();
-    ProgressIndicator indicatorMetadata = new ProgressIndicator();
 
-    Label resultCoreLabel = new Label();
-    Label resultTiles = new Label();
-    Label resultExtensions = new Label();
-    Label resultSchema = new Label();
-    Label resultMetadata = new Label();
+   private final FailedRequirementsButton buttonCore = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Core");
+   private final FailedRequirementsButton buttonTiles = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Tiles");
+   private final FailedRequirementsButton buttonExtensions = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Extensions");
+   private final FailedRequirementsButton buttonSchema = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Schema");
+   private final FailedRequirementsButton buttonMetadata = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Metadata");
 
-    FailedRequirementsButton buttonCore = new FailedRequirementsButton(Collections.EMPTY_LIST);
-    FailedRequirementsButton buttonTiles = new FailedRequirementsButton(Collections.EMPTY_LIST);
-    FailedRequirementsButton buttonExtensions = new FailedRequirementsButton(Collections.EMPTY_LIST);
-    FailedRequirementsButton buttonSchema = new FailedRequirementsButton(Collections.EMPTY_LIST);
-    FailedRequirementsButton buttonMetadata = new FailedRequirementsButton(Collections.EMPTY_LIST);
-
-    Result coreResult       = new Result(this.resultCoreLabel, PassingLevel.Fail, Collections.EMPTY_LIST, this.buttonCore);
-    Result tilesResult      = new Result(this.resultTiles,     PassingLevel.Fail, Collections.EMPTY_LIST, this.buttonTiles);
-    Result extensionsResult = new Result(this.resultExtensions,PassingLevel.Fail, Collections.EMPTY_LIST, this.buttonExtensions);
-    Result schemaResult     = new Result(this.resultSchema,    PassingLevel.Fail, Collections.EMPTY_LIST, this.buttonSchema);
-    Result metadataResult   = new Result(this.resultMetadata,  PassingLevel.Fail, Collections.EMPTY_LIST, this.buttonMetadata);
+   private final Result coreResult       = new Result(new Label("GeoPackage Core..."),      PassingLevel.Fail, this.buttonCore);
+   private final Result tilesResult      = new Result(new Label("GeoPackage Tiles..."),     PassingLevel.Fail, this.buttonTiles);
+   private final Result extensionsResult = new Result(new Label("GeoPackage Extensions..."),PassingLevel.Fail, this.buttonExtensions);
+   private final Result schemaResult     = new Result(new Label("GeoPackage Schema..."),    PassingLevel.Fail, this.buttonSchema);
+   private final Result metadataResult   = new Result(new Label("GeoPackage Metadata..."),  PassingLevel.Fail, this.buttonMetadata);
 
     GeoPackage gpkg;
 
@@ -87,306 +77,182 @@ public class PassingLevelResultsWindow extends Stage
     {
         this.file = file;
         this.setTitle(String.format("Verification for file %s", file.getName()));
-        try(GeoPackage geoPackage = new GeoPackage(PassingLevelResultsWindow.this.file, VerificationLevel.None, OpenMode.Open))
-        {
-            this.buildPassFailPanel(geoPackage);
-        }
-        catch(Exception ex)
-        {
-            ex.printStackTrace();
-        }
+        this.buildPassFailPanel();
+        Task<Void> task = new Task<Void>(){
+
+            @Override
+            protected Void call() throws Exception
+            {
+                try(GeoPackage geoPackage = new GeoPackage(PassingLevelResultsWindow.this.file, VerificationLevel.None, OpenMode.Open))
+                {
+                    PassingLevelResultsWindow.this.gpkg = geoPackage;
+
+                    PassingLevelResultsWindow.this.createTasks();
+                }
+                catch(Exception ex)
+                {
+                    ex.printStackTrace();
+                }
+                return null;
+            }};
+      Thread mainThread = new Thread(task);
+      mainThread.start();
 
     }
 
-    private void buildPassFailPanel(final GeoPackage geoPackage)
+    private void buildPassFailPanel()
     {
-        final Label coreLabel         = new Label("GeoPackage Core...");
-        final Label tilesLabel        = new Label("GeoPackage Tiles...");
-        final Label extensionsLabel   = new Label("GeoPackage Extensions...");
-        final Label schemaLabel       = new Label("GeoPackage Schema...");
-        final Label metadataLabel     = new Label("GeoPackage Metadata...");
-
         this.gridPanel.setHgap(2);
         this.gridPanel.setVgap(1);
 
-        this.gpkg = geoPackage;
 
         ColumnConstraints columnLeft = new ColumnConstraints(230);
         ColumnConstraints columnCenter = new ColumnConstraints(90);
-        ColumnConstraints columnRight = new ColumnConstraints(40);
+        ColumnConstraints columnRight = new ColumnConstraints(90);
 
         this.setResizable(false);
         this.gridPanel.getColumnConstraints().addAll(columnLeft, columnCenter, columnRight);
 
-        //Verify GeoPackage and display results
+        int row = 0;
+        for(Result result: new ArrayList<>(Arrays.asList(this.coreResult, this.tilesResult, this.extensionsResult, this.metadataResult, this.schemaResult)))
+        {
+            result.geoPackageLabel.setFont(new Font(this.fontSize));
+            createButtonListener(result.button);
+            result.button.setVisible(false);
+            //result.indicator.progressProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> System.out.println(newValue));
+            this.gridPanel.add(result.geoPackageLabel,        0, row);
+            this.gridPanel.add(result.passingLabel, 1, row);
+            this.gridPanel.add(result.button,       2, row);
+            row++;
+        }
 
-            int row = 0;
-            this.buildLabelTest(coreLabel, row);
-            this.resultCoreLabel.setGraphic(this.indicatorCore);
-            this.gridPanel.add(this.resultCoreLabel, 1, row);
-            this.createButtonListener(this.buttonCore, "GeoPackage Core");
-            this.buttonCore.setVisible(false);
-            this.gridPanel.add(this.buttonCore, 3, row);
+        //create indicator listeners??
 
-            int row1 = 1;
-            this.buildLabelTest(tilesLabel, row1);
-            this.resultTiles.setGraphic(this.indicatorTiles);
-            this.gridPanel.add(this.resultTiles, 1, row1);
-            this.createButtonListener(this.buttonTiles, "GeoPackage Tiles");
-            this.buttonTiles.setVisible(false);
-            this.gridPanel.add(this.buttonTiles, 3, row1);
-
-            int row2 = 2;
-            this.buildLabelTest(extensionsLabel, row2);
-            this.resultExtensions.setGraphic(this.indicatorExtensions);
-            this.gridPanel.add(this.resultExtensions, 1, row2);
-            this.createButtonListener(this.buttonExtensions, "GeoPackage Extensions");
-            this.buttonExtensions.setVisible(false);
-            this.gridPanel.add(this.buttonExtensions, 3, row2);
-
-            int row3 = 3;
-            this.buildLabelTest(schemaLabel, row3);
-            this.resultSchema.setGraphic(this.indicatorSchema);
-            this.gridPanel.add(this.resultSchema, 1, row3);
-            this.createButtonListener(this.buttonSchema, "GeoPackage Schema");
-            this.buttonSchema.setVisible(false);
-            this.gridPanel.add(this.buttonSchema, 3, row3);
-
-            int row4 = 4;
-            this.buildLabelTest(metadataLabel, row4);
-            this.resultMetadata.setGraphic(this.indicatorMetadata);
-            this.gridPanel.add(this.resultMetadata, 1, row4);
-            this.createButtonListener(this.buttonMetadata, "GeoPackage Metadata");
-            this.buttonMetadata.setVisible(false);
-            this.gridPanel.add(this.buttonMetadata, 3, row4);
-            //create task
-
-            Task<Object> taskCore = new Task<Object>(){
-
-                @Override
-                protected Object call() throws Exception
-                {
-                       Collection<VerificationIssue> coreFailedMessages = PassingLevelResultsWindow.this.gpkg.core().getVerificationIssues(PassingLevelResultsWindow.this.file, VerificationLevel.Full);
-                       PassingLevel corePassingLevel = PassingLevelResultsWindow.getPassingLevel(coreFailedMessages);
-                       PassingLevelResultsWindow.this.coreResult.failedMessages = coreFailedMessages;
-                       PassingLevelResultsWindow.this.coreResult.passingLevel = corePassingLevel;
-                       this.updateValue(PassingLevelResultsWindow.this.coreResult);
-
-                    return PassingLevelResultsWindow.this.tilesResult;
-                }
-
-            };
-
-            Task<Object> taskTiles = new Task<Object>(){
-                @Override
-                protected Object call() throws Exception
-                {
-                    Collection<VerificationIssue> tilesFailedMessages = PassingLevelResultsWindow.this.gpkg.tiles().getVerificationIssues(VerificationLevel.Full);
-                    PassingLevel tilesPassingLevel = PassingLevelResultsWindow.getPassingLevel(tilesFailedMessages);
-                    PassingLevelResultsWindow.this.tilesResult.failedMessages = tilesFailedMessages;
-                    PassingLevelResultsWindow.this.tilesResult.passingLevel = tilesPassingLevel;
-                    this.updateValue(PassingLevelResultsWindow.this.tilesResult);
-                    return PassingLevelResultsWindow.this.tilesResult;
-                }
-            };
-
-            Task<Object> taskExtensions = new Task<Object>(){
-
-                @Override
-                protected Object call() throws Exception
-                {
-                    Collection<VerificationIssue> extensionFailedMessages = PassingLevelResultsWindow.this.gpkg.extensions().getVerificationIssues(VerificationLevel.Full);
-                    PassingLevel extensionsPassingLevel = PassingLevelResultsWindow.getPassingLevel(extensionFailedMessages);
-                    PassingLevelResultsWindow.this.extensionsResult.failedMessages = extensionFailedMessages;
-                    PassingLevelResultsWindow.this.extensionsResult.passingLevel = extensionsPassingLevel;
-                    this.updateValue(PassingLevelResultsWindow.this.extensionsResult);
-                    return PassingLevelResultsWindow.this.extensionsResult;
-                }
-            };
-            Task<Object> taskSchema = new Task<Object>(){
-
-                @Override
-                protected Object call() throws Exception
-                {
-                    Collection<VerificationIssue> schemaFailedMessages = PassingLevelResultsWindow.this.gpkg.schema().getVerificationIssues(VerificationLevel.Full);
-                    PassingLevel schemaPassingLevel = PassingLevelResultsWindow.getPassingLevel(schemaFailedMessages);
-                    PassingLevelResultsWindow.this.schemaResult.failedMessages = schemaFailedMessages;
-                    PassingLevelResultsWindow.this.schemaResult.passingLevel = schemaPassingLevel;
-                    this.updateValue(PassingLevelResultsWindow.this.schemaResult);
-                    return PassingLevelResultsWindow.this.schemaResult;
-                }
-            };
-
-            Task<Object> taskMetadata = new Task<Object>(){
-
-                @Override
-                protected Object call() throws Exception
-                {
-                    Collection<VerificationIssue> metadataFailedMessages = PassingLevelResultsWindow.this.gpkg.metadata().getVerificationIssues(VerificationLevel.Full);
-                    PassingLevel metadataPassingLevel = PassingLevelResultsWindow.getPassingLevel(metadataFailedMessages);
-                    PassingLevelResultsWindow.this.metadataResult.failedMessages = metadataFailedMessages;
-                    PassingLevelResultsWindow.this.metadataResult.passingLevel = metadataPassingLevel;
-                    this.updateValue(PassingLevelResultsWindow.this.metadataResult);
-                    return PassingLevelResultsWindow.this.metadataResult;
-                }
-            };
-
-            taskCore.valueProperty().addListener((obs, oldMessage, newMessage) -> {
-                if(newMessage.getClass() == Result.class)
-                  {
-                     Result result = (Result) newMessage;
-                     result.label.setGraphic(null);
-                     result.label.setText(result.passingLevel.getText());
-                     result.label.setFont(new Font(this.fontSize));
-                     result.label.setStyle("-fx-font-weight: bold");
-                     result.label.setTextFill(result.passingLevel.getColor());
-                     if(!PassingLevel.Pass.equals(result.passingLevel))
-                     {
-                         result.button.setRequirements(result.failedMessages);
-                         result.button.setVisible(true);
-                     }
-                  }
-               });
-
-            taskTiles.valueProperty().addListener((obs, oldMessage, newMessage) -> {
-                if(newMessage.getClass() == Result.class)
-                  {
-                     Result result = (Result) newMessage;
-                     result.label.setGraphic(null);
-                     result.label.setText(result.passingLevel.getText());
-                     result.label.setFont(new Font(this.fontSize));
-                     result.label.setStyle("-fx-font-weight: bold");
-                     result.label.setTextFill(result.passingLevel.getColor());
-                     if(!PassingLevel.Pass.equals(result.passingLevel))
-                     {
-                         result.button.setRequirements(result.failedMessages);
-                         result.button.setVisible(true);
-                     }
-                  }
-               });
-
-            taskExtensions.valueProperty().addListener((obs, oldMessage, newMessage) -> {
-                if(newMessage.getClass() == Result.class)
-                  {
-                     Result result = (Result) newMessage;
-                     result.label.setGraphic(null);
-                     result.label.setText(result.passingLevel.getText());
-                     result.label.setFont(new Font(this.fontSize));
-                     result.label.setStyle("-fx-font-weight: bold");
-                     result.label.setTextFill(result.passingLevel.getColor());
-                     if(!PassingLevel.Pass.equals(result.passingLevel))
-                     {
-                         result.button.setRequirements(result.failedMessages);
-                         result.button.setVisible(true);
-                     }
-                  }
-               });
-
-            taskSchema.valueProperty().addListener((obs, oldMessage, newMessage) -> {
-                if(newMessage.getClass() == Result.class)
-                  {
-                     Result result = (Result) newMessage;
-                     result.label.setGraphic(null);
-                     result.label.setText(result.passingLevel.getText());
-                     result.label.setFont(new Font(this.fontSize));
-                     result.label.setStyle("-fx-font-weight: bold");
-                     result.label.setTextFill(result.passingLevel.getColor());
-                     if(!PassingLevel.Pass.equals(result.passingLevel))
-                     {
-                         result.button.setRequirements(result.failedMessages);
-                         result.button.setVisible(true);
-                     }
-                  }
-            });
-
-            taskMetadata.valueProperty().addListener((obs, oldMessage, newMessage) -> {
-                if(newMessage.getClass() == Result.class)
-                  {
-                     Result result = (Result) newMessage;
-                     result.label.setGraphic(null);
-                     result.label.setText(result.passingLevel.getText());
-                     result.label.setFont(new Font(this.fontSize));
-                     result.label.setStyle("-fx-font-weight: bold");
-                     result.label.setTextFill(result.passingLevel.getColor());
-                     if(!PassingLevel.Pass.equals(result.passingLevel))
-                     {
-                         result.button.setRequirements(result.failedMessages);
-                         result.button.setVisible(true);
-                     }
-                  }
-            });
-
-            Thread core = new Thread(taskCore);
-            Thread tiles = new Thread(taskTiles);
-            Thread extensions = new Thread(taskExtensions);
-            Thread schema = new Thread(taskSchema);
-            Thread metadata = new Thread(taskMetadata);
-
-                try
-                {
-                    core.start();
-                    tiles.start();
-                    extensions.start();
-                    schema.start();
-                    metadata.start();
-
-                    core.join();
-                    tiles.join();
-                    extensions.join();
-                    schema.join();
-                    metadata.join();
-
-
-                } catch (InterruptedException e)
-                {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-
-
-
-
-       // this.setVisible(true);
         BorderPane root = new BorderPane();
-        Scene scene = new Scene(root, 450, 140, Color.WHITE);
+        Scene scene = new Scene(root, 410, 140, Color.WHITE);
         root.setCenter(this.gridPanel);
         this.setScene(scene);
         this.show();
     }
 
-    private void buildLabelTest(final Label coreLabel, final int row)
+    private void createTasks()
     {
-        //Create Label of Which Part of GeoPackage Tested
-        this.gridPanel.add(coreLabel, 0, row);
-        coreLabel.setFont(new Font(this.fontSize));
-    }
 
-    @SuppressWarnings("unused")
-    private void buildPassingLevelAndShowMore(final Collection<VerificationIssue> failedRequirements, final int row, final String component)
-    {
-        //Get Passing Level
-        PassingLevel passingLevel = getPassingLevel(failedRequirements);
-        //Get The results and put it on the label
-        Label result = new Label(passingLevel.getText());
-        //Set the result in appropriate colored text
-        result.setTextFill(passingLevel.getColor());
-        result.setStyle("-fx-font-weight: bold");
-        result.setFont(new Font(this.fontSize ));
-        GridPane.setHalignment(result, HPos.LEFT);
-        this.gridPanel.add(result, 1, row);
+        Task<Object> taskCore = new Task<Object>(){
 
-        //IF errors create and show the error messages
-        FailedRequirementsButton showMore = new FailedRequirementsButton(failedRequirements);
+            @Override
+            protected Object call() throws Exception
+            {
+               PassingLevelResultsWindow.this.coreResult.failedMessages = PassingLevelResultsWindow.this.gpkg.core().getVerificationIssues(PassingLevelResultsWindow.this.file, VerificationLevel.Full);
+               PassingLevelResultsWindow.this.coreResult.passingLevel  = PassingLevelResultsWindow.getPassingLevel(PassingLevelResultsWindow.this.coreResult.failedMessages);
+               this.updateValue(PassingLevelResultsWindow.this.coreResult);
+               return PassingLevelResultsWindow.this.tilesResult;
+            }
 
-        //do not show error message button if the test is passed
-        if(passingLevel.equals(PassingLevel.Pass))
+        };
+
+        Task<Object> taskTiles = new Task<Object>(){
+            @Override
+            protected Object call() throws Exception
+            {
+                PassingLevelResultsWindow.this.tilesResult.failedMessages  = PassingLevelResultsWindow.this.gpkg.tiles().getVerificationIssues(VerificationLevel.Full);
+                PassingLevelResultsWindow.this.tilesResult.passingLevel = PassingLevelResultsWindow.getPassingLevel( PassingLevelResultsWindow.this.tilesResult.failedMessages);
+                this.updateValue(PassingLevelResultsWindow.this.tilesResult);
+
+                return PassingLevelResultsWindow.this.tilesResult;
+            }
+        };
+
+        Task<Object> taskExtensions = new Task<Object>(){
+
+            @Override
+            protected Object call() throws Exception
+            {
+                PassingLevelResultsWindow.this.extensionsResult.failedMessages = PassingLevelResultsWindow.this.gpkg.extensions().getVerificationIssues(VerificationLevel.Full);
+                PassingLevelResultsWindow.this.extensionsResult.passingLevel = PassingLevelResultsWindow.getPassingLevel(PassingLevelResultsWindow.this.extensionsResult.failedMessages);
+                this.updateValue(PassingLevelResultsWindow.this.extensionsResult);
+
+                return PassingLevelResultsWindow.this.extensionsResult;
+            }
+        };
+        Task<Object> taskSchema = new Task<Object>(){
+
+            @Override
+            protected Object call() throws Exception
+            {
+                PassingLevelResultsWindow.this.schemaResult.failedMessages = PassingLevelResultsWindow.this.gpkg.schema().getVerificationIssues(VerificationLevel.Full);
+                PassingLevelResultsWindow.this.schemaResult.passingLevel = PassingLevelResultsWindow.getPassingLevel(PassingLevelResultsWindow.this.schemaResult.failedMessages);
+                this.updateValue(PassingLevelResultsWindow.this.schemaResult);
+
+                return PassingLevelResultsWindow.this.schemaResult;
+            }
+        };
+
+        Task<Object> taskMetadata = new Task<Object>(){
+
+            @Override
+            protected Object call() throws Exception
+            {
+                PassingLevelResultsWindow.this.metadataResult.failedMessages = PassingLevelResultsWindow.this.gpkg.metadata().getVerificationIssues(VerificationLevel.Full);
+                PassingLevelResultsWindow.this.metadataResult.passingLevel   = PassingLevelResultsWindow.getPassingLevel(PassingLevelResultsWindow.this.metadataResult.failedMessages);
+                this.updateValue(PassingLevelResultsWindow.this.metadataResult);
+
+                return PassingLevelResultsWindow.this.metadataResult;
+            }
+        };
+
+        this.createTaskListeners(new ArrayList<>(Arrays.asList(taskCore, taskTiles, taskExtensions, taskSchema, taskMetadata)));
+
+        Thread core       = new Thread(taskCore);
+        Thread tiles      = new Thread(taskTiles);
+        Thread extensions = new Thread(taskExtensions);
+        Thread schema     = new Thread(taskSchema);
+        Thread metadata   = new Thread(taskMetadata);
+
+        try
         {
-            showMore.setVisible(false);
+            core.start();
+            tiles.start();
+            extensions.start();
+            schema.start();
+            metadata.start();
+
+            core.join();
+            tiles.join();
+            extensions.join();
+            schema.join();
+            metadata.join();
         }
-        this.gridPanel.add(showMore, 3, row);
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
     }
 
-    private void createButtonListener(final FailedRequirementsButton button, final String component)
+    private void createTaskListeners(final List<Task<Object>> taskList)
+    {
+        for(Task<Object> task: taskList)
+        {
+            task.valueProperty().addListener((obs, oldMessage, newMessage) -> {
+                if(newMessage.getClass() == Result.class)
+                  {
+                     Result result = (Result) newMessage;
+                     result.passingLabel.setGraphic(null);
+                     result.passingLabel.setText(result.passingLevel.getText());
+                     result.passingLabel.setFont(new Font(this.fontSize));
+                     result.passingLabel.setStyle("-fx-font-weight: bold");
+                     result.passingLabel.setTextFill(result.passingLevel.getColor());
+                     if(!PassingLevel.Pass.equals(result.passingLevel))
+                     {
+                         result.button.setRequirements(result.failedMessages);
+                         result.button.setVisible(true);
+                     }
+                  }
+            });
+        }
+    }
+
+    private static void createButtonListener(final FailedRequirementsButton button)
     {
         button.setOnAction(e ->
         {
@@ -394,7 +260,7 @@ public class PassingLevelResultsWindow extends Stage
             {
                 if (e.getSource().getClass() == FailedRequirementsButton.class)
                 {
-                    new FailedRequirementsWindow(button.getFailedRequirements(), component);
+                    new FailedRequirementsWindow(button.getFailedRequirements(), button.getComponent());
                 }
 
             } catch (Exception e1)
