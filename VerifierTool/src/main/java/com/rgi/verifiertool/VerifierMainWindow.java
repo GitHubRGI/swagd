@@ -24,13 +24,10 @@
 package com.rgi.verifiertool;
 
 import java.io.File;
-import java.util.List;
 
 import javafx.application.Application;
-import javafx.concurrent.Task;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.text.Font;
@@ -47,6 +44,7 @@ public class VerifierMainWindow extends Application
      * Launch the application.
      * @param args incoming arguments
      */
+
     public static void main(final String[] args)
     {
         Application.launch(args);
@@ -64,9 +62,8 @@ public class VerifierMainWindow extends Application
         dragHereMessage.setFont(new Font(20));
         dragHereMessage.setX(150.0);
         dragHereMessage.setY(190.0);
-        ProgressIndicator progress = new ProgressIndicator();
-        progress.setVisible(false);
-        root.getChildren().addAll(dragHereMessage, progress);
+
+        root.getChildren().add(dragHereMessage);
 
         //create the even that drags the file over
         scene.setOnDragOver(event ->
@@ -84,18 +81,15 @@ public class VerifierMainWindow extends Application
         // Dropping over surface
         scene.setOnDragDropped(event ->
         {
-            progress.setVisible(true);
+
             Dragboard db = event.getDragboard();
             boolean success = false;
             if (db.hasFiles())
             {
-                List<File> selectedFiles = db.getFiles();
-                Task<Object> task = VerifierMainWindow.createWorker(selectedFiles);
-                progress.progressProperty().unbind();
-                progress.progressProperty().bind(task.progressProperty());
-                //new Thread(task).start();
-                task.run();
-                progress.setVisible(false);
+                for (File file : db.getFiles())
+                {
+                    new PassingLevelResultsWindow(file);
+                }
             }
             event.setDropCompleted(true);
             event.consume();
@@ -105,30 +99,4 @@ public class VerifierMainWindow extends Application
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-
-    private static Task<Object> createWorker(final List<File> selectedFiles)
-    {
-        return new Task<Object>()
-        {
-            @SuppressWarnings("unused")
-            @Override
-            protected Object call() throws Exception
-            {
-                try
-                {
-                    for (File file : selectedFiles)
-                    {
-                        new PassingLevelResultsWindow(file);
-                    }
-                }
-                catch(Exception ex)
-                {
-                    ex.printStackTrace();
-                }
-                return true;
-            }
-
-        };
-    }
-
 }

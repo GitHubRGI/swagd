@@ -34,14 +34,14 @@ import com.rgi.geopackage.verification.VerificationIssue;
  */
 public class FailedRequirementsButton extends Button
 {
-    private final Collection<VerificationIssue> failedRequirements;
+    private Collection<VerificationIssue> failedRequirements;
     /**
      * @param text message on the button
      * @param failedRequirements the requirements that the GeoPackage Failed
      */
-    public FailedRequirementsButton(final String text, final Collection<VerificationIssue> failedRequirements)
+    public FailedRequirementsButton(final Collection<VerificationIssue> failedRequirements)
     {
-        super(text);
+        super("show more");
         this.failedRequirements = failedRequirements;
     }
 
@@ -51,6 +51,11 @@ public class FailedRequirementsButton extends Button
     public Collection<VerificationIssue> getFailedRequirements()
     {
         return this.failedRequirements;
+    }
+
+    public void setRequirements(final Collection<VerificationIssue> failedRequirements)
+    {
+        this.failedRequirements = failedRequirements;
     }
 
 }

@@ -352,8 +352,7 @@ public class TilesVerifier extends Verifier
                                                                                        {
                                                                                            errorMessage.add(message);
                                                                                        }
-
-                                                                                    }
+                                                                                   }
                                                                                    catch (final Exception ex1)
                                                                                    {
                                                                                        errorMessage.add(ex1.getMessage());
