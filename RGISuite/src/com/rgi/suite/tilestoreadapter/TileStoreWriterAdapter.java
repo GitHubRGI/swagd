@@ -34,20 +34,53 @@ import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.suite.Settings;
 
 /**
+ * Abstract base class for UI adapters for tile store writers
+ *
  * @author Luke Lambert
  *
  */
 public abstract class TileStoreWriterAdapter
 {
+    /**
+     * Constructor
+     *
+     * @param settings
+     *             Handle to the application's settings object
+     */
     public TileStoreWriterAdapter(final Settings settings)
     {
         this.settings = settings;
     }
 
+    /**
+     * Use an input file to hint at possible values for the UI elements
+     *
+     * @param inputFile
+     *             Input file
+     * @throws TileStoreException
+     *             if there's a problem with the tile store
+     */
     public abstract void hint(final File inputFile) throws TileStoreException;
 
+    /**
+     * Provides UI elements to use as input to construct a tile store writer
+     *
+     * @return Returns a matrix of UI elements to build an input form that will
+     *             provide the inputs to build a corresponding tile store
+     *             writer
+     */
     public abstract Collection<Collection<JComponent>> getWriterParameterControls();
 
+    /**
+     * Constructs a tile store writer based on the values of the UI elements
+     *
+     * @param tileStoreReader
+     *             Tile store reader that may be required to know how to build
+     *             a tile scheme for our new tile store writer
+     * @return A {@link TileStoreWriter}
+     * @throws TileStoreException
+     *             if construction of the tile store reader fails
+     */
     public abstract TileStoreWriter getTileStoreWriter(final TileStoreReader tileStoreReader) throws TileStoreException;
 
     protected final Settings settings;

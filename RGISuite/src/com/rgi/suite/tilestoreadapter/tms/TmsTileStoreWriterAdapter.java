@@ -41,6 +41,12 @@ import com.rgi.common.util.FileUtility;
 import com.rgi.suite.Settings;
 import com.rgi.suite.tilestoreadapter.ImageFormatTileStoreAdapter;
 
+/**
+ *
+ *
+ * @author Luke Lambert
+ *
+ */
 public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
 {
     private static final String TmsOutputLocationSettingName = "ui.tms.outputLocation";
@@ -54,6 +60,12 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
                                                                                              Arrays.asList(new JLabel("Compression quality:"), this.compressionQuality),
                                                                                              Arrays.asList(new JLabel("Directory:"),           this.directory, this.directorySelector));
 
+    /**
+     * Constructor
+     *
+     * @param settings
+     *
+     */
     public TmsTileStoreWriterAdapter(final Settings settings)
     {
         super(settings);
