@@ -71,7 +71,7 @@ public class RawImageTileReader implements TileStoreReader {
         final Dataset dataset = gdal.Open(this.rawImage.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
         try
         {
-            this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSrs(dataset));
+            this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSpatialReference(dataset));
         }
         catch(final DataFormatException dfe)
         {
@@ -235,7 +235,7 @@ public class RawImageTileReader implements TileStoreReader {
         {
             try
             {
-                return GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSrs(this.dataset));
+                return GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSpatialReference(this.dataset));
             }
             catch(final DataFormatException ex)
             {

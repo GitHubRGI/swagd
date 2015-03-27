@@ -26,10 +26,9 @@ import java.awt.Color;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
+import java.util.zip.DataFormatException;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -46,6 +45,8 @@ import org.gdal.osr.SpatialReference;
 import org.gdal.osr.osr;
 import org.junit.rules.TemporaryFolder;
 import org.w3c.dom.Document;
+
+import utility.GdalUtility;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
@@ -105,14 +106,20 @@ public class GdalTileJob implements Runnable {
         try
         {
             final Dataset inputDataset = this.openInput();
-            final SpatialReference inputSrs = this.openInputSrs(inputDataset);
-            final Dataset outputDataset = this.openOutput(inputDataset, inputSrs);
-            final BoundingBox outputBounds = this.getOutputBounds(outputDataset);
-            final List<Range<Coordinate<Integer>>> ranges = this.calculateTileRangesForAllZooms(outputBounds);
+            final Dataset outputDataset = this.openOutput(inputDataset);
+            final BoundingBox outputBounds = GdalUtility.getBoundsForDataset(outputDataset);
+            final List<Range<Coordinate<Integer>>> ranges = GdalUtility.calculateTileRangesForAllZooms(outputBounds,
+            																						   this.crsProfile,
+            																						   this.writer.getTileScheme(),
+            																						   this.writer.getTileOrigin());
             // Generate base tiles
             try
             {
-                final int maxZoom = this.maximalZoomForPixelSize(outputDataset, outputBounds, ranges);
+            	final int maxZoom = GdalUtility.maximalZoomForDataset(outputDataset,
+            														  ranges,
+            														  this.writer.getTileOrigin(),
+            														  this.writer.getTileScheme(),
+            														  this.tileDimensions);
                 this.generateBaseTiles(outputDataset, ranges.get(maxZoom), maxZoom);
                 System.out.println("Base tiles finished generating.");
             }
@@ -120,18 +127,14 @@ public class GdalTileJob implements Runnable {
             {
                 ex1.printStackTrace();
             }
-            // Generate overview tiles
-            try
-            {
-                final int minZoom = this.minimalZoomForPixelSize(outputDataset, outputBounds, ranges);
-                this.generateOverviewTiles();
-            }
-            catch(final TileStoreException ex1)
-            {
-                ex1.printStackTrace();
-            }
+            final int minZoom = GdalUtility.minimalZoomForDataset(outputDataset,
+																  ranges,
+																  this.writer.getTileOrigin(),
+																  this.writer.getTileScheme(),
+																  this.tileDimensions);
+			this.generateOverviewTiles();
         }
-        catch(final TilingException ex1)
+        catch(final TilingException | DataFormatException ex1)
         {
             // TODO: handle tiling failure
             ex1.printStackTrace();
@@ -157,7 +160,7 @@ public class GdalTileJob implements Runnable {
         }
         final SpatialReference inputSrs = this.openInputSrs(dataset);
         // We cannot tile an image with no geo referencing information
-        if (this.datasetHasNoGeoReference(dataset))
+        if (!GdalUtility.datasetHasGeoReference(dataset))
         {
             throw new TilingException("Input raster image has no georeference.");
         }
@@ -165,23 +168,31 @@ public class GdalTileJob implements Runnable {
         return dataset;
     }
 
-    private Dataset openOutput(final Dataset inputDataset, final SpatialReference inputSrs) throws TilingException
+    private Dataset openOutput(final Dataset inputDataset) throws TilingException
     {
         final Dataset outputDataset;
         // Get the output SRS
-        final SpatialReference outputSrs = this.openOutputSrs(this.crsProfile.getCoordinateReferenceSystem().getIdentifier());
-        // If input srs and output srs are not the same, reproject by making a VRT
-        if (inputSrs.ExportToProj4() != outputSrs.ExportToProj4() || inputDataset.GetGCPCount() == 0)
+        try
         {
-            // Create a warped VRT
-            outputDataset = gdal.AutoCreateWarpedVRT(inputDataset, inputSrs.ExportToWkt(), outputSrs.ExportToWkt());
+        	final SpatialReference inputSrs = GdalUtility.getDatasetSpatialReference(inputDataset);
+        	final SpatialReference outputSrs = GdalUtility.getSpatialReferenceFromCrs(this.crsProfile.getCoordinateReferenceSystem());
+        	// If input srs and output srs are not the same, reproject by making a VRT
+        	if (inputSrs.ExportToProj4() != outputSrs.ExportToProj4() || inputDataset.GetGCPCount() == 0)
+        	{
+        	    // Create a warped VRT
+        	    outputDataset = GdalUtility.warpDatasetToSrs(inputDataset, outputSrs);
+        	}
+        	else
+        	{
+        	    // The input and output projections are the same, no reprojection needed
+        	    outputDataset = inputDataset;
+        	}
+        	//return this.correctNoData(outputDataset, this.getNoDataValues(inputDataset));
         }
-        else
+        catch (DataFormatException tse)
         {
-            // The input and output projections are the same, no reprojection needed
-            outputDataset = inputDataset;
+        	throw new TilingException(tse);
         }
-        //return this.correctNoData(outputDataset, this.getNoDataValues(inputDataset));
         return this.correctNoDataSimple(outputDataset);
     }
 
@@ -210,44 +221,6 @@ public class GdalTileJob implements Runnable {
         // Import from an EPSG code, i.e., 3857, 4326, 900913
         srs.ImportFromEPSG(identifier);
         return srs;
-    }
-
-    private boolean datasetHasNoGeoReference(final Dataset dataset)
-    {
-        // Specify what an empty georeference is
-        final double[] emptyGeoReference = { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
-        // Compare dataset geotransform to an empty geotransform and ensure there are no GCPs
-        return Arrays.equals(dataset.GetGeoTransform(), emptyGeoReference) && dataset.GetGCPCount() == 0;
-    }
-
-    private Double[] getNoDataValues(final Dataset dataset)
-    {
-        // Initialize a new double array of size 3
-        final Double[] noDataValues = new Double[3];
-        // Get the nodata value for each band
-        IntStream.range(1,  dataset.GetRasterCount() + 1).forEach(band ->
-        {
-            final Double[] noDataValue = new Double[1];
-            dataset.GetRasterBand(band).GetNoDataValue(noDataValue);
-            if (noDataValue.length != 0 && noDataValue[0] != null)
-            {
-                // Assumes only one value coming back from the band
-                noDataValues[band-1] = noDataValue[0];
-            }
-        });
-        // Is array still using the initialized values?
-        if (noDataValues[0] == null && noDataValues[1] == null && noDataValues[2] == null)
-        {
-            return new Double[0];
-        }
-        // TODO: Is it possible to see a raster from GDAL with 2 bands? I think
-        // only Mono and RGB options are possible
-        if (noDataValues[0] != null)
-        {
-            noDataValues[1] = noDataValues[0];
-            noDataValues[2] = noDataValues[0];
-        }
-        return noDataValues;
     }
 
     private Dataset correctNoDataSimple(final Dataset dataset)
@@ -462,104 +435,6 @@ public class GdalTileJob implements Runnable {
         return dataset.GetRasterCount();
     }
 
-    private BoundingBox getOutputBounds(final Dataset dataset) throws TilingException
-    {
-        final double[] outputGeotransform = dataset.GetGeoTransform();
-        // Report error in case rotation/skew is in geotransform (only for raster profile)
-        if (outputGeotransform[2] != 0 && outputGeotransform[4] != 0)
-        {
-            throw new TilingException("Georeference of the raster contains rotation or skew. " +
-                    "Such raster is not supported. Please use gdalwarp first.");
-        }
-        final double minX = outputGeotransform[0];
-        final double maxX = outputGeotransform[0] + dataset.GetRasterXSize() * outputGeotransform[1];
-        final double maxY = outputGeotransform[3];
-        final double minY = outputGeotransform[3] - dataset.GetRasterYSize() * outputGeotransform[1];
-        return new BoundingBox(minX, minY, maxX, maxY);
-    }
-
-    private List<Range<Coordinate<Integer>>> calculateTileRangesForAllZooms(final BoundingBox outputBounds)
-    {
-        final List<Range<Coordinate<Integer>>> tilesRangeByZoom = new ArrayList<Range<Coordinate<Integer>>>();
-        // Get the crs coordinates of the output bounds
-        final CrsCoordinate topLeft = new CrsCoordinate(outputBounds.getTopLeft(), this.crsProfile.getCoordinateReferenceSystem());
-        final CrsCoordinate bottomRight = new CrsCoordinate(outputBounds.getBottomRight(), this.crsProfile.getCoordinateReferenceSystem());
-        // Get the tile coordinates of the bounding box for each zoom level
-        IntStream.range(0, 32).forEach(zoom ->
-        {
-            final TileMatrixDimensions tileMatrixDimensions = this.writer.getTileScheme().dimensions(zoom);
-            final Coordinate<Integer> topLeftTile = this.crsProfile.crsToTileCoordinate(topLeft, this.crsProfile.getBounds(), tileMatrixDimensions, this.writer.getTileOrigin());
-            final Coordinate<Integer> bottomRightTile = this.crsProfile.crsToTileCoordinate(bottomRight, this.crsProfile.getBounds(), tileMatrixDimensions, this.writer.getTileOrigin());
-            tilesRangeByZoom.add(zoom, new Range<Coordinate<Integer>>(topLeftTile, bottomRightTile));
-        });
-        return tilesRangeByZoom;
-    }
-
-    private int minimalZoomForPixelSize(final Dataset dataset, final BoundingBox outputBounds, final List<Range<Coordinate<Integer>>> tileRanges) throws TileStoreException
-    {
-        final double pixelSize = dataset.GetGeoTransform()[1];
-        final double zoomPixelSize = (pixelSize * Math.max(dataset.GetRasterXSize(), dataset.GetRasterYSize()) / this.tileSize);
-        try
-        {
-            return this.zoomLevelForPixelSize(zoomPixelSize, outputBounds, tileRanges);
-        }
-        catch(final NumberFormatException nfe)
-        {
-            System.out.println("Could not determine minimal zoom, defaulting to 0.");
-        }
-        // In the worst case, zoom level zero will have only one tile...
-        return 0;
-    }
-
-    private int maximalZoomForPixelSize(final Dataset dataset, final BoundingBox outputBounds, final List<Range<Coordinate<Integer>>> tileRanges) throws TileStoreException, TilingException
-    {
-        // default resolution, get the closest possible zoom level up on the raster resolution
-        final double zoomPixelSize = dataset.GetGeoTransform()[1];
-        try
-        {
-            return this.zoomLevelForPixelSize(zoomPixelSize, outputBounds, tileRanges);
-        }
-        catch(final NumberFormatException nfe)
-        {
-            // A default base level would be bad in all cases
-            throw new TilingException("Could not determine output raster base zoom level.");
-        }
-    }
-
-    private int zoomLevelForPixelSize(final double zoomPixelSize, final BoundingBox outputBounds, final List<Range<Coordinate<Integer>>> tileRanges) throws TileStoreException
-    {
-        final int[] zooms = IntStream.range(0, 31).toArray();
-        for(final int zoom : zooms)
-        {
-            // Get the tile coordinates of the top-left and bottom-right tiles
-            final Coordinate<Integer> topLeftTile = this.writer.crsToTileCoordinate(new CrsCoordinate(outputBounds.getTopLeft(), this.crsProfile.getCoordinateReferenceSystem()), zoom);
-            final Coordinate<Integer> bottomRightTile = this.writer.crsToTileCoordinate(new CrsCoordinate(outputBounds.getBottomRight(), this.crsProfile.getCoordinateReferenceSystem()), zoom);
-            // Convert tile coordinates to crs coordinates: this will give us correct units-of-measure-per-pixel
-            // This is tile data *plus* padding to the full tile grid
-            final TileMatrixDimensions tileMatrixDimensions = this.writer.getTileScheme().dimensions(zoom);
-            final CrsCoordinate topLeftCrsFull = this.crsProfile.tileToCrsCoordinate(topLeftTile.getX(),
-                                                                                     topLeftTile.getY() + 1,
-                                                                                     this.crsProfile.getBounds(),
-                                                                                     tileMatrixDimensions,
-                                                                                     this.writer.getTileOrigin());
-            final CrsCoordinate bottomRightCrsFull = this.crsProfile.tileToCrsCoordinate(bottomRightTile.getX() + 1,
-                                                                                         bottomRightTile.getY(),
-                                                                                         this.crsProfile.getBounds(),
-                                                                                         tileMatrixDimensions,
-                                                                                         this.writer.getTileOrigin());
-            // bounding box is made with minx, miny, maxx, maxy
-            final double width = (new BoundingBox(topLeftCrsFull.getX(), bottomRightCrsFull.getY(), bottomRightCrsFull.getX(), topLeftCrsFull.getY())).getWidth();
-            // get how many tiles wide this zoom will be so that number can be multiplied by tile size
-            final int zoomTilesWide = tileRanges.get(zoom).getMaximum().getX() - tileRanges.get(zoom).getMinimum().getX() + 1;
-            final double zoomResolution = width / (zoomTilesWide * this.tileSize);
-            if (zoomPixelSize > zoomResolution)
-            {
-                return zoom == 0 ? 0 : zoom - 1;
-            }
-        }
-        throw new NumberFormatException("Could not determine zoom level for pixel size: " + String.valueOf(zoomPixelSize));
-    }
-
     private void generateBaseTiles(final Dataset dataset, final Range<Coordinate<Integer>> baseZoomRange, final int baseZoom) throws TilingException
     {
         // Create a tile folder name
@@ -674,29 +549,12 @@ public class GdalTileJob implements Runnable {
                 final int[] tileBandAlpha = {tileBandCount};
                 querySizeDataInMemory.WriteRaster(writeX, writeY, writeXSize, writeYSize, writeXSize, writeYSize, gdalconstConstants.GDT_Byte, alphaRegularArrayOut, tileBandAlpha);
                 // Scale each band of tileDataInMemory down to the tile size (down from the query size)
-                this.scaleQueryToTileSize(querySizeDataInMemory, tileDataInMemory);
+                GdalUtility.scaleQueryToTileSize(querySizeDataInMemory, tileDataInMemory);
                 // Write tile to disk, strict=0 (false)
                 gdal.GetDriverByName("PNG").CreateCopy(tilePath.toString(), tileDataInMemory, 0);
                 //System.out.println("check");
             }
         }
-    }
-
-    private void scaleQueryToTileSize(final Dataset queryDataset, final Dataset tileDataInMemory) throws TilingException
-    {
-        final int querySize = queryDataset.GetRasterXSize();
-        final int tileSize = tileDataInMemory.GetRasterXSize();
-        final int tileBands = tileDataInMemory.GetRasterCount();
-        // This is *just* for the average resampling algorithm only (gdalconstConstants.GRA_Average)
-        for (final int band : IntStream.range(1, tileBands+1).toArray())
-        {
-            final int resolution = gdal.RegenerateOverview(queryDataset.GetRasterBand(band), tileDataInMemory.GetRasterBand(band), "average");
-            if (resolution != 0)
-            {
-                throw new TilingException("Could not RegenerateOverview on band: " + String.valueOf(band));
-            }
-        }
-        // TODO: Implement for all other algorithms
     }
 
     private void generateOverviewTiles()

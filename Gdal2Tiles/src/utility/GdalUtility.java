@@ -65,6 +65,7 @@ import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStoreException;
+import com.rgi.g2t.TilingException;
 
 /**
  * @author Luke Lambert
@@ -255,7 +256,7 @@ public class GdalUtility
      * @return Returns a GDAL {@link SpatialReference} that the input dataset has
      * @throws DataFormatException  Thrown when GDAL has exhausted all means to get the WKT and failed.
      */
-    public static SpatialReference getDatasetSrs(final Dataset dataset) throws DataFormatException
+    public static SpatialReference getDatasetSpatialReference(final Dataset dataset) throws DataFormatException
     {
         if(dataset == null)
         {
@@ -279,7 +280,12 @@ public class GdalUtility
         throw new DataFormatException("Cannot get source file spatial reference system.");
     }
 
-    public static SpatialReference getDatasetSrs(final File file) throws DataFormatException
+    /**
+     * @param file
+     * @return
+     * @throws DataFormatException
+     */
+    public static SpatialReference getDatasetSpatialReference(final File file) throws DataFormatException
     {
         osr.UseExceptions();
         // Register gdal for use
@@ -289,7 +295,7 @@ public class GdalUtility
 
         try
         {
-            return GdalUtility.getDatasetSrs(dataset);
+            return GdalUtility.getDatasetSpatialReference(dataset);
         }
         finally
         {
@@ -309,6 +315,15 @@ public class GdalUtility
         final SpatialReference srs = new SpatialReference();
         srs.ImportFromWkt(CrsProfileFactory.create(crs).getWellKnownText());
         return srs;
+    }
+    
+    /**
+     * @param crsProfile
+     * @return
+     */
+    public static SpatialReference getSpatialReferenceFromCrsProfile(final CrsProfile crsProfile)
+    {
+    	return GdalUtility.getSpatialReferenceFromCrs(crsProfile.getCoordinateReferenceSystem());
     }
 
     /**
@@ -380,6 +395,10 @@ public class GdalUtility
         return new CoordinateReferenceSystem(getName(srs), authority, Integer.valueOf(identifier));
     }
 
+    /**
+     * @param srs
+     * @return
+     */
     public static String getName(final SpatialReference srs)
     {
         return Arrays.asList("PROJCS", "GEOGCS", "GEOCCS")  // These are all of the top level strings according to http://portal.opengeospatial.org/files/?artifact_id=25355.  They must all be followed by a name attribute.
@@ -401,7 +420,7 @@ public class GdalUtility
     {
         try
         {
-            return CrsProfileFactory.create(GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSrs(dataset)));
+            return CrsProfileFactory.create(GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSpatialReference(dataset)));
         }
         catch (final DataFormatException dfe)
         {
@@ -639,5 +658,63 @@ public class GdalUtility
             throw new DataFormatException();
         }
         return output;
+    }
+
+    /**
+     * @param queryDataset
+     * @param tileDataInMemory
+     * @return
+     * @throws TilingException
+     */
+    public static Dataset scaleQueryToTileSize(final Dataset queryDataset,
+    										   final Dataset tileDataInMemory) throws TilingException
+    {
+    	final int tileBands = tileDataInMemory.GetRasterCount();
+    	for (final int band : IntStream.range(1, tileBands + 1).toArray())
+    	{
+    		final int resolution = gdal.RegenerateOverview(queryDataset.GetRasterBand(band),
+    													   tileDataInMemory.GetRasterBand(band),
+    													   "average");
+    		if (resolution != 0)
+    		{
+    			throw new TilingException("Could not RegenerateOverview on band: "
+    									  + String.valueOf(band));
+    		}
+    	}
+    	return tileDataInMemory;
+    }
+    
+    /**
+     * @param dataset
+     * @return
+     */
+    public static Double[] getDatasetNoDataValues(final Dataset dataset)
+    {
+        // Initialize a new double array of size 3
+        final Double[] noDataValues = new Double[3];
+        // Get the nodata value for each band
+        IntStream.range(1,  dataset.GetRasterCount() + 1).forEach(band ->
+        {
+            final Double[] noDataValue = new Double[1];
+            dataset.GetRasterBand(band).GetNoDataValue(noDataValue);
+            if (noDataValue.length != 0 && noDataValue[0] != null)
+            {
+                // Assumes only one value coming back from the band
+                noDataValues[band-1] = noDataValue[0];
+            }
+        });
+        // Is array still using the initialized values?
+        if (noDataValues[0] == null && noDataValues[1] == null && noDataValues[2] == null)
+        {
+            return new Double[0];
+        }
+        // TODO: Is it possible to see a raster from GDAL with 2 bands? I think
+        // only Mono and RGB options are possible
+        if (noDataValues[0] != null)
+        {
+            noDataValues[1] = noDataValues[0];
+            noDataValues[2] = noDataValues[0];
+        }
+        return noDataValues;
     }
 }
