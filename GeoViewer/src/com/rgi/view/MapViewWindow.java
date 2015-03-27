@@ -372,7 +372,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     {
         try
         {
-        	final CrsProfile profile = CrsProfileFactory.create(store.getCoordinateReferenceSystem());
+            final CrsProfile profile = CrsProfileFactory.create(store.getCoordinateReferenceSystem());
             MapViewWindow.this.center = profile.toGlobalGeodetic(store.getBounds().getCenter());
 
             if(!store.getZoomLevels().isEmpty())    // TODO attn Jen: error message?

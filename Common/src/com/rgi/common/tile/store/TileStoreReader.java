@@ -137,7 +137,7 @@ public interface TileStoreReader extends AutoCloseable
     /**
      * @return returns the tile store's coordinate reference system
      * @throws TileStoreException
-     * 			   Wraps errors thrown by the tile store reader implementation
+     *                Wraps errors thrown by the tile store reader implementation
      */
     public CoordinateReferenceSystem getCoordinateReferenceSystem() throws TileStoreException;
 
@@ -173,8 +173,8 @@ public interface TileStoreReader extends AutoCloseable
 
     /**
      * @return the Tile Scheme which can calculate the number of tiles at a particular zoom level
-     * @throws TileStoreException 
-     *			   Wraps errors thrown by the tile store reader implementation
+     * @throws TileStoreException
+     *               Wraps errors thrown by the tile store reader implementation
      */
     public TileScheme getTileScheme() throws TileStoreException;
 }
