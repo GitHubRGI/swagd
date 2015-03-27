@@ -64,6 +64,7 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
      * Constructor
      *
      * @param settings
+     *             Handle to the application's settings object
      *
      */
     public TmsTileStoreWriterAdapter(final Settings settings)
