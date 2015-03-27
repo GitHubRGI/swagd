@@ -104,7 +104,8 @@ public class GdalTileJob implements Runnable {
 		try
 		{
 			final Dataset inputDataset = this.openInput();
-			final Dataset outputDataset = this.openOutput(inputDataset, this.openInputSrs(inputDataset));
+			final SpatialReference inputSrs = this.openInputSrs(inputDataset);
+			final Dataset outputDataset = this.openOutput(inputDataset, inputSrs);
 			final BoundingBox outputBounds = this.getOutputBounds(outputDataset);
 			final List<Range<Coordinate<Integer>>> ranges = this.calculateTileRangesForAllZooms(outputBounds);
 			// Generate base tiles
