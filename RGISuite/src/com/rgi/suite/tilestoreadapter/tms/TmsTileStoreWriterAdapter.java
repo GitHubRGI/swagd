@@ -58,30 +58,28 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
     {
         super(settings);
 
-        // TODO save values of controls to settings
-
         this.directorySelector.addActionListener(e -> { final String startDirectory = this.settings.get(TmsOutputLocationSettingName, DefaultTmsOutputLocation);
 
-                                                     final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
+                                                        final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
-                                                     fileChooser.setMultiSelectionEnabled(false);
-                                                     fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                                                        fileChooser.setMultiSelectionEnabled(false);
+                                                        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-                                                     final int option = fileChooser.showOpenDialog(null);
+                                                        final int option = fileChooser.showOpenDialog(null);
 
-                                                     if(option == JFileChooser.APPROVE_OPTION)
-                                                     {
-                                                         final File file = fileChooser.getSelectedFile();
+                                                        if(option == JFileChooser.APPROVE_OPTION)
+                                                        {
+                                                            final File file = fileChooser.getSelectedFile();
 
-                                                         this.settings.set(TmsOutputLocationSettingName, file.getParent());
-                                                         this.settings.save();
+                                                            this.settings.set(TmsOutputLocationSettingName, file.getParent());
+                                                            this.settings.save();
 
-                                                         this.directory.setText(String.format("%s%c%s%c",
-                                                                                              fileChooser.getSelectedFile().getPath(),
-                                                                                              File.separatorChar,
-                                                                                              new File(this.directory.getText()).getName(),
-                                                                                              File.separatorChar));
-                                                     }
+                                                            this.directory.setText(String.format("%s%c%s%c",
+                                                                                                 fileChooser.getSelectedFile().getPath(),
+                                                                                                 File.separatorChar,
+                                                                                                 new File(this.directory.getText()).getName(),
+                                                                                                 File.separatorChar));
+                                                        }
                                                    });
     }
 

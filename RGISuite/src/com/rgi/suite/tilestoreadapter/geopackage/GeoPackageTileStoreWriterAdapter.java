@@ -75,8 +75,6 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
     {
         super(settings);
 
-        // TODO save values of controls to settings
-
         this.outputFileNameSelector.addActionListener(e -> { final String startDirectory = this.settings.get(GeoPackageOutputLocationSettingName, DefaultGeoPackageOutputLocation);
 
                                                              final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
@@ -163,8 +161,8 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
 
         return new GeoPackageWriter(new File(this.filename.getText()),
                                     tileStoreReader.getCoordinateReferenceSystem(),
-                                    this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
-                                    this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
+                                    this.tileSetName.getText(),
+                                    this.tileSetName.getText(),
                                     this.tileSetDescription.getText(),
                                     tileStoreReader.getBounds(),
                                     getRelativeZoomTimesTwoTileScheme(tileStoreReader),
