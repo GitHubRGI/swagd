@@ -119,7 +119,6 @@ public class PassingLevelResultsWindow extends Stage
             result.geoPackageLabel.setFont(new Font(this.fontSize));
             createButtonListener(result.button);
             result.button.setVisible(false);
-            //result.indicator.progressProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> System.out.println(newValue));
             this.gridPanel.add(result.geoPackageLabel,        0, row);
             this.gridPanel.add(result.passingLabel, 1, row);
             this.gridPanel.add(result.button,       2, row);
@@ -144,9 +143,9 @@ public class PassingLevelResultsWindow extends Stage
             protected Object call() throws Exception
             {
                PassingLevelResultsWindow.this.coreResult.failedMessages = PassingLevelResultsWindow.this.gpkg.core().getVerificationIssues(PassingLevelResultsWindow.this.file, VerificationLevel.Full);
-               PassingLevelResultsWindow.this.coreResult.passingLevel  = PassingLevelResultsWindow.getPassingLevel(PassingLevelResultsWindow.this.coreResult.failedMessages);
+               PassingLevelResultsWindow.this.coreResult.passingLevel  = PassingLevelResultsWindow.getPassingLevel( PassingLevelResultsWindow.this.coreResult.failedMessages);
                this.updateValue(PassingLevelResultsWindow.this.coreResult);
-               return PassingLevelResultsWindow.this.tilesResult;
+               return PassingLevelResultsWindow.this.coreResult;
             }
 
         };

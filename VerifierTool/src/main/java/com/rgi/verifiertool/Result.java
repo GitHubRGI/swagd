@@ -31,4 +31,10 @@ public class Result
             this.passingLabel.setGraphic(this.indicator);
         }
 
+        public void setLevelAndMessage(final PassingLevel level, final Collection<VerificationIssue> failedRequirements)
+        {
+            this.failedMessages = failedRequirements;
+            this.passingLevel = level;
+        }
+
 }
