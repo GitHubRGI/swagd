@@ -25,17 +25,36 @@ package com.rgi.suite.uielements;
 
 import javax.swing.AbstractSpinnerModel;
 
+/**
+ * Extension to {@link AbstractSpinnerModel} that displays values that go up or
+ * down by successive or previous powers of two
+ *
+ * @author Luke Lambert
+ *
+ */
 public class PowerOfTwoSpinnerModel extends AbstractSpinnerModel
 {
+    private static final long serialVersionUID = 4397576810228153980L;
+
     private final int binaryLogOfMinimum;
     private final int binaryLogOfMaximum;
 
     private int binaryLogOfValue;
 
+    /**
+     * Constructor
+     *
+     * @param initial
+     *             Initial spinner value. Rounded to the nearest power of two.
+     * @param minimum
+     *             Minimum spinner value. Rounded to the nearest power of two.
+     * @param maximum
+     *             Maximum spinner value. Rounded to the nearest power of two.
+     */
     public PowerOfTwoSpinnerModel(final int initial, final int minimum, final int maximum)
     {
-        this.binaryLogOfMinimum = this.binaryLog(minimum);
-        this.binaryLogOfMaximum = this.binaryLog(maximum);
+        this.binaryLogOfMinimum = PowerOfTwoSpinnerModel.binaryLog(minimum);
+        this.binaryLogOfMaximum = PowerOfTwoSpinnerModel.binaryLog(maximum);
 
         this.setValue(initial);
     }
@@ -49,7 +68,7 @@ public class PowerOfTwoSpinnerModel extends AbstractSpinnerModel
     @Override
     public void setValue(final Object value)
     {
-        this.binaryLogOfValue = this.binaryLog((int)value);
+        this.binaryLogOfValue = PowerOfTwoSpinnerModel.binaryLog((int)value);
         this.fireStateChanged();
     }
 
@@ -67,7 +86,7 @@ public class PowerOfTwoSpinnerModel extends AbstractSpinnerModel
                                                                 : (int)Math.pow(2, this.binaryLogOfValue-1);
     }
 
-    private int binaryLog(final int val)
+    private static int binaryLog(final int val)
     {
         return (int)(Math.log(val) / Math.log(2));
     }

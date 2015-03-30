@@ -279,8 +279,22 @@ public class GdalUtility
         throw new DataFormatException("Cannot get source file spatial reference system.");
     }
 
+    /**
+     * Get the {@link SpatialReference} from an image file
+     *
+     * @param file
+     *             Image file
+     * @return The {@link SpatialReference} of the image file
+     * @throws DataFormatException
+     *             when {@link GdalUtility#getDatasetSrs(Dataset)} throws
+     */
     public static SpatialReference getDatasetSrs(final File file) throws DataFormatException
     {
+        if(file == null || !file.canRead())
+        {
+            throw new IllegalArgumentException("File may not be null, and must be readable");
+        }
+
         osr.UseExceptions();
         // Register gdal for use
         gdal.AllRegister();
@@ -380,11 +394,24 @@ public class GdalUtility
         return new CoordinateReferenceSystem(getName(srs), authority, Integer.valueOf(identifier));
     }
 
-    public static String getName(final SpatialReference srs)
+    /**
+     * Gets the name of a {@link SpatialReference}
+     *
+     * @param spatialReference
+     *             Spatial reference
+     * @return
+     *        The name of a {@link SpatialReference}. This is the first
+     *        attribute after by a top level entry in the WKT. By the <a
+     *        href="http://portal.opengeospatial.org/files/?artifact_id=25355">
+     *        WKT specification</a>, the only valid top level entries are:
+     *        "PROJCS", "GEOGCS", "GEOCCS" and each of their first attributes
+     *        must be the name of the spatial reference system.
+     */
+    public static String getName(final SpatialReference spatialReference)
     {
         return Arrays.asList("PROJCS", "GEOGCS", "GEOCCS")  // These are all of the top level strings according to http://portal.opengeospatial.org/files/?artifact_id=25355.  They must all be followed by a name attribute.
                      .stream()
-                     .map(srsType -> srs.GetAttrValue(srsType, 0))
+                     .map(srsType -> spatialReference.GetAttrValue(srsType, 0))
                      .filter(Objects::nonNull)
                      .findFirst()
                      .orElse(null);
@@ -424,7 +451,8 @@ public class GdalUtility
                                                                                   final TileScheme tileScheme,
                                                                                   final TileOrigin tileOrigin)
     {
-        final List<Range<Coordinate<Integer>>> tileRangesByZoom = new ArrayList<Range<Coordinate<Integer>>>();
+        final List<Range<Coordinate<Integer>>> tileRangesByZoom = new ArrayList<>();
+
         // Get the crs coordinates of the bounds
         final CrsCoordinate topLeft = new CrsCoordinate(bounds.getTopLeft(), crsProfile.getCoordinateReferenceSystem());
         final CrsCoordinate bottomRight = new CrsCoordinate(bounds.getBottomRight(), crsProfile.getCoordinateReferenceSystem());
@@ -433,8 +461,9 @@ public class GdalUtility
             final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
             final Coordinate<Integer> topLeftTile = crsProfile.crsToTileCoordinate(topLeft, crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
             final Coordinate<Integer> bottomRightTile = crsProfile.crsToTileCoordinate(bottomRight, crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
-            tileRangesByZoom.add(zoom, new Range<Coordinate<Integer>>(topLeftTile, bottomRightTile));
+            tileRangesByZoom.add(zoom, new Range<>(topLeftTile, bottomRightTile));
         });
+
         return tileRangesByZoom;
     }
 

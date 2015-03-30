@@ -50,6 +50,12 @@ import com.rgi.geopackage.verification.VerificationLevel;
 import com.rgi.suite.tilestoreadapter.AdapterMismatchException;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 
+/**
+ * {@link TileStoreReaderAdapter} for the GeoPackage tile store format
+ *
+ * @author Luke Lambert
+ *
+ */
 public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
 {
     private class TileSetAdapter
@@ -85,6 +91,17 @@ public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
     private final JScrollPane           scrollPane;
     private final JLabel selectCount = new JLabel();
 
+    /**
+     * Constructor
+     *
+     * @param file
+     *             Folder that contains a TMS tile sets
+     * @param allowMultipleReaders
+     *             Flag that indicates whether or not we should return more
+     *             than one tile store reader if it contains one
+     * @throws AdapterMismatchException
+     *             if the supplied file doesn't contain a TMS tile set
+     */
     public GeoPackageTileStoreReaderAdapter(final File file, final boolean allowMultipleReaders) throws AdapterMismatchException
     {
         super(file, allowMultipleReaders);

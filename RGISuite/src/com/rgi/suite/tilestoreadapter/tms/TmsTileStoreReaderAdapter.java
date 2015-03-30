@@ -50,12 +50,11 @@ public class TmsTileStoreReaderAdapter extends TileStoreReaderAdapter
                                                                                                            .sorted()
                                                                                                            .toArray(CoordinateReferenceSystem[]::new));
 
-
     /**
      * Constructor
      *
      * @param file
-     *             File or folder that contains one or more tile sets
+     *             Folder that contains a TMS tile sets
      * @param allowMultipleReaders
      *             Flag that indicates whether or not we should return more
      *             than one tile store reader if it contains one

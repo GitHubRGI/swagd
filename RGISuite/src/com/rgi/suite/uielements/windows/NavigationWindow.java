@@ -34,9 +34,16 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-
+/**
+ * Abstract base window with a simple content panel, and OK/Cancel buttons
+ *
+ * @author Luke Lambert
+ *
+ */
 public abstract class NavigationWindow extends JFrame
 {
+    private static final long serialVersionUID = 8504437764097328769L;
+
     protected final JPanel contentPanel = new JPanel();
 
     // Navigation stuff
@@ -44,6 +51,11 @@ public abstract class NavigationWindow extends JFrame
     protected final JButton okButton        = new JButton("OK");
     protected final JButton cancelButton    = new JButton("Cancel");
 
+    /**
+     * Constructor
+     *
+     * Constructs the basic window layout, and OK/Cancel buttons
+     */
     public NavigationWindow()
     {
         this.setLayout(new BorderLayout());
