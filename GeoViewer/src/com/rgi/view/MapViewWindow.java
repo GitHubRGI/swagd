@@ -88,11 +88,12 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     private final ButtonGroup mainGroup        = new ButtonGroup();
 
     /**
+     * Constructor
+     *
      * @param tileStoreReaders
      *             Tile stores to display
-     * @throws TileStoreException Thrown when the file is not supported for viewing.
      */
-    public MapViewWindow(final Collection<TileStoreReader> tileStoreReaders) throws TileStoreException
+    public MapViewWindow(final Collection<TileStoreReader> tileStoreReaders)
     {
         super("Tile Viewer");
 
@@ -104,9 +105,10 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         this.tileStoreReaders = tileStoreReaders;
         this.viewer = new JMapViewer();
 
-//        this.treeMap   = new JMapTree(stores);//TODO when tree is working use this to display the tileStores
-//        this.viewer    = this.treeMap.getViewer();
-//        this.treeMap.setName("TileSets");
+        // TODO when tree is working use this to display the tileStores
+        //this.treeMap   = new JMapTree(stores);
+        //this.viewer    = this.treeMap.getViewer();
+        //this.treeMap.setName("TileSets");
 
         this.addWindowListener(new WindowAdapter()
                               {

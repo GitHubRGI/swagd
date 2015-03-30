@@ -43,7 +43,8 @@ public class Packager
 
     /**
      * Constructor
-     *
+     * @param taskMonitor
+     *             Mechanism by which packager progress is monitored
      * @param tileStoreReader
      *             Input tile store
      * @param tileStoreWriter
@@ -61,6 +62,9 @@ public class Packager
 
     /**
      * Starts the packaging job
+     * @throws TileStoreException
+     *             when {@link TileStoreReader#countTiles()} or
+     *             {@link TileStoreReader#stream()} throws
      */
     public void execute() throws TileStoreException
     {

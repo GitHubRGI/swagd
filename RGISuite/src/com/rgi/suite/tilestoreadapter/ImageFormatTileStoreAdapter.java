@@ -34,12 +34,25 @@ import javax.swing.JComboBox;
 
 import com.rgi.suite.Settings;
 
+/**
+ * Abstract base {@link TileStoreWriterAdapter} that contains the UI elements
+ * and logic to manipulate image compression parameters
+ *
+ * @author Luke Lambert
+ *
+ */
 public abstract class ImageFormatTileStoreAdapter extends TileStoreWriterAdapter
 {
     protected final JComboBox<Float>    compressionQuality   = new JComboBox<>();
     protected final JComboBox<String>   imageCompressionType = new JComboBox<>();
     protected final JComboBox<MimeType> imageFormat;
 
+    /**
+     * Constructor
+     *
+     * @param settings
+     *             Handle to the application's settings object
+     */
     public ImageFormatTileStoreAdapter(final Settings settings)
     {
         super(settings);

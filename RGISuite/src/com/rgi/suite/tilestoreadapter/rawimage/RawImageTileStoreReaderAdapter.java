@@ -45,6 +45,12 @@ import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.g2t.RawImageTileReader;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 
+/**
+ * Reader adapter for a raw image
+ *
+ * @author Luke Lambert
+ *
+ */
 public class RawImageTileStoreReaderAdapter extends TileStoreReaderAdapter
 {
     private final Supplier<Dimensions<Integer>> tileDimensionsSupplier;
@@ -60,6 +66,19 @@ public class RawImageTileStoreReaderAdapter extends TileStoreReaderAdapter
     private final Collection<Collection<JComponent>> readerParameterControls = Arrays.asList(Arrays.asList(new JLabel("Native reference system:"),  this.nativeReferenceSystem),
                                                                                              Arrays.asList(new JLabel("Output reference system::"), this.referenceSystems));
 
+    /**
+     * Constructor
+     *
+     * @param file
+     *             Image file to treat like a tile store
+     * @param tileDimensionsSupplier
+     *             Callback to supply a width and height for tile size
+     * @param forceInput
+     *             If true, {@link #needsInput} will always return true. This
+     *             forces the selection of a coordinate reference system.
+     * @throws DataFormatException
+     *             Rethrown from {@link GdalUtility#getDatasetSrs}
+     */
     public RawImageTileStoreReaderAdapter(final File file, final Supplier<Dimensions<Integer>> tileDimensionsSupplier, final boolean forceInput) throws DataFormatException
     {
         super(file, false);
