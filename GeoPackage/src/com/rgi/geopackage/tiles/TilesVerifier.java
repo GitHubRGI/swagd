@@ -341,23 +341,21 @@ public class TilesVerifier extends Verifier
             try (Statement stmt              = this.getSqliteConnection().createStatement();
                  ResultSet tileDataResultSet = stmt.executeQuery(selectTileDataQuery))
             {
-                Set<String> errorMessage = new HashSet<>();
-               ResultSetStream.getStream(tileDataResultSet).forEach(resultSet -> { try
-                                                                                   {
-                                                                                       final int    tileId   = resultSet.getInt("id");
-                                                                                       final byte[] tileData = resultSet.getBytes("tile_data");
+                List<String> errorMessage =  ResultSetStream.getStream(tileDataResultSet)
+                                                            .map(resultSet -> { try
+                                                                                {
+                                                                                    final int    tileId   = resultSet.getInt("id");
+                                                                                    final byte[] tileData = resultSet.getBytes("tile_data");
 
-                                                                                       String message = TilesVerifier.verifyData(tileId, tileData);
-                                                                                       if (!message.isEmpty())
-                                                                                       {
-                                                                                           errorMessage.add(message);
-                                                                                       }
-                                                                                   }
-                                                                                   catch (final Exception ex1)
-                                                                                   {
-                                                                                       errorMessage.add(ex1.getMessage());
-                                                                                   }
-                                                                                 });
+                                                                                    return TilesVerifier.verifyData(tileId, tileData);
+                                                                                }
+                                                                                catch (final SQLException ex1)
+                                                                                {
+                                                                                   return ex1.getMessage();
+                                                                                }
+                                                                              })
+                                                            .filter(Objects::nonNull)
+                                                            .collect(Collectors.toList());
 
                Assert.assertTrue(String.format("The following tileId's in table '%s' are not in the correct image format:\n\t\t%s.",
                                                tableName,
@@ -383,7 +381,7 @@ public class TilesVerifier extends Verifier
         {
             if(TilesVerifier.canReadImage(pngImageReaders, cacheImage) ||TilesVerifier.canReadImage(jpegImageReaders, cacheImage))
             {
-                return "";
+                return null;
             }
 
            return String.format("tile id: %d", tileId);
@@ -391,7 +389,7 @@ public class TilesVerifier extends Verifier
         }
         catch(final IOException ex)
         {
-            return  ex.getMessage();
+            return ex.getMessage();
         }
     }
 
@@ -1538,7 +1536,11 @@ public class TilesVerifier extends Verifier
 
     private static final TableDefinition TileMatrixSetTableDefinition;
     private static final TableDefinition TileMatrixTableDefinition;
-
+//TODO static class vars
+    /*
+     *         final Collection<ImageReader> jpegImageReaders = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/jpeg"));
+        final Collection<ImageReader> pngImageReaders  = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/png"));
+     */
     static
     {
         final Map<String, ColumnDefinition> tileMatrixSetColumns = new HashMap<>();
@@ -1568,6 +1570,7 @@ public class TilesVerifier extends Verifier
         TileMatrixTableDefinition = new TableDefinition("gpkg_tile_matrix",
                                                         tileMatrixColumns,
                                                         new HashSet<>(Arrays.asList(new ForeignKeyDefinition("gpkg_contents", "table_name", "table_name"))));
+
 
     }
 }

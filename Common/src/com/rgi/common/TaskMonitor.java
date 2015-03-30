@@ -20,3 +20,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+package com.rgi.common;
+
+/**
+ * @author Duff Means
+ *
+ */
+public interface TaskMonitor
+{
+    public void setMaximum(final int max);
+
+    public void setProgress(final int value);
+}
+

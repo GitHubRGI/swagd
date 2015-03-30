@@ -28,6 +28,8 @@ import java.io.File;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.effect.Light.Distant;
 import javafx.scene.effect.Lighting;
 import javafx.scene.input.Dragboard;
@@ -37,6 +39,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 /**
@@ -77,6 +81,25 @@ public class VerifierMainWindow extends Application
 
         dragHereMessage.setEffect(lighting);
 
+        Text applicationInfo = new Text();//TODO
+        Hyperlink geoPackageLink = new Hyperlink("GeoPackage Specification");
+        layout.setBottom(geoPackageLink);
+        WebView browser = new WebView();
+        WebEngine webEngine = browser.getEngine();
+        geoPackageLink.setOnAction(e -> {
+            //TODO open in user browser
+                                            Stage stage = new Stage();
+                                            ScrollPane root = new ScrollPane();
+                                            Scene browserScene = new Scene(root);
+                                            webEngine.load("http://www.geopackage.org/spec/");
+                                            root.setFitToWidth(true);
+                                            root.setFitToHeight(true);
+                                            root.setContent(browser);
+                                            stage.setScene(browserScene);
+                                            stage.show();
+                                        }
+
+                                        );
         primaryStage.setResizable(false);
         layout.setCenter(dragHereMessage);
 

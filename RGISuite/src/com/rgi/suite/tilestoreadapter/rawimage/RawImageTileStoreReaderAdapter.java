@@ -21,74 +21,93 @@
  * SOFTWARE.
  */
 
-package com.rgi.suite.tilestoreadapter.tms;
+package com.rgi.suite.tilestoreadapter.rawimage;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Supplier;
+import java.util.zip.DataFormatException;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
+import org.gdal.osr.SpatialReference;
+
+import utility.GdalUtility;
+
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
-import com.rgi.common.tile.store.tms.TmsReader;
-import com.rgi.suite.tilestoreadapter.AdapterMismatchException;
+import com.rgi.g2t.RawImageTileReader;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 
-/**
- * @author Luke Lambert
- *
- */
-public class TmsTileStoreReaderAdapter extends TileStoreReaderAdapter
+public class RawImageTileStoreReaderAdapter extends TileStoreReaderAdapter
 {
+    private final Supplier<Dimensions<Integer>> tileDimensionsSupplier;
+    private final boolean forceInput;
+
     private final JComboBox<CoordinateReferenceSystem> referenceSystems = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
                                                                                                            .stream()
                                                                                                            .sorted()
                                                                                                            .toArray(CoordinateReferenceSystem[]::new));
 
+    private final JLabel nativeReferenceSystem = new JLabel();
 
-    /**
-     * Constructor
-     *
-     * @param file
-     *             File or folder that contains one or more tile sets
-     * @param allowMultipleReaders
-     *             Flag that indicates whether or not we should return more
-     *             than one tile store reader if it contains one
-     * @throws AdapterMismatchException
-     *             if the supplied file doesn't contain a TMS tile set
-     */
-    public TmsTileStoreReaderAdapter(final File file, final boolean allowMultipleReaders) throws AdapterMismatchException
+    private final Collection<Collection<JComponent>> readerParameterControls = Arrays.asList(Arrays.asList(new JLabel("Native reference system:"),  this.nativeReferenceSystem),
+                                                                                             Arrays.asList(new JLabel("Output reference system::"), this.referenceSystems));
+
+    public RawImageTileStoreReaderAdapter(final File file, final Supplier<Dimensions<Integer>> tileDimensionsSupplier, final boolean forceInput) throws DataFormatException
     {
-        super(file, allowMultipleReaders);
+        super(file, false);
 
-        if(!file.isDirectory())
+        this.tileDimensionsSupplier = tileDimensionsSupplier;
+        this.forceInput             = forceInput;
+
+        final SpatialReference srs = GdalUtility.getDatasetSrs(file);
+
+        final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(srs);
+
+        String crsName;
+
+        if(crs != null)
         {
-            throw new AdapterMismatchException("Input file is not a directory");
+            crsName = crs.toString();
         }
-    }
+        else
+        {
+            crsName = GdalUtility.getName(srs);
+            if(crsName == null)
+            {
+                crsName = "<none specified>";
+            }
+        }
 
-    @Override
-    public boolean needsInput()
-    {
-        return true;
+        this.nativeReferenceSystem.setText(crsName);
+        this.referenceSystems.setSelectedItem(crs);
     }
 
     @Override
     public Collection<Collection<JComponent>> getReaderParameterControls()
     {
-        return Arrays.asList(Arrays.asList(new JLabel("Reference system:"),
-                                           this.referenceSystems));
+        return this.readerParameterControls;
     }
 
     @Override
-    public TileStoreReader getTileStoreReader()
+    public boolean needsInput()
     {
-        return new TmsReader((CoordinateReferenceSystem)this.referenceSystems.getSelectedItem(), this.file.toPath());
+        return this.forceInput || this.referenceSystems.getSelectedItem() != null;
+    }
+
+    @Override
+    public TileStoreReader getTileStoreReader() throws TileStoreException
+    {
+        return new RawImageTileReader(this.file,
+                                      this.tileDimensionsSupplier.get(),
+                                      (CoordinateReferenceSystem)this.referenceSystems.getSelectedItem());
     }
 
     @Override
@@ -96,5 +115,4 @@ public class TmsTileStoreReaderAdapter extends TileStoreReaderAdapter
     {
         return Arrays.asList(this.getTileStoreReader());
     }
-
 }

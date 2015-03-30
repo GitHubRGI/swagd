@@ -20,3 +20,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+package utility;
+
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+
+@SuppressWarnings("javadoc")
+public class SimpleGridBagConstraints extends GridBagConstraints
+{
+        public SimpleGridBagConstraints(final int gridX, final int gridY, final boolean stretch)
+        {
+            super(gridX, gridY, 1, 1, stretch ? 1 : 0, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
+        }
+}

@@ -20,3 +20,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+package utility;
+
+import java.util.function.Function;
+
+/**
+ * @author Luke.Lambert
+ *
+ * @param <T>
+ *
+ * @see <a
+ *      href="https://stackoverflow.com/a/27252163/16434">https://stackoverflow.com/a/27252163/16434</a>
+ */
+@FunctionalInterface
+public interface ThrowingFunction<T, R> extends Function<T, R>
+{
+    @Override
+    public default R apply(final T t)
+    {
+        try
+        {
+            return applyThrows(t);
+        }
+        catch(final Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public R applyThrows(T t) throws Exception;
+}
