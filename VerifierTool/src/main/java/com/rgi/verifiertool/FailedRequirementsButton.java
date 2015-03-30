@@ -23,6 +23,7 @@
 package com.rgi.verifiertool;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import javafx.scene.control.Button;
 
@@ -38,13 +39,12 @@ public class FailedRequirementsButton extends Button
     private final String component;
 
     /**
-     * @param failedRequirements A Collection<VerificationIssue>  with messages of the failed Requirements that the verifier found
      * @param component the system that the requirements failed on (GeoPackage Core, Tiles, etc)
      */
-    public FailedRequirementsButton(final Collection<VerificationIssue> failedRequirements, final String component)
+    public FailedRequirementsButton(final String component)
     {
         super("show more");
-        this.failedRequirements = failedRequirements;
+        this.failedRequirements = Collections.EMPTY_LIST;
         this.component = component;
     }
 

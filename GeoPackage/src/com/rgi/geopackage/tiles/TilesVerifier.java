@@ -357,7 +357,7 @@ public class TilesVerifier extends Verifier
                                                             .filter(Objects::nonNull)
                                                             .collect(Collectors.toList());
 
-               Assert.assertTrue(String.format("The following tileId's in table '%s' are not in the correct image format:\n\t\t%s.",
+               Assert.assertTrue(String.format("The following columns named \"id\" in table '%s' are not in the correct image format:\n\t\t%s.",
                                                tableName,
                                                errorMessage.stream().collect(Collectors.joining("\n"))),
                                  errorMessage.isEmpty());
@@ -373,8 +373,6 @@ public class TilesVerifier extends Verifier
 
     private static String verifyData(final int tileId, final byte[] tileData)
     {
-        final Collection<ImageReader> jpegImageReaders = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/jpeg"));
-        final Collection<ImageReader> pngImageReaders  = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/png"));
 
         try(ByteArrayInputStream        byteArray  = new ByteArrayInputStream(tileData);
             MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(byteArray))
@@ -384,7 +382,7 @@ public class TilesVerifier extends Verifier
                 return null;
             }
 
-           return String.format("tile id: %d", tileId);
+           return String.format("column id: %d", tileId);
 
         }
         catch(final IOException ex)
@@ -1513,12 +1511,12 @@ public class TilesVerifier extends Verifier
 
         public String columnInvalidToString()
         {
-            return String.format("      Tile id: %d, column: %2d (max: %d)", this.tileID, this.tileColumn, this.matrixWidth-1);
+            return String.format("      column id: %d, tile_column: %2d (max: %d)", this.tileID, this.tileColumn, this.matrixWidth-1);
         }
 
         public String rowInvalidToString()
         {
-            return String.format("      Tile id: %d, row: %2d (max: %d)", this.tileID, this.tileRow, this.matrixHeight-1);
+            return String.format("      column id: %d, tile_row: %2d (max: %d)", this.tileID, this.tileRow, this.matrixHeight-1);
         }
 
         @Override
@@ -1536,6 +1534,9 @@ public class TilesVerifier extends Verifier
 
     private static final TableDefinition TileMatrixSetTableDefinition;
     private static final TableDefinition TileMatrixTableDefinition;
+
+    private static final Collection<ImageReader> jpegImageReaders;
+    private static final Collection<ImageReader> pngImageReaders;
 //TODO static class vars
     /*
      *         final Collection<ImageReader> jpegImageReaders = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/jpeg"));
@@ -1543,6 +1544,9 @@ public class TilesVerifier extends Verifier
      */
     static
     {
+        jpegImageReaders = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/jpeg"));
+        pngImageReaders  = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/png"));
+
         final Map<String, ColumnDefinition> tileMatrixSetColumns = new HashMap<>();
 
         tileMatrixSetColumns.put("table_name",  new ColumnDefinition("TEXT",     true, true,  true,  null));

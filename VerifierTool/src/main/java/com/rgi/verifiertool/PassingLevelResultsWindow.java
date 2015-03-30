@@ -24,10 +24,10 @@
 package com.rgi.verifiertool;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import javafx.concurrent.Task;
@@ -56,19 +56,17 @@ public class PassingLevelResultsWindow extends Stage
     private final int fontSize = 18;
     File file;
 
-   private final FailedRequirementsButton buttonCore       = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Core");
-   private final FailedRequirementsButton buttonTiles      = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Tiles");
-   private final FailedRequirementsButton buttonExtensions = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Extensions");
-   private final FailedRequirementsButton buttonSchema     = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Schema");
-   private final FailedRequirementsButton buttonMetadata   = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Metadata");
+   private final FailedRequirementsButton buttonCore       = new FailedRequirementsButton("GeoPackage Core");
+   private final FailedRequirementsButton buttonTiles      = new FailedRequirementsButton("GeoPackage Tiles");
+   private final FailedRequirementsButton buttonExtensions = new FailedRequirementsButton("GeoPackage Extensions");
+   private final FailedRequirementsButton buttonSchema     = new FailedRequirementsButton("GeoPackage Schema");
+   private final FailedRequirementsButton buttonMetadata   = new FailedRequirementsButton("GeoPackage Metadata");
 
    private final Result coreResult       = new Result(new Label("GeoPackage Core..."),      PassingLevel.Fail, this.buttonCore);
    private final Result tilesResult      = new Result(new Label("GeoPackage Tiles..."),     PassingLevel.Fail, this.buttonTiles);
    private final Result extensionsResult = new Result(new Label("GeoPackage Extensions..."),PassingLevel.Fail, this.buttonExtensions);
    private final Result schemaResult     = new Result(new Label("GeoPackage Schema..."),    PassingLevel.Fail, this.buttonSchema);
    private final Result metadataResult   = new Result(new Label("GeoPackage Metadata..."),  PassingLevel.Fail, this.buttonMetadata);
-
-    GeoPackage gpkg;
 
     /**
      * @param file GeoPackage File to verify
@@ -86,9 +84,8 @@ public class PassingLevelResultsWindow extends Stage
             {
                 try(GeoPackage geoPackage = new GeoPackage(PassingLevelResultsWindow.this.file, VerificationLevel.None, OpenMode.Open))
                 {
-                    PassingLevelResultsWindow.this.gpkg = geoPackage;
                     //get the failed requirements for each of the systems
-                    PassingLevelResultsWindow.this.createTasks();
+                    PassingLevelResultsWindow.this.createTasks(geoPackage);
                 }
                 catch(Exception ex)
                 {
@@ -98,14 +95,12 @@ public class PassingLevelResultsWindow extends Stage
             }};
       Thread mainThread = new Thread(task);
       mainThread.start();
-
     }
 
     private void buildPassFailPanel()
     {
         this.gridPanel.setHgap(2);
         this.gridPanel.setVgap(1);
-
 
         ColumnConstraints columnLeft   = new ColumnConstraints(230);
         ColumnConstraints columnCenter = new ColumnConstraints(90);
@@ -118,13 +113,13 @@ public class PassingLevelResultsWindow extends Stage
         int row = 0;
         for(Result result: new ArrayList<>(Arrays.asList(this.coreResult, this.tilesResult, this.extensionsResult, this.metadataResult, this.schemaResult)))
         {
-            result.geoPackageLabel.setFont(new Font(this.fontSize));
-            createButtonListener(result.button);
-            result.button.setVisible(false); //don't show if it is passed (will turn on if failed)
+            result.getGeoPackageLabel().setFont(new Font(this.fontSize));
+            createButtonListener(result.getButton());
+            result.getButton().setVisible(false); //don't show if it is passed (will turn on if failed)
 
-            this.gridPanel.add(result.geoPackageLabel, 0, row);
-            this.gridPanel.add(result.passingLabel,    1, row);
-            this.gridPanel.add(result.button,          2, row);
+            this.gridPanel.add(result.getGeoPackageLabel(), 0, row);
+            this.gridPanel.add(result.getPassingLabel(),    1, row);
+            this.gridPanel.add(result.getButton(),          2, row);
 
             row++;
         }
@@ -136,71 +131,29 @@ public class PassingLevelResultsWindow extends Stage
         this.show();
     }
 
-    private void createTasks()
+    private static Task<Result> createTask(final Collection<VerificationIssue> messages, final Result result)
     {
-
-        Task<Object> taskCore = new Task<Object>(){
-
-            @Override
-            protected Object call() throws Exception
-            {
-               PassingLevelResultsWindow.this.coreResult.failedMessages = PassingLevelResultsWindow.this.gpkg.core().getVerificationIssues(PassingLevelResultsWindow.this.file, VerificationLevel.Full);
-               PassingLevelResultsWindow.this.coreResult.passingLevel  = PassingLevelResultsWindow.getPassingLevel( PassingLevelResultsWindow.this.coreResult.failedMessages);
-               this.updateValue(PassingLevelResultsWindow.this.coreResult);
-               return PassingLevelResultsWindow.this.coreResult;
-            }
-
-        };
-
-        Task<Object> taskTiles = new Task<Object>(){
-            @Override
-            protected Object call() throws Exception
-            {
-                PassingLevelResultsWindow.this.tilesResult.failedMessages  = PassingLevelResultsWindow.this.gpkg.tiles().getVerificationIssues(VerificationLevel.Full);
-                PassingLevelResultsWindow.this.tilesResult.passingLevel = PassingLevelResultsWindow.getPassingLevel( PassingLevelResultsWindow.this.tilesResult.failedMessages);
-                this.updateValue(PassingLevelResultsWindow.this.tilesResult);
-
-                return PassingLevelResultsWindow.this.tilesResult;
-            }
-        };
-
-        Task<Object> taskExtensions = new Task<Object>(){
+        return new Task<Result>(){
 
             @Override
-            protected Object call() throws Exception
+            protected Result call() throws Exception
             {
-                PassingLevelResultsWindow.this.extensionsResult.failedMessages = PassingLevelResultsWindow.this.gpkg.extensions().getVerificationIssues(VerificationLevel.Full);
-                PassingLevelResultsWindow.this.extensionsResult.passingLevel = PassingLevelResultsWindow.getPassingLevel(PassingLevelResultsWindow.this.extensionsResult.failedMessages);
-                this.updateValue(PassingLevelResultsWindow.this.extensionsResult);
+               result.setFailedMessages(messages);
+               result.setPassingLevel(PassingLevelResultsWindow.getPassingLevel(messages));
+               this.updateValue(result);
 
-                return PassingLevelResultsWindow.this.extensionsResult;
+               return result;
             }
         };
-        Task<Object> taskSchema = new Task<Object>(){
+    }
 
-            @Override
-            protected Object call() throws Exception
-            {
-                PassingLevelResultsWindow.this.schemaResult.failedMessages = PassingLevelResultsWindow.this.gpkg.schema().getVerificationIssues(VerificationLevel.Full);
-                PassingLevelResultsWindow.this.schemaResult.passingLevel = PassingLevelResultsWindow.getPassingLevel(PassingLevelResultsWindow.this.schemaResult.failedMessages);
-                this.updateValue(PassingLevelResultsWindow.this.schemaResult);
-
-                return PassingLevelResultsWindow.this.schemaResult;
-            }
-        };
-
-        Task<Object> taskMetadata = new Task<Object>(){
-
-            @Override
-            protected Object call() throws Exception
-            {
-                PassingLevelResultsWindow.this.metadataResult.failedMessages = PassingLevelResultsWindow.this.gpkg.metadata().getVerificationIssues(VerificationLevel.Full);
-                PassingLevelResultsWindow.this.metadataResult.passingLevel   = PassingLevelResultsWindow.getPassingLevel(PassingLevelResultsWindow.this.metadataResult.failedMessages);
-                this.updateValue(PassingLevelResultsWindow.this.metadataResult);
-
-                return PassingLevelResultsWindow.this.metadataResult;
-            }
-        };
+    private void createTasks(final GeoPackage geoPackage) throws SQLException
+    {
+        Task<Result> taskCore       = createTask(geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full), this.coreResult);
+        Task<Result> taskTiles      = createTask(geoPackage.tiles()     .getVerificationIssues(VerificationLevel.Full),                       this.tilesResult);
+        Task<Result> taskExtensions = createTask(geoPackage.extensions().getVerificationIssues(VerificationLevel.Full),                       this.extensionsResult);
+        Task<Result> taskSchema     = createTask( geoPackage.schema()   .getVerificationIssues(VerificationLevel.Full),                       this.schemaResult);
+        Task<Result> taskMetadata   = createTask( geoPackage.metadata() .getVerificationIssues(VerificationLevel.Full),                       this.metadataResult);
 
         this.createTaskListeners(new ArrayList<>(Arrays.asList(taskCore, taskTiles, taskExtensions, taskSchema, taskMetadata)));
 
@@ -230,47 +183,33 @@ public class PassingLevelResultsWindow extends Stage
         }
     }
 
-    private void createTaskListeners(final List<Task<Object>> taskList)
+    private void createTaskListeners(final List<Task<Result>> taskList)
     {
         //this will post the result when finished verifying
-        for(Task<Object> task: taskList)
+        for(Task<Result> task: taskList)
         {
             task.valueProperty().addListener((obs, oldMessage, newMessage) -> {
                 if(newMessage.getClass() == Result.class)
                   {
-                     Result result = (Result) newMessage;
-                     result.passingLabel.setGraphic(null);
-                     result.passingLabel.setText(result.passingLevel.getText());
-                     result.passingLabel.setFont(new Font(this.fontSize));
-                     result.passingLabel.setStyle("-fx-font-weight: bold");
-                     result.passingLabel.setTextFill(result.passingLevel.getColor());
-                     if(!PassingLevel.Pass.equals(result.passingLevel))
+                     Result result = newMessage;
+                     result.getPassingLabel().setGraphic(null);
+                     result.getPassingLabel().setText(result.getPassingLevel().getText());
+                     result.getPassingLabel().setFont(new Font(this.fontSize));
+                     result.getPassingLabel().setStyle("-fx-font-weight: bold");
+                     result.getPassingLabel().setTextFill(result.getPassingLevel().getColor());
+                     if(!PassingLevel.Pass.equals(result.getPassingLevel()))
                      {
-                         result.button.setRequirements(result.failedMessages);
-                         result.button.setVisible(true);
+                         result.getButton().setRequirements(result.getFailedMessages());
+                         result.getButton().setVisible(true);
                      }
                   }
             });
         }
     }
 
-    @SuppressWarnings("unused")//because of line 263, value not set to an object
     private static void createButtonListener(final FailedRequirementsButton button)
     {
-        button.setOnAction(e ->
-        {
-            try
-            {
-                if (e.getSource().getClass() == FailedRequirementsButton.class)
-                {
-                    new FailedRequirementsWindow(button.getFailedRequirements(), button.getComponent());
-                }
-
-            } catch (Exception e1)
-            {
-                e1.printStackTrace();
-            }
-        });
+        button.setOnAction(e ->  new FailedRequirementsWindow(button.getFailedRequirements(), button.getComponent()));
     }
 
     /**

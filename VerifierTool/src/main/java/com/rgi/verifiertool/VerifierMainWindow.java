@@ -59,7 +59,7 @@ public class VerifierMainWindow extends Application
         Application.launch(args);
     }
 
-    @SuppressWarnings("unused")//this is bc I do not make an object on line 105
+    @SuppressWarnings("unused")//this is bc I do not make an object on line 128
     @Override
     public void start(final Stage primaryStage) throws Exception
     {
@@ -98,7 +98,6 @@ public class VerifierMainWindow extends Application
                                             stage.setScene(browserScene);
                                             stage.show();
                                         }
-
                                         );
         primaryStage.setResizable(false);
         layout.setCenter(dragHereMessage);
@@ -110,7 +109,8 @@ public class VerifierMainWindow extends Application
             if (db.hasFiles())
             {
                 event.acceptTransferModes(TransferMode.COPY);
-            } else
+            }
+            else
             {
                 event.consume();
             }
