@@ -24,24 +24,29 @@
 package com.rgi.verifiertool;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
+import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.VerificationIssue;
 
 /**
  * @author Jenifer Cochran
  *
  */
+
 public class FailedRequirementsWindow extends Stage
 {
-    private final Collection<VerificationIssue> failedRequirements;
+    TextFlow text = new TextFlow();
 
+    private final Collection<VerificationIssue> failedRequirements;
     /**
      * @param failedRequirements failed requirements to display
      * @param Component The component that was failing
@@ -50,33 +55,46 @@ public class FailedRequirementsWindow extends Stage
     {
        super();
        this.setTitle(String.format("Failed Requirements for %s", Component));
-       Scene scene = new Scene(new Group());
+
        //set the failed requirements passed in
        this.failedRequirements = failedRequirements;
-       TextArea errorMessages = new TextArea(this.getMessage());
-       //allow the text to wrap
-       errorMessages.setWrapText(true);
+       this.createMessage();
        //create a scroll to scan through error messages
-       ScrollPane scrollPane = new ScrollPane(errorMessages);
+       ScrollPane scrollPane = new ScrollPane(this.text);
        //allow the pane to resize to main window
-       scrollPane.setFitToHeight(true);
+       Scene scene = new Scene(scrollPane, 400, 500);
        scrollPane.setFitToWidth(true);
        //create the window set up
-       scene.setRoot(scrollPane);
        this.setScene(scene);
        this.show();
     }
 
-    private String getMessage()
+    private void createMessage()
     {
-        return this.failedRequirements.stream()
-                                             .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
-                                             .map(failedRequirement -> String.format("(%s) Requirement %d: \"%s\"\n\n\t%s\n\n\n",
-                                                                                        failedRequirement.getRequirement().severity(),
-                                                                                        failedRequirement.getRequirement().number(),
-                                                                                        failedRequirement.getRequirement().text(),
-                                                                                        failedRequirement.getReason()))
-                                             .collect(Collectors.joining("\n"));
+       this.failedRequirements.stream()
+                              .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
+                              .forEach(failedRequirement ->
+                                                    {
+                                                      Text severity = new Text(String.format("(%s) ",failedRequirement.getRequirement().severity()));
+
+                                                      if(Severity.Error == failedRequirement.getRequirement().severity())
+                                                      {
+                                                          severity.setFill(Color.RED);
+                                                      }
+                                                      else
+                                                      {
+                                                          severity.setFill(Color.ORANGE);
+                                                      }
+                                                      severity.setFont(Font.font(null, FontWeight.BOLD, 12));
+
+                                                      Text requirement = new Text(String.format("Requirement %d: \"%s\"\n\n", failedRequirement.getRequirement().number(), failedRequirement.getRequirement().text() ));
+                                                      requirement.setFont(Font.font(null, FontWeight.BOLD, 12));
+
+                                                      Text reason = new Text(String.format("%s\n\n",failedRequirement.getReason()));
+
+                                                      this.text.getChildren().addAll(severity, requirement, reason);
+                                                  });
+
     }
 
 }

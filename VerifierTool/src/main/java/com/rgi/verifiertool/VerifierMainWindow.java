@@ -26,11 +26,16 @@ package com.rgi.verifiertool;
 import java.io.File;
 
 import javafx.application.Application;
-import javafx.scene.Group;
+import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.effect.Light.Distant;
+import javafx.scene.effect.Lighting;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -41,7 +46,7 @@ import javafx.stage.Stage;
 public class VerifierMainWindow extends Application
 {
     /**
-     * Launch the application.
+     * Launch the Verifier application.
      * @param args incoming arguments
      */
 
@@ -50,20 +55,30 @@ public class VerifierMainWindow extends Application
         Application.launch(args);
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("unused")//this is bc I do not make an object on line 105
     @Override
     public void start(final Stage primaryStage) throws Exception
     {
         //Set the window up
-        Group root = new Group();
-        Scene scene = new Scene(root, 551, 400);
-        primaryStage.setTitle("GeoPackage Verifier Tool");
-        final Text dragHereMessage = new Text("Drag GeoPackage Files Here.");
-        dragHereMessage.setFont(new Font(20));
-        dragHereMessage.setX(150.0);
-        dragHereMessage.setY(190.0);
+        BorderPane layout = new BorderPane();
+        Scene       scene = new Scene(layout, 551, 400);
 
-        root.getChildren().add(dragHereMessage);
+        primaryStage.setTitle("GeoPackage Verifier Tool");
+
+        final Text dragHereMessage = new Text("Drag GeoPackage Files Here.");
+        dragHereMessage.setFill(Color.DARKBLUE);
+        dragHereMessage.setFont(Font.font(null, FontWeight.BOLD, 30));
+
+        Lighting lighting = new Lighting();
+        Distant  light    = new Distant();
+        light.setAzimuth(-135.0f);
+        lighting.setLight(light);
+        lighting.setSurfaceScale(4.0f);
+
+        dragHereMessage.setEffect(lighting);
+
+        primaryStage.setResizable(false);
+        layout.setCenter(dragHereMessage);
 
         //create the even that drags the file over
         scene.setOnDragOver(event ->
@@ -83,7 +98,6 @@ public class VerifierMainWindow extends Application
         {
 
             Dragboard db = event.getDragboard();
-            boolean success = false;
             if (db.hasFiles())
             {
                 for (File file : db.getFiles())
@@ -98,5 +112,7 @@ public class VerifierMainWindow extends Application
         //show the window
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        primaryStage.setOnCloseRequest(event -> Platform.exit());
     }
 }

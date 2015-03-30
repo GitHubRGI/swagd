@@ -56,11 +56,11 @@ public class PassingLevelResultsWindow extends Stage
     private final int fontSize = 18;
     File file;
 
-   private final FailedRequirementsButton buttonCore = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Core");
-   private final FailedRequirementsButton buttonTiles = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Tiles");
+   private final FailedRequirementsButton buttonCore       = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Core");
+   private final FailedRequirementsButton buttonTiles      = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Tiles");
    private final FailedRequirementsButton buttonExtensions = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Extensions");
-   private final FailedRequirementsButton buttonSchema = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Schema");
-   private final FailedRequirementsButton buttonMetadata = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Metadata");
+   private final FailedRequirementsButton buttonSchema     = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Schema");
+   private final FailedRequirementsButton buttonMetadata   = new FailedRequirementsButton(Collections.EMPTY_LIST, "GeoPackage Metadata");
 
    private final Result coreResult       = new Result(new Label("GeoPackage Core..."),      PassingLevel.Fail, this.buttonCore);
    private final Result tilesResult      = new Result(new Label("GeoPackage Tiles..."),     PassingLevel.Fail, this.buttonTiles);
@@ -78,6 +78,7 @@ public class PassingLevelResultsWindow extends Stage
         this.file = file;
         this.setTitle(String.format("Verification for file %s", file.getName()));
         this.buildPassFailPanel();
+        //show window while validating the GeoPackages
         Task<Void> task = new Task<Void>(){
 
             @Override
@@ -86,7 +87,7 @@ public class PassingLevelResultsWindow extends Stage
                 try(GeoPackage geoPackage = new GeoPackage(PassingLevelResultsWindow.this.file, VerificationLevel.None, OpenMode.Open))
                 {
                     PassingLevelResultsWindow.this.gpkg = geoPackage;
-
+                    //get the failed requirements for each of the systems
                     PassingLevelResultsWindow.this.createTasks();
                 }
                 catch(Exception ex)
@@ -106,26 +107,27 @@ public class PassingLevelResultsWindow extends Stage
         this.gridPanel.setVgap(1);
 
 
-        ColumnConstraints columnLeft = new ColumnConstraints(230);
+        ColumnConstraints columnLeft   = new ColumnConstraints(230);
         ColumnConstraints columnCenter = new ColumnConstraints(90);
-        ColumnConstraints columnRight = new ColumnConstraints(90);
+        ColumnConstraints columnRight  = new ColumnConstraints(90);
 
         this.setResizable(false);
         this.gridPanel.getColumnConstraints().addAll(columnLeft, columnCenter, columnRight);
 
+        //create the panel with the label of the system, passingLevel, and the button to show the failed requirements
         int row = 0;
         for(Result result: new ArrayList<>(Arrays.asList(this.coreResult, this.tilesResult, this.extensionsResult, this.metadataResult, this.schemaResult)))
         {
             result.geoPackageLabel.setFont(new Font(this.fontSize));
             createButtonListener(result.button);
-            result.button.setVisible(false);
-            this.gridPanel.add(result.geoPackageLabel,        0, row);
-            this.gridPanel.add(result.passingLabel, 1, row);
-            this.gridPanel.add(result.button,       2, row);
+            result.button.setVisible(false); //don't show if it is passed (will turn on if failed)
+
+            this.gridPanel.add(result.geoPackageLabel, 0, row);
+            this.gridPanel.add(result.passingLabel,    1, row);
+            this.gridPanel.add(result.button,          2, row);
+
             row++;
         }
-
-        //create indicator listeners??
 
         BorderPane root = new BorderPane();
         Scene scene = new Scene(root, 410, 140, Color.WHITE);
@@ -230,6 +232,7 @@ public class PassingLevelResultsWindow extends Stage
 
     private void createTaskListeners(final List<Task<Object>> taskList)
     {
+        //this will post the result when finished verifying
         for(Task<Object> task: taskList)
         {
             task.valueProperty().addListener((obs, oldMessage, newMessage) -> {
@@ -251,6 +254,7 @@ public class PassingLevelResultsWindow extends Stage
         }
     }
 
+    @SuppressWarnings("unused")//because of line 263, value not set to an object
     private static void createButtonListener(final FailedRequirementsButton button)
     {
         button.setOnAction(e ->

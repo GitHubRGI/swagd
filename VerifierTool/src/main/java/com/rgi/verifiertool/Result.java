@@ -13,28 +13,21 @@ import com.rgi.geopackage.verification.VerificationIssue;
  */
 public class Result
 {
-        Label  geoPackageLabel;
-        PassingLevel passingLevel;
+        Label                         geoPackageLabel;
+        PassingLevel                  passingLevel;
         Collection<VerificationIssue> failedMessages;
-        FailedRequirementsButton button;
-        Label passingLabel;
-        ProgressIndicator indicator;
+        FailedRequirementsButton      button;
+        Label                         passingLabel;
+        ProgressIndicator             indicator;
 
         Result(final Label label, final PassingLevel passingLevel, final FailedRequirementsButton button)
         {
             this.geoPackageLabel = label;
-            this.passingLevel = passingLevel;
-            this.failedMessages = button.getFailedRequirements();
-            this.button = button;
-            this.passingLabel = new Label();
-            this.indicator = new ProgressIndicator();
+            this.passingLevel    = passingLevel;
+            this.failedMessages  = button.getFailedRequirements();
+            this.button          = button;
+            this.passingLabel    = new Label();
+            this.indicator       = new ProgressIndicator();
             this.passingLabel.setGraphic(this.indicator);
         }
-
-        public void setLevelAndMessage(final PassingLevel level, final Collection<VerificationIssue> failedRequirements)
-        {
-            this.failedMessages = failedRequirements;
-            this.passingLevel = level;
-        }
-
 }
