@@ -191,15 +191,16 @@ public class PackagerWindow extends NavigationWindow
                 {
                     final Dimension dimension = column.getPreferredSize();
 
+                    // This is a work-around to resize (and then stretch) the middle column to fit our input form layout
                     if(columnCount == 1 &&
                        (dimension.getWidth()  < 1 ||
-                        dimension.getHeight() < 1)) // TODO; This is a HACK
+                        dimension.getHeight() < 1))
                     {
 
                         column.setPreferredSize(new Dimension(220, 25));
                     }
 
-                    this.inputPanel.add(column, new SimpleGridBagConstraints(columnCount, rowCount, columnCount == 1)); // TODO; last parameter is similarly a hack for that second column
+                    this.inputPanel.add(column, new SimpleGridBagConstraints(columnCount, rowCount, columnCount == 1));
 
                     ++columnCount;
                 }
@@ -229,12 +230,13 @@ public class PackagerWindow extends NavigationWindow
             int columnCount = 0;
             for(final JComponent column : row)
             {
-                if(columnCount == 1) // TODO; This is a HACK
+                // This is a work-around to resize (and then stretch) the middle column to fit our input form layout
+                if(columnCount == 1)
                 {
                     column.setPreferredSize(new Dimension(220, 25));
                 }
 
-                this.outputPanel.add(column, new SimpleGridBagConstraints(columnCount, rowCount, columnCount == 1)); // TODO; last parameter is similarly a hack for that second column
+                this.outputPanel.add(column, new SimpleGridBagConstraints(columnCount, rowCount, columnCount == 1));
 
                 ++columnCount;
             }

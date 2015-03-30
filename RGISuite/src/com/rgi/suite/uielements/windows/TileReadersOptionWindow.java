@@ -81,15 +81,16 @@ public class TileReadersOptionWindow extends NavigationWindow
                     {
                         final Dimension dimension = column.getPreferredSize();
 
+                        // This is a work-around to resize (and then stretch) the middle column to fit our input form layout
                         if(columnCount == 1 &&
                            (dimension.getWidth()  < 1 ||
-                            dimension.getHeight() < 1)) // TODO; This is a HACK
+                            dimension.getHeight() < 1))
                         {
 
                             column.setPreferredSize(new Dimension(220, 25));
                         }
 
-                        readerPanel.add(column, new SimpleGridBagConstraints(columnCount, rowCount, columnCount == 1)); // TODO; last parameter is similarly a hack for that second column
+                        readerPanel.add(column, new SimpleGridBagConstraints(columnCount, rowCount, columnCount == 1));
 
                         ++columnCount;
                     }

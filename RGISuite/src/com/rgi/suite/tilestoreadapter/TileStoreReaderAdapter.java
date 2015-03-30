@@ -32,11 +32,22 @@ import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 
 /**
+ * Abstract base class for UI adapters for tile store readers
+ *
  * @author Luke Lambert
  *
  */
 public abstract class TileStoreReaderAdapter
 {
+    /**
+     * Constructor
+     *
+     * @param file
+     *             File or folder that contains one or more tile sets
+     * @param allowMultipleReaders
+     *             Flag that indicates whether or not we should return more
+     *             than one tile store reader if it contains one
+     */
     public TileStoreReaderAdapter(final File file, final boolean allowMultipleReaders)
     {
         if(file == null)
@@ -56,11 +67,41 @@ public abstract class TileStoreReaderAdapter
         return this.file;
     }
 
+    /**
+     * Provides UI elements to use as input to construct a tile store reader
+     *
+     * @return Returns a matrix of UI elements to build an input form that will
+     *             provide the inputs to build a corresponding tile store
+     *             reader
+     */
     public abstract Collection<Collection<JComponent>> getReaderParameterControls();
 
+    /**
+     * In some scenarios (e.g. viewing) we want to be able to use input
+     * defaults to construct a tile store reader without using a UI
+     *
+     * @return <code>true</code> if the corresponding tile store reader has
+     *             mandatory inputs that cannot be automatically inferred
+     */
     public abstract boolean needsInput();
 
-    public abstract TileStoreReader             getTileStoreReader()  throws TileStoreException;
+    /**
+     * Constructs a tile store reader based on the values of the UI elements
+     *
+     * @return A {@link TileStoreReader}
+     * @throws TileStoreException
+     *             if construction of the tile store reader fails
+     */
+    public abstract TileStoreReader getTileStoreReader()  throws TileStoreException;
+
+    /**
+     * Some file types can contain more than one tile set. This methods allows
+     * for the construction of a tile store reader for each tile set.
+     *
+     * @return A collection of {@link TileStoreReader}s
+     * @throws TileStoreException
+     *             if construction of a tile store reader fails
+     */
     public abstract Collection<TileStoreReader> getTileStoreReaders() throws TileStoreException;
 
     protected final File    file;
