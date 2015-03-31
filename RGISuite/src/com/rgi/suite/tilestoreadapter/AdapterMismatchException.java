@@ -23,6 +23,10 @@
 package com.rgi.suite.tilestoreadapter;
 
 /**
+ * Exception indicating that a {@link TileStoreReaderAdapter} or a {@link
+ * TileStoreWriterAdapter} has been initialized with a file that does not map
+ * that tile store format
+ *
  * @author Luke Lambert
  *
  */
@@ -30,18 +34,45 @@ public class AdapterMismatchException extends Exception
 {
     private static final long serialVersionUID = 8066480795328932111L;
 
+
+    /**
+     * Constructor
+     *
+     * @param message
+     *             The detail message. The detail message is saved for later
+     *             retrieval by the {@link #getMessage()} method.
+     */
     public AdapterMismatchException(final String message)
     {
         super(message);
     }
 
-    public AdapterMismatchException(final Exception exception)
+    /**
+     * Constructor
+     *
+     * @param cause
+     *             the cause (which is saved for later retrieval by the {@link
+     *             #getCause()} method).  (A <tt>null</tt> value is permitted,
+     *             and indicates that the cause is nonexistent or unknown.)
+     */
+    public AdapterMismatchException(final Exception cause)
     {
-        super(exception);
+        super(cause);
     }
 
-    public AdapterMismatchException(final String message, final Exception exception)
+    /**
+     * Constructor
+     *
+     * @param message
+     *             the detail message (which is saved for later retrieval by
+     *             the {@link #getMessage()} method).
+     * @param cause
+     *             the cause (which is saved for later retrieval by the {@link
+     *             #getCause()} method).  (A <tt>null</tt> value is permitted,
+     *             and indicates that the cause is nonexistent or unknown.)
+     */
+    public AdapterMismatchException(final String message, final Exception cause)
     {
-        super(message, exception);
+        super(message, cause);
     }
 }

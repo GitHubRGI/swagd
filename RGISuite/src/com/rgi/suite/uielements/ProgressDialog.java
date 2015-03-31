@@ -26,6 +26,7 @@ package com.rgi.suite.uielements;
 import java.awt.Dialog.ModalityType;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.Window;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.JDialog;
@@ -37,8 +38,31 @@ import utility.ThrowingFunction;
 
 import com.rgi.common.TaskMonitor;
 
+/**
+ * Convenience methods for creating a modal progress bar dialog
+ *
+ * @author Luke Lambert
+ *
+ */
 public class ProgressDialog
 {
+    /**
+     * Creates a modal progress bar dialog, and executes and monitors the progress of the supplied input {@code function}
+     *
+     * @param owner
+     *             the {@link Window} from which the dialog is displayed or
+     *             {@code null} if this dialog has no owner
+     * @param title
+     *             the {@link String} to display in the dialog's title bar or
+     *             {@code null} if the dialog has no title
+     * @param function
+     *             Function that serves as a monitorable callback. Progress updates are reflected in the dialog's UI
+     * @return Value returned by the {@code function}
+     * @throws InterruptedException
+     *             if the current thread was interrupted while waiting
+     * @throws ExecutionException
+     *             if the computation threw an exception
+     */
     public static <R> R trackProgress(final Frame owner, final String title, final ThrowingFunction<TaskMonitor, R> function) throws InterruptedException, ExecutionException
     {
         final JDialog progressDialog = new JDialog(owner, title, ModalityType.DOCUMENT_MODAL);

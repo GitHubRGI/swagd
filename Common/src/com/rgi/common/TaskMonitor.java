@@ -25,12 +25,25 @@ package com.rgi.common;
 
 /**
  * @author Duff Means
+ * @author Luke Lambert
  *
  */
 public interface TaskMonitor
 {
-    public void setMaximum(final int max);
+    /**
+     * Sets the maximum number of iterations to be monitored
+     *
+     * @param maximum
+     *             the maximum number of tasks to be monitored
+     */
+    public void setMaximum(final int maximum);
 
+    /**
+     * Sets the current iteration of the task
+     *
+     * @param value
+     *             Current iteration of the task
+     */
     public void setProgress(final int value);
 }
 

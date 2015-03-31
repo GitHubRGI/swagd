@@ -48,7 +48,6 @@ import javax.swing.WindowConstants;
 import utility.PropertiesAction;
 import utility.TileStoreUtility;
 
-import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.suite.uielements.windows.PackagerWindow;
 import com.rgi.suite.uielements.windows.TileReadersOptionWindow;
 import com.rgi.suite.uielements.windows.TilerWindow;
@@ -196,17 +195,9 @@ public class GeoSuite
                                                                                                   GeoSuite.this.settings.save();
 
                                                                                                   final TileReadersOptionWindow tileReadersOptionWindow = new TileReadersOptionWindow(TileStoreUtility.getTileStoreReaderAdapters(true, files),
-                                                                                                                                                                                      readers -> { try
-                                                                                                                                                                                                   {
-                                                                                                                                                                                                       final JFrame viewWindow = new MapViewWindow(readers);
-                                                                                                                                                                                                       viewWindow.setLocationRelativeTo(null);
-                                                                                                                                                                                                       viewWindow.setVisible(true);
-                                                                                                                                                                                                   }
-                                                                                                                                                                                                   catch(final TileStoreException ex)
-                                                                                                                                                                                                   {
-                                                                                                                                                                                                       JOptionPane.showMessageDialog(null, "Map View", "Unable to view file selection: " + ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-                                                                                                                                                                                                       ex.printStackTrace();
-                                                                                                                                                                                                   }
+                                                                                                                                                                                      readers -> { final JFrame viewWindow = new MapViewWindow(readers);
+                                                                                                                                                                                                   viewWindow.setLocationRelativeTo(null);
+                                                                                                                                                                                                   viewWindow.setVisible(true);
                                                                                                                                                                                                  });
 
                                                                                                   if(tileReadersOptionWindow.needsInput())

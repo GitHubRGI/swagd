@@ -26,11 +26,29 @@ package utility;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 
-@SuppressWarnings("javadoc")
+/**
+ * Convenience class wrapping a basic {@link GridBagConstraints} with common
+ * values
+ *
+ * @author Luke Lambert
+ *
+ */
 public class SimpleGridBagConstraints extends GridBagConstraints
 {
-        public SimpleGridBagConstraints(final int gridX, final int gridY, final boolean stretch)
-        {
-            super(gridX, gridY, 1, 1, stretch ? 1 : 0, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
-        }
+    private static final long serialVersionUID = -8883148851290993101L;
+
+    /**
+     * Constructor
+     *
+     * @param gridX
+     *             Grid column value
+     * @param gridY
+     *             Grid row value
+     * @param stretch
+     *             If true, the control is stretched to take up remaining space on its row
+     */
+    public SimpleGridBagConstraints(final int gridX, final int gridY, final boolean stretch)
+    {
+        super(gridX, gridY, 1, 1, stretch ? 1 : 0, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
+    }
 }

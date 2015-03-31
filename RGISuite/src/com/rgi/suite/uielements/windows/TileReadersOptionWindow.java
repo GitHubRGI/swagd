@@ -40,13 +40,31 @@ import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 
+/**
+ * Window that prompts the user for input required to read tile stores
+ *
+ * @author Luke Lambert
+ *
+ */
 public class TileReadersOptionWindow extends NavigationWindow
 {
+    private static final long serialVersionUID = 5667756189513470272L;
+
     private final Collection<TileStoreReaderAdapter>    readerAdapters;
     private final Consumer<Collection<TileStoreReader>> readerConsumer;
 
     private boolean needsInput = false;
 
+    /**
+     * Constructor
+     *
+     * @param readerAdapters
+     *             A collection of {@link TileStoreReaderAdapter}s which may
+     *             require additional input to create {@link TileStoreReader}s
+     * @param readerConsumer
+     *             Callback mechanism to consume {@link TileStoreReader}s once
+     *             they've been created
+     */
     public TileReadersOptionWindow(final Collection<TileStoreReaderAdapter> readerAdapters, final Consumer<Collection<TileStoreReader>> readerConsumer)
     {
         if(readerAdapters == null || readerAdapters.size() < 1)
@@ -59,7 +77,7 @@ public class TileReadersOptionWindow extends NavigationWindow
 
         this.contentPanel.setLayout(new BoxLayout(this.contentPanel, BoxLayout.PAGE_AXIS));
 
-        this.readerAdapters  = readerAdapters;
+        this.readerAdapters = readerAdapters;
         this.readerConsumer = readerConsumer;
 
         for(final TileStoreReaderAdapter adapter : this.readerAdapters)
@@ -102,16 +120,35 @@ public class TileReadersOptionWindow extends NavigationWindow
             }
         }
 
-        //this.contentPane.revalidate();
         this.pack();
     }
 
+    @Override
+    public boolean execute()
+    {
+        this.readerConsumer.accept(this.getReaders());
+        return true;
+    }
+
+    /**
+     * Test to see if any additional input is actually required before
+     *
+     * @return true if none of the input {@link TileStoreReaderAdapter}s
+     *             require additional information to create their respective
+     *             {@link TileStoreReader}
+     */
     public boolean needsInput()
     {
         return this.needsInput;
     }
 
-    public Collection<TileStoreReader> getReaders()
+    @Override
+    protected String processName()
+    {
+        return "File Options";
+    }
+
+    private Collection<TileStoreReader> getReaders()
     {
         final List<TileStoreReader> readers = new ArrayList<>();
 
@@ -130,19 +167,5 @@ public class TileReadersOptionWindow extends NavigationWindow
                                 });
 
         return readers;
-    }
-
-
-    @Override
-    protected String processName()
-    {
-        return "File Options";
-    }
-
-    @Override
-    public boolean execute()
-    {
-        this.readerConsumer.accept(this.getReaders());
-        return true;
     }
 }
