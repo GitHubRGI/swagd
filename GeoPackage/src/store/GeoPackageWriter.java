@@ -372,5 +372,8 @@ public class GeoPackageWriter implements TileStoreWriter
     private final ImageWriteParam          imageWriteOptions;
     private final TileScheme               tileScheme;
 
+    /**
+     * Image formats supported by an unextended GeoPackage
+     */
     public static final Set<MimeType> SupportedImageFormats = MimeTypeUtility.createMimeTypeSet("image/jpeg", "image/png");
 }

@@ -46,9 +46,15 @@ import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreReaderAdapter;
 public class TileStoreUtility
 {
     /**
+     * Creates a {@link TileStoreReaderAdapter} for each file
+     *
+     * @param allowMultipleReaders
+     *             Allows adapters to return multiple {@link TileStoreReader}s
+     *             from individual files that may contain more than one tile
+     *             set
      * @param files
-     *             Files containing one or more tile stores
-     * @return A {@link Collection} of {@link TileStoreReader}s.
+     *             Files representing tile stores
+     * @return A {@link Collection} of {@link TileStoreReaderAdapter}s
      */
     public static Collection<TileStoreReaderAdapter> getTileStoreReaderAdapters(final boolean allowMultipleReaders, final File... files)
     {
@@ -57,6 +63,17 @@ public class TileStoreUtility
                      .collect(Collectors.toList());
     }
 
+    /**
+     * Creates a {@link TileStoreReaderAdapter} for the input file
+     *
+     * @param allowMultipleReaders
+     *             Allows adapters to return multiple {@link TileStoreReader}s
+     *             from individual files that may contain more than one tile
+     *             set
+     * @param file
+     *             File representing a tile store
+     * @return A {@link TileStoreReaderAdapter}
+     */
     public static TileStoreReaderAdapter getTileStoreReaderAdapter(final boolean allowMultipleReaders, final File file)
     {
         for(final Class<? extends TileStoreReaderAdapter> readerClass : KnownTileStoreReaderAdapters)

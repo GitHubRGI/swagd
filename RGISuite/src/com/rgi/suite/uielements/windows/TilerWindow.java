@@ -164,7 +164,7 @@ public class TilerWindow extends NavigationWindow
                                                                   }
 
                                                                   this.nativeReferenceSystem.setText(crsName);
-                                                                  this.referenceSystems.setSelectedItem(crs);   // TODO double check that selecting an equivalent object (like this) works, rather than looking up the matching object in the combobox, and then selecting that
+                                                                  this.referenceSystems.setSelectedItem(crs);
 
                                                                   this.tileStoreWriterAdapter.hint(file);
                                                               }
@@ -270,12 +270,13 @@ public class TilerWindow extends NavigationWindow
             int columnCount = 0;
             for(final JComponent column : row)
             {
-                if(columnCount == 1) // TODO; This is a HACK
+                // This is a work-around to resize (and then stretch) the middle column to fit our input form layout
+                if(columnCount == 1)
                 {
                     column.setPreferredSize(new Dimension(220, 25));
                 }
 
-                this.outputPanel.add(column, new SimpleGridBagConstraints(columnCount, rowCount, columnCount == 1)); // TODO; last parameter is similarly a hack for that second column
+                this.outputPanel.add(column, new SimpleGridBagConstraints(columnCount, rowCount, columnCount == 1));
 
                 ++columnCount;
             }
@@ -321,9 +322,6 @@ public class TilerWindow extends NavigationWindow
             this.warn("Please select an output reference system");
             return false;
         }
-
-
-        // TODO waiting on Lander's new tiler code
 
         // This spawns a modal dialog and blocks this thread
         ProgressDialog.trackProgress(this,

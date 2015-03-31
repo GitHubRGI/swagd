@@ -26,19 +26,36 @@ package com.rgi.suite.tilestoreadapter.rawimage;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Supplier;
+import java.util.zip.DataFormatException;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
+import org.gdal.osr.SpatialReference;
+
+import utility.GdalUtility;
+
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.g2t.RawImageTileReader;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 
+/**
+ * Reader adapter for a raw image
+ *
+ * @author Luke Lambert
+ *
+ */
 public class RawImageTileStoreReaderAdapter extends TileStoreReaderAdapter
 {
+    private final Supplier<Dimensions<Integer>> tileDimensionsSupplier;
+    private final boolean forceInput;
+
     private final JComboBox<CoordinateReferenceSystem> referenceSystems = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
                                                                                                            .stream()
                                                                                                            .sorted()
@@ -49,14 +66,47 @@ public class RawImageTileStoreReaderAdapter extends TileStoreReaderAdapter
     private final Collection<Collection<JComponent>> readerParameterControls = Arrays.asList(Arrays.asList(new JLabel("Native reference system:"),  this.nativeReferenceSystem),
                                                                                              Arrays.asList(new JLabel("Output reference system::"), this.referenceSystems));
 
-    public RawImageTileStoreReaderAdapter(final File file, final boolean forceInput)
+    /**
+     * Constructor
+     *
+     * @param file
+     *             Image file to treat like a tile store
+     * @param tileDimensionsSupplier
+     *             Callback to supply a width and height for tile size
+     * @param forceInput
+     *             If true, {@link #needsInput} will always return true. This
+     *             forces the selection of a coordinate reference system.
+     * @throws DataFormatException
+     *             Rethrown from {@link GdalUtility#getDatasetSrs}
+     */
+    public RawImageTileStoreReaderAdapter(final File file, final Supplier<Dimensions<Integer>> tileDimensionsSupplier, final boolean forceInput) throws DataFormatException
     {
         super(file, false);
 
-        // TODO
-        //CoordinateReferenceSystem crs = GdalUtility.getCRS(file);
-        //this.nativeReferenceSystem.setText(crs.toString());
-        //this.referenceSystems.setSelectedItem(crs);   // TODO double check that selecting an equivalent object (like this) works, rather than looking up the matching object in the combobox, and then selecting that
+        this.tileDimensionsSupplier = tileDimensionsSupplier;
+        this.forceInput             = forceInput;
+
+        final SpatialReference srs = GdalUtility.getDatasetSrs(file);
+
+        final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(srs);
+
+        String crsName;
+
+        if(crs != null)
+        {
+            crsName = crs.toString();
+        }
+        else
+        {
+            crsName = GdalUtility.getName(srs);
+            if(crsName == null)
+            {
+                crsName = "<none specified>";
+            }
+        }
+
+        this.nativeReferenceSystem.setText(crsName);
+        this.referenceSystems.setSelectedItem(crs);
     }
 
     @Override
@@ -68,16 +118,15 @@ public class RawImageTileStoreReaderAdapter extends TileStoreReaderAdapter
     @Override
     public boolean needsInput()
     {
-        // TODO Auto-generated method stub
-        return false;
+        return this.forceInput || this.referenceSystems.getSelectedItem() != null;
     }
 
     @Override
     public TileStoreReader getTileStoreReader() throws TileStoreException
     {
-        // TODO
-        //return new RawImageTileStoreReader(this.referenceSystems.getSelectedItem());
-        return null;
+        return new RawImageTileReader(this.file,
+                                      this.tileDimensionsSupplier.get(),
+                                      (CoordinateReferenceSystem)this.referenceSystems.getSelectedItem());
     }
 
     @Override

@@ -64,7 +64,7 @@ public class MimeTypeUtility
             }
             catch(final MimeTypeParseException | NullPointerException ex)
             {
-                ex.printStackTrace();   // This method was specifically created to avoid checked exceptions
+               // This method was specifically created to avoid checked exceptions
             }
         }
         return imageFormats;

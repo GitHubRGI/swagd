@@ -215,5 +215,8 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
     private final ImageWriter     imageWriter;
     private final ImageWriteParam imageWriteOptions;
 
+    /**
+     * Image MimeTypes supported by the TMS tile store
+     */
     public static final Set<MimeType> SupportedImageFormats = MimeTypeUtility.createMimeTypeSet(ImageIO.getReaderMIMETypes());
 }

@@ -53,6 +53,8 @@ public class Tiler
      *             Desired tile pixel width and height
      * @param noDataColor
      *             Default tile color
+     * @param taskMonitor
+     *             Callback to report the tiler progress
      */
     public Tiler(final File                file,
                  final TileStoreWriter     tileWriter,
