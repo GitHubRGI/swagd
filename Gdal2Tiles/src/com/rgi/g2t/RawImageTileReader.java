@@ -133,7 +133,7 @@ public class RawImageTileReader implements TileStoreReader {
 
     @Override
     public void close() throws Exception {
-        gdal.GDALDestroyDriverManager();
+        //gdal.GDALDestroyDriverManager();
         this.dataset.delete();
     }
 

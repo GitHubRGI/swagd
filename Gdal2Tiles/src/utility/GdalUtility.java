@@ -338,7 +338,7 @@ public class GdalUtility
         // Compare dataset geotransform to an empty identity transform and ensure there are no GCPs
         // below is the negation of HasGeoReference
         //return Arrays.equals(dataset.GetGeoTransform(), emptyGeoReference) && dataset.GetGCPCount() == 0;
-        return Arrays.equals(dataset.GetGeoTransform(), identityTransform) || dataset.GetGCPCount() != 0;
+        return !Arrays.equals(dataset.GetGeoTransform(), identityTransform) || dataset.GetGCPCount() != 0;
     }
 
     /**
@@ -445,8 +445,10 @@ public class GdalUtility
     {
         final List<Range<Coordinate<Integer>>> tileRangesByZoom = new ArrayList<Range<Coordinate<Integer>>>();
         // Get the crs coordinates of the bounds
-        final CrsCoordinate topLeft = new CrsCoordinate(bounds.getTopLeft(), crsProfile.getCoordinateReferenceSystem());
-        final CrsCoordinate bottomRight = new CrsCoordinate(bounds.getBottomRight(), crsProfile.getCoordinateReferenceSystem());
+        //final CrsCoordinate topLeft = new CrsCoordinate(bounds.getTopLeft(), crsProfile.getCoordinateReferenceSystem());
+        //final CrsCoordinate bottomRight = new CrsCoordinate(bounds.getBottomRight(), crsProfile.getCoordinateReferenceSystem());
+        final CrsCoordinate topLeft = new CrsCoordinate(bounds.getBottomLeft(), crsProfile.getCoordinateReferenceSystem());
+        final CrsCoordinate bottomRight = new CrsCoordinate(bounds.getTopRight(), crsProfile.getCoordinateReferenceSystem());
         IntStream.range(0, 32).forEach(zoom ->
         {
             final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
@@ -489,7 +491,9 @@ public class GdalUtility
         try
         {
             final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(dataset);
-            return GdalUtility.zoomLevelForPixelSize(zoomPixelSize, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
+            final int zoom = GdalUtility.zoomLevelForPixelSize(zoomPixelSize, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
+            // Sometimes the resolution yields a zoom in which 2 tiles exist, so scale up by one level to ensure 1 tile only
+            return zoom == 0 ? 0 : zoom - 1; 
         }
         catch(final TileStoreException e)
         {
@@ -583,27 +587,27 @@ public class GdalUtility
             final int[] zooms = IntStream.range(0, 32).toArray();
             for(final int zoom : zooms)
             {
-                   final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
-                   // Get the tile coordinates of the top-left and bottom-right tiles
-                   final Coordinate<Integer> topLeftTile = crsProfile.crsToTileCoordinate(new CrsCoordinate(boundingBox.getTopLeft(), crsProfile.getCoordinateReferenceSystem()),
-                                                                                          boundingBox,
+                final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
+                // Get the tile coordinates of the top-left and bottom-right tiles
+                final Coordinate<Integer> topLeftTile = crsProfile.crsToTileCoordinate(new CrsCoordinate(boundingBox.getTopLeft(), crsProfile.getCoordinateReferenceSystem()),
+                                                                                          crsProfile.getBounds(), //boundingBox, Use bounds of the world here
                                                                                           tileMatrixDimensions,
                                                                                           tileOrigin);
-                   final Coordinate<Integer> bottomRightTile = crsProfile.crsToTileCoordinate(new CrsCoordinate(boundingBox.getBottomRight(), crsProfile.getCoordinateReferenceSystem()),
-                                                                                              boundingBox,
+                final Coordinate<Integer> bottomRightTile = crsProfile.crsToTileCoordinate(new CrsCoordinate(boundingBox.getBottomRight(), crsProfile.getCoordinateReferenceSystem()),
+                                                                                              crsProfile.getBounds(), //boundingBox, Use bounds of the world here
                                                                                               tileMatrixDimensions,
                                                                                               tileOrigin);
-                   // Convert tile coordinates to crs coordinates: this will give us correct units-of-measure-per-pixel
-                   // This is tile data *plus* padding to the full tile grid
-                   final Coordinate<Integer> topLeftCoord = tileOrigin.transform(TileOrigin.UpperLeft, topLeftTile.getX(), topLeftTile.getY(), tileMatrixDimensions);
-                   final Coordinate<Integer> bottomRightCoord = tileOrigin.transform(TileOrigin.LowerRight, bottomRightTile.getX(), bottomRightTile.getY(), tileMatrixDimensions);
-                   final CrsCoordinate topLeftCrsFull = crsProfile.tileToCrsCoordinate(topLeftCoord.getX(),
+                // Convert tile coordinates to crs coordinates: this will give us correct units-of-measure-per-pixel
+                // This is tile data *plus* padding to the full tile grid
+                final Coordinate<Integer> topLeftCoord = tileOrigin.transform(TileOrigin.UpperLeft, topLeftTile.getX(), topLeftTile.getY(), tileMatrixDimensions);
+                final Coordinate<Integer> bottomRightCoord = tileOrigin.transform(TileOrigin.LowerRight, bottomRightTile.getX(), bottomRightTile.getY(), tileMatrixDimensions);
+                final CrsCoordinate topLeftCrsFull = crsProfile.tileToCrsCoordinate(topLeftCoord.getX(),
                                                                                     topLeftCoord.getY(),
                                                                                     crsProfile.getBounds(),
                                                                                     tileMatrixDimensions,
                                                                                     TileOrigin.UpperLeft);
                 final CrsCoordinate bottomRightCrsFull = crsProfile.tileToCrsCoordinate(bottomRightCoord.getX(),
-                                                                                           bottomRightCoord.getY(),
+                                                                                        bottomRightCoord.getY(),
                                                                                         crsProfile.getBounds(),
                                                                                         tileMatrixDimensions,
                                                                                         TileOrigin.LowerRight);
@@ -628,9 +632,7 @@ public class GdalUtility
                     // check if the image lies on tile boundaries.  In that case, a small image could
                     // produce two tiles if it lies on the bounds of the tile grid.
                     // Return two zoom levels up to be sure?
-                    return zoom == 0 || zoom == 1 ? 0 : zoom - 2;
-                    // just one level up, previous way of doing it that couldnt guarantee just 1 tile
-                    //return zoom == 0 ? 0 : zoom - 1;
+                    return zoom == 0 ? 0 : zoom - 1;
                 }
         }
             throw new NumberFormatException("Could not determine zoom level for pixel size: " + String.valueOf(zoomPixelSize));
@@ -662,23 +664,34 @@ public class GdalUtility
 
     /**
      * @param queryDataset
+     * @param dimensions 
      * @param tileDataInMemory
      * @return
      * @throws TilingException
      */
     public static Dataset scaleQueryToTileSize(final Dataset queryDataset,
-    										   final Dataset tileDataInMemory) throws TilingException
+    										   final Dimensions<Integer> dimensions) throws TilingException
     {
-    	final int tileBands = tileDataInMemory.GetRasterCount();
-    	for (final int band : IntStream.range(1, tileBands + 1).toArray())
+    	// TODO: This just handles average resampling, it should be adjusted for other
+    	// resampling types
+    	final Dataset tileDataInMemory = gdal.GetDriverByName("MEM").Create("", dimensions.getWidth(), dimensions.getHeight(), queryDataset.GetRasterCount());
+    	for (final int band : IntStream.range(1, queryDataset.GetRasterCount() + 1).toArray())
     	{
-    		final int resolution = gdal.RegenerateOverview(queryDataset.GetRasterBand(band),
-    													   tileDataInMemory.GetRasterBand(band),
-    													   "average");
-    		if (resolution != 0)
+    		try
     		{
-    			throw new TilingException("Could not RegenerateOverview on band: "
-    									  + String.valueOf(band));
+    			final int resolution = gdal.RegenerateOverview(queryDataset.GetRasterBand(band),
+    														   tileDataInMemory.GetRasterBand(band),
+    														   "average");
+    			// This could possibly be replaced with (resolution != gdalconstConstants.CE_None)
+    			if (resolution != 0)
+    			{
+    				throw new TilingException("Could not RegenerateOverview on band: "
+    										  + String.valueOf(band));
+    			}
+    		}
+    		catch (IllegalArgumentException iae)
+    		{
+    			iae.printStackTrace();
     		}
     	}
     	return tileDataInMemory;
@@ -716,5 +729,290 @@ public class GdalUtility
             noDataValues[2] = noDataValues[0];
         }
         return noDataValues;
+    }
+    
+    /**
+     * @param dataset
+     * @param alphaBand
+     * @return
+     */
+    public static int getRasterBandCount(final Dataset dataset, final Band alphaBand)
+    {
+        // TODO: The bitwise calc functionality needs to be verified from the python functionality
+        final boolean bitwiseAlpha = (alphaBand.GetMaskFlags() & gdalconstConstants.GMF_ALPHA) != 0;
+        if (bitwiseAlpha || dataset.GetRasterCount() == 4 || dataset.GetRasterCount() == 2)
+        {
+            return dataset.GetRasterCount() - 1;
+        }
+        return dataset.GetRasterCount();
+    }
+    
+    /**
+     * @param dataset
+     * @return
+     * @throws TileStoreException
+     */
+    public static int getAlphaBandIndex(final Dataset dataset) throws TileStoreException
+    {
+        final int[] bands = IntStream.range(1, dataset.GetRasterCount()).toArray();
+        for (final int nBand : bands)
+        {
+            final Band band = dataset.GetRasterBand(nBand);
+            if (band.GetColorInterpretation() == gdalconstConstants.GCI_AlphaBand)
+            {
+                return nBand;
+            }
+        }
+        throw new TileStoreException("No Alpha band detected.  Call getAlphaBandIndex after correctNoDataSimple");
+    }
+    
+    /**
+     * @param dataset
+     * @return
+     */
+    public static Dataset correctNoDataSimple(final Dataset dataset)
+    {
+        boolean datasetHasAlphaBand = false;
+        // Iterate through the bands to see if any are tagged alpha
+        final int[] bands = IntStream.range(1, dataset.GetRasterCount()).toArray();
+        for (final int nBand : bands)
+        {
+            final Band band = dataset.GetRasterBand(nBand);
+            if (band.GetColorInterpretation() == gdalconstConstants.GCI_AlphaBand)
+            {
+                datasetHasAlphaBand = true;
+            }
+        }
+        // If the dataset actually has an alpha band, return it
+        if (datasetHasAlphaBand)
+        {
+            return dataset;
+        }
+        // Dataset has no alpha and is NOT a VRT
+        if (!dataset.GetDriver().getShortName().equalsIgnoreCase("VRT"))
+        {
+            // Create a vrt of this dataset
+            final Dataset vrtCopy = gdal.AutoCreateWarpedVRT(dataset);
+            // Add an alpha band
+            vrtCopy.AddBand(gdalconstConstants.GDT_Byte);
+            // A new band added is always the last, per docs
+            vrtCopy.GetRasterBand(vrtCopy.GetRasterCount()).SetColorInterpretation(gdalconstConstants.GCI_AlphaBand);
+            return vrtCopy;
+        }
+        // Dataset has no alpha and IS a VRT
+        dataset.AddBand(gdalconstConstants.GDT_Byte);
+        dataset.GetRasterBand(dataset.GetRasterCount()).SetColorInterpretation(gdalconstConstants.GCI_AlphaBand);
+        return dataset;
+    }
+    
+    /**
+     * @param geoTransform
+     * @param boundingBox
+     * @param dimensions 
+     * @param dataset 
+     * @return
+     * @throws TilingException 
+     */
+    public static GdalRasterParameters getGdalRasterParameters(final double[] geoTransform,
+    														   final BoundingBox boundingBox,
+    														   final Dimensions<Integer> dimensions,
+    														   final Dataset dataset) throws TilingException
+    {
+    	int readX = (int)((boundingBox.getMinX() - geoTransform[0]) / geoTransform[1] + 0.001);
+  		int readY = (int)((boundingBox.getMaxY() - geoTransform[3]) / geoTransform[5] + 0.001);
+  		int readXSize = (int)((boundingBox.getMaxX() - boundingBox.getMinX()) / geoTransform[1] + 0.5);
+  		int readYSize = (int)((boundingBox.getMinY() - boundingBox.getMaxY()) / geoTransform[5] + 0.5);
+  		return new GdalRasterParameters(readX, readY, readXSize, readYSize, dimensions, dataset);
+    }
+    
+    /**
+     * @param params
+     * @param write
+     * @param dataset
+     * @return
+     * @throws TilingException
+     */
+    public static byte[] readRaster(final GdalRasterParameters params, final Dataset dataset) throws TilingException
+    {
+    	final int bandCount = dataset.GetRasterCount(); // correctNoDataSimple should have added an alpha band
+    	final byte[] imageData = new byte[params.getWriteXSize() * params.getWriteYSize() * bandCount];
+    	final int[] bandList = IntStream.range(1, bandCount + 1).toArray();
+    	final int result = dataset.ReadRaster(params.getReadX(),
+    										  params.getReadY(),
+    										  params.getReadXSize(),
+    										  params.getReadYSize(),
+    										  params.getWriteXSize(),
+    										  params.getWriteYSize(),
+    										  gdalconstConstants.GDT_Byte,
+    										  imageData,
+    										  bandList);
+    	if (result == gdalconstConstants.CE_Failure)
+    	{
+    		throw new TilingException("Failure reported by ReadRaster call in GdalUtility.");
+    	}
+    	return imageData;
+    }
+    
+    /**
+     * @param params
+     * @param imageData
+     * @param bandCount
+     * @return
+     * @throws TilingException
+     */
+    public static Dataset writeRaster(final GdalRasterParameters params, final byte[] imageData, final int bandCount) throws TilingException
+    {
+    	final Dataset querySizeDatasetInMemory = gdal.GetDriverByName("MEM").Create("", params.getReadXSize(), params.getReadYSize(), bandCount);
+    	final int[] bandList = IntStream.range(1, bandCount + 1).toArray();
+    	final int result = querySizeDatasetInMemory.WriteRaster(params.getReadX(),
+    															params.getReadY(),
+    															params.getReadXSize(),
+    															params.getReadYSize(),
+    															params.getReadXSize(),
+    															params.getReadYSize(),
+    															gdalconstConstants.GDT_Byte,
+    															imageData,
+    															bandList);
+    	if (result == gdalconstConstants.CE_Failure)
+    	{
+    		//throw new TilingException("Failure reported by WriteRaster call in GdalUtility.");
+    	}
+    	return querySizeDatasetInMemory;
+    }
+    
+    /**
+     * @author Steven D. Lander
+     *
+     */
+    public static class GdalRasterParameters
+    {
+    	private int readX;
+    	private int readY;
+    	private int readXSize;
+    	private int readYSize;
+    	private int writeX;
+    	private int writeY;
+    	private int writeXSize;
+    	private int writeYSize;
+    	
+    	/**
+    	 * @param readX
+    	 * @param readY
+    	 * @param readXSize
+    	 * @param readYSize
+    	 * @param dimensions 
+    	 * @param dataset 
+    	 * @throws TilingException 
+    	 */
+    	public GdalRasterParameters(final int readX,
+    								final int readY,
+    								final int readXSize,
+    								final int readYSize,
+    								final Dimensions<Integer> dimensions,
+    								final Dataset dataset) throws TilingException
+    	{
+    		if (dimensions == null)
+    		{
+    			throw new TilingException("Dimensions of the tile system cannot be null.");
+    		}
+    		if (dataset == null)
+    		{
+    			throw new TilingException("Input dataset must be supplied to GdalRasterParameters.");
+    		}
+    		this.readX = readX;
+    		this.readY = readY;
+    		this.readXSize = readXSize;
+    		this.readYSize = readYSize;
+    		this.writeX = 0;
+    		this.writeY = 0;
+    		this.writeXSize = 4 * dimensions.getWidth();
+    		this.writeYSize = 4 * dimensions.getHeight();
+    		this.adjust(dataset);
+    	}
+    	
+    	/**
+    	 * @return
+    	 */
+    	public int getReadX()
+    	{
+    		return this.readX;
+    	}
+    	
+    	/**
+    	 * @return
+    	 */
+    	public int getReadY()
+    	{
+    		return this.readY;
+    	}
+    	
+    	/**
+    	 * @return
+    	 */
+    	public int getReadXSize()
+    	{
+    		return this.readXSize;
+    	}
+    	
+    	/**
+    	 * @return
+    	 */
+    	public int getReadYSize()
+    	{
+    		return this.readYSize;
+    	}
+    	
+    	public int getWriteX()
+    	{
+    		return this.writeX;
+    	}
+    	
+    	public int getWriteY()
+    	{
+    		return this.writeY;
+    	}
+    	
+    	public int getWriteXSize()
+    	{
+    		return this.writeXSize;
+    	}
+    	
+    	public int getWriteYSize()
+    	{
+    		return this.writeYSize;
+    	}
+    	
+    	/**
+    	 * @param dataset
+    	 */
+    	private void adjust(final Dataset dataset)
+    	{
+	        if (this.readX < 0)
+	        {
+	            final int readXShift = Math.abs(this.readX);
+	            this.writeX = (int)(this.writeXSize * ((double)readXShift / this.readXSize));
+	            this.writeXSize -= this.writeX;
+	            this.readXSize -= (int)(this.readXSize * ((double)readXShift) / this.readXSize);
+	            this.readX = 0;
+	        }
+	        if (this.readX + this.readXSize > dataset.GetRasterXSize())
+	        {
+	            this.writeXSize = (int)(this.writeXSize * ((double)(dataset.GetRasterXSize() - this.readX) / this.readXSize));
+	            this.readXSize = dataset.GetRasterXSize() - this.readX;
+	        }
+	        if (this.readY < 0)
+	        {
+	            final int readYShift = Math.abs(this.readY);
+	            this.writeY = (int)(this.writeYSize * ((double)readYShift / this.readYSize));
+	            this.writeYSize -= this.writeY;
+	            this.readYSize -= (int)(this.readYSize * ((double)readYShift / this.readYSize));
+	            this.readY = 0;
+	        }
+	        if (this.readY + this.readYSize > dataset.GetRasterYSize())
+	        {
+	            this.writeYSize = (int)(this.writeYSize * ((double)(dataset.GetRasterYSize() - this.readY) / this.readYSize));
+	            this.readYSize = dataset.GetRasterYSize() - this.readY;
+	        }
+    	}
     }
 }
