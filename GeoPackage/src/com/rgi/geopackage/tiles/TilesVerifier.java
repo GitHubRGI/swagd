@@ -1292,7 +1292,7 @@ public class TilesVerifier extends Verifier
                       final int maxX = minXMaxXMinYMaxYRS.getInt("MAX(tile_column)");
                       final int maxY = minXMaxXMinYMaxYRS.getInt("MAX(tile_row)");
 
-                      final String query2 = String.format("SELECT matrix_width, matrix_height, zoom_level FROM %s WHERE zoom_level = (SELECT MIN(zoom_level) FROM %s)", GeoPackageTiles.MatrixTableName, pyramidTable);
+                      final String query2 = String.format("SELECT matrix_width, matrix_height, zoom_level FROM %s WHERE table_name = '%s' AND zoom_level = (SELECT MIN(zoom_level) FROM %s)", GeoPackageTiles.MatrixTableName, pyramidTable, pyramidTable);
                       try(Statement stmt2        = this.getSqliteConnection().createStatement();
                           ResultSet dimensionsRS = stmt2.executeQuery(query2))
                       {
