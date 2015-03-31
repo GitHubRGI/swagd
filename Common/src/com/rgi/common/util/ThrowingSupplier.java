@@ -46,9 +46,9 @@ public interface ThrowingSupplier<T> extends Supplier<T>
         {
             return getThrows();
         }
-        catch(final Exception e)
+        catch(final Throwable th)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException(th);
         }
     }
 
@@ -57,8 +57,8 @@ public interface ThrowingSupplier<T> extends Supplier<T>
      *
      * @return the function result
      *
-     * @throws Exception
+     * @throws Throwable
      *             when the underlying throws
      */
-    public T getThrows() throws Exception;
+    public T getThrows() throws Throwable;
 }

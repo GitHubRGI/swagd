@@ -23,13 +23,15 @@
 
 package com.rgi.verifiertool;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.net.URI;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Hyperlink;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.effect.Light.Distant;
 import javafx.scene.effect.Lighting;
 import javafx.scene.input.Dragboard;
@@ -39,8 +41,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 /**
@@ -53,89 +53,78 @@ public class VerifierMainWindow extends Application
      * Launch the Verifier application.
      * @param args incoming arguments
      */
-
     public static void main(final String[] args)
     {
         Application.launch(args);
     }
 
-    @SuppressWarnings("unused")//this is bc I do not make an object on line 128
     @Override
     public void start(final Stage primaryStage) throws Exception
     {
         //Set the window up
-        BorderPane layout = new BorderPane();
-        Scene       scene = new Scene(layout, 551, 400);
+        final BorderPane layout = new BorderPane();
+        final Scene      scene  = new Scene(layout, 550, 400);
 
         primaryStage.setTitle("GeoPackage Verifier Tool");
 
-        final Text dragHereMessage = new Text("Drag GeoPackage Files Here.");
-        dragHereMessage.setFill(Color.DARKBLUE);
-        dragHereMessage.setFont(Font.font(null, FontWeight.BOLD, 30));
+        final Text dragHereMessage = createFancyText("Drag GeoPackage Files Here.");
 
-        Lighting lighting = new Lighting();
-        Distant  light    = new Distant();
-        light.setAzimuth(-135.0f);
-        lighting.setLight(light);
-        lighting.setSurfaceScale(4.0f);
-
-        dragHereMessage.setEffect(lighting);
-
-        Text applicationInfo = new Text();//TODO
-        Hyperlink geoPackageLink = new Hyperlink("GeoPackage Specification");
+        final Text applicationInfo = new Text();//TODO
+        final Hyperlink geoPackageLink = new Hyperlink("GeoPackage Specification");
         layout.setBottom(geoPackageLink);
-        WebView browser = new WebView();
-        WebEngine webEngine = browser.getEngine();
-        geoPackageLink.setOnAction(e -> {
-            //TODO open in user browser
-                                            Stage stage = new Stage();
-                                            ScrollPane root = new ScrollPane();
-                                            Scene browserScene = new Scene(root);
-                                            webEngine.load("http://www.geopackage.org/spec/");
-                                            root.setFitToWidth(true);
-                                            root.setFitToHeight(true);
-                                            root.setContent(browser);
-                                            stage.setScene(browserScene);
-                                            stage.show();
-                                        }
-                                        );
+
+        geoPackageLink.setOnAction((ThrowingEventHandler<ActionEvent>)(event -> Desktop.getDesktop().browse(new URI("http://www.geopackage.org/spec/"))));
+
         primaryStage.setResizable(false);
         layout.setCenter(dragHereMessage);
 
         //create the even that drags the file over
-        scene.setOnDragOver(event ->
-        {
-            Dragboard db = event.getDragboard();
-            if (db.hasFiles())
-            {
-                event.acceptTransferModes(TransferMode.COPY);
-            }
-            else
-            {
-                event.consume();
-            }
-        });
+        scene.setOnDragOver(event -> { final Dragboard db = event.getDragboard();
+                                       if(db.hasFiles())
+                                       {
+                                           event.acceptTransferModes(TransferMode.COPY);
+                                       }
+                                       else
+                                       {
+                                           event.consume();
+                                       }
+                                     });
 
         // Dropping over surface
-        scene.setOnDragDropped(event ->
-        {
-
-            Dragboard db = event.getDragboard();
-            if (db.hasFiles())
-            {
-                for (File file : db.getFiles())
-                {
-                    new PassingLevelResultsWindow(file);
-                }
-            }
-            event.setDropCompleted(true);
-            event.consume();
-        });
+        scene.setOnDragDropped(event -> { final Dragboard db = event.getDragboard();
+                                          if(db.hasFiles())
+                                          {
+                                              for(final File file : db.getFiles())
+                                              {
+                                                  final Stage resultsStage = new PassingLevelResultsWindow(file);
+                                                  resultsStage.show();
+                                              }
+                                          }
+                                          event.setDropCompleted(true);
+                                          event.consume();
+                                        });
 
         //show the window
         primaryStage.setScene(scene);
         primaryStage.show();
 
         primaryStage.setOnCloseRequest(event -> Platform.exit());
+    }
+
+    private static Text createFancyText(final String text)
+    {
+        final Text fancyText = new Text(text);
+        fancyText.setFill(Color.DARKBLUE);
+        fancyText.setFont(Font.font(null, FontWeight.BOLD, 30));
+
+        final Lighting lighting = new Lighting();
+        final Distant  light    = new Distant();
+        light.setAzimuth(-135.0f);
+        lighting.setLight(light);
+        lighting.setSurfaceScale(4.0f);
+
+        fancyText.setEffect(lighting);
+
+        return fancyText;
     }
 }

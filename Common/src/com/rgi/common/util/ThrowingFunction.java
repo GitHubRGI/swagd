@@ -46,9 +46,9 @@ public interface ThrowingFunction<T, R> extends Function<T, R>
         {
             return applyThrows(t);
         }
-        catch(final Exception e)
+        catch(final Throwable th)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException(th);
         }
     }
 
@@ -59,8 +59,8 @@ public interface ThrowingFunction<T, R> extends Function<T, R>
      *
      * @return the function result
      *
-     * @throws Exception
+     * @throws Throwable
      *             when the underlying apply throws
      */
-    public R applyThrows(T t) throws Exception;
+    public R applyThrows(T t) throws Throwable;
 }

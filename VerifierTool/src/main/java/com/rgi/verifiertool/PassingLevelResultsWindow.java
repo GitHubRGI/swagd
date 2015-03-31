@@ -130,7 +130,6 @@ public class PassingLevelResultsWindow extends Stage
         final Scene scene = new Scene(root, 410, 140, Color.WHITE);
         root.setCenter(this.gridPanel);
         this.setScene(scene);
-        this.show();
     }
 
     private static Task<Result> createTask(final ThrowingSupplier<Collection<VerificationIssue>> messagesSupplier, final Result result)

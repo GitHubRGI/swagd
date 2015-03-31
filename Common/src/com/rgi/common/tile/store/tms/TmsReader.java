@@ -79,6 +79,7 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
      */
     public TmsReader(final CoordinateReferenceSystem coordinateReferenceSystem, final Path location)
     {
+        // TODO look for tilemapresource.xml for metadata
         super(coordinateReferenceSystem, location);
 
         if(!location.toFile().canRead())
