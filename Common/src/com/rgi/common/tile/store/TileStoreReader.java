@@ -31,6 +31,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
+import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
 
 /**
@@ -177,4 +178,9 @@ public interface TileStoreReader extends AutoCloseable
      *               Wraps errors thrown by the tile store reader implementation
      */
     public TileScheme getTileScheme() throws TileStoreException;
+
+    /**
+     * @return Returns the tile origin
+     */
+    public TileOrigin getTileOrigin();
 }

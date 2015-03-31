@@ -388,6 +388,12 @@ public class GeoPackageReader implements TileStoreReader
         return this.tileScheme;
     }
 
+    @Override
+    public TileOrigin getTileOrigin()
+    {
+        return GeoPackageTiles.Origin;
+    }
+
     private static BufferedImage getImage(final Tile tile) throws TileStoreException
     {
         if(tile == null)
@@ -487,4 +493,5 @@ public class GeoPackageReader implements TileStoreReader
     private final Set<Integer>             zoomLevels;
     private final Map<Integer, TileMatrix> tileMatrices;
     private final TileMatrixSet            tileMatrixSet;
+
 }
