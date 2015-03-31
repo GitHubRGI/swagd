@@ -93,6 +93,7 @@ public class PassingLevelResultsWindow extends Stage
                 }
                 return null;
             }};
+
       Thread mainThread = new Thread(task);
       mainThread.start();
     }
@@ -141,7 +142,6 @@ public class PassingLevelResultsWindow extends Stage
                result.setFailedMessages(messages);
                result.setPassingLevel(PassingLevelResultsWindow.getPassingLevel(messages));
                this.updateValue(result);
-
                return result;
             }
         };
@@ -163,24 +163,11 @@ public class PassingLevelResultsWindow extends Stage
         Thread schema     = new Thread(taskSchema);
         Thread metadata   = new Thread(taskMetadata);
 
-        try
-        {
-            core.start();
-            tiles.start();
-            extensions.start();
-            schema.start();
-            metadata.start();
-
-            core.join();
-            tiles.join();
-            extensions.join();
-            schema.join();
-            metadata.join();
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
+        core.start();
+        tiles.start();
+        extensions.start();
+        metadata.start();
+        schema.start();
     }
 
     private void createTaskListeners(final List<Task<Result>> taskList)
@@ -202,6 +189,7 @@ public class PassingLevelResultsWindow extends Stage
                          result.getButton().setRequirements(result.getFailedMessages());
                          result.getButton().setVisible(true);
                      }
+                     this.show();
                   }
             });
         }

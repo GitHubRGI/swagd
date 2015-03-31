@@ -62,7 +62,8 @@ public class FailedRequirementsWindow extends Stage
        //create a scroll to scan through error messages
        ScrollPane scrollPane = new ScrollPane(this.text);
        //allow the pane to resize to main window
-       Scene scene = new Scene(scrollPane, 400, 500);
+       Scene scene = new Scene(scrollPane, 500, this.text.getMinHeight());
+       scrollPane.setMaxHeight(500);
        scrollPane.setFitToWidth(true);
        //create the window set up
        this.setScene(scene);
