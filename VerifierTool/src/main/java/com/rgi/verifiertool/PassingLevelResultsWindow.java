@@ -77,7 +77,7 @@ public class PassingLevelResultsWindow extends Stage
         this.setTitle(String.format("Verification for file %s", file.getName()));
         this.buildPassFailPanel();
         //show window while validating the GeoPackages
-        Task<Void> task = new Task<Void>(){
+        final Task<Void> task = new Task<Void>(){
 
             @Override
             protected Void call() throws Exception
@@ -87,14 +87,14 @@ public class PassingLevelResultsWindow extends Stage
                     //get the failed requirements for each of the systems
                     PassingLevelResultsWindow.this.createTasks(geoPackage);
                 }
-                catch(Exception ex)
+                catch(final Exception ex)
                 {
                     ex.printStackTrace();
                 }
                 return null;
             }};
 
-      Thread mainThread = new Thread(task);
+      final Thread mainThread = new Thread(task);
       mainThread.start();
     }
 
@@ -103,16 +103,16 @@ public class PassingLevelResultsWindow extends Stage
         this.gridPanel.setHgap(2);
         this.gridPanel.setVgap(1);
 
-        ColumnConstraints columnLeft   = new ColumnConstraints(230);
-        ColumnConstraints columnCenter = new ColumnConstraints(90);
-        ColumnConstraints columnRight  = new ColumnConstraints(90);
+        final ColumnConstraints columnLeft   = new ColumnConstraints(230);
+        final ColumnConstraints columnCenter = new ColumnConstraints(90);
+        final ColumnConstraints columnRight  = new ColumnConstraints(90);
 
         this.setResizable(false);
         this.gridPanel.getColumnConstraints().addAll(columnLeft, columnCenter, columnRight);
 
         //create the panel with the label of the system, passingLevel, and the button to show the failed requirements
         int row = 0;
-        for(Result result: new ArrayList<>(Arrays.asList(this.coreResult, this.tilesResult, this.extensionsResult, this.metadataResult, this.schemaResult)))
+        for(final Result result: new ArrayList<>(Arrays.asList(this.coreResult, this.tilesResult, this.extensionsResult, this.metadataResult, this.schemaResult)))
         {
             result.getGeoPackageLabel().setFont(new Font(this.fontSize));
             createButtonListener(result.getButton());
@@ -125,8 +125,8 @@ public class PassingLevelResultsWindow extends Stage
             row++;
         }
 
-        BorderPane root = new BorderPane();
-        Scene scene = new Scene(root, 410, 140, Color.WHITE);
+        final BorderPane root = new BorderPane();
+        final Scene scene = new Scene(root, 410, 140, Color.WHITE);
         root.setCenter(this.gridPanel);
         this.setScene(scene);
         this.show();
@@ -149,19 +149,19 @@ public class PassingLevelResultsWindow extends Stage
 
     private void createTasks(final GeoPackage geoPackage) throws SQLException
     {
-        Task<Result> taskCore       = createTask(geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full), this.coreResult);
-        Task<Result> taskTiles      = createTask(geoPackage.tiles()     .getVerificationIssues(VerificationLevel.Full),                       this.tilesResult);
-        Task<Result> taskExtensions = createTask(geoPackage.extensions().getVerificationIssues(VerificationLevel.Full),                       this.extensionsResult);
-        Task<Result> taskSchema     = createTask( geoPackage.schema()   .getVerificationIssues(VerificationLevel.Full),                       this.schemaResult);
-        Task<Result> taskMetadata   = createTask( geoPackage.metadata() .getVerificationIssues(VerificationLevel.Full),                       this.metadataResult);
+        final Task<Result> taskCore       = createTask(geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full), this.coreResult);
+        final Task<Result> taskTiles      = createTask(geoPackage.tiles()     .getVerificationIssues(VerificationLevel.Full),                       this.tilesResult);
+        final Task<Result> taskExtensions = createTask(geoPackage.extensions().getVerificationIssues(VerificationLevel.Full),                       this.extensionsResult);
+        final Task<Result> taskSchema     = createTask(geoPackage.schema()    .getVerificationIssues(VerificationLevel.Full),                       this.schemaResult);
+        final Task<Result> taskMetadata   = createTask(geoPackage.metadata()  .getVerificationIssues(VerificationLevel.Full),                       this.metadataResult);
 
         this.createTaskListeners(new ArrayList<>(Arrays.asList(taskCore, taskTiles, taskExtensions, taskSchema, taskMetadata)));
 
-        Thread core       = new Thread(taskCore);
-        Thread tiles      = new Thread(taskTiles);
-        Thread extensions = new Thread(taskExtensions);
-        Thread schema     = new Thread(taskSchema);
-        Thread metadata   = new Thread(taskMetadata);
+        final Thread core       = new Thread(taskCore);
+        final Thread tiles      = new Thread(taskTiles);
+        final Thread extensions = new Thread(taskExtensions);
+        final Thread schema     = new Thread(taskSchema);
+        final Thread metadata   = new Thread(taskMetadata);
 
         core.start();
         tiles.start();
@@ -173,12 +173,12 @@ public class PassingLevelResultsWindow extends Stage
     private void createTaskListeners(final List<Task<Result>> taskList)
     {
         //this will post the result when finished verifying
-        for(Task<Result> task: taskList)
+        for(final Task<Result> task: taskList)
         {
             task.valueProperty().addListener((obs, oldMessage, newMessage) -> {
                 if(newMessage.getClass() == Result.class)
                   {
-                     Result result = newMessage;
+                     final Result result = newMessage;
                      result.getPassingLabel().setGraphic(null);
                      result.getPassingLabel().setText(result.getPassingLevel().getText());
                      result.getPassingLabel().setFont(new Font(this.fontSize));
