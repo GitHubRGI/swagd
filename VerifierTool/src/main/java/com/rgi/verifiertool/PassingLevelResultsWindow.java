@@ -24,11 +24,9 @@
 package com.rgi.verifiertool;
 
 import java.io.File;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import javafx.concurrent.Task;
 import javafx.scene.Scene;
@@ -40,6 +38,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import com.rgi.common.util.ThrowingSupplier;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.verification.Severity;
@@ -77,7 +76,8 @@ public class PassingLevelResultsWindow extends Stage
         this.setTitle(String.format("Verification for file %s", file.getName()));
         this.buildPassFailPanel();
         //show window while validating the GeoPackages
-        final Task<Void> task = new Task<Void>(){
+        final Task<Void> task = new Task<Void>()
+        {
 
             @Override
             protected Void call() throws Exception
@@ -92,10 +92,11 @@ public class PassingLevelResultsWindow extends Stage
                     ex.printStackTrace();
                 }
                 return null;
-            }};
+            }
+        };
 
-      final Thread mainThread = new Thread(task);
-      mainThread.start();
+        final Thread mainThread = new Thread(task);
+        mainThread.start();
     }
 
     private void buildPassFailPanel()
@@ -132,30 +133,39 @@ public class PassingLevelResultsWindow extends Stage
         this.show();
     }
 
-    private static Task<Result> createTask(final Collection<VerificationIssue> messages, final Result result)
+    private static Task<Result> createTask(final ThrowingSupplier<Collection<VerificationIssue>> messagesSupplier, final Result result)
     {
         return new Task<Result>(){
 
             @Override
             protected Result call() throws Exception
             {
-               result.setFailedMessages(messages);
-               result.setPassingLevel(PassingLevelResultsWindow.getPassingLevel(messages));
-               this.updateValue(result);
-               return result;
+                try
+                {
+                    final Collection<VerificationIssue> messages = messagesSupplier.get();
+
+                    result.setFailedMessages(messages);
+                    result.setPassingLevel(PassingLevelResultsWindow.getPassingLevel(messages));
+                    this.updateValue(result);
+                    return result;
+                }
+                catch(final Exception ex)
+                {
+                    throw ex;
+                }
             }
         };
     }
 
-    private void createTasks(final GeoPackage geoPackage) throws SQLException
+    private void createTasks(final GeoPackage geoPackage) throws InterruptedException
     {
-        final Task<Result> taskCore       = createTask(geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full), this.coreResult);
-        final Task<Result> taskTiles      = createTask(geoPackage.tiles()     .getVerificationIssues(VerificationLevel.Full),                       this.tilesResult);
-        final Task<Result> taskExtensions = createTask(geoPackage.extensions().getVerificationIssues(VerificationLevel.Full),                       this.extensionsResult);
-        final Task<Result> taskSchema     = createTask(geoPackage.schema()    .getVerificationIssues(VerificationLevel.Full),                       this.schemaResult);
-        final Task<Result> taskMetadata   = createTask(geoPackage.metadata()  .getVerificationIssues(VerificationLevel.Full),                       this.metadataResult);
+        final Task<Result> taskCore       = createTask(() -> geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full), this.coreResult);
+        final Task<Result> taskTiles      = createTask(() -> geoPackage.tiles()     .getVerificationIssues(VerificationLevel.Full),                       this.tilesResult);
+        final Task<Result> taskExtensions = createTask(() -> geoPackage.extensions().getVerificationIssues(VerificationLevel.Full),                       this.extensionsResult);
+        final Task<Result> taskSchema     = createTask(() -> geoPackage.schema()    .getVerificationIssues(VerificationLevel.Full),                       this.schemaResult);
+        final Task<Result> taskMetadata   = createTask(() -> geoPackage.metadata()  .getVerificationIssues(VerificationLevel.Full),                       this.metadataResult);
 
-        this.createTaskListeners(new ArrayList<>(Arrays.asList(taskCore, taskTiles, taskExtensions, taskSchema, taskMetadata)));
+        this.createTaskListeners(Arrays.asList(taskCore, taskTiles, taskExtensions, taskSchema, taskMetadata));
 
         final Thread core       = new Thread(taskCore);
         final Thread tiles      = new Thread(taskTiles);
@@ -163,34 +173,40 @@ public class PassingLevelResultsWindow extends Stage
         final Thread schema     = new Thread(taskSchema);
         final Thread metadata   = new Thread(taskMetadata);
 
-        core.start();
-        tiles.start();
+        core      .start();
+        tiles     .start();
         extensions.start();
-        metadata.start();
-        schema.start();
+        metadata  .start();
+        schema    .start();
+
+        core      .join();
+        tiles     .join();
+        extensions.join();
+        metadata  .join();
+        schema    .join();
     }
 
-    private void createTaskListeners(final List<Task<Result>> taskList)
+    private void createTaskListeners(final Collection<Task<Result>> tasks)
     {
         //this will post the result when finished verifying
-        for(final Task<Result> task: taskList)
+        for(final Task<Result> task : tasks)
         {
             task.valueProperty().addListener((obs, oldMessage, newMessage) -> {
                 if(newMessage.getClass() == Result.class)
-                  {
-                     final Result result = newMessage;
-                     result.getPassingLabel().setGraphic(null);
-                     result.getPassingLabel().setText(result.getPassingLevel().getText());
-                     result.getPassingLabel().setFont(new Font(this.fontSize));
-                     result.getPassingLabel().setStyle("-fx-font-weight: bold");
-                     result.getPassingLabel().setTextFill(result.getPassingLevel().getColor());
-                     if(!PassingLevel.Pass.equals(result.getPassingLevel()))
-                     {
-                         result.getButton().setRequirements(result.getFailedMessages());
-                         result.getButton().setVisible(true);
-                     }
-                     this.show();
-                  }
+                {
+                    final Result result = newMessage;
+                    result.getPassingLabel().setGraphic(null);
+                    result.getPassingLabel().setText(result.getPassingLevel().getText());
+                    result.getPassingLabel().setFont(new Font(this.fontSize));
+                    result.getPassingLabel().setStyle("-fx-font-weight: bold");
+                    result.getPassingLabel().setTextFill(result.getPassingLevel().getColor());
+                    if(!PassingLevel.Pass.equals(result.getPassingLevel()))
+                    {
+                        result.getButton().setRequirements(result.getFailedMessages());
+                        result.getButton().setVisible(true);
+                    }
+                    this.show();
+                }
             });
         }
     }
