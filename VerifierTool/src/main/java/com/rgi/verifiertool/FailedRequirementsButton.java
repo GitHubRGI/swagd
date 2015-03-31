@@ -44,7 +44,7 @@ public class FailedRequirementsButton extends Button
     public FailedRequirementsButton(final String component)
     {
         super("show more");
-        this.failedRequirements = Collections.EMPTY_LIST;
+        this.failedRequirements = Collections.emptyList();
         this.component = component;
     }
 
