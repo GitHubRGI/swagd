@@ -42,8 +42,6 @@ import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
-import com.rgi.common.tile.scheme.TileScheme;
-import com.rgi.common.tile.scheme.ZoomTimesTwo;
 /**
  * @author Jenifer Cochran
  *
@@ -70,25 +68,6 @@ public class SphericalMercatorCrsProfileTest
        }
     }
 
-    @Test
-    public void whitehorse()
-    {
-        SphericalMercatorCrsProfile crs = new SphericalMercatorCrsProfile();
-
-        BoundingBox bBox = new BoundingBox(-1505415.7808118355, 8547695.553855633, -1504256.5941966893, 8558804.020190556);
-        TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
-        TileOrigin origin = TileOrigin.LowerLeft;
-
-        CrsCoordinate coordLL = crs.tileToCrsCoordinate(254, 1462, crs.getBounds(), tileScheme.dimensions(11), origin);
-        CrsCoordinate coordUR = crs.tileToCrsCoordinate(256, 1463, crs.getBounds(), tileScheme.dimensions(11), origin);
-
-
-        Coordinate<Integer> upperLeftTile  = crs.crsToTileCoordinate(coordLL, crs.getBounds(), tileScheme.dimensions(11), origin);
-        Coordinate<Integer> lowerRightTile = crs.crsToTileCoordinate(coordUR, crs.getBounds(), tileScheme.dimensions(11), origin);
-        Coordinate<Integer> upperRightTile = crs.crsToTileCoordinate(new CrsCoordinate(bBox.getBottomLeft(), crs.getCoordinateReferenceSystem()), crs.getBounds(), tileScheme.dimensions(11), origin);
-
-
-    }
     /**
      * Tests if spherical mercator throws an IllegalArgumentException
      * when passing a null value to crsToTileCoordinate
