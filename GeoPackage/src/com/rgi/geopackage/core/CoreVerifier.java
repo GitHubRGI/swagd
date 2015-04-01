@@ -248,16 +248,12 @@ public class CoreVerifier extends Verifier
                         try (PreparedStatement stmt2 = this.getSqliteConnection().prepareStatement(String.format("PRAGMA table_info(%s));", table_name));
                              ResultSet pragmaTableinfo = stmt2.executeQuery();)
                         {
+                            while (pragmaTableinfo.next())
                             {
-                                {
-                                    while (pragmaTableinfo.next())
-                                    {
-                                        final String dataType = pragmaTableinfo.getString("type");
-                                        final boolean correctDataType = Verifier.checkDataType(dataType);
+                                final String dataType = pragmaTableinfo.getString("type");
+                                final boolean correctDataType = Verifier.checkDataType(dataType);
 
-                                        assertTrue(String.format("Incorrect data type encountered: %s  From table: %s",dataType, table_name), correctDataType);
-                                    }
-                                }
+                                assertTrue(String.format("Incorrect data type encountered: %s  From table: %s",dataType, table_name), correctDataType);
                             }
                         }
                     }
