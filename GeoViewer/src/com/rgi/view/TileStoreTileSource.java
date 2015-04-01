@@ -27,12 +27,11 @@ import java.awt.Image;
 import java.io.IOException;
 
 import org.openstreetmap.gui.jmapviewer.Coordinate;
+import org.openstreetmap.gui.jmapviewer.OsmMercator;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileSource;
 
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.coordinate.referencesystem.profile.GlobalGeodeticCrsProfile;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
@@ -45,18 +44,17 @@ import com.rgi.common.tile.store.TileStoreReader;
  *
  * @author Steven D. Lander
  */
-public class TileStoreTileSource implements TileSource
+public class TileStoreTileSource  implements TileSource
 {
     private final TileStoreReader tileStore;
 
     private final int minimumZoomLevel;
     private final int maximumZoomLevel;
-    @SuppressWarnings("unused")
-    private final CrsProfile crsProfile;
     private final GlobalGeodeticCrsProfile globalGeodeticCrs = new GlobalGeodeticCrsProfile();
     private final CoordinateReferenceSystem globalGeodetic   = this.globalGeodeticCrs.getCoordinateReferenceSystem();
     private final static TileOrigin Origin     = TileOrigin.UpperLeft;           // Tile Origin for JMapViewer
     private final static TileScheme TileScheme = new ZoomTimesTwo(0, 31, 1, 1);  // Tile scheme for JMapViewer: http://wiki.openstreetmap.org/wiki/Slippy_Map
+    private final int tileSize;
     /**
      * @param tileStore The tile store that will be viewed.
      * @throws TileStoreException Thrown when the tile store is not supported or is invalid.
@@ -67,8 +65,7 @@ public class TileStoreTileSource implements TileSource
 
         this.minimumZoomLevel = tileStore.getZoomLevels().stream().min(Integer::compare).orElse(-1);
         this.maximumZoomLevel = tileStore.getZoomLevels().stream().max(Integer::compare).orElse(-1);
-
-        this.crsProfile = CrsProfileFactory.create(this.tileStore.getCoordinateReferenceSystem());
+        this.tileSize = this.tileStore.getImageDimensions().getWidth();
     }
 
     @Override
@@ -160,53 +157,32 @@ public class TileStoreTileSource implements TileSource
     @Override
     public int getTileSize()
     {
-        try
-        {
-            return this.tileStore.getImageDimensions().getWidth();
-        }
-        catch(final TileStoreException ex)
-        {
-            ex.printStackTrace();
-            return 0;
-        }
+        return this.tileSize;
     }
 
     @Override
-    public double getDistance(final double la1, final double lo1, final double la2, final double lo2)
-    {
-        // TODO Auto-generated method stub
-        final double distance = Math.sqrt((lo1-lo2)*(lo1-lo2) + (la1-la2)*(la1-la2));
-        return distance;
-    }
-    //this is pixel
-    @Override
-    public int LonToX(final double arg0, final int arg1)
-    {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-//this is pixel
-    @Override
-    public int LatToY(final double aLat, final int aZoomlevel)
-    {
-        //TODO
-        return 0;
-    }
-//this is pixel
-    @Override
-    public double XToLon(final int aX, final int aZoomlevel)
-    {
-        // TODO Auto-generated method stub
-        return 0;
+    public double getDistance(final double lat1, final double lon1, final double lat2, final double lon2) {
+        return OsmMercator.getDistance(lat1, lon1, lat2, lon2);
     }
 
-
-//this is pixel
     @Override
-    public double YToLat(final int aY, final int aZoomlevel)
-    {
-        // TODO Auto-generated method stub
-        return 0;
+    public int LonToX(final double lon, final int zoom) {
+        return (int )OsmMercator.LonToX(lon, zoom);
+    }
+
+    @Override
+    public int LatToY(final double lat, final int zoom) {
+        return (int )OsmMercator.LatToY(lat, zoom);
+    }
+
+    @Override
+    public double XToLon(final int x, final int zoom) {
+        return OsmMercator.XToLon(x, zoom);
+    }
+
+    @Override
+    public double YToLat(final int y, final int zoom) {
+        return OsmMercator.YToLat(y, zoom);
     }
 
 
@@ -246,7 +222,8 @@ public class TileStoreTileSource implements TileSource
     @Override
     public String getId()
     {
-        return this.tileStore.getName();
+        return "";
     }
+
 
 }

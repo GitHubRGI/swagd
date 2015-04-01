@@ -25,7 +25,6 @@ package com.rgi.view;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -122,11 +121,8 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         this.viewer.addJMVListener(this);
         this.setLayout(new BorderLayout());
         this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        this.setExtendedState(Frame.MAXIMIZED_BOTH);
 
         new DefaultMapController(this.viewer).setMovementMouseButton(MouseEvent.BUTTON1);
-
-        //this.viewer.setTileLoader(new TileStoreLoader(this.tileStore, this.viewer));
 
         //add tile grid checkbox
         final JCheckBox showTileGrid = new JCheckBox("Tile grid visible");
@@ -171,6 +167,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         panelTop.add(this.unitsPerPixelXValue);
         panelTop.add(this.unitsPerPixelYLabel);
         panelTop.add(this.unitsPerPixelYValue);
+        this.setSize(800, 800);
         this.repaint();
 
     }
@@ -214,7 +211,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         try
         {
             this.viewer.setTileLoader(new TileStoreLoader(this.getSelectedStore(), this.viewer));
-           // this.viewer.setTileSource(new TileStoreTileSource(this.tileStore));
+            this.viewer.setTileSource(new TileStoreTileSource(this.getSelectedStore()));
 
         }
         catch (final TileStoreException e)
@@ -240,7 +237,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
                     try
                     {
                         MapViewWindow.this.viewer.setTileLoader(new TileStoreLoader(button.getTileStore(), MapViewWindow.this.viewer));
-                       // this.viewer.setTileSource(new TileStoreTileSource(this.tileStore));
+                        MapViewWindow.this.viewer.setTileSource(new TileStoreTileSource(button.getTileStore()));
                         MapViewWindow.this.setInitialDisplayPosition(button.getTileStore());
 
                     }
@@ -307,15 +304,15 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
                 this.unitsPerPixelXLabel.setText("Units/Pixel: ");
                 this.unitsPerPixelYLabel.setVisible(false);
                 this.unitsPerPixelYValue.setVisible(false);
-                this.unitsPerPixelXValue.setText(String.format("%.4f", unitsPerPixelValueXCalculation));
+                this.unitsPerPixelXValue.setText(String.format("%.7f", unitsPerPixelValueXCalculation));
             }
             else
             {
                 //if not equal show both for x and y
                 this.unitsPerPixelXLabel.setText("Units/PixelX: ");//change label to specify X
 
-                this.unitsPerPixelXValue.setText(String.format("%.4f", unitsPerPixelValueXCalculation));// place value of x
-                this.unitsPerPixelYValue.setText(String.format("%.4f", unitsPerPixelValueYCalculation));//place value of Y
+                this.unitsPerPixelXValue.setText(String.format("%.7f", unitsPerPixelValueXCalculation));// place value of x
+                this.unitsPerPixelYValue.setText(String.format("%.7f", unitsPerPixelValueYCalculation));//place value of Y
 
                 this.unitsPerPixelYLabel.setVisible(true);//set y label visible
                 this.unitsPerPixelYValue.setVisible(true);//set y value visible
