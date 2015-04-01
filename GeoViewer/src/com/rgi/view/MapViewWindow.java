@@ -28,6 +28,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -79,12 +80,14 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     JMapViewer viewer;
     boolean treeSelected = false;
 
-    private final JLabel currentZoomLevelValue = new JLabel("");
-    private final JLabel unitsPerPixelXLabel   = new JLabel("Units/PixelX: ");
-    private final JLabel unitsPerPixelYLabel   = new JLabel("Units/PixelY: ");
-    private final JLabel unitsPerPixelXValue   = new JLabel("");
-    private final JLabel unitsPerPixelYValue   = new JLabel("");
-    private final ButtonGroup mainGroup        = new ButtonGroup();
+    private final JLabel currentZoomLevelValue   = new JLabel("");
+    private final JLabel unitsPerPixelXLabel     = new JLabel("Units/PixelX: ");
+    private final JLabel unitsPerPixelYLabel     = new JLabel("Units/PixelY: ");
+    private final JLabel unitsPerPixelXValue     = new JLabel("");
+    private final JLabel unitsPerPixelYValue     = new JLabel("");
+    private final JLabel coordinatePosition      = new JLabel("Current Position: ");
+    private final       JLabel coordinatePositionValue = new JLabel("");
+    private final ButtonGroup mainGroup          = new ButtonGroup();
 
     /**
      * Constructor
@@ -136,6 +139,9 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         final JButton backToCenterButton = new JButton("Center");
         this.addCenterButton(backToCenterButton);
 
+        //add Listener for the current coordinate
+        this.mouseCoordinateListener();
+
         //set tree visible //TODO this will be added when tree is working
         // this.treeMap.setTreeVisible(true);
        // this.treeMap.addLayer(element)
@@ -159,7 +165,15 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         northPanel.add(panelTop, BorderLayout.NORTH);
         northPanel.add(panelBottom, BorderLayout.SOUTH);
 
+//        this.viewer.setLayout(new BorderLayout());//TODO
+//        JPanel southPanel = new JPanel();
+//        southPanel.add(this.coordinatePosition);
+//        southPanel.add(this.coordinatePositionValue);
+//        this.viewer.add(southPanel, BorderLayout.SOUTH);
+
         panelBottom.add(showTileGrid);
+        panelBottom.add(this.coordinatePosition);
+        panelBottom.add(this.coordinatePositionValue);
         panelTop.add(backToCenterButton);
         panelTop.add(currentZoomLevelLabel);
         panelTop.add(this.currentZoomLevelValue);
@@ -170,6 +184,32 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         this.setSize(800, 800);
         this.repaint();
 
+    }
+
+    private void mouseCoordinateListener()
+    {
+        this.viewer.addMouseMotionListener(new MouseMotionListener()
+        {
+
+            @Override
+            public void mouseMoved(final MouseEvent e)
+            {
+                Coordinate latLong = MapViewWindow.this.viewer.getPosition(e.getPoint());
+                MapViewWindow.this.updateCoordinate(latLong);
+            }
+
+            @Override
+            public void mouseDragged(final MouseEvent e)
+            {
+                // TODO Auto-generated method stub
+
+            }
+        });
+    }
+
+    protected void updateCoordinate(final Coordinate latLong)
+    {
+        this.coordinatePositionValue.setText(String.format("%f %f", latLong.getLat(), latLong.getLon()));
     }
 
     private void setListOfTileStores(final JPanel westPanel)
