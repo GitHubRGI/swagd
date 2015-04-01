@@ -23,6 +23,7 @@
 package com.rgi.geopackage.extensions;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -265,29 +266,35 @@ public class ExtensionsVerifier extends Verifier
 
                 if (extensionData.tableName != null && columnName != null)
                 {
-                    final String query = String.format("PRAGMA table_info(%s);", extensionData.tableName);
+                    final String query = "PRAGMA table_info(?);";
 
-                    try (Statement stmt      = this.getSqliteConnection().createStatement();
-                         ResultSet tableInfo = stmt.executeQuery(query))
+                    try (PreparedStatement stmt      = this.getSqliteConnection().prepareStatement(query))
                     {
-                        final boolean columnExists = ResultSetStream.getStream(tableInfo)
-                                                                    .anyMatch(resultSet ->
-                                                                                          {   try
-                                                                                              {
-                                                                                                  return resultSet.getString("name").equals(columnName);
-                                                                                              }
-                                                                                              catch (final SQLException ex)
-                                                                                              {
-                                                                                                  return false;
-                                                                                              }
-                                                                                          });
+                        stmt.setString(1, extensionData.tableName);
 
-                        Assert.assertTrue(String.format("The column %s does not exist in the table %s. "
-                                                            + "Please either add this column to this table "
-                                                            + "or delete the record in gpkg_extensions.",
-                                                        columnName,
-                                                        extensionData.tableName),
-                                          columnExists);
+                        try(ResultSet tableInfo = stmt.executeQuery(query))
+                        {
+                              {
+                                  final boolean columnExists = ResultSetStream.getStream(tableInfo)
+                                                                              .anyMatch(resultSet ->
+                                                                                                    {   try
+                                                                                                        {
+                                                                                                            return resultSet.getString("name").equals(columnName);
+                                                                                                        }
+                                                                                                        catch (final SQLException ex)
+                                                                                                        {
+                                                                                                            return false;
+                                                                                                        }
+                                                                                                    });
+
+                                  Assert.assertTrue(String.format("The column %s does not exist in the table %s. "
+                                                                      + "Please either add this column to this table "
+                                                                      + "or delete the record in gpkg_extensions.",
+                                                                  columnName,
+                                                                  extensionData.tableName),
+                                                    columnExists);
+                              }
+                        }
                     }
                 }
             }
@@ -322,17 +329,16 @@ public class ExtensionsVerifier extends Verifier
         {
 
             final Set<String> invalidExtensionNames = this.gpkgExtensionsDataAndColumnName.keySet()
-                                                                                    .stream()
-                                                                                    .map(extensionData -> ExtensionsVerifier.verifyExtensionName(extensionData.extensionName))
-                                                                                    .filter(data -> data != null)
-                                                                                    .collect(Collectors.toSet());
+                                                                                          .stream()
+                                                                                          .map(extensionData -> ExtensionsVerifier.verifyExtensionName(extensionData.extensionName))
+                                                                                          .filter(data -> data != null)
+                                                                                          .collect(Collectors.toSet());
 
-            Assert.assertTrue("The following extension_name(s) are invalid: \n"
-                                  .concat(String.join(invalidExtensionNames.stream()
-                                                                           .map(extensionName -> extensionName)
-                                                                           .filter(Objects::nonNull)
-                                                                           .collect(Collectors.joining(", ")),
-                                                      "\n")),
+            Assert.assertTrue("The following extension_name(s) are invalid: \n".concat(String.join(invalidExtensionNames.stream()
+                                                                               .map(extensionName -> extensionName)
+                                                                               .filter(Objects::nonNull)
+                                                                               .collect(Collectors.joining(", ")),
+                                                                               "\n")),
                               invalidExtensionNames.isEmpty());
 
         }
@@ -413,8 +419,8 @@ public class ExtensionsVerifier extends Verifier
         {
             final String query = "SELECT scope FROM gpkg_extensions WHERE scope != 'read-write' AND scope != 'write-only'";
 
-            try (Statement stmt = this.getSqliteConnection().createStatement();
-                    ResultSet invalidScopeValues = stmt.executeQuery(query))
+            try (Statement stmt               = this.getSqliteConnection().createStatement();
+                 ResultSet invalidScopeValues = stmt.executeQuery(query))
             {
                 final List<String> invalidScope = ResultSetStream.getStream(invalidScopeValues)
                                                                  .map(resultSet ->
@@ -438,7 +444,6 @@ public class ExtensionsVerifier extends Verifier
                                                             .collect(Collectors.joining(", "))),
                                   invalidScope.isEmpty());
             }
-
         }
     }
 
