@@ -330,4 +330,10 @@ public class RawImageTileReader implements TileStoreReader
             throw new TileStoreException(new OperationNotSupportedException());
         }
     }
+
+    @Override
+    public TileOrigin getTileOrigin()
+    {
+        return tileOrigin;
+    }
 }
