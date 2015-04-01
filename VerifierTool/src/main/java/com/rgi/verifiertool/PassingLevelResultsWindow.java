@@ -24,7 +24,6 @@
 package com.rgi.verifiertool;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -113,7 +112,7 @@ public class PassingLevelResultsWindow extends Stage
 
         //create the panel with the label of the system, passingLevel, and the button to show the failed requirements
         int row = 0;
-        for(final Result result: new ArrayList<>(Arrays.asList(this.coreResult, this.tilesResult, this.extensionsResult, this.metadataResult, this.schemaResult)))
+        for(final Result result : Arrays.asList(this.coreResult, this.tilesResult, this.extensionsResult, this.metadataResult, this.schemaResult))
         {
             result.getGeoPackageLabel().setFont(new Font(this.fontSize));
             createButtonListener(result.getButton());
@@ -123,7 +122,7 @@ public class PassingLevelResultsWindow extends Stage
             this.gridPanel.add(result.getPassingLabel(),    1, row);
             this.gridPanel.add(result.getButton(),          2, row);
 
-            row++;
+            ++row;
         }
 
         final BorderPane root = new BorderPane();

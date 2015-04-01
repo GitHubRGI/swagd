@@ -24,6 +24,7 @@
 package com.rgi.verifiertool;
 
 import java.io.File;
+import java.util.Collection;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -35,6 +36,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -43,13 +45,16 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
-
 /**
  * @author Jenifer Cochran
  *
  */
 public class VerifierMainWindow extends Application
 {
+    private final BorderPane layout = new BorderPane();
+
+    private final VBox filesContainer = new VBox(); // TODO wrap in a scroll panel
+
     /**
      * Launch the Verifier application.
      * @param args incoming arguments
@@ -63,18 +68,15 @@ public class VerifierMainWindow extends Application
     public void start(final Stage primaryStage) throws Exception
     {
         //Set the window up
-        final BorderPane  layout     = new BorderPane();
-        final Scene       scene      = new Scene(layout, 550, 400);
-        final GridPane    bottomGrid = new GridPane();
+        final Scene    scene      = new Scene(this.layout, 550, 400);
+        final GridPane bottomGrid = new GridPane();
 
-        layout.setBottom(bottomGrid);
         bottomGrid.setHgap(100);
 
         final Text dragHereMessage = createFancyText("Drag GeoPackage Files Here");
 
-        final Text applicationInfo = new Text();//TODO
-
-        layout.setCenter(dragHereMessage);
+        this.layout.setCenter(dragHereMessage);
+        this.layout.setBottom(bottomGrid);
 
         //Create Link to SWAGD github
         final Hyperlink swagdInfo = new Hyperlink("SWAGD Project");
@@ -89,29 +91,27 @@ public class VerifierMainWindow extends Application
         //add an about this application link
         final Hyperlink verifierToolInfo = new Hyperlink("About application");
         bottomGrid.add(verifierToolInfo, 2, 0);
-        verifierToolInfo.setOnAction(e -> {
+        verifierToolInfo.setOnAction(e -> { final Text title  = new Text("GeoPackage Verifier Tool\n");
+                                            title.setFill(Color.DARKBLUE);
+                                            title.setFont(Font.font(null, FontWeight.EXTRA_BOLD, 20));
+                                            title.setTextAlignment(TextAlignment.CENTER);
 
-                                                final Text     title  = new Text("GeoPackage Verifier Tool\n");
-                                                title.setFill(Color.DARKBLUE);
-                                                title.setFont(Font.font(null, FontWeight.EXTRA_BOLD, 20));
-                                                title.setTextAlignment(TextAlignment.CENTER);
-                                                final Text     company = new Text("Reinventing Geospatial Inc.\n\n");
-                                                company.setFont(Font.font(null, FontWeight.BOLD, 18));
+                                            final Text company = new Text("Reinventing Geospatial Inc.\n\n");
+                                            company.setFont(Font.font(null, FontWeight.BOLD, 18));
 
-                                                final Text     about   = new Text("This application will verify GeoPackages with Raster Tile data for the GeoPackage Encoding Standard Version 1.0.  "
-                                                                          + "This Verification Tool will test the GeoPackage Core, GeoPackage Tiles, GeoPackage Extensions, GeoPackage Schema, "
-                                                                          + "and GeoPackage Metadata requirements.  This will test a GeoPackage file against the Requirements referenced in the Encoding Standard.   "
-                                                                          + "This will not verify GeoPackages with Feature data.");
-                                                about.setFont(Font.font(null, FontWeight.THIN, 14));
+                                            final Text about = new Text("This application will verify GeoPackages with Raster Tile data for the GeoPackage Encoding Standard Version 1.0.  "
+                                                                      + "This Verification Tool will test the GeoPackage Core, GeoPackage Tiles, GeoPackage Extensions, GeoPackage Schema, "
+                                                                      + "and GeoPackage Metadata requirements.  This will test a GeoPackage file against the Requirements referenced in the Encoding Standard.   "
+                                                                      + "This will not verify GeoPackages with Feature data.");
+                                            about.setFont(Font.font(null, FontWeight.THIN, 14));
 
-                                                final Stage infoStage = new Stage();
-                                                final TextFlow text   = new TextFlow(title, company, about);
-                                                final Scene infoScene = new Scene(text, 400, 230);
+                                            final Stage infoStage = new Stage();
+                                            final TextFlow text   = new TextFlow(title, company, about);
+                                            final Scene infoScene = new Scene(text, 400, 230);
 
-                                                infoStage.setScene(infoScene);
-                                                infoStage.show();
-
-                                            });
+                                            infoStage.setScene(infoScene);
+                                            infoStage.show();
+                                          });
 
         //create the even that drags the file over
         scene.setOnDragOver(event -> { final Dragboard db = event.getDragboard();
@@ -129,11 +129,9 @@ public class VerifierMainWindow extends Application
         scene.setOnDragDropped(event -> { final Dragboard db = event.getDragboard();
                                           if(db.hasFiles())
                                           {
-                                              for(final File file : db.getFiles())
-                                              {
-                                                  final Stage resultsStage = new PassingLevelResultsWindow(file);
-                                                  resultsStage.show();
-                                              }
+                                              this.layout.setCenter(this.filesContainer);
+
+                                              this.addFiles(db.getFiles());
                                           }
                                           event.setDropCompleted(true);
                                           event.consume();
@@ -145,6 +143,17 @@ public class VerifierMainWindow extends Application
         primaryStage.setOnCloseRequest(event -> Platform.exit());
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    private void addFiles(final Collection<File> files)
+    {
+        for(final File file : files)
+        {
+            this.filesContainer.getChildren().add(new FileVerificationPane(file));
+
+            //final Stage resultsStage = new PassingLevelResultsWindow(file);
+            //resultsStage.show();
+        }
     }
 
     private static Text createFancyText(final String text)
