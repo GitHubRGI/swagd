@@ -245,12 +245,9 @@ public class CoreVerifier extends Verifier
                     if (DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), table_name))
                     {
 
-                        try (PreparedStatement stmt2 = this.getSqliteConnection().prepareStatement("PRAGMA table_info(?);"))
+                        try (PreparedStatement stmt2 = this.getSqliteConnection().prepareStatement(String.format("PRAGMA table_info(%s));", table_name));
+                             ResultSet pragmaTableinfo = stmt2.executeQuery();)
                         {
-
-                            stmt2.setString(1, table_name);
-
-                            try (ResultSet pragmaTableinfo = stmt2.executeQuery())
                             {
                                 {
                                     while (pragmaTableinfo.next())
