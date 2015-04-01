@@ -222,7 +222,7 @@ public class TileStoreTileSource  implements TileSource
     @Override
     public String getId()
     {
-        return "";
+        return this.tileStore.getName();
     }
 
 
