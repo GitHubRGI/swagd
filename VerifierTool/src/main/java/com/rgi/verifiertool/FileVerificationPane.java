@@ -1,13 +1,20 @@
 package com.rgi.verifiertool;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.concurrent.Task;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
 
+import com.rgi.common.util.functional.ThrowingConsumer;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
+import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 public class FileVerificationPane extends TitledPane
@@ -24,14 +31,64 @@ public class FileVerificationPane extends TitledPane
         this.setText(geoPackageFile.getName());
         this.setContent(this.content);
 
-        Platform.runLater(() -> { try(GeoPackage geoPackage = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Open))
-                                  {
-                                      this.content.getChildren().add(new SubsystemVerificationPane("Core", () -> geoPackage.core().getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full)));
-                                  }
-                                  catch(final Exception ex)
-                                  {
-                                      throw new RuntimeException(ex);
-                                  }
-                                });
+        final List<SubsystemVerificationPane> subsystems = Arrays.asList(new SubsystemVerificationPane("Core",       (geoPackage) -> geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full)),
+                                                                         new SubsystemVerificationPane("Features",   (geoPackage) -> null),
+                                                                         new SubsystemVerificationPane("Tiles",      (geoPackage) -> geoPackage.tiles()     .getVerificationIssues(VerificationLevel.Full)),
+                                                                         new SubsystemVerificationPane("Extensions", (geoPackage) -> geoPackage.extensions().getVerificationIssues(VerificationLevel.Full)),
+                                                                         new SubsystemVerificationPane("Schema",     (geoPackage) -> geoPackage.schema()    .getVerificationIssues(VerificationLevel.Full)),
+                                                                         new SubsystemVerificationPane("Metadata",   (geoPackage) -> geoPackage.metadata()  .getVerificationIssues(VerificationLevel.Full)));
+
+        this.content.getChildren().addAll(subsystems);
+
+        final Thread mainThread = new Thread(new Task<Void>()
+                                             {
+                                                 @Override
+                                                 protected Void call() throws Exception
+                                                 {
+                                                     try(final GeoPackage geoPackage = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Open))
+                                                     {
+                                                         final List<Thread> updateThreads = subsystems.stream()
+                                                                                                      .map(subsystem -> new Thread(FileVerificationPane.this.createTask(subsystem, geoPackage)))
+                                                                                                      .collect(Collectors.toList());
+
+                                                         updateThreads.forEach(thread -> thread.start());
+
+                                                         updateThreads.forEach((ThrowingConsumer<Thread>)(thread -> thread.join()));
+                                                     }
+                                                     catch(final Exception ex)
+                                                     {
+                                                         throw new RuntimeException(ex);
+                                                     }
+
+                                                     return null;
+                                                 }
+                                             });
+        mainThread.start();
+    }
+
+    private Task<Collection<VerificationIssue>> createTask(final SubsystemVerificationPane subsystemVerificationPane, final GeoPackage geoPackage)
+    {
+        final Task<Collection<VerificationIssue>> task = new Task<Collection<VerificationIssue>>()
+                                                         {
+                                                             @Override
+                                                             protected Collection<VerificationIssue> call() throws Exception
+                                                             {
+                                                                 try
+                                                                 {
+                                                                     final Collection<VerificationIssue> messages = subsystemVerificationPane.getMessages(geoPackage);
+                                                                     this.updateValue(messages);
+                                                                     return messages;
+                                                                 }
+                                                                 catch(final Exception ex)
+                                                                 {
+                                                                     return null;
+                                                                 }
+
+                                                             }
+                                                         };
+
+        task.valueProperty().addListener((ChangeListener<Collection<VerificationIssue>>)(observable, oldValue, newValue) -> subsystemVerificationPane.update(newValue));
+
+        return task;
     }
 }

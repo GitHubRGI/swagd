@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.common.util;
+package com.rgi.common.util.functional;
 
 import java.util.function.Supplier;
 

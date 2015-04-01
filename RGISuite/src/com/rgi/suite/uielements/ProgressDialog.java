@@ -35,7 +35,7 @@ import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
 
 import com.rgi.common.TaskMonitor;
-import com.rgi.common.util.ThrowingFunction;
+import com.rgi.common.util.functional.ThrowingFunction;
 
 /**
  * Convenience methods for creating a modal progress bar dialog

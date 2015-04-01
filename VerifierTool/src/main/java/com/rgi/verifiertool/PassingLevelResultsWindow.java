@@ -37,7 +37,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-import com.rgi.common.util.ThrowingSupplier;
+import com.rgi.common.util.functional.ThrowingSupplier;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.verification.Severity;

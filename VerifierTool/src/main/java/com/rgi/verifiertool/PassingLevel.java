@@ -24,32 +24,37 @@ package com.rgi.verifiertool;
 
 import javafx.scene.paint.Color;
 
-
 /**
  * @author Jenifer Cochran
+ * @author Luke Lambert
  *
  */
 public enum PassingLevel
 {
+    Unimplemented(Color.GRAY, "Unimplemented"),
+
     /**
      * Set the font to green if GeoPackage passes verifier
      */
     Pass(Color.GREEN, "Passed"),
+
     /**
      * Set the font to yellow if GeoPackage has warnings but no errors in verifier
      */
     Warning(Color.ORANGE, "Warning"),
+
     /**
      * Set the font to red if GeoPackage has failing requirements
      */
     Fail(Color.RED, "Failed");
-    private Color color;
-    private String text;
+
+    private final Color color;
+    private final String text;
 
     PassingLevel(final Color color, final String text)
     {
-        this.setColor(color);
-        this.setText(text);
+        this.color = color;
+        this.text  = text;
     }
 
     /**
@@ -61,26 +66,10 @@ public enum PassingLevel
     }
 
     /**
-     * @param text set message of level (Pass, failed, warning)
-     */
-    public void setText(final String text)
-    {
-        this.text = text;
-    }
-
-    /**
      * @return set color of the passing level (red-> error, orange-> warning, green-> passed)
      */
     public Color getColor()
     {
         return this.color;
-    }
-
-    /**
-     * @param color set color of the passing level (red-> error, orange-> warning, green-> passed)
-     */
-    public void setColor(final Color color)
-    {
-        this.color = color;
     }
 }
