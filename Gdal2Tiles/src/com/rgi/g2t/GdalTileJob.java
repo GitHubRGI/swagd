@@ -59,8 +59,8 @@ public class GdalTileJob implements Runnable {
     private final CrsProfile          crsProfile;
     private final File                file;
     private final Dimensions<Integer> tileDimensions;
-    private final Color noDataColor;
-    private final TaskMonitor monitor;
+    private final Color 			  noDataColor;
+    private final TaskMonitor		  monitor;
     
     /**
      * @param file
@@ -95,45 +95,42 @@ public class GdalTileJob implements Runnable {
             																						   this.writer.getTileScheme(),
             																						   this.writer.getTileOrigin());
             // Generate tiles
-            try
+            final int minZoom = GdalUtility.minimalZoomForDataset(outputDataset,
+            													  ranges,
+            													  this.writer.getTileOrigin(),
+            													  this.writer.getTileScheme(),
+            													  this.tileDimensions);
+            final int maxZoom = GdalUtility.maximalZoomForDataset(outputDataset,
+            													  ranges,
+            													  this.writer.getTileOrigin(),
+            													  this.writer.getTileScheme(),
+            													  this.tileDimensions);
+            final List<Range<Coordinate<Integer>>> levelsToTile = ranges.subList(minZoom, maxZoom + 1);
+            // Set the total tile count in monitor
+            final int maxTiles = levelsToTile.stream()
+            								 .mapToInt(range ->
+            										  {
+            											  // range.getMinimum is the TopLeft corner of the bounding box and
+            											  // range.getMaximum is the BottomRight corner of the bounding box
+            											  final int totalX = range.getMaximum().getX() - range.getMinimum().getX() + 1;
+            											  final int totalY = range.getMinimum().getY() - range.getMaximum().getY() + 1;
+            											  return totalX * totalY;
+            										  })
+            								 .sum();
+            this.monitor.setMaximum(maxTiles);
+            // Tile all levels
+            int tilesComplete = 0;
+            for (int zoom = maxZoom; zoom >= minZoom; --zoom)
             {
-            	final int minZoom = GdalUtility.minimalZoomForDataset(outputDataset,
-            														  ranges,
-            														  this.writer.getTileOrigin(),
-            														  this.writer.getTileScheme(),
-            														  this.tileDimensions);
-            	final int maxZoom = GdalUtility.maximalZoomForDataset(outputDataset,
-            														  ranges,
-            														  this.writer.getTileOrigin(),
-            														  this.writer.getTileScheme(),
-            														  this.tileDimensions);
-            	final List<Range<Coordinate<Integer>>> levelsToTile = ranges.subList(minZoom, maxZoom + 1);
-            	// Set the total tile count in monitor
-            	final int maxTiles = levelsToTile.stream().mapToInt(range ->
-            	{
-            		// range.getMinimum is the TopLeft corner of the bounding box and
-            		// range.getMaximum is the BottomRight corner of the bounding box
-            		final int totalX = range.getMaximum().getX() - range.getMinimum().getX() + 1;
-            		final int totalY = range.getMinimum().getY() - range.getMaximum().getY() + 1;
-            		return totalX * totalY;
-            	}).sum();
-            	this.monitor.setMaximum(maxTiles);
-            	for (int zoom = maxZoom; zoom >= minZoom; --zoom)
-            	{
-            		this.generateTiles(outputDataset, ranges.get(zoom), zoom);
-            	}
-                System.out.println("Base tiles finished generating.");
+            	tilesComplete = this.generateTiles(outputDataset, ranges.get(zoom), zoom, tilesComplete);
             }
-            //catch(TilingException | TileStoreException  ex1)
-            catch (Exception ex1)
-            {
-                ex1.printStackTrace();
-            }
+            System.out.println("Tile generation finished.");
+            inputDataset.delete();
+            outputDataset.delete();
         }
-        catch(final TilingException | DataFormatException ex1)
+        catch(final TilingException | DataFormatException | TileStoreException ex1)
         {
-            // TODO: handle tiling failure
-            ex1.printStackTrace();
+        	throw new RuntimeException(ex1);
         }
     }
 
@@ -170,7 +167,7 @@ public class GdalTileJob implements Runnable {
         	final SpatialReference inputSrs = GdalUtility.getDatasetSpatialReference(inputDataset);
         	final SpatialReference outputSrs = GdalUtility.getSpatialReferenceFromCrs(this.crsProfile.getCoordinateReferenceSystem());
         	// If input srs and output srs are not the same, reproject by making a VRT
-        	if (inputSrs.ExportToProj4() != outputSrs.ExportToProj4() || inputDataset.GetGCPCount() == 0)
+        	if (!inputSrs.ExportToProj4().equals(outputSrs.ExportToProj4()) || inputDataset.GetGCPCount() == 0)
         	{
         	    // Create a warped VRT
         	    //outputDataset = GdalUtility.warpDatasetToSrs(inputDataset, inputSrs, outputSrs);
@@ -190,10 +187,13 @@ public class GdalTileJob implements Runnable {
         }
     }
 
-    private void generateTiles(final Dataset dataset, final Range<Coordinate<Integer>> zoomRange, final int zoom) throws TilingException
+    private int generateTiles(final Dataset dataset,
+    						   final Range<Coordinate<Integer>> zoomRange,
+    						   final int zoom,
+    						   final int tilesComplete) throws TilingException
     {
     	// Set the tile progress accumulator
-    	int tileProgress = 0;
+    	int tileProgress = tilesComplete;
         // Create a tile folder name
         final Coordinate<Integer> topLeftCoordinate = zoomRange.getMinimum();
         final Coordinate<Integer> bottomRightCoordinate = zoomRange.getMaximum();
@@ -240,5 +240,6 @@ public class GdalTileJob implements Runnable {
                 }
             }
         }
+        return tileProgress;
     }
 }
