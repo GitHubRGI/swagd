@@ -165,11 +165,11 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         northPanel.add(panelTop, BorderLayout.NORTH);
         northPanel.add(panelBottom, BorderLayout.SOUTH);
 
-//        this.viewer.setLayout(new BorderLayout());//TODO
-//        JPanel southPanel = new JPanel();
-//        southPanel.add(this.coordinatePosition);
-//        southPanel.add(this.coordinatePositionValue);
-//        this.viewer.add(southPanel, BorderLayout.SOUTH);
+        this.viewer.setLayout(new BorderLayout());//TODO
+        JPanel southPanel = new JPanel();
+        southPanel.add(this.coordinatePosition);
+        southPanel.add(this.coordinatePositionValue);
+        this.viewer.add(southPanel, BorderLayout.SOUTH);
 
         panelBottom.add(showTileGrid);
         panelBottom.add(this.coordinatePosition);
@@ -220,10 +220,11 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
         splitPane.setLeftComponent(westPanel);
         splitPane.setRightComponent(this.viewer);
+       // splitPane.setRightComponent(this.viewer);
         this.add(splitPane, BorderLayout.CENTER);
 
         splitPane.setOneTouchExpandable(true);
-        splitPane.setDividerLocation(150);
+        splitPane.setDividerLocation(200);
 
       //Provide minimum sizes for the two components in the split pane
         final Dimension minimumSize = new Dimension(100, 50);
