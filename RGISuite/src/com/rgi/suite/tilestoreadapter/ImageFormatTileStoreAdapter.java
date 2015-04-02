@@ -69,7 +69,11 @@ public abstract class ImageFormatTileStoreAdapter extends TileStoreWriterAdapter
                         .sorted((a, b) -> a.toString().compareTo(b.toString()))
                         .toArray(MimeType[]::new));
 
-        this.imageFormat.setSelectedItem(this.getInitialImageFormat());
+        this.selectImageFormat(this.getInitialImageFormat());
+
+        this.compressionQuality  .setEnabled(false);
+        this.imageCompressionType.setEnabled(false);
+        this.imageFormat         .setEnabled(false);
     }
 
     protected abstract Collection<MimeType> getSupportedImageFormats();
@@ -81,7 +85,7 @@ public abstract class ImageFormatTileStoreAdapter extends TileStoreWriterAdapter
         final ImageWriteParam imageWriteParameter = this.getImageWriter().getDefaultWriteParam();
 
         final String compressionType         = (String)this.imageCompressionType.getSelectedItem();
-        final Float  compressionQualityValue = (Float)this.compressionQuality.getSelectedItem();
+        final Float  compressionQualityValue = (Float) this.compressionQuality  .getSelectedItem();
 
         if(compressionType != null && imageWriteParameter.canWriteCompressed())
         {
@@ -164,6 +168,21 @@ public abstract class ImageFormatTileStoreAdapter extends TileStoreWriterAdapter
         for(final T item : items)
         {
             comboBox.addItem(item);
+        }
+    }
+
+    protected void selectImageFormat(final MimeType mimeType)
+    {
+        for(int x = 0; x < this.imageFormat.getItemCount(); ++x)
+        {
+            final MimeType other = this.imageFormat.getItemAt(x);
+
+            if(other.getBaseType().equals(mimeType.getBaseType()) &&
+               other.getSubType() .equals(mimeType.getSubType()))
+            {
+                this.imageFormat.setSelectedIndex(x);
+                return;
+            }
         }
     }
 }
