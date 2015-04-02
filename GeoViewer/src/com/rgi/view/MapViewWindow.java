@@ -28,6 +28,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
 import org.openstreetmap.gui.jmapviewer.Coordinate;
@@ -80,12 +82,14 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     JMapViewer viewer;
     boolean treeSelected = false;
 
-    private final JLabel currentZoomLevelValue = new JLabel("");
-    private final JLabel unitsPerPixelXLabel   = new JLabel("Units/PixelX: ");
-    private final JLabel unitsPerPixelYLabel   = new JLabel("Units/PixelY: ");
-    private final JLabel unitsPerPixelXValue   = new JLabel("");
-    private final JLabel unitsPerPixelYValue   = new JLabel("");
-    private final ButtonGroup mainGroup        = new ButtonGroup();
+    private final JLabel      currentZoomLevelValue   = new JLabel("");
+    private final JLabel      unitsPerPixelXLabel     = new JLabel("Units/PixelX: ");
+    private final JLabel      unitsPerPixelYLabel     = new JLabel("Units/PixelY: ");
+    private final JLabel      unitsPerPixelXValue     = new JLabel("");
+    private final JLabel      unitsPerPixelYValue     = new JLabel("");
+    private final JLabel      coordinatePositionValue = new JLabel("");
+    private final ButtonGroup mainGroup               = new ButtonGroup();
+    private final       JPanel      eastPanel               = new JPanel();
 
     /**
      * Constructor
@@ -100,6 +104,11 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         if(tileStoreReaders == null)
         {
             throw new IllegalArgumentException("Tile store reader collection may not be null");
+        }
+
+        if(tileStoreReaders.size() == 0)
+        {
+            throw new IllegalArgumentException("There must be at least one Tile Store reader to display.");
         }
 
         this.tileStoreReaders = tileStoreReaders;
@@ -128,14 +137,18 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         //add tile grid checkbox
         final JCheckBox showTileGrid = new JCheckBox("Tile grid visible");
         this.addCheckboxForTileGridLines(showTileGrid);
-       // this.viewer.setTileSource(new TileStoreTileSource(this.tileStore)); // TODO - investigate which method is causing the viewer to not work//its lat/long to tilex/y and visa versa
 
         //This will display the zoom level and resolution
         final JLabel currentZoomLevelLabel = new JLabel("Zoom Level: ");
+        currentZoomLevelLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         //this adds a button to set the display to the center at the lowest integer zoom level
         final JButton backToCenterButton = new JButton("Center");
+        backToCenterButton.setHorizontalAlignment(SwingConstants.LEFT);
         this.addCenterButton(backToCenterButton);
+
+        //add Listener for the current coordinate
+        this.mouseCoordinateListener();
 
         //set tree visible //TODO this will be added when tree is working
         // this.treeMap.setTreeVisible(true);
@@ -153,6 +166,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         final JPanel westPanel = new JPanel();
 
         //Set list of tileStore Radio Buttons
+        this.eastPanel.setLayout(new BorderLayout());
         this.setListOfTileStores(westPanel);
         this.add(northPanel, BorderLayout.NORTH);
 
@@ -160,17 +174,43 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         northPanel.add(panelTop, BorderLayout.NORTH);
         northPanel.add(panelBottom, BorderLayout.SOUTH);
 
-        panelBottom.add(showTileGrid);
         panelTop.add(backToCenterButton);
-        panelTop.add(currentZoomLevelLabel);
-        panelTop.add(this.currentZoomLevelValue);
-        panelTop.add(this.unitsPerPixelXLabel);
-        panelTop.add(this.unitsPerPixelXValue);
-        panelTop.add(this.unitsPerPixelYLabel);
-        panelTop.add(this.unitsPerPixelYValue);
+        panelTop.add(showTileGrid);
+
+        panelBottom.add(currentZoomLevelLabel);
+        panelBottom.add(this.currentZoomLevelValue);
+        panelBottom.add(this.unitsPerPixelXLabel);
+        panelBottom.add(this.unitsPerPixelXValue);
+        panelBottom.add(this.unitsPerPixelYLabel);
+        panelBottom.add(this.unitsPerPixelYValue);
         this.setSize(800, 800);
         this.repaint();
 
+    }
+
+    private void mouseCoordinateListener()
+    {
+        this.viewer.addMouseMotionListener(new MouseMotionListener()
+        {
+
+            @Override
+            public void mouseMoved(final MouseEvent e)
+            {
+                Coordinate latLong = MapViewWindow.this.viewer.getPosition(e.getPoint());
+                MapViewWindow.this.updateCoordinate(latLong);
+            }
+
+            @Override
+            public void mouseDragged(final MouseEvent e)
+            {
+                //no desired action required
+            }
+        });
+    }
+
+    protected void updateCoordinate(final Coordinate latLong)
+    {
+        this.coordinatePositionValue.setText(String.format("Latitude: %f    Longitude: %f", latLong.getLat(), latLong.getLon()));
     }
 
     private void setListOfTileStores(final JPanel westPanel)
@@ -178,13 +218,19 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
         westPanel.add(this.createRadioButtons());
+        this.eastPanel.add(this.viewer, BorderLayout.CENTER);
+        this.coordinatePositionValue.setHorizontalAlignment(SwingConstants.RIGHT);
+        this.eastPanel.add(this.coordinatePositionValue, BorderLayout.SOUTH);
+
 
         splitPane.setLeftComponent(westPanel);
-        splitPane.setRightComponent(this.viewer);
+
+        splitPane.setRightComponent(this.eastPanel);
+//        splitPane.setRightComponent(this.viewer);
         this.add(splitPane, BorderLayout.CENTER);
 
         splitPane.setOneTouchExpandable(true);
-        splitPane.setDividerLocation(150);
+        splitPane.setDividerLocation(200);
 
       //Provide minimum sizes for the two components in the split pane
         final Dimension minimumSize = new Dimension(100, 50);
