@@ -30,6 +30,7 @@ import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.OsmMercator;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileSource;
 
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.GlobalGeodeticCrsProfile;
@@ -65,7 +66,14 @@ public class TileStoreTileSource  implements TileSource
 
         this.minimumZoomLevel = tileStore.getZoomLevels().stream().min(Integer::compare).orElse(-1);
         this.maximumZoomLevel = tileStore.getZoomLevels().stream().max(Integer::compare).orElse(-1);
-        this.tileSize = this.tileStore.getImageDimensions().getWidth();
+        Dimensions<Integer> tileDimensions = this.tileStore.getImageDimensions();
+
+        if(tileDimensions == null)
+        {
+            throw new IllegalArgumentException("Tile Dimensions cannot be null");
+        }
+
+        this.tileSize = tileDimensions.getWidth();
     }
 
     @Override
