@@ -99,6 +99,11 @@ public class TileReadersOptionWindow extends NavigationWindow
                     {
                         final Dimension dimension = column.getPreferredSize();
 
+                        if(dimension == null)
+                        {
+                            throw new IllegalArgumentException("Dimension may not be null");//added due to coverity scan
+                        }
+
                         // This is a work-around to resize (and then stretch) the middle column to fit our input form layout
                         if(columnCount == 1 &&
                            (dimension.getWidth()  < 1 ||
