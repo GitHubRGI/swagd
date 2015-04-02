@@ -1222,8 +1222,7 @@ public class GeoPackageTiles
     {
         final double divisor = Math.pow(10.0, decimalPlaces);
 
-        return (Math.round(left  * divisor) / divisor) ==
-               (Math.round(right * divisor) / divisor);
+        return Math.abs(left - right) < (1/divisor);
     }
 
     private final GeoPackageCore core;

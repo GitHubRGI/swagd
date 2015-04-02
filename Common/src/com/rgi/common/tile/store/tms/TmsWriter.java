@@ -167,14 +167,21 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
                                                                     this.imageOutputFormat.getSubType().toLowerCase()));
         try
         {
-            // Image will not write unless the directories exist leading to it.
-            if(!tilePath.getParent().toFile().exists())
+            Path parentPath = tilePath.getParent();
+
+            if(parentPath == null)
             {
-                final boolean directoryFound = (new File(tilePath.getParent().toString())).mkdirs();
+                throw new IllegalArgumentException(String.format("A parent directory does not exist for the tile z: %d, x: %d, y: %d.", zoomLevel, column, row));
+            }
+
+            // Image will not write unless the directories exist leading to it.
+            if(!parentPath.toFile().exists())
+            {
+                final boolean directoryFound = (new File(parentPath.toString())).mkdirs();
 
                 if(!directoryFound)
                 {
-                    throw new TileStoreException(String.format("Image directory does not exist. Invalid directory: %s", tilePath.getParent().toString()));
+                    throw new TileStoreException(String.format("Image directory does not exist. Invalid directory: %s", parentPath.toString()));
                 }
             }
 
