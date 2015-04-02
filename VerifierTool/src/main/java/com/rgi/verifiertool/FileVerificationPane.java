@@ -3,6 +3,7 @@ package com.rgi.verifiertool;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,11 +29,12 @@ public class FileVerificationPane extends TitledPane
             throw new IllegalArgumentException("GeoPackage file may not be null, and must be a valid filename");
         }
 
+        this.setAnimated(false);
         this.setText(geoPackageFile.getName());
         this.setContent(this.content);
 
         final List<SubsystemVerificationPane> subsystems = Arrays.asList(new SubsystemVerificationPane("Core",       (geoPackage) -> geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full)),
-                                                                         new SubsystemVerificationPane("Features",   (geoPackage) -> null),
+                                                                         new SubsystemVerificationPane("Features",   (geoPackage) -> Collections.emptyList()),
                                                                          new SubsystemVerificationPane("Tiles",      (geoPackage) -> geoPackage.tiles()     .getVerificationIssues(VerificationLevel.Full)),
                                                                          new SubsystemVerificationPane("Extensions", (geoPackage) -> geoPackage.extensions().getVerificationIssues(VerificationLevel.Full)),
                                                                          new SubsystemVerificationPane("Schema",     (geoPackage) -> geoPackage.schema()    .getVerificationIssues(VerificationLevel.Full)),
@@ -75,7 +77,7 @@ public class FileVerificationPane extends TitledPane
                                                              {
                                                                  try
                                                                  {
-                                                                     final Collection<VerificationIssue> messages = subsystemVerificationPane.getMessages(geoPackage);
+                                                                     final Collection<VerificationIssue> messages = subsystemVerificationPane.getIssues(geoPackage);
                                                                      this.updateValue(messages);
                                                                      return messages;
                                                                  }
