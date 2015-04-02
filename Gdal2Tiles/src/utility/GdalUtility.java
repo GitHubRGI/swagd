@@ -464,10 +464,10 @@ public class GdalUtility
         final List<Range<Coordinate<Integer>>> tileRangesByZoom = new ArrayList<>();
 
         // Get the crs coordinates of the bounds
-        //final CrsCoordinate topLeft = new CrsCoordinate(bounds.getTopLeft(), crsProfile.getCoordinateReferenceSystem());
-        //final CrsCoordinate bottomRight = new CrsCoordinate(bounds.getBottomRight(), crsProfile.getCoordinateReferenceSystem());
-        final CrsCoordinate topLeft = new CrsCoordinate(bounds.getBottomLeft(), crsProfile.getCoordinateReferenceSystem());
-        final CrsCoordinate bottomRight = new CrsCoordinate(bounds.getTopRight(), crsProfile.getCoordinateReferenceSystem());
+        final CrsCoordinate topLeft = new CrsCoordinate(bounds.getTopLeft(), crsProfile.getCoordinateReferenceSystem());
+        final CrsCoordinate bottomRight = new CrsCoordinate(bounds.getBottomRight(), crsProfile.getCoordinateReferenceSystem());
+        //final CrsCoordinate topLeft = new CrsCoordinate(bounds.getBottomLeft(), crsProfile.getCoordinateReferenceSystem());
+        //final CrsCoordinate bottomRight = new CrsCoordinate(bounds.getTopRight(), crsProfile.getCoordinateReferenceSystem());
         IntStream.range(0, 32).forEach(zoom ->
         {
             final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
@@ -512,8 +512,10 @@ public class GdalUtility
         {
             final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(dataset);
             final int zoom = GdalUtility.zoomLevelForPixelSize(zoomPixelSize, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
-            // Sometimes the resolution yields a zoom in which 2 tiles exist, so scale up by one level to ensure 1 tile only
-            return zoom == 0 ? 0 : zoom - 1; 
+            // TODO: We could probably come up with a better way of doing this
+            // The resolution returned ensures that a raster could exist within a single tile, but that raster could still produce
+            // 4 tiles at the lowest-integer-zoom if it was on tile boundaries.  Scale up *2* levels to ensure this does not happen.
+            return zoom == 0 || zoom == 1 ? 0 : zoom - 2; 
         }
         catch(final TileStoreException e)
         {
@@ -668,13 +670,14 @@ public class GdalUtility
      * not correct for NODATA values.
      *
      * @param dataset An input {@link Dataset}
-     * @param srs A {@link SpatialReference} that the return dataset should conform to
+     * @param fromSrs 
+     * @param toSrs 
      * @return A {@link Dataset} in the input {@link SpatialReference} requested
      * @throws DataFormatException Thrown when the AutoCreateWarpedVRT method returns null
      */
-    public static Dataset warpDatasetToSrs(final Dataset dataset, final SpatialReference srs) throws DataFormatException
+    public static Dataset warpDatasetToSrs(final Dataset dataset, final SpatialReference fromSrs, final SpatialReference toSrs) throws DataFormatException
     {
-        final Dataset output = gdal.AutoCreateWarpedVRT(dataset);
+        final Dataset output = gdal.AutoCreateWarpedVRT(dataset, fromSrs.ExportToWkt(), toSrs.ExportToWkt(), gdalconstConstants.GRA_Average);
         if (output == null)
         {
             throw new DataFormatException();
@@ -794,7 +797,7 @@ public class GdalUtility
     {
         boolean datasetHasAlphaBand = false;
         // Iterate through the bands to see if any are tagged alpha
-        final int[] bands = IntStream.range(1, dataset.GetRasterCount()).toArray();
+        final int[] bands = IntStream.range(1, dataset.GetRasterCount() + 1).toArray();
         for (final int nBand : bands)
         {
             final Band band = dataset.GetRasterBand(nBand);
@@ -816,13 +819,33 @@ public class GdalUtility
             // Add an alpha band
             vrtCopy.AddBand(gdalconstConstants.GDT_Byte);
             // A new band added is always the last, per docs
-            vrtCopy.GetRasterBand(vrtCopy.GetRasterCount()).SetColorInterpretation(gdalconstConstants.GCI_AlphaBand);
+            vrtCopy.GetRasterBand(vrtCopy.GetRasterCount() + 1).SetColorInterpretation(gdalconstConstants.GCI_AlphaBand);
             return vrtCopy;
         }
         // Dataset has no alpha and IS a VRT
         dataset.AddBand(gdalconstConstants.GDT_Byte);
-        dataset.GetRasterBand(dataset.GetRasterCount()).SetColorInterpretation(gdalconstConstants.GCI_AlphaBand);
+        dataset.GetRasterBand(dataset.GetRasterCount() + 1).SetColorInterpretation(gdalconstConstants.GCI_AlphaBand);
         return dataset;
+    }
+    
+    /**
+     * @param dataset
+     * @return
+     */
+    public static boolean datasetHasAlpha(final Dataset dataset)
+    {
+    	boolean datasetHasAlpha = false;
+    	final int[] bands = IntStream.range(1, dataset.GetRasterCount() + 1).toArray();
+    	for (final int nBand : bands)
+    	{
+    		final Band band = dataset.GetRasterBand(nBand);
+    		if (band.GetColorInterpretation() == gdalconstConstants.GCI_AlphaBand)
+    		{
+    			datasetHasAlpha = true;
+    			break;
+    		}
+    	}
+    	return datasetHasAlpha;
     }
     
     /**
@@ -856,17 +879,45 @@ public class GdalUtility
     {
     	final int bandCount = dataset.GetRasterCount(); // correctNoDataSimple should have added an alpha band
     	final byte[] imageData = new byte[params.getWriteXSize() * params.getWriteYSize() * bandCount];
+    	final int result = dataset.ReadRaster(params.getReadX(), // xOffset
+    										  params.getReadY(), // yOffset
+    										  params.getReadXSize(), // xSize
+    										  params.getReadYSize(), // ySize
+    										  params.getWriteXSize(), // buffer_xSize
+    										  params.getWriteYSize(), // buffer_ySize
+    										  gdalconstConstants.GDT_Byte, // buffer type
+    										  imageData, // array into which the data will be written, must
+    										  			 // contain at least buffer_xSize * buffer_ySize * nBandCount
+    										  null); // Per documentation, will select the first nBandCount bands
+    	if (result != gdalconstConstants.CE_None)
+    	{
+    		throw new TilingException("Failure reported by ReadRaster call in GdalUtility.");
+    	}
+    	return imageData;
+    }
+    
+    /**
+     * @param params
+     * @param dataset
+     * @return
+     * @throws TilingException
+     */
+    public static ByteBuffer readRasterDirect(final GdalRasterParameters params, final Dataset dataset) throws TilingException
+    {
+    	final int bandCount = dataset.GetRasterCount(); // correctNoDataSimple should have added an alpha band
+    	//final byte[] backingArray = new byte[params.getWriteXSize() * params.getWriteYSize() * bandCount];
+    	ByteBuffer imageData = ByteBuffer.allocateDirect(params.getWriteXSize() * params.getWriteYSize() * bandCount);   	
     	final int[] bandList = IntStream.range(1, bandCount + 1).toArray();
-    	final int result = dataset.ReadRaster(params.getReadX(),
-    										  params.getReadY(),
-    										  params.getReadXSize(),
-    										  params.getReadYSize(),
-    										  params.getWriteXSize(),
-    										  params.getWriteYSize(),
-    										  gdalconstConstants.GDT_Byte,
-    										  imageData,
-    										  bandList);
-    	if (result == gdalconstConstants.CE_Failure)
+    	final int result = dataset.ReadRaster_Direct(params.getReadX(),
+    										  		 params.getReadY(),
+    										  		 params.getReadXSize(),
+    										  		 params.getReadYSize(),
+    										  		 params.getWriteXSize(),
+    										  		 params.getWriteYSize(),
+    										  		 gdalconstConstants.GDT_Byte,
+    										  		 imageData,
+    										  		 null); // Per documentation, will select the first nBandCount bands
+    	if (result != gdalconstConstants.CE_None)
     	{
     		throw new TilingException("Failure reported by ReadRaster call in GdalUtility.");
     	}
@@ -882,20 +933,45 @@ public class GdalUtility
      */
     public static Dataset writeRaster(final GdalRasterParameters params, final byte[] imageData, final int bandCount) throws TilingException
     {
-    	final Dataset querySizeDatasetInMemory = gdal.GetDriverByName("MEM").Create("", params.getReadXSize(), params.getReadYSize(), bandCount);
-    	final int[] bandList = IntStream.range(1, bandCount + 1).toArray();
-    	final int result = querySizeDatasetInMemory.WriteRaster(params.getReadX(),
-    															params.getReadY(),
-    															params.getReadXSize(),
-    															params.getReadYSize(),
-    															params.getReadXSize(),
-    															params.getReadYSize(),
+    	final Dataset querySizeDatasetInMemory = gdal.GetDriverByName("MEM").Create("", params.getQueryXSize(), params.getQueryYSize(), bandCount);
+    	final int result = querySizeDatasetInMemory.WriteRaster(params.getWriteX(),
+    															params.getWriteY(),
+    															params.getWriteXSize(),
+    															params.getWriteYSize(),
+    															params.getWriteXSize(),
+    															params.getWriteYSize(),
     															gdalconstConstants.GDT_Byte,
     															imageData,
-    															bandList);
-    	if (result == gdalconstConstants.CE_Failure)
+    															null); // Per documentation, will select the first nBandCount bands
+    	if (result != gdalconstConstants.CE_None)
     	{
-    		//throw new TilingException("Failure reported by WriteRaster call in GdalUtility.");
+    		throw new TilingException("Failure reported by WriteRaster call in GdalUtility.");
+    	}
+    	return querySizeDatasetInMemory;
+    }
+    
+    /**
+     * @param params
+     * @param imageData
+     * @param bandCount
+     * @return
+     * @throws TilingException
+     */
+    public static Dataset writeRasterDirect(final GdalRasterParameters params, final ByteBuffer imageData, final int bandCount) throws TilingException
+    {
+    	Dataset querySizeDatasetInMemory = gdal.GetDriverByName("MEM").Create("", params.getQueryXSize(), params.getQueryYSize(), bandCount);
+    	final int result = querySizeDatasetInMemory.WriteRaster_Direct(params.getWriteX(),
+    																   params.getWriteY(),
+    																   params.getWriteXSize(),
+    																   params.getWriteYSize(),
+    																   params.getWriteXSize(),
+    																   params.getWriteYSize(),
+    																   gdalconstConstants.GDT_Byte,
+    																   imageData,
+    																   null); // Per documentation, will select the first nBandCount bands
+    	if (result != gdalconstConstants.CE_None)
+    	{
+    		throw new TilingException("Failure reported by WriteRasterDirect call in GdalUtility.");
     	}
     	return querySizeDatasetInMemory;
     }
@@ -914,6 +990,8 @@ public class GdalUtility
     	private int writeY;
     	private int writeXSize;
     	private int writeYSize;
+    	private int queryXSize;
+    	private int queryYSize;
     	
     	/**
     	 * @param readX
@@ -945,8 +1023,10 @@ public class GdalUtility
     		this.readYSize = readYSize;
     		this.writeX = 0;
     		this.writeY = 0;
-    		this.writeXSize = 4 * dimensions.getWidth();
-    		this.writeYSize = 4 * dimensions.getHeight();
+    		this.queryXSize = 4 * dimensions.getWidth();
+    		this.queryYSize = 4 * dimensions.getHeight();
+    		this.writeXSize = this.queryXSize;
+    		this.writeYSize = this.queryYSize;
     		this.adjust(dataset);
     	}
     	
@@ -982,24 +1062,52 @@ public class GdalUtility
     		return this.readYSize;
     	}
     	
+    	/**
+    	 * @return
+    	 */
     	public int getWriteX()
     	{
     		return this.writeX;
     	}
     	
+    	/**
+    	 * @return
+    	 */
     	public int getWriteY()
     	{
     		return this.writeY;
     	}
     	
+    	/**
+    	 * @return
+    	 */
     	public int getWriteXSize()
     	{
     		return this.writeXSize;
     	}
     	
+    	/**
+    	 * @return
+    	 */
     	public int getWriteYSize()
     	{
     		return this.writeYSize;
+    	}
+    	
+    	/**
+    	 * @return
+    	 */
+    	public int getQueryXSize()
+    	{
+    		return this.queryXSize;
+    	}
+    	
+    	/**
+    	 * @return
+    	 */
+    	public int getQueryYSize()
+    	{
+    		return this.queryYSize;
     	}
     	
     	/**
@@ -1010,27 +1118,27 @@ public class GdalUtility
 	        if (this.readX < 0)
 	        {
 	            final int readXShift = Math.abs(this.readX);
-	            this.writeX = (int)(this.writeXSize * ((double)readXShift / this.readXSize));
+	            this.writeX = (int)(this.writeXSize * ((float)readXShift / this.readXSize));
 	            this.writeXSize -= this.writeX;
-	            this.readXSize -= (int)(this.readXSize * ((double)readXShift) / this.readXSize);
+	            this.readXSize -= (int)(this.readXSize * ((float)readXShift) / this.readXSize);
 	            this.readX = 0;
 	        }
 	        if (this.readX + this.readXSize > dataset.GetRasterXSize())
 	        {
-	            this.writeXSize = (int)(this.writeXSize * ((double)(dataset.GetRasterXSize() - this.readX) / this.readXSize));
+	            this.writeXSize = (int)(this.writeXSize * ((float)(dataset.GetRasterXSize() - this.readX) / this.readXSize));
 	            this.readXSize = dataset.GetRasterXSize() - this.readX;
 	        }
 	        if (this.readY < 0)
 	        {
 	            final int readYShift = Math.abs(this.readY);
-	            this.writeY = (int)(this.writeYSize * ((double)readYShift / this.readYSize));
+	            this.writeY = (int)(this.writeYSize * ((float)readYShift / this.readYSize));
 	            this.writeYSize -= this.writeY;
-	            this.readYSize -= (int)(this.readYSize * ((double)readYShift / this.readYSize));
+	            this.readYSize -= (int)(this.readYSize * ((float)readYShift / this.readYSize));
 	            this.readY = 0;
 	        }
 	        if (this.readY + this.readYSize > dataset.GetRasterYSize())
 	        {
-	            this.writeYSize = (int)(this.writeYSize * ((double)(dataset.GetRasterYSize() - this.readY) / this.readYSize));
+	            this.writeYSize = (int)(this.writeYSize * ((float)(dataset.GetRasterYSize() - this.readY) / this.readYSize));
 	            this.readYSize = dataset.GetRasterYSize() - this.readY;
 	        }
     	}
