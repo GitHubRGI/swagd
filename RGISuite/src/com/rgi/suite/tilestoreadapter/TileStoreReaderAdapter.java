@@ -92,7 +92,7 @@ public abstract class TileStoreReaderAdapter
      * @throws TileStoreException
      *             if construction of the tile store reader fails
      */
-    public abstract TileStoreReader getTileStoreReader()  throws TileStoreException;
+    public abstract TileStoreReader getTileStoreReader() throws TileStoreException;
 
     /**
      * Some file types can contain more than one tile set. This methods allows

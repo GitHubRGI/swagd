@@ -146,12 +146,13 @@ public class TileStoreLoader implements TileLoader
 
     private CrsCoordinate toCrsCoordinate(final Tile tile)
     {
+        com.rgi.common.coordinate.Coordinate<Integer> transformedCoordinate = Origin.transform(this.tileStore.getTileOrigin(), tile.getXtile(), tile.getYtile(), TileScheme.dimensions(tile.getZoom()));
         return this.crsProfile
-                   .tileToCrsCoordinate(tile.getXtile(),
-                                        tile.getYtile(),
+                   .tileToCrsCoordinate(transformedCoordinate.getX(),
+                                        transformedCoordinate.getY(),
                                         this.crsProfile.getBounds(),
                                         TileScheme.dimensions(tile.getZoom()),
-                                        Origin);
+                                        this.tileStore.getTileOrigin());
     }
 
     private final static TileOrigin Origin     = TileOrigin.UpperLeft;           // Tile Origin for JMapViewer
