@@ -30,6 +30,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Hyperlink;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.effect.Light.Distant;
 import javafx.scene.effect.Lighting;
 import javafx.scene.input.Dragboard;
@@ -51,9 +52,8 @@ import javafx.stage.Stage;
  */
 public class VerifierMainWindow extends Application
 {
-    private final BorderPane layout = new BorderPane();
-
-    private final VBox filesContainer = new VBox(); // TODO wrap in a scroll panel
+    private final ScrollPane scrollPane     = new ScrollPane();
+    private final VBox       filesContainer = new VBox();
 
     /**
      * Launch the Verifier application.
@@ -67,16 +67,20 @@ public class VerifierMainWindow extends Application
     @Override
     public void start(final Stage primaryStage) throws Exception
     {
-        //Set the window up
-        final Scene    scene      = new Scene(this.layout, 550, 400);
-        final GridPane bottomGrid = new GridPane();
+        final BorderPane layout     = new BorderPane();
+        final Scene      scene      = new Scene(layout, 550, 400);
+        final GridPane   bottomGrid = new GridPane();
+
+        this.scrollPane.setFitToHeight(true);
+        this.scrollPane.setFitToWidth (true);
+        this.scrollPane.setContent(this.filesContainer);
 
         bottomGrid.setHgap(100);
 
         final Text dragHereMessage = createFancyText("Drag GeoPackage Files Here");
 
-        this.layout.setCenter(dragHereMessage);
-        this.layout.setBottom(bottomGrid);
+        layout.setCenter(dragHereMessage);
+        layout.setBottom(bottomGrid);
 
         //Create Link to SWAGD github
         final Hyperlink swagdInfo = new Hyperlink("SWAGD Project");
@@ -129,8 +133,7 @@ public class VerifierMainWindow extends Application
         scene.setOnDragDropped(event -> { final Dragboard db = event.getDragboard();
                                           if(db.hasFiles())
                                           {
-                                              this.layout.setCenter(this.filesContainer);
-
+                                              layout.setCenter(this.scrollPane);
                                               this.addFiles(db.getFiles());
                                           }
                                           event.setDropCompleted(true);
@@ -138,7 +141,6 @@ public class VerifierMainWindow extends Application
                                         });
 
         //show the window
-
         primaryStage.setResizable(false);
         primaryStage.setOnCloseRequest(event -> Platform.exit());
         primaryStage.setScene(scene);
