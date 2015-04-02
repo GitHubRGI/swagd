@@ -26,7 +26,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
@@ -88,10 +87,10 @@ public class ExtensionsVerifier extends Verifier
         if (this.hasGpkgExtensionsTable)
         {
 
-            final String query = "SELECT table_name, column_name, extension_name FROM gpkg_extensions;";
+            final String query = String.format("SELECT table_name, column_name, extension_name FROM %s;", GeoPackageExtensions.ExtensionsTableName);
 
-            try (Statement stmt                  = this.getSqliteConnection().createStatement();
-                 ResultSet tableNameColumnNameRS = stmt.executeQuery(query))
+            try (PreparedStatement stmt                  = this.getSqliteConnection().prepareStatement(query);
+                 ResultSet         tableNameColumnNameRS = stmt.executeQuery())
             {
                 this.gpkgExtensionsDataAndColumnName = ResultSetStream.getStream(tableNameColumnNameRS)
                                                                       .map(resultSet ->
@@ -211,8 +210,8 @@ public class ExtensionsVerifier extends Verifier
                                 + "FROM  gpkg_extensions AS ge "
                                 + "LEFT OUTER JOIN sqlite_master AS sm ON "
                                                                         + "ge.table_name = sm.tbl_name";
-            try (Statement stmt2                = this.getSqliteConnection().createStatement();
-                 ResultSet tablesReferencedInSM = stmt2.executeQuery(query2))
+            try (PreparedStatement stmt2                = this.getSqliteConnection().prepareStatement(query2);
+                 ResultSet         tablesReferencedInSM = stmt2.executeQuery())
             {
                 final Map<String, String> tablesMatchesFound = ResultSetStream.getStream(tablesReferencedInSM)
                                                                         .map(resultSet ->
@@ -365,14 +364,16 @@ public class ExtensionsVerifier extends Verifier
     {
         if (this.hasGpkgExtensionsTable)
         {
-            final String query = "SELECT table_name " + "FROM gpkg_extensions "
-                    + "WHERE definition NOT LIKE 'Annex%' "
-                    + "AND   definition NOT LIKE 'http%' "
-                    + "AND   definition NOT LIKE 'mailto%' "
-                    + "AND   definition NOT LIKE 'Extension Title%';";
+            final String query = String.format("SELECT table_name "
+                                             + "FROM %s "
+                                             + "WHERE definition NOT LIKE 'Annex%' "
+                                             + "AND   definition NOT LIKE 'http%' "
+                                             + "AND   definition NOT LIKE 'mailto%' "
+                                             + "AND   definition NOT LIKE 'Extension Title%';",
+                                             GeoPackageExtensions.ExtensionsTableName);
 
-            try (Statement stmt                    = this.getSqliteConnection().createStatement();
-                 ResultSet invalidDefinitionValues = stmt.executeQuery(query))
+            try (PreparedStatement stmt                    = this.getSqliteConnection().prepareStatement(query);
+                 ResultSet         invalidDefinitionValues = stmt.executeQuery())
             {
                 final List<String> invalidDefinitions = ResultSetStream.getStream(invalidDefinitionValues)
                                                                        .map(resultSet ->
@@ -419,8 +420,8 @@ public class ExtensionsVerifier extends Verifier
         {
             final String query = "SELECT scope FROM gpkg_extensions WHERE scope != 'read-write' AND scope != 'write-only'";
 
-            try (Statement stmt               = this.getSqliteConnection().createStatement();
-                 ResultSet invalidScopeValues = stmt.executeQuery(query))
+            try (PreparedStatement stmt               = this.getSqliteConnection().prepareStatement(query);
+                 ResultSet         invalidScopeValues = stmt.executeQuery())
             {
                 final List<String> invalidScope = ResultSetStream.getStream(invalidScopeValues)
                                                                  .map(resultSet ->
