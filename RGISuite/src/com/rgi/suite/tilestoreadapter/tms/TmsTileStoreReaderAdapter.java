@@ -65,6 +65,8 @@ public class TmsTileStoreReaderAdapter extends TileStoreReaderAdapter
     {
         super(file, allowMultipleReaders);
 
+        this.referenceSystems.setSelectedItem(null);
+
         if(!file.isDirectory())
         {
             throw new AdapterMismatchException("Input file is not a directory");
@@ -85,8 +87,13 @@ public class TmsTileStoreReaderAdapter extends TileStoreReaderAdapter
     }
 
     @Override
-    public TileStoreReader getTileStoreReader()
+    public TileStoreReader getTileStoreReader() throws TileStoreException
     {
+        if(this.referenceSystems.getSelectedItem() == null)
+        {
+            throw new TileStoreException("Please select a reference system");
+        }
+
         return new TmsReader((CoordinateReferenceSystem)this.referenceSystems.getSelectedItem(), this.file.toPath());
     }
 
