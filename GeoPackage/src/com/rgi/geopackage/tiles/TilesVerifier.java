@@ -26,6 +26,7 @@ package com.rgi.geopackage.tiles;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -55,6 +56,7 @@ import utility.DatabaseUtility;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.verification.Assert;
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.ColumnDefinition;
@@ -92,8 +94,8 @@ public class TilesVerifier extends Verifier
         final String queryTables = "SELECT tbl_name FROM sqlite_master " +
                                    "WHERE tbl_name NOT LIKE 'gpkg_%' "   +
                                                       "AND (type = 'table' OR type = 'view');";
-        try(Statement createStmt             = this.getSqliteConnection().createStatement();
-            ResultSet possiblePyramidTables  = createStmt.executeQuery(queryTables);)
+        try(PreparedStatement createStmt             = this.getSqliteConnection().prepareStatement(queryTables);
+            ResultSet         possiblePyramidTables  = createStmt.executeQuery();)
         {
            this.allPyramidUserDataTables = ResultSetStream.getStream(possiblePyramidTables)
                                                           .map(resultSet ->
@@ -116,9 +118,9 @@ public class TilesVerifier extends Verifier
             this.allPyramidUserDataTables = Collections.emptySet();
         }
 
-        final String query2 = "SELECT table_name FROM gpkg_contents WHERE data_type = 'tiles';";
-        try(Statement createStmt2       = this.getSqliteConnection().createStatement();
-            ResultSet contentsPyramidTables = createStmt2.executeQuery(query2))
+        final String query2 = String.format("SELECT table_name FROM %s WHERE data_type = 'tiles';", GeoPackageCore.ContentsTableName);
+        try(PreparedStatement createStmt2           = this.getSqliteConnection().prepareStatement(query2);
+            ResultSet         contentsPyramidTables = createStmt2.executeQuery())
         {
             this.pyramidTablesInContents = ResultSetStream.getStream(contentsPyramidTables)
                                                           .map(resultSet -> {  try
@@ -138,10 +140,10 @@ public class TilesVerifier extends Verifier
             this.pyramidTablesInContents = Collections.emptySet();
         }
 
-        final String query3 = "SELECT DISTINCT table_name FROM gpkg_tile_matrix;";
+        final String query3 = String.format("SELECT DISTINCT table_name FROM %s;", GeoPackageTiles.MatrixTableName);
 
-        try(Statement createStmt3             = this.getSqliteConnection().createStatement();
-            ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(query3))
+        try(PreparedStatement createStmt3             = this.getSqliteConnection().prepareStatement(query3);
+            ResultSet         tileMatrixPyramidTables = createStmt3.executeQuery())
         {
             this.pyramidTablesInTileMatrix = ResultSetStream.getStream(tileMatrixPyramidTables)
                                                             .map(resultSet -> {  try
@@ -225,88 +227,93 @@ public class TilesVerifier extends Verifier
                                                          + "matrix_height,"
                                                          + "tile_width,"
                                                          + "tile_height "
-                                                  + "FROM gpkg_tile_matrix "
-                                                  + "WHERE table_name = '%s' "
-                                                  + "ORDER BY zoom_level ASC;", tableName);
+                                                  + "FROM %s "
+                                                  + "WHERE table_name = '?' "
+                                                  + "ORDER BY zoom_level ASC;", GeoPackageTiles.MatrixTableName);
 
-                try (Statement stmt      = this.getSqliteConnection().createStatement();
-                     ResultSet pixelInfo = stmt.executeQuery(query1))
+                try (PreparedStatement stmt      = this.getSqliteConnection().prepareStatement(query1))
                 {
-                    final List<TileData> tileDataSet = ResultSetStream.getStream(pixelInfo)
-                                                                      .map(resultSet -> { try
-                                                                                          {
-                                                                                              final TileData tileData = new TileData();
-                                                                                              tileData.pixelXSize   = resultSet.getDouble("pixel_x_size");
-                                                                                              tileData.pixelYSize   = resultSet.getDouble("pixel_y_size");
-                                                                                              tileData.zoomLevel    = resultSet.getInt("zoom_level");
-                                                                                              tileData.matrixHeight = resultSet.getInt("matrix_height");
-                                                                                              tileData.matrixWidth  = resultSet.getInt("matrix_width");
-                                                                                              tileData.tileHeight   = resultSet.getInt("tile_height");
-                                                                                              tileData.tileWidth    = resultSet.getInt("tile_width");
 
-                                                                                              return tileData;
-                                                                                          }
-                                                                                          catch(final SQLException ex)
-                                                                                          {
-                                                                                              return null;
-                                                                                          }
-                                                                                         })
-                                                                      .filter(Objects::nonNull)
-                                                                      .collect(Collectors.toList());
+                    stmt.setString(1, tableName);
 
-                    for(int index = 0; index < tileDataSet.size()-1; ++index)
+                    try(ResultSet         pixelInfo = stmt.executeQuery())
                     {
-                        final TileData current = tileDataSet.get(index);
-                        final TileData next    = tileDataSet.get(index + 1);
+                        final List<TileData> tileDataSet = ResultSetStream.getStream(pixelInfo)
+                                                                          .map(resultSet -> { try
+                                                                                              {
+                                                                                                  final TileData tileData = new TileData();
+                                                                                                  tileData.pixelXSize   = resultSet.getDouble("pixel_x_size");
+                                                                                                  tileData.pixelYSize   = resultSet.getDouble("pixel_y_size");
+                                                                                                  tileData.zoomLevel    = resultSet.getInt("zoom_level");
+                                                                                                  tileData.matrixHeight = resultSet.getInt("matrix_height");
+                                                                                                  tileData.matrixWidth  = resultSet.getInt("matrix_width");
+                                                                                                  tileData.tileHeight   = resultSet.getInt("tile_height");
+                                                                                                  tileData.tileWidth    = resultSet.getInt("tile_width");
 
-                        if(current.zoomLevel == next.zoomLevel - 1)
+                                                                                                  return tileData;
+                                                                                              }
+                                                                                              catch(final SQLException ex)
+                                                                                              {
+                                                                                                  return null;
+                                                                                              }
+                                                                                             })
+                                                                          .filter(Objects::nonNull)
+                                                                          .collect(Collectors.toList());
+
+                        for(int index = 0; index < tileDataSet.size()-1; ++index)
                         {
-                            Assert.assertTrue(String.format("Pixel sizes for tile matrix user data tables do not vary by factors of 2"
-                                                            + " between adjacent zoom levels in the tile matrix metadata table: %f, %f",
-                                                            next.pixelXSize,
-                                                            next.pixelYSize),
-                                              TilesVerifier.isEqual((current.pixelXSize / 2.0), next.pixelXSize) &&
-                                              TilesVerifier.isEqual((current.pixelYSize / 2.0), next.pixelYSize));
-                        }
-                    }
+                            final TileData current = tileDataSet.get(index);
+                            final TileData next    = tileDataSet.get(index + 1);
 
-                    //TODO Test will be moved on later release//This tests if the pixel x values and pixel y values are valid based on their bounding box in the tile matrix set
-                    if(this.hasTileMatrixSetTable)
-                    {
-                        final String query2 = String.format("SELECT min_x, min_y, max_x, max_y FROM %s WHERE table_name = '%s'",
-                                                            GeoPackageTiles.MatrixSetTableName,
-                                                            tableName);
-
-                        try(Statement stmt2         = this.getSqliteConnection().createStatement();
-                            ResultSet boundingBoxRS = stmt2.executeQuery(query2))
-                        {
-                            if(boundingBoxRS.next())
+                            if(current.zoomLevel == next.zoomLevel - 1)
                             {
-                                final double minX = boundingBoxRS.getDouble("min_x");
-                                final double minY = boundingBoxRS.getDouble("min_y");
-                                final double maxX = boundingBoxRS.getDouble("max_x");
-                                final double maxY = boundingBoxRS.getDouble("max_y");
+                                Assert.assertTrue(String.format("Pixel sizes for tile matrix user data tables do not vary by factors of 2"
+                                                                + " between adjacent zoom levels in the tile matrix metadata table: %f, %f",
+                                                                next.pixelXSize,
+                                                                next.pixelYSize),
+                                                  TilesVerifier.isEqual((current.pixelXSize / 2.0), next.pixelXSize) &&
+                                                  TilesVerifier.isEqual((current.pixelYSize / 2.0), next.pixelYSize));
+                            }
+                        }
 
-                                final BoundingBox boundingBox = new BoundingBox(minX, minY, maxX, maxY);
+                        //TODO Test will be moved on later release//This tests if the pixel x values and pixel y values are valid based on their bounding box in the tile matrix set
+                        if(this.hasTileMatrixSetTable)
+                        {
+                            final String query2 = String.format("SELECT min_x, min_y, max_x, max_y FROM %s WHERE table_name = '%s'",
+                                                                GeoPackageTiles.MatrixSetTableName,
+                                                                tableName);
 
-                                final List<TileData> invalidPixelValues = tileDataSet.stream()
-                                                                                     .filter(tileData -> !validPixelValues(tileData, boundingBox))
-                                                                                     .collect(Collectors.toList());
+                            try(Statement stmt2         = this.getSqliteConnection().createStatement();
+                                ResultSet boundingBoxRS = stmt2.executeQuery(query2))
+                            {
+                                if(boundingBoxRS.next())
+                                {
+                                    final double minX = boundingBoxRS.getDouble("min_x");
+                                    final double minY = boundingBoxRS.getDouble("min_y");
+                                    final double maxX = boundingBoxRS.getDouble("max_x");
+                                    final double maxY = boundingBoxRS.getDouble("max_y");
 
-                                Assert.assertTrue(String.format("Based on the bounding box given in the Tile Matrix Set for tiles table %s, "
-                                                                           + "tile_height, "
-                                                                           + "tile_width, "
-                                                                           + "matrix_width, and "
-                                                                           + "matrix_height, "
-                                                                + "the following pixel values are invalid.\n%s",
-                                                                tableName,
-                                                                invalidPixelValues.stream()
-                                                                                  .map(tileData -> String.format("Invalid pixel_x_size: %f, Invalid pixel_y_size: %f at zoom_level %d",
-                                                                                                                 tileData.pixelXSize,
-                                                                                                                 tileData.pixelYSize,
-                                                                                                                 tileData.zoomLevel))
-                                                                                  .collect(Collectors.joining("\n"))),
-                                                  invalidPixelValues.isEmpty());
+                                    final BoundingBox boundingBox = new BoundingBox(minX, minY, maxX, maxY);
+
+                                    final List<TileData> invalidPixelValues = tileDataSet.stream()
+                                                                                         .filter(tileData -> !validPixelValues(tileData, boundingBox))
+                                                                                         .collect(Collectors.toList());
+
+                                    Assert.assertTrue(String.format("Based on the bounding box given in the Tile Matrix Set for tiles table %s, "
+                                                                               + "tile_height, "
+                                                                               + "tile_width, "
+                                                                               + "matrix_width, and "
+                                                                               + "matrix_height, "
+                                                                    + "the following pixel values are invalid.\n%s",
+                                                                    tableName,
+                                                                    invalidPixelValues.stream()
+                                                                                      .map(tileData -> String.format("Invalid pixel_x_size: %f, Invalid pixel_y_size: %f at zoom_level %d",
+                                                                                                                     tileData.pixelXSize,
+                                                                                                                     tileData.pixelYSize,
+                                                                                                                     tileData.zoomLevel))
+                                                                                      .collect(Collectors.joining("\n"))),
+                                                      invalidPixelValues.isEmpty());
+                                }
                             }
                         }
                     }
@@ -341,43 +348,46 @@ public class TilesVerifier extends Verifier
 
         for (final String tableName : this.allPyramidUserDataTables)
         {
-            final String selectTileDataQuery = String.format("SELECT tile_data, id FROM %s;", tableName);
+            final String selectTileDataQuery = String.format("SELECT tile_data, id FROM ?;");
 
-            try (Statement stmt              = this.getSqliteConnection().createStatement();
-                 ResultSet tileDataResultSet = stmt.executeQuery(selectTileDataQuery))
+            try (PreparedStatement stmt              = this.getSqliteConnection().prepareStatement(selectTileDataQuery))
             {
+                stmt.setString(1, tableName);
 
-                final Map<Integer, byte[]> allTileData =  ResultSetStream.getStream(tileDataResultSet)
-                                                                         .map(resultSet -> { try
-                                                                                             {
-                                                                                                 final int    tileId   = resultSet.getInt("id");
-                                                                                                 final byte[] tileData = resultSet.getBytes("tile_data");
-                                                                                                 return new AbstractMap.SimpleImmutableEntry<>(tileId, tileData);
-                                                                                             }
-                                                                                             catch (final Exception ex1)
-                                                                                             {
-                                                                                                 return null;
-                                                                                             }
-                                                                                           })
-                                                                         .filter(Objects::nonNull)
-                                                                         .collect(Collectors.toMap(entry -> entry.getKey(),
-                                                                                                   entry -> entry.getValue()));
-
-
-                for(final Integer imageID : allTileData.keySet())
+                try(ResultSet tileDataResultSet = stmt.executeQuery())
                 {
-                    try(ByteArrayInputStream        byteArray  = new ByteArrayInputStream(allTileData.get(imageID));
-                        MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(byteArray))
+                    final Map<Integer, byte[]> allTileData =  ResultSetStream.getStream(tileDataResultSet)
+                                                                             .map(resultSet -> { try
+                                                                                                 {
+                                                                                                     final int    tileId   = resultSet.getInt("id");
+                                                                                                     final byte[] tileData = resultSet.getBytes("tile_data");
+                                                                                                     return new AbstractMap.SimpleImmutableEntry<>(tileId, tileData);
+                                                                                                 }
+                                                                                                 catch (final Exception ex1)
+                                                                                                 {
+                                                                                                     return null;
+                                                                                                 }
+                                                                                               })
+                                                                             .filter(Objects::nonNull)
+                                                                             .collect(Collectors.toMap(entry -> entry.getKey(),
+                                                                                                       entry -> entry.getValue()));
+
+
+                    for(final Integer imageID : allTileData.keySet())
                     {
-                       Assert.assertTrue(String.format("The tile id: %d in the table: %s is not in the correct format.  The image must be of MIME type image/jpeg or image/png.",
-                                                       imageID,
-                                                       tableName),
-                                         TilesVerifier.canReadImage(pngImageReaders, cacheImage) ||
-                                         TilesVerifier.canReadImage(jpegImageReaders, cacheImage));
-                    }
-                    catch(final IOException ex)
-                    {
-                        Assert.fail(ex.getMessage());
+                        try(ByteArrayInputStream        byteArray  = new ByteArrayInputStream(allTileData.get(imageID));
+                            MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(byteArray))
+                        {
+                           Assert.assertTrue(String.format("The tile id: %d in the table: %s is not in the correct format.  The image must be of MIME type image/jpeg or image/png.",
+                                                           imageID,
+                                                           tableName),
+                                             TilesVerifier.canReadImage(pngImageReaders, cacheImage) ||
+                                             TilesVerifier.canReadImage(jpegImageReaders, cacheImage));
+                        }
+                        catch(final IOException ex)
+                        {
+                            Assert.fail(ex.getMessage());
+                        }
                     }
                 }
             }
@@ -463,10 +473,10 @@ public class TilesVerifier extends Verifier
     {
         if(this.hasTileMatrixSetTable)
         {
-            final String queryMatrixSetPyramid = "SELECT table_name FROM gpkg_tile_matrix_set;";
+            final String queryMatrixSetPyramid = String.format("SELECT table_name FROM %s;", GeoPackageTiles.MatrixSetTableName);
 
-            try (Statement stmt                      = this.getSqliteConnection().createStatement();
-                 ResultSet tileTablesInTileMatrixSet = stmt.executeQuery(queryMatrixSetPyramid))
+            try (PreparedStatement stmt                      = this.getSqliteConnection().prepareStatement(queryMatrixSetPyramid);
+                 ResultSet         tileTablesInTileMatrixSet = stmt.executeQuery(queryMatrixSetPyramid))
             {
                final Set<String> tileMatrixSetTables = ResultSetStream.getStream(tileTablesInTileMatrixSet)
                                                                       .map(resultSet -> { try
@@ -489,8 +499,6 @@ public class TilesVerifier extends Verifier
                                                   table),
                                     tileMatrixSetTables.contains(table));
               }
-
-
             }
             catch (final Exception ex)
             {
@@ -517,10 +525,10 @@ public class TilesVerifier extends Verifier
     {
         if (this.hasTileMatrixSetTable)
         {
-            final String queryMatrixSet = "SELECT table_name FROM gpkg_tile_matrix_set;";
+            final String queryMatrixSet =  String.format("SELECT table_name FROM %s;", GeoPackageTiles.MatrixSetTableName);
 
-            try (Statement stmt                        = this.getSqliteConnection().createStatement();
-                 ResultSet tileTablesInTileMatrixSet   = stmt.executeQuery(queryMatrixSet))
+            try (PreparedStatement stmt                        = this.getSqliteConnection().prepareStatement(queryMatrixSet);
+                 ResultSet         tileTablesInTileMatrixSet   = stmt.executeQuery())
             {
                 final Set<String> tileMatrixSetTables = ResultSetStream.getStream(tileTablesInTileMatrixSet)
                                                                        .map(resultSet -> { try
@@ -565,19 +573,21 @@ public class TilesVerifier extends Verifier
     {
         if(this.hasTileMatrixSetTable)
         {
-            final String query1 = "SELECT srs_id from gpkg_tile_matrix_set AS tms " +
-                                   "WHERE srs_id NOT IN" +
-                                                 "(SELECT srs_id " +
-                                                  "FROM gpkg_spatial_ref_sys);";
+            final String query1 = String.format("SELECT srs_id from %s AS tms " +
+                                                "WHERE srs_id NOT IN" +
+                                                             "(SELECT srs_id " +
+                                                             "FROM %s);",
+                                              GeoPackageTiles.MatrixSetTableName,
+                                              GeoPackageCore.SpatialRefSysTableName);
 
-            try (Statement stmt            = this.getSqliteConnection().createStatement();
-                 ResultSet unreferencedSRS = stmt.executeQuery(query1))
+            try (PreparedStatement stmt            = this.getSqliteConnection().prepareStatement(query1);
+                 ResultSet         unreferencedSRS = stmt.executeQuery())
             {
                 if (unreferencedSRS.next())
                 {
                     Assert.fail(String.format("The gpkg_tile_matrix_set table contains a reference to an srs_id that is not defined in the gpkg_spatial_ref_sys Table. "
-                                        + "Unreferenced srs_id: %s",
-                                       unreferencedSRS.getInt("srs_id")));
+                                            + "Unreferenced srs_id: %s",
+                                unreferencedSRS.getInt("srs_id")));
                 }
             }
             catch (final Exception ex)
@@ -641,14 +651,16 @@ public class TilesVerifier extends Verifier
     {
         if(this.hasTileMatrixTable)
         {
-            final String query = String.format("SELECT table_name FROM gpkg_tile_matrix AS tm " +
+            final String query = String.format("SELECT table_name FROM %s AS tm " +
                                                "WHERE table_name NOT IN"                        +
                                                                    "(SELECT table_name  "        +
-                                                                    "FROM gpkg_contents AS gc "  +
-                                                                    "WHERE tm.table_name = gc.table_name AND gc.data_type = 'tiles');");
+                                                                    "FROM %s AS gc "  +
+                                                                    "WHERE tm.table_name = gc.table_name AND gc.data_type = 'tiles');",
+                                              GeoPackageTiles.MatrixTableName,
+                                              GeoPackageCore.ContentsTableName);
 
-            try(Statement stmt               = this.getSqliteConnection().createStatement();
-                ResultSet unreferencedTables = stmt.executeQuery(query))
+            try(PreparedStatement stmt               = this.getSqliteConnection().prepareStatement(query);
+                ResultSet         unreferencedTables = stmt.executeQuery())
             {
                     if (unreferencedTables.next())
                     {
@@ -687,15 +699,20 @@ public class TilesVerifier extends Verifier
         {
             for (final String tableName : this.allPyramidUserDataTables)
             {
-                final String query1      = String.format("SELECT DISTINCT zoom_level FROM gpkg_tile_matrix WHERE table_name ='%s' ORDER BY zoom_level;", tableName);
-                final String query2      = String.format("SELECT DISTINCT zoom_level FROM %s                                      ORDER BY zoom_level;", tableName);
+                final String query1      = String.format("SELECT DISTINCT zoom_level FROM gpkg_tile_matrix WHERE table_name ='?' ORDER BY zoom_level;", GeoPackageTiles.MatrixTableName);
+                final String query2      = String.format("SELECT DISTINCT zoom_level FROM ?                                      ORDER BY zoom_level;");
 
-                try (Statement stmt1                     = this.getSqliteConnection().createStatement();
-                     ResultSet gm_zoomLevels             = stmt1.executeQuery(query1);
+//                final String query1      = String.format("SELECT DISTINCT zoom_level FROM gpkg_tile_matrix WHERE table_name ='%s' ORDER BY zoom_level;", tableName);
+//                final String query2      = String.format("SELECT DISTINCT zoom_level FROM %s                                      ORDER BY zoom_level;", tableName);
+                //TODO fix me!!!
 
-                     Statement stmt2                     = this.getSqliteConnection().createStatement();
-                     ResultSet py_zoomLevels             = stmt2.executeQuery(query2))
+                try (PreparedStatement stmt1             = this.getSqliteConnection().prepareStatement(query1);
+                     ResultSet gm_zoomLevels             = stmt1.executeQuery();
+
+                     PreparedStatement stmt2             = this.getSqliteConnection().prepareStatement(query2);
+                     ResultSet py_zoomLevels             = stmt2.executeQuery())
                 {
+
                     final Set<Integer> tileMatrixZooms = ResultSetStream.getStream(gm_zoomLevels)
                                                                   .map(resultSet -> { try
                                                                                       {
