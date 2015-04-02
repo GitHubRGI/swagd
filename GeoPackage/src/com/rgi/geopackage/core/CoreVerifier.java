@@ -34,6 +34,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -234,8 +235,8 @@ public class CoreVerifier extends Verifier
         {
             final String query = "SELECT table_name FROM gpkg_contents;";
 
-            try (Statement stmt     = this.getSqliteConnection().createStatement();
-                ResultSet tableName = stmt.executeQuery(query);)
+            try (PreparedStatement stmt       = this.getSqliteConnection().prepareStatement(query);
+                ResultSet          tableName = stmt.executeQuery();)
             {
                 while (tableName.next())
                 {
@@ -277,8 +278,8 @@ public class CoreVerifier extends Verifier
     {
         final String query = "PRAGMA integrity_check;";
 
-        try(Statement stmt           = this.getSqliteConnection().createStatement();
-            ResultSet integrityCheck = stmt.executeQuery(query);)
+        try(PreparedStatement stmt           = this.getSqliteConnection().prepareStatement(query);
+            ResultSet         integrityCheck = stmt.executeQuery();)
         {
             integrityCheck.next();
             final String integrity_check = integrityCheck.getString("integrity_check");
@@ -301,8 +302,8 @@ public class CoreVerifier extends Verifier
     {
         final String query = "PRAGMA foreign_key_check;";
 
-        try(Statement stmt         = this.getSqliteConnection().createStatement();
-            ResultSet foreignCheck = stmt.executeQuery(query);)
+        try(PreparedStatement stmt         = this.getSqliteConnection().prepareStatement(query);
+            ResultSet         foreignCheck = stmt.executeQuery();)
         {
             final boolean badfk = foreignCheck.next();
             assertTrue("PRAGMA foreign_key_check failed.", badfk != true);
@@ -323,10 +324,9 @@ public class CoreVerifier extends Verifier
     {
         final String query = "SELECT * FROM sqlite_master;";
 
-        try(Statement stmt = this.getSqliteConnection().createStatement();)
+        try(PreparedStatement stmt = this.getSqliteConnection().prepareStatement(query);
+            ResultSet         result = stmt.executeQuery())
         {
-            stmt.executeQuery(query);
-
             assertTrue(true);  // If the statement can execute it has implemented the SQLite SQL API interface
         }
         catch(final SQLException e)
@@ -353,8 +353,8 @@ public class CoreVerifier extends Verifier
     {
         final String query2 = "SELECT sqlite_compileoption_used('SQLITE_OMIT_*')";
 
-        try(Statement stmt     = this.getSqliteConnection().createStatement();
-            ResultSet omitUsed = stmt.executeQuery(query2);)
+        try(PreparedStatement stmt     = this.getSqliteConnection().prepareStatement(query2);
+            ResultSet         omitUsed = stmt.executeQuery();)
         {
             assertTrue("For a GeoPackage you are not allowed to use any omit options during compile time."
                     + "  Please remove any SQLITE_OMIT options used.", 1 != omitUsed.getInt("sqlite_compileoption_used('SQLITE_OMIT_*')"));
@@ -414,24 +414,24 @@ public class CoreVerifier extends Verifier
         {
             final String wgs1984Sql = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE organization_coordsys_id =  4326 AND (organization = 'EPSG' OR organization = 'epsg');";
 
-            try(Statement stmt3            = this.getSqliteConnection().createStatement();
-                ResultSet srsdefaultvalue3 = stmt3.executeQuery(wgs1984Sql))
+            try(PreparedStatement stmt3            = this.getSqliteConnection().prepareStatement(wgs1984Sql);
+                ResultSet         srsdefaultvalue3 = stmt3.executeQuery())
             {
                 assertTrue("The gpkg_spatial_ref_sys table shall contain a record for organization \"EPSG\" or \"epsg\" and organization_coordsys_id 4326 for WGS-84", srsdefaultvalue3.next());
             }
 
             final String undefinedCartesianSql = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = -1 AND organization = 'NONE' AND organization_coordsys_id = -1 AND definition = 'undefined';";
 
-            try(Statement stmt             = this.getSqliteConnection().createStatement();
-                ResultSet srsdefaultvalues = stmt.executeQuery(undefinedCartesianSql))
+            try(PreparedStatement stmt             = this.getSqliteConnection().prepareStatement(undefinedCartesianSql);
+                ResultSet         srsdefaultvalues = stmt.executeQuery())
             {
                 assertTrue("The gpkg_spatial_ref_sys table shall contain a record with an srs_id of -1, an organization of \"NONE\", an organization_coordsys_id of -1, and definition \"undefined\" for undefined Cartesian coordinate reference systems", srsdefaultvalues.next());
             }
 
             final String undefinedGeographicSql = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = 0 AND organization = 'NONE' AND organization_coordsys_id =  0 AND definition = 'undefined';";
 
-            try(Statement stmt2            = this.getSqliteConnection().createStatement();
-                ResultSet srsdefaultvalue2 = stmt2.executeQuery(undefinedGeographicSql))
+            try(PreparedStatement stmt2            = this.getSqliteConnection().prepareStatement(undefinedGeographicSql);
+                ResultSet         srsdefaultvalue2 = stmt2.executeQuery())
             {
                 assertTrue("The gpkg_spatial_ref_sys table shall contain a record with an srs_id of 0, an organization of \"NONE\", an organization_coordsys_id of 0, and definition \"undefined\" for undefined geographic coordinate reference systems.", srsdefaultvalue2.next());
             }
@@ -456,8 +456,8 @@ public class CoreVerifier extends Verifier
             final String query = "SELECT DISTINCT gc.srs_id AS gc_srid, srs.srs_name, srs.srs_id, srs.organization, srs.organization_coordsys_id, "
                                   + " srs.definition FROM gpkg_contents AS gc LEFT OUTER JOIN gpkg_spatial_ref_sys AS srs ON srs.srs_id = gc.srs_id;";
 
-            try(Statement stmt       = this.getSqliteConnection().createStatement();
-                ResultSet srsdefined = stmt.executeQuery(query))
+            try(PreparedStatement stmt       = this.getSqliteConnection().prepareStatement(query);
+                ResultSet         srsdefined = stmt.executeQuery())
             {
 
                 while(srsdefined.next())
@@ -521,8 +521,8 @@ public class CoreVerifier extends Verifier
                                + "LEFT OUTER JOIN sqlite_master AS sm "
                                + "ON gc.table_name = sm.tbl_name;";
 
-            try(Statement stmt        = this.getSqliteConnection().createStatement();
-                ResultSet gctablename = stmt.executeQuery(query);)
+            try(PreparedStatement stmt        = this.getSqliteConnection().prepareStatement(query);
+                ResultSet         gctablename = stmt.executeQuery();)
             {
                 // check runtime options (foreign keys)
                 while(gctablename.next())
@@ -559,8 +559,8 @@ public class CoreVerifier extends Verifier
         {
             final String query = "SELECT last_change FROM gpkg_contents;";
 
-            try(Statement stmt       = this.getSqliteConnection().createStatement();
-                ResultSet lastchange = stmt.executeQuery(query);)
+            try(PreparedStatement stmt       = this.getSqliteConnection().prepareStatement(query);
+                ResultSet         lastchange = stmt.executeQuery();)
             {
                 // check format of last_change column
                 while(lastchange.next())
@@ -608,10 +608,10 @@ public class CoreVerifier extends Verifier
     {
         if(this.hasContentsTable)
             {
-            final String query = "PRAGMA foreign_key_check('gpkg_contents');";
+            final String query = String.format("PRAGMA foreign_key_check('%s');", GeoPackageCore.ContentsTableName);
 
-            try(Statement stmt       = this.getSqliteConnection().createStatement();
-                ResultSet foreignKey = stmt.executeQuery(query);)
+            try(PreparedStatement stmt       = this.getSqliteConnection().prepareStatement(query);
+                ResultSet         foreignKey = stmt.executeQuery();)
             {
                 // check runtime options (foreign keys)
                 assertTrue("There are violations on the foreign keys in the table gpkg_contents", !foreignKey.next());
