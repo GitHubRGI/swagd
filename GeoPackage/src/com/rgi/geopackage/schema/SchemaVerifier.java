@@ -24,9 +24,9 @@
 package com.rgi.geopackage.schema;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -156,8 +156,8 @@ public class SchemaVerifier extends Verifier
                             + "WHERE dc.table_name NOT IN(SELECT gc.table_name "
                                                        + "FROM gpkg_contents AS gc);";
 
-            try(Statement stmt                = this.getSqliteConnection().createStatement();
-                ResultSet invalidTableNamesRS = stmt.executeQuery(query))
+            try(PreparedStatement stmt                = this.getSqliteConnection().prepareStatement(query);
+                ResultSet         invalidTableNamesRS = stmt.executeQuery())
             {
                 final List<String> invalidTableNames = ResultSetStream.getStream(invalidTableNamesRS)
                                                                       .map(resultSet -> { try
@@ -203,25 +203,29 @@ public class SchemaVerifier extends Verifier
             {
                 if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), dataColumn.tableName))
                 {
-                    final String query = String.format("PRAGMA table_info(%s);", dataColumn.tableName);
+                    final String query = "PRAGMA table_info(?);";
 
-                    try(Statement stmt        = this.getSqliteConnection().createStatement();
-                        ResultSet tableInfoRS = stmt.executeQuery(query))
+                    try(PreparedStatement stmt        = this.getSqliteConnection().prepareStatement(query))
                     {
-                        final boolean columnExists = ResultSetStream.getStream(tableInfoRS)
-                                                                    .anyMatch(resultSet -> { try
-                                                                                             {
-                                                                                                return resultSet.getString("name").equals(dataColumn.columnName);
-                                                                                             }
-                                                                                             catch(final SQLException ex)
-                                                                                             {
-                                                                                                 return false;
-                                                                                             }
-                                                                                            });
-                        Assert.assertTrue(String.format("The column %s does not exist in the table %s.",
-                                                        dataColumn.columnName,
-                                                        dataColumn.tableName),
-                                          columnExists);
+                        stmt.setString(1, dataColumn.tableName);
+
+                        try( ResultSet tableInfoRS = stmt.executeQuery())
+                        {
+                             final boolean columnExists = ResultSetStream.getStream(tableInfoRS)
+                                                                         .anyMatch(resultSet -> { try
+                                                                                                  {
+                                                                                                     return resultSet.getString("name").equals(dataColumn.columnName);
+                                                                                                  }
+                                                                                                  catch(final SQLException ex)
+                                                                                                  {
+                                                                                                      return false;
+                                                                                                  }
+                                                                                                 });
+                             Assert.assertTrue(String.format("The column %s does not exist in the table %s.",
+                                                             dataColumn.columnName,
+                                                             dataColumn.tableName),
+                                               columnExists);
+                        }
                     }
                 }
             }
@@ -246,7 +250,7 @@ public class SchemaVerifier extends Verifier
         {
             for(final DataColumnConstraints dataColumnConstraints: this.dataColumnConstraintsValues)
             {
-                if(dataColumnConstraints.constraintName != null || !dataColumnConstraints.constraintName.isEmpty())
+                if(dataColumnConstraints.constraintName != null)
                 {
                     final boolean containsConstraint = this.dataColumnsValues.stream()
                                                                              .filter(dataColumn -> dataColumn.constraintName != null)
@@ -334,8 +338,8 @@ public class SchemaVerifier extends Verifier
         {
            final String query = "SELECT DISTINCT constraint_name AS cs FROM gpkg_data_column_constraints WHERE constraint_type IN ('range', 'glob');";
 
-           try(Statement stmt                             = this.getSqliteConnection().createStatement();
-               ResultSet constraintNamesWithRangeOrGlobRS = stmt.executeQuery(query))
+           try(PreparedStatement stmt                             = this.getSqliteConnection().prepareStatement(query);
+               ResultSet         constraintNamesWithRangeOrGlobRS = stmt.executeQuery())
            {
                final List<String> constraintNamesWithRangeOrGlob = ResultSetStream.getStream(constraintNamesWithRangeOrGlobRS)
                                                                                   .map(resultSet -> { try
@@ -351,17 +355,21 @@ public class SchemaVerifier extends Verifier
                                                                                  .collect(Collectors.toList());
                for(final String constraintName: constraintNamesWithRangeOrGlob)
                {
-                   final String query2 = String.format("SELECT count(*) FROM gpkg_data_column_constraints WHERE constraint_name = '%s'", constraintName);
+                   final String query2 = String.format("SELECT count(*) FROM gpkg_data_column_constraints WHERE constraint_name = '?'");
 
-                   try(Statement stmt2 = this.getSqliteConnection().createStatement();
-                       ResultSet countConstraintNameRS = stmt2.executeQuery(query2))
+                   try(PreparedStatement stmt2 = this.getSqliteConnection().prepareStatement(query2))
                    {
-                       final int count = countConstraintNameRS.getInt("count(*)");
+                       stmt2.setString(1, constraintName);
 
-                       Assert.assertTrue(String.format("There are constraint_name values in gpkg_data_column_constraints with a constraint_type of 'glob' or 'range' are not unique. "
-                                                         + "Non-unique constraint_name: %s",
-                                                       constraintName),
-                                         count <= 1);
+                       try(ResultSet countConstraintNameRS = stmt2.executeQuery())
+                       {
+                           final int count = countConstraintNameRS.getInt("count(*)");
+
+                           Assert.assertTrue(String.format("There are constraint_name values in gpkg_data_column_constraints with a constraint_type of 'glob' or 'range' are not unique. "
+                                                             + "Non-unique constraint_name: %s",
+                                                           constraintName),
+                                             count <= 1);
+                       }
                    }
                }
            }
@@ -496,13 +504,13 @@ public class SchemaVerifier extends Verifier
         if(this.hasDataColumnsConstraintsTable)
         {
             final List<DataColumnConstraints> invalidConstraintRecords = this.getDataColumnConstraintsValues().stream()
-                                                                                                        .filter(columnValue -> Type.Enum.equals(columnValue.constraintType) ||
-                                                                                                                               Type.Glob.equals(columnValue.constraintType))
-                                                                                                        .filter(columnValue -> !(columnValue.min == null            &&
-                                                                                                                                 columnValue.max == null            &&
-                                                                                                                                 columnValue.minIsInclusive == null &&
-                                                                                                                                 columnValue.maxIsInclusive == null))
-                                                                                                        .collect(Collectors.toList());
+                                                                                                              .filter(columnValue -> Type.Enum.equals(columnValue.constraintType) ||
+                                                                                                                                     Type.Glob.equals(columnValue.constraintType))
+                                                                                                              .filter(columnValue -> !(columnValue.min == null            &&
+                                                                                                                                       columnValue.max == null            &&
+                                                                                                                                       columnValue.minIsInclusive == null &&
+                                                                                                                                       columnValue.maxIsInclusive == null))
+                                                                                                              .collect(Collectors.toList());
             Assert.assertTrue(String.format("The following constraint_name(s) have a constraint_type of \"enum\" or \"glob\" "
                                             + "and do NOT have null values for min, max, minIsInclusive, and/or maxIsInclusive. "
                                             + "\nInvalid constraint_name(s): %s.",
@@ -531,10 +539,10 @@ public class SchemaVerifier extends Verifier
         if(this.hasDataColumnsConstraintsTable)
         {
             final List<DataColumnConstraints> invalidValueRecords = this.getDataColumnConstraintsValues().stream()
-                                                                                                   .filter(columnValue -> Type.Enum.equals(columnValue.constraintType) ||
-                                                                                                                          Type.Glob.equals(columnValue.constraintType))
-                                                                                                   .filter(columnValue -> columnValue.value == null)
-                                                                                                   .collect(Collectors.toList());
+                                                                                                         .filter(columnValue -> Type.Enum.equals(columnValue.constraintType) ||
+                                                                                                                                Type.Glob.equals(columnValue.constraintType))
+                                                                                                         .filter(columnValue -> columnValue.value == null)
+                                                                                                         .collect(Collectors.toList());
             Assert.assertTrue(String.format("The following constraint_name(s) from the gpkg_data_column_constraints "
                                               + "table have invalid values for the column value. \nInvalid value with "
                                               + "constraint_name as: %s.",
@@ -552,10 +560,10 @@ public class SchemaVerifier extends Verifier
 
     private List<DataColumnConstraints> getDataColumnConstraintsValues()
     {
-        final String query = "SELECT constraint_name, constraint_type, value, min, minIsInclusive, max, maxIsInclusive FROM gpkg_data_column_constraints;";
+        final String query = String.format("SELECT constraint_name, constraint_type, value, min, minIsInclusive, max, maxIsInclusive FROM %s;", GeoPackageSchema.DataColumnConstraintsTableName);
 
-        try(Statement stmt                   = this.getSqliteConnection().createStatement();
-            ResultSet tableNamesAndColumnsRS = stmt.executeQuery(query))
+        try(PreparedStatement stmt                   = this.getSqliteConnection().prepareStatement(query);
+            ResultSet         tableNamesAndColumnsRS = stmt.executeQuery())
         {
             return ResultSetStream.getStream(tableNamesAndColumnsRS)
                                   .map(resultSet -> { try
@@ -609,10 +617,10 @@ public class SchemaVerifier extends Verifier
 
     private List<DataColumns> getDataColumnValues()
     {
-        final String query = "SELECT table_name, column_name, constraint_name FROM gpkg_data_columns;";
+        final String query = String.format("SELECT table_name, column_name, constraint_name FROM %s;", GeoPackageSchema.DataColumnsTableName);
 
-        try(Statement stmt                   = this.getSqliteConnection().createStatement();
-            ResultSet tableNamesAndColumnsRS = stmt.executeQuery(query))
+        try(PreparedStatement stmt                   = this.getSqliteConnection().prepareStatement(query);
+            ResultSet         tableNamesAndColumnsRS = stmt.executeQuery())
         {
             return ResultSetStream.getStream(tableNamesAndColumnsRS)
                                   .map(resultSet -> { try
