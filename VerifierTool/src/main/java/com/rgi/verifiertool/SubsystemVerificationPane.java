@@ -21,6 +21,16 @@ public class SubsystemVerificationPane extends HBox
 
     public SubsystemVerificationPane(final String subsystemName, final ThrowingFunction<GeoPackage, Collection<VerificationIssue>> messagesFunction)
     {
+        if(subsystemName == null || subsystemName.isEmpty())
+        {
+            throw new IllegalArgumentException("Subsystem name may not be null or empty");
+        }
+
+        if(messagesFunction == null)
+        {
+            throw new IllegalArgumentException("Funtional callback to get verification issue messages may not be null");
+        }
+
         this.subsystemName    = subsystemName;
         this.messagesFunction = messagesFunction;
 
@@ -30,7 +40,14 @@ public class SubsystemVerificationPane extends HBox
 
     public Collection<VerificationIssue> getMessages(final GeoPackage geoPackage)
     {
-        return this.messagesFunction.apply(geoPackage);
+        try
+        {
+            return this.messagesFunction.apply(geoPackage);
+        }
+        catch(final Throwable th)
+        {
+            return null;
+        }
     }
 
     public void update(final Collection<VerificationIssue> messages)
