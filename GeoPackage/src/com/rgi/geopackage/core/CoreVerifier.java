@@ -34,7 +34,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -235,8 +234,8 @@ public class CoreVerifier extends Verifier
         {
             final String query = "SELECT table_name FROM gpkg_contents;";
 
-            try (Statement stmt = this.getSqliteConnection().createStatement();
-                    ResultSet tableName = stmt.executeQuery(query);)
+            try (Statement stmt     = this.getSqliteConnection().createStatement();
+                ResultSet tableName = stmt.executeQuery(query);)
             {
                 while (tableName.next())
                 {
@@ -245,8 +244,8 @@ public class CoreVerifier extends Verifier
                     if (DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), table_name))
                     {
 
-                        try (PreparedStatement stmt2 = this.getSqliteConnection().prepareStatement(String.format("PRAGMA table_info(%s));", table_name));
-                             ResultSet pragmaTableinfo = stmt2.executeQuery();)
+                        try (Statement stmt2 = this.getSqliteConnection().createStatement();
+                             ResultSet pragmaTableinfo = stmt2.executeQuery(String.format("PRAGMA table_info('%s');", table_name));)
                         {
                             while (pragmaTableinfo.next())
                             {
