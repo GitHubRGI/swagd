@@ -68,13 +68,31 @@ public class GdalTileJob implements Runnable {
      * @param tileDimensions
      * @param noDataColor
      * @param monitor
+     * @throws TilingException 
      */
     public GdalTileJob(final File file,
                        final TileStoreWriter writer,
                        final Dimensions<Integer> tileDimensions,
                        final Color noDataColor,
-                       final TaskMonitor monitor)
+                       final TaskMonitor monitor) throws TilingException
     {
+    	if (file == null)
+    	{
+    		throw new TilingException("Raster file location cannot be null");
+    	}
+    	if (writer == null)
+    	{
+    		throw new TilingException("Tile store writer cannot be null.");
+    	}
+    	if (tileDimensions == null)
+    	{
+    		throw new TilingException("Tile matrix dimensions cannot be null.");
+    	}
+    	// TODO: Implement alpha support for nodata color.
+    	if (monitor == null)
+    	{
+    		throw new TilingException("Monitor cannot be null.");
+    	}
         this.file           = file;
         this.writer         = writer;
         this.tileDimensions = tileDimensions;
@@ -89,7 +107,9 @@ public class GdalTileJob implements Runnable {
         {
             final Dataset inputDataset = this.openInput();
             final Dataset outputDataset = this.openOutput(inputDataset);
+
             final BoundingBox outputBounds = GdalUtility.getBoundsForDataset(outputDataset);
+            // Calculate all the tiles in every zoom possible (0-31)
             final List<Range<Coordinate<Integer>>> ranges = GdalUtility.calculateTileRangesForAllZooms(outputBounds,
             																						   this.crsProfile,
             																						   this.writer.getTileScheme(),
@@ -105,26 +125,30 @@ public class GdalTileJob implements Runnable {
             													  this.writer.getTileOrigin(),
             													  this.writer.getTileScheme(),
             													  this.tileDimensions);
+            // Select the subset of zooms that will actually be tiled, so we can generate the total
+            // tile count from it
             final List<Range<Coordinate<Integer>>> levelsToTile = ranges.subList(minZoom, maxZoom + 1);
+
             // Set the total tile count in monitor
             final int maxTiles = levelsToTile.stream()
-            								 .mapToInt(range ->
-            										  {
-            											  // range.getMinimum is the TopLeft corner of the bounding box and
-            											  // range.getMaximum is the BottomRight corner of the bounding box
-            											  final int totalX = range.getMaximum().getX() - range.getMinimum().getX() + 1;
-            											  final int totalY = range.getMinimum().getY() - range.getMaximum().getY() + 1;
-            											  return totalX * totalY;
-            										  })
+            								 .mapToInt(range -> {
+		            											  // range.getMinimum is the TopLeft corner of the bounding box and
+		            											  // range.getMaximum is the BottomRight corner of the bounding box
+		            											  final int totalX = range.getMaximum().getX() - range.getMinimum().getX() + 1;
+		            											  final int totalY = range.getMinimum().getY() - range.getMaximum().getY() + 1;
+		            											  return totalX * totalY;
+            										  			})
             								 .sum();
             this.monitor.setMaximum(maxTiles);
+
             // Tile all levels
             int tilesComplete = 0;
             for (int zoom = maxZoom; zoom >= minZoom; --zoom)
             {
             	tilesComplete = this.generateTiles(outputDataset, ranges.get(zoom), zoom, tilesComplete);
             }
-            System.out.println("Tile generation finished.");
+
+            // Clean up the opened datasets
             inputDataset.delete();
             outputDataset.delete();
         }
@@ -188,25 +212,26 @@ public class GdalTileJob implements Runnable {
     }
 
     private int generateTiles(final Dataset dataset,
-    						   final Range<Coordinate<Integer>> zoomRange,
-    						   final int zoom,
-    						   final int tilesComplete) throws TilingException
+    						  final Range<Coordinate<Integer>> zoomRange,
+    						  final int zoom,
+    						  final int tilesComplete) throws TilingException
     {
     	// Set the tile progress accumulator
     	int tileProgress = tilesComplete;
+
         // Create a tile folder name
         final Coordinate<Integer> topLeftCoordinate = zoomRange.getMinimum();
         final Coordinate<Integer> bottomRightCoordinate = zoomRange.getMaximum();
+
         // Set x/y min/max values
         final int tileMinX = topLeftCoordinate.getX();
         final int tileMaxX = bottomRightCoordinate.getX();
         final int tileMinY = bottomRightCoordinate.getY();
         final int tileMaxY = topLeftCoordinate.getY();
+        
+        // Set the dimensions of this zoom
         final TileMatrixDimensions zoomDimensions = this.writer.getTileScheme().dimensions(zoom);
-        // Calculate a total tile count: (BR.X - TL.X) * (TL.Y - BR.Y)
-        //final int totalXTiles = 1 + Math.abs((tileMaxX - tileMinX));
-        //final int totalYTiles = 1 + Math.abs((tileMaxY - tileMinY));
-        //final int totalTileCount = (totalXTiles * totalYTiles);
+
         // create a for loop for tile y, counting down
         for (int tileY = tileMaxY; tileY >= tileMinY; tileY--)
         {
@@ -214,32 +239,49 @@ public class GdalTileJob implements Runnable {
             // This makes queries start at top-left of the data
             for (int tileX = tileMinX; tileX <= tileMaxX; tileX++)
             {
-                // Resolve a tile path and name
+                // Create coordinates for the bounding box corners
                 final CrsCoordinate tileTopLeftCorner = this.crsProfile.tileToCrsCoordinate(tileX, tileY + 1, this.crsProfile.getBounds(), zoomDimensions, this.writer.getTileOrigin());
                 final CrsCoordinate tileBottomRightCorner = this.crsProfile.tileToCrsCoordinate(tileX + 1, tileY, this.crsProfile.getBounds(), zoomDimensions, this.writer.getTileOrigin());
+
+                // Create a bounding box from the coordinates above
                 final BoundingBox tileBBox = new BoundingBox(tileTopLeftCorner.getX(), tileBottomRightCorner.getY(), tileBottomRightCorner.getX(), tileTopLeftCorner.getY());
+                // Build the parameters for gdal read raster call
                 final GdalRasterParameters params = GdalUtility.getGdalRasterParameters(dataset.GetGeoTransform(), tileBBox, this.tileDimensions, dataset);
-                // Read dat raster using a Byte array type (GDT_Byte)
-                //final byte[] imageData = GdalUtility.readRaster(params, dataset);
+
+                // Read image data directly from the raster
                 final ByteBuffer imageData = GdalUtility.readRasterDirect(params, dataset);
+
                 // TODO: logic goes here in the case that the querysize == tile size (gdalconstConstants.GRA_NearestNeighbour) (write directly)
                 // Time to start writing the tile
-                //final Dataset querySizeImageCanvas = GdalUtility.writeRaster(params, imageData, dataset.GetRasterCount());
                 final Dataset querySizeImageCanvas = GdalUtility.writeRasterDirect(params, imageData, dataset.GetRasterCount());
                 
                 // Scale each band of tileDataInMemory down to the tile size (down from the query size)
                 final Dataset tileDataInMemory = GdalUtility.scaleQueryToTileSize(querySizeImageCanvas, this.tileDimensions);
                 try
                 {
+                	// Write the tile to the tile store
                 	this.writer.addTile(tileX, tileY, zoom, GdalUtility.convert(tileDataInMemory));
+                	// Iterate the tile progress bar
                 	this.monitor.setProgress(++tileProgress);
                 }
                 catch (TileStoreException tse)
                 {
                 	throw new TilingException(tse);
                 }
+                finally
+                {
+                	if (querySizeImageCanvas != null)
+                	{
+                		querySizeImageCanvas.delete();
+                	}
+                	if (tileDataInMemory != null)
+                	{
+                		tileDataInMemory.delete();
+                	}
+                }
             }
         }
+        // Return the total tiles produced for this zoom
         return tileProgress;
     }
 }
