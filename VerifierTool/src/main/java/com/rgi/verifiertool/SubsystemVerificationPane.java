@@ -4,9 +4,12 @@ import java.util.Collection;
 
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 import com.rgi.common.util.functional.ThrowingFunction;
 import com.rgi.geopackage.GeoPackage;
@@ -16,6 +19,7 @@ import com.rgi.geopackage.verification.VerificationIssue;
 
 public class SubsystemVerificationPane extends VBox
 {
+
     private boolean hasIssues;
 
     private final String subsystemName;
@@ -39,8 +43,20 @@ public class SubsystemVerificationPane extends VBox
         this.subsystemName  = subsystemName;
         this.issuesFunction = issuesFunction;
 
-        this.getChildren().addAll(new Label(this.subsystemName),
+        Label subsystemLabel = this.prettyLabel();
+
+        this.getChildren().addAll(subsystemLabel,
                                   this.progressIndicator);
+    }
+
+    private Label prettyLabel()
+    {
+        Label subsystemLabel = new Label(this.subsystemName);
+
+        subsystemLabel.setFont(Font.font("SanSerif", FontWeight.BOLD, 16));
+        subsystemLabel.setTextFill(Color.web("0x6D84A3"));
+
+        return subsystemLabel;
     }
 
     /**
@@ -62,64 +78,79 @@ public class SubsystemVerificationPane extends VBox
 
     public void update(final Collection<VerificationIssue> issues)
     {
+        this.getChildren().remove(this.progressIndicator);
+
         if(issues != null && !issues.isEmpty())
         {
-            final GridPane issueGrid = new GridPane();
-
-            final int row = 0;
+            TextFlow textBox = new TextFlow();
+            textBox.setStyle("-fx-border-color: gray;");
 
             for(final VerificationIssue issue : issues)
             {
-                issueGrid.add(getSeverityLabel(issue.getRequirement().severity()), 0, row*2);
+                Text severity = getSeverityLabel(issue.getRequirement().severity());
 
-                issueGrid.add(getRequirementLabel(issue.getRequirement()), 1, row*2);
-                issueGrid.add(getReasonLabel     (issue.getReason()),      1, row*2+1);
+                Text requirement = getRequirementLabel(issue.getRequirement());
+                Text reason = getReasonLabel(issue.getReason());
+
+                textBox.getChildren().addAll(severity, requirement, reason);
             }
 
-            this.getChildren().add(issueGrid);
+            this.getChildren().add(textBox);
         }
-
-        this.getChildren().remove(this.progressIndicator);
+        else
+        {
+            //add pass
+            this.getChildren().add(getPassText());
+        }
     }
 
-    private static Label getSeverityLabel(final Severity severity)
+    private static Text getPassText()
     {
-        final Label label = new Label(severity.name());
+        Text passed = new Text("Passed");
+        passed.setFont(Font.font("SanSerif", FontWeight.BOLD, 16));
+        passed.setFill(Color.GREEN);
 
-        label.setTextFill(getColor(severity));
+        return passed;
+    }
 
-        return label;
+    private static Text getSeverityLabel(final Severity severity)
+    {
+        final Text text = new Text(severity.name());
+
+        text.setFill(getColor(severity));
+        text.setFont(Font.font("SanSerif", FontWeight.BOLD, 12));
+
+        return text;
     }
 
     private static Color getColor(final Severity severity)
     {
         switch(severity)
         {
-            case Warning: return Color.YELLOW;
+            case Warning: return Color.ORANGE;
             case Error:   return Color.RED;
 
             default: return Color.BLACK;
         }
     }
 
-    private static Label getRequirementLabel(final Requirement requirement)
+    private static Text getRequirementLabel(final Requirement requirement)
     {
-        final Label label = new Label();
+        final Text text = new Text();
 
-        label.setWrapText(true);
-
-        label.setText(String.format("Requirement %d: \"%s\"",
+        text.setText(String.format(" Requirement %d: \"%s\"\n\n",
                                     requirement.number(),
                                     requirement.text()));
-        return label;
+
+        text.setFont(Font.font("SanSerif", FontWeight.BOLD, 12));
+
+        return text;
     }
 
-    private static Label getReasonLabel(final String reason)
+    private static Text getReasonLabel(final String reason)
     {
-        final Label label = new Label(reason);
+        final Text text = new Text(String.format("%s \n\n", reason));
 
-        label.setWrapText(true);
-
-        return label;
+        return text;
     }
 }

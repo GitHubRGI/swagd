@@ -11,6 +11,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Task;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 import com.rgi.common.util.functional.ThrowingConsumer;
 import com.rgi.geopackage.GeoPackage;
@@ -31,7 +34,7 @@ public class FileVerificationPane extends TitledPane
 
         this.setAnimated(false);
         this.setText(geoPackageFile.getName());
-        this.setContent(this.content);
+        this.setPrettyText();
 
         final List<SubsystemVerificationPane> subsystems = Arrays.asList(new SubsystemVerificationPane("Core",       (geoPackage) -> geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full)),
                                                                          new SubsystemVerificationPane("Features",   (geoPackage) -> Collections.emptyList()),
@@ -66,6 +69,13 @@ public class FileVerificationPane extends TitledPane
                                                  }
                                              });
         mainThread.start();
+    }
+
+    private void setPrettyText()
+    {
+        this.setContent(this.content);
+        this.setTextFill(Color.NAVY);
+        this.setFont(Font.font("SanSerif", FontWeight.BOLD, 18));
     }
 
     private Task<Collection<VerificationIssue>> createTask(final SubsystemVerificationPane subsystemVerificationPane, final GeoPackage geoPackage)
