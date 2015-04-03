@@ -92,7 +92,7 @@ public class PackagerWindow extends NavigationWindow
 
         this.settings = settings;
 
-        this.outputStoreType.addItem(new GeoPackageTileStoreWriterAdapter(settings));
+        this.outputStoreType.addItem(new GeoPackageTileStoreWriterAdapter(settings, true));
         this.outputStoreType.addItem(new TmsTileStoreWriterAdapter       (settings));
 
         this.contentPanel.setLayout(new BoxLayout(this.contentPanel, BoxLayout.PAGE_AXIS));

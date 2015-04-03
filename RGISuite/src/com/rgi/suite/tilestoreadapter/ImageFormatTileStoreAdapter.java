@@ -52,14 +52,19 @@ public abstract class ImageFormatTileStoreAdapter extends TileStoreWriterAdapter
      *
      * @param settings
      *             Handle to the application's settings object
+     * @param imageFormatEnabled
+     *             Enable the choice of an Image Format chosen
      */
-    public ImageFormatTileStoreAdapter(final Settings settings)
+    public ImageFormatTileStoreAdapter(final Settings settings, final boolean imageFormatEnabled, final boolean imageCompressionTypeEnabled)
     {
         super(settings);
 
         this.imageFormat = new JComboBox<>();
 
-        this.imageFormat.addActionListener(e -> { this.imageFormatChanged(); });
+        if(imageCompressionTypeEnabled)
+        {
+            this.imageFormat.addActionListener(e -> { this.imageFormatChanged(); });
+        }
 
         this.imageCompressionType.addActionListener(e -> { this.imageCompressionTypeChanged(); });
 
@@ -73,7 +78,17 @@ public abstract class ImageFormatTileStoreAdapter extends TileStoreWriterAdapter
 
         this.compressionQuality  .setEnabled(false);
         this.imageCompressionType.setEnabled(false);
-        this.imageFormat         .setEnabled(false);
+        this.imageFormat         .setEnabled(imageFormatEnabled);
+    }
+    /**
+     * Constructor
+     *
+     * @param settings
+     *             Handle to the application's settings object
+     */
+    public ImageFormatTileStoreAdapter(final Settings settings)
+    {
+        this(settings, false, false);
     }
 
     protected abstract Collection<MimeType> getSupportedImageFormats();

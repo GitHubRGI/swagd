@@ -60,16 +60,19 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
                                                                                              Arrays.asList(new JLabel("Compression quality:"), this.compressionQuality),
                                                                                              Arrays.asList(new JLabel("Directory:"),           this.directory, this.directorySelector));
 
+
     /**
      * Constructor
      *
      * @param settings
      *             Handle to the application's settings object
+     * @param imageFormatEnabled
+     *             Allow the image format setting option to be chosen by the user
      *
      */
-    public TmsTileStoreWriterAdapter(final Settings settings)
+    public TmsTileStoreWriterAdapter(final Settings settings, final boolean imageFormatEnabled)
     {
-        super(settings);
+        super(settings, imageFormatEnabled, false);
 
         this.directorySelector.addActionListener(e -> { final String startDirectory = this.settings.get(TmsOutputLocationSettingName, DefaultTmsOutputLocation);
 
@@ -94,6 +97,18 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
                                                                                                  File.separatorChar));
                                                         }
                                                    });
+    }
+
+    /**
+     * Constructor
+     *
+     * @param settings
+     *             Handle to the application's settings object
+     *
+     */
+    public TmsTileStoreWriterAdapter(final Settings settings)
+    {
+        this(settings, false);
     }
 
     @Override
