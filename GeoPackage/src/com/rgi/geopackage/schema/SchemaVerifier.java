@@ -248,16 +248,13 @@ public class SchemaVerifier extends Verifier
             {
                if(dataColumnConstraints.constraintName != null)
                {
-                   if(!dataColumnConstraints.constraintName.isEmpty())
-                   {
-                       final boolean containsConstraint = this.dataColumnsValues.stream()
-                                                                                .filter(dataColumn -> dataColumn.constraintName != null)
-                                                                                .anyMatch(dataColumn -> dataColumn.constraintName.equals(dataColumnConstraints.constraintName));
+                   final boolean containsConstraint = this.dataColumnsValues.stream()
+                                                                            .filter(dataColumn -> dataColumn.constraintName != null)
+                                                                            .anyMatch(dataColumn -> dataColumn.constraintName.equals(dataColumnConstraints.constraintName));
 
-                       Assert.assertTrue(String.format("The constraint_name %s in gpkg_data_columns is not referenced in gpkg_data_constraints table in the column constraint_name.",
-                                                       dataColumnConstraints.constraintName),
-                                         containsConstraint);
-                   }
+                   Assert.assertTrue(String.format("The constraint_name %s in gpkg_data_columns is not referenced in gpkg_data_constraints table in the column constraint_name.",
+                                                   dataColumnConstraints.constraintName),
+                                     containsConstraint);
                }
             }
         }
