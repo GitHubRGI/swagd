@@ -323,6 +323,10 @@ public class GdalUtility
      */
     public static SpatialReference getSpatialReferenceFromCrs(final CoordinateReferenceSystem crs)
     {
+    	if (crs == null)
+    	{
+    		throw new IllegalArgumentException("Coordinate reference system cannot be null.");
+    	}
         final SpatialReference srs = new SpatialReference();
         srs.ImportFromWkt(CrsProfileFactory.create(crs).getWellKnownText());
         return srs;
@@ -334,6 +338,10 @@ public class GdalUtility
      */
     public static SpatialReference getSpatialReferenceFromCrsProfile(final CrsProfile crsProfile)
     {
+    	if (crsProfile == null)
+    	{
+    		throw new IllegalArgumentException("Crs Profile cannot be null.");
+    	}
     	return GdalUtility.getSpatialReferenceFromCrs(crsProfile.getCoordinateReferenceSystem());
     }
 
@@ -345,6 +353,10 @@ public class GdalUtility
      */
     public static boolean datasetHasGeoReference(final Dataset dataset)
     {
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
         final double[] identityTransform = { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
         // Compare dataset geotransform to an empty identity transform and ensure there are no GCPs
         return !Arrays.equals(dataset.GetGeoTransform(), identityTransform) || dataset.GetGCPCount() != 0;
@@ -362,6 +374,10 @@ public class GdalUtility
      */
     public static BoundingBox getBoundsForDataset(final Dataset dataset) throws DataFormatException
     {
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
         final double[] outputGeotransform = dataset.GetGeoTransform();
         // Report error in case rotation/skew is in geotransform (only for raster profile)
         // gdal2tiles.py only checks for (ogt[2], ogt[4]) != (0,0), it does not seem to care if only
@@ -387,6 +403,10 @@ public class GdalUtility
      */
     public static CoordinateReferenceSystem getCoordinateReferenceSystemFromSpatialReference(final SpatialReference srs)
     {
+    	if (srs == null)
+    	{
+    		throw new IllegalArgumentException("Input spatial reference system cannot be null.");
+    	}
         // Passing null to GetAuthorityName and Code will query the root node of the WKT, not
         // sure if this is what we want
         final String authority  = srs.GetAuthorityName(null);
@@ -421,6 +441,10 @@ public class GdalUtility
      */
     public static String getName(final SpatialReference spatialReference)
     {
+    	if (spatialReference == null)
+    	{
+    		throw new IllegalArgumentException("Input spatial reference cannot be null.");
+    	}
         return Arrays.asList("PROJCS", "GEOGCS", "GEOCCS")  // These are all of the top level strings according to http://portal.opengeospatial.org/files/?artifact_id=25355.  They must all be followed by a name attribute.
                      .stream()
                      .map(srsType -> spatialReference.GetAttrValue(srsType, 0))
@@ -438,6 +462,10 @@ public class GdalUtility
      */
     public static CrsProfile getCrsProfileForDataset(final Dataset dataset) throws TileStoreException
     {
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
         try
         {
             return CrsProfileFactory.create(GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSpatialReference(dataset)));
@@ -463,6 +491,22 @@ public class GdalUtility
                                                                                   final TileScheme tileScheme,
                                                                                   final TileOrigin tileOrigin)
     {
+    	if (bounds == null)
+    	{
+    		throw new IllegalArgumentException("Input bounds cannot be null.");
+    	}
+    	if (crsProfile == null)
+    	{
+    		throw new IllegalArgumentException("Input crs profile cannot be null.");
+    	}
+    	if (tileScheme == null)
+    	{
+    		throw new IllegalArgumentException("Input tile scheme cannot be null.");
+    	}
+    	if (tileOrigin == null)
+    	{
+    		throw new IllegalArgumentException("Input tile origin cannot be null.");
+    	}
         final List<Range<Coordinate<Integer>>> tileRangesByZoom = new ArrayList<>();
 
         // Get the crs coordinates of the bounds
@@ -497,6 +541,26 @@ public class GdalUtility
                                             final TileScheme tileScheme,
                                             final Dimensions<Integer> tileSize)
     {
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null");
+    	}
+    	if (tileRanges == null || tileRanges.isEmpty())
+    	{
+    		throw new IllegalArgumentException("Tile range list cannot be null or empty.");
+    	}
+    	if (tileOrigin == null)
+    	{
+    		throw new IllegalArgumentException("Tile origin cannot be null.");
+    	}
+    	if (tileScheme == null)
+    	{
+    		throw new IllegalArgumentException("Tile scheme cannot be null.");
+    	}
+    	if (tileSize == null)
+    	{
+    		throw new IllegalArgumentException("Tile size cannot be null");
+    	}
         final double pixelSize = dataset.GetGeoTransform()[1];
         final double zoomPixelSize;
         if (tileSize.getWidth() == tileSize.getHeight())
@@ -564,7 +628,9 @@ public class GdalUtility
      * @return A set of integers for all the zoom levels in the input dataset
      * @throws TileStoreException Thrown if the input dataset bounds could not be retrieved
      */
-    public static Set<Integer> getZoomLevelsForDataset(final Dataset dataset, final TileOrigin tileOrigin, final Dimensions<Integer> tileSize) throws TileStoreException
+    public static Set<Integer> getZoomLevelsForDataset(final Dataset dataset,
+    												   final TileOrigin tileOrigin,
+    												   final Dimensions<Integer> tileSize) throws TileStoreException
     {
         // World extent tile scheme
         final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
@@ -694,7 +760,9 @@ public class GdalUtility
      * @return A {@link Dataset} in the input {@link SpatialReference} requested
      * @throws DataFormatException Thrown when the AutoCreateWarpedVRT method returns null
      */
-    public static Dataset warpDatasetToSrs(final Dataset dataset, final SpatialReference fromSrs, final SpatialReference toSrs) throws DataFormatException
+    public static Dataset warpDatasetToSrs(final Dataset dataset,
+    									   final SpatialReference fromSrs,
+    									   final SpatialReference toSrs) throws DataFormatException
     {
         final Dataset output = gdal.AutoCreateWarpedVRT(dataset, fromSrs.ExportToWkt(), toSrs.ExportToWkt(), gdalconstConstants.GRA_Average);
         if (output == null)
@@ -778,7 +846,8 @@ public class GdalUtility
      * @param alphaBand
      * @return
      */
-    public static int getRasterBandCount(final Dataset dataset, final Band alphaBand)
+    public static int getRasterBandCount(final Dataset dataset,
+    									 final Band alphaBand)
     {
         // TODO: The bitwise calc functionality needs to be verified from the python functionality
         final boolean bitwiseAlpha = (alphaBand.GetMaskFlags() & gdalconstConstants.GMF_ALPHA) != 0;
@@ -854,6 +923,7 @@ public class GdalUtility
     														   final Dimensions<Integer> dimensions,
     														   final Dataset dataset) throws TilingException
     {
+    	// TODO: investigate replacing readX/Y with boundingBox.getWidth/Height calls
     	int readX = (int)((boundingBox.getMinX() - geoTransform[0]) / geoTransform[1] + 0.001);
   		int readY = (int)((boundingBox.getMaxY() - geoTransform[3]) / geoTransform[5] + 0.001);
   		int readXSize = (int)((boundingBox.getMaxX() - boundingBox.getMinX()) / geoTransform[1] + 0.5);
@@ -868,7 +938,8 @@ public class GdalUtility
      * @return
      * @throws TilingException
      */
-    public static byte[] readRaster(final GdalRasterParameters params, final Dataset dataset) throws TilingException
+    public static byte[] readRaster(final GdalRasterParameters params,
+    								final Dataset dataset) throws TilingException
     {
     	final int bandCount = dataset.GetRasterCount(); // correctNoDataSimple should have added an alpha band
     	final byte[] imageData = new byte[params.getWriteXSize() * params.getWriteYSize() * bandCount];
@@ -895,7 +966,8 @@ public class GdalUtility
      * @return
      * @throws TilingException
      */
-    public static ByteBuffer readRasterDirect(final GdalRasterParameters params, final Dataset dataset) throws TilingException
+    public static ByteBuffer readRasterDirect(final GdalRasterParameters params,
+    										  final Dataset dataset) throws TilingException
     {
     	final int bandCount = dataset.GetRasterCount(); // correctNoDataSimple should have added an alpha band
     	ByteBuffer imageData = ByteBuffer.allocateDirect(params.getWriteXSize() * params.getWriteYSize() * bandCount);   	
@@ -922,7 +994,9 @@ public class GdalUtility
      * @return
      * @throws TilingException
      */
-    public static Dataset writeRaster(final GdalRasterParameters params, final byte[] imageData, final int bandCount) throws TilingException
+    public static Dataset writeRaster(final GdalRasterParameters params,
+    								  final byte[] imageData,
+    								  final int bandCount) throws TilingException
     {
     	final Dataset querySizeDatasetInMemory = gdal.GetDriverByName("MEM").Create("", params.getQueryXSize(), params.getQueryYSize(), bandCount);
     	final int result = querySizeDatasetInMemory.WriteRaster(params.getWriteX(),
@@ -948,7 +1022,9 @@ public class GdalUtility
      * @return
      * @throws TilingException
      */
-    public static Dataset writeRasterDirect(final GdalRasterParameters params, final ByteBuffer imageData, final int bandCount) throws TilingException
+    public static Dataset writeRasterDirect(final GdalRasterParameters params,
+    										final ByteBuffer imageData,
+    										final int bandCount) throws TilingException
     {
     	Dataset querySizeDatasetInMemory = gdal.GetDriverByName("MEM").Create("", params.getQueryXSize(), params.getQueryYSize(), bandCount);
     	final int result = querySizeDatasetInMemory.WriteRaster_Direct(params.getWriteX(),
