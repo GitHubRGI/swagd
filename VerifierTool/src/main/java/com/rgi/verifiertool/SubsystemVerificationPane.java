@@ -54,7 +54,7 @@ public class SubsystemVerificationPane extends VBox
         Label subsystemLabel = new Label(this.subsystemName);
 
         subsystemLabel.setFont(Font.font("SanSerif", FontWeight.BOLD, 16));
-        subsystemLabel.setTextFill(Color.web("0x6D84A3"));
+        subsystemLabel.setTextFill(Color.DARKSLATEBLUE);
 
         return subsystemLabel;
     }
@@ -78,8 +78,6 @@ public class SubsystemVerificationPane extends VBox
 
     public void update(final Collection<VerificationIssue> issues)
     {
-        this.getChildren().remove(this.progressIndicator);
-
         if(issues != null && !issues.isEmpty())
         {
             TextFlow textBox = new TextFlow();
@@ -102,6 +100,8 @@ public class SubsystemVerificationPane extends VBox
             //add pass
             this.getChildren().add(getPassText());
         }
+
+        this.getChildren().remove(this.progressIndicator);
     }
 
     private static Text getPassText()
