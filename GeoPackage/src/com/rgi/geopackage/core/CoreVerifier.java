@@ -37,7 +37,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -245,8 +244,8 @@ public class CoreVerifier extends Verifier
                     if (DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), table_name))
                     {
 
-                        try (Statement stmt2 = this.getSqliteConnection().createStatement();
-                             ResultSet pragmaTableinfo = stmt2.executeQuery(String.format("PRAGMA table_info('%s');", table_name));)
+                        try (PreparedStatement stmt2           = this.getSqliteConnection().prepareStatement(String.format("PRAGMA table_info('%s');", table_name));
+                             ResultSet         pragmaTableinfo = stmt2.executeQuery())
                         {
                             while (pragmaTableinfo.next())
                             {
