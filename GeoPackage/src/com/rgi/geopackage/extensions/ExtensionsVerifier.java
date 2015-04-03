@@ -313,7 +313,7 @@ public class ExtensionsVerifier extends Verifier
             + "where <author> indicates the person or organization that developed "
             + "and maintains the extension. The valid character set for <author> "
             + "SHALL be [a-zA-Z0-9]. The valid character set for <extension_name> "
-            + "SHALL be [a-zA-Z0-9_]. An extension_name for the �gpkg� author name "
+            + "SHALL be [a-zA-Z0-9_]. An extension_name for the gpkg author name "
             + "SHALL be one of those defined in this encoding standard or in an OGC "
             + "Best Practices Document that extends it.", severity = Severity.Warning)
     public void Requirement82() throws AssertionError

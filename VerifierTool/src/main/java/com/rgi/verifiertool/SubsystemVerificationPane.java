@@ -81,7 +81,7 @@ public class SubsystemVerificationPane extends VBox
         if(issues != null && !issues.isEmpty())
         {
             TextFlow textBox = new TextFlow();
-            textBox.setStyle("-fx-border-color: gray;");
+            textBox.setStyle("-fx-border-radius: 10 10 10 10; -fx-border-color: gray; -fx-background-color: white;");
 
             for(final VerificationIssue issue : issues)
             {
