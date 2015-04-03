@@ -54,6 +54,8 @@ public abstract class ImageFormatTileStoreAdapter extends TileStoreWriterAdapter
      *             Handle to the application's settings object
      * @param imageFormatEnabled
      *             Enable the choice of an Image Format chosen
+     * @param imageCompressionTypeEnabled
+     *             Enable the choice of a compression type
      */
     public ImageFormatTileStoreAdapter(final Settings settings, final boolean imageFormatEnabled, final boolean imageCompressionTypeEnabled)
     {
