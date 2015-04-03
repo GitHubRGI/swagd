@@ -31,18 +31,16 @@ import com.rgi.common.TaskMonitor;
 import com.rgi.common.tile.store.TileStoreWriter;
 
 /**
- * @author Duff Means
  * @author Luke Lambert
  *
  */
 public class Tiler
 {
-    private final TaskMonitor         taskMonitor;
     final private File                file;
     final private TileStoreWriter     tileWriter;
-    //final private TileStoreReader     tileReader;
     final private Dimensions<Integer> tileDimensions;
     final private Color               noDataColor;
+    private final TaskMonitor         taskMonitor;
 
     /**
      * Constructor
@@ -55,19 +53,20 @@ public class Tiler
      *             Desired tile pixel width and height
      * @param noDataColor
      *             Default tile color
+     * @param taskMonitor
+     *             Callback to report the tiler progress
      */
-    public Tiler(final TaskMonitor         taskMonitor,
-                 final File                file,
+    public Tiler(final File                file,
                  final TileStoreWriter     tileWriter,
                  final Dimensions<Integer> tileDimensions,
-                 final Color               noDataColor)
+                 final Color               noDataColor,
+                 final TaskMonitor         taskMonitor)
     {
-        this.taskMonitor    = taskMonitor;
         this.file           = file;
-        //this.tileReader     = tileReader;
         this.tileWriter     = tileWriter;
         this.tileDimensions = tileDimensions;
         this.noDataColor    = noDataColor;
+        this.taskMonitor    = taskMonitor;
 
         sanityCheckGdalInstallation();
     }
@@ -77,14 +76,12 @@ public class Tiler
      */
     public void execute()
     {
-        // TODO Integrate with Lander's new tiling code
-//        final TileJob tileJob = new TileJob(this.file,
-//                                            //this.tileReader,
-//                                            this.tileWriter,
-//                                            this.tileDimensions,
-//                                            this.noDataColor/*,
-//                                            this*/);
-//        tileJob.run();
+        final GdalTileJob tileJob = new GdalTileJob(this.file,
+                                                    this.tileWriter,
+                                                    this.tileDimensions,
+                                                    this.noDataColor,
+                                                    this.taskMonitor);
+        tileJob.run();
     }
 
     private static void sanityCheckGdalInstallation()
@@ -101,5 +98,4 @@ public class Tiler
         // Check each path entry for the required dll's/so's
         // Throw an error if any of the required ones are missing
     }
-
 }

@@ -52,7 +52,14 @@ import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.FileUtility;
 import com.rgi.suite.Settings;
 import com.rgi.suite.tilestoreadapter.ImageFormatTileStoreAdapter;
+import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
 
+/**
+ * {@link TileStoreWriterAdapter} for the GeoPackage tile store format
+ *
+ * @author Luke Lambert
+ *
+ */
 public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
 {
     private static final String GeoPackageOutputLocationSettingName = "ui.gpkg.outputLocation";
@@ -71,11 +78,15 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
                                                                                              Arrays.asList(new JLabel("Tile set description:"), this.tileSetDescription),
                                                                                              Arrays.asList(new JLabel("File name:"),            this.filename, this.outputFileNameSelector));
 
+    /**
+     * Constructor
+     *
+     * @param settings
+     *             Handle to the application's settings object
+     */
     public GeoPackageTileStoreWriterAdapter(final Settings settings)
     {
         super(settings);
-
-        // TODO save values of controls to settings
 
         this.outputFileNameSelector.addActionListener(e -> { final String startDirectory = this.settings.get(GeoPackageOutputLocationSettingName, DefaultGeoPackageOutputLocation);
 
@@ -163,8 +174,8 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
 
         return new GeoPackageWriter(new File(this.filename.getText()),
                                     tileStoreReader.getCoordinateReferenceSystem(),
-                                    this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
-                                    this.tileSetName.getText(),    // TODO !!IMPORTANT!! make sure this meets the naming standards
+                                    this.tileSetName.getText(),
+                                    this.tileSetName.getText(),
                                     this.tileSetDescription.getText(),
                                     tileStoreReader.getBounds(),
                                     getRelativeZoomTimesTwoTileScheme(tileStoreReader),

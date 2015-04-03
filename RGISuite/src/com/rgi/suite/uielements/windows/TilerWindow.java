@@ -43,16 +43,26 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 
+import org.gdal.osr.SpatialReference;
+
+import utility.GdalUtility;
 import utility.SimpleGridBagConstraints;
 
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.common.tile.store.TileStoreWriter;
+import com.rgi.g2t.RawImageTileReader;
+import com.rgi.g2t.Tiler;
 import com.rgi.suite.Settings;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
 import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreWriterAdapter;
 import com.rgi.suite.tilestoreadapter.tms.TmsTileStoreWriterAdapter;
 import com.rgi.suite.uielements.PowerOfTwoSpinnerModel;
+import com.rgi.suite.uielements.ProgressDialog;
 import com.rgi.suite.uielements.SwatchButton;
+
 
 /**
  * Gather additional information for tiling, and tile
@@ -72,11 +82,12 @@ public class TilerWindow extends NavigationWindow
     private TileStoreWriterAdapter tileStoreWriterAdapter = null;
 
     // Input stuff
-    private final JPanel     inputPanel          = new JPanel(new GridBagLayout());
-    private final JTextField inputFileName       = new JTextField();
-    private final JButton    inputFileNameButton = new JButton("\u2026");
+    private final JPanel     inputPanel            = new JPanel(new GridBagLayout());
+    private final JTextField inputFileName         = new JTextField();
+    private final JButton    inputFileNameButton   = new JButton("\u2026");
+    private final JLabel     nativeReferenceSystem = new JLabel();
 
-    private final JComboBox<CoordinateReferenceSystem> crsComboBox = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
+    private final JComboBox<CoordinateReferenceSystem> referenceSystems = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
                                                                                                       .stream()
                                                                                                       .sorted()
                                                                                                       .toArray(CoordinateReferenceSystem[]::new));
@@ -88,7 +99,7 @@ public class TilerWindow extends NavigationWindow
 
     private final JSpinner     tileWidthSpinner;
     private final JSpinner     tileHeightSpinner;
-    private final SwatchButton clearColorButton;
+    private final SwatchButton clearColorButton = new SwatchButton("");;
 
     /**
      * Constructor
@@ -103,14 +114,14 @@ public class TilerWindow extends NavigationWindow
 
         this.settings = settings;
 
+        this.referenceSystems.setSelectedItem(null);
+
         this.outputStoreType.addItem(new GeoPackageTileStoreWriterAdapter(settings));
         this.outputStoreType.addItem(new TmsTileStoreWriterAdapter       (settings));
 
         this.contentPanel.setLayout(new BoxLayout(this.contentPanel, BoxLayout.PAGE_AXIS));
 
         // Input stuff
-        this.inputFileName.setEditable(false);
-
         this.inputPanel .setBorder(BorderFactory.createTitledBorder("Input"));
 
         this.inputFileNameButton.addActionListener(e -> { final String startDirectory = this.settings.get(LastInputLocationSettingName, System.getProperty("user.home"));
@@ -118,7 +129,7 @@ public class TilerWindow extends NavigationWindow
                                                           final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
                                                           fileChooser.setMultiSelectionEnabled(false);
-                                                          fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                                                          fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
                                                           final int option = fileChooser.showOpenDialog(this);
 
@@ -133,7 +144,28 @@ public class TilerWindow extends NavigationWindow
                                                                   this.settings.set(LastInputLocationSettingName, file.getParent());
                                                                   this.settings.save();
 
-                                                                  this.buildInputContent();
+                                                                  final SpatialReference srs = GdalUtility.getDatasetSrs(file);
+
+                                                                  final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(srs);
+
+                                                                  String crsName;
+
+                                                                  if(crs != null)
+                                                                  {
+                                                                      crsName = crs.toString();
+                                                                  }
+                                                                  else
+                                                                  {
+                                                                      crsName = GdalUtility.getName(srs);
+                                                                      if(crsName == null)
+                                                                      {
+                                                                          crsName = "<none specified>";
+                                                                      }
+                                                                  }
+
+                                                                  this.nativeReferenceSystem.setText(crsName);
+                                                                  this.referenceSystems.setSelectedItem(crs);
+
                                                                   this.tileStoreWriterAdapter.hint(file);
                                                               }
                                                               catch(final Exception ex)
@@ -164,17 +196,22 @@ public class TilerWindow extends NavigationWindow
         this.tileWidthSpinner = new JSpinner(new PowerOfTwoSpinnerModel(this.settings.get(TileWidthSettingName,
                                                                                           Integer::parseInt,
                                                                                           256),
-                                                            128,
-                                                            2048));
+                                                                        128,
+                                                                        2048));
+
+        this.tileWidthSpinner.setEnabled(false);
 
         this.tileHeightSpinner = new JSpinner(new PowerOfTwoSpinnerModel(this.settings.get(TileHeightSettingName,
                                                                                            Integer::parseInt,
                                                                                            256),
-                                                             128,
-                                                             2048));
+                                                                         128,
+                                                                         2048));
+
+        this.tileHeightSpinner.setEnabled(false);
 
 
-        this.clearColorButton = new SwatchButton("");
+        this.clearColorButton.setEnabled(false);
+        this.clearColorButton.setPreferredSize(new Dimension(220, 20));
         this.clearColorButton.setColor(this.settings.get(ClearColorSettingName,
                                                          string -> colorFromString(string),
                                                          new Color(0, 0, 0, 0)));
@@ -205,8 +242,11 @@ public class TilerWindow extends NavigationWindow
         this.inputPanel.add(this.inputFileName,       new SimpleGridBagConstraints(1, 0, true));
         this.inputPanel.add(this.inputFileNameButton, new SimpleGridBagConstraints(2, 0, false));
 
-        this.inputPanel.add(new JLabel("Reference System:"), new SimpleGridBagConstraints(0, 1, false));
-        this.inputPanel.add(this.crsComboBox,                new SimpleGridBagConstraints(1, 1, true));
+        this.inputPanel.add(new JLabel("Native reference System:"), new SimpleGridBagConstraints(0, 1, false));
+        this.inputPanel.add(this.nativeReferenceSystem,            new SimpleGridBagConstraints(1, 1, true));
+
+        this.inputPanel.add(new JLabel("Output reference System:"), new SimpleGridBagConstraints(0, 2, false));
+        this.inputPanel.add(this.referenceSystems,                  new SimpleGridBagConstraints(1, 2, true));
     }
 
     private void buildOutputContent()
@@ -234,12 +274,13 @@ public class TilerWindow extends NavigationWindow
             int columnCount = 0;
             for(final JComponent column : row)
             {
-                if(columnCount == 1) // TODO; This is a HACK
+                // This is a work-around to resize (and then stretch) the middle column to fit our input form layout
+                if(columnCount == 1)
                 {
                     column.setPreferredSize(new Dimension(220, 25));
                 }
 
-                this.outputPanel.add(column, new SimpleGridBagConstraints(columnCount, rowCount, columnCount == 1)); // TODO; last parameter is similarly a hack for that second column
+                this.outputPanel.add(column, new SimpleGridBagConstraints(columnCount, rowCount, columnCount == 1));
 
                 ++columnCount;
             }
@@ -255,7 +296,7 @@ public class TilerWindow extends NavigationWindow
     @Override
     protected String processName()
     {
-        return "Packaging";
+        return "Tiling";
     }
 
     @Override
@@ -264,12 +305,14 @@ public class TilerWindow extends NavigationWindow
         final int tileWidth  = (int)this.tileWidthSpinner .getValue();
         final int tileHeight = (int)this.tileHeightSpinner.getValue();
 
+        final Dimensions<Integer> tileDimensions = new Dimensions<>(tileWidth, tileHeight);
+
+        final CoordinateReferenceSystem crs = (CoordinateReferenceSystem)this.referenceSystems.getSelectedItem();
+
         final Color color = this.clearColorButton.getColor();
 
-        // Save UI values - TODO put these in the event handlers
         this.settings.set(TileWidthSettingName,  Integer.toString(tileWidth));
         this.settings.set(TileHeightSettingName, Integer.toString(tileHeight));
-
         this.settings.save();
 
         if(this.inputFileName.getText().isEmpty())
@@ -278,65 +321,32 @@ public class TilerWindow extends NavigationWindow
             return false;
         }
 
-
-        // TODO waiting on Lander's new tiler code
+        if(this.referenceSystems.getSelectedItem() == null)
+        {
+            this.warn("Please select an output reference system");
+            return false;
+        }
 
         // This spawns a modal dialog and blocks this thread
-//        ProgressDialog.trackProgress(this,
-//                                     this.processName() + "...",
-//                                     taskMonitor -> { try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
-//                                                      {
-//                                                          (new Tiler(taskMonitor,
-//                                                                     new File(this.inputFileName.getText()),
-//                                                                     tileStoreWriter,
-//                                                                     new Dimensions<>(tileWidth,
-//                                                                                      tileHeight),
-//                                                                     color)).execute();
-//                                                          return null;
-//                                                      }
-//                                                    });
+        ProgressDialog.trackProgress(this,
+                                     this.processName() + "...",
+                                     taskMonitor -> { final File file = new File(this.inputFileName.getText());
+
+                                                      try(final TileStoreReader tileStoreReader = new RawImageTileReader(file, tileDimensions, crs))
+                                                      {
+                                                          try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
+                                                          {
+                                                              (new Tiler(file,
+                                                                         tileStoreWriter,
+                                                                         tileDimensions,
+                                                                         color,
+                                                                         taskMonitor)).execute();
+                                                              return null;
+                                                          }
+                                                      }
+                                                    });
 
         return true;
-    }
-
-    private static CoordinateReferenceSystem getCrs(@SuppressWarnings("unused") final File file) throws RuntimeException
-    {
-        return null;
-
-        // TODO use Lander's GDAL utilities once they're ready
-        //osr.UseExceptions(); // TODO only do this once
-        //gdal.AllRegister();  // TODO only do this once
-        //
-        //final Dataset dataset = gdal.Open(file.getAbsolutePath(),
-        //                                  gdalconstConstants.GA_ReadOnly);
-        //
-        //if(dataset == null)
-        //{
-        //    return null;
-        //}
-        //
-        //final SpatialReference srs = new SpatialReference(dataset.GetProjection());
-        //
-        //gdal.GDALDestroyDriverManager(); // TODO only do this once
-        //
-        //final String attributePath = "PROJCS|GEOGCS|AUTHORITY";   // https://gis.stackexchange.com/questions/20298/
-        //
-        //final String authority  = srs.GetAttrValue(attributePath, 0);
-        //final String identifier = srs.GetAttrValue(attributePath, 1);
-        //
-        //if(authority == null || identifier == null)
-        //{
-        //    return null;    // Failed to get the attribute value for some reason, see: http://gdal.org/java/org/gdal/osr/SpatialReference.html#GetAttrValue(java.lang.String,%20int)
-        //}
-        //
-        //try
-        //{
-        //    return new CoordinateReferenceSystem(authority, Integer.parseInt(identifier));
-        //}
-        //catch(final NumberFormatException ex)
-        //{
-        //    return null;    // The authority identifier in the WKT wasn't an integer
-        //}
     }
 
     private static Color colorFromString(final String string)

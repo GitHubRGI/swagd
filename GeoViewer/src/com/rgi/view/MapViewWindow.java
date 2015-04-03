@@ -25,10 +25,10 @@ package com.rgi.view;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -45,6 +45,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
 import org.openstreetmap.gui.jmapviewer.Coordinate;
@@ -54,6 +55,7 @@ import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
 import org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent;
 import org.openstreetmap.gui.jmapviewer.interfaces.JMapViewerEventListener;
 
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.store.TileStoreException;
@@ -80,19 +82,22 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
     JMapViewer viewer;
     boolean treeSelected = false;
 
-    private final JLabel currentZoomLevelValue = new JLabel("");
-    private final JLabel unitsPerPixelXLabel   = new JLabel("Units/PixelX: ");
-    private final JLabel unitsPerPixelYLabel   = new JLabel("Units/PixelY: ");
-    private final JLabel unitsPerPixelXValue   = new JLabel("");
-    private final JLabel unitsPerPixelYValue   = new JLabel("");
-    private final ButtonGroup mainGroup        = new ButtonGroup();
+    private final JLabel      currentZoomLevelValue   = new JLabel("");
+    private final JLabel      unitsPerPixelXLabel     = new JLabel("Units/PixelX: ");
+    private final JLabel      unitsPerPixelYLabel     = new JLabel("Units/PixelY: ");
+    private final JLabel      unitsPerPixelXValue     = new JLabel("");
+    private final JLabel      unitsPerPixelYValue     = new JLabel("");
+    private final JLabel      coordinatePositionValue = new JLabel("");
+    private final ButtonGroup mainGroup               = new ButtonGroup();
+    private final       JPanel      eastPanel               = new JPanel();
 
     /**
+     * Constructor
+     *
      * @param tileStoreReaders
      *             Tile stores to display
-     * @throws TileStoreException Thrown when the file is not supported for viewing.
      */
-    public MapViewWindow(final Collection<TileStoreReader> tileStoreReaders) throws TileStoreException
+    public MapViewWindow(final Collection<TileStoreReader> tileStoreReaders)
     {
         super("Tile Viewer");
 
@@ -101,12 +106,18 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
             throw new IllegalArgumentException("Tile store reader collection may not be null");
         }
 
+        if(tileStoreReaders.size() == 0)
+        {
+            throw new IllegalArgumentException("There must be at least one Tile Store reader to display.");
+        }
+
         this.tileStoreReaders = tileStoreReaders;
         this.viewer = new JMapViewer();
 
-//        this.treeMap   = new JMapTree(stores);//TODO when tree is working use this to display the tileStores
-//        this.viewer    = this.treeMap.getViewer();
-//        this.treeMap.setName("TileSets");
+        // TODO when tree is working use this to display the tileStores
+        //this.treeMap   = new JMapTree(stores);
+        //this.viewer    = this.treeMap.getViewer();
+        //this.treeMap.setName("TileSets");
 
         this.addWindowListener(new WindowAdapter()
                               {
@@ -120,23 +131,24 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         this.viewer.addJMVListener(this);
         this.setLayout(new BorderLayout());
         this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        this.setExtendedState(Frame.MAXIMIZED_BOTH);
 
         new DefaultMapController(this.viewer).setMovementMouseButton(MouseEvent.BUTTON1);
-
-        //this.viewer.setTileLoader(new TileStoreLoader(this.tileStore, this.viewer));
 
         //add tile grid checkbox
         final JCheckBox showTileGrid = new JCheckBox("Tile grid visible");
         this.addCheckboxForTileGridLines(showTileGrid);
-       // this.viewer.setTileSource(new TileStoreTileSource(this.tileStore)); // TODO - investigate which method is causing the viewer to not work//its lat/long to tilex/y and visa versa
 
         //This will display the zoom level and resolution
         final JLabel currentZoomLevelLabel = new JLabel("Zoom Level: ");
+        currentZoomLevelLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         //this adds a button to set the display to the center at the lowest integer zoom level
         final JButton backToCenterButton = new JButton("Center");
+        backToCenterButton.setHorizontalAlignment(SwingConstants.LEFT);
         this.addCenterButton(backToCenterButton);
+
+        //add Listener for the current coordinate
+        this.mouseCoordinateListener();
 
         //set tree visible //TODO this will be added when tree is working
         // this.treeMap.setTreeVisible(true);
@@ -154,6 +166,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         final JPanel westPanel = new JPanel();
 
         //Set list of tileStore Radio Buttons
+        this.eastPanel.setLayout(new BorderLayout());
         this.setListOfTileStores(westPanel);
         this.add(northPanel, BorderLayout.NORTH);
 
@@ -161,16 +174,43 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         northPanel.add(panelTop, BorderLayout.NORTH);
         northPanel.add(panelBottom, BorderLayout.SOUTH);
 
-        panelBottom.add(showTileGrid);
         panelTop.add(backToCenterButton);
-        panelTop.add(currentZoomLevelLabel);
-        panelTop.add(this.currentZoomLevelValue);
-        panelTop.add(this.unitsPerPixelXLabel);
-        panelTop.add(this.unitsPerPixelXValue);
-        panelTop.add(this.unitsPerPixelYLabel);
-        panelTop.add(this.unitsPerPixelYValue);
+        panelTop.add(showTileGrid);
+
+        panelBottom.add(currentZoomLevelLabel);
+        panelBottom.add(this.currentZoomLevelValue);
+        panelBottom.add(this.unitsPerPixelXLabel);
+        panelBottom.add(this.unitsPerPixelXValue);
+        panelBottom.add(this.unitsPerPixelYLabel);
+        panelBottom.add(this.unitsPerPixelYValue);
+        this.setSize(800, 800);
         this.repaint();
 
+    }
+
+    private void mouseCoordinateListener()
+    {
+        this.viewer.addMouseMotionListener(new MouseMotionListener()
+        {
+
+            @Override
+            public void mouseMoved(final MouseEvent e)
+            {
+                Coordinate latLong = MapViewWindow.this.viewer.getPosition(e.getPoint());
+                MapViewWindow.this.updateCoordinate(latLong);
+            }
+
+            @Override
+            public void mouseDragged(final MouseEvent e)
+            {
+                //no desired action required
+            }
+        });
+    }
+
+    protected void updateCoordinate(final Coordinate latLong)
+    {
+        this.coordinatePositionValue.setText(String.format("Latitude: %f    Longitude: %f", latLong.getLat(), latLong.getLon()));
     }
 
     private void setListOfTileStores(final JPanel westPanel)
@@ -178,13 +218,19 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
         westPanel.add(this.createRadioButtons());
+        this.eastPanel.add(this.viewer, BorderLayout.CENTER);
+        this.coordinatePositionValue.setHorizontalAlignment(SwingConstants.RIGHT);
+        this.eastPanel.add(this.coordinatePositionValue, BorderLayout.SOUTH);
+
 
         splitPane.setLeftComponent(westPanel);
-        splitPane.setRightComponent(this.viewer);
+
+        splitPane.setRightComponent(this.eastPanel);
+//        splitPane.setRightComponent(this.viewer);
         this.add(splitPane, BorderLayout.CENTER);
 
         splitPane.setOneTouchExpandable(true);
-        splitPane.setDividerLocation(150);
+        splitPane.setDividerLocation(200);
 
       //Provide minimum sizes for the two components in the split pane
         final Dimension minimumSize = new Dimension(100, 50);
@@ -212,7 +258,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
         try
         {
             this.viewer.setTileLoader(new TileStoreLoader(this.getSelectedStore(), this.viewer));
-           // this.viewer.setTileSource(new TileStoreTileSource(this.tileStore));
+            this.viewer.setTileSource(new TileStoreTileSource(this.getSelectedStore()));
 
         }
         catch (final TileStoreException e)
@@ -238,7 +284,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
                     try
                     {
                         MapViewWindow.this.viewer.setTileLoader(new TileStoreLoader(button.getTileStore(), MapViewWindow.this.viewer));
-                       // this.viewer.setTileSource(new TileStoreTileSource(this.tileStore));
+                        MapViewWindow.this.viewer.setTileSource(new TileStoreTileSource(button.getTileStore()));
                         MapViewWindow.this.setInitialDisplayPosition(button.getTileStore());
 
                     }
@@ -289,11 +335,18 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
             final int currentZoom = this.viewer.getZoom();
 
             final double boundsWidth = this.getSelectedStore().getBounds().getWidth();
-            final double tileSizeX   = this.getSelectedStore().getImageDimensions().getWidth();
+            final Dimensions<Integer> tileDimensions = this.getSelectedStore().getImageDimensions();
+
+            if(tileDimensions == null)
+            {
+                throw new IllegalArgumentException("Tile dimensions must be defined.");//added for coverity scan
+            }
+
+            final double tileSizeX   = tileDimensions.getWidth();
             final int    matrixWidth = this.getSelectedStore().getTileScheme().dimensions(currentZoom).getWidth();
 
             final double boundsHeight = this.getSelectedStore().getBounds().getHeight();
-            final double tileSizeY    = this.getSelectedStore().getImageDimensions().getHeight();
+            final double tileSizeY    = tileDimensions.getHeight();
             final int    matrixHeight = this.getSelectedStore().getTileScheme().dimensions(currentZoom).getHeight();
 
             final Double unitsPerPixelValueXCalculation = boundsWidth /(tileSizeX * matrixWidth);
@@ -305,15 +358,15 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
                 this.unitsPerPixelXLabel.setText("Units/Pixel: ");
                 this.unitsPerPixelYLabel.setVisible(false);
                 this.unitsPerPixelYValue.setVisible(false);
-                this.unitsPerPixelXValue.setText(String.format("%.4f", unitsPerPixelValueXCalculation));
+                this.unitsPerPixelXValue.setText(String.format("%.7f", unitsPerPixelValueXCalculation));
             }
             else
             {
                 //if not equal show both for x and y
                 this.unitsPerPixelXLabel.setText("Units/PixelX: ");//change label to specify X
 
-                this.unitsPerPixelXValue.setText(String.format("%.4f", unitsPerPixelValueXCalculation));// place value of x
-                this.unitsPerPixelYValue.setText(String.format("%.4f", unitsPerPixelValueYCalculation));//place value of Y
+                this.unitsPerPixelXValue.setText(String.format("%.7f", unitsPerPixelValueXCalculation));// place value of x
+                this.unitsPerPixelYValue.setText(String.format("%.7f", unitsPerPixelValueYCalculation));//place value of Y
 
                 this.unitsPerPixelYLabel.setVisible(true);//set y label visible
                 this.unitsPerPixelYValue.setVisible(true);//set y value visible
@@ -370,9 +423,9 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
 
     private void setInitialDisplayPosition(final TileStoreReader store)
     {
-        final CrsProfile profile = CrsProfileFactory.create(store.getCoordinateReferenceSystem());
         try
         {
+            final CrsProfile profile = CrsProfileFactory.create(store.getCoordinateReferenceSystem());
             MapViewWindow.this.center = profile.toGlobalGeodetic(store.getBounds().getCenter());
 
             if(!store.getZoomLevels().isEmpty())    // TODO attn Jen: error message?

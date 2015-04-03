@@ -1010,6 +1010,11 @@ public class GeoPackageTiles
         final CoordinateReferenceSystem crs = crsCoordinate.getCoordinateReferenceSystem();
         final SpatialReferenceSystem    srs = this.core.getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
 
+        if(srs == null)
+        {
+            throw new IllegalArgumentException("Spatial Reference System may not be null."); //added due to coverity scan
+        }
+
         if(!crs.getAuthority().equalsIgnoreCase(srs.getOrganization()) ||
            crs.getIdentifier() != srs.getOrganizationSrsId())
         {
@@ -1098,6 +1103,11 @@ public class GeoPackageTiles
         final double tileHeightInSrs = tileMatrix.getPixelYSize() * tileMatrix.getTileHeight();
 
         final SpatialReferenceSystem srs = this.core.getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
+
+        if(srs == null)
+        {
+            throw new IllegalArgumentException("Spatial Reference System may not be null");//added due to coverity scan
+        }
 
         final TileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileSet);
 
@@ -1212,8 +1222,7 @@ public class GeoPackageTiles
     {
         final double divisor = Math.pow(10.0, decimalPlaces);
 
-        return (Math.round(left  * divisor) / divisor) ==
-               (Math.round(right * divisor) / divisor);
+        return Math.abs(left - right) < (1/divisor);
     }
 
     private final GeoPackageCore core;

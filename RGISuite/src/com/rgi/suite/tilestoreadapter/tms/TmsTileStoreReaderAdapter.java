@@ -45,14 +45,27 @@ import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
  */
 public class TmsTileStoreReaderAdapter extends TileStoreReaderAdapter
 {
-    private final JComboBox<CoordinateReferenceSystem> crsComboBox = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
-                                                                                                      .stream()
-                                                                                                      .sorted()
-                                                                                                      .toArray(CoordinateReferenceSystem[]::new));
+    private final JComboBox<CoordinateReferenceSystem> referenceSystems = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
+                                                                                                           .stream()
+                                                                                                           .sorted()
+                                                                                                           .toArray(CoordinateReferenceSystem[]::new));
 
+    /**
+     * Constructor
+     *
+     * @param file
+     *             Folder that contains a TMS tile sets
+     * @param allowMultipleReaders
+     *             Flag that indicates whether or not we should return more
+     *             than one tile store reader if it contains one
+     * @throws AdapterMismatchException
+     *             if the supplied file doesn't contain a TMS tile set
+     */
     public TmsTileStoreReaderAdapter(final File file, final boolean allowMultipleReaders) throws AdapterMismatchException
     {
         super(file, allowMultipleReaders);
+
+        this.referenceSystems.setSelectedItem(null);
 
         if(!file.isDirectory())
         {
@@ -69,14 +82,19 @@ public class TmsTileStoreReaderAdapter extends TileStoreReaderAdapter
     @Override
     public Collection<Collection<JComponent>> getReaderParameterControls()
     {
-        return Arrays.asList(Arrays.asList(new JLabel("Reference System:"),
-                                           this.crsComboBox));
+        return Arrays.asList(Arrays.asList(new JLabel("Reference system:"),
+                                           this.referenceSystems));
     }
 
     @Override
-    public TileStoreReader getTileStoreReader()
+    public TileStoreReader getTileStoreReader() throws TileStoreException
     {
-        return new TmsReader((CoordinateReferenceSystem)this.crsComboBox.getSelectedItem(), this.file.toPath());
+        if(this.referenceSystems.getSelectedItem() == null)
+        {
+            throw new TileStoreException("Please select a reference system");
+        }
+
+        return new TmsReader((CoordinateReferenceSystem)this.referenceSystems.getSelectedItem(), this.file.toPath());
     }
 
     @Override

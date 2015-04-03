@@ -44,11 +44,36 @@ public class CoordinateReferenceSystem implements Comparable<CoordinateReference
      */
     public CoordinateReferenceSystem(final String authority, final int identifier)
     {
+        this(null, authority, identifier);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param name
+     *             Name of the coordinate reference system.  Non-null values
+     *             may not be empty.
+     * @param authority
+     *             The name of the defining authority of the coordinate
+     *             reference system (e.g. "EPSG"). This value is converted to
+     *             upper case.
+     * @param identifier
+     *             The identifier as assigned by the the authority of the
+     *             coordinate reference system
+     */
+    public CoordinateReferenceSystem(final String name, final String authority, final int identifier)
+    {
+        if(name != null && name.isEmpty())
+        {
+            throw new IllegalArgumentException("A non-null name may not be empty");
+        }
+
         if(authority == null || authority.isEmpty())
         {
             throw new IllegalArgumentException("Authority string may not be null or empty");
         }
 
+        this.name       = name;
         this.authority  = authority.toUpperCase();
         this.identifier = identifier;
     }
@@ -72,9 +97,18 @@ public class CoordinateReferenceSystem implements Comparable<CoordinateReference
     @Override
     public String toString()
     {
-        return String.format("%s:%d",
-                             this.authority,
-                             this.identifier);
+        final String shortName = String.format("%s:%d",
+                                               this.authority,
+                                               this.identifier);
+
+        if(this.name == null)
+        {
+            return shortName;
+        }
+
+        return String.format("%s - %s",
+                             shortName,
+                             this.name);
     }
 
     @Override
@@ -115,6 +149,7 @@ public class CoordinateReferenceSystem implements Comparable<CoordinateReference
         return Integer.compare(this.identifier, other.identifier);
     }
 
+    private final String name;
     private final String authority;
     private final int    identifier;
 }

@@ -322,10 +322,9 @@ public class CoreVerifier extends Verifier
     {
         final String query = "SELECT * FROM sqlite_master;";
 
-        try(Statement stmt = this.getSqliteConnection().createStatement();)
+        try(Statement stmt = this.getSqliteConnection().createStatement();
+            ResultSet set = stmt.executeQuery(query);)
         {
-            stmt.executeQuery(query);
-
             assertTrue(true);  // If the statement can execute it has implemented the SQLite SQL API interface
         }
         catch(final SQLException e)

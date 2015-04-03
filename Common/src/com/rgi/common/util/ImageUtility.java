@@ -23,6 +23,10 @@
 
 package com.rgi.common.util;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
@@ -146,4 +150,51 @@ public class ImageUtility
             return bufferedImage;
         }
     }
+
+    /**
+     * Writes text on a {@link BufferedImage} with a red border around the image
+     *
+     * @param oldImage
+     *             The image that is to be written on
+     * @param text
+     *             The words that are to be written on the image
+     * @return A {@link BufferedImage} with text written on the image
+     */
+    public static BufferedImage graffiti(final BufferedImage oldImage, final String text)
+    {
+        final int width  = oldImage.getWidth();
+        final int height = oldImage.getHeight();
+
+        final BufferedImage newImage = new BufferedImage(width,
+                                                         height,
+                                                         oldImage.getType());
+
+        final Graphics2D brush = newImage.createGraphics();
+        brush.drawImage(oldImage, 0, 0, null);
+
+        brush.setColor(Color.red);
+        brush.drawLine(      0,        0,  width-1,        0);
+        brush.drawLine(width-1,        0,  width-1, height-1);
+        brush.drawLine(width-1, height-1,        0, height-1);
+        brush.drawLine(      0, height-1,        0,        0);
+
+        brush.setPaint(Color.blue);
+        brush.setFont(new Font("Serif", Font.BOLD, 20));
+
+        //brush.clearRect(0, 0, width, height);
+
+        final FontMetrics fm = brush.getFontMetrics();
+
+        final String[] parts = text.split("\n");
+        for(int part = 0; part < parts.length; ++part)
+        {
+            final int x = 2;//bufferedImage.getWidth() - fm.stringWidth(text) - 5;
+            final int y = fm.getHeight();
+            brush.drawString(parts[part], x, y*(part+1));
+        }
+        brush.dispose();
+
+        return newImage;
+    }
+
 }

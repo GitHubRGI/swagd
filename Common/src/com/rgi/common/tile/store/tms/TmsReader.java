@@ -372,6 +372,10 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
 
     private TileHandle getTileHandle(final Path path)
     {
+        if(path == null)
+        {
+            throw new IllegalArgumentException("The path may not be null");
+        }
         final File file = path.toFile();
 
         final String absolutePath = file.getAbsolutePath();
@@ -382,7 +386,14 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
         {
             try
             {
-                final MimeType mimeType = new MimeType(Files.probeContentType(path));
+                String mimeTypeString = Files.probeContentType(path);
+
+                if(mimeTypeString == null)
+                {
+                    return null;
+                }
+
+                final MimeType mimeType = new MimeType(mimeTypeString);
 
                 if(mimeType.getPrimaryType().toLowerCase().equals("image"))
                 {

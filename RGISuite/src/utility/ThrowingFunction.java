@@ -26,9 +26,12 @@ package utility;
 import java.util.function.Function;
 
 /**
- * @author Luke.Lambert
+ * Wrapper for {@link Function} which allows the throwing of an exception
  *
- * @param <T>
+ * @param <T> The type of the input to the function
+ * @param <R> The type of the result of the function
+ *
+ * @author Luke Lambert
  *
  * @see <a
  *      href="https://stackoverflow.com/a/27252163/16434">https://stackoverflow.com/a/27252163/16434</a>
@@ -49,5 +52,15 @@ public interface ThrowingFunction<T, R> extends Function<T, R>
         }
     }
 
+    /**
+     * Applies this function to the given argument
+     *
+     * @param t the function argument
+     *
+     * @return the function result
+     *
+     * @throws Exception
+     *             when the underlying throws
+     */
     public R applyThrows(T t) throws Exception;
 }
