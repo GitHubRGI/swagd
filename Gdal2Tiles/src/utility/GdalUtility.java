@@ -289,7 +289,7 @@ public class GdalUtility
      *             Image file
      * @return The {@link SpatialReference} of the image file
      * @throws DataFormatException
-     *             when {@link GdalUtility#getDatasetSrs(Dataset)} throws
+     *             when {@link GdalUtility#getDatasetSpatialReference(Dataset)} throws
      */
     public static SpatialReference getDatasetSpatialReference(final File file) throws DataFormatException
     {
@@ -333,8 +333,10 @@ public class GdalUtility
     }
     
     /**
-     * @param crsProfile
-     * @return
+     * Provide a {@link SpatialReference} given an input {@link CrsProfile}
+     * 
+     * @param crsProfile A {@link CrsProfile} from which a {@link SpatialReference} should be built
+     * @return A {@link SpatialReference} built from the input CrsProfile
      */
     public static SpatialReference getSpatialReferenceFromCrsProfile(final CrsProfile crsProfile)
     {
@@ -607,6 +609,26 @@ public class GdalUtility
                                             final TileScheme tileScheme,
                                             final Dimensions<Integer> tileSize) throws TileStoreException
     {
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
+    	if (tileRanges == null || tileRanges.isEmpty())
+    	{
+    		throw new IllegalArgumentException("Tile range list cannot be null or empty.");
+    	}
+    	if (tileOrigin == null)
+    	{
+    		throw new IllegalArgumentException("Tile origin cannot be null.");
+    	}
+    	if (tileScheme == null)
+    	{
+    		throw new IllegalArgumentException("Tile scheme cannot be null.");
+    	}
+    	if (tileSize == null)
+    	{
+    		throw new IllegalArgumentException("Tile dimensions cannot be null.");
+    	}
         final double zoomPixelSize = dataset.GetGeoTransform()[1];
         try
         {
@@ -632,6 +654,18 @@ public class GdalUtility
     												   final TileOrigin tileOrigin,
     												   final Dimensions<Integer> tileSize) throws TileStoreException
     {
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
+    	if (tileOrigin == null)
+    	{
+    		throw new IllegalArgumentException("Tile origin cannot be null.");
+    	}
+    	if (tileSize == null)
+    	{
+    		throw new IllegalArgumentException("Tile dimensions cannot be null.");
+    	}
         // World extent tile scheme
         final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
         try
@@ -670,6 +704,30 @@ public class GdalUtility
                                             final TileOrigin tileOrigin,
                                             final Dimensions<Integer> tileSize) throws TileStoreException
     {
+    	if (tileRanges == null || tileRanges.isEmpty())
+    	{
+    		throw new IllegalArgumentException("Tile range list cannot be null.");
+    	}
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
+    	if (crsProfile == null)
+    	{
+    		throw new IllegalArgumentException("Crs profile cannot be null.");
+    	}
+    	if (tileScheme == null)
+    	{
+    		throw new IllegalArgumentException("Tile scheme cannot be null.");
+    	}
+    	if (tileOrigin == null)
+    	{
+    		throw new IllegalArgumentException("Tile origin cannot be null.");
+    	}
+    	if (tileSize == null)
+    	{
+    		throw new IllegalArgumentException("Tile dimensions cannot be null.");
+    	}
     	try
     	{
 			final BoundingBox boundingBox = GdalUtility.getBoundsForDataset(dataset);
@@ -701,6 +759,26 @@ public class GdalUtility
 	    									     final Dimensions<Integer> tileSize,
 	    									     final BoundingBox boundingBox)
     {
+    	if (tileRanges == null || tileRanges.isEmpty())
+    	{
+    		throw new IllegalArgumentException("Tile range list cannot be null.");
+    	}
+    	if (crsProfile == null)
+    	{
+    		throw new IllegalArgumentException("Crs profile cannot be null.");
+    	}
+    	if (tileScheme == null)
+    	{
+    		throw new IllegalArgumentException("Tile scheme cannot be null.");
+    	}
+    	if (tileOrigin == null)
+    	{
+    		throw new IllegalArgumentException("Tile origin cannot be null.");
+    	}
+    	if (tileSize == null)
+    	{
+    		throw new IllegalArgumentException("Tile dimensions cannot be null.");
+    	}
 		final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
 		// Get the tile coordinates of the top-left and bottom-right tiles
 		final Coordinate<Integer> topLeftTile = crsProfile.crsToTileCoordinate(new CrsCoordinate(boundingBox.getTopLeft(),
@@ -764,6 +842,18 @@ public class GdalUtility
     									   final SpatialReference fromSrs,
     									   final SpatialReference toSrs) throws DataFormatException
     {
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
+    	if (fromSrs == null)
+    	{
+    		throw new IllegalArgumentException("From-Srs cannot be null.");
+    	}
+    	if (toSrs == null)
+    	{
+    		throw new IllegalArgumentException("To-Srs cannot be null.");
+    	}
         final Dataset output = gdal.AutoCreateWarpedVRT(dataset, fromSrs.ExportToWkt(), toSrs.ExportToWkt(), gdalconstConstants.GRA_Average);
         if (output == null)
         {
@@ -773,15 +863,27 @@ public class GdalUtility
     }
 
 	/**
-	 * @param queryDataset
-	 * @param dimensions 
-	 * @param tileDataInMemory
-	 * @return
-	 * @throws TilingException
+	 * Scale a Dataset down into a smaller-sized Dataset using the average algorithm.
+	 * 
+	 * @param queryDataset A {@link Dataset} that needs to be scaled down to a smaller size
+	 * @param dimensions  A {@link Dimensions} object containing the width and height
+	 * 					  information for the output {@link Dataset}
+	 * @return A {@link Dataset} of the sizespecified in the width and height properties of
+	 * 		   the input {@link Dimensions} object
+	 * @throws TilingException Thrown when any band of the input query {@link Dataset} fails
+	 * 						   to scale correctly with {@link gdal#RegenerateOverview(Band, Band, String)}
 	 */
     public static Dataset scaleQueryToTileSize(final Dataset queryDataset,
     										   final Dimensions<Integer> dimensions) throws TilingException
     {
+    	if (queryDataset == null)
+    	{
+    		throw new IllegalArgumentException("Query dataset cannot be null.");
+    	}
+    	if (dimensions == null)
+    	{
+    		throw new IllegalArgumentException("Tile dimensions cannot be null.");
+    	}
     	// TODO: This just handles average resampling, it should be adjusted for other resampling types
     	final Dataset tileDataInMemory = gdal.GetDriverByName("MEM").Create("",
     																		dimensions.getWidth(),
@@ -808,11 +910,17 @@ public class GdalUtility
     }
     
     /**
-     * @param dataset
-     * @return
+     * Get the color values specified as NODATA in a Dataset.
+     * 
+     * @param dataset An input {@link Dataset} that possibly has NODATA values
+     * @return The NODATA values as a {@link Double} array
      */
     public static Double[] getDatasetNoDataValues(final Dataset dataset)
     {
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
         // Initialize a new double array of size 3
         final Double[] noDataValues = new Double[3];
         // Get the nodata value for each band
@@ -842,25 +950,41 @@ public class GdalUtility
     }
     
     /**
-     * @param dataset
-     * @param alphaBand
-     * @return
+     * Get the number of raster {@link Band}s in a Dataset.
+     * 
+     * @param dataset An input {@link Dataset} containing a number of bands
+     * @param alphaBand An alpha {@link Band}
+     * @return The number of {@link Band}s in the input {@link Dataset}
      */
     public static int getRasterBandCount(final Dataset dataset,
     									 final Band alphaBand)
     {
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
+    	if (alphaBand == null)
+    	{
+    		throw new IllegalArgumentException("Alpha band cannot be null.");
+    	}
         // TODO: The bitwise calc functionality needs to be verified from the python functionality
         final boolean bitwiseAlpha = (alphaBand.GetMaskFlags() & gdalconstConstants.GMF_ALPHA) != 0;
         return bitwiseAlpha || dataset.GetRasterCount() == 4 || dataset.GetRasterCount() == 2 ? dataset.GetRasterCount() - 1 : dataset.GetRasterCount();
     }
     
     /**
-     * @param dataset
-     * @return
-     * @throws TileStoreException
+     * Get the index of the alpha {@link Band} of a Dataset, if any.
+     * 
+     * @param dataset An input {@link Dataset} to search for an alpha {@link Band}
+     * @return The index of the alpha band of the input Dataset if found
+     * @throws TileStoreException Thrown when no alpha band could be detected.
      */
     public static int getAlphaBandIndex(final Dataset dataset) throws TileStoreException
     {
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
     	return IntStream.rangeClosed(1, dataset.GetRasterCount())
     					.filter(index -> dataset.GetRasterBand(index).GetColorInterpretation() == gdalconstConstants.GCI_AlphaBand)
     					.findFirst()
@@ -868,11 +992,17 @@ public class GdalUtility
     }
     
     /**
-     * @param dataset
-     * @return
+     * Correct an input raster {@link Dataset}s NODATA values to an alpha {@link Band}
+     * 
+     * @param dataset An input {@link Dataset}
+     * @return A dataset with an alpha band added that reflects the input Dataset's NODATA value
      */
     public static Dataset correctNoDataSimple(final Dataset dataset)
     {
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
         boolean datasetHasAlphaBand = GdalUtility.datasetHasAlpha(dataset);
 
         // If the dataset actually has an alpha band, return it
@@ -901,29 +1031,57 @@ public class GdalUtility
     }
     
     /**
-     * @param dataset
-     * @return
+     * Return whether or not the input Dataset has an alpha {@link Band}
+     * 
+     * @param dataset An input {@link Dataset}
+     * @return True if the input {@link Dataset} has an alpha {@link Band},
+     * 		   false otherwise.
      */
     public static boolean datasetHasAlpha(final Dataset dataset)
     {
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
     	return IntStream.rangeClosed(1, dataset.GetRasterCount())
     					.anyMatch(index -> dataset.GetRasterBand(index).GetColorInterpretation() == gdalconstConstants.GCI_AlphaBand);
     }
     
     /**
-     * @param geoTransform
-     * @param boundingBox
-     * @param dimensions 
-     * @param dataset 
-     * @return
-     * @throws TilingException 
+     * Create a set of Gdal parameters for reading tile data and writing that
+     * data to another Dataset.
+     * 
+     * @param geoTransform An array of doubles representing the geotransform of the input dataset
+     * @param boundingBox The {@link BoundingBox} of the tile query
+     * @param dimensions The tile {@link Dimensions}
+     * @param dataset The input {@link Dataset}
+     * @return An object with all information necessary to perform Gdal ReadRaster and WriteRaster
+     * 		   operations.
+     * @throws TilingException When creating a new {@link GdalRasterParameters} objects throws
      */
     public static GdalRasterParameters getGdalRasterParameters(final double[] geoTransform,
     														   final BoundingBox boundingBox,
     														   final Dimensions<Integer> dimensions,
     														   final Dataset dataset) throws TilingException
     {
+    	if (geoTransform.length == 0)
+    	{
+    		throw new IllegalArgumentException("Geotransform cannot be empty.");
+    	}
+    	if (boundingBox == null)
+    	{
+    		throw new IllegalArgumentException("Bounding box cannot be null.");
+    	}
+    	if (dimensions == null)
+    	{
+    		throw new IllegalArgumentException("Tile dimensions cannot be null.");
+    	}
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
     	// TODO: investigate replacing readX/Y with boundingBox.getWidth/Height calls
+    	// This is sorcery of the darkest kind.  It works but it not fully understood.
     	int readX = (int)((boundingBox.getMinX() - geoTransform[0]) / geoTransform[1] + 0.001);
   		int readY = (int)((boundingBox.getMaxY() - geoTransform[3]) / geoTransform[5] + 0.001);
   		int readXSize = (int)((boundingBox.getMaxX() - boundingBox.getMinX()) / geoTransform[1] + 0.5);
@@ -941,6 +1099,14 @@ public class GdalUtility
     public static byte[] readRaster(final GdalRasterParameters params,
     								final Dataset dataset) throws TilingException
     {
+    	if (params == null)
+    	{
+    		throw new IllegalArgumentException("Gdal parameters cannot be null.");
+    	}
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
     	final int bandCount = dataset.GetRasterCount(); // correctNoDataSimple should have added an alpha band
     	final byte[] imageData = new byte[params.getWriteXSize() * params.getWriteYSize() * bandCount];
     	final int result = dataset.ReadRaster(params.getReadX(), // xOffset
@@ -969,6 +1135,14 @@ public class GdalUtility
     public static ByteBuffer readRasterDirect(final GdalRasterParameters params,
     										  final Dataset dataset) throws TilingException
     {
+    	if (params == null)
+    	{
+    		throw new IllegalArgumentException("Gdal parameters cannot be null.");
+    	}
+    	if (dataset == null)
+    	{
+    		throw new IllegalArgumentException("Input dataset cannot be null.");
+    	}
     	final int bandCount = dataset.GetRasterCount(); // correctNoDataSimple should have added an alpha band
     	ByteBuffer imageData = ByteBuffer.allocateDirect(params.getWriteXSize() * params.getWriteYSize() * bandCount);   	
     	final int result = dataset.ReadRaster_Direct(params.getReadX(),
@@ -998,6 +1172,14 @@ public class GdalUtility
     								  final byte[] imageData,
     								  final int bandCount) throws TilingException
     {
+    	if (params == null)
+    	{
+    		throw new IllegalArgumentException("Gdal parameters cannot be null.");
+    	}
+    	if (imageData.length == 0)
+    	{
+    		throw new IllegalArgumentException("Image data must be non-zero length.");
+    	}
     	final Dataset querySizeDatasetInMemory = gdal.GetDriverByName("MEM").Create("", params.getQueryXSize(), params.getQueryYSize(), bandCount);
     	final int result = querySizeDatasetInMemory.WriteRaster(params.getWriteX(),
     															params.getWriteY(),
@@ -1026,6 +1208,14 @@ public class GdalUtility
     										final ByteBuffer imageData,
     										final int bandCount) throws TilingException
     {
+    	if (params == null)
+    	{
+    		throw new IllegalArgumentException("Gdal parameters cannot be null.");
+    	}
+    	if (imageData == null)
+    	{
+    		throw new IllegalArgumentException("Image data must be non-zero length.");
+    	}
     	Dataset querySizeDatasetInMemory = gdal.GetDriverByName("MEM").Create("", params.getQueryXSize(), params.getQueryYSize(), bandCount);
     	final int result = querySizeDatasetInMemory.WriteRaster_Direct(params.getWriteX(),
     																   params.getWriteY(),
@@ -1044,6 +1234,8 @@ public class GdalUtility
     }
     
     /**
+     * An object containing all data necessary for Gdal ReadRaster and WriteRaster functions.
+     * 
      * @author Steven D. Lander
      *
      */
@@ -1057,8 +1249,8 @@ public class GdalUtility
     	private int writeY;
     	private int writeXSize;
     	private int writeYSize;
-    	private int queryXSize;
-    	private int queryYSize;
+    	private final int queryXSize;
+    	private final int queryYSize;
     	
     	/**
     	 * @param readX
@@ -1084,22 +1276,28 @@ public class GdalUtility
     		{
     			throw new TilingException("Input dataset must be supplied to GdalRasterParameters.");
     		}
+    		// Points that dictate where a tile read occurs on the dataset
     		this.readX = readX;
     		this.readY = readY;
+    		// Size values that dictate how much data should be read from the dataset for
+    		// a tile read operation
     		this.readXSize = readXSize;
     		this.readYSize = readYSize;
+    		// Points on the write canvas that dictate where the read data should be written
     		this.writeX = 0;
     		this.writeY = 0;
+    		// Size values that indicate how large the tile query canvas should be
     		// Hardcoding the query to be larger size for later down-scaling
     		this.queryXSize = 4 * dimensions.getWidth();
     		this.queryYSize = 4 * dimensions.getHeight();
+    		// Size values that dictate how large the write canvas should be
     		this.writeXSize = this.queryXSize;
     		this.writeYSize = this.queryYSize;
     		this.adjust(dataset);
     	}
     	
     	/**
-    	 * @return
+    	 * @return The point in the x axis where tile data should be read from
     	 */
     	public int getReadX()
     	{
@@ -1107,7 +1305,7 @@ public class GdalUtility
     	}
     	
     	/**
-    	 * @return
+    	 * @return The point in the x axis where tile data should be read from
     	 */
     	public int getReadY()
     	{
@@ -1115,7 +1313,7 @@ public class GdalUtility
     	}
     	
     	/**
-    	 * @return
+    	 * @return The raster read size for the x axis
     	 */
     	public int getReadXSize()
     	{
@@ -1123,7 +1321,7 @@ public class GdalUtility
     	}
     	
     	/**
-    	 * @return
+    	 * @return The raster read size for the y axis
     	 */
     	public int getReadYSize()
     	{
@@ -1131,7 +1329,7 @@ public class GdalUtility
     	}
     	
     	/**
-    	 * @return
+    	 * @return The point in the x axis where tile data should be written
     	 */
     	public int getWriteX()
     	{
@@ -1139,7 +1337,7 @@ public class GdalUtility
     	}
     	
     	/**
-    	 * @return
+    	 * @return The point in the y axis where tile data should be written
     	 */
     	public int getWriteY()
     	{
@@ -1147,7 +1345,7 @@ public class GdalUtility
     	}
     	
     	/**
-    	 * @return
+    	 * @return The raster canvas write size for the x axis
     	 */
     	public int getWriteXSize()
     	{
@@ -1155,7 +1353,7 @@ public class GdalUtility
     	}
     	
     	/**
-    	 * @return
+    	 * @return The raster canvas write size for the y axis
     	 */
     	public int getWriteYSize()
     	{
@@ -1163,7 +1361,7 @@ public class GdalUtility
     	}
     	
     	/**
-    	 * @return
+    	 * @return The size of the raster data query in the x axis
     	 */
     	public int getQueryXSize()
     	{
@@ -1171,7 +1369,7 @@ public class GdalUtility
     	}
     	
     	/**
-    	 * @return
+    	 * @return The size of the raster data query in the y axis
     	 */
     	public int getQueryYSize()
     	{
@@ -1179,7 +1377,10 @@ public class GdalUtility
     	}
     	
     	/**
-    	 * @param dataset
+    	 * Adjust final read, write, and size parameters for a Gdal calls to ReadRaster and
+    	 * Write Raster.
+    	 * 
+    	 * @param dataset The input dataset with which all values will be adjusted from
     	 */
     	private void adjust(final Dataset dataset)
     	{
