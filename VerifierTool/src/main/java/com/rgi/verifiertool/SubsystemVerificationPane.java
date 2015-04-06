@@ -2,10 +2,13 @@ package com.rgi.verifiertool;
 
 import java.util.Collection;
 
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -43,18 +46,19 @@ public class SubsystemVerificationPane extends VBox
         this.subsystemName  = subsystemName;
         this.issuesFunction = issuesFunction;
 
+
+        this.setStyle("-fx-background-color: #FCFCFD;");
         Label subsystemLabel = this.prettyLabel();
 
-        this.getChildren().addAll(subsystemLabel,
-                                  this.progressIndicator);
+        this.getChildren().addAll(subsystemLabel, this.progressIndicator);
     }
 
     private Label prettyLabel()
     {
         Label subsystemLabel = new Label(this.subsystemName);
 
-        subsystemLabel.setFont(Font.font("SanSerif", FontWeight.BOLD, 16));
-        subsystemLabel.setTextFill(Color.DARKSLATEBLUE);
+        subsystemLabel.setFont(Font.font(font, FontWeight.BOLD, 16));
+        subsystemLabel.setTextFill(darkAquaBlue);
 
         return subsystemLabel;
     }
@@ -81,7 +85,7 @@ public class SubsystemVerificationPane extends VBox
         if(issues != null && !issues.isEmpty())
         {
             TextFlow textBox = new TextFlow();
-            textBox.setStyle("-fx-border-radius: 10 10 10 10; -fx-border-color: gray; -fx-background-color: white;");
+            textBox.setStyle("-fx-border-radius: 10 10 10 10; -fx-border-color: gray;-fx-background-radius: 10 10 10 10; -fx-background-color: #9BBED6;");
 
             for(final VerificationIssue issue : issues)
             {
@@ -99,26 +103,27 @@ public class SubsystemVerificationPane extends VBox
         {
             //add pass
             this.getChildren().add(getPassText());
-        }
 
+        }
+        this.snapshot(new SnapshotParameters(), new WritableImage(1,1));//added to refresh scroll pane
         this.getChildren().remove(this.progressIndicator);
     }
 
     private static Text getPassText()
     {
         Text passed = new Text("Passed");
-        passed.setFont(Font.font("SanSerif", FontWeight.BOLD, 16));
-        passed.setFill(Color.GREEN);
+        passed.setFont(Font.font(font, FontWeight.BOLD, 16));
+        passed.setFill(brightGreen);
 
         return passed;
     }
 
     private static Text getSeverityLabel(final Severity severity)
     {
-        final Text text = new Text(severity.name());
+        final Text text = new Text(String.format("\n%s ",severity.name()));
 
         text.setFill(getColor(severity));
-        text.setFont(Font.font("SanSerif", FontWeight.BOLD, 12));
+        text.setFont(Font.font(font, FontWeight.BOLD, 14));
 
         return text;
     }
@@ -127,8 +132,8 @@ public class SubsystemVerificationPane extends VBox
     {
         switch(severity)
         {
-            case Warning: return Color.ORANGE;
-            case Error:   return Color.RED;
+            case Warning: return brightOrange;
+            case Error:   return brightRed;
 
             default: return Color.BLACK;
         }
@@ -138,19 +143,30 @@ public class SubsystemVerificationPane extends VBox
     {
         final Text text = new Text();
 
-        text.setText(String.format(" Requirement %d: \"%s\"\n\n",
+        text.setText(String.format(" Requirement %d: \"%s\"\n",
                                     requirement.number(),
                                     requirement.text()));
 
-        text.setFont(Font.font("SanSerif", FontWeight.BOLD, 12));
+        text.setFont(Font.font(font, FontWeight.EXTRA_BOLD, 12));
+        text.setFill(white);
 
         return text;
     }
 
     private static Text getReasonLabel(final String reason)
     {
-        final Text text = new Text(String.format("%s \n\n", reason));
+        final Text text = new Text(String.format("%s \n", reason));
+        text.setFill(darkAquaBlue);
+        text.setFont(Font.font(font, FontWeight.BOLD, 12));
 
         return text;
     }
+
+    private final static String font = "SanSerif";
+    private final static Paint darkAquaBlue = Color.rgb(41, 110, 163);
+    private final static Paint brightGreen  = Color.rgb(0,  218,  125);
+    private final static Color brightOrange = Color.rgb(255,  187,  16);
+    private final static Color brightRed    = Color.rgb(217, 35, 52);
+    private final static Paint white        = Color.rgb(252, 252, 253);
+
 }
