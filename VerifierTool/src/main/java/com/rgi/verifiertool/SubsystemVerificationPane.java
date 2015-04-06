@@ -47,7 +47,7 @@ public class SubsystemVerificationPane extends VBox
         this.issuesFunction = issuesFunction;
 
 
-        this.setStyle("-fx-background-color: #FCFCFD;");
+        this.setStyle(String.format("-fx-background-color: %s;", whiteHex));
         Label subsystemLabel = this.prettyLabel();
 
         this.getChildren().addAll(subsystemLabel, this.progressIndicator);
@@ -85,7 +85,7 @@ public class SubsystemVerificationPane extends VBox
         if(issues != null && !issues.isEmpty())
         {
             TextFlow textBox = new TextFlow();
-            textBox.setStyle("-fx-border-radius: 10 10 10 10; -fx-border-color: gray;-fx-background-radius: 10 10 10 10; -fx-background-color: #9BBED6;");
+            textBox.setStyle(String.format("-fx-border-radius: 10 10 10 10; -fx-border-color: gray;-fx-background-radius: 10 10 10 10; -fx-background-color: %s;", greyBlueHex));
 
             for(final VerificationIssue issue : issues)
             {
@@ -120,7 +120,7 @@ public class SubsystemVerificationPane extends VBox
 
     private static Text getSeverityLabel(final Severity severity)
     {
-        final Text text = new Text(String.format("\n%s ",severity.name()));
+        final Text text = new Text(String.format("%s ",severity.name()));
 
         text.setFill(getColor(severity));
         text.setFont(Font.font(font, FontWeight.BOLD, 14));
@@ -168,5 +168,7 @@ public class SubsystemVerificationPane extends VBox
     private final static Color brightOrange = Color.rgb(255,  187,  16);
     private final static Color brightRed    = Color.rgb(217, 35, 52);
     private final static Paint white        = Color.rgb(252, 252, 253);
+    private final static String whiteHex    = "#FCFCFD";
+    private final static String greyBlueHex = "#9BBED6";
 
 }

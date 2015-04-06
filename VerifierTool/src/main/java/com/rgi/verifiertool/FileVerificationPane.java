@@ -40,7 +40,7 @@ public class FileVerificationPane extends TitledPane
         this.setAnimated(false);
         this.setText(geoPackageFile.getName());
         this.setPrettyText();
-        this.content.setStyle("-fx-background-color: #FCFCFD;");
+        this.content.setStyle(String.format("-fx-background-color: %s;", whiteHex));
         this.createContextMenu();
         this.setOnMousePressed(e -> this.createDeleteListener(e));
 
@@ -144,5 +144,6 @@ public class FileVerificationPane extends TitledPane
     }
     private final static String font = "SanSerif";
     private final static Paint brightBlue = Color.rgb(0, 120, 212);
+    private final static String whiteHex    =  "#FCFCFD";
 
 }

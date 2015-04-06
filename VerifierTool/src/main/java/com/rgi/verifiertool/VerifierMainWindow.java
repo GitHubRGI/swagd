@@ -30,9 +30,12 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
@@ -75,10 +78,12 @@ public class VerifierMainWindow extends Application
         this.scrollPane.setFitToHeight(true);
         this.scrollPane.setFitToWidth (true);
         this.scrollPane.setContent(this.filesContainer);
-        this.filesContainer.setStyle("-fx-background-color: #2D8CD5;");
-        this.scrollPane.setStyle("-fx-background-color: #2D8CD5;");
-        bottomGrid.setStyle("-fx-background-color: #9BBED6;");
-        layout.setStyle("-fx-background-color: #2D8CD5;");
+        this.filesContainer.setStyle(String.format("-fx-background-color: %s;", brightBlueHex));
+        this.scrollPane.setStyle(String.format("-fx-background-color: %s;", brightBlueHex));
+        bottomGrid.setStyle(String.format("-fx-background-color: %s;", greyBlueHex));
+        layout.setStyle(String.format("-fx-background-color: %s;", brightBlueHex));
+
+        setIcon(primaryStage);
 
         bottomGrid.setHgap(100);
 
@@ -137,6 +142,12 @@ public class VerifierMainWindow extends Application
         primaryStage.show();
     }
 
+    private static void setIcon(final Stage stage)
+    {
+        Image rgiIcon = new Image(VerifierMainWindow.class.getResourceAsStream("RGI_Logo.png"));
+        stage.getIcons().add(rgiIcon);
+    }
+
     private static void showApplicationInformation()
     {
         //create title and set font
@@ -163,6 +174,7 @@ public class VerifierMainWindow extends Application
 
         text.setStyle("-fx-background-color: #FCFCFD;");
 
+        setIcon(infoStage);
         infoStage.setResizable(false);
         infoStage.setScene(infoScene);
         infoStage.show();
@@ -177,6 +189,7 @@ public class VerifierMainWindow extends Application
                 FileVerificationPane verificationPane = new FileVerificationPane(file);
                 this.filesContainer.getChildren().add(verificationPane);
                 verificationPane.setParent(this.filesContainer);
+                this.filesContainer.snapshot(new SnapshotParameters(), new WritableImage(1,1));
             }
             else
             {
@@ -194,7 +207,7 @@ public class VerifierMainWindow extends Application
 
     private static void setHyperLinkFancyFont(final Hyperlink link)
     {
-        link.setTextFill(hyperlinkColor);
+        link.setTextFill(darkGreyBlue);
         link.setFont(Font.font(font,FontWeight.BOLD, 11));
     }
 
@@ -208,6 +221,8 @@ public class VerifierMainWindow extends Application
     }
 
     private final static String font = "SanSerif";
-    private final static Paint  hyperlinkColor = Color.rgb(41, 110, 163);
+    private final static Paint  darkGreyBlue = Color.rgb(41, 110, 163);
     private final static Paint  whiteColor = Color.rgb(252, 252, 253);
+    private final static String brightBlueHex = "#2D8CD5";
+    private final static String greyBlueHex = "#9BBED6";
 }
