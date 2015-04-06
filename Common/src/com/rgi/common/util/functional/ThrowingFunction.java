@@ -21,43 +21,46 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.verification;
+package com.rgi.common.util.functional;
+
+import java.util.function.Function;
 
 /**
+ * Wrapper for {@link Function} which allows the throwing of an exception
+ *
+ * @param <T> The type of the input to the function
+ * @param <R> The type of the result of the function
+ *
  * @author Luke Lambert
  *
+ * @see <a
+ *      href="https://stackoverflow.com/a/27252163/16434">https://stackoverflow.com/a/27252163/16434</a>
  */
-public class VerificationIssue
+@FunctionalInterface
+public interface ThrowingFunction<T, R> extends Function<T, R>
 {
+    @Override
+    public default R apply(final T t)
+    {
+        try
+        {
+            return applyThrows(t);
+        }
+        catch(final Throwable th)
+        {
+            throw new RuntimeException(th);
+        }
+    }
+
     /**
-     * Constructor
+     * Applies this function to the given argument
      *
-     * @param reason
-     *             The explanation of how a GeoPackage didn't conform to a specific requirement
-     * @param requirement
-     *             The requirement that the GeoPackage didn't fully conform to
+     * @param t the function argument
+     *
+     * @return the function result
+     *
+     * @throws Throwable
+     *             when the underlying apply throws
      */
-    public VerificationIssue(final String reason, final Requirement requirement)
-    {
-        this.reason     = reason;
-        this.requirement = requirement;
-    }
-
-    /**
-     * @return the message
-     */
-    public String getReason()
-    {
-        return this.reason;
-    }
-    /**
-     * @return the requirement
-     */
-    public Requirement getRequirement()
-    {
-        return this.requirement;
-    }
-
-    final private String      reason;
-    final private Requirement requirement;
+    public R applyThrows(T t) throws Throwable;
 }

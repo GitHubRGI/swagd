@@ -86,7 +86,7 @@ public class RawImageTileStoreReaderAdapter extends TileStoreReaderAdapter
         this.tileDimensionsSupplier = tileDimensionsSupplier;
         this.forceInput             = forceInput;
 
-        final SpatialReference srs = GdalUtility.getDatasetSrs(file);
+        final SpatialReference srs = GdalUtility.getDatasetSpatialReference(file);
 
         final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(srs);
 

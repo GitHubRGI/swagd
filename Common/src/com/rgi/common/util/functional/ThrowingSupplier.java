@@ -21,15 +21,15 @@
  * SOFTWARE.
  */
 
-package utility;
+package com.rgi.common.util.functional;
 
-import java.util.function.Function;
+import java.util.function.Supplier;
+
 
 /**
- * Wrapper for {@link Function} which allows the throwing of an exception
+ * Wrapper for {@link Supplier} which allows the throwing of an exception
  *
- * @param <T> The type of the input to the function
- * @param <R> The type of the result of the function
+ * @param <T> The type of results supplied by this supplier
  *
  * @author Luke Lambert
  *
@@ -37,30 +37,28 @@ import java.util.function.Function;
  *      href="https://stackoverflow.com/a/27252163/16434">https://stackoverflow.com/a/27252163/16434</a>
  */
 @FunctionalInterface
-public interface ThrowingFunction<T, R> extends Function<T, R>
+public interface ThrowingSupplier<T> extends Supplier<T>
 {
     @Override
-    public default R apply(final T t)
+    public default T get()
     {
         try
         {
-            return applyThrows(t);
+            return getThrows();
         }
-        catch(final Exception e)
+        catch(final Throwable th)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException(th);
         }
     }
 
     /**
      * Applies this function to the given argument
      *
-     * @param t the function argument
-     *
      * @return the function result
      *
-     * @throws Exception
+     * @throws Throwable
      *             when the underlying throws
      */
-    public R applyThrows(T t) throws Exception;
+    public T getThrows() throws Throwable;
 }
