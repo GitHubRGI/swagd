@@ -38,7 +38,7 @@ public class SpatialReferenceSystem
      * @param name
      *             Human readable name of this spatial reference system
      * @param identifier
-     *             Unique identifier for each Spatial Reference System within a GeoPackage
+     *             Unique identifier for each Spatial reference system within a GeoPackage
      * @param organization
      *             Case-insensitive name of the defining organization e.g. EPSG or epsg
      * @param organizationSrsId
@@ -120,22 +120,26 @@ public class SpatialReferenceSystem
     }
 
     /**
-     * @param inName Spatial Reference System name
-     * @param inIdentifier Spatial Reference System identifier
-     * @param inOrganization Spatial Reference System organization
-     * @param inOrganizationSrsId Spatial Reference System Identifier
-     * @param inDefinition Spatial Reference System definition
-     * @return returns true if the Spatial Reference System equals the parameter values; otherwise returns false;
+     * @param inName
+     *             Spatial reference system name
+     * @param inIdentifier
+     *             Spatial reference system identifier
+     * @param inOrganization
+     *             Spatial reference system organization
+     * @param inOrganizationSrsId
+     *             Spatial reference system Identifier
+     * @param inDefinition
+     *             Spatial reference system definition
+     * @return returns true if the Spatial reference system equals the
+     *             parameter values; otherwise returns false;
      */
     public boolean equals(final String inName,
-                          final int    inIdentifier,
                           final String inOrganization,
                           final int    inOrganizationSrsId,
                           final String inDefinition)
     {
         // The testing of this.description v.s. other.description is intentionally left out.
         return this.name              .equals(inName)                   &&
-               this.identifier        == inIdentifier                   &&
                this.organization      .equalsIgnoreCase(inOrganization) &&
                this.organizationSrsId == inOrganizationSrsId            &&
                this.definition        .equals(inDefinition);
@@ -150,7 +154,7 @@ public class SpatialReferenceSystem
     }
 
     /**
-     * @return Unique identifier for each Spatial Reference System within a GeoPackage
+     * @return Unique identifier for each spatial reference system within a GeoPackage
      */
     public int getIdentifier()
     {
