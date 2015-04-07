@@ -2,6 +2,7 @@ package com.rgi.verifiertool;
 
 import java.util.Collection;
 
+import javafx.geometry.Insets;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
@@ -54,10 +55,11 @@ public class SubsystemVerificationPane extends VBox
         this.subsystemName  = subsystemName;
         this.issuesFunction = issuesFunction;
         this.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
+        this.setPadding(new Insets(5));
 
         final Label subsystemLabel = this.prettyLabel();
 
-        this.progressIndicator.setPrefSize(10, 10);
+        this.progressIndicator.setMinSize(35, 35);
 
         this.getChildren().addAll(subsystemLabel, this.progressIndicator);
     }
@@ -105,10 +107,9 @@ public class SubsystemVerificationPane extends VBox
 
             for(final VerificationIssue issue : issues)
             {
-                final Text severity = getSeverityLabel(issue.getRequirement().severity());
-
+                final Text severity    = getSeverityLabel(issue.getRequirement().severity());
                 final Text requirement = getRequirementLabel(issue.getRequirement());
-                final Text reason = getReasonLabel(issue.getReason());
+                final Text reason      = getReasonLabel(issue.getReason());
 
                 textBox.getChildren().addAll(severity, requirement, reason);
             }
