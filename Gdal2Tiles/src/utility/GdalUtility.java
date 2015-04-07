@@ -834,9 +834,12 @@ public class GdalUtility
      * Warp an input {@link Dataset} into a different spatial reference system. Does
      * not correct for NODATA values.
      *
-     * @param dataset An input {@link Dataset}
+     * @param dataset
+     *             An input {@link Dataset}
      * @param fromSrs
+     *             Original spatial reference system of the <code>dataset</code>
      * @param toSrs
+     *             Spatial reference system to warp the <code>dataset</code> to
      * @return A {@link Dataset} in the input {@link SpatialReference} requested
      * @throws DataFormatException Thrown when the AutoCreateWarpedVRT method returns null
      */
