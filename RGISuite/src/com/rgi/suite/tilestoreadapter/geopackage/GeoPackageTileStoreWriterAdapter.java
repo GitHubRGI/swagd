@@ -86,20 +86,7 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
      */
     public GeoPackageTileStoreWriterAdapter(final Settings settings)
     {
-        this(settings, false);
-    }
-
-    /**
-     * Constructor
-     *
-     * @param settings
-     *             Handle to the application's settings object
-     * @param imageFormatEnabled
-     *             Allow the image format setting option to be chosen by user
-     */
-    public GeoPackageTileStoreWriterAdapter(final Settings settings, final boolean imageFormatEnabled)
-    {
-        super(settings, imageFormatEnabled, false);
+        super(settings);
 
         this.outputFileNameSelector.addActionListener(e -> { final String startDirectory = this.settings.get(GeoPackageOutputLocationSettingName, DefaultGeoPackageOutputLocation);
 
