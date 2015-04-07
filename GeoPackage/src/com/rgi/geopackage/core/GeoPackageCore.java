@@ -51,6 +51,22 @@ import com.rgi.geopackage.verification.VerificationLevel;
 public class GeoPackageCore
 {
     /**
+     * The Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
+     */
+    public static final SimpleDateFormat DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+    /**
+     * The name of the GeoPackage Spatial Reference System Table "gpkg_spatial_ref_sys"
+     */
+    public final static String SpatialRefSysTableName = "gpkg_spatial_ref_sys";
+
+    /**
+     * The name of the GeoPackage Contents Table "gpkg_contents"
+     */
+    public final static String ContentsTableName = "gpkg_contents";
+
+
+    /**
      * Constructor
      *
      * @param databaseConnection
@@ -124,8 +140,6 @@ public class GeoPackageCore
      *
      * @param name
      *             Human readable name of this spatial reference system
-     * @param identifier
-     *             Unique identifier for each Spatial Reference System within a GeoPackage
      * @param organization
      *             Case-insensitive name of the defining organization e.g. EPSG or epsg
      * @param organizationSrsId
@@ -138,7 +152,6 @@ public class GeoPackageCore
      * @throws SQLException throws if an SQLException occurs
      */
     public SpatialReferenceSystem addSpatialReferenceSystem(final String name,
-                                                            final int    identifier,
                                                             final String organization,
                                                             final int    organizationSrsId,
                                                             final String definition,
@@ -146,6 +159,25 @@ public class GeoPackageCore
     {
         try
         {
+            final SpatialReferenceSystem existingSrs = this.getSpatialReferenceSystem(organization, organizationSrsId);
+
+            if(existingSrs != null)
+            {
+                if(existingSrs.equals(name,
+                                      organization,
+                                      organizationSrsId,
+                                      definition))
+                {
+                    return existingSrs;
+                }
+
+                throw new IllegalArgumentException("A spatial reference system already exists with this organization and organization-assigned numeric identifier, but has different values for its other fields");
+            }
+
+            final int identifier = DatabaseUtility.nextValue(this.databaseConnection,
+                                                             GeoPackageCore.SpatialRefSysTableName,
+                                                             GeoPackageCore.SpatialRefSystemSrsIdColumnName);
+
             final SpatialReferenceSystem spatialReferenceSystem = this.addSpatialReferenceSystemNoCommit(name,
                                                                                                          identifier,
                                                                                                          organization,
@@ -216,7 +248,7 @@ public class GeoPackageCore
      * identifier for each spatial reference system within a GeoPackage
      *
      * @param identifier
-     *            Unique identifier for each Spatial Reference System within a
+     *            Unique identifier for each spatial reference system within a
      *            GeoPackage
      * @return Returns the unique spatial reference system (SRS), or null
      * @throws SQLException
@@ -554,7 +586,6 @@ public class GeoPackageCore
         if(existingSrs != null)
         {
             if(existingSrs.equals(name,
-                                  identifier,
                                   organization,
                                   organizationSrsId,
                                   definition))
@@ -603,7 +634,7 @@ public class GeoPackageCore
     {
         try
         {
-            // Create the spatial ref system table
+            // Create the spatial reference system table
             if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageCore.SpatialRefSysTableName))
             {
                 try(Statement statement = this.databaseConnection.createStatement())
@@ -612,10 +643,10 @@ public class GeoPackageCore
                 }
             }
 
-            // Add the default entries to the spatial ref system table
+            // Add the default entries to the spatial reference system table
             // See: http://www.geopackage.org/spec/#spatial_ref_sys -> 1.1.2.1.2. Table Data Values, Requirement 11
             this.addSpatialReferenceSystemNoCommit("World Geodetic System (WGS) 1984",
-                                                   4326,
+                                                   1,
                                                    "EPSG",
                                                    4326,
                                                    "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]", // http://spatialreference.org/ref/epsg/wgs-84/ogcwkt/
@@ -626,14 +657,14 @@ public class GeoPackageCore
                                                    "NONE",
                                                    -1,
                                                    "undefined",
-                                                   "undefined Cartesian coordinate reference system");
+                                                   "Undefined Cartesian coordinate reference system");
 
             this.addSpatialReferenceSystemNoCommit("Undefined Geographic Coordinate Reference System",
                                                    0,
                                                    "NONE",
                                                    0,
                                                    "undefined",
-                                                   "undefined Geographic coordinate reference system");
+                                                   "Undefined geographic coordinate reference system");
 
             // Create the package contents table or view
             if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageCore.ContentsTableName))
@@ -704,17 +735,5 @@ public class GeoPackageCore
 
     private final Connection databaseConnection;
 
-    /**
-     * The Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
-     */
-    public final SimpleDateFormat DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");//changed from non-static due to findbugs
-
-    /**
-     * The name of the GeoPackage Spatial Reference System Table "gpkg_spatial_ref_sys"
-     */
-    public final static String SpatialRefSysTableName = "gpkg_spatial_ref_sys";
-    /**
-     * The name of the GeoPackage Contents Table "gpkg_contents"
-     */
-    public final static String ContentsTableName = "gpkg_contents";
+    private static final String SpatialRefSystemSrsIdColumnName = "srs_id";
 }
