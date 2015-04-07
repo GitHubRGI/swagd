@@ -99,7 +99,7 @@ public class TilerWindow extends NavigationWindow
 
     private final JSpinner     tileWidthSpinner;
     private final JSpinner     tileHeightSpinner;
-    private final SwatchButton clearColorButton = new SwatchButton("");;
+    private final SwatchButton clearColorButton = new SwatchButton("");
 
     /**
      * Constructor

@@ -77,7 +77,7 @@ public class RawImageTileStoreReaderAdapter extends TileStoreReaderAdapter
      *             If true, {@link #needsInput} will always return true. This
      *             forces the selection of a coordinate reference system.
      * @throws DataFormatException
-     *             Rethrown from {@link GdalUtility#getDatasetSrs}
+     *             Rethrown from {@link GdalUtility#getDatasetSpatialReference}
      */
     public RawImageTileStoreReaderAdapter(final File file, final Supplier<Dimensions<Integer>> tileDimensionsSupplier, final boolean forceInput) throws DataFormatException
     {
