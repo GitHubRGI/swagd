@@ -1059,12 +1059,11 @@ public class GdalUtility
      * @param dataset The input {@link Dataset}
      * @return An object with all information necessary to perform GDAL ReadRaster and WriteRaster
      *            operations.
-     * @throws TilingException When creating a new {@link GdalRasterParameters} objects throws
      */
     public static GdalRasterParameters getGdalRasterParameters(final double[] geoTransform,
                                                                final BoundingBox boundingBox,
                                                                final Dimensions<Integer> dimensions,
-                                                               final Dataset dataset) throws TilingException
+                                                               final Dataset dataset)
     {
         if (geoTransform.length == 0)
         {
@@ -1085,10 +1084,10 @@ public class GdalUtility
         // TODO: investigate replacing readX/Y with boundingBox.getWidth/Height calls
         // This is sorcery of the darkest kind.  It works but it not fully understood.
         final int readX = (int)((boundingBox.getMinX() - geoTransform[0]) / geoTransform[1] + 0.001);
-          final int readY = (int)((boundingBox.getMaxY() - geoTransform[3]) / geoTransform[5] + 0.001);
-          final int readXSize = (int)((boundingBox.getMaxX() - boundingBox.getMinX()) / geoTransform[1] + 0.5);
-          final int readYSize = (int)((boundingBox.getMinY() - boundingBox.getMaxY()) / geoTransform[5] + 0.5);
-          return new GdalRasterParameters(readX, readY, readXSize, readYSize, dimensions, dataset);
+        final int readY = (int)((boundingBox.getMaxY() - geoTransform[3]) / geoTransform[5] + 0.001);
+        final int readXSize = (int)((boundingBox.getMaxX() - boundingBox.getMinX()) / geoTransform[1] + 0.5);
+        final int readYSize = (int)((boundingBox.getMinY() - boundingBox.getMaxY()) / geoTransform[5] + 0.5);
+        return new GdalRasterParameters(readX, readY, readXSize, readYSize, dimensions, dataset);
     }
 
     /**
