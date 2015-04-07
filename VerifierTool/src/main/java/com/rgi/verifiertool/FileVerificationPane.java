@@ -13,8 +13,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TitledPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
@@ -40,7 +38,7 @@ public class FileVerificationPane extends TitledPane
         this.setAnimated(false);
         this.setText(geoPackageFile.getName());
         this.setPrettyText();
-        this.content.setStyle(String.format("-fx-background-color: %s;", whiteHex));
+        this.content.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
         this.createContextMenu();
         this.setOnMousePressed(e -> this.createDeleteListener(e));
 
@@ -112,9 +110,9 @@ public class FileVerificationPane extends TitledPane
     private void setPrettyText()
     {
         this.setContent(this.content);
-        this.setTextFill(brightBlue);
-        this.setFont(Font.font(font, FontWeight.BOLD, 18));
-        this.setStyle("-fx-body-color: #FCFCFD;");
+        this.setTextFill(Style.brightBlue.toColor());
+        this.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 18));
+        this.setStyle(String.format("-fx-body-color: %s;", Style.white.getHex()));
     }
 
     private Task<Collection<VerificationIssue>> createTask(final SubsystemVerificationPane subsystemVerificationPane, final GeoPackage geoPackage)
@@ -142,8 +140,4 @@ public class FileVerificationPane extends TitledPane
 
         return task;
     }
-    private final static String font = "SanSerif";
-    private final static Paint brightBlue = Color.rgb(0, 120, 212);
-    private final static String whiteHex    =  "#FCFCFD";
-
 }

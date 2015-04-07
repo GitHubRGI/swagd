@@ -42,7 +42,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -72,18 +71,20 @@ public class VerifierMainWindow extends Application
     public void start(final Stage primaryStage) throws Exception
     {
         final BorderPane layout     = new BorderPane();
-        final Scene      scene      = new Scene(layout, 550, 400);
+        final Scene      scene      = new Scene(layout, 570, 400);
         final GridPane   bottomGrid = new GridPane();
 
         this.scrollPane.setFitToHeight(true);
         this.scrollPane.setFitToWidth (true);
         this.scrollPane.setContent(this.filesContainer);
-        this.filesContainer.setStyle(String.format("-fx-background-color: %s;", brightBlueHex));
-        this.scrollPane.setStyle(String.format("-fx-background-color: %s;", brightBlueHex));
-        bottomGrid.setStyle(String.format("-fx-background-color: %s;", greyBlueHex));
-        layout.setStyle(String.format("-fx-background-color: %s;", brightBlueHex));
 
-        setIcon(primaryStage);
+        //Set the background Colors
+        this.filesContainer.setStyle(String.format("-fx-background-color: %s;", Style.brightBlue.getHex()));
+        this.scrollPane.setStyle(String.format("-fx-background-color: %s;", Style.brightBlue.getHex()));
+        bottomGrid.setStyle(String.format("-fx-background-color: %s;", Style.greyBlue.getHex()));
+        layout.setStyle(String.format("-fx-background-color: %s;", Style.brightBlue.getHex()));
+
+        //setIcon(primaryStage);
 
         bottomGrid.setHgap(100);
 
@@ -92,23 +93,9 @@ public class VerifierMainWindow extends Application
         layout.setCenter(dragHereMessage);
         layout.setBottom(bottomGrid);
 
-        //Create Link to SWAGD github
-        final Hyperlink swagdInfo = new Hyperlink("SWAGD Project");
-        setHyperLinkFancyFont(swagdInfo);
-        bottomGrid.add(swagdInfo, 0, 0);
-        swagdInfo.setOnAction(e -> this.getHostServices().showDocument("https://github.com/GitHubRGI/swagd"));
-
-        //create link to GeoPackage specification Document
-        final Hyperlink geoPackageLink = new Hyperlink("GeoPackage Specification");
-        setHyperLinkFancyFont(geoPackageLink);
-        bottomGrid.add(geoPackageLink, 1, 0);
-        geoPackageLink.setOnAction(e -> this.getHostServices().showDocument("http://www.geopackage.org/spec/"));
-
-        //add an about this application link
-        final Hyperlink verifierToolInfo = new Hyperlink("About application");
-        setHyperLinkFancyFont(verifierToolInfo);
-        bottomGrid.add(verifierToolInfo, 2, 0);
-        verifierToolInfo.setOnAction(e -> showApplicationInformation());
+        this.createSWAGDHyperLink(bottomGrid);
+        this.createGeoPackageSpecificationHyperLink(bottomGrid);
+        createApplicationInfoHyperLink(bottomGrid);
 
         //create the even that drags the file over
         scene.setOnDragOver(event -> { final Dragboard db = event.getDragboard();
@@ -142,6 +129,30 @@ public class VerifierMainWindow extends Application
         primaryStage.show();
     }
 
+    private static void createApplicationInfoHyperLink(final GridPane bottomGrid)
+    {
+        final Hyperlink verifierToolInfo = new Hyperlink("About application");
+        setHyperLinkFancyFont(verifierToolInfo);
+        bottomGrid.add(verifierToolInfo, 2, 0);
+        verifierToolInfo.setOnAction(e -> showApplicationInformation());
+    }
+
+    private void createSWAGDHyperLink(final GridPane bottomGrid)
+    {
+        final Hyperlink swagdInfo = new Hyperlink("SWAGD Project");
+        setHyperLinkFancyFont(swagdInfo);
+        bottomGrid.add(swagdInfo, 0, 0);
+        swagdInfo.setOnAction(e -> this.getHostServices().showDocument("https://github.com/GitHubRGI/swagd"));
+    }
+
+    private void createGeoPackageSpecificationHyperLink(final GridPane bottomGrid)
+    {
+        final Hyperlink geoPackageLink = new Hyperlink("GeoPackage Specification");
+        setHyperLinkFancyFont(geoPackageLink);
+        bottomGrid.add(geoPackageLink, 1, 0);
+        geoPackageLink.setOnAction(e -> this.getHostServices().showDocument("http://www.geopackage.org/spec/"));
+    }
+
     private static void setIcon(final Stage stage)
     {
         Image rgiIcon = new Image(VerifierMainWindow.class.getResourceAsStream("RGI_Logo.png"));
@@ -153,12 +164,12 @@ public class VerifierMainWindow extends Application
         //create title and set font
         final Text title  = new Text("GeoPackage Verifier Tool\n");
         title.setFill(Color.rgb(0, 120, 212));
-        title.setFont(Font.font(font, FontWeight.EXTRA_BOLD, 20));
+        title.setFont(Font.font(Style.getFont(), FontWeight.EXTRA_BOLD, 20));
         title.setTextAlignment(TextAlignment.CENTER);
 
         //set company name and font
         final Text company = new Text("Reinventing Geospatial Inc.\n\n");
-        company.setFont(Font.font(font, FontWeight.BOLD, 18));
+        company.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 18));
         company.setFill(Color.rgb(41, 110, 163));
 
         //set application information and font
@@ -166,13 +177,13 @@ public class VerifierMainWindow extends Application
                                   + "This Verification Tool will test the GeoPackage Core, GeoPackage Tiles, GeoPackage Extensions, GeoPackage Schema, "
                                   + "and GeoPackage Metadata requirements.  This will test a GeoPackage file against the Requirements referenced in the Encoding Standard.   "
                                   + "This will not verify GeoPackages with Feature data.");
-        about.setFont(Font.font(font, FontWeight.THIN, 14));
+        about.setFont(Font.font(Style.getFont(), FontWeight.THIN, 14));
 
         final Stage infoStage = new Stage();
         final TextFlow text   = new TextFlow(title, company, about);
         final Scene infoScene = new Scene(text, 400, 220);
 
-        text.setStyle("-fx-background-color: #FCFCFD;");
+        text.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
 
         setIcon(infoStage);
         infoStage.setResizable(false);
@@ -196,7 +207,7 @@ public class VerifierMainWindow extends Application
                 //show error message
                 Stage errorStage = new Stage();
                 Label errorLabel  = new Label("Error Invalid Input:\nMust select a File."); //TODO
-                errorLabel.setFont(Font.font(font, FontWeight.EXTRA_BOLD, 16));
+                errorLabel.setFont(Font.font(Style.getFont(), FontWeight.EXTRA_BOLD, 16));
                 errorLabel.setAlignment(Pos.CENTER);
                 errorStage.setScene(new Scene(errorLabel, 300, 100));
                 errorStage.show();
@@ -207,22 +218,16 @@ public class VerifierMainWindow extends Application
 
     private static void setHyperLinkFancyFont(final Hyperlink link)
     {
-        link.setTextFill(darkGreyBlue);
-        link.setFont(Font.font(font,FontWeight.BOLD, 11));
+        link.setTextFill(Style.darkAquaBlue.toColor());
+        link.setFont(Font.font(Style.getFont(),FontWeight.BOLD, 11));
     }
 
     private static Text createFancyText(final String text)
     {
         final Text fancyText = new Text(text);
-        fancyText.setFill(whiteColor);
-        fancyText.setFont(Font.font(font, FontWeight.BOLD, 30));
+        fancyText.setFill(Style.white.toColor());
+        fancyText.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 30));
 
         return fancyText;
     }
-
-    private final static String font = "SanSerif";
-    private final static Paint  darkGreyBlue = Color.rgb(41, 110, 163);
-    private final static Paint  whiteColor = Color.rgb(252, 252, 253);
-    private final static String brightBlueHex = "#2D8CD5";
-    private final static String greyBlueHex = "#9BBED6";
 }
