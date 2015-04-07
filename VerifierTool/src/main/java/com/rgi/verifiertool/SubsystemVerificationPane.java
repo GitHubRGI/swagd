@@ -5,9 +5,15 @@ import java.util.Collection;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -69,12 +75,14 @@ public class SubsystemVerificationPane extends VBox
 
         this.gridPane.add(subsystemLabel, 0, 0);
         this.gridPane.add(this.progressIndicator, 1, 0);
-        ColumnConstraints columnLeft = new ColumnConstraints(90);
-        ColumnConstraints columnRight = new ColumnConstraints();
-        this.gridPane.getColumnConstraints().addAll(columnLeft, columnRight);
+        //Columns for the top label
+        ColumnConstraints columnLeft   = new ColumnConstraints(90);
+        ColumnConstraints columnCenter = new ColumnConstraints(90);
+        ColumnConstraints columnRight  = new ColumnConstraints(25, 25, 25);
+
+        this.gridPane.getColumnConstraints().addAll(columnLeft,columnCenter, columnRight);
         this.gridPane.setVgap(10);
 
-        //this.getChildren().addAll(subsystemLabel, this.progressIndicator);
         this.getChildren().add(this.gridPane);
     }
 
@@ -130,7 +138,9 @@ public class SubsystemVerificationPane extends VBox
                 textBox.getChildren().addAll(severity, requirement, reason);
             }
 
+
             this.gridPane.add(getSeverityLevel(issues), 1, 0);
+            this.gridPane.add(this.createClipBoard(issues), 2, 0);
             this.getChildren().add(textBox);
         }
         else
@@ -140,8 +150,36 @@ public class SubsystemVerificationPane extends VBox
 
         }
         this.snapshot(new SnapshotParameters(), new WritableImage(1,1));//added to refresh scroll pane
-        //this.getChildren().remove(this.progressIndicator);
 
+    }
+
+    private Node createClipBoard(final Collection<VerificationIssue> issues)
+    {
+        Image     clipBoard     = new Image(SubsystemVerificationPane.class.getResourceAsStream("Clipboard_Icon.png"));
+
+        ImageView clipBoardView = new ImageView(clipBoard);
+        clipBoardView.setFitHeight(19);
+        clipBoardView.setFitWidth(19);
+        Button    copyButton    = new Button();
+        copyButton.setMaxSize(20, 20);
+        copyButton.setMinSize(20, 20);
+
+        Tooltip copyMessage = new Tooltip("Copy Message");
+        Tooltip.install(copyButton, copyMessage);
+        copyButton.setGraphic(clipBoardView);
+        copyButton.setOnAction(e-> {
+                                        Clipboard clipboard = Clipboard.getSystemClipboard();
+                                        ClipboardContent content = new ClipboardContent();
+                                        content.putString(this.getVerificationIssues(issues));
+                                        clipboard.setContent(content);
+                                    });
+
+        return copyButton;
+    }
+
+    private String getVerificationIssues(final Collection<VerificationIssue> issues)
+    {
+        return "this will work\n and so will this!";//TODO make this copy the issues
     }
 
     private static Node getSeverityLevel(final Collection<VerificationIssue> issues)

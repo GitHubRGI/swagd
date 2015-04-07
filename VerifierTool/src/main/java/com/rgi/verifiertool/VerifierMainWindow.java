@@ -87,6 +87,8 @@ public class VerifierMainWindow extends Application
         bottomGrid.setStyle(String.format("-fx-background-color: %s;", Style.greyBlue.getHex()));
         layout.setStyle(String.format("-fx-background-color: %s;", Style.brightBlue.getHex()));
 
+        primaryStage.setTitle("RGi GeoPackage Verifier Tool");
+
         setIcon(primaryStage);
 
         bottomGrid.setHgap(100);
