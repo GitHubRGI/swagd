@@ -28,6 +28,7 @@ import java.util.Collection;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Hyperlink;
@@ -48,13 +49,14 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
 /**
+ * @author Luke Lambert
  * @author Jenifer Cochran
  *
  */
 public class VerifierMainWindow extends Application
 {
     private final ScrollPane scrollPane     = new ScrollPane();
-    private final VBox       filesContainer = new VBox();
+    private final VBox       filesContainer = new VBox(10);
 
     /**
      * Launch the Verifier application.
@@ -76,13 +78,16 @@ public class VerifierMainWindow extends Application
         this.scrollPane.setFitToWidth (true);
         this.scrollPane.setContent(this.filesContainer);
 
+        //set margins
+        this.filesContainer.setPadding(new Insets(10));
+
         //Set the background Colors
         this.filesContainer.setStyle(String.format("-fx-background-color: %s;", Style.brightBlue.getHex()));
         this.scrollPane.setStyle(String.format("-fx-background-color: %s;", Style.brightBlue.getHex()));
         bottomGrid.setStyle(String.format("-fx-background-color: %s;", Style.greyBlue.getHex()));
         layout.setStyle(String.format("-fx-background-color: %s;", Style.brightBlue.getHex()));
 
-        //setIcon(primaryStage);
+        setIcon(primaryStage);
 
         bottomGrid.setHgap(100);
 
@@ -116,7 +121,6 @@ public class VerifierMainWindow extends Application
                                               primaryStage.setResizable(true);
                                               primaryStage.setMinHeight(400);
                                               primaryStage.setMinWidth(580);
-                                              primaryStage.setMaxWidth(580);
                                           }
                                           event.setDropCompleted(true);
                                           event.consume();
