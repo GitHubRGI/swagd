@@ -73,11 +73,8 @@ public class Tiler
 
     /**
      * Creates the tiles
-     *
-     * @throws TilingException
-     *             when GdalTileJob creation fails
      */
-    public void execute() throws TilingException
+    public void execute()
     {
         final GdalTileJob tileJob = new GdalTileJob(this.file,
                                                     this.tileWriter,

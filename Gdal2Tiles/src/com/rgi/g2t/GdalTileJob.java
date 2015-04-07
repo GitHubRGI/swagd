@@ -50,8 +50,9 @@ import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
 
 /**
- * @author Steven D. Lander
+ * A {@link Runnable} job that tiles input raster data.
  *
+ * @author Steven D. Lander
  */
 public class GdalTileJob implements Runnable {
 
@@ -63,35 +64,36 @@ public class GdalTileJob implements Runnable {
     private final TaskMonitor		  monitor;
 
     /**
-     * @param file
-     * @param writer
-     * @param tileDimensions
-     * @param noDataColor
-     * @param monitor
-     * @throws TilingException
+     * Constructor
+     *
+     * @param file The {@link File} object of the raster data to be tiled
+     * @param writer The {@link TileStoreWriter} object that will be used to create tiles on-disk
+     * @param tileDimensions The {@link Dimensions} of the tile grid requested
+     * @param noDataColor The {@link Color} of the NODATA fields within the raster image
+     * @param monitor The {@link TaskMonitor} of the running job
      */
     public GdalTileJob(final File file,
                        final TileStoreWriter writer,
                        final Dimensions<Integer> tileDimensions,
                        final Color noDataColor,
-                       final TaskMonitor monitor) throws TilingException
+                       final TaskMonitor monitor)
     {
     	if (file == null)
     	{
-    		throw new TilingException("Raster file location cannot be null");
+    		throw new IllegalArgumentException("Raster file location cannot be null");
     	}
     	if (writer == null)
     	{
-    		throw new TilingException("Tile store writer cannot be null.");
+    		throw new IllegalArgumentException("Tile store writer cannot be null.");
     	}
     	if (tileDimensions == null)
     	{
-    		throw new TilingException("Tile matrix dimensions cannot be null.");
+    		throw new IllegalArgumentException("Tile matrix dimensions cannot be null.");
     	}
     	// TODO: Implement alpha support for nodata color.
     	if (monitor == null)
     	{
-    		throw new TilingException("Monitor cannot be null.");
+    		throw new IllegalArgumentException("Monitor cannot be null.");
     	}
         this.file           = file;
         this.writer         = writer;
@@ -158,6 +160,12 @@ public class GdalTileJob implements Runnable {
         }
     }
 
+    /**
+     * Open a raster file for tiling.
+     *
+     * @return A {@link Dataset} representing the raster image on disk
+     * @throws TilingException Thrown when the {@link Dataset} has no Georeference
+     */
     private Dataset openInput() throws TilingException
     {
         osr.UseExceptions();
@@ -184,6 +192,15 @@ public class GdalTileJob implements Runnable {
         return dataset;
     }
 
+    /**
+     * Open a {@link Dataset} warped to correct for differing {@link SpatialReference} systems.
+     *
+     * @param inputDataset A {@link Dataset} representing the input raster
+     * @return A {@link Dataset} warped to the correct {@link SpatialReference}
+     * @throws TilingException Thrown when an error occurs with either getting the
+     * 						   {@link SpatialReference} from the input raster OR when warping
+     * 						   the input dataset fails
+     */
     private Dataset openOutput(final Dataset inputDataset) throws TilingException
     {
         try
@@ -208,6 +225,18 @@ public class GdalTileJob implements Runnable {
         }
     }
 
+    /**
+     * Generate tiles for all zoom levels requested.
+     *
+     * @param dataset A {@link Dataset} to generate tiles from
+     * @param zoomRange A {@link Range} of zoom level X/Y coordinates to generate
+     * 					tiles from
+     * @param zoom The specific integer zoom level to tile
+     * @param tilesComplete The amount of tiles created to-date
+     * @return The current amount of tiles created to-date
+     * @throws TilingException Thrown when the {@link TileStoreWriter} fails to
+     * 						   add a tile
+     */
     private int generateTiles(final Dataset dataset,
     						  final Range<Coordinate<Integer>> zoomRange,
     						  final int zoom,
