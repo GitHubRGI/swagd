@@ -73,7 +73,9 @@ public class Tiler
 
     /**
      * Creates the tiles
-     * @throws TilingException 
+     *
+     * @throws TilingException
+     *             when GdalTileJob creation fails
      */
     public void execute() throws TilingException
     {

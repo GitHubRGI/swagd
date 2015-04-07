@@ -122,8 +122,6 @@ public class SpatialReferenceSystem
     /**
      * @param inName
      *             Spatial reference system name
-     * @param inIdentifier
-     *             Spatial reference system identifier
      * @param inOrganization
      *             Spatial reference system organization
      * @param inOrganizationSrsId
