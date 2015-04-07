@@ -3,10 +3,13 @@ package com.rgi.verifiertool;
 import java.util.Collection;
 
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -34,6 +37,8 @@ public class SubsystemVerificationPane extends VBox
 
     private final ThrowingFunction<GeoPackage, Collection<VerificationIssue>> issuesFunction;
 
+    private final GridPane gridPane = new GridPane();
+
     private final ProgressIndicator progressIndicator = new ProgressIndicator();
 
     /**
@@ -59,9 +64,18 @@ public class SubsystemVerificationPane extends VBox
 
         final Label subsystemLabel = this.prettyLabel();
 
-        this.progressIndicator.setMinSize(35, 35);
+        this.progressIndicator.setMinSize(25, 25);
+        this.progressIndicator.setMaxSize(25, 25);
 
-        this.getChildren().addAll(subsystemLabel, this.progressIndicator);
+        this.gridPane.add(subsystemLabel, 0, 0);
+        this.gridPane.add(this.progressIndicator, 1, 0);
+        ColumnConstraints columnLeft = new ColumnConstraints(90);
+        ColumnConstraints columnRight = new ColumnConstraints();
+        this.gridPane.getColumnConstraints().addAll(columnLeft, columnRight);
+        this.gridPane.setVgap(10);
+
+        //this.getChildren().addAll(subsystemLabel, this.progressIndicator);
+        this.getChildren().add(this.gridPane);
     }
 
     private Label prettyLabel()
@@ -100,6 +114,8 @@ public class SubsystemVerificationPane extends VBox
      */
     public void update(final Collection<VerificationIssue> issues)
     {
+        this.gridPane.getChildren().remove(this.progressIndicator);
+
         if(issues != null && !issues.isEmpty())
         {
             final TextFlow textBox = new TextFlow();
@@ -114,16 +130,30 @@ public class SubsystemVerificationPane extends VBox
                 textBox.getChildren().addAll(severity, requirement, reason);
             }
 
+            this.gridPane.add(getSeverityLevel(issues), 1, 0);
             this.getChildren().add(textBox);
         }
         else
         {
             //add pass
-            this.getChildren().add(getPassText());
+            this.gridPane.add(getPassText(), 1, 0);
 
         }
         this.snapshot(new SnapshotParameters(), new WritableImage(1,1));//added to refresh scroll pane
-        this.getChildren().remove(this.progressIndicator);
+        //this.getChildren().remove(this.progressIndicator);
+
+    }
+
+    private static Node getSeverityLevel(final Collection<VerificationIssue> issues)
+    {
+        boolean hasError = issues.stream().anyMatch(issue -> issue.getRequirement().severity().equals(Severity.Error));
+
+        if(hasError)
+        {
+            return getSeverityLabel(Severity.Error);
+        }
+
+        return getSeverityLabel(Severity.Warning);
     }
 
     private static Text getPassText()
@@ -172,7 +202,7 @@ public class SubsystemVerificationPane extends VBox
 
     private static Text getReasonLabel(final String reason)
     {
-        final Text text = new Text(String.format("%s \n\n", reason));
+        final Text text = new Text(String.format("%s \n", reason));
         text.setFill(Style.greyBlue.toColor());
         text.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 12));
 
