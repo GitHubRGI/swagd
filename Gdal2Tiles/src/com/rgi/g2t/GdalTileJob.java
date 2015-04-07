@@ -62,8 +62,9 @@ public class GdalTileJob implements Runnable {
     private final Dimensions<Integer> tileDimensions;
     private final Color 			  noDataColor;
     private final TaskMonitor		  monitor;
-    
+
     /**
+<<<<<<< HEAD
      * Constructor.
      * 
      * @param file The {@link File} object of the raster data to be tiled
@@ -71,6 +72,14 @@ public class GdalTileJob implements Runnable {
      * @param tileDimensions The {@link Dimensions} of the tile grid requested
      * @param noDataColor The {@link Color} of the NODATA fields within the raster image
      * @param monitor The {@link TaskMonitor} of the running job
+=======
+     * @param file
+     * @param writer
+     * @param tileDimensions
+     * @param noDataColor
+     * @param monitor
+     * @throws TilingException
+>>>>>>> master
      */
     public GdalTileJob(final File file,
                        final TileStoreWriter writer,
@@ -169,14 +178,14 @@ public class GdalTileJob implements Runnable {
     private Dataset openInput() throws TilingException
     {
         osr.UseExceptions();
-        // Register gdal for use
+        // Register GDAL for use
         gdal.AllRegister();
-        // TODO: Check memory driver in case gdal is configured incorrectly?
+        // TODO: Check memory driver in case GDAL is configured incorrectly?
         final Dataset dataset = gdal.Open(this.file.toPath().toString(), gdalconstConstants.GA_ReadOnly);
         // TODO: What happens if it cannot open this?
         if (dataset.GetRasterBand(1).GetColorTable() != null)
         {
-            // TODO: make a temp vrt with gdal_translate to expand this to RGB/RGBA
+            // TODO: make a temporary vrt with gdal_translate to expand this to RGB/RGBA
             System.out.println("expand this raster to RGB/RGBA");
         }
         if (dataset.GetRasterCount() == 0)
@@ -207,6 +216,7 @@ public class GdalTileJob implements Runnable {
         {
         	final SpatialReference inputSrs = GdalUtility.getDatasetSpatialReference(inputDataset);
         	final SpatialReference outputSrs = GdalUtility.getSpatialReferenceFromCrs(this.crsProfile.getCoordinateReferenceSystem());
+
         	// If input srs and output srs are not the same, reproject by making a VRT
         	if (!inputSrs.ExportToProj4().equals(outputSrs.ExportToProj4()) || inputDataset.GetGCPCount() == 0)
         	{
@@ -214,15 +224,11 @@ public class GdalTileJob implements Runnable {
         	    //outputDataset = GdalUtility.warpDatasetToSrs(inputDataset, inputSrs, outputSrs);
         	    return GdalUtility.warpDatasetToSrs(inputDataset, inputSrs, outputSrs);
         	}
-        	else
-        	{
-        	    // The input and output projections are the same, no reprojection needed
-        	    //outputDataset = inputDataset;
-        		return inputDataset;
-        	}
-        	//return this.correctNoData(outputDataset, this.getNoDataValues(inputDataset));
+
+        	// The input and output projections are the same, no reprojection needed
+            return inputDataset;
         }
-        catch (DataFormatException tse)
+        catch (final DataFormatException tse)
         {
         	throw new TilingException(tse);
         }
@@ -257,7 +263,7 @@ public class GdalTileJob implements Runnable {
         final int tileMaxX = bottomRightCoordinate.getX();
         final int tileMinY = bottomRightCoordinate.getY();
         final int tileMaxY = topLeftCoordinate.getY();
-        
+
         // Set the dimensions of this zoom
         final TileMatrixDimensions zoomDimensions = this.writer.getTileScheme().dimensions(zoom);
 
@@ -283,7 +289,7 @@ public class GdalTileJob implements Runnable {
                 // TODO: logic goes here in the case that the querysize == tile size (gdalconstConstants.GRA_NearestNeighbour) (write directly)
                 // Time to start writing the tile
                 final Dataset querySizeImageCanvas = GdalUtility.writeRasterDirect(params, imageData, dataset.GetRasterCount());
-                
+
                 // Scale each band of tileDataInMemory down to the tile size (down from the query size)
                 final Dataset tileDataInMemory = GdalUtility.scaleQueryToTileSize(querySizeImageCanvas, this.tileDimensions);
                 try
@@ -293,7 +299,7 @@ public class GdalTileJob implements Runnable {
                 	// Iterate the tile progress bar
                 	this.monitor.setProgress(++tileProgress);
                 }
-                catch (TileStoreException tse)
+                catch (final TileStoreException tse)
                 {
                 	throw new TilingException(tse);
                 }

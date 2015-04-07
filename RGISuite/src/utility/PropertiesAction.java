@@ -36,7 +36,7 @@ import javax.swing.KeyStroke;
  *
  */
 @SuppressWarnings("serial")
-@Deprecated
+@Deprecated // This will go away when we transition from Swing to JavaFX
 public abstract class PropertiesAction extends AbstractAction
 {
     protected PropertiesAction(final Properties p, final String key)

@@ -17,9 +17,14 @@ import com.rgi.geopackage.verification.Requirement;
 import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.VerificationIssue;
 
+/**
+ * Pane representing a single GeoPackage subsystem's verification output
+ *
+ * @author Luke Lambert
+ *
+ */
 public class SubsystemVerificationPane extends VBox
 {
-
     private boolean hasIssues;
 
     private final String subsystemName;
@@ -28,6 +33,15 @@ public class SubsystemVerificationPane extends VBox
 
     private final ProgressIndicator progressIndicator = new ProgressIndicator();
 
+    /**
+     * Constructor
+     *
+     * @param subsystemName
+     *             Name of GeoPackage subsystem
+     * @param issuesFunction
+     *             Function to be called later that gather's the verification
+     *             messages from the subsystem
+     */
     public SubsystemVerificationPane(final String subsystemName, final ThrowingFunction<GeoPackage, Collection<VerificationIssue>> issuesFunction)
     {
         if(subsystemName == null || subsystemName.isEmpty())
@@ -43,7 +57,7 @@ public class SubsystemVerificationPane extends VBox
         this.subsystemName  = subsystemName;
         this.issuesFunction = issuesFunction;
 
-        Label subsystemLabel = this.prettyLabel();
+        final Label subsystemLabel = this.prettyLabel();
 
         this.getChildren().addAll(subsystemLabel,
                                   this.progressIndicator);
@@ -51,7 +65,7 @@ public class SubsystemVerificationPane extends VBox
 
     private Label prettyLabel()
     {
-        Label subsystemLabel = new Label(this.subsystemName);
+        final Label subsystemLabel = new Label(this.subsystemName);
 
         subsystemLabel.setFont(Font.font("SanSerif", FontWeight.BOLD, 16));
         subsystemLabel.setTextFill(Color.DARKSLATEBLUE);
@@ -67,6 +81,13 @@ public class SubsystemVerificationPane extends VBox
         return this.hasIssues;
     }
 
+    /**
+     * Returns the verification issues for this subsystem
+     *
+     * @param geoPackage
+     *             GeoPackage to verify
+     * @return returns a {@link Collection} of {@link VerificationIssue}s
+     */
     public Collection<VerificationIssue> getIssues(final GeoPackage geoPackage)
     {
         final Collection<VerificationIssue> issues = this.issuesFunction.apply(geoPackage);
@@ -76,19 +97,25 @@ public class SubsystemVerificationPane extends VBox
         return issues;
     }
 
+    /**
+     * Processes the verification issues, and updates the UI as necessary
+     *
+     * @param issues
+     *             Verification issues for the subsystem of a GeoPackage
+     */
     public void update(final Collection<VerificationIssue> issues)
     {
         if(issues != null && !issues.isEmpty())
         {
-            TextFlow textBox = new TextFlow();
+            final TextFlow textBox = new TextFlow();
             textBox.setStyle("-fx-border-color: gray;");
 
             for(final VerificationIssue issue : issues)
             {
-                Text severity = getSeverityLabel(issue.getRequirement().severity());
+                final Text severity = getSeverityLabel(issue.getRequirement().severity());
 
-                Text requirement = getRequirementLabel(issue.getRequirement());
-                Text reason = getReasonLabel(issue.getReason());
+                final Text requirement = getRequirementLabel(issue.getRequirement());
+                final Text reason = getReasonLabel(issue.getReason());
 
                 textBox.getChildren().addAll(severity, requirement, reason);
             }
@@ -106,7 +133,7 @@ public class SubsystemVerificationPane extends VBox
 
     private static Text getPassText()
     {
-        Text passed = new Text("Passed");
+        final Text passed = new Text("Passed");
         passed.setFont(Font.font("SanSerif", FontWeight.BOLD, 16));
         passed.setFill(Color.GREEN);
 
