@@ -36,6 +36,7 @@ import javax.naming.OperationNotSupportedException;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
+import org.gdal.osr.SpatialReference;
 import org.gdal.osr.osr;
 
 import utility.GdalUtility;
@@ -129,7 +130,7 @@ public class RawImageTileReader implements TileStoreReader
             if(coordinateReferenceSystem == null)
             {
                 this.dataset = inputDataset;
-                this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSrs(this.dataset));
+                this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSpatialReference(this.dataset));
 
                 if(this.coordinateReferenceSystem == null)
                 {
@@ -139,7 +140,8 @@ public class RawImageTileReader implements TileStoreReader
             else
             {
                 this.coordinateReferenceSystem = coordinateReferenceSystem;
-                this.dataset = GdalUtility.warpDatasetToSrs(inputDataset, GdalUtility.getSpatialReferenceFromCrs(this.coordinateReferenceSystem));
+                final SpatialReference inputSrs = GdalUtility.getDatasetSpatialReference(inputDataset);
+                this.dataset = GdalUtility.warpDatasetToSrs(inputDataset, inputSrs, GdalUtility.getSpatialReferenceFromCrs(this.coordinateReferenceSystem));
             }
         }
         catch(final DataFormatException dfe)
@@ -157,7 +159,7 @@ public class RawImageTileReader implements TileStoreReader
             this.dataset.delete();
         }
 
-        gdal.GDALDestroyDriverManager();
+        //gdal.GDALDestroyDriverManager();
     }
 
     @Override

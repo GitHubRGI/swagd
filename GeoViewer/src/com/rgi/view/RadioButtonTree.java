@@ -45,7 +45,6 @@ public class RadioButtonTree extends JTree
      */
     private static final long serialVersionUID = 1L;
     ButtonGroup mainGroup;
-    private RadioButtonTree tree;
     private final JMapViewer map;
     private final List<TileStoreRadioButton> buttonList = new ArrayList<>();
 
@@ -53,8 +52,7 @@ public class RadioButtonTree extends JTree
     {
         this.map = map;
         this.mainGroup = new ButtonGroup();
-
-       this.addGroup(stores);
+        this.addGroup(stores);
     }
 
     public void addLayer(final TileStoreReader store)
@@ -76,11 +74,6 @@ public class RadioButtonTree extends JTree
                                              });
 
 
-    }
-
-    public RadioButtonTree getTree()
-    {
-        return this.tree;
     }
 
     public ButtonGroup getGroup()

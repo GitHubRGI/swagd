@@ -55,6 +55,7 @@ import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
 import org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent;
 import org.openstreetmap.gui.jmapviewer.interfaces.JMapViewerEventListener;
 
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.store.TileStoreException;
@@ -334,11 +335,18 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
             final int currentZoom = this.viewer.getZoom();
 
             final double boundsWidth = this.getSelectedStore().getBounds().getWidth();
-            final double tileSizeX   = this.getSelectedStore().getImageDimensions().getWidth();
+            final Dimensions<Integer> tileDimensions = this.getSelectedStore().getImageDimensions();
+
+            if(tileDimensions == null)
+            {
+                throw new IllegalArgumentException("Tile dimensions must be defined.");//added for coverity scan
+            }
+
+            final double tileSizeX   = tileDimensions.getWidth();
             final int    matrixWidth = this.getSelectedStore().getTileScheme().dimensions(currentZoom).getWidth();
 
             final double boundsHeight = this.getSelectedStore().getBounds().getHeight();
-            final double tileSizeY    = this.getSelectedStore().getImageDimensions().getHeight();
+            final double tileSizeY    = tileDimensions.getHeight();
             final int    matrixHeight = this.getSelectedStore().getTileScheme().dimensions(currentZoom).getHeight();
 
             final Double unitsPerPixelValueXCalculation = boundsWidth /(tileSizeX * matrixWidth);

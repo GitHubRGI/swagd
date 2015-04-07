@@ -99,7 +99,7 @@ public class TilerWindow extends NavigationWindow
 
     private final JSpinner     tileWidthSpinner;
     private final JSpinner     tileHeightSpinner;
-    private final SwatchButton clearColorButton = new SwatchButton("");;
+    private final SwatchButton clearColorButton = new SwatchButton("");
 
     /**
      * Constructor
@@ -144,7 +144,7 @@ public class TilerWindow extends NavigationWindow
                                                                   this.settings.set(LastInputLocationSettingName, file.getParent());
                                                                   this.settings.save();
 
-                                                                  final SpatialReference srs = GdalUtility.getDatasetSrs(file);
+                                                                  final SpatialReference srs = GdalUtility.getDatasetSpatialReference(file);
 
                                                                   final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(srs);
 
