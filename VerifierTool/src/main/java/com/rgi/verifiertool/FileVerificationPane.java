@@ -22,6 +22,10 @@ import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
+/**
+ * @author Luke Lambert
+ * @author Jenifer Cochran
+ */
 public class FileVerificationPane extends TitledPane
 {
     private final VBox content = new VBox();
@@ -29,6 +33,9 @@ public class FileVerificationPane extends TitledPane
     private VBox parent;
 
 
+    /**
+     * @param geoPackageFile The File that needs to be tested against the GeoPackage Specification
+     */
     public FileVerificationPane(final File geoPackageFile)
     {
         if(geoPackageFile == null || !geoPackageFile.canRead())
@@ -59,7 +66,7 @@ public class FileVerificationPane extends TitledPane
                                                      try(final GeoPackage geoPackage = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Open))
                                                      {
                                                          final List<Thread> updateThreads = subsystems.stream()
-                                                                                                      .map(subsystem -> new Thread(FileVerificationPane.this.createTask(subsystem, geoPackage)))
+                                                                                                      .map(subsystem -> new Thread(FileVerificationPane.createTask(subsystem, geoPackage)))
                                                                                                       .collect(Collectors.toList());
 
                                                          updateThreads.forEach(thread -> thread.start());
@@ -115,7 +122,7 @@ public class FileVerificationPane extends TitledPane
         this.setStyle(String.format("-fx-body-color: %s;", Style.white.getHex()));
     }
 
-    private Task<Collection<VerificationIssue>> createTask(final SubsystemVerificationPane subsystemVerificationPane, final GeoPackage geoPackage)
+    private static Task<Collection<VerificationIssue>> createTask(final SubsystemVerificationPane subsystemVerificationPane, final GeoPackage geoPackage)
     {
         final Task<Collection<VerificationIssue>> task = new Task<Collection<VerificationIssue>>()
                                                          {

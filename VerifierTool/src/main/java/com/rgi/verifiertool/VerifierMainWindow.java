@@ -71,7 +71,7 @@ public class VerifierMainWindow extends Application
     public void start(final Stage primaryStage) throws Exception
     {
         final BorderPane layout     = new BorderPane();
-        final Scene      scene      = new Scene(layout, 570, 400);
+        final Scene      scene      = new Scene(layout, 580, 400);
         final GridPane   bottomGrid = new GridPane();
 
         this.scrollPane.setFitToHeight(true);
@@ -116,7 +116,9 @@ public class VerifierMainWindow extends Application
                                               layout.setCenter(this.scrollPane);
                                               this.addFiles(db.getFiles());
                                               primaryStage.setResizable(true);
-                                              primaryStage.setMinWidth(550);
+                                              primaryStage.setMinHeight(400);
+                                              primaryStage.setMinWidth(580);
+                                              primaryStage.setMaxWidth(580);
                                           }
                                           event.setDropCompleted(true);
                                           event.consume();

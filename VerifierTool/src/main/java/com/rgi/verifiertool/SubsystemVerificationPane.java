@@ -19,6 +19,11 @@ import com.rgi.geopackage.verification.Requirement;
 import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.VerificationIssue;
 
+/**
+ * @author Luke Lambert
+ * @author Jenifer Cochran
+ *
+ */
 public class SubsystemVerificationPane extends VBox
 {
 
@@ -30,6 +35,10 @@ public class SubsystemVerificationPane extends VBox
 
     private final ProgressIndicator progressIndicator = new ProgressIndicator();
 
+    /**
+     * @param subsystemName The Subsystem of the GeoPackage that is being tested (i.e. Core, Tiles..)
+     * @param issuesFunction The function that will call the subsystem's verification method (to run the verifier and collect the error messages)
+     */
     public SubsystemVerificationPane(final String subsystemName, final ThrowingFunction<GeoPackage, Collection<VerificationIssue>> issuesFunction)
     {
         if(subsystemName == null || subsystemName.isEmpty())
@@ -69,6 +78,10 @@ public class SubsystemVerificationPane extends VBox
         return this.hasIssues;
     }
 
+    /**
+     * @param geoPackage The GeoPackage file that is being tested
+     * @return The Collection of Verification issues that contain the error messages
+     */
     public Collection<VerificationIssue> getIssues(final GeoPackage geoPackage)
     {
         final Collection<VerificationIssue> issues = this.issuesFunction.apply(geoPackage);
@@ -78,6 +91,9 @@ public class SubsystemVerificationPane extends VBox
         return issues;
     }
 
+    /**
+     * @param issues The Verification Error messages from the tested GeoPackage (for each subsystem)
+     */
     public void update(final Collection<VerificationIssue> issues)
     {
         if(issues != null && !issues.isEmpty())
