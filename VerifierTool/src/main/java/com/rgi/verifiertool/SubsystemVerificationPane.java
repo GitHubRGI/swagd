@@ -55,14 +55,16 @@ public class SubsystemVerificationPane extends VBox
         this.issuesFunction = issuesFunction;
         this.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
 
-        Label subsystemLabel = this.prettyLabel();
+        final Label subsystemLabel = this.prettyLabel();
+
+        this.progressIndicator.setPrefSize(10, 10);
 
         this.getChildren().addAll(subsystemLabel, this.progressIndicator);
     }
 
     private Label prettyLabel()
     {
-        Label subsystemLabel = new Label(this.subsystemName);
+        final Label subsystemLabel = new Label(this.subsystemName);
 
         subsystemLabel.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 16));
         subsystemLabel.setTextFill(Style.darkAquaBlue.toColor());
@@ -98,15 +100,15 @@ public class SubsystemVerificationPane extends VBox
     {
         if(issues != null && !issues.isEmpty())
         {
-            TextFlow textBox = new TextFlow();
+            final TextFlow textBox = new TextFlow();
             textBox.setStyle(String.format("-fx-border-radius: 10 10 10 10; -fx-border-color: gray;-fx-background-radius: 10 10 10 10; -fx-background-color: %s;", Style.darkAquaBlue.getHex()));
 
             for(final VerificationIssue issue : issues)
             {
-                Text severity = getSeverityLabel(issue.getRequirement().severity());
+                final Text severity = getSeverityLabel(issue.getRequirement().severity());
 
-                Text requirement = getRequirementLabel(issue.getRequirement());
-                Text reason = getReasonLabel(issue.getReason());
+                final Text requirement = getRequirementLabel(issue.getRequirement());
+                final Text reason = getReasonLabel(issue.getReason());
 
                 textBox.getChildren().addAll(severity, requirement, reason);
             }
@@ -125,7 +127,7 @@ public class SubsystemVerificationPane extends VBox
 
     private static Text getPassText()
     {
-        Text passed = new Text("Passed");
+        final Text passed = new Text("Passed");
         passed.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 16));
         passed.setFill(Style.brightGreen.toColor());
 

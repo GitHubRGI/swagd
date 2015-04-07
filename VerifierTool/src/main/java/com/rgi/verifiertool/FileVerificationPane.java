@@ -42,6 +42,7 @@ public class FileVerificationPane extends TitledPane
         {
             throw new IllegalArgumentException("GeoPackage file may not be null, and must be a valid filename");
         }
+
         this.setAnimated(false);
         this.setText(geoPackageFile.getName());
         this.setPrettyText();
@@ -102,8 +103,8 @@ public class FileVerificationPane extends TitledPane
 
     private void createContextMenu()
     {
-        MenuItem remove = new MenuItem("Remove");
-        MenuItem cancel = new MenuItem("Cancel");
+        final MenuItem remove = new MenuItem("Remove");
+        final MenuItem cancel = new MenuItem("Cancel");
         this.deleteMenu.getItems().addAll(remove, cancel);
 
         remove.setOnAction(e -> {

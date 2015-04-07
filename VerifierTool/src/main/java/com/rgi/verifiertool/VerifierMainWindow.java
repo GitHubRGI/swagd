@@ -30,12 +30,10 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
@@ -157,7 +155,7 @@ public class VerifierMainWindow extends Application
 
     private static void setIcon(final Stage stage)
     {
-        Image rgiIcon = new Image(VerifierMainWindow.class.getResourceAsStream("RGI_Logo.png"));
+        final Image rgiIcon = new Image(VerifierMainWindow.class.getResourceAsStream("RGI_Logo.png"));
         stage.getIcons().add(rgiIcon);
     }
 
@@ -199,16 +197,16 @@ public class VerifierMainWindow extends Application
         {
             if(file.isFile())
             {
-                FileVerificationPane verificationPane = new FileVerificationPane(file);
-                this.filesContainer.getChildren().add(verificationPane);
-                verificationPane.setParent(this.filesContainer);
-                this.filesContainer.snapshot(new SnapshotParameters(), new WritableImage(1,1));
+                final FileVerificationPane verificationPane = new FileVerificationPane(file);
+                verificationPane.setParent(VerifierMainWindow.this.filesContainer);
+
+                VerifierMainWindow.this.filesContainer.getChildren().add(verificationPane);
             }
             else
             {
                 //show error message
-                Stage errorStage = new Stage();
-                Label errorLabel  = new Label("Error Invalid Input:\nMust select a File."); //TODO
+                final Stage errorStage = new Stage();
+                final Label errorLabel = new Label("Error Invalid Input:\nMust select a File."); //TODO
                 errorLabel.setFont(Font.font(Style.getFont(), FontWeight.EXTRA_BOLD, 16));
                 errorLabel.setAlignment(Pos.CENTER);
                 errorStage.setScene(new Scene(errorLabel, 300, 100));
