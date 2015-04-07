@@ -69,6 +69,8 @@ import com.rgi.g2t.TilingException;
 
 
 /**
+ * Common functionality of the GDAL Library made into helper functions.
+ * 
  * @author Luke Lambert
  * @author Steven D. Lander
  */
@@ -1090,11 +1092,14 @@ public class GdalUtility
     }
     
     /**
-     * @param params
-     * @param write
-     * @param dataset
-     * @return
-     * @throws TilingException
+     * Read a subset of image data from a raster {@link Dataset}.
+     * 
+     * @param params A {@link GdalRasterParameters} object containing data on how the tile should be read from
+     * 				 the raster image
+     * @param dataset The {@link Dataset} to read the tile data from
+     * @return A {@link Byte} array of size @params.writeXSize() * @params.writeYSize() * @dataset.GetRasterCount()
+     * 		   containing tile data for the area specified in @params
+     * @throws TilingException Thrown when ReadRaster reports a failure
      */
     public static byte[] readRaster(final GdalRasterParameters params,
     								final Dataset dataset) throws TilingException
@@ -1127,10 +1132,14 @@ public class GdalUtility
     }
     
     /**
-     * @param params
-     * @param dataset
-     * @return
-     * @throws TilingException
+     * Read a subset of image data from a raster {@link Dataset} directly using a {@link ByteBuffer}.
+     * 
+     * @param params A Gdal parameters object containing data on how the tile should be read from
+     * 				 the raster image
+     * @param dataset The {@link Dataset} to read the tile data from
+     * @return A {@link Byte} array of size @params.writeXSize() * @params.writeYSize() * @dataset.GetRasterCount()
+     * 		   containing tile data for the area specified in @params
+     * @throws TilingException Thrown when ReadRaster_Direct reports a failure
      */
     public static ByteBuffer readRasterDirect(final GdalRasterParameters params,
     										  final Dataset dataset) throws TilingException
@@ -1162,11 +1171,15 @@ public class GdalUtility
     }
     
     /**
-     * @param params
-     * @param imageData
-     * @param bandCount
-     * @return
-     * @throws TilingException
+     * Write tile data to an output {@link Dataset}.
+     * 
+     * @param params The {@link GdalRasterParameters} containing data on how the tile should be
+     * 				 written to the returned {@link Dataset}
+     * @param imageData A {@link Byte} array of size @params.writeXSize() * @params.writeYSize() * @dataset.GetRasterCount()
+     * 		   			containing tile data for the area specified
+     * @param bandCount The number of bands the output {@link Dataset} should have
+     * @return A {@link Dataset} representing a tile image
+     * @throws TilingException Thrown when WriteRaster reports a failure
      */
     public static Dataset writeRaster(final GdalRasterParameters params,
     								  final byte[] imageData,
@@ -1198,11 +1211,14 @@ public class GdalUtility
     }
     
     /**
-     * @param params
-     * @param imageData
-     * @param bandCount
-     * @return
-     * @throws TilingException
+     * Write tile data to an output {@link Dataset} directly using a {@link ByteBuffer}.
+     * @param params The {@link GdalRasterParameters} containing data on how the tile should be
+     * 				 written to the returned {@link Dataset}
+     * @param imageData A {@link Byte} array of size @params.writeXSize() * @params.writeYSize() * @dataset.GetRasterCount()
+     * 		   			containing tile data for the area specified
+     * @param bandCount The number of bands the output {@link Dataset} should have
+     * @return A {@link Dataset} representing a tile image
+     * @throws TilingException Thrown when WriteRaster_Direct reports a failure
      */
     public static Dataset writeRasterDirect(final GdalRasterParameters params,
     										final ByteBuffer imageData,
@@ -1253,28 +1269,27 @@ public class GdalUtility
     	private final int queryYSize;
     	
     	/**
-    	 * @param readX
-    	 * @param readY
-    	 * @param readXSize
-    	 * @param readYSize
-    	 * @param dimensions 
-    	 * @param dataset 
-    	 * @throws TilingException 
+    	 * @param readX The X-axis pixel location to start reading tile data from
+    	 * @param readY The Y-axis pixel location to start reading tile data from
+    	 * @param readXSize The amount of pixels to read in the X-axis
+    	 * @param readYSize The amount of pixels to read in the Y-axis
+    	 * @param dimensions The {@link Dimensions} of the tile grid
+    	 * @param dataset The raster {@link Dataset} that is being manipulated
     	 */
     	public GdalRasterParameters(final int readX,
     								final int readY,
     								final int readXSize,
     								final int readYSize,
     								final Dimensions<Integer> dimensions,
-    								final Dataset dataset) throws TilingException
+    								final Dataset dataset)
     	{
     		if (dimensions == null)
     		{
-    			throw new TilingException("Dimensions of the tile system cannot be null.");
+    			throw new IllegalArgumentException("Dimensions of the tile system cannot be null.");
     		}
     		if (dataset == null)
     		{
-    			throw new TilingException("Input dataset must be supplied to GdalRasterParameters.");
+    			throw new IllegalArgumentException("Input dataset must be supplied to GdalRasterParameters.");
     		}
     		// Points that dictate where a tile read occurs on the dataset
     		this.readX = readX;
