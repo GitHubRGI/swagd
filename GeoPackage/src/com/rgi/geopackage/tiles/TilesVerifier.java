@@ -29,7 +29,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -207,7 +206,7 @@ public class TilesVerifier extends Verifier
      * @throws SQLException throws if an SQLException occurs
      */
     @Requirement(number = 34,
-                 text = "In a GeoPackage that contains a tile pyramid user data table"
+                 text = "In a GeoPackage that contains a tile pyramid user data table "
                          + "that contains tile data, by default, zoom level pixel sizes for that "
                          + "table SHALL vary by a factor of 2 between zoom levels in tile matrix metadata table.",
                  severity = Severity.Warning)
@@ -293,15 +292,14 @@ public class TilesVerifier extends Verifier
                                                                                      .filter(tileData -> !validPixelValues(tileData, boundingBox))
                                                                                      .collect(Collectors.toList());
 
-                                Assert.assertTrue(String.format("Based on the bounding box given in the Tile Matrix Set for tiles table %s, "
-                                                                           + "tile_height, "
-                                                                           + "tile_width, "
-                                                                           + "matrix_width, and "
-                                                                           + "matrix_height, "
-                                                                + "the following pixel values are invalid.\n%s",
+                                Assert.assertTrue(String.format("\nNote: This next message is an additional concern that is related to this requirement but not the requirement itself."+
+                                                                "\nThe pixel_x_size and pixel_y_size should satisfy these two equations:"
+                                                                + "\n\tpixel_x_size = (bounding box width  / matrix_width)  / tile_width "
+                                                                + "AND \n\tpixel_y_size = (bounding box height / matrix_height)/ tile_height.  "
+                                                                + "\nBased on these two equations, the following pixel values are invalid for the table '%s'.:\n%s ",
                                                                 tableName,
                                                                 invalidPixelValues.stream()
-                                                                                  .map(tileData -> String.format("Invalid pixel_x_size: %f, Invalid pixel_y_size: %f at zoom_level %d",
+                                                                                  .map(tileData -> String.format("\tInvalid pixel_x_size: %f, Invalid pixel_y_size: %f at zoom_level %d",
                                                                                                                  tileData.pixelXSize,
                                                                                                                  tileData.pixelYSize,
                                                                                                                  tileData.zoomLevel))
@@ -336,9 +334,6 @@ public class TilesVerifier extends Verifier
         Assert.assertTrue("Test skipped when verification level is not set to " + VerificationLevel.Full,
                           this.verificationLevel == VerificationLevel.Full);
 
-        final Collection<ImageReader> jpegImageReaders = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/jpeg"));
-        final Collection<ImageReader> pngImageReaders  = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/png"));
-
         for (final String tableName : this.allPyramidUserDataTables)
         {
             final String selectTileDataQuery = String.format("SELECT tile_data, id FROM %s;", tableName);
@@ -346,40 +341,28 @@ public class TilesVerifier extends Verifier
             try (Statement stmt              = this.getSqliteConnection().createStatement();
                  ResultSet tileDataResultSet = stmt.executeQuery(selectTileDataQuery))
             {
+                List<String> errorMessage =  ResultSetStream.getStream(tileDataResultSet)
+                                                            .map(resultSet -> { try
+                                                                                {
+                                                                                    final int    tileId   = resultSet.getInt("id");
+                                                                                    final byte[] tileData = resultSet.getBytes("tile_data");
 
-                final Map<Integer, byte[]> allTileData =  ResultSetStream.getStream(tileDataResultSet)
-                                                                         .map(resultSet -> { try
-                                                                                             {
-                                                                                                 final int    tileId   = resultSet.getInt("id");
-                                                                                                 final byte[] tileData = resultSet.getBytes("tile_data");
-                                                                                                 return new AbstractMap.SimpleImmutableEntry<>(tileId, tileData);
-                                                                                             }
-                                                                                             catch (final Exception ex1)
-                                                                                             {
-                                                                                                 return null;
-                                                                                             }
-                                                                                           })
-                                                                         .filter(Objects::nonNull)
-                                                                         .collect(Collectors.toMap(entry -> entry.getKey(),
-                                                                                                   entry -> entry.getValue()));
+                                                                                    return TilesVerifier.verifyData(tileId, tileData);
+                                                                                }
+                                                                                catch (final SQLException ex1)
+                                                                                {
+                                                                                   return ex1.getMessage();
+                                                                                }
+                                                                              })
+                                                            .filter(Objects::nonNull)
+                                                            .collect(Collectors.toList());
+
+               Assert.assertTrue(String.format("The following columns named \"id\" in table '%s' are not in the correct image format:\n\t\t%s.",
+                                               tableName,
+                                               errorMessage.stream().collect(Collectors.joining("\n"))),
+                                 errorMessage.isEmpty());
 
 
-                for(final Integer imageID : allTileData.keySet())
-                {
-                    try(ByteArrayInputStream        byteArray  = new ByteArrayInputStream(allTileData.get(imageID));
-                        MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(byteArray))
-                    {
-                       Assert.assertTrue(String.format("The tile id: %d in the table: %s is not in the correct format.  The image must be of MIME type image/jpeg or image/png.",
-                                                       imageID,
-                                                       tableName),
-                                         TilesVerifier.canReadImage(pngImageReaders, cacheImage) ||
-                                         TilesVerifier.canReadImage(jpegImageReaders, cacheImage));
-                    }
-                    catch(final IOException ex)
-                    {
-                        Assert.fail(ex.getMessage());
-                    }
-                }
             }
             catch (final SQLException ex)
             {
@@ -387,6 +370,27 @@ public class TilesVerifier extends Verifier
             }
         }
     }
+
+    private static String verifyData(final int tileId, final byte[] tileData)
+    {
+
+        try(ByteArrayInputStream        byteArray  = new ByteArrayInputStream(tileData);
+            MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(byteArray))
+        {
+            if(TilesVerifier.canReadImage(pngImageReaders, cacheImage) ||TilesVerifier.canReadImage(jpegImageReaders, cacheImage))
+            {
+                return null;
+            }
+
+           return String.format("column id: %d", tileId);
+
+        }
+        catch(final IOException ex)
+        {
+            return ex.getMessage();
+        }
+    }
+
 
     /**
      * Requirement 36
@@ -1302,10 +1306,11 @@ public class TilesVerifier extends Verifier
                               final int matrixHeight = dimensionsRS.getInt("matrix_height");
                               final int zoomLevel    = dimensionsRS.getInt("zoom_level");
 
-                              Assert.assertTrue(String.format("The BoundingBox in gpkg_tile_matrix_set does not define the minimum bounding box for all content in the table %s.\n "
-                                                                  + "\tActual Values:   MIN(tile_column): %4d,  MIN(tile_row): %4d, MAX(tile_column): %4d,                   MAX(tile_row): %4d\n "
-                                                                  + "\tExpected values: MIN(tile_column):    0,  MIN(tile_row):    0, MAX(tile_column): %4d (matrix_width -1), MAX(tile_row): %4d (matrix_height -1),"
-                                                                  + "\n\tExpected values based on the Tile Matrix given at the MIN(zoom_level) %d.",
+                              Assert.assertTrue(String.format("\nNote: This next message is an additional concern that is related to this requirement but not the requirement itself.  "+
+                                                                  "The BoundingBox in gpkg_tile_matrix_set does not define the minimum bounding box for all content in the table %s.\n"
+                                                                  + "\tActual Values:\n\t\tMIN(tile_column): %4d,\n\t\tMIN(tile_row): %4d,\n\t\tMAX(tile_column): %4d,\n\t\tMAX(tile_row): %4d\n\n"
+                                                                  + "\tExpected values:\n\t\tMIN(tile_column):    0,\n\t\tMIN(tile_row):    0,\n\t\tMAX(tile_column): %4d (matrix_width -1),\n\t\tMAX(tile_row): %4d (matrix_height -1),"
+                                                                  + "\n\n\tExpected values based on the Tile Matrix given at the MIN(zoom_level) %d.",
                                                               pyramidTable,
                                                               minX,
                                                               minY,
@@ -1506,12 +1511,12 @@ public class TilesVerifier extends Verifier
 
         public String columnInvalidToString()
         {
-            return String.format("      Tile id: %d, column: %2d (max: %d)", this.tileID, this.tileColumn, this.matrixWidth-1);
+            return String.format("      column id: %d, tile_column: %2d (max: %d)", this.tileID, this.tileColumn, this.matrixWidth-1);
         }
 
         public String rowInvalidToString()
         {
-            return String.format("      Tile id: %d, row: %2d (max: %d)", this.tileID, this.tileRow, this.matrixHeight-1);
+            return String.format("      column id: %d, tile_row: %2d (max: %d)", this.tileID, this.tileRow, this.matrixHeight-1);
         }
 
         @Override
@@ -1530,8 +1535,18 @@ public class TilesVerifier extends Verifier
     private static final TableDefinition TileMatrixSetTableDefinition;
     private static final TableDefinition TileMatrixTableDefinition;
 
+    private static final Collection<ImageReader> jpegImageReaders;
+    private static final Collection<ImageReader> pngImageReaders;
+//TODO static class vars
+    /*
+     *         final Collection<ImageReader> jpegImageReaders = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/jpeg"));
+        final Collection<ImageReader> pngImageReaders  = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/png"));
+     */
     static
     {
+        jpegImageReaders = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/jpeg"));
+        pngImageReaders  = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/png"));
+
         final Map<String, ColumnDefinition> tileMatrixSetColumns = new HashMap<>();
 
         tileMatrixSetColumns.put("table_name",  new ColumnDefinition("TEXT",     true, true,  true,  null));
@@ -1559,6 +1574,7 @@ public class TilesVerifier extends Verifier
         TileMatrixTableDefinition = new TableDefinition("gpkg_tile_matrix",
                                                         tileMatrixColumns,
                                                         new HashSet<>(Arrays.asList(new ForeignKeyDefinition("gpkg_contents", "table_name", "table_name"))));
+
 
     }
 }

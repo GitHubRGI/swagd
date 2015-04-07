@@ -21,43 +21,44 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.verification;
+package com.rgi.common.util.functional;
+
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
+ * Wrapper for {@link Function} which allows the throwing of an exception
+ *
+ * @param <T> the type of the input to the operation
+ *
  * @author Luke Lambert
  *
+ * @see <a
+ *      href="https://stackoverflow.com/a/27252163/16434">https://stackoverflow.com/a/27252163/16434</a>
  */
-public class VerificationIssue
+@FunctionalInterface
+public interface ThrowingConsumer<T> extends Consumer<T>
 {
+    @Override
+    public default void accept(final T t)
+    {
+        try
+        {
+            acceptThrows(t);
+        }
+        catch(final Throwable th)
+        {
+            throw new RuntimeException(th);
+        }
+    }
+
     /**
-     * Constructor
+     * Performs this operation on the given argument.
      *
-     * @param reason
-     *             The explanation of how a GeoPackage didn't conform to a specific requirement
-     * @param requirement
-     *             The requirement that the GeoPackage didn't fully conform to
+     * @param t the input argument
+     *
+     * @throws Throwable
+     *             when the underlying apply throws
      */
-    public VerificationIssue(final String reason, final Requirement requirement)
-    {
-        this.reason     = reason;
-        this.requirement = requirement;
-    }
-
-    /**
-     * @return the message
-     */
-    public String getReason()
-    {
-        return this.reason;
-    }
-    /**
-     * @return the requirement
-     */
-    public Requirement getRequirement()
-    {
-        return this.requirement;
-    }
-
-    final private String      reason;
-    final private Requirement requirement;
+    public void acceptThrows(T t) throws Throwable;
 }
