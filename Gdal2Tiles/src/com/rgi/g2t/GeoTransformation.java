@@ -60,8 +60,8 @@ public class GeoTransformation
         this.topLeft = new Coordinate<>(this.affineTransform[0],
                                         this.affineTransform[3]);
 
-        this.pixelDimensions = new Dimensions<>(this.affineTransform[1],  // Height is stored as a negative number...
-                                                 -this.affineTransform[5]);
+        this.pixelDimensions = new Dimensions<>( this.affineTransform[1],
+                                                -this.affineTransform[5]); // Height is stored as a negative number...
     }
 
     /**

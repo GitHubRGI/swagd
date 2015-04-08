@@ -66,17 +66,22 @@ public class GdalTileJob implements Runnable {
     /**
      * Constructor
      *
-     * @param file The {@link File} object of the raster data to be tiled
-     * @param writer The {@link TileStoreWriter} object that will be used to create tiles on-disk
-     * @param tileDimensions The {@link Dimensions} of the tile grid requested
-     * @param noDataColor The {@link Color} of the NODATA fields within the raster image
-     * @param monitor The {@link TaskMonitor} of the running job
+     * @param file
+     *             The {@link File} object of the raster data to be tiled
+     * @param writer
+     *             The {@link TileStoreWriter} object that will be used to create tiles on-disk
+     * @param tileDimensions
+     *             The {@link Dimensions} of the tile grid requested
+     * @param noDataColor
+     *             The {@link Color} of the NODATA fields within the raster image
+     * @param monitor
+     *             The {@link TaskMonitor} of the running job
      */
-    public GdalTileJob(final File file,
-                       final TileStoreWriter writer,
+    public GdalTileJob(final File                file,
+                       final TileStoreWriter     writer,
                        final Dimensions<Integer> tileDimensions,
-                       final Color noDataColor,
-                       final TaskMonitor monitor)
+                       final Color               noDataColor,
+                       final TaskMonitor         monitor)
     {
     	if (file == null)
     	{
