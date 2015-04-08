@@ -37,7 +37,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -500,14 +500,14 @@ public class GdalUtility
      * @param tileOrigin
      *             A {@link TileOrigin} that represents which corner tiling
      *             begins from
-     * @return A {@link Map} of zoom levels to tile coordinate info for the
+     * @return A {@link Map} of zoom levels to tile coordinate info for theS
      *             top left and bottom right corners of the matrix
      */
-    public static Map<Integer, Range<Coordinate<Integer>>> calculateTileRangesForAllZooms(final BoundingBox  bounds,
-                                                                                          final CrsProfile   crsProfile,
-                                                                                          final Set<Integer> zoomLevels,
-                                                                                          final TileScheme   tileScheme,
-                                                                                          final TileOrigin   tileOrigin)
+    public static Map<Integer, Range<Coordinate<Integer>>> calculateTileRangesForZoomLevels(final BoundingBox         bounds,
+                                                                                            final CrsProfile          crsProfile,
+                                                                                            final Collection<Integer> zoomLevels,
+                                                                                            final TileScheme          tileScheme,
+                                                                                            final TileOrigin          tileOrigin)
     {
         if (bounds == null)
         {
@@ -542,19 +542,24 @@ public class GdalUtility
     /**
      * Get the lowest-integer zoom level for the input {@link Dataset}
      *
-     * @param dataset An input {@link Dataset}
-     * @param tileRanges The calculated list of tile numbers and zooms
-     * @param tileOrigin The {@link TileOrigin} of the tile grid
-     * @param tileScheme The {@link TileScheme} of the tile grid
-     * @param tileSize A {@link Dimensions} Integer object that describes what the tiles should look like
-     * @return The zoom level for this dataset that produces only one tile.  Defaults to 0 if
-     *            an error occurs
+     * @param dataset
+     *             An input {@link Dataset}
+     * @param tileRanges
+     *             The calculated list of tile numbers and zooms
+     * @param tileOrigin
+     *             The {@link TileOrigin} of the tile grid
+     * @param tileScheme
+     *             The {@link TileScheme} of the tile grid
+     * @param tileSize
+     *             A {@link Dimensions} Integer object that describes what the tiles should look like
+     * @return The zoom level for this dataset that produces only one tile.
+     *            Defaults to 0 if an error occurs.
      */
-    public static int minimalZoomForDataset(final Dataset dataset,
-                                            final List<Range<Coordinate<Integer>>> tileRanges,
-                                            final TileOrigin tileOrigin,
-                                            final TileScheme tileScheme,
-                                            final Dimensions<Integer> tileSize)
+    public static int minimalZoomForDataset(final Dataset                                  dataset,
+                                            final Map<Integer, Range<Coordinate<Integer>>> tileRanges,
+                                            final TileOrigin                               tileOrigin,
+                                            final TileScheme                               tileScheme,
+                                            final Dimensions<Integer>                      tileSize)
     {
         if (dataset == null)
         {
@@ -622,11 +627,11 @@ public class GdalUtility
      * @return The zoom level for this dataset that is closest to the actual resolution
      * @throws TileStoreException Thrown when the
      */
-    public static int maximalZoomForDataset(final Dataset dataset,
-                                            final List<Range<Coordinate<Integer>>> tileRanges,
-                                            final TileOrigin tileOrigin,
-                                            final TileScheme tileScheme,
-                                            final Dimensions<Integer> tileSize) throws TileStoreException
+    public static int maximalZoomForDataset(final Dataset                                  dataset,
+                                            final Map<Integer, Range<Coordinate<Integer>>> tileRanges,
+                                            final TileOrigin                               tileOrigin,
+                                            final TileScheme                               tileScheme,
+                                            final Dimensions<Integer>                      tileSize) throws TileStoreException
     {
         if (dataset == null)
         {
@@ -687,14 +692,22 @@ public class GdalUtility
         }
 
         // World extent tile scheme
-        final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
+        final ZoomTimesTwo tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
+
         try
         {
-            final BoundingBox datasetBounds = GdalUtility.getBoundsForDataset(dataset);
-            final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(dataset);
-            final List<Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRangesForAllZooms(datasetBounds, crsProfile, tileScheme, tileOrigin);
+            final BoundingBox datasetBounds = GdalUtility.getBoundsForDataset    (dataset); // todo/temp check to see if GeoTransform gives the same dimension values as dataset.getrastersize calls
+            final CrsProfile  crsProfile    = GdalUtility.getCrsProfileForDataset(dataset);
+
+            final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRangesForZoomLevels(datasetBounds,
+                                                                                                                     crsProfile,
+                                                                                                                     tileScheme.getZoomLevels(),
+                                                                                                                     tileScheme,
+                                                                                                                     tileOrigin);
+
             final int minZoom = GdalUtility.minimalZoomForDataset(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
             final int maxZoom = GdalUtility.maximalZoomForDataset(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+
             return IntStream.rangeClosed(minZoom, maxZoom).boxed().collect(Collectors.toSet());
         }
         catch (final DataFormatException dfe)
