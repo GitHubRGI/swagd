@@ -23,6 +23,7 @@
         <jacoco.report.tile2gpkg>GeoPackage/target/site/jacoco/jacoco.xml</jacoco.report.tile2gpkg>
         <jacoco.report.packager>Packager/target/site/jacoco/jacoco.xml</jacoco.report.packager>
         <jacoco.report.rgisuite>RGISuite/target/site/jacoco/jacoco.xml</jacoco.report.rgisuite>
+        <jacoco.report.verifiertool>VerifierTool/target/site/jacoco/jacoco.xml</jacoco.report.verifiertool>
     </properties>
 
     <modules>
@@ -33,6 +34,7 @@
         <module>GeoPackage</module>
         <module>Packager</module>
         <module>RGISuite</module>
+        <module>VerifierTool</module>
     </modules>
 
     <build>
@@ -72,6 +74,7 @@
                         <jacocoReport>${jacoco.report.tile2gpkg}</jacocoReport>
                         <jacocoReport>${jacoco.report.packager}</jacocoReport>
                         <jacocoReport>${jacoco.report.rgisuite}</jacocoReport>
+                        <jacocoReport>${jacoco.report.verifiertool}</jacocoReport>
                     </jacocoReports>
                     <!--dryRun>true</dryRun-->
                 </configuration>
