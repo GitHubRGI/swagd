@@ -26,6 +26,9 @@ import java.awt.Color;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.zip.DataFormatException;
 
 import org.gdal.gdal.Dataset;
@@ -116,17 +119,22 @@ public class GdalTileJob implements Runnable {
             final Dataset outputDataset = this.openOutput(inputDataset);
 
             final BoundingBox outputBounds = GdalUtility.getBoundsForDataset(outputDataset);
+
             // Calculate all the tiles in every zoom possible (0-31)
-            final List<Range<Coordinate<Integer>>> ranges = GdalUtility.calculateTileRangesForAllZooms(outputBounds,
-            																						   this.crsProfile,
-            																						   this.writer.getTileScheme(),
-            																						   this.writer.getTileOrigin());
+            final Map<Integer, Range<Coordinate<Integer>>> ranges = GdalUtility.calculateTileRangesForZoomLevels(outputBounds,
+            																						             this.crsProfile,
+            																						             IntStream.rangeClosed(0, 31)
+            																						                      .boxed()
+            																						                      .collect(Collectors.toList()),
+            																						             this.writer.getTileScheme(),
+            																						             this.writer.getTileOrigin());
             // Generate tiles
             final int minZoom = GdalUtility.minimalZoomForDataset(outputDataset,
             													  ranges,
             													  this.writer.getTileOrigin(),
             													  this.writer.getTileScheme(),
             													  this.tileDimensions);
+
             final int maxZoom = GdalUtility.maximalZoomForDataset(outputDataset,
             													  ranges,
             													  this.writer.getTileOrigin(),
