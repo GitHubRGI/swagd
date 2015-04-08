@@ -196,7 +196,10 @@ public class SubsystemVerificationPane extends VBox
                                                       })
                                         .collect(Collectors.joining("\n"));
 
-         return  String.format("GeoPackage failed to meet the following requirements for GeoPackage %s:\n\n%s", this.subsystemName, failedMessages);
+         return  String.format("RGi GeoPackage Verfier Tool Version %.1f.\n\n\nGeoPackage failed to meet the following requirements for GeoPackage %s:\n\n%s",
+                                VerifierMainWindow.versionNumber,
+                                this.subsystemName,
+                                failedMessages);
     }
 
     private static Node getSeverityLevel(final Collection<VerificationIssue> issues)

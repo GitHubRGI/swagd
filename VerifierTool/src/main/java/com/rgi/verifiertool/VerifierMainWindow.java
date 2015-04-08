@@ -57,6 +57,7 @@ public class VerifierMainWindow extends Application
 {
     private final ScrollPane scrollPane     = new ScrollPane();
     private final VBox       filesContainer = new VBox(10);
+    public  final static double versionNumber = 1.0;
 
     /**
      * Launch the Verifier application.
@@ -168,7 +169,7 @@ public class VerifierMainWindow extends Application
     private static void showApplicationInformation()
     {
         //create title and set font
-        final Text title  = new Text("GeoPackage Verifier Tool\n");
+        final Text title  = new Text("RGi GeoPackage Verifier Tool\n");
         title.setFill(Color.rgb(0, 120, 212));
         title.setFont(Font.font(Style.getFont(), FontWeight.EXTRA_BOLD, 20));
         title.setTextAlignment(TextAlignment.CENTER);
@@ -179,10 +180,10 @@ public class VerifierMainWindow extends Application
         company.setFill(Color.rgb(41, 110, 163));
 
         //set application information and font
-        final Text about = new Text("This application will verify GeoPackages with Raster Tile data for the GeoPackage Encoding Standard Version 1.0.  "
+        final Text about = new Text(String.format("This application will verify GeoPackages with Raster Tile data for the GeoPackage Encoding Standard Version 1.0.  "
                                   + "This Verification Tool will test the GeoPackage Core, GeoPackage Tiles, GeoPackage Extensions, GeoPackage Schema, "
                                   + "and GeoPackage Metadata requirements.  This will test a GeoPackage file against the Requirements referenced in the Encoding Standard.   "
-                                  + "This will not verify GeoPackages with Feature data.");
+                                  + "This will not verify GeoPackages with Feature data. RGi GeoPackage Verifier Tool Version %.1f", versionNumber));
         about.setFont(Font.font(Style.getFont(), FontWeight.THIN, 14));
 
         final Stage infoStage = new Stage();
