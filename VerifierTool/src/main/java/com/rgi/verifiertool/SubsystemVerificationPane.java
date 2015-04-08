@@ -1,6 +1,7 @@
 package com.rgi.verifiertool;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -53,6 +54,7 @@ public class SubsystemVerificationPane extends VBox
      */
     public SubsystemVerificationPane(final String subsystemName, final ThrowingFunction<GeoPackage, Collection<VerificationIssue>> issuesFunction)
     {
+        super(3);
         if(subsystemName == null || subsystemName.isEmpty())
         {
             throw new IllegalArgumentException("Subsystem name may not be null or empty");
@@ -66,7 +68,7 @@ public class SubsystemVerificationPane extends VBox
         this.subsystemName  = subsystemName;
         this.issuesFunction = issuesFunction;
         this.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
-        this.setPadding(new Insets(5));
+        this.setPadding(new Insets(7));
 
         final Label subsystemLabel = this.prettyLabel();
 
@@ -77,7 +79,7 @@ public class SubsystemVerificationPane extends VBox
         this.gridPane.add(this.progressIndicator, 1, 0);
         //Columns for the top label
         ColumnConstraints columnLeft   = new ColumnConstraints(90);
-        ColumnConstraints columnCenter = new ColumnConstraints(90);
+        ColumnConstraints columnCenter = new ColumnConstraints(370);
         ColumnConstraints columnRight  = new ColumnConstraints(25, 25, 25);
 
         this.gridPane.getColumnConstraints().addAll(columnLeft,columnCenter, columnRight);
@@ -140,7 +142,7 @@ public class SubsystemVerificationPane extends VBox
 
 
             this.gridPane.add(getSeverityLevel(issues), 1, 0);
-            this.gridPane.add(this.createClipBoard(issues), 2, 0);
+            this.gridPane.add(this.createClipBoardButton(issues), 2, 0);
             this.getChildren().add(textBox);
         }
         else
@@ -153,19 +155,23 @@ public class SubsystemVerificationPane extends VBox
 
     }
 
-    private Node createClipBoard(final Collection<VerificationIssue> issues)
+    private Node createClipBoardButton(final Collection<VerificationIssue> issues)
     {
         Image     clipBoard     = new Image(SubsystemVerificationPane.class.getResourceAsStream("Clipboard_Icon.png"));
 
         ImageView clipBoardView = new ImageView(clipBoard);
         clipBoardView.setFitHeight(19);
         clipBoardView.setFitWidth(19);
+
         Button    copyButton    = new Button();
-        copyButton.setMaxSize(20, 20);
-        copyButton.setMinSize(20, 20);
+        copyButton.setMaxSize(24, 24);
+        copyButton.setMinSize(24, 24);
+        copyButton.setStyle(String.format("-fx-border-radius: 2 2 2 2;"
+                                        + "-fx-background-radius: 2 2 2 2; "));
 
         Tooltip copyMessage = new Tooltip("Copy Message");
         Tooltip.install(copyButton, copyMessage);
+
         copyButton.setGraphic(clipBoardView);
         copyButton.setOnAction(e-> {
                                         Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -179,7 +185,18 @@ public class SubsystemVerificationPane extends VBox
 
     private String getVerificationIssues(final Collection<VerificationIssue> issues)
     {
-        return "this will work\n and so will this!";//TODO make this copy the issues
+          String failedMessages = issues.stream()
+                                        .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
+                                        .map(issue -> {
+                                                        return String.format("(%s) Requirement %d: \"%s\"\n\n%s\n",
+                                                                             issue.getRequirement().severity(),
+                                                                             issue.getRequirement().number(),
+                                                                             issue.getRequirement().text(),
+                                                                             issue.getReason());
+                                                      })
+                                        .collect(Collectors.joining("\n"));
+
+         return  String.format("GeoPackage failed to meet the following requirements for GeoPackage %s:\n\n%s", this.subsystemName, failedMessages);
     }
 
     private static Node getSeverityLevel(final Collection<VerificationIssue> issues)

@@ -35,7 +35,17 @@ public enum Style
     /**
      * Grey Blue "#9BBED6"
      */
-    greyBlue("#9BBED6");
+    greyBlue("#9BBED6"),
+
+    /**
+     * Light Grey "#808080"
+     */
+    lightGrey("#808080"),
+
+    /**
+     * Black "#000000"
+     */
+    black("#000000");
 
     private String hexColor;
     Style(final String color)
