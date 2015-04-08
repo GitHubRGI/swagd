@@ -31,13 +31,14 @@ import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.VerificationIssue;
 
 /**
+ * Pane representing a single GeoPackage subsystem's verification output
+ *
  * @author Luke Lambert
  * @author Jenifer Cochran
  *
  */
 public class SubsystemVerificationPane extends VBox
 {
-
     private boolean hasIssues;
 
     private final String subsystemName;
@@ -49,8 +50,13 @@ public class SubsystemVerificationPane extends VBox
     private final ProgressIndicator progressIndicator = new ProgressIndicator();
 
     /**
-     * @param subsystemName The Subsystem of the GeoPackage that is being tested (i.e. Core, Tiles..)
-     * @param issuesFunction The function that will call the subsystem's verification method (to run the verifier and collect the error messages)
+     * Constructor
+     *
+     * @param subsystemName
+     *             Name of GeoPackage subsystem
+     * @param issuesFunction
+     *             Function to be called later that gather's the verification
+     *             messages from the subsystem
      */
     public SubsystemVerificationPane(final String subsystemName, final ThrowingFunction<GeoPackage, Collection<VerificationIssue>> issuesFunction)
     {
@@ -70,17 +76,17 @@ public class SubsystemVerificationPane extends VBox
         this.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
         this.setPadding(new Insets(7));
 
-        final Label subsystemLabel = this.prettyLabel();
-
         this.progressIndicator.setMinSize(25, 25);
         this.progressIndicator.setMaxSize(25, 25);
+
+        final Label subsystemLabel = this.prettyLabel();
 
         this.gridPane.add(subsystemLabel, 0, 0);
         this.gridPane.add(this.progressIndicator, 1, 0);
         //Columns for the top label
-        ColumnConstraints columnLeft   = new ColumnConstraints(90);
-        ColumnConstraints columnCenter = new ColumnConstraints(360);
-        ColumnConstraints columnRight  = new ColumnConstraints(25, 25, 25);
+        final ColumnConstraints columnLeft   = new ColumnConstraints(90);
+        final ColumnConstraints columnCenter = new ColumnConstraints(360);
+        final ColumnConstraints columnRight  = new ColumnConstraints(25, 25, 25);
 
         this.gridPane.getColumnConstraints().addAll(columnLeft,columnCenter, columnRight);
         this.gridPane.setVgap(10);
@@ -107,8 +113,11 @@ public class SubsystemVerificationPane extends VBox
     }
 
     /**
-     * @param geoPackage The GeoPackage file that is being tested
-     * @return The Collection of Verification issues that contain the error messages
+     * Returns the verification issues for this subsystem
+     *
+     * @param geoPackage
+     *             GeoPackage to verify
+     * @return returns a {@link Collection} of {@link VerificationIssue}s
      */
     public Collection<VerificationIssue> getIssues(final GeoPackage geoPackage)
     {
@@ -120,7 +129,10 @@ public class SubsystemVerificationPane extends VBox
     }
 
     /**
-     * @param issues The Verification Error messages from the tested GeoPackage (for each subsystem)
+     * Processes the verification issues, and updates the UI as necessary
+     *
+     * @param issues
+     *             Verification issues for the subsystem of a GeoPackage
      */
     public void update(final Collection<VerificationIssue> issues)
     {
@@ -129,13 +141,14 @@ public class SubsystemVerificationPane extends VBox
         if(issues != null && !issues.isEmpty())
         {
             final TextFlow textBox = new TextFlow();
+
             textBox.setStyle(String.format("-fx-border-radius: 10 10 10 10; -fx-border-color: gray;-fx-background-radius: 10 10 10 10; -fx-background-color: %s;", Style.darkAquaBlue.getHex()));
 
             for(final VerificationIssue issue : issues)
             {
-                final Text severity    = getSeverityLabel(issue.getRequirement().severity());
+                final Text severity    = getSeverityLabel   (issue.getRequirement().severity());
                 final Text requirement = getRequirementLabel(issue.getRequirement());
-                final Text reason      = getReasonLabel(issue.getReason());
+                final Text reason      = getReasonLabel     (issue.getReason());
 
                 textBox.getChildren().addAll(severity, requirement, reason);
             }
@@ -157,25 +170,25 @@ public class SubsystemVerificationPane extends VBox
 
     private Node createClipBoardButton(final Collection<VerificationIssue> issues)
     {
-        Image     clipBoard     = new Image(SubsystemVerificationPane.class.getResourceAsStream("Clipboard_Icon.png"));
+        final Image     clipBoard     = new Image(SubsystemVerificationPane.class.getResourceAsStream("Clipboard_Icon.png"));
 
-        ImageView clipBoardView = new ImageView(clipBoard);
+        final ImageView clipBoardView = new ImageView(clipBoard);
         clipBoardView.setFitHeight(19);
         clipBoardView.setFitWidth(19);
 
-        Button    copyButton    = new Button();
+        final Button    copyButton    = new Button();
         copyButton.setMaxSize(24, 24);
         copyButton.setMinSize(24, 24);
         copyButton.setStyle(String.format("-fx-border-radius: 2 2 2 2;"
                                         + "-fx-background-radius: 2 2 2 2; "));
 
-        Tooltip copyMessage = new Tooltip("Copy Message");
+        final Tooltip copyMessage = new Tooltip("Copy Message");
         Tooltip.install(copyButton, copyMessage);
 
         copyButton.setGraphic(clipBoardView);
         copyButton.setOnAction(e-> {
-                                        Clipboard clipboard = Clipboard.getSystemClipboard();
-                                        ClipboardContent content = new ClipboardContent();
+                                        final Clipboard clipboard = Clipboard.getSystemClipboard();
+                                        final ClipboardContent content = new ClipboardContent();
                                         content.putString(this.getVerificationIssues(issues));
                                         clipboard.setContent(content);
                                     });
@@ -185,7 +198,7 @@ public class SubsystemVerificationPane extends VBox
 
     private String getVerificationIssues(final Collection<VerificationIssue> issues)
     {
-          String failedMessages = issues.stream()
+          final String failedMessages = issues.stream()
                                         .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
                                         .map(issue -> {
                                                         return String.format("(%s) Requirement %d: \"%s\"\n\n%s\n",
@@ -204,7 +217,7 @@ public class SubsystemVerificationPane extends VBox
 
     private static Node getSeverityLevel(final Collection<VerificationIssue> issues)
     {
-        boolean hasError = issues.stream().anyMatch(issue -> issue.getRequirement().severity().equals(Severity.Error));
+        final boolean hasError = issues.stream().anyMatch(issue -> issue.getRequirement().severity().equals(Severity.Error));
 
         if(hasError)
         {
@@ -217,6 +230,7 @@ public class SubsystemVerificationPane extends VBox
     private static Text getPassText()
     {
         final Text passed = new Text("Passed");
+
         passed.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 16));
         passed.setFill(Style.brightGreen.toColor());
 

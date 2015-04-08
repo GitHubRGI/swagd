@@ -8,9 +8,12 @@ A Java-based application for converting geospatial images into tiles, packaging 
 [![Stories in Ready](https://badge.waffle.io/GitHubRGI/swagd.png?label=ready&title=Ready)](https://waffle.io/GitHubRGI/swagd)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/3993/badge.svg)](https://scan.coverity.com/projects/3993)
 
-## The Road To Release 1.0
+## Release 2.0 Progress
+[See current status towards Release 2.0 here.](https://github.com/GitHubRGI/swagd/milestones/Release%202.0)
 
-[See current progress to Release 1.0](https://github.com/GitHubRGI/swagd/milestones)
+## Release 1.0 Complete!
+* [See notes for Release 1.0 here.](https://github.com/GitHubRGI/swagd/releases/tag/v1.0)
+* Windows executable download link will be available soon.
 
 ## Projects
 * __Common__: Contains functionality for coordinates, tiles, tile stores, and tasks
@@ -20,10 +23,12 @@ A Java-based application for converting geospatial images into tiles, packaging 
 * __Geopackage__: Functions and validators for creating or reading GeoPackages
   * _Dependency_: Common
 * __GeoViewer__: Workflow code for the JMapViewer-based map canvas viewer for GeoPackages
-  * _Dependencies_: Common, Geopackage, JMapViewer (refer to build environment wiki)
+  * _Dependencies_: Common, GeoPackage, JMapViewer (refer to build environment wiki)
 * __IntegrationTest__: Test code for integration environments
-  * _Dependencies_: Common, Gdal2Tiles, Geopackage, GeoViewer
+  * _Dependencies_: Common, Gdal2Tiles, GeoPackage, GeoViewer
 * __Packager__: Workflow code that will use the Geopackage library to create Geopackage data products
-  * _Dependencies_: Common, Geopackage
+  * _Dependencies_: Common, GeoPackage
 * __RGISuite__: Main project and workflow aggregation
   * _Dependencies_: Common, Gdal2Tiles, Geopackage, GeoViewer, Packager
+* __VerifierTool__: Verify GeoPackages against the OGC GeoPackage Specification
+  * _Dependencies_: Common, GeoPackage

@@ -23,8 +23,11 @@ import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
+ * Pane representing a single GeoPackage file's verification output
+ *
  * @author Luke Lambert
  * @author Jenifer Cochran
+ *
  */
 public class FileVerificationPane extends TitledPane
 {
@@ -32,9 +35,11 @@ public class FileVerificationPane extends TitledPane
     private final ContextMenu deleteMenu = new ContextMenu();
     private VBox parent;
 
-
     /**
-     * @param geoPackageFile The File that needs to be tested against the GeoPackage Specification
+     * Constructor
+     *
+     * @param geoPackageFile
+     *             File handle to a GeoPackage file
      */
     public FileVerificationPane(final File geoPackageFile)
     {
