@@ -79,7 +79,7 @@ public class SubsystemVerificationPane extends VBox
         this.gridPane.add(this.progressIndicator, 1, 0);
         //Columns for the top label
         ColumnConstraints columnLeft   = new ColumnConstraints(90);
-        ColumnConstraints columnCenter = new ColumnConstraints(370);
+        ColumnConstraints columnCenter = new ColumnConstraints(360);
         ColumnConstraints columnRight  = new ColumnConstraints(25, 25, 25);
 
         this.gridPane.getColumnConstraints().addAll(columnLeft,columnCenter, columnRight);

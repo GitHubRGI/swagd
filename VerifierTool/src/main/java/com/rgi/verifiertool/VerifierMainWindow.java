@@ -39,6 +39,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -57,6 +58,9 @@ public class VerifierMainWindow extends Application
 {
     private final ScrollPane scrollPane     = new ScrollPane();
     private final VBox       filesContainer = new VBox(10);
+    /**
+     * Version number of The Verfier Tool
+     */
     public  final static double versionNumber = 1.0;
 
     /**
@@ -141,6 +145,7 @@ public class VerifierMainWindow extends Application
         final Hyperlink verifierToolInfo = new Hyperlink("About application");
         setHyperLinkFancyFont(verifierToolInfo);
         bottomGrid.add(verifierToolInfo, 2, 0);
+        GridPane.setHgrow(verifierToolInfo, Priority.ALWAYS);
         verifierToolInfo.setOnAction(e -> showApplicationInformation());
     }
 
@@ -149,6 +154,7 @@ public class VerifierMainWindow extends Application
         final Hyperlink swagdInfo = new Hyperlink("SWAGD Project");
         setHyperLinkFancyFont(swagdInfo);
         bottomGrid.add(swagdInfo, 0, 0);
+        GridPane.setHgrow(swagdInfo, Priority.ALWAYS);
         swagdInfo.setOnAction(e -> this.getHostServices().showDocument("https://github.com/GitHubRGI/swagd"));
     }
 
@@ -157,6 +163,7 @@ public class VerifierMainWindow extends Application
         final Hyperlink geoPackageLink = new Hyperlink("GeoPackage Specification");
         setHyperLinkFancyFont(geoPackageLink);
         bottomGrid.add(geoPackageLink, 1, 0);
+        GridPane.setHgrow(geoPackageLink, Priority.ALWAYS);
         geoPackageLink.setOnAction(e -> this.getHostServices().showDocument("http://www.geopackage.org/spec/"));
     }
 
