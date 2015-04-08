@@ -294,7 +294,7 @@ public class TilesVerifier extends Verifier
 
                                 Assert.assertTrue(String.format("\nNote: This next message is an additional concern that is related to this requirement but not the requirement itself."+
                                                                 "\nThe pixel_x_size and pixel_y_size should satisfy these two equations:"
-                                                                + "\n\tpixel_x_wize = (bounding box width  / matrix_width)  / tile_width "
+                                                                + "\n\tpixel_x_size = (bounding box width  / matrix_width)  / tile_width "
                                                                 + "AND \n\tpixel_y_size = (bounding box height / matrix_height)/ tile_height.  "
                                                                 + "\nBased on these two equations, the following pixel values are invalid for the table '%s'.:\n%s ",
                                                                 tableName,
@@ -1307,10 +1307,10 @@ public class TilesVerifier extends Verifier
                               final int zoomLevel    = dimensionsRS.getInt("zoom_level");
 
                               Assert.assertTrue(String.format("\nNote: This next message is an additional concern that is related to this requirement but not the requirement itself.  "+
-                                                                  "The BoundingBox in gpkg_tile_matrix_set does not define the minimum bounding box for all content in the table %s.\n "
-                                                                  + "\tActual Values:   MIN(tile_column): %4d,   MIN(tile_row): %4d,  MAX(tile_column): %4d,                   MAX(tile_row): %4d\n "
-                                                                  + "\tExpected values: MIN(tile_column):    0,  MIN(tile_row):    0, MAX(tile_column): %4d (matrix_width -1), MAX(tile_row): %4d (matrix_height -1),"
-                                                                  + "\n\tExpected values based on the Tile Matrix given at the MIN(zoom_level) %d.",
+                                                                  "The BoundingBox in gpkg_tile_matrix_set does not define the minimum bounding box for all content in the table %s.\n"
+                                                                  + "\tActual Values:\n\t\tMIN(tile_column): %4d,\n\t\tMIN(tile_row): %4d,\n\t\tMAX(tile_column): %4d,\n\t\tMAX(tile_row): %4d\n\n"
+                                                                  + "\tExpected values:\n\t\tMIN(tile_column):    0,\n\t\tMIN(tile_row):    0,\n\t\tMAX(tile_column): %4d (matrix_width -1),\n\t\tMAX(tile_row): %4d (matrix_height -1),"
+                                                                  + "\n\n\tExpected values based on the Tile Matrix given at the MIN(zoom_level) %d.",
                                                               pyramidTable,
                                                               minX,
                                                               minY,

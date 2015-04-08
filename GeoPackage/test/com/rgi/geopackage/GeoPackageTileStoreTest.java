@@ -217,7 +217,7 @@ public class GeoPackageTileStoreTest
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.tiles().addTileSet(tableName, "identifier", "description", bBoxGiven, gpkg.core().getSpatialReferenceSystem(4326));
+            gpkg.tiles().addTileSet(tableName, "identifier", "description", bBoxGiven, gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
@@ -297,7 +297,7 @@ public class GeoPackageTileStoreTest
         {
             final BoundingBox bBoxGiven = new BoundingBox(0.0,0.0,180.0,180.0);
 
-            gpkg.tiles().addTileSet(tableName, "identifier", "description", bBoxGiven, gpkg.core().getSpatialReferenceSystem(4326));
+            gpkg.tiles().addTileSet(tableName, "identifier", "description", bBoxGiven, gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
@@ -327,7 +327,7 @@ public class GeoPackageTileStoreTest
                                                       "identifier",
                                                       "description",
                                                       new BoundingBox(0.0,0.0,0.0,0.0),
-                                                      gpkg.core().getSpatialReferenceSystem(4326));
+                                                      gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
             try(GeoPackageReader reader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
                 final BufferedImage tile = reader.getTile(0, 0, 0);
@@ -503,7 +503,7 @@ public class GeoPackageTileStoreTest
                                     "identifier",
                                     "description",
                                     new BoundingBox(0.0,0.0,60.0,30.0),
-                                    gpkg.core().getSpatialReferenceSystem(4326));
+                                    gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
@@ -542,7 +542,7 @@ public class GeoPackageTileStoreTest
                                     "identifier",
                                     "description",
                                     new BoundingBox(0.0,0.0,60.0,30.0),
-                                    gpkg.core().addSpatialReferenceSystem("Srs Name", 3857, "EPSG", 3857, "definition", "description"));
+                                    gpkg.core().addSpatialReferenceSystem("Srs Name", "EPSG", 3857, "definition", "description"));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
@@ -581,7 +581,7 @@ public class GeoPackageTileStoreTest
                                     "identifier",
                                     "description",
                                     new BoundingBox(0.0,0.0,60.0,30.0),
-                                    gpkg.core().addSpatialReferenceSystem("Srs Name", 3857, "EPSG", 3857, "definition", "description"));
+                                    gpkg.core().addSpatialReferenceSystem("Srs Name", "EPSG", 3857, "definition", "description"));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
@@ -615,7 +615,7 @@ public class GeoPackageTileStoreTest
 
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().addSpatialReferenceSystem("WebMercator", 3857, "epsg", 3857, "definition", "description");
+            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().addSpatialReferenceSystem("WebMercator", "epsg", 3857, "definition", "description");
 
             gpkg.tiles().addTileSet(tableName, "identifier", "description", new BoundingBox(0.0,0.0,60.0,30.0), spatialReferenceSystem);
 
@@ -629,7 +629,7 @@ public class GeoPackageTileStoreTest
                                                 spatialReferenceSystem.getOrganization(),
                                                 spatialReferenceSystem.getIdentifier()),
                                   coordinateReferenceSystemReturned.getAuthority().equalsIgnoreCase(spatialReferenceSystem.getOrganization()) &&
-                                  coordinateReferenceSystemReturned.getIdentifier() ==              spatialReferenceSystem.getIdentifier());
+                                  coordinateReferenceSystemReturned.getIdentifier() ==              spatialReferenceSystem.getOrganizationSrsId());
             }
         }
         finally
@@ -663,7 +663,8 @@ public class GeoPackageTileStoreTest
                                                     "identifier",
                                                     "description",
                                                     bBox,
-                                                    gpkg.core().getSpatialReferenceSystem(4326));
+                                                    gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
+
             final TileSet tileSet2 = gpkg.tiles()
                                          .addTileSet("tabelName2",
                                                      "identifier2",
@@ -720,7 +721,7 @@ public class GeoPackageTileStoreTest
                                                     "identifier",
                                                     "description",
                                                     bBox,
-                                                    gpkg.core().getSpatialReferenceSystem(4326));
+                                                    gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
 
             final Set<Integer> zoomLevelsExpected = new HashSet<>(Arrays.asList(2,5,9,20));
 
@@ -866,7 +867,7 @@ public class GeoPackageTileStoreTest
                                                       "identifier",
                                                       "description",
                                                       bBox,
-                                                      gpkg.core().getSpatialReferenceSystem(4326));
+                                                      gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
 
               addTileMatricesToGpkg(zoomLevels,
                                      tileSet,
@@ -1756,7 +1757,7 @@ public class GeoPackageTileStoreTest
             final String                 identifier             = "identifier";
             final String                 description            = "description";
             final BoundingBox            boundingBox            = new BoundingBox(0.0, 0.0, 90.0, 90.0);
-            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem("EPSG", 4326);
 
             gpkg.tiles().addTileSet(tableName, identifier, description, boundingBox, spatialReferenceSystem);
 
@@ -1797,9 +1798,9 @@ public class GeoPackageTileStoreTest
         {
             final SphericalMercatorCrsProfile spherical = new SphericalMercatorCrsProfile();
             final BoundingBox tileSetBounds = new BoundingBox(SphericalMercatorCrsProfile.Bounds.getMinX()/4,
-                                                        SphericalMercatorCrsProfile.Bounds.getMinY()/2,
-                                                        SphericalMercatorCrsProfile.Bounds.getMaxX()/10,
-                                                        SphericalMercatorCrsProfile.Bounds.getMaxY()/8);
+                                                              SphericalMercatorCrsProfile.Bounds.getMinY()/2,
+                                                              SphericalMercatorCrsProfile.Bounds.getMaxX()/10,
+                                                              SphericalMercatorCrsProfile.Bounds.getMaxY()/8);
             final String tileSetName = "tableName";
             final int zoomLevel = 6;
             final int tileWidth = 256;
@@ -1807,11 +1808,10 @@ public class GeoPackageTileStoreTest
             final int matrixWidth = 10;
             final int matrixHeight = 6;
             final SpatialReferenceSystem srs = gpkg.core().addSpatialReferenceSystem(spherical.getName(),
-                                                                               spherical.getCoordinateReferenceSystem().getIdentifier(),
-                                                                               spherical.getCoordinateReferenceSystem().getAuthority(),
-                                                                               spherical.getCoordinateReferenceSystem().getIdentifier(),
-                                                                               spherical.getWellKnownText(),
-                                                                               spherical.getDescription());
+                                                                                     spherical.getCoordinateReferenceSystem().getAuthority(),
+                                                                                     spherical.getCoordinateReferenceSystem().getIdentifier(),
+                                                                                     spherical.getWellKnownText(),
+                                                                                     spherical.getDescription());
 
             GeoPackageTileStoreTest.createTileSetAndTileMatrix(gpkg, srs, tileSetBounds, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, tileSetName);
 
@@ -2365,13 +2365,13 @@ public class GeoPackageTileStoreTest
     }
     private static TileMatrix createTileSetAndTileMatrix(final GeoPackage gpkg, final BoundingBox bBox, final int zoomLevel, final int matrixWidth, final int matrixHeight) throws SQLException
     {
-        return createTileSetAndTileMatrix(gpkg, gpkg.core().getSpatialReferenceSystem(4326), bBox, zoomLevel, matrixWidth, matrixHeight, 256, 256, "tableName");
+        return createTileSetAndTileMatrix(gpkg, gpkg.core().getSpatialReferenceSystem("EPSG", 4326), bBox, zoomLevel, matrixWidth, matrixHeight, 256, 256, "tableName");
     }
 
     @SuppressWarnings("unused")
     private static TileMatrix createTileSetAndTileMatrix(final GeoPackage gpkg, final BoundingBox bBox, final int zoomLevel, final int matrixWidth, final int matrixHeight, final int tileWidth, final int tileHeight, final String identifierTableName) throws SQLException
     {
-        return createTileSetAndTileMatrix(gpkg, gpkg.core().getSpatialReferenceSystem(4326), bBox, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, identifierTableName);
+        return createTileSetAndTileMatrix(gpkg, gpkg.core().getSpatialReferenceSystem("EPSG", 4326), bBox, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, identifierTableName);
     }
 
     private static TileMatrix createTileSetAndTileMatrix(final GeoPackage gpkg, final SpatialReferenceSystem srs, final BoundingBox bBox, final int zoomLevel, final int matrixWidth, final int matrixHeight, final int tileWidth, final int tileHeight, final String identifierTableName) throws SQLException

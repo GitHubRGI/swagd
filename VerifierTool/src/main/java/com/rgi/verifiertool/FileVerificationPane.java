@@ -11,6 +11,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Task;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 import com.rgi.common.util.functional.ThrowingConsumer;
 import com.rgi.geopackage.GeoPackage;
@@ -18,10 +21,22 @@ import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
+/**
+ * Pane representing a single GeoPackage file's verification output
+ *
+ * @author Luke Lambert
+ *
+ */
 public class FileVerificationPane extends TitledPane
 {
     private final VBox content = new VBox();
 
+    /**
+     * Constructor
+     *
+     * @param geoPackageFile
+     *             File handle to a GeoPackage
+     */
     public FileVerificationPane(final File geoPackageFile)
     {
         if(geoPackageFile == null || !geoPackageFile.canRead())
@@ -31,7 +46,7 @@ public class FileVerificationPane extends TitledPane
 
         this.setAnimated(false);
         this.setText(geoPackageFile.getName());
-        this.setContent(this.content);
+        this.setPrettyText();
 
         final List<SubsystemVerificationPane> subsystems = Arrays.asList(new SubsystemVerificationPane("Core",       (geoPackage) -> geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full)),
                                                                          new SubsystemVerificationPane("Features",   (geoPackage) -> Collections.emptyList()),
@@ -50,7 +65,7 @@ public class FileVerificationPane extends TitledPane
                                                      try(final GeoPackage geoPackage = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Open))
                                                      {
                                                          final List<Thread> updateThreads = subsystems.stream()
-                                                                                                      .map(subsystem -> new Thread(FileVerificationPane.this.createTask(subsystem, geoPackage)))
+                                                                                                      .map(subsystem -> new Thread(FileVerificationPane.createTask(subsystem, geoPackage)))
                                                                                                       .collect(Collectors.toList());
 
                                                          updateThreads.forEach(thread -> thread.start());
@@ -68,7 +83,14 @@ public class FileVerificationPane extends TitledPane
         mainThread.start();
     }
 
-    private Task<Collection<VerificationIssue>> createTask(final SubsystemVerificationPane subsystemVerificationPane, final GeoPackage geoPackage)
+    private void setPrettyText()
+    {
+        this.setContent(this.content);
+        this.setTextFill(Color.NAVY);
+        this.setFont(Font.font("SanSerif", FontWeight.BOLD, 18));
+    }
+
+    private static Task<Collection<VerificationIssue>> createTask(final SubsystemVerificationPane subsystemVerificationPane, final GeoPackage geoPackage)
     {
         final Task<Collection<VerificationIssue>> task = new Task<Collection<VerificationIssue>>()
                                                          {
