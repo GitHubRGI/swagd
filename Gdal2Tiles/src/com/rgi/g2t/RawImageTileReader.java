@@ -27,6 +27,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import java.util.zip.DataFormatException;
@@ -217,25 +218,30 @@ public class RawImageTileReader implements TileStoreReader
         // Create a new tile scheme
         // zoomLevel should be the minZoom of the raw image (lowest integer zoom)
         // this zoom should only have one tile
-        final TileScheme tileScheme = new ZoomTimesTwo(zoomLevel, zoomLevel, 1, 1);
+        final ZoomTimesTwo tileScheme = new ZoomTimesTwo(zoomLevel, zoomLevel, 1, 1);
         final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(this.dataset);
         // Calculate the tile ranges for all the zoom levels (0-31)
-        final List<Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRangesForAllZooms(this.getBounds(),
-                                                                                                       crsProfile,
-                                                                                                       tileScheme,
-                                                                                                       TileOrigin.LowerLeft);
+        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRangesForZoomLevels(tileScheme.getZoomLevels(),
+                                                                                                                 this.getBounds(),
+                                                                                                                 crsProfile,
+                                                                                                                 tileScheme,
+                                                                                                                 TileOrigin.LowerLeft);
         // Pick out the zoom level range for this particular zoom
         final Range<Coordinate<Integer>> zoomInfo = tileRanges.get(zoomLevel);
+
         // Get the coordinate information
         final Coordinate<Integer> topLeftCoordinate = zoomInfo.getMinimum();
         final Coordinate<Integer> bottomRightCoordinate = zoomInfo.getMaximum();
+
         // Parse each coordinate into min/max tiles for X/Y
         final int zoomMinXTile = topLeftCoordinate.getX();
         final int zoomMaxXTile = bottomRightCoordinate.getX();
         final int zoomMinYTile = bottomRightCoordinate.getY();
         final int zoomMaxYTile = topLeftCoordinate.getY();
+
         // Create a tile handle list that we can append to
         final List<TileHandle> tileHandles = new ArrayList<>();
+
         for (int tileY = zoomMaxYTile; tileY >= zoomMinYTile; --tileY)
         {
             // Iterate through all Y's

@@ -102,11 +102,11 @@ public class GeoTransformation
      *             GDAL {@link Dataset}
      * @return Returns the geographic bounds of a dataset based on the geotransformation
      */
-    public BoundingBox getBounds(final Dataset dataset)
+    public BoundingBox getBounds(final Dataset dataset) // TODO take pixel dimensions instead
     {
         return new BoundingBox(this.affineTransform[0],
+                               this.affineTransform[3] - this.affineTransform[5] * dataset.getRasterYSize(),
                                this.affineTransform[0] + this.affineTransform[1] * dataset.getRasterXSize(),
-                               this.affineTransform[3] + this.affineTransform[5] * dataset.getRasterYSize(),
                                this.affineTransform[3]);
     }
 

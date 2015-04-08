@@ -488,24 +488,25 @@ public class GdalUtility
      * Calculate all the tile ranges for the data in the input {@link
      * BoundingBox} for the given zoom levels.
      *
+     * @param zoomLevels
+     *             Set of all valid zoom levels
      * @param bounds
      *             A {@link BoundingBox} describing the data area
      * @param crsProfile
      *             A {@link CrsProfile} for the input area
-     * @param zoomLevels
-     *             Set of all valid zoom levels
      * @param tileScheme
      *             A {@link TileScheme} representing the way in which the tiles
      *             should be arranged
      * @param tileOrigin
      *             A {@link TileOrigin} that represents which corner tiling
      *             begins from
+     *
      * @return A {@link Map} of zoom levels to tile coordinate info for theS
      *             top left and bottom right corners of the matrix
      */
-    public static Map<Integer, Range<Coordinate<Integer>>> calculateTileRangesForZoomLevels(final BoundingBox         bounds,
+    public static Map<Integer, Range<Coordinate<Integer>>> calculateTileRangesForZoomLevels(final Collection<Integer> zoomLevels,
+                                                                                            final BoundingBox         bounds,
                                                                                             final CrsProfile          crsProfile,
-                                                                                            final Collection<Integer> zoomLevels,
                                                                                             final TileScheme          tileScheme,
                                                                                             final TileOrigin          tileOrigin)
     {
@@ -699,9 +700,9 @@ public class GdalUtility
             final BoundingBox datasetBounds = GdalUtility.getBoundsForDataset    (dataset); // todo/temp check to see if GeoTransform gives the same dimension values as dataset.getrastersize calls
             final CrsProfile  crsProfile    = GdalUtility.getCrsProfileForDataset(dataset);
 
-            final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRangesForZoomLevels(datasetBounds,
+            final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRangesForZoomLevels(tileScheme.getZoomLevels(),
+                                                                                                                     datasetBounds,
                                                                                                                      crsProfile,
-                                                                                                                     tileScheme.getZoomLevels(),
                                                                                                                      tileScheme,
                                                                                                                      tileOrigin);
 
