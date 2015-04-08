@@ -29,12 +29,11 @@ import java.util.Collection;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
@@ -219,11 +218,33 @@ public class VerifierMainWindow extends Application
             else
             {
                 //show error message
-                final Stage errorStage = new Stage();
-                final Label errorLabel = new Label("Error Invalid Input:\nMust select a File."); //TODO
-                errorLabel.setFont(Font.font(Style.getFont(), FontWeight.EXTRA_BOLD, 16));
-                errorLabel.setAlignment(Pos.CENTER);
-                errorStage.setScene(new Scene(errorLabel, 300, 100));
+                final Stage     errorStage = new Stage();
+                      GridPane  gridPane = new GridPane();
+                final TextFlow  errorTextFlow = new TextFlow();
+
+                Text errorText = new Text(String.format("Error Invalid Input"));
+                Text invalidFileText = new Text(String.format("\t%s", file));
+                invalidFileText.setFont(Font.font(Style.getFont(), FontWeight.MEDIUM, 14));
+                errorText.setFont(Font.font(Style.getFont(), FontWeight.EXTRA_BOLD, 16));
+
+                errorTextFlow.getChildren().addAll(errorText, invalidFileText);
+                errorTextFlow.setMaxWidth(500);
+
+                Image      errorImage  = new Image(VerifierMainWindow.class.getResourceAsStream("Error_Icon.png"));
+                ImageView  errorViewer = new ImageView(errorImage);
+
+                errorViewer.setFitHeight(60);
+                errorViewer.setFitWidth(60);
+
+                gridPane.add(errorViewer, 0, 0);
+                gridPane.add(errorTextFlow, 1, 0);
+                gridPane.setHgap(10);
+                gridPane.resize(errorTextFlow.getPrefWidth() + errorViewer.getFitWidth(), errorTextFlow.getPrefHeight() + errorViewer.getFitHeight());
+
+                errorStage.setTitle("Error Invalid Input");
+                errorStage.getIcons().add(errorImage);
+                errorStage.setScene(new Scene(gridPane, gridPane.getPrefWidth(), gridPane.getPrefHeight()));
+                errorStage.setResizable(false);
                 errorStage.show();
             }
 
