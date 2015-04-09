@@ -139,7 +139,7 @@ public class PackagerWindow extends NavigationWindow
                                                               }
                                                               catch(final Exception ex)
                                                               {
-                                                                  this.error(ex.getMessage());
+                                                                  this.error(ex);
                                                               }
                                                               finally
                                                               {

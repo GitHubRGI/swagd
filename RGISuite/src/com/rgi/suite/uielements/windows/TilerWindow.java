@@ -170,7 +170,7 @@ public class TilerWindow extends NavigationWindow
                                                               }
                                                               catch(final Exception ex)
                                                               {
-                                                                  this.error(ex.getMessage());
+                                                                  this.error(ex);
                                                               }
                                                           }
                                                         });

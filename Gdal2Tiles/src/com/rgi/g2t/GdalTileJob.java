@@ -111,7 +111,8 @@ public class GdalTileJob implements Runnable {
     }
 
     @Override
-    public void run() {
+    public void run()
+    {
         try
         {
             final Dataset inputDataset = this.openInput();
@@ -157,7 +158,7 @@ public class GdalTileJob implements Runnable {
 
             // Tile all levels
             int tilesComplete = 0;
-            for (int zoom = maxZoom; zoom >= minZoom; --zoom)
+            for(int zoom = maxZoom; zoom >= minZoom; --zoom)
             {
                 tilesComplete = this.generateTiles(outputDataset, ranges.get(zoom), zoom, tilesComplete);
             }
