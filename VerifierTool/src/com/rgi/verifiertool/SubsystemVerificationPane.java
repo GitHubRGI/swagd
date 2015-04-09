@@ -68,7 +68,7 @@ public class SubsystemVerificationPane extends VBox
 
         this.subsystemName  = subsystemName;
         this.issuesFunction = issuesFunction;
-        this.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
+        this.setStyle(String.format("-fx-background-color: %s;", Style.greyBlue.getHex()));
         this.setPadding(new Insets(7));
 
         this.progressIndicator.setMinSize(25, 25);
@@ -136,7 +136,7 @@ public class SubsystemVerificationPane extends VBox
         {
             final TextFlow textBox = new TextFlow();
 
-            textBox.setStyle(String.format("-fx-border-radius: 10 10 10 10; -fx-border-color: gray;-fx-background-radius: 10 10 10 10; -fx-background-color: %s;", Style.darkAquaBlue.getHex()));
+            textBox.setStyle(String.format("-fx-padding: 5;-fx-border-radius: 10; -fx-border-color: gray;-fx-background-radius: 10; -fx-background-color: %s;", Style.darkAquaBlue.getHex()));
 
             for(final VerificationIssue issue : issues)
             {
@@ -152,7 +152,7 @@ public class SubsystemVerificationPane extends VBox
         else
         {
             //add pass
-            this.gridPane.add(createIconAndText(getPassText(), "passedIcon.png"), 1, 0);
+            this.gridPane.add(createIconAndText(getPassText(), "passedIcon.png", Style.lightGreen), 1, 0);
 
         }
         this.snapshot(new SnapshotParameters(), new WritableImage(1,1));//added to refresh scroll pane
@@ -167,13 +167,13 @@ public class SubsystemVerificationPane extends VBox
         //add correct label
         if(hasError)
         {
-            return createIconAndText(getSeverityText(Severity.Error), "errorIcon.png");
+            return createIconAndText(getSeverityText(Severity.Error), "errorIcon.png", Style.lightRed);
         }
 
-        return createIconAndText(getSeverityText(Severity.Warning), "WarningIcon.png");
+        return createIconAndText(getSeverityText(Severity.Warning), "WarningIcon.png", Style.lightOrange);
     }
 
-    private static Node createIconAndText(final Text passingLevel, final String imageFileName)
+    private static Node createIconAndText(final Text passingLevel, final String imageFileName, final Style backgroundColor)
     {
         //set up pane
         GridPane severityLevelPane = new GridPane();
@@ -188,6 +188,9 @@ public class SubsystemVerificationPane extends VBox
         errorImage.setFitWidth(20);
         severityLevelPane.add(passingLevel, 1, 0);
         severityLevelPane.add(errorImage, 0, 0);
+        severityLevelPane.setMaxSize(80+ errorImage.getFitWidth(), passingLevel.getLayoutBounds().getHeight() + errorImage.getFitHeight());
+
+        severityLevelPane.setStyle(String.format("-fx-padding: 5;-fx-border-radius: 10; -fx-border-color: grey;-fx-background-radius: 10; -fx-background-color: %s;", backgroundColor.getHex()));
 
         return severityLevelPane;
 
@@ -228,7 +231,7 @@ public class SubsystemVerificationPane extends VBox
     {
         final Text text = new Text();
 
-        text.setText(String.format(" Requirement %d: \"%s\"\n",
+        text.setText(String.format(" Requirement %d: \"%s\"\n\n",
                                     requirement.number(),
                                     requirement.text()));
 

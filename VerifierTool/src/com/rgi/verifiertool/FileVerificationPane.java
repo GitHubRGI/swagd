@@ -65,7 +65,7 @@ public class FileVerificationPane extends TitledPane
         this.createContextMenu();
         this.setOnMousePressed(e -> this.createDeleteListener(e));
 
-        this.content.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
+        this.content.setStyle(String.format("-fx-background-color: %s;", Style.greyBlue.getHex()));
         this.content.getChildren().add(this.createCopyButton());
         this.copyButton.setVisible(false);
 
@@ -121,8 +121,8 @@ public class FileVerificationPane extends TitledPane
     {
         this.copyButton.setMaxSize(109, 30);
         this.copyButton.setMinSize(109, 30);
-        this.copyButton.setStyle(String.format("-fx-border-radius: 2 2 2 2;"
-                                             + "-fx-background-radius: 2 2 2 2;"
+        this.copyButton.setStyle(String.format("-fx-border-radius: 5;"
+                                             + "-fx-background-radius: 5;"
                                              + "-fx-background-color: linear-gradient(%s, %s); ",
                                                Style.brightBlue.getHex(),
                                                Style.darkAquaBlue.getHex()));

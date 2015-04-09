@@ -9,21 +9,33 @@ import javafx.scene.paint.Color;
 public enum Style
 {
     /**
+     * Light Green "#B4D38D"
+     */
+    lightGreen("#B4D38D"),
+    /**
+     * Light Orange "#FAD167"
+     */
+    lightOrange("#FAD167"),
+    /**
+     * Light Red "#FFA859"
+     */
+    lightRed("#FFA859"),
+    /**
      * Dark Blue "#296EA3"
      */
     darkAquaBlue("#296EA3"),
     /**
-     * Bright Green "#00DA7D"
+     * Bright Green "#547A14"
      */
-    brightGreen("#89B351"),
+    brightGreen("#547A14"),
     /**
-     * Bright Orange "#FFBB10"
+     * Bright Orange "#E68206"
      */
-    brightOrange("#F58C08"),
+    brightOrange("#E68206"),
     /**
-     * Bright Red "#D92334"
+     * Bright Red "#BC2F05"
      */
-    brightRed("#C7390B"),
+    brightRed("#BC2F05"),
     /**
      * White "#FCFCFD"
      */
@@ -36,7 +48,6 @@ public enum Style
      * Grey Blue "#9BBED6"
      */
     greyBlue("#9BBED6"),
-
     /**
      * Light Grey "#808080"
      */
