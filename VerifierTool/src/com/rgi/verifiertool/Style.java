@@ -76,7 +76,7 @@ public enum Style
      */
     public static String getFixedWidthFont()
     {
-        return "Arial Rounded MT Bold";
+        return "Consolas";
     }
 
     /**

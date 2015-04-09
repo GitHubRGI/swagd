@@ -219,7 +219,7 @@ public class SubsystemVerificationPane extends VBox
     {
         final Text text = new Text(String.format("%s \n", reason));
         text.setFill(Style.greyBlue.toColor());
-        text.setFont(Font.font(Style.getFixedWidthFont(), FontWeight.EXTRA_BOLD, 12));
+        text.setFont(Font.font(Style.getFixedWidthFont(), FontWeight.EXTRA_BOLD, 13));
 
         return text;
     }
