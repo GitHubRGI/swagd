@@ -162,12 +162,7 @@ public class FileVerificationPane extends TitledPane
                                                                            return getVerificationIssuesForSubsystem(subsystem, this.fileErrorMessages.get(subsystem));
                                                                        })
                                                      .collect(Collectors.joining("\n"));
-        if(!body.isEmpty())
-        {
-            return String.format("%s\n%s", header, body);
-        }
-
-        return String.format("%s\n\n\nNo Errors found.", header);
+        return String.format("%s\n%s", header, body);
     }
 
     private static Integer compareSubsystems(final String subsystem1, final String susbystem2)

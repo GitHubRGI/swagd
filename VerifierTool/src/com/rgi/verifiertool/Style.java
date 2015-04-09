@@ -15,15 +15,15 @@ public enum Style
     /**
      * Bright Green "#00DA7D"
      */
-    brightGreen("#00DA7D"),
+    brightGreen("#89B351"),
     /**
      * Bright Orange "#FFBB10"
      */
-    brightOrange("#FFBB10"),
+    brightOrange("#F58C08"),
     /**
      * Bright Red "#D92334"
      */
-    brightRed("#D92334"),
+    brightRed("#C7390B"),
     /**
      * White "#FCFCFD"
      */

@@ -7,6 +7,8 @@ import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -78,7 +80,7 @@ public class SubsystemVerificationPane extends VBox
         this.gridPane.add(this.progressIndicator, 1, 0);
         //Columns for the top label
         final ColumnConstraints columnLeft   = new ColumnConstraints(90);
-        final ColumnConstraints columnCenter = new ColumnConstraints();
+        final ColumnConstraints columnCenter = new ColumnConstraints(200);
 
         this.gridPane.getColumnConstraints().addAll(columnLeft,columnCenter);
         this.gridPane.setVgap(10);
@@ -138,9 +140,9 @@ public class SubsystemVerificationPane extends VBox
 
             for(final VerificationIssue issue : issues)
             {
-                final Text severity    = getSeverityLabel   (issue.getRequirement().severity());
-                final Text requirement = getRequirementLabel(issue.getRequirement());
-                final Text reason      = getReasonLabel     (issue.getReason());
+                final Text severity    = getSeverityText   (issue.getRequirement().severity());
+                final Text requirement = getRequirementText(issue.getRequirement());
+                final Text reason      = getReasonText     (issue.getReason());
 
                 textBox.getChildren().addAll(severity, requirement, reason);
             }
@@ -150,7 +152,7 @@ public class SubsystemVerificationPane extends VBox
         else
         {
             //add pass
-            this.gridPane.add(getPassText(), 1, 0);
+            this.gridPane.add(createIconAndText(getPassText(), "passedIcon.png"), 1, 0);
 
         }
         this.snapshot(new SnapshotParameters(), new WritableImage(1,1));//added to refresh scroll pane
@@ -162,25 +164,46 @@ public class SubsystemVerificationPane extends VBox
     {
         final boolean hasError = issues.stream().anyMatch(issue -> issue.getRequirement().severity().equals(Severity.Error));
 
+        //add correct label
         if(hasError)
         {
-            return getSeverityLabel(Severity.Error);
+            return createIconAndText(getSeverityText(Severity.Error), "errorIcon.png");
         }
 
-        return getSeverityLabel(Severity.Warning);
+        return createIconAndText(getSeverityText(Severity.Warning), "WarningIcon.png");
+    }
+
+    private static Node createIconAndText(final Text passingLevel, final String imageFileName)
+    {
+        //set up pane
+        GridPane severityLevelPane = new GridPane();
+        final ColumnConstraints columnLeft   = new ColumnConstraints();
+        final ColumnConstraints columnCenter = new ColumnConstraints();
+        severityLevelPane.setVgap(5);
+        severityLevelPane.setHgap(5);
+        severityLevelPane.getColumnConstraints().addAll(columnLeft,columnCenter);
+
+        ImageView errorImage = new ImageView( new Image(SubsystemVerificationPane.class.getResourceAsStream(imageFileName)));
+        errorImage.setFitHeight(20);
+        errorImage.setFitWidth(20);
+        severityLevelPane.add(passingLevel, 1, 0);
+        severityLevelPane.add(errorImage, 0, 0);
+
+        return severityLevelPane;
+
     }
 
     private static Text getPassText()
     {
         final Text passed = new Text("Passed");
 
-        passed.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 16));
+        passed.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 14));
         passed.setFill(Style.brightGreen.toColor());
 
         return passed;
     }
 
-    private static Text getSeverityLabel(final Severity severity)
+    private static Text getSeverityText(final Severity severity)
     {
         final Text text = new Text(String.format("%s ",severity.name()));
 
@@ -201,7 +224,7 @@ public class SubsystemVerificationPane extends VBox
         }
     }
 
-    private static Text getRequirementLabel(final Requirement requirement)
+    private static Text getRequirementText(final Requirement requirement)
     {
         final Text text = new Text();
 
@@ -215,7 +238,7 @@ public class SubsystemVerificationPane extends VBox
         return text;
     }
 
-    private static Text getReasonLabel(final String reason)
+    private static Text getReasonText(final String reason)
     {
         final Text text = new Text(String.format("%s \n", reason));
         text.setFill(Style.greyBlue.toColor());

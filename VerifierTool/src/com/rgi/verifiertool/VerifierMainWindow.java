@@ -246,7 +246,7 @@ public class VerifierMainWindow extends Application
                 errorTextFlow.getChildren().addAll(errorText, invalidFileText);
                 errorTextFlow.setMaxWidth(500);
 
-                Image      errorImage  = new Image(VerifierMainWindow.class.getResourceAsStream("Error_Icon.png"));
+                Image      errorImage  = new Image(VerifierMainWindow.class.getResourceAsStream("errorIcon.png"));
                 ImageView  errorViewer = new ImageView(errorImage);
 
                 errorViewer.setFitHeight(60);
