@@ -83,5 +83,15 @@ public abstract class TileStoreWriterAdapter
      */
     public abstract TileStoreWriter getTileStoreWriter(final TileStoreReader tileStoreReader) throws TileStoreException;
 
+    /**
+     * In the case of a failed tile store operation (e.g. packaging, or tiling)
+     * call this method to clean up the process started by calling {@link
+     * #getTileStoreWriter(TileStoreReader)}
+     *
+     * @throws TileStoreException
+     *             if tile store removal fails
+     */
+    public abstract void removeStore() throws TileStoreException;
+
     protected final Settings settings;
 }

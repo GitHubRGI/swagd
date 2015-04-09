@@ -221,11 +221,10 @@ public class RawImageTileReader implements TileStoreReader
         final ZoomTimesTwo tileScheme = new ZoomTimesTwo(zoomLevel, zoomLevel, 1, 1);
         final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(this.dataset);
         // Calculate the tile ranges for all the zoom levels (0-31)
-        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRangesForZoomLevels(tileScheme.getZoomLevels(),
-                                                                                                                 this.getBounds(),
-                                                                                                                 crsProfile,
-                                                                                                                 tileScheme,
-                                                                                                                 TileOrigin.LowerLeft);
+        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
+                                                                                                    this.getBounds(),
+                                                                                                    crsProfile,
+                                                                                                    TileOrigin.LowerLeft);
         // Pick out the zoom level range for this particular zoom
         final Range<Coordinate<Integer>> zoomInfo = tileRanges.get(zoomLevel);
 

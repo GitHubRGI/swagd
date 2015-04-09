@@ -24,7 +24,6 @@
 package com.rgi.common.tile.scheme;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -117,14 +116,11 @@ public class ZoomTimesTwo implements TileScheme
         return this.zoomLevelDimensions[zoomLevel - this.minimumZoomLevel];
     }
 
-    /**
-     * @return Returns a {@link Set} of all valid zoom levels for this tile
-     *             scheme
-     */
+    @Override
     public Collection<Integer> getZoomLevels()
     {
         return IntStream.rangeClosed(this.minimumZoomLevel,
-                            this.maximumZoomLevel)
+                                     this.maximumZoomLevel)
                         .boxed()
                         .collect(Collectors.toList());
     }

@@ -205,6 +205,18 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
                                     this.getImageWriteParameter());
     }
 
+    @Override
+    public void removeStore() throws TileStoreException
+    {
+        final File file = new File(this.filename.getText());
+
+        if(file.delete() == false)
+        {
+            throw new TileStoreException(String.format("Unable to remove file '%s'",
+                                                       file.getAbsolutePath()));
+        }
+    }
+
     private static TileScheme getRelativeZoomTimesTwoTileScheme(final TileStoreReader tileStoreReader) throws TileStoreException
     {
         final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();

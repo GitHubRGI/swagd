@@ -26,8 +26,6 @@ import java.awt.Color;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.zip.DataFormatException;
 
 import org.gdal.gdal.Dataset;
@@ -56,8 +54,8 @@ import com.rgi.common.tile.store.TileStoreWriter;
  *
  * @author Steven D. Lander
  */
-public class GdalTileJob implements Runnable {
-
+public class GdalTileJob implements Runnable
+{
     private final TileStoreWriter     writer;
     private final CrsProfile          crsProfile;
     private final File                file;
@@ -97,7 +95,9 @@ public class GdalTileJob implements Runnable {
         {
             throw new IllegalArgumentException("Tile matrix dimensions cannot be null.");
         }
-        // TODO: Implement alpha support for nodata color.
+
+        // TODO: Implement alpha support for no data color.
+
         if (monitor == null)
         {
             throw new IllegalArgumentException("Monitor cannot be null.");
@@ -121,13 +121,10 @@ public class GdalTileJob implements Runnable {
             final BoundingBox outputBounds = GdalUtility.getBoundsForDataset(outputDataset);
 
             // Calculate all the tiles in every zoom possible (0-31)
-            final Map<Integer, Range<Coordinate<Integer>>> ranges = GdalUtility.calculateTileRangesForZoomLevels(IntStream.rangeClosed(0, 31)
-                                                                                                                          .boxed()
-                                                                                                                          .collect(Collectors.toList()),
-                                                                                                                 outputBounds,
-                                                                                                                 this.crsProfile,
-                                                                                                                 this.writer.getTileScheme(),
-                                                                                                                 this.writer.getTileOrigin());
+            final Map<Integer, Range<Coordinate<Integer>>> ranges = GdalUtility.calculateTileRanges(this.writer.getTileScheme(),
+                                                                                                    outputBounds,
+                                                                                                    this.crsProfile,
+                                                                                                    this.writer.getTileOrigin());
             // Generate tiles
             final int minZoom = GdalUtility.minimalZoomForDataset(outputDataset,
                                                                   ranges,

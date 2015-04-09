@@ -37,7 +37,6 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -488,15 +487,13 @@ public class GdalUtility
      * Calculate all the tile ranges for the data in the input {@link
      * BoundingBox} for the given zoom levels.
      *
-     * @param zoomLevels
-     *             Set of all valid zoom levels
+     * @param tileScheme
+     *             A {@link TileScheme} describing tile matrices for a set of
+     *             zoom levels
      * @param bounds
      *             A {@link BoundingBox} describing the data area
      * @param crsProfile
      *             A {@link CrsProfile} for the input area
-     * @param tileScheme
-     *             A {@link TileScheme} representing the way in which the tiles
-     *             should be arranged
      * @param tileOrigin
      *             A {@link TileOrigin} that represents which corner tiling
      *             begins from
@@ -504,11 +501,10 @@ public class GdalUtility
      * @return A {@link Map} of zoom levels to tile coordinate info for theS
      *             top left and bottom right corners of the matrix
      */
-    public static Map<Integer, Range<Coordinate<Integer>>> calculateTileRangesForZoomLevels(final Collection<Integer> zoomLevels,
-                                                                                            final BoundingBox         bounds,
-                                                                                            final CrsProfile          crsProfile,
-                                                                                            final TileScheme          tileScheme,
-                                                                                            final TileOrigin          tileOrigin)
+    public static Map<Integer, Range<Coordinate<Integer>>> calculateTileRanges(final TileScheme  tileScheme,
+                                                                               final BoundingBox bounds,
+                                                                               final CrsProfile  crsProfile,
+                                                                               final TileOrigin  tileOrigin)
     {
         if (bounds == null)
         {
@@ -531,7 +527,8 @@ public class GdalUtility
         final CrsCoordinate topLeft     = new CrsCoordinate(bounds.getTopLeft(),     crsProfile.getCoordinateReferenceSystem());
         final CrsCoordinate bottomRight = new CrsCoordinate(bounds.getBottomRight(), crsProfile.getCoordinateReferenceSystem());
 
-        return zoomLevels.stream()
+        return tileScheme.getZoomLevels()
+                         .stream()
                          .collect(Collectors.toMap(zoom -> zoom,
                                                    zoom -> { final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
                                                              final Coordinate<Integer>     topLeftTile = crsProfile.crsToTileCoordinate(topLeft,     crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
@@ -634,35 +631,41 @@ public class GdalUtility
                                             final TileScheme                               tileScheme,
                                             final Dimensions<Integer>                      tileSize) throws TileStoreException
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
-        if (tileRanges == null || tileRanges.isEmpty())
+
+        if(tileRanges == null || tileRanges.isEmpty())
         {
             throw new IllegalArgumentException("Tile range list cannot be null or empty.");
         }
-        if (tileOrigin == null)
+
+        if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Tile origin cannot be null.");
         }
-        if (tileScheme == null)
+
+        if(tileScheme == null)
         {
             throw new IllegalArgumentException("Tile scheme cannot be null.");
         }
-        if (tileSize == null)
+
+        if(tileSize == null)
         {
             throw new IllegalArgumentException("Tile dimensions cannot be null.");
         }
+
         final double zoomPixelSize = dataset.GetGeoTransform()[1];
+
         try
         {
             final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(dataset);
             return GdalUtility.zoomLevelForPixelSize(zoomPixelSize, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
         }
-        catch (final TileStoreException e)
+        catch(final TileStoreException e)
         {
-            throw new TileStoreException("Could not determine maximal zoom for input raster pixel size (dataset.GetGeoTransform()[1]).");
+            throw new TileStoreException("Could not determine maximum zoom level.");
         }
     }
 
@@ -700,11 +703,10 @@ public class GdalUtility
             final BoundingBox datasetBounds = GdalUtility.getBoundsForDataset    (dataset); // todo/temp check to see if GeoTransform gives the same dimension values as dataset.getrastersize calls
             final CrsProfile  crsProfile    = GdalUtility.getCrsProfileForDataset(dataset);
 
-            final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRangesForZoomLevels(tileScheme.getZoomLevels(),
-                                                                                                                     datasetBounds,
-                                                                                                                     crsProfile,
-                                                                                                                     tileScheme,
-                                                                                                                     tileOrigin);
+            final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
+                                                                                                        datasetBounds,
+                                                                                                        crsProfile,
+                                                                                                        tileOrigin);
 
             final int minZoom = GdalUtility.minimalZoomForDataset(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
             final int maxZoom = GdalUtility.maximalZoomForDataset(dataset, tileRanges, tileOrigin, tileScheme, tileSize);

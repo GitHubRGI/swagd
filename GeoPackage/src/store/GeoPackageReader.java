@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -149,15 +150,34 @@ public class GeoPackageReader implements TileStoreReader
                                                 .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
                                                                           tileMatrix -> tileMatrix));
 
-            this.tileScheme = zoomLevel -> { if(GeoPackageReader.this.tileMatrices.containsKey(zoomLevel))
-                                             {
-                                                 final TileMatrix tileMatrix = GeoPackageReader.this.tileMatrices.get(zoomLevel);
-                                                 return new TileMatrixDimensions(tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight());
-                                             }
+            this.tileScheme = new TileScheme()
+                              {
+                                  @Override
+                                  public TileMatrixDimensions dimensions(final int zoomLevel)
+                                  {
+                                      if(GeoPackageReader.this.tileMatrices.containsKey(zoomLevel))
+                                      {
+                                          final TileMatrix tileMatrix = GeoPackageReader.this.tileMatrices.get(zoomLevel);
+                                          return new TileMatrixDimensions(tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight());
+                                      }
 
-                                             throw new IllegalArgumentException(String.format("Zoom level must be in the range %s",
-                                                                                              new Range<>(GeoPackageReader.this.tileMatrices.keySet(), Integer::compare)));
-                                           };
+                                      throw new IllegalArgumentException(String.format("Zoom level must be in the range %s",
+                                                                                       new Range<>(GeoPackageReader.this.tileMatrices.keySet(), Integer::compare)));
+                                  }
+
+                                  @Override
+                                  public Collection<Integer> getZoomLevels()
+                                  {
+                                      try
+                                      {
+                                          return GeoPackageReader.this.geoPackage.tiles().getTileZoomLevels(GeoPackageReader.this.tileSet);
+                                      }
+                                      catch(final SQLException ex)
+                                      {
+                                          throw new RuntimeException(ex);
+                                      }
+                                  }
+                              };
         }
         catch(final Exception ex)
         {

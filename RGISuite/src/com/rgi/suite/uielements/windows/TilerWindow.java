@@ -341,8 +341,14 @@ public class TilerWindow extends NavigationWindow
                                                                          tileDimensions,
                                                                          color,
                                                                          taskMonitor)).execute();
-                                                              return null;
                                                           }
+                                                          catch(final Exception ex)
+                                                          {
+                                                              this.tileStoreWriterAdapter.removeStore();
+                                                              throw ex;
+                                                          }
+
+                                                          return null;
                                                       }
                                                     });
 
