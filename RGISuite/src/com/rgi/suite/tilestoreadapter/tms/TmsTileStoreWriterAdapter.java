@@ -143,10 +143,20 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
     @Override
     public TileStoreWriter getTileStoreWriter(final TileStoreReader tileStoreReader) throws TileStoreException
     {
+        final File file = new File(this.directory.getText());
+
+        final String parent = file.getParent();
+
+        if(parent != null)
+        {
+            this.settings.set(TmsOutputLocationSettingName, parent);
+                              this.settings.save();
+        }
+
         final MimeType mimeType = (MimeType)this.imageFormat.getSelectedItem();
 
         return new TmsWriter(tileStoreReader.getCoordinateReferenceSystem(),
-                             new File(this.directory.getText()).toPath(),
+                             file.toPath(),
                              mimeType,
                              this.getImageWriteParameter());
     }

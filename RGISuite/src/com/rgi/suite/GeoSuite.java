@@ -117,17 +117,16 @@ public class GeoSuite
         suiteWindow.setResizable(false);
         suiteWindow.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-        // Show the window
         suiteWindow.addWindowListener(new WindowAdapter()
                                       {
                                           @Override
                                           public void windowClosing(final WindowEvent event)
                                           {
-                                              final int option = JOptionPane.showConfirmDialog(suiteWindow, "Are you sure you want to exit?", "Confirm Exit", JOptionPane.YES_NO_OPTION);
-                                              if(option == JOptionPane.YES_OPTION)
-                                              {
+                                              //final int option = JOptionPane.showConfirmDialog(suiteWindow, "Are you sure you want to exit?", "Confirm Exit", JOptionPane.YES_NO_OPTION);
+                                              //if(option == JOptionPane.YES_OPTION)
+                                              //{
                                                   System.exit(0);
-                                              }
+                                              //}
                                           }
                                       });
 

@@ -78,6 +78,8 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
                                                                                              Arrays.asList(new JLabel("Tile set description:"), this.tileSetDescription),
                                                                                              Arrays.asList(new JLabel("File name:"),            this.filename, this.outputFileNameSelector));
 
+    private File lastFileHint = null;
+
     /**
      * Constructor
      *
@@ -93,7 +95,7 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
                                                              final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
                                                              fileChooser.setMultiSelectionEnabled(false);
-                                                             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                                                             fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
                                                              final int option = fileChooser.showOpenDialog(null);
 
@@ -104,7 +106,35 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
                                                                  this.settings.set(GeoPackageOutputLocationSettingName, file.getParent());
                                                                  this.settings.save();
 
-                                                                 this.filename.setText(fileChooser.getSelectedFile().getPath());
+                                                                 if(file.isDirectory())
+                                                                 {
+                                                                     final File oldFileSelection = new File(this.filename.getText());
+
+                                                                     if(oldFileSelection.isFile())
+                                                                     {
+                                                                         this.filename.setText(file.getPath() + File.separatorChar + oldFileSelection.getName());
+                                                                     }
+                                                                     else if(this.lastFileHint != null)
+                                                                     {
+                                                                         this.filename.setText(file.getPath());
+                                                                         try
+                                                                         {
+                                                                             this.hint(this.lastFileHint);
+                                                                         }
+                                                                         catch(final Exception ex)
+                                                                         {
+                                                                             // ignore
+                                                                         }
+                                                                     }
+                                                                     else
+                                                                     {
+                                                                         this.filename.setText("geopackage.gpkg");
+                                                                     }
+                                                                 }
+                                                                 else
+                                                                 {
+                                                                     this.filename.setText(file.getPath());
+                                                                 }
                                                              }
                                                            });
     }
@@ -138,6 +168,8 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
     @Override
     public void hint(final File inputFile) throws TileStoreException
     {
+        this.lastFileHint = inputFile;
+
         String name = FileUtility.nameWithoutExtension(inputFile);
 
         name = name.replaceAll("[^_a-zA-Z0-9]", "_");
@@ -169,9 +201,19 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
     @Override
     public TileStoreWriter getTileStoreWriter(final TileStoreReader tileStoreReader) throws TileStoreException
     {
+        final File file = new File(this.filename.getText());
+
+        final String parent = file.getParent();
+
+        if(parent != null)
+        {
+            this.settings.set(GeoPackageOutputLocationSettingName, parent);
+                              this.settings.save();
+        }
+
         final MimeType mimeType = (MimeType)this.imageFormat.getSelectedItem();
 
-        return new GeoPackageWriter(new File(this.filename.getText()),
+        return new GeoPackageWriter(file,
                                     tileStoreReader.getCoordinateReferenceSystem(),
                                     this.tileSetName.getText(),
                                     this.tileSetName.getText(),
