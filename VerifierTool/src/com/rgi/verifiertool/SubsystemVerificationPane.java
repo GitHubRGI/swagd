@@ -1,20 +1,13 @@
 package com.rgi.verifiertool;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.Tooltip;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -85,10 +78,9 @@ public class SubsystemVerificationPane extends VBox
         this.gridPane.add(this.progressIndicator, 1, 0);
         //Columns for the top label
         final ColumnConstraints columnLeft   = new ColumnConstraints(90);
-        final ColumnConstraints columnCenter = new ColumnConstraints(360);
-        final ColumnConstraints columnRight  = new ColumnConstraints(25, 25, 25);
+        final ColumnConstraints columnCenter = new ColumnConstraints();
 
-        this.gridPane.getColumnConstraints().addAll(columnLeft,columnCenter, columnRight);
+        this.gridPane.getColumnConstraints().addAll(columnLeft,columnCenter);
         this.gridPane.setVgap(10);
 
         this.getChildren().add(this.gridPane);
@@ -153,9 +145,7 @@ public class SubsystemVerificationPane extends VBox
                 textBox.getChildren().addAll(severity, requirement, reason);
             }
 
-
             this.gridPane.add(getSeverityLevel(issues), 1, 0);
-            this.gridPane.add(this.createClipBoardButton(issues), 2, 0);
             this.getChildren().add(textBox);
         }
         else
@@ -168,52 +158,6 @@ public class SubsystemVerificationPane extends VBox
 
     }
 
-    private Node createClipBoardButton(final Collection<VerificationIssue> issues)
-    {
-        final Image     clipBoard     = new Image(SubsystemVerificationPane.class.getResourceAsStream("Clipboard_Icon.png"));
-
-        final ImageView clipBoardView = new ImageView(clipBoard);
-        clipBoardView.setFitHeight(19);
-        clipBoardView.setFitWidth(19);
-
-        final Button    copyButton    = new Button();
-        copyButton.setMaxSize(24, 24);
-        copyButton.setMinSize(24, 24);
-        copyButton.setStyle(String.format("-fx-border-radius: 2 2 2 2;"
-                                        + "-fx-background-radius: 2 2 2 2; "));
-
-        final Tooltip copyMessage = new Tooltip("Copy Message");
-        Tooltip.install(copyButton, copyMessage);
-
-        copyButton.setGraphic(clipBoardView);
-        copyButton.setOnAction(e-> {
-                                        final Clipboard clipboard = Clipboard.getSystemClipboard();
-                                        final ClipboardContent content = new ClipboardContent();
-                                        content.putString(this.getVerificationIssues(issues));
-                                        clipboard.setContent(content);
-                                    });
-
-        return copyButton;
-    }
-
-    private String getVerificationIssues(final Collection<VerificationIssue> issues)
-    {
-          final String failedMessages = issues.stream()
-                                        .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
-                                        .map(issue -> {
-                                                        return String.format("(%s) Requirement %d: \"%s\"\n\n%s\n",
-                                                                             issue.getRequirement().severity(),
-                                                                             issue.getRequirement().number(),
-                                                                             issue.getRequirement().text(),
-                                                                             issue.getReason());
-                                                      })
-                                        .collect(Collectors.joining("\n"));
-
-         return  String.format("RGi GeoPackage Verfier Tool Version %.1f.\n\n\nGeoPackage failed to meet the following requirements for GeoPackage %s:\n\n%s",
-                                VerifierMainWindow.versionNumber,
-                                this.subsystemName,
-                                failedMessages);
-    }
 
     private static Node getSeverityLevel(final Collection<VerificationIssue> issues)
     {
@@ -279,5 +223,10 @@ public class SubsystemVerificationPane extends VBox
         text.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 12));
 
         return text;
+    }
+
+    public String getName()
+    {
+        return this.subsystemName;
     }
 }

@@ -24,11 +24,15 @@
 package com.rgi.verifiertool;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.ScrollPane;
@@ -37,10 +41,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -60,7 +64,11 @@ public class VerifierMainWindow extends Application
     /**
      * Version number of The Verfier Tool
      */
-    public  final static double versionNumber = 1.0;
+    public final static String rgiToolVersionNumber = String.format("%.1f.%s", 1.0, new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
+    /**
+     * The Version of the GeoPackage Encoding Standard that this Verifier reflects
+     */
+    public final static String geoPackageSpecificationVersionNumber = "1.0";
 
     /**
      * Launch the Verifier application.
@@ -95,7 +103,15 @@ public class VerifierMainWindow extends Application
 
         setIcon(primaryStage);
 
-        bottomGrid.setHgap(100);
+        //set the bottom grid column constraints
+        ColumnConstraints columnLeft   = new ColumnConstraints(90,  120, 2000, Priority.ALWAYS, HPos.LEFT,   true);
+        ColumnConstraints columnCenter = new ColumnConstraints(150, 150, 2000, Priority.ALWAYS, HPos.CENTER, true);
+        ColumnConstraints columnRight  = new ColumnConstraints(100, 120, 2000, Priority.ALWAYS, HPos.RIGHT,  true);
+        bottomGrid.getColumnConstraints().addAll(columnLeft, columnCenter, columnRight);
+       // bottomGrid.setHgap(50);
+        bottomGrid.setMinSize(400, 25);
+        bottomGrid.setAlignment(Pos.CENTER);
+
 
         final Text dragHereMessage = createFancyText("Drag GeoPackage Files Here");
 
@@ -126,7 +142,7 @@ public class VerifierMainWindow extends Application
                                               this.addFiles(db.getFiles());
                                               primaryStage.setResizable(true);
                                               primaryStage.setMinHeight(400);
-                                              primaryStage.setMinWidth(580);
+                                              primaryStage.setMinWidth(550);
                                           }
                                           event.setDropCompleted(true);
                                           event.consume();
@@ -144,7 +160,8 @@ public class VerifierMainWindow extends Application
         final Hyperlink verifierToolInfo = new Hyperlink("About application");
         setHyperLinkFancyFont(verifierToolInfo);
         bottomGrid.add(verifierToolInfo, 2, 0);
-        GridPane.setHgrow(verifierToolInfo, Priority.ALWAYS);
+        //GridPane.setHgrow(verifierToolInfo, Priority.ALWAYS);
+        GridPane.setHalignment(verifierToolInfo, HPos.RIGHT);
         verifierToolInfo.setOnAction(e -> showApplicationInformation());
     }
 
@@ -153,7 +170,7 @@ public class VerifierMainWindow extends Application
         final Hyperlink swagdInfo = new Hyperlink("SWAGD Project");
         setHyperLinkFancyFont(swagdInfo);
         bottomGrid.add(swagdInfo, 0, 0);
-        GridPane.setHgrow(swagdInfo, Priority.ALWAYS);
+        GridPane.setHalignment(swagdInfo, HPos.LEFT);
         swagdInfo.setOnAction(e -> this.getHostServices().showDocument("https://github.com/GitHubRGI/swagd"));
     }
 
@@ -162,7 +179,7 @@ public class VerifierMainWindow extends Application
         final Hyperlink geoPackageLink = new Hyperlink("GeoPackage Specification");
         setHyperLinkFancyFont(geoPackageLink);
         bottomGrid.add(geoPackageLink, 1, 0);
-        GridPane.setHgrow(geoPackageLink, Priority.ALWAYS);
+        GridPane.setHalignment(geoPackageLink, HPos.CENTER);
         geoPackageLink.setOnAction(e -> this.getHostServices().showDocument("http://www.geopackage.org/spec/"));
     }
 
@@ -175,21 +192,21 @@ public class VerifierMainWindow extends Application
     private static void showApplicationInformation()
     {
         //create title and set font
-        final Text title  = new Text("RGi GeoPackage Verifier Tool\n");
-        title.setFill(Color.rgb(0, 120, 212));
+        final Text title  = new Text("RGi\u00AE GeoPackage Verifier Tool\n");
+        title.setFill(Style.brightBlue.toColor());
         title.setFont(Font.font(Style.getFont(), FontWeight.EXTRA_BOLD, 20));
         title.setTextAlignment(TextAlignment.CENTER);
 
         //set company name and font
-        final Text company = new Text("Reinventing Geospatial Inc.\n\n");
+        final Text company = new Text("Reinventing Geospatial Inc.\u00AE\n\n");
         company.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 18));
-        company.setFill(Color.rgb(41, 110, 163));
+        company.setFill(Style.darkAquaBlue.toColor());
 
         //set application information and font
         final Text about = new Text(String.format("This application will verify GeoPackages with Raster Tile data for the GeoPackage Encoding Standard Version 1.0.  "
                                   + "This Verification Tool will test the GeoPackage Core, GeoPackage Tiles, GeoPackage Extensions, GeoPackage Schema, "
-                                  + "and GeoPackage Metadata requirements.  This will test a GeoPackage file against the Requirements referenced in the Encoding Standard.   "
-                                  + "This will not verify GeoPackages with Feature data. RGi GeoPackage Verifier Tool Version %.1f", versionNumber));
+                                  + "and GeoPackage Metadata requirements.  This will test a GeoPackage file against the Requirements referenced in the GeoPackage Encoding Standard.   "
+                                  + "This will not verify GeoPackages with Feature data. RGi\u00AE GeoPackage Verifier Tool Version %s", rgiToolVersionNumber));
         about.setFont(Font.font(Style.getFont(), FontWeight.THIN, 14));
 
         final Stage infoStage = new Stage();
