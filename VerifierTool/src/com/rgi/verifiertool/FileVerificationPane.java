@@ -9,13 +9,12 @@ import java.util.stream.Collectors;
 
 import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Task;
-import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
@@ -38,7 +37,7 @@ import com.rgi.geopackage.verification.VerificationLevel;
  */
 public class FileVerificationPane extends TitledPane
 {
-    private final VBox content = new VBox();
+    private final VBox content = new VBox(3);
     private final ContextMenu deleteMenu = new ContextMenu();
     private VBox parent;
     private final HashMap<String, Collection<VerificationIssue>> fileErrorMessages = new HashMap<>();
@@ -64,7 +63,7 @@ public class FileVerificationPane extends TitledPane
         this.content.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
         this.createContextMenu();
         this.setOnMousePressed(e -> this.createDeleteListener(e));
-        this.content.getChildren().add(this.createClipBoardButton());
+        this.content.getChildren().add(this.createCopyButton());
 
         final List<SubsystemVerificationPane> subsystems = Arrays.asList(new SubsystemVerificationPane("Core",       (geoPackage) -> geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full)),
                                                                          //new SubsystemVerificationPane("Features",   (geoPackage) -> Collections.emptyList()),
@@ -101,24 +100,30 @@ public class FileVerificationPane extends TitledPane
         mainThread.start();
     }
 
-    private Button createClipBoardButton()
+    private ToggleButton createCopyButton()
     {
-        final Image     clipBoard     = new Image(FileVerificationPane.class.getResourceAsStream("Clipboard_Icon.png"));
-
-        final ImageView clipBoardView = new ImageView(clipBoard);
-        clipBoardView.setFitHeight(19);
-        clipBoardView.setFitWidth(19);
-
-        final Button    copyButton    = new Button();
-        copyButton.setMaxSize(24, 24);
-        copyButton.setMinSize(24, 24);
+        final ToggleButton    copyButton    = new ToggleButton("Copy Message");
+        copyButton.setMaxSize(109, 30);
+        copyButton.setMinSize(109, 30);
         copyButton.setStyle(String.format("-fx-border-radius: 2 2 2 2;"
-                                        + "-fx-background-radius: 2 2 2 2; "));
+                                        + "-fx-background-radius: 2 2 2 2;"
+                                        + "-fx-background-color: linear-gradient(%s, %s); ",
+                                     //  + "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 5,0.0,0,1);",
+                                        Style.brightBlue.getHex(),
+                                        Style.darkAquaBlue.getHex()
+                                        ));
 
-        final Tooltip copyMessage = new Tooltip("Copy Message");
+        copyButton.setTextFill(Style.white.toColor());
+        copyButton.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 12));
+
+        final Tooltip copyMessage = new Tooltip("Copy Failed Requirements for this File");
         Tooltip.install(copyButton, copyMessage);
 
-        copyButton.setGraphic(clipBoardView);
+        copyButton.setOnMouseEntered(e-> copyButton.setEffect(new DropShadow()));
+        copyButton.setOnMouseExited(e-> copyButton.setEffect(null));
+        copyButton.setOnMousePressed(e-> copyButton.setStyle(String.format(" -fx-background-color: linear-gradient(%s, %s)",  Style.darkAquaBlue.getHex(), Style.brightBlue.getHex())));
+        copyButton.setOnMouseReleased(e-> copyButton.setStyle(String.format(" -fx-background-color: linear-gradient(%s, %s)",  Style.brightBlue.getHex(), Style.darkAquaBlue.getHex())));
+
         copyButton.setOnAction(e-> {
                                         final Clipboard clipboard = Clipboard.getSystemClipboard();
                                         final ClipboardContent clipboardContent = new ClipboardContent();
@@ -226,7 +231,7 @@ public class FileVerificationPane extends TitledPane
     {
         this.setContent(this.content);
         this.setTextFill(Style.brightBlue.toColor());
-        this.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 18));
+        this.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 18));
         this.setStyle(String.format("-fx-body-color: %s;", Style.white.getHex()));
     }
 

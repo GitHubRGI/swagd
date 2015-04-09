@@ -64,11 +64,19 @@ public enum Style
     }
 
     /**
-     * @return font of the program
+     * @return Main font of the program
      */
-    public static String getFont()
+    public static String getMainFont()
     {
         return "SanSerif";
+    }
+
+    /**
+     * @return
+     */
+    public static String getFixedWidthFont()
+    {
+        return "Arial Rounded MT Bold";
     }
 
     /**

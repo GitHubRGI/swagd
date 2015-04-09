@@ -194,12 +194,12 @@ public class VerifierMainWindow extends Application
         //create title and set font
         final Text title  = new Text("RGi\u00AE GeoPackage Verifier Tool\n");
         title.setFill(Style.brightBlue.toColor());
-        title.setFont(Font.font(Style.getFont(), FontWeight.EXTRA_BOLD, 20));
+        title.setFont(Font.font(Style.getMainFont(), FontWeight.EXTRA_BOLD, 20));
         title.setTextAlignment(TextAlignment.CENTER);
 
         //set company name and font
         final Text company = new Text("Reinventing Geospatial Inc.\u00AE\n\n");
-        company.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 18));
+        company.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 18));
         company.setFill(Style.darkAquaBlue.toColor());
 
         //set application information and font
@@ -207,7 +207,7 @@ public class VerifierMainWindow extends Application
                                   + "This Verification Tool will test the GeoPackage Core, GeoPackage Tiles, GeoPackage Extensions, GeoPackage Schema, "
                                   + "and GeoPackage Metadata requirements.  This will test a GeoPackage file against the Requirements referenced in the GeoPackage Encoding Standard.   "
                                   + "This will not verify GeoPackages with Feature data. RGi\u00AE GeoPackage Verifier Tool Version %s", rgiToolVersionNumber));
-        about.setFont(Font.font(Style.getFont(), FontWeight.THIN, 14));
+        about.setFont(Font.font(Style.getMainFont(), FontWeight.THIN, 14));
 
         final Stage infoStage = new Stage();
         final TextFlow text   = new TextFlow(title, company, about);
@@ -241,8 +241,8 @@ public class VerifierMainWindow extends Application
 
                 Text errorText = new Text(String.format("Error Invalid Input"));
                 Text invalidFileText = new Text(String.format("\t%s", file));
-                invalidFileText.setFont(Font.font(Style.getFont(), FontWeight.MEDIUM, 14));
-                errorText.setFont(Font.font(Style.getFont(), FontWeight.EXTRA_BOLD, 16));
+                invalidFileText.setFont(Font.font(Style.getMainFont(), FontWeight.MEDIUM, 14));
+                errorText.setFont(Font.font(Style.getMainFont(), FontWeight.EXTRA_BOLD, 16));
 
                 errorTextFlow.getChildren().addAll(errorText, invalidFileText);
                 errorTextFlow.setMaxWidth(500);
@@ -271,14 +271,14 @@ public class VerifierMainWindow extends Application
     private static void setHyperLinkFancyFont(final Hyperlink link)
     {
         link.setTextFill(Style.darkAquaBlue.toColor());
-        link.setFont(Font.font(Style.getFont(),FontWeight.BOLD, 11));
+        link.setFont(Font.font(Style.getMainFont(),FontWeight.BOLD, 11));
     }
 
     private static Text createFancyText(final String text)
     {
         final Text fancyText = new Text(text);
         fancyText.setFill(Style.white.toColor());
-        fancyText.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 30));
+        fancyText.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 30));
 
         return fancyText;
     }

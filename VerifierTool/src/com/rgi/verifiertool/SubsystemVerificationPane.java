@@ -90,7 +90,7 @@ public class SubsystemVerificationPane extends VBox
     {
         final Label subsystemLabel = new Label(this.subsystemName);
 
-        subsystemLabel.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 16));
+        subsystemLabel.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 16));
         subsystemLabel.setTextFill(Style.darkAquaBlue.toColor());
 
         return subsystemLabel;
@@ -175,7 +175,7 @@ public class SubsystemVerificationPane extends VBox
     {
         final Text passed = new Text("Passed");
 
-        passed.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 16));
+        passed.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 16));
         passed.setFill(Style.brightGreen.toColor());
 
         return passed;
@@ -186,7 +186,7 @@ public class SubsystemVerificationPane extends VBox
         final Text text = new Text(String.format("%s ",severity.name()));
 
         text.setFill(getColor(severity));
-        text.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 14));
+        text.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 14));
 
         return text;
     }
@@ -210,7 +210,7 @@ public class SubsystemVerificationPane extends VBox
                                     requirement.number(),
                                     requirement.text()));
 
-        text.setFont(Font.font(Style.getFont(), FontWeight.EXTRA_BOLD, 12));
+        text.setFont(Font.font(Style.getMainFont(), FontWeight.EXTRA_BOLD, 12));
         text.setFill(Style.white.toColor());
 
         return text;
@@ -220,11 +220,15 @@ public class SubsystemVerificationPane extends VBox
     {
         final Text text = new Text(String.format("%s \n", reason));
         text.setFill(Style.greyBlue.toColor());
-        text.setFont(Font.font(Style.getFont(), FontWeight.BOLD, 12));
+        text.setFont(Font.font(Style.getFixedWidthFont(), FontWeight.EXTRA_BOLD, 12));
 
         return text;
     }
 
+    /**
+     * @return
+     *         The Name of the Subsystem (i.e. Core, Tiles, etc..)
+     */
     public String getName()
     {
         return this.subsystemName;
