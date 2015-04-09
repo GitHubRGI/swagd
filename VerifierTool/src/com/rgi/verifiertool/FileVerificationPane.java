@@ -41,7 +41,7 @@ public class FileVerificationPane extends TitledPane
     private final ContextMenu deleteMenu = new ContextMenu();
     private VBox parent;
     private final HashMap<String, Collection<VerificationIssue>> fileErrorMessages = new HashMap<>();
-    private final ToggleButton    copyButton    = new ToggleButton("Copy Message");
+    private final ToggleButton    copyButton    = new ToggleButton("Copy Issues");
 
 
     /**
@@ -57,12 +57,15 @@ public class FileVerificationPane extends TitledPane
             throw new IllegalArgumentException("GeoPackage file may not be null, and must be a valid filename");
         }
 
-        this.setAnimated(false);
+        this.setAnimated(true);
         this.setText(geoPackageFile.getName());
         this.setPrettyText();
-        this.content.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
+
+        //create context menu to delete files from pane
         this.createContextMenu();
         this.setOnMousePressed(e -> this.createDeleteListener(e));
+
+        this.content.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
         this.content.getChildren().add(this.createCopyButton());
         this.copyButton.setVisible(false);
 
@@ -94,7 +97,6 @@ public class FileVerificationPane extends TitledPane
                                                      }
                                                      catch(final Exception ex)
                                                      {
-                                                         System.out.println("ahahhahahahaha!!");
                                                          throw new RuntimeException(ex);
                                                      }
 
@@ -120,11 +122,10 @@ public class FileVerificationPane extends TitledPane
         this.copyButton.setMaxSize(109, 30);
         this.copyButton.setMinSize(109, 30);
         this.copyButton.setStyle(String.format("-fx-border-radius: 2 2 2 2;"
-                                        + "-fx-background-radius: 2 2 2 2;"
-                                        + "-fx-background-color: linear-gradient(%s, %s); ",
-                                        Style.brightBlue.getHex(),
-                                        Style.darkAquaBlue.getHex()
-                                        ));
+                                             + "-fx-background-radius: 2 2 2 2;"
+                                             + "-fx-background-color: linear-gradient(%s, %s); ",
+                                               Style.brightBlue.getHex(),
+                                               Style.darkAquaBlue.getHex()));
 
         this.copyButton.setTextFill(Style.white.toColor());
         this.copyButton.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 12));
@@ -135,22 +136,22 @@ public class FileVerificationPane extends TitledPane
         this.copyButton.setOnMouseEntered (e-> this.copyButton.setEffect(new DropShadow()));
         this.copyButton.setOnMouseExited  (e-> this.copyButton.setEffect(null));
         this.copyButton.setOnMousePressed (e-> this.copyButton.setStyle(String.format(" -fx-background-color: linear-gradient(%s, %s)",  Style.darkAquaBlue.getHex(), Style.brightBlue.getHex())));
-        this.copyButton.setOnMouseReleased(e-> this.copyButton.setStyle(String.format(" -fx-background-color: linear-gradient(%s, %s)",  Style.brightBlue.getHex(), Style.darkAquaBlue.getHex())));
+        this.copyButton.setOnMouseReleased(e-> this.copyButton.setStyle(String.format(" -fx-background-color: linear-gradient(%s, %s)",  Style.brightBlue.getHex(),   Style.darkAquaBlue.getHex())));
         this.copyButton.setOnAction(e-> {
-                                        final Clipboard clipboard = Clipboard.getSystemClipboard();
-                                        final ClipboardContent clipboardContent = new ClipboardContent();
-                                        clipboard.clear();
-                                        clipboardContent.clear();
-                                        clipboardContent.putString(this.getVerificationIssues());
-                                        clipboard.setContent(clipboardContent);
-                                    });
+                                            final Clipboard clipboard = Clipboard.getSystemClipboard();
+                                            final ClipboardContent clipboardContent = new ClipboardContent();
+                                            clipboard.clear();
+                                            clipboardContent.clear();
+                                            clipboardContent.putString(this.getVerificationIssues());
+                                            clipboard.setContent(clipboardContent);
+                                        });
 
         return this.copyButton;
     }
 
     private String getVerificationIssues()
     {
-        String header = String.format("RGi\u00AE GeoPackage Verifier Tool Version %s.\nGeoPackage Encoding Standard Specification Version %s.\nFile Assessed: %s\n\n\n",
+        String header = String.format("RGi\u00AE GeoPackage Verifier Tool Version %s.\nGeoPackage Encoding Standard Specification Version %s.\nFile: %s\n\n\n",
                                       VerifierMainWindow.rgiToolVersionNumber,
                                       VerifierMainWindow.geoPackageSpecificationVersionNumber,
                                       this.getText());

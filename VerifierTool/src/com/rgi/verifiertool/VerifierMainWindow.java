@@ -157,10 +157,9 @@ public class VerifierMainWindow extends Application
 
     private static void createApplicationInfoHyperLink(final GridPane bottomGrid)
     {
-        final Hyperlink verifierToolInfo = new Hyperlink("About application");
+        final Hyperlink verifierToolInfo = new Hyperlink("About Application");
         setHyperLinkFancyFont(verifierToolInfo);
         bottomGrid.add(verifierToolInfo, 2, 0);
-        //GridPane.setHgrow(verifierToolInfo, Priority.ALWAYS);
         GridPane.setHalignment(verifierToolInfo, HPos.RIGHT);
         verifierToolInfo.setOnAction(e -> showApplicationInformation());
     }
