@@ -41,7 +41,7 @@ public class FileVerificationPane extends TitledPane
     private final ContextMenu deleteMenu = new ContextMenu();
     private VBox parent;
     private final HashMap<String, Collection<VerificationIssue>> fileErrorMessages = new HashMap<>();
-
+    private final ToggleButton    copyButton    = new ToggleButton("Copy Message");
 
 
     /**
@@ -64,6 +64,7 @@ public class FileVerificationPane extends TitledPane
         this.createContextMenu();
         this.setOnMousePressed(e -> this.createDeleteListener(e));
         this.content.getChildren().add(this.createCopyButton());
+        this.copyButton.setVisible(false);
 
         final List<SubsystemVerificationPane> subsystems = Arrays.asList(new SubsystemVerificationPane("Core",       (geoPackage) -> geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full)),
                                                                          //new SubsystemVerificationPane("Features",   (geoPackage) -> Collections.emptyList()),
@@ -74,10 +75,11 @@ public class FileVerificationPane extends TitledPane
 
         this.content.getChildren().addAll(subsystems);
 
-        final Thread mainThread = new Thread(new Task<Void>()
+
+        final Task<ToggleButton> mainTask = new Task<ToggleButton>()
                                              {
                                                  @Override
-                                                 protected Void call() throws Exception
+                                                 protected ToggleButton call() throws Exception
                                                  {
                                                      try(final GeoPackage geoPackage = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Open))
                                                      {
@@ -88,43 +90,53 @@ public class FileVerificationPane extends TitledPane
                                                          updateThreads.forEach(thread -> thread.start());
 
                                                          updateThreads.forEach((ThrowingConsumer<Thread>)(thread -> thread.join()));
+                                                         this.updateValue(FileVerificationPane.this.copyButton);
                                                      }
                                                      catch(final Exception ex)
                                                      {
+                                                         System.out.println("ahahhahahahaha!!");
                                                          throw new RuntimeException(ex);
                                                      }
 
-                                                     return null;
+                                                     return FileVerificationPane.this.copyButton;
                                                  }
-                                             });
+                                             };
+        mainTask.valueProperty().addListener((ChangeListener<ToggleButton>)(observable, oldValue, newValue) -> {
+            if(!this.fileErrorMessages.isEmpty())
+            {
+                newValue.setVisible(true);
+            }
+            else
+            {
+                this.content.getChildren().remove(newValue);
+            }
+        });
+        final Thread mainThread = new Thread(mainTask);
         mainThread.start();
     }
 
     private ToggleButton createCopyButton()
     {
-        final ToggleButton    copyButton    = new ToggleButton("Copy Message");
-        copyButton.setMaxSize(109, 30);
-        copyButton.setMinSize(109, 30);
-        copyButton.setStyle(String.format("-fx-border-radius: 2 2 2 2;"
+        this.copyButton.setMaxSize(109, 30);
+        this.copyButton.setMinSize(109, 30);
+        this.copyButton.setStyle(String.format("-fx-border-radius: 2 2 2 2;"
                                         + "-fx-background-radius: 2 2 2 2;"
                                         + "-fx-background-color: linear-gradient(%s, %s); ",
-                                     //  + "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 5,0.0,0,1);",
                                         Style.brightBlue.getHex(),
                                         Style.darkAquaBlue.getHex()
                                         ));
 
-        copyButton.setTextFill(Style.white.toColor());
-        copyButton.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 12));
+        this.copyButton.setTextFill(Style.white.toColor());
+        this.copyButton.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 12));
 
         final Tooltip copyMessage = new Tooltip("Copy Failed Requirements for this File");
-        Tooltip.install(copyButton, copyMessage);
-
-        copyButton.setOnMouseEntered(e-> copyButton.setEffect(new DropShadow()));
-        copyButton.setOnMouseExited(e-> copyButton.setEffect(null));
-        copyButton.setOnMousePressed(e-> copyButton.setStyle(String.format(" -fx-background-color: linear-gradient(%s, %s)",  Style.darkAquaBlue.getHex(), Style.brightBlue.getHex())));
-        copyButton.setOnMouseReleased(e-> copyButton.setStyle(String.format(" -fx-background-color: linear-gradient(%s, %s)",  Style.brightBlue.getHex(), Style.darkAquaBlue.getHex())));
-
-        copyButton.setOnAction(e-> {
+        Tooltip.install(this.copyButton, copyMessage);
+        //set actions to button
+        this.copyButton.setOnMouseEntered (e-> this.copyButton.setEffect(new DropShadow()));
+        this.copyButton.setOnMouseExited  (e-> this.copyButton.setEffect(null));
+        this.copyButton.setOnMousePressed (e-> this.copyButton.setStyle(String.format(" -fx-background-color: linear-gradient(%s, %s)",  Style.darkAquaBlue.getHex(), Style.brightBlue.getHex())));
+        this.copyButton.setOnMouseReleased(e-> this.copyButton.setStyle(String.format(" -fx-background-color: linear-gradient(%s, %s)",  Style.brightBlue.getHex(), Style.darkAquaBlue.getHex())));
+        this.copyButton.setOnAction(e-> {
                                         final Clipboard clipboard = Clipboard.getSystemClipboard();
                                         final ClipboardContent clipboardContent = new ClipboardContent();
                                         clipboard.clear();
@@ -133,7 +145,7 @@ public class FileVerificationPane extends TitledPane
                                         clipboard.setContent(clipboardContent);
                                     });
 
-        return copyButton;
+        return this.copyButton;
     }
 
     private String getVerificationIssues()

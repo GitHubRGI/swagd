@@ -144,7 +144,6 @@ public class SubsystemVerificationPane extends VBox
 
                 textBox.getChildren().addAll(severity, requirement, reason);
             }
-
             this.gridPane.add(getSeverityLevel(issues), 1, 0);
             this.getChildren().add(textBox);
         }

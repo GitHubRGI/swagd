@@ -72,7 +72,7 @@ public enum Style
     }
 
     /**
-     * @return
+     * @return A font with fixed width (used for the reasons in error messages)
      */
     public static String getFixedWidthFont()
     {
