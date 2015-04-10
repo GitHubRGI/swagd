@@ -27,6 +27,8 @@ import java.awt.Color;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 
 import org.gdal.gdal.Dataset;
@@ -46,6 +48,7 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
@@ -127,47 +130,64 @@ public class GdalTileJob implements Runnable
                                                                                                     this.crsProfile,
                                                                                                     this.writer.getTileOrigin());
             // Generate tiles
-            final int minZoom = GdalUtility.minimalZoomForDataset(outputDataset,
-                                                                  ranges,
-                                                                  this.writer.getTileOrigin(),
-                                                                  this.writer.getTileScheme(),
-                                                                  this.tileDimensions);
-
-            final int maxZoom = GdalUtility.maximalZoomForDataset(outputDataset,
-                                                                  ranges,
-                                                                  this.writer.getTileOrigin(),
-                                                                  this.writer.getTileScheme(),
-                                                                  this.tileDimensions);
+//            final int minZoom = GdalUtility.minimalZoomForDataset(outputDataset,
+//                                                                  ranges,
+//                                                                  this.writer.getTileOrigin(),
+//                                                                  this.writer.getTileScheme(),
+//                                                                  this.tileDimensions);
+//
+//            final int maxZoom = GdalUtility.maximalZoomForDataset(outputDataset,
+//                                                                  ranges,
+//                                                                  this.writer.getTileOrigin(),
+//                                                                  this.writer.getTileScheme(),
+//                                                                  this.tileDimensions);
+//
+//            final Range<Integer> range = new Range<>(this.writer.getTileScheme()
+//                                                                .getZoomLevels()
+//                                                                .stream(),
+//                                                     Integer::compare);
 
             // Set the total tile count in monitor
             final int maxTiles = ranges.entrySet()
                                        .stream()
-                                       .filter(entrySet -> entrySet.getKey() >= minZoom && entrySet.getKey() <= maxZoom)    // Select the subset of zooms that will actually be tiled, so we can generate the total tile count from it
+                                       //.filter(entrySet -> entrySet.getKey() >= minZoom && entrySet.getKey() <= maxZoom)    // Select the subset of zooms that will actually be tiled, so we can generate the total tile count from it
                                        .map(entrySet -> entrySet.getValue())
                                        .mapToInt(range -> { // range.getMinimum is the TopLeft corner of the bounding box and
                                                             // range.getMaximum is the BottomRight corner of the bounding box
                                                             final int totalX = range.getMaximum().getX() - range.getMinimum().getX() + 1;
                                                             final int totalY = range.getMinimum().getY() - range.getMaximum().getY() + 1;
                                                             return totalX * totalY;
-                                                           })
+                                                          })
                                        .sum();
 
             this.monitor.setMaximum(maxTiles);
 
             // Tile all levels
             int tilesComplete = 0;
-            for(int zoom = maxZoom; zoom >= minZoom; --zoom)
+//            for(int zoom = maxZoom; zoom >= minZoom; --zoom)
+//            {
+//                tilesComplete = this.generateTiles(outputDataset, ranges.get(zoom), zoom, tilesComplete);
+//            }
+
+            for(final Entry<Integer, Range<Coordinate<Integer>>> entry : ranges.entrySet()
+                                    .stream()
+                                    .sorted((a, b) -> (Integer.compare(a.getKey(), b.getKey()) * -1)) // sort max to min
+                                    .collect(Collectors.toList()))
             {
-                tilesComplete = this.generateTiles(outputDataset, ranges.get(zoom), zoom, tilesComplete);
+                final int zoom = entry.getKey();
+                final Range<Coordinate<Integer>> range = entry.getValue();
+
+                tilesComplete = this.generateTiles(outputDataset, range, zoom, tilesComplete);
             }
+
 
             // Clean up the opened datasets
             inputDataset.delete();
             outputDataset.delete();
         }
-        catch(final TilingException | DataFormatException | TileStoreException ex1)
+        catch(final TilingException | DataFormatException/* | TileStoreException*/ ex)
         {
-            throw new RuntimeException(ex1);
+            throw new RuntimeException(ex);
         }
     }
 
@@ -277,12 +297,13 @@ public class GdalTileJob implements Runnable
             for (int tileX = tileMinX; tileX <= tileMaxX; tileX++)
             {
                 // Create coordinates for the bounding box corners
-                final CrsCoordinate tileTopLeftCorner = this.crsProfile.tileToCrsCoordinate(tileX, tileY + 1, this.crsProfile.getBounds(), zoomDimensions, this.writer.getTileOrigin());
-                final CrsCoordinate tileBottomRightCorner = this.crsProfile.tileToCrsCoordinate(tileX + 1, tileY, this.crsProfile.getBounds(), zoomDimensions, this.writer.getTileOrigin());
+                final CrsCoordinate tileTopLeftCorner     = this.crsProfile.tileToCrsCoordinate(tileX,     tileY + 1, this.crsProfile.getBounds(), zoomDimensions, TileOrigin.LowerLeft);
+                final CrsCoordinate tileBottomRightCorner = this.crsProfile.tileToCrsCoordinate(tileX + 1, tileY,     this.crsProfile.getBounds(), zoomDimensions, TileOrigin.LowerLeft);
 
                 // Create a bounding box from the coordinates above
                 final BoundingBox tileBBox = new BoundingBox(tileTopLeftCorner.getX(), tileBottomRightCorner.getY(), tileBottomRightCorner.getX(), tileTopLeftCorner.getY());
-                // Build the parameters for gdal read raster call
+
+                // Build the parameters for GDAL read raster call
                 final GdalRasterParameters params = GdalUtility.getGdalRasterParameters(dataset.GetGeoTransform(), tileBBox, this.tileDimensions, dataset);
 
                 // Read image data directly from the raster

@@ -1133,24 +1133,30 @@ public class GdalUtility
         {
             throw new IllegalArgumentException("Geotransform cannot be empty.");
         }
+
         if (boundingBox == null)
         {
             throw new IllegalArgumentException("Bounding box cannot be null.");
         }
+
         if (dimensions == null)
         {
             throw new IllegalArgumentException("Tile dimensions cannot be null.");
         }
+
         if (dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
+
         // TODO: investigate replacing readX/Y with boundingBox.getWidth/Height calls
         // This is sorcery of the darkest kind.  It works but it not fully understood.
         final int readX = (int)((boundingBox.getMinX() - geoTransform[0]) / geoTransform[1] + 0.001);
         final int readY = (int)((boundingBox.getMaxY() - geoTransform[3]) / geoTransform[5] + 0.001);
+
         final int readXSize = (int)((boundingBox.getMaxX() - boundingBox.getMinX()) / geoTransform[1] + 0.5);
         final int readYSize = (int)((boundingBox.getMinY() - boundingBox.getMaxY()) / geoTransform[5] + 0.5);
+
         return new GdalRasterParameters(readX, readY, readXSize, readYSize, dimensions, dataset);
     }
 
@@ -1218,14 +1224,14 @@ public class GdalUtility
         final int bandCount = dataset.GetRasterCount(); // correctNoDataSimple should have added an alpha band
         final ByteBuffer imageData = ByteBuffer.allocateDirect(params.getWriteXSize() * params.getWriteYSize() * bandCount);
         final int result = dataset.ReadRaster_Direct(params.getReadX(),
-                                                       params.getReadY(),
-                                                       params.getReadXSize(),
-                                                       params.getReadYSize(),
-                                                       params.getWriteXSize(),
-                                                       params.getWriteYSize(),
-                                                       gdalconstConstants.GDT_Byte,
-                                                       imageData,
-                                                       null); // Per documentation, will select the first nBandCount bands
+                                                     params.getReadY(),
+                                                     params.getReadXSize(),
+                                                     params.getReadYSize(),
+                                                     params.getWriteXSize(),
+                                                     params.getWriteYSize(),
+                                                     gdalconstConstants.GDT_Byte,
+                                                     imageData,
+                                                     null); // Per documentation, will select the first nBandCount bands
         if (result != gdalconstConstants.CE_None)
         {
             throw new TilingException("Failure reported by ReadRaster call in GdalUtility.");
@@ -1350,24 +1356,30 @@ public class GdalUtility
             {
                 throw new IllegalArgumentException("Dimensions of the tile system cannot be null.");
             }
+
             if (dataset == null)
             {
                 throw new IllegalArgumentException("Input dataset must be supplied to GdalRasterParameters.");
             }
+
             // Points that dictate where a tile read occurs on the dataset
             this.readX = readX;
             this.readY = readY;
+
             // Size values that dictate how much data should be read from the dataset for
             // a tile read operation
             this.readXSize = readXSize;
             this.readYSize = readYSize;
+
             // Points on the write canvas that dictate where the read data should be written
             this.writeX = 0;
             this.writeY = 0;
+
             // Size values that indicate how large the tile query canvas should be
-            // Hardcoding the query to be larger size for later down-scaling
+            // Hard coding the query to be larger size for later down-scaling
             this.queryXSize = 4 * dimensions.getWidth();
             this.queryYSize = 4 * dimensions.getHeight();
+
             // Size values that dictate how large the write canvas should be
             this.writeXSize = this.queryXSize;
             this.writeYSize = this.queryYSize;
@@ -1470,11 +1482,13 @@ public class GdalUtility
                 this.readXSize -= (int)(this.readXSize * ((float)readXShift) / this.readXSize);
                 this.readX = 0;
             }
+
             if (this.readX + this.readXSize > dataset.GetRasterXSize())
             {
                 this.writeXSize = (int)(this.writeXSize * ((float)(dataset.GetRasterXSize() - this.readX) / this.readXSize));
                 this.readXSize = dataset.GetRasterXSize() - this.readX;
             }
+
             if (this.readY < 0)
             {
                 final int readYShift = Math.abs(this.readY);
@@ -1483,6 +1497,7 @@ public class GdalUtility
                 this.readYSize -= (int)(this.readYSize * ((float)readYShift / this.readYSize));
                 this.readY = 0;
             }
+
             if (this.readY + this.readYSize > dataset.GetRasterYSize())
             {
                 this.writeYSize = (int)(this.writeYSize * ((float)(dataset.GetRasterYSize() - this.readY) / this.readYSize));
