@@ -164,12 +164,12 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
     @Override
     public void removeStore() throws TileStoreException
     {
-        final File directory = new File(this.directory.getText());
+        final File newDirectory = new File(this.directory.getText());
 
-        if(directory.delete() == false)
+        if(newDirectory.delete() == false)
         {
             throw new TileStoreException(String.format("Unable to remove directory '%s'",
-                                                       directory.getAbsolutePath()));
+                                                       newDirectory.getAbsolutePath()));
         }
     }
 }
