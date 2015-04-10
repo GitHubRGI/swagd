@@ -55,7 +55,7 @@ public class SubsystemVerificationPane extends VBox
      */
     public SubsystemVerificationPane(final String subsystemName, final ThrowingFunction<GeoPackage, Collection<VerificationIssue>> issuesFunction)
     {
-        super(3);
+        super(5);
         if(subsystemName == null || subsystemName.isEmpty())
         {
             throw new IllegalArgumentException("Subsystem name may not be null or empty");
@@ -65,7 +65,6 @@ public class SubsystemVerificationPane extends VBox
         {
             throw new IllegalArgumentException("Funtional callback to get verification issue messages may not be null");
         }
-
         this.subsystemName  = subsystemName;
         this.issuesFunction = issuesFunction;
         this.setStyle(String.format("-fx-background-color: %s;", Style.greyBlue.getHex()));
@@ -79,7 +78,7 @@ public class SubsystemVerificationPane extends VBox
         this.gridPane.add(subsystemLabel, 0, 0);
         this.gridPane.add(this.progressIndicator, 1, 0);
         //Columns for the top label
-        final ColumnConstraints columnLeft   = new ColumnConstraints(90);
+        final ColumnConstraints columnLeft   = new ColumnConstraints(98);
         final ColumnConstraints columnCenter = new ColumnConstraints(200);
 
         this.gridPane.getColumnConstraints().addAll(columnLeft,columnCenter);
@@ -92,7 +91,7 @@ public class SubsystemVerificationPane extends VBox
     {
         final Label subsystemLabel = new Label(this.subsystemName);
 
-        subsystemLabel.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 16));
+        subsystemLabel.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 18));
         subsystemLabel.setTextFill(Style.darkAquaBlue.toColor());
 
         return subsystemLabel;
@@ -188,7 +187,7 @@ public class SubsystemVerificationPane extends VBox
         errorImage.setFitWidth(20);
         severityLevelPane.add(passingLevel, 1, 0);
         severityLevelPane.add(errorImage, 0, 0);
-        severityLevelPane.setMaxSize(80+ errorImage.getFitWidth(), passingLevel.getLayoutBounds().getHeight() + errorImage.getFitHeight());
+        severityLevelPane.setMaxSize(80 + errorImage.getFitWidth(), passingLevel.getLayoutBounds().getHeight() + errorImage.getFitHeight());
 
         severityLevelPane.setStyle(String.format("-fx-padding: 5;-fx-border-radius: 10; -fx-border-color: grey;-fx-background-radius: 10; -fx-background-color: %s;", backgroundColor.getHex()));
 

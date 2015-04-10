@@ -108,7 +108,6 @@ public class VerifierMainWindow extends Application
         ColumnConstraints columnCenter = new ColumnConstraints(150, 150, 2000, Priority.ALWAYS, HPos.CENTER, true);
         ColumnConstraints columnRight  = new ColumnConstraints(100, 120, 2000, Priority.ALWAYS, HPos.RIGHT,  true);
         bottomGrid.getColumnConstraints().addAll(columnLeft, columnCenter, columnRight);
-       // bottomGrid.setHgap(50);
         bottomGrid.setMinSize(400, 25);
         bottomGrid.setAlignment(Pos.CENTER);
 

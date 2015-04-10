@@ -9,7 +9,9 @@ import java.util.stream.Collectors;
 
 import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Task;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
@@ -21,6 +23,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 
 import com.rgi.common.util.functional.ThrowingConsumer;
 import com.rgi.geopackage.GeoPackage;
@@ -37,7 +40,7 @@ import com.rgi.geopackage.verification.VerificationLevel;
  */
 public class FileVerificationPane extends TitledPane
 {
-    private final VBox content = new VBox(3);
+    private final VBox content = new VBox(7);
     private final ContextMenu deleteMenu = new ContextMenu();
     private VBox parent;
     private final HashMap<String, Collection<VerificationIssue>> fileErrorMessages = new HashMap<>();
@@ -57,16 +60,18 @@ public class FileVerificationPane extends TitledPane
             throw new IllegalArgumentException("GeoPackage file may not be null, and must be a valid filename");
         }
 
-        this.setAnimated(true);
+        this.setPrettyTitle(geoPackageFile.getName());
         this.setText(geoPackageFile.getName());
-        this.setPrettyText();
+        this.setGraphicTextGap(this.getMaxWidth() - new Label(geoPackageFile.getName()).getWidth() + 180);
+        this.setGraphic(this.createCopyButton());
+        this.setContentDisplay(ContentDisplay.RIGHT);
 
         //create context menu to delete files from pane
         this.createContextMenu();
         this.setOnMousePressed(e -> this.createDeleteListener(e));
+        this.setContent(this.content);
 
         this.content.setStyle(String.format("-fx-background-color: %s;", Style.greyBlue.getHex()));
-        this.content.getChildren().add(this.createCopyButton());
         this.copyButton.setVisible(false);
 
         final List<SubsystemVerificationPane> subsystems = Arrays.asList(new SubsystemVerificationPane("Core",       (geoPackage) -> geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full)),
@@ -110,7 +115,7 @@ public class FileVerificationPane extends TitledPane
             }
             else
             {
-                this.content.getChildren().remove(newValue);
+                newValue.setVisible(false);
             }
         });
         final Thread mainThread = new Thread(mainTask);
@@ -235,12 +240,15 @@ public class FileVerificationPane extends TitledPane
                                 });
     }
 
-    private void setPrettyText()
+    private Text setPrettyTitle(final String fileName)
     {
-        this.setContent(this.content);
+        Text fileNameTitle = new Text(fileName);
+
         this.setTextFill(Style.brightBlue.toColor());
         this.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 18));
         this.setStyle(String.format("-fx-body-color: %s;", Style.white.getHex()));
+
+        return fileNameTitle;
     }
 
     private static Task<Collection<VerificationIssue>> createTask(final SubsystemVerificationPane subsystemVerificationPane, final GeoPackage geoPackage, final HashMap<String, Collection<VerificationIssue>> fileErrorMessages2)
