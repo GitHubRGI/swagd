@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javafx.beans.binding.DoubleBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Task;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
@@ -20,6 +20,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -59,20 +60,18 @@ public class FileVerificationPane extends TitledPane
         {
             throw new IllegalArgumentException("GeoPackage file may not be null, and must be a valid filename");
         }
-
-        this.setPrettyTitle(geoPackageFile.getName());
         this.setText(geoPackageFile.getName());
-        this.setGraphicTextGap(this.getMaxWidth() - new Label(geoPackageFile.getName()).getWidth() + 180);
-        this.setGraphic(this.createCopyButton());
-        this.setContentDisplay(ContentDisplay.RIGHT);
+        this.setPrettyTitle();//sets the font, fill, and style
+        this.createTitleAndButton();//creates the top pane graphic with title
+        this.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);//anchor pane is the only thing on top
 
         //create context menu to delete files from pane
         this.createContextMenu();
         this.setOnMousePressed(e -> this.createDeleteListener(e));
+        //set the subsystem error messages/passing
         this.setContent(this.content);
-
         this.content.setStyle(String.format("-fx-background-color: %s;", Style.greyBlue.getHex()));
-        this.copyButton.setVisible(false);
+        this.copyButton.setVisible(false);//only show if there are errors
 
         final List<SubsystemVerificationPane> subsystems = Arrays.asList(new SubsystemVerificationPane("Core",       (geoPackage) -> geoPackage.core()      .getVerificationIssues(geoPackage.getFile(), VerificationLevel.Full)),
                                                                          //new SubsystemVerificationPane("Features",   (geoPackage) -> Collections.emptyList()),
@@ -120,6 +119,38 @@ public class FileVerificationPane extends TitledPane
         });
         final Thread mainThread = new Thread(mainTask);
         mainThread.start();
+    }
+
+    private void createTitleAndButton()
+    {
+        //this sets the text to the left and the copy button to the right in the titled pane
+        Text fileTitle = new Text();
+        //binds the text position and other properties to the anchor pane
+        fileTitle.textProperty().bind(this.textProperty());
+        fileTitle.fillProperty().bind(this.textFillProperty());
+        fileTitle.fontProperty().bind(this.fontProperty());
+        fileTitle.setLayoutY(this.getLayoutY() + 20);
+        //file name left copy button right
+        AnchorPane title = new AnchorPane();
+        AnchorPane.setLeftAnchor(fileTitle, 1.0);
+        AnchorPane.setRightAnchor(this.createCopyButton(), 0.0);
+
+        title.getChildren().addAll(fileTitle, this.copyButton);
+        //add the anchor pane to the titled pane
+        this.setGraphic(title);
+        //allow the buttons to move with the resizing of the window
+        title.prefWidthProperty().bind(new DoubleBinding() {
+            {
+                super.bind(VerifierMainWindow.getRootWidthProperty());
+            }
+
+            @Override
+            protected double computeValue() {
+                double breathingSpace = 90 ;
+                double value = VerifierMainWindow.getRootWidth()- breathingSpace ;
+                return value;
+            }
+        });
     }
 
     private ToggleButton createCopyButton()
@@ -240,15 +271,11 @@ public class FileVerificationPane extends TitledPane
                                 });
     }
 
-    private Text setPrettyTitle(final String fileName)
+    private  void setPrettyTitle()
     {
-        Text fileNameTitle = new Text(fileName);
-
         this.setTextFill(Style.brightBlue.toColor());
         this.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 18));
         this.setStyle(String.format("-fx-body-color: %s;", Style.white.getHex()));
-
-        return fileNameTitle;
     }
 
     private static Task<Collection<VerificationIssue>> createTask(final SubsystemVerificationPane subsystemVerificationPane, final GeoPackage geoPackage, final HashMap<String, Collection<VerificationIssue>> fileErrorMessages2)
@@ -280,4 +307,5 @@ public class FileVerificationPane extends TitledPane
 
         return task;
     }
+
 }

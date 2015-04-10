@@ -30,6 +30,7 @@ import java.util.Date;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -69,7 +70,7 @@ public class VerifierMainWindow extends Application
      * The Version of the GeoPackage Encoding Standard that this Verifier reflects
      */
     public final static String geoPackageSpecificationVersionNumber = "1.0";
-
+    final static BorderPane layout     = new BorderPane();
     /**
      * Launch the Verifier application.
      * @param args incoming arguments
@@ -82,7 +83,6 @@ public class VerifierMainWindow extends Application
     @Override
     public void start(final Stage primaryStage) throws Exception
     {
-        final BorderPane layout     = new BorderPane();
         final Scene      scene      = new Scene(layout, 580, 400);
         final GridPane   bottomGrid = new GridPane();
 
@@ -141,7 +141,7 @@ public class VerifierMainWindow extends Application
                                               this.addFiles(db.getFiles());
                                               primaryStage.setResizable(true);
                                               primaryStage.setMinHeight(400);
-                                              primaryStage.setMinWidth(550);
+                                              primaryStage.setMinWidth(580);
                                           }
                                           event.setDropCompleted(true);
                                           event.consume();
@@ -279,5 +279,22 @@ public class VerifierMainWindow extends Application
         fancyText.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 30));
 
         return fancyText;
+    }
+    /**
+     * @return The width of this resizable root(in this case layout). This is used to resize the button's layout in FileVerification Pane.
+     */
+    public static double getRootWidth()
+    {
+        return layout.getWidth();
+    }
+
+    /**
+     * @return The width of this resizable root(in this case layout) property.
+     * This is used to resize the button's layout in FileVerification Pane with binding the properties.
+
+     */
+    public static ReadOnlyDoubleProperty getRootWidthProperty()
+    {
+        return layout.widthProperty();
     }
 }
