@@ -29,7 +29,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -345,35 +344,31 @@ public class TilesVerifier extends Verifier
 
         for (final String tableName : this.allPyramidUserDataTables)
         {
-            final String selectTileDataQuery = String.format("SELECT tile_data, id FROM ?;");
+            final String selectTileDataQuery = String.format("SELECT tile_data, id FROM %s;", tableName);
 
-            try (PreparedStatement stmt              = this.getSqliteConnection().prepareStatement(selectTileDataQuery))
+            try (PreparedStatement stmt              = this.getSqliteConnection().prepareStatement(selectTileDataQuery);
+                 ResultSet         tileDataResultSet = stmt.executeQuery())
             {
-                stmt.setString(1, tableName);
+                 List<String> errorMessage =  ResultSetStream.getStream(tileDataResultSet)
+                                                             .map(resultSet -> { try
+                                                                                 {
+                                                                                     final int    tileId   = resultSet.getInt("id");
+                                                                                     final byte[] tileData = resultSet.getBytes("tile_data");
 
-                try(ResultSet tileDataResultSet = stmt.executeQuery())
-                {
-                     List<String> errorMessage =  ResultSetStream.getStream(tileDataResultSet)
-                                                                 .map(resultSet -> { try
-                                                                                     {
-                                                                                         final int    tileId   = resultSet.getInt("id");
-                                                                                         final byte[] tileData = resultSet.getBytes("tile_data");
+                                                                                     return TilesVerifier.verifyData(tileId, tileData);
+                                                                                 }
+                                                                                 catch (final SQLException ex1)
+                                                                                 {
+                                                                                    return ex1.getMessage();
+                                                                                 }
+                                                                               })
+                                                             .filter(Objects::nonNull)
+                                                             .collect(Collectors.toList());
 
-                                                                                         return TilesVerifier.verifyData(tileId, tileData);
-                                                                                     }
-                                                                                     catch (final SQLException ex1)
-                                                                                     {
-                                                                                        return ex1.getMessage();
-                                                                                     }
-                                                                                   })
-                                                                 .filter(Objects::nonNull)
-                                                                 .collect(Collectors.toList());
-
-                     Assert.assertTrue(String.format("The following columns named \"id\" in table '%s' are not in the correct image format:\n\t\t%s.",
-                                                     tableName,
-                                                     errorMessage.stream().collect(Collectors.joining("\n"))),
-                                       errorMessage.isEmpty());
-                }
+                 Assert.assertTrue(String.format("The following columns named \"id\" in table '%s' are not in the correct image format:\n\t\t%s.",
+                                                 tableName,
+                                                 errorMessage.stream().collect(Collectors.joining("\n"))),
+                                   errorMessage.isEmpty());
             }
             catch (final SQLException ex)
             {
@@ -1333,33 +1328,38 @@ public class TilesVerifier extends Verifier
                       final int maxX = minXMaxXMinYMaxYRS.getInt("MAX(tile_column)");
                       final int maxY = minXMaxXMinYMaxYRS.getInt("MAX(tile_row)");
 
-                      final String query2 = String.format("SELECT matrix_width, matrix_height, zoom_level FROM %s WHERE table_name = '%s' AND zoom_level = (SELECT MIN(zoom_level) FROM %s)", GeoPackageTiles.MatrixTableName, pyramidTable, pyramidTable);
-                      try(Statement stmt2        = this.getSqliteConnection().createStatement();
-                          ResultSet dimensionsRS = stmt2.executeQuery(query2))
-                      {
-                          while(dimensionsRS.next())
-                          {
-                              final int matrixWidth  = dimensionsRS.getInt("matrix_width");
-                              final int matrixHeight = dimensionsRS.getInt("matrix_height");
-                              final int zoomLevel    = dimensionsRS.getInt("zoom_level");
+                      final String query2 = String.format("SELECT matrix_width, matrix_height, zoom_level FROM %s WHERE table_name = ? AND zoom_level = (SELECT MIN(zoom_level) FROM %s)", GeoPackageTiles.MatrixTableName, pyramidTable, pyramidTable);
 
-                              Assert.assertTrue(String.format("\nNote: This next message is an additional concern that is related to this requirement but not the requirement itself.  "+
-                                                                  "The BoundingBox in gpkg_tile_matrix_set does not define the minimum bounding box for all content in the table %s.\n"
-                                                                  + "\tActual Values:\n\t\tMIN(tile_column): %4d,\n\t\tMIN(tile_row): %4d,\n\t\tMAX(tile_column): %4d,\n\t\tMAX(tile_row): %4d\n\n"
-                                                                  + "\tExpected values:\n\t\tMIN(tile_column):    0,\n\t\tMIN(tile_row):    0,\n\t\tMAX(tile_column): %4d (matrix_width -1),\n\t\tMAX(tile_row): %4d (matrix_height -1),"
-                                                                  + "\n\n\tExpected values based on the Tile Matrix given at the MIN(zoom_level) %d.",
-                                                              pyramidTable,
-                                                              minX,
-                                                              minY,
-                                                              maxX,
-                                                              maxY,
-                                                              matrixWidth  - 1,
-                                                              matrixHeight - 1,
-                                                              zoomLevel),
-                                                minX == 0 &&
-                                                minY == 0 &&
-                                                maxX == (matrixWidth - 1) &&
-                                                maxY == (matrixHeight - 1));
+                      try(PreparedStatement stmt2        = this.getSqliteConnection().prepareStatement(query2))
+                      {
+                          stmt2.setString(1, pyramidTable);
+
+                          try(ResultSet dimensionsRS = stmt2.executeQuery())
+                          {
+                              while(dimensionsRS.next())
+                              {
+                                  final int matrixWidth  = dimensionsRS.getInt("matrix_width");
+                                  final int matrixHeight = dimensionsRS.getInt("matrix_height");
+                                  final int zoomLevel    = dimensionsRS.getInt("zoom_level");
+
+                                  Assert.assertTrue(String.format("\nNote: This next message is an additional concern that is related to this requirement but not the requirement itself.  "+
+                                                                      "The BoundingBox in gpkg_tile_matrix_set does not define the minimum bounding box for all content in the table %s.\n"
+                                                                      + "\tActual Values:\n\t\tMIN(tile_column): %4d,\n\t\tMIN(tile_row): %4d,\n\t\tMAX(tile_column): %4d,\n\t\tMAX(tile_row): %4d\n\n"
+                                                                      + "\tExpected values:\n\t\tMIN(tile_column):    0,\n\t\tMIN(tile_row):    0,\n\t\tMAX(tile_column): %4d (matrix_width -1),\n\t\tMAX(tile_row): %4d (matrix_height -1),"
+                                                                      + "\n\n\tExpected values based on the Tile Matrix given at the MIN(zoom_level) %d.",
+                                                                  pyramidTable,
+                                                                  minX,
+                                                                  minY,
+                                                                  maxX,
+                                                                  maxY,
+                                                                  matrixWidth  - 1,
+                                                                  matrixHeight - 1,
+                                                                  zoomLevel),
+                                                    minX == 0 &&
+                                                    minY == 0 &&
+                                                    maxX == (matrixWidth - 1) &&
+                                                    maxY == (matrixHeight - 1));
+                              }
                           }
                       }
                  }

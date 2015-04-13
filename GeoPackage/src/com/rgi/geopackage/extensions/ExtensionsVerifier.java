@@ -265,35 +265,29 @@ public class ExtensionsVerifier extends Verifier
 
                 if (extensionData.tableName != null && columnName != null)
                 {
-                    final String query = "PRAGMA table_info(?);";
+                    final String query = String.format("PRAGMA table_info(%s);", extensionData.tableName );
 
-                    try (PreparedStatement stmt      = this.getSqliteConnection().prepareStatement(query))
+                    try (PreparedStatement stmt      = this.getSqliteConnection().prepareStatement(query);
+                         ResultSet         tableInfo = stmt.executeQuery())
                     {
-                        stmt.setString(1, extensionData.tableName);
+                         final boolean columnExists = ResultSetStream.getStream(tableInfo)
+                                                                     .anyMatch(resultSet ->
+                                                                                           {   try
+                                                                                               {
+                                                                                                   return resultSet.getString("name").equals(columnName);
+                                                                                               }
+                                                                                               catch (final SQLException ex)
+                                                                                               {
+                                                                                                   return false;
+                                                                                               }
+                                                                                           });
 
-                        try(ResultSet tableInfo = stmt.executeQuery(query))
-                        {
-                              {
-                                  final boolean columnExists = ResultSetStream.getStream(tableInfo)
-                                                                              .anyMatch(resultSet ->
-                                                                                                    {   try
-                                                                                                        {
-                                                                                                            return resultSet.getString("name").equals(columnName);
-                                                                                                        }
-                                                                                                        catch (final SQLException ex)
-                                                                                                        {
-                                                                                                            return false;
-                                                                                                        }
-                                                                                                    });
-
-                                  Assert.assertTrue(String.format("The column %s does not exist in the table %s. "
-                                                                      + "Please either add this column to this table "
-                                                                      + "or delete the record in gpkg_extensions.",
-                                                                  columnName,
-                                                                  extensionData.tableName),
-                                                    columnExists);
-                              }
-                        }
+                         Assert.assertTrue(String.format("The column %s does not exist in the table %s. "
+                                                             + "Please either add this column to this table "
+                                                             + "or delete the record in gpkg_extensions.",
+                                                         columnName,
+                                                         extensionData.tableName),
+                                           columnExists);
                     }
                 }
             }
@@ -371,11 +365,15 @@ public class ExtensionsVerifier extends Verifier
         {
             final String query = String.format("SELECT table_name "
                                              + "FROM %s "
-                                             + "WHERE definition NOT LIKE 'Annex%' "
-                                             + "AND   definition NOT LIKE 'http%' "
-                                             + "AND   definition NOT LIKE 'mailto%' "
-                                             + "AND   definition NOT LIKE 'Extension Title%';",
-                                             GeoPackageExtensions.ExtensionsTableName);
+                                             + "WHERE definition NOT LIKE '%s' "
+                                             + "AND   definition NOT LIKE '%s' "
+                                             + "AND   definition NOT LIKE '%s' "
+                                             + "AND   definition NOT LIKE '%s';",
+                                             GeoPackageExtensions.ExtensionsTableName,
+                                             "Annex%",
+                                             "http%",
+                                             "mailto%",
+                                             "Extension Title%");
 
             try (PreparedStatement stmt                    = this.getSqliteConnection().prepareStatement(query);
                  ResultSet         invalidDefinitionValues = stmt.executeQuery())
