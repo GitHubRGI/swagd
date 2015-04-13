@@ -150,7 +150,6 @@ public class GeoPackageWriter implements TileStoreWriter
 
             final SpatialReferenceSystem spatialReferenceSystem = this.geoPackage.core()
                                                                                  .addSpatialReferenceSystem(this.crsProfile.getName(),
-                                                                                                            this.crsProfile.getCoordinateReferenceSystem().getIdentifier(),
                                                                                                             this.crsProfile.getCoordinateReferenceSystem().getAuthority(),
                                                                                                             this.crsProfile.getCoordinateReferenceSystem().getIdentifier(),
                                                                                                             this.crsProfile.getWellKnownText(),

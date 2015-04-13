@@ -282,7 +282,7 @@ public class GeoPackageCoreAPITest
             final String                  identifier  = "identifier";
             final String                  description = "description";
             final BoundingBox             boundingBox = new BoundingBox(0.0,0.0,0.0,0.0);
-            final SpatialReferenceSystem  srs         = gpkg.core().getSpatialReferenceSystem(4326);
+            final SpatialReferenceSystem  srs         = gpkg.core().getSpatialReferenceSystem("EPSG", 4326);
 
             //add the content to gpkg
             final TileSet tileSet  = gpkg.tiles().addTileSet(tableName, identifier, description, boundingBox, srs);
@@ -325,7 +325,7 @@ public class GeoPackageCoreAPITest
         {
             //Content information
             final String                  tableName   = "tableName";
-            final SpatialReferenceSystem  srs         = gpkg.core().getSpatialReferenceSystem(4326);
+            final SpatialReferenceSystem  srs         = gpkg.core().getSpatialReferenceSystem("EPSG", 4326);
 
              //try to add the same content twice
             gpkg.core().addContent(tableName, "dataType",  "identifier",  "description", new BoundingBox(0.0, 0.0, 0.0, 0.0), srs);
@@ -363,7 +363,7 @@ public class GeoPackageCoreAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            gpkg.core().addSpatialReferenceSystem(null, 123, "organization", 123, "definition", "description");
+            gpkg.core().addSpatialReferenceSystem(null, "organization", 123, "definition", "description");
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create an SRS with a null parameter for name.");
         }
         finally
@@ -394,7 +394,7 @@ public class GeoPackageCoreAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            gpkg.core().addSpatialReferenceSystem("", 123, "organization", 123, "definition", "description");
+            gpkg.core().addSpatialReferenceSystem("", "organization", 123, "definition", "description");
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create an SRS with an empty string for name.");
         }
         finally
@@ -425,7 +425,7 @@ public class GeoPackageCoreAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            gpkg.core().addSpatialReferenceSystem("srsName", 123, null, 123, "definition", "description");
+            gpkg.core().addSpatialReferenceSystem("srsName", null, 123, "definition", "description");
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create an SRS with a null parameter for organization.");
         }
         finally
@@ -456,7 +456,7 @@ public class GeoPackageCoreAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            gpkg.core().addSpatialReferenceSystem("srsName", 123, "", 123, "definition", "description");
+            gpkg.core().addSpatialReferenceSystem("srsName", "", 123, "definition", "description");
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create an SRS with an empty string for organization.");
         }
         finally
@@ -487,7 +487,7 @@ public class GeoPackageCoreAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            gpkg.core().addSpatialReferenceSystem("srsName", 123, "organization", 123, null, "description");
+            gpkg.core().addSpatialReferenceSystem("srsName", "organization", 123, null, "description");
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create a SRS with a null parameter for definition.");
         }
         finally
@@ -518,49 +518,8 @@ public class GeoPackageCoreAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            gpkg.core().addSpatialReferenceSystem("srsName", 123, "organization", 123, "", "description");
+            gpkg.core().addSpatialReferenceSystem("srsName", "organization", 123, "", "description");
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create an SRS with an empty string for definition.");
-        }
-        finally
-        {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
-        }
-    }
-
-    /**
-     * Tests if a GeoPackage throws an IllegalArgumentException when
-     * creating a SRS with the same identifier but differing other
-     * fields.
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void createSpatialReferenceSystemNotUnique() throws ClassNotFoundException, ConformanceException, IOException, SQLException
-    {
-        final File testFile = this.getRandomFile(7);
-
-        try(GeoPackage gpkg = new GeoPackage(testFile))
-        {
-            final String name           = "srsName";
-            final int    identifier     = 123;
-            final String organization   = "organization";
-            final int    organizationId = 123;
-            final int    diffOrgId      = 124;
-            final String description    = "description";
-            final String definition     = "definition";
-
-            gpkg.core().addSpatialReferenceSystem(name, identifier, organization, organizationId, definition, description);
-            gpkg.core().addSpatialReferenceSystem(name, identifier, organization, diffOrgId,      definition, description);
-            fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create an SRS with same identifier but differing other fields.");
         }
         finally
         {
@@ -591,14 +550,13 @@ public class GeoPackageCoreAPITest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final String name           = "srsName";
-            final int    identifier     = 123;
             final String organization   = "organization";
             final int    organizationId = 123;
             final String description    = "description";
             final String definition     = "definition";
 
-            final SpatialReferenceSystem firstSRS  = gpkg.core().addSpatialReferenceSystem(name, identifier, organization, organizationId, definition, description);
-            final SpatialReferenceSystem secondSRS = gpkg.core().addSpatialReferenceSystem(name, identifier, organization, organizationId, definition, description);
+            final SpatialReferenceSystem firstSRS  = gpkg.core().addSpatialReferenceSystem(name, organization, organizationId, definition, description);
+            final SpatialReferenceSystem secondSRS = gpkg.core().addSpatialReferenceSystem(name, organization, organizationId, definition, description);
 
             assertTrue("GeoPackage did not return the same SRS objects as expected.", firstSRS.equals(secondSRS));
         }
@@ -625,14 +583,16 @@ public class GeoPackageCoreAPITest
         final File testFile = this.getRandomFile(8);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
+            final String organization = "org";
+            final int    id           = 123;
+
             final SpatialReferenceSystem testSrs = gpkg.core().addSpatialReferenceSystem("name",
-                                                                                         123,
-                                                                                         "org",
-                                                                                         123,
+                                                                                         organization,
+                                                                                         id,
                                                                                          "definition",
                                                                                          null);
 
-            final SpatialReferenceSystem gpkgSrs = gpkg.core().getSpatialReferenceSystem(123);
+            final SpatialReferenceSystem gpkgSrs = gpkg.core().getSpatialReferenceSystem(organization, id);
 
             assertTrue("The GeoPackage get Spatial Reference System does not give back the value expeced.",
                        testSrs.equals(gpkgSrs));
@@ -665,17 +625,15 @@ public class GeoPackageCoreAPITest
         {
 
             gpkg.core().addSpatialReferenceSystem("scaled world mercator",
-                                           9804,
-                                           "org",
-                                           9804,
-                                           "definition",
-                                           "description");
+                                                  "org",
+                                                  9804,
+                                                  "definition",
+                                                  "description");
             gpkg.core().addSpatialReferenceSystem("scaled world mercator",
-                                           9804,
-                                           "org",
-                                           9804,
-                                           "different definition",
-                                           "description");
+                                                  "org",
+                                                  9804,
+                                                  "different definition",
+                                                  "description");
 
             fail("The GeoPackage should throw a RuntimeException when adding Spatial Reference System with the same SRS id but have different definition fields.");
         }
@@ -707,18 +665,16 @@ public class GeoPackageCoreAPITest
         {
 
           gpkg.core().addSpatialReferenceSystem("scaled world mercator",
-                                         9804,
-                                         "org",
-                                         9804,
-                                         "definition",
-                                         "description");
+                                                "org",
+                                                9804,
+                                                "definition",
+                                                "description");
 
           gpkg.core().addSpatialReferenceSystem("scaled different mercator",
-                                         9804,
-                                         "org",
-                                         9804,
-                                         "definition",
-                                         "description");
+                                                "org",
+                                                9804,
+                                                "definition",
+                                                "description");
 
 
           fail("The GeoPackage should throw a IllegalArgumentException when adding a Spatial Reference System with the same SRS id but have different names.");
@@ -750,7 +706,6 @@ public class GeoPackageCoreAPITest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             gpkg.core().addSpatialReferenceSystem("scaled world mercator",
-                                                  9804,
                                                   "org",
                                                   9804,
                                                   "definition",
@@ -758,7 +713,6 @@ public class GeoPackageCoreAPITest
 
 
             gpkg.core().addSpatialReferenceSystem("different name",
-                                                  9804,
                                                   "org",
                                                   9804,
                                                   "definition",
@@ -771,50 +725,6 @@ public class GeoPackageCoreAPITest
         finally
         {
 
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
-        }
-    }
-
-    /**
-     * Gives a GeoPackage two SRS's such that they are the same identifier but other fields differ.
-     * In this case the organizations's are different.
-     * @throws SQLException
-     * @throws Exception
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void addExistingSrsWithSameSrsIdAndDifferingOtherFields4() throws RuntimeException, SQLException, Exception
-    {
-        final File testFile = this.getRandomFile(5);
-
-        try(GeoPackage gpkg = new GeoPackage(testFile))
-        {
-            gpkg.core().addSpatialReferenceSystem("scaled world mercator",
-                                                  9804,
-                                                  "org",
-                                                  9804,
-                                                  "definition",
-                                                  "description");
-
-
-            gpkg.core().addSpatialReferenceSystem("scaled world mercator",
-                                                  9804,
-                                                  "different organization",
-                                                  9804,
-                                                  "definition",
-                                                  "description");
-
-            fail("The GeoPackage should throw a IllegalArgumentException when adding a Spatial Reference System "
-                    + "with the same and SRS identifier but diffent organization");
-
-        }
-        finally
-        {
             if(testFile.exists())
             {
                 if(!testFile.delete())
@@ -842,26 +752,23 @@ public class GeoPackageCoreAPITest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final String name         = "scaled world mercator";
-            final int    identifier   = 9804;
             final String organization = "org";
             final int    orgId        = 9;
             final String definition   = "definition";
             final String description  = "description";
 
             final SpatialReferenceSystem srs = gpkg.core().addSpatialReferenceSystem(name,
-                                                                                     identifier,
                                                                                      organization,
                                                                                      orgId,
                                                                                      definition,
                                                                                      description);
 
               assertTrue("GeoPackage did not return expected values for the SRS given",
-                                 srs.getName()             .equals(name)         &&
-                                 srs.getIdentifier()        == identifier        &&
-                                 srs.getOrganization()     .equals(organization) &&
-                                 srs.getOrganizationSrsId() ==  orgId            &&
-                                 srs.getDefinition()       .equals(definition)   &&
-                                 srs.getDescription()      .equals(description));
+                         srs.getName()             .equals(name)         &&
+                         srs.getOrganization()     .equals(organization) &&
+                         srs.getOrganizationSrsId() ==  orgId            &&
+                         srs.getDefinition()       .equals(definition)   &&
+                         srs.getDescription()      .equals(description));
 
         }
         finally
@@ -893,76 +800,16 @@ public class GeoPackageCoreAPITest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final String name         = "scaled world mercator";
-            final int    identifier   = 9804;
             final String organization = "org";
             final int    orgId        = 9;
             final String definition   = "definition";
             final String description  = "description";
 
-            final SpatialReferenceSystem srs1 = gpkg.core().addSpatialReferenceSystem(name, identifier, organization, orgId, definition, description);
-            final SpatialReferenceSystem srs2 = gpkg.core().addSpatialReferenceSystem(name, identifier, organization, orgId, definition, description);
+            final SpatialReferenceSystem srs1 = gpkg.core().addSpatialReferenceSystem(name, organization, orgId, definition, description);
+            final SpatialReferenceSystem srs2 = gpkg.core().addSpatialReferenceSystem(name, organization, orgId, definition, description);
 
             assertTrue("The GeoPackage returned false when it should have returned true for two equal SRS objects. ",srs1.equals(srs2));
             assertTrue("The HashCode for the same srs differed.",srs1.hashCode() == srs2.hashCode());
-
-        }
-        finally
-        {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
-        }
-    }
-
-    /**
-     * Tests the GeoPackage SRS equals and hashCode methods
-     * return false when two SRS's are different.
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws FileNotFoundException
-     */
-    @Test
-    public void addSRSAndCompareEqualsAndHashCodeTwoDifferentSRS() throws ClassNotFoundException, ConformanceException, IOException, SQLException
-    {
-        final File testFile = this.getRandomFile(8);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
-        {
-          final SpatialReferenceSystem srs1 = gpkg.core().addSpatialReferenceSystem("name",   123, "organization",   123,  "definition", "description");
-          final SpatialReferenceSystem srs2 = gpkg.core().addSpatialReferenceSystem("name",   122, "organization",   123,  "definition", "description");
-
-          assertTrue("GeoPackage returned true when it should have returned false when two different SRS compared with the equals method",!srs1.equals(srs2));
-          assertTrue("GeoPackage returned the same HashCode for two different SRS's",srs1.hashCode() !=  srs2.hashCode());
-
-        }
-        finally
-        {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
-        }
-    }
-
-    @Test
-    public void addSRSAndCompareEqualsTwoDifferentSRS() throws ClassNotFoundException, ConformanceException, IOException, SQLException
-    {
-        final File testFile = this.getRandomFile(8);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
-        {
-          final SpatialReferenceSystem srs1 = gpkg.core().addSpatialReferenceSystem("name",  123, "organization", 123, "definition", "description");
-          final SpatialReferenceSystem srs2 = gpkg.core().addSpatialReferenceSystem("name2", 122, "organization", 123, "definition", "description");
-
-          assertTrue("GeoPackage returned true when it should have returned false when two different SRS compared with the equals method",!srs1.equals(srs2));
-          assertTrue("GeoPackage returned the same HashCode for two different SRS's",srs1.hashCode() !=  srs2.hashCode());
 
         }
         finally
@@ -989,9 +836,9 @@ public class GeoPackageCoreAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            final SpatialReferenceSystem testSrs = gpkg.core().addSpatialReferenceSystem("name",555,"org",111, "def","desc");
+            final SpatialReferenceSystem testSrs = gpkg.core().addSpatialReferenceSystem("name", "org", 111, "def", "desc");
 
-            final SpatialReferenceSystem gpkgSrs = gpkg.core().getSpatialReferenceSystem(555);
+            final SpatialReferenceSystem gpkgSrs = gpkg.core().getSpatialReferenceSystem("org", 111);
 
             assertTrue("The GeoPackage did not return expected result for SpatialReferenceSystem in method getSpatialReferenceSystem.",
                          gpkgSrs.equals(testSrs));
@@ -1093,21 +940,19 @@ public class GeoPackageCoreAPITest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final String name              = "name";
-            final int    identifier        = 222;
             final String organization      = "organization";
             final int    organizationSrsId = 333;
             final String definition        = "definition";
             final String description       = "description";
 
             final SpatialReferenceSystem srsAdded = gpkg.core().addSpatialReferenceSystem(name,
-                                                                                    identifier,
-                                                                                    organization,
-                                                                                    organizationSrsId,
-                                                                                    definition,
-                                                                                    description);
+                                                                                          organization,
+                                                                                          organizationSrsId,
+                                                                                          definition,
+                                                                                          description);
 
             final SpatialReferenceSystem srsFound = gpkg.core().getSpatialReferenceSystem("oRgaNiZaTiOn",
-                                                                                    organizationSrsId);
+                                                                                          organizationSrsId);
 
             assertTrue("The GeoPackage did not return the expected values for the Spatial Reference System Object when "
                         + "asking to retrieve the SRS object through the getSpatialReferenceSystem(String, int) method.",
@@ -1290,7 +1135,7 @@ public class GeoPackageCoreAPITest
         final File testFile = this.getRandomFile(8);
         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
         {
-            gpkg.core().addContent("tablename", "tiles", "identifier", "description", null, gpkg.core().getSpatialReferenceSystem(4326));
+            gpkg.core().addContent("tablename", "tiles", "identifier", "description", null, gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
             fail("Expected GeoPackageCore to throw an IllegalArgumentException when giving a null balue for bounding box");
         }
         finally
@@ -1546,7 +1391,7 @@ public class GeoPackageCoreAPITest
             final String identifier = "identifier";
             final String description = "description";
             final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 0.0, 0.0);
-            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem("EPSG", 4326);
 
             final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
 
@@ -1595,7 +1440,7 @@ public class GeoPackageCoreAPITest
             final String identifier = "identifier";
             final String description = "description";
             final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 0.0, 0.0);
-            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem("EPSG", 4326);
 
 
 
@@ -1645,7 +1490,7 @@ public class GeoPackageCoreAPITest
             final String identifier = "identifier";
             final String description = "description";
             final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 0.0, 0.0);
-            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem("EPSG", 4326);
 
             final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
 
@@ -1692,7 +1537,7 @@ public class GeoPackageCoreAPITest
             final String identifier = "identifier";
             final String description = "description";
             final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 0.0, 0.0);
-            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem("EPSG", 4326);
 
             final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
 
@@ -1741,7 +1586,7 @@ public class GeoPackageCoreAPITest
             final String identifier = null;
             final String description = null;
             final BoundingBox boundingBox = new BoundingBox(0.0, 0.0, 0.0, 0.0);
-            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem(4326);
+            final SpatialReferenceSystem spatialReferenceSystem = gpkg.core().getSpatialReferenceSystem("EPSG", 4326);
 
             final Content content = gpkg.core().addContent(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem);
 

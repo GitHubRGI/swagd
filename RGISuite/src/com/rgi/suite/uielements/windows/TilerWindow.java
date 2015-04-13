@@ -99,7 +99,7 @@ public class TilerWindow extends NavigationWindow
 
     private final JSpinner     tileWidthSpinner;
     private final JSpinner     tileHeightSpinner;
-    private final SwatchButton clearColorButton;
+    private final SwatchButton clearColorButton = new SwatchButton("");
 
     /**
      * Constructor
@@ -114,14 +114,14 @@ public class TilerWindow extends NavigationWindow
 
         this.settings = settings;
 
+        this.referenceSystems.setSelectedItem(null);
+
         this.outputStoreType.addItem(new GeoPackageTileStoreWriterAdapter(settings));
         this.outputStoreType.addItem(new TmsTileStoreWriterAdapter       (settings));
 
         this.contentPanel.setLayout(new BoxLayout(this.contentPanel, BoxLayout.PAGE_AXIS));
 
         // Input stuff
-        //this.inputFileName.setEditable(false);
-
         this.inputPanel .setBorder(BorderFactory.createTitledBorder("Input"));
 
         this.inputFileNameButton.addActionListener(e -> { final String startDirectory = this.settings.get(LastInputLocationSettingName, System.getProperty("user.home"));
@@ -144,7 +144,7 @@ public class TilerWindow extends NavigationWindow
                                                                   this.settings.set(LastInputLocationSettingName, file.getParent());
                                                                   this.settings.save();
 
-                                                                  final SpatialReference srs = GdalUtility.getDatasetSrs(file);
+                                                                  final SpatialReference srs = GdalUtility.getDatasetSpatialReference(file);
 
                                                                   final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(srs);
 
@@ -199,14 +199,18 @@ public class TilerWindow extends NavigationWindow
                                                                         128,
                                                                         2048));
 
+        this.tileWidthSpinner.setEnabled(false);
+
         this.tileHeightSpinner = new JSpinner(new PowerOfTwoSpinnerModel(this.settings.get(TileHeightSettingName,
                                                                                            Integer::parseInt,
                                                                                            256),
                                                                          128,
                                                                          2048));
 
+        this.tileHeightSpinner.setEnabled(false);
 
-        this.clearColorButton = new SwatchButton("");
+
+        this.clearColorButton.setEnabled(false);
         this.clearColorButton.setPreferredSize(new Dimension(220, 20));
         this.clearColorButton.setColor(this.settings.get(ClearColorSettingName,
                                                          string -> colorFromString(string),
@@ -292,7 +296,7 @@ public class TilerWindow extends NavigationWindow
     @Override
     protected String processName()
     {
-        return "Packaging";
+        return "Tiling";
     }
 
     @Override

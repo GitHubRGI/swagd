@@ -322,7 +322,6 @@ public class CoreVerifier extends Verifier
     public void Requirement8() throws AssertionError
     {
         final String query = "SELECT * FROM sqlite_master;";
-
         try(PreparedStatement stmt = this.getSqliteConnection().prepareStatement(query);
             ResultSet         result = stmt.executeQuery())
         {

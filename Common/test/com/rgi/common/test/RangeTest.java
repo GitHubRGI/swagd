@@ -109,7 +109,7 @@ public class RangeTest
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException()
     {
-        final List<Number>  listValues = new ArrayList<>(Arrays.asList(11.0, 12.5, -1.0, -1.15, -1.0, -1.15, 2.0, 5.0, 10.0, 12.5, 12.5));
+        final List<Number>  listValues = Arrays.asList(11.0, 12.5, -1.0, -1.15, -1.0, -1.15, 2.0, 5.0, 10.0, 12.5, 12.5);
         final Function<Number, Integer> function = t -> (int) Math.floor(t.doubleValue());
 
         new Range<>(null, function, this.numberComparator);

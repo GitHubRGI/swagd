@@ -319,7 +319,7 @@ public class ExtensionsVerifier extends Verifier
             + "where <author> indicates the person or organization that developed "
             + "and maintains the extension. The valid character set for <author> "
             + "SHALL be [a-zA-Z0-9]. The valid character set for <extension_name> "
-            + "SHALL be [a-zA-Z0-9_]. An extension_name for the �gpkg� author name "
+            + "SHALL be [a-zA-Z0-9_]. An extension_name for the gpkg author name "
             + "SHALL be one of those defined in this encoding standard or in an OGC "
             + "Best Practices Document that extends it.", severity = Severity.Warning)
     public void Requirement82() throws AssertionError
@@ -333,13 +333,18 @@ public class ExtensionsVerifier extends Verifier
                                                                                           .filter(data -> data != null)
                                                                                           .collect(Collectors.toSet());
 
-            Assert.assertTrue("The following extension_name(s) are invalid: \n".concat(String.join(invalidExtensionNames.stream()
-                                                                               .map(extensionName -> extensionName)
-                                                                               .filter(Objects::nonNull)
-                                                                               .collect(Collectors.joining(", ")),
-                                                                               "\n")),
-                              invalidExtensionNames.isEmpty());
-
+            Assert.assertTrue(String.format("The following extension_name(s) are invalid: \n%s",
+                                            invalidExtensionNames.stream()
+                                                                 .map(extensionName ->{
+                                                                                           if(extensionName.isEmpty())
+                                                                                           {
+                                                                                               return "\t<empty string>";
+                                                                                           }
+                                                                                            return String.format("\t%s", extensionName);
+                                                                                      })
+                                                                 .filter(Objects::nonNull)
+                                                                 .collect(Collectors.joining(", "))),
+                                          invalidExtensionNames.isEmpty());
         }
     }
 
@@ -456,8 +461,13 @@ public class ExtensionsVerifier extends Verifier
         {
             return extensionName;
         }
-        if ( author[0].matches("gpkg") ||
-            !author[0].matches("[a-zA-Z0-9]+") ||
+
+        if(author[0].matches("gpkg") && !isRegisteredExtension(extensionName))
+        {
+            return extensionName;
+        }
+
+        if (!author[0].matches("[a-zA-Z0-9]+") ||
             !author[1].matches("[a-zA-Z0-9_]+"))
         {
             return extensionName;
@@ -467,12 +477,18 @@ public class ExtensionsVerifier extends Verifier
     }
 
 
+    private static boolean isRegisteredExtension(final String extensionName)
+    {
+        return RegisteredExtensions.stream().anyMatch(registeredExtension -> registeredExtension.equals(extensionName));
+    }
+
     private static boolean equals(final String first, final String second)
     {
         return first == null ? second == null : first.equals(second);
     }
 
     private static final TableDefinition ExtensionsTableDefinition;
+    private static final List<String>    RegisteredExtensions;
 
     static
     {
@@ -488,5 +504,7 @@ public class ExtensionsVerifier extends Verifier
                                                         extensionsTableColumns,
                                                         Collections.emptySet(),
                                                         new HashSet<>(Arrays.asList(new UniqueDefinition("table_name", "column_name", "extension_name"))));
+
+        RegisteredExtensions = Arrays.asList("gpkg_zoom_other","gpkg_webp", "gpkg_geometry_columns", "gpkg_rtree_index","gpkg_geometry_type_trigger", "gpkg_srs_id_trigger");
     }
 }

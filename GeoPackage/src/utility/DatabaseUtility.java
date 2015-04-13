@@ -200,6 +200,45 @@ public class DatabaseUtility
         }
     }
 
+    /**
+     * Get the smallest value for a table and column <i>that does not yet exist
+     * </i>
+     *
+     * @param connection
+     *             connection to the database
+     * @param tableName
+     *             table name
+     * @param columnName
+     *             column name
+     * @return the smallest value for a table and column that does not yet exist
+     * @throws SQLException
+     *             if there's a database error
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T nextValue(final Connection connection, final String tableName, final String columnName) throws SQLException
+    {
+        final String smallestNonexistentValue = String.format("SELECT (table1.%1$s + 1) " +
+                                                              "FROM %2$s AS table1 LEFT JOIN %2$s table2 on table2.%1$s = (table1.%1$s + 1) " +
+                                                              "WHERE table2.%1$s IS NULL " +
+                                                              "ORDER BY table1.%1$s " +
+                                                              "LIMIT 1",
+                                                              columnName,
+                                                              tableName);
+
+        try(PreparedStatement preparedStatement = connection.prepareStatement(smallestNonexistentValue))
+        {
+            try(ResultSet result = preparedStatement.executeQuery())
+            {
+                if(result.isBeforeFirst())
+                {
+                    return (T)result.getObject(1);
+                }
+
+                return null;
+            }
+        }
+    }
+
     private static void verify(final Connection connection) throws SQLException
     {
         if(connection == null)
