@@ -80,10 +80,10 @@ public abstract class ProportionalCrsProfile implements CrsProfile
         final double normalizedSrsTileCoordinateX = Math.abs(coordinate.getX() - tileCorner.getX());
         final double normalizedSrsTileCoordinateY = Math.abs(coordinate.getY() - tileCorner.getY());
 
-        final int divisor = 1000000000;//round to integer extent
+        final int divisor = 1000000000; // Round to integer extent
 
-        final int tileX = (int)Math.floor(Math.round((normalizedSrsTileCoordinateX / tileCrsWidth)*divisor)/divisor);
-        final int tileY = (int)Math.floor(Math.round((normalizedSrsTileCoordinateY / tileCrsHeight)*divisor)/divisor);
+        final int tileX = (int)Math.floor(Math.round((normalizedSrsTileCoordinateX / tileCrsWidth)  * divisor) / divisor);
+        final int tileY = (int)Math.floor(Math.round((normalizedSrsTileCoordinateY / tileCrsHeight) * divisor) / divisor);
 
 
         return new Coordinate<>(tileX, tileY);
@@ -143,5 +143,58 @@ public abstract class ProportionalCrsProfile implements CrsProfile
         return new CrsCoordinate(boundsCorner.getX() + (tileCoordinate.getX() + tileOrigin.getHorizontal())*(tileCrsWidth),
                                  boundsCorner.getY() + (tileCoordinate.getY() + tileOrigin.getVertical())  *(tileCrsHeight),
                                  this.getCoordinateReferenceSystem());
+    }
+
+    @Override
+    public BoundingBox getTileBounds(final int                  column,
+                                     final int                  row,
+                                     final BoundingBox          bounds,
+                                     final TileMatrixDimensions dimensions,
+                                     final TileOrigin           tileOrigin)
+    {
+        if(bounds == null)
+        {
+            throw new IllegalArgumentException("Bounds may not be null");
+        }
+
+        if(dimensions == null)
+        {
+            throw new IllegalArgumentException("Tile matrix dimensions may not be null");
+        }
+
+        if(!dimensions.contains(row, column))
+        {
+            throw new IllegalArgumentException("The row and column must be within the tile matrix dimensions");
+        }
+
+        if(column < 0)
+        {
+            throw new IllegalArgumentException("Column must be 0 or greater;");
+        }
+
+        if(row < 0)
+        {
+            throw new IllegalArgumentException("Row must be 0 or greater;");
+        }
+
+        if(tileOrigin == null)
+        {
+            throw new IllegalArgumentException("Origin may not be null");
+        }
+
+        final double tileCrsWidth  = bounds.getWidth()  / dimensions.getWidth();
+        final double tileCrsHeight = bounds.getHeight() / dimensions.getHeight();
+
+        final Coordinate<Integer> tileCoordinate = tileOrigin.transform(TileOrigin.LowerLeft,
+                                                                        column,
+                                                                        row,
+                                                                        dimensions);
+
+        final Coordinate<Double> boundsCorner = bounds.getBottomLeft();
+
+        return new BoundingBox(boundsCorner.getX() + (tileCoordinate.getX() +     tileOrigin.getHorizontal()) * (tileCrsWidth),
+                               boundsCorner.getY() + (tileCoordinate.getY() +     tileOrigin.getVertical())   * (tileCrsHeight),
+                               boundsCorner.getX() + (tileCoordinate.getX() + 1 + tileOrigin.getHorizontal()) * (tileCrsWidth),
+                               boundsCorner.getY() + (tileCoordinate.getY() + 1 + tileOrigin.getVertical())   * (tileCrsHeight));
     }
 }

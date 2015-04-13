@@ -45,7 +45,6 @@ import com.rgi.common.Dimensions;
 import com.rgi.common.Range;
 import com.rgi.common.TaskMonitor;
 import com.rgi.common.coordinate.Coordinate;
-import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.TileOrigin;
@@ -291,12 +290,8 @@ public class GdalTileJob implements Runnable
             // This makes queries start at top-left of the data
             for (int tileX = tileMinX; tileX <= tileMaxX; tileX++)
             {
-                // Create coordinates for the bounding box corners
-                final CrsCoordinate tileTopLeftCorner     = this.crsProfile.tileToCrsCoordinate(tileX,     tileY + 1, this.crsProfile.getBounds(), zoomDimensions, TileOrigin.LowerLeft);
-                final CrsCoordinate tileBottomRightCorner = this.crsProfile.tileToCrsCoordinate(tileX + 1, tileY,     this.crsProfile.getBounds(), zoomDimensions, TileOrigin.LowerLeft);
-
-                // Create a bounding box from the coordinates above
-                final BoundingBox tileBBox = new BoundingBox(tileTopLeftCorner.getX(), tileBottomRightCorner.getY(), tileBottomRightCorner.getX(), tileTopLeftCorner.getY());
+                // Create a bounding box from the tile coordinate
+                final BoundingBox tileBBox = this.crsProfile.getTileBounds(tileX, tileY, this.crsProfile.getBounds(), zoomDimensions, TileOrigin.LowerLeft);
 
                 // Build the parameters for GDAL read raster call
                 final GdalRasterParameters params = GdalUtility.getGdalRasterParameters(dataset.GetGeoTransform(), tileBBox, this.tileDimensions, dataset);

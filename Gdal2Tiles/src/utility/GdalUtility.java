@@ -396,7 +396,7 @@ public class GdalUtility
         }
 
         return new BoundingBox(outputGeotransform[0],
-                               outputGeotransform[3] - dataset.GetRasterYSize() * outputGeotransform[1],
+                               outputGeotransform[3] - dataset.GetRasterYSize() * outputGeotransform[5],
                                outputGeotransform[0] + dataset.GetRasterXSize() * outputGeotransform[1],
                                outputGeotransform[3]);
     }
