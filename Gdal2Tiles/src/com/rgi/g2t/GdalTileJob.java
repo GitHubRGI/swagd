@@ -162,24 +162,19 @@ public class GdalTileJob implements Runnable
 
             this.monitor.setMaximum(maxTiles);
 
-            // Tile all levels
             int tilesComplete = 0;
-//            for(int zoom = maxZoom; zoom >= minZoom; --zoom)
-//            {
-//                tilesComplete = this.generateTiles(outputDataset, ranges.get(zoom), zoom, tilesComplete);
-//            }
 
+            // Tile all levels
             for(final Entry<Integer, Range<Coordinate<Integer>>> entry : ranges.entrySet()
-                                    .stream()
-                                    .sorted((a, b) -> (Integer.compare(a.getKey(), b.getKey()) * -1)) // sort max to min
-                                    .collect(Collectors.toList()))
+                                                                               .stream()
+                                                                               .sorted((a, b) -> (Integer.compare(a.getKey(), b.getKey()) * -1)) // sort max to min
+                                                                               .collect(Collectors.toList()))
             {
                 final int zoom = entry.getKey();
                 final Range<Coordinate<Integer>> range = entry.getValue();
 
                 tilesComplete = this.generateTiles(outputDataset, range, zoom, tilesComplete);
             }
-
 
             // Clean up the opened datasets
             inputDataset.delete();
