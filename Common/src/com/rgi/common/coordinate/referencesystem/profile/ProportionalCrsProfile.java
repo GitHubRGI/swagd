@@ -140,8 +140,8 @@ public abstract class ProportionalCrsProfile implements CrsProfile
 
         final Coordinate<Double> boundsCorner = bounds.getBottomLeft();
 
-        return new CrsCoordinate(boundsCorner.getX() + (tileCoordinate.getX() + tileOrigin.getHorizontal())*(tileCrsWidth),
-                                 boundsCorner.getY() + (tileCoordinate.getY() + tileOrigin.getVertical())  *(tileCrsHeight),
+        return new CrsCoordinate(boundsCorner.getX() + (tileCoordinate.getX() + tileOrigin.getHorizontal()) * (tileCrsWidth),
+                                 boundsCorner.getY() + (tileCoordinate.getY() + tileOrigin.getVertical())   * (tileCrsHeight),
                                  this.getCoordinateReferenceSystem());
     }
 

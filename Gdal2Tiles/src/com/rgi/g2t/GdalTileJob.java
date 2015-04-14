@@ -47,7 +47,6 @@ import com.rgi.common.TaskMonitor;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
@@ -118,28 +117,27 @@ public class GdalTileJob implements Runnable
     {
         try
         {
-            final Dataset inputDataset = this.openInput();
+            final Dataset inputDataset  = this.openInput();
             final Dataset outputDataset = this.openOutput(inputDataset);
 
             final BoundingBox outputBounds = GdalUtility.getBoundsForDataset(outputDataset);
 
-            // Calculate all the tiles in every zoom possible (0-31)
             final Map<Integer, Range<Coordinate<Integer>>> ranges = GdalUtility.calculateTileRanges(this.writer.getTileScheme(),
                                                                                                     outputBounds,
                                                                                                     this.crsProfile,
                                                                                                     this.writer.getTileOrigin());
-            // Generate tiles
-//            final int minZoom = GdalUtility.minimalZoomForDataset(outputDataset,
-//                                                                  ranges,
-//                                                                  this.writer.getTileOrigin(),
-//                                                                  this.writer.getTileScheme(),
-//                                                                  this.tileDimensions);
-//
-//            final int maxZoom = GdalUtility.maximalZoomForDataset(outputDataset,
-//                                                                  ranges,
-//                                                                  this.writer.getTileOrigin(),
-//                                                                  this.writer.getTileScheme(),
-//                                                                  this.tileDimensions);
+
+            final int minZoom = GdalUtility.minimalZoomForDataset(outputDataset,
+                                                                  ranges,
+                                                                  this.writer.getTileOrigin(),
+                                                                  this.writer.getTileScheme(),
+                                                                  this.tileDimensions);
+
+            final int maxZoom = GdalUtility.maximalZoomForDataset(outputDataset,
+                                                                  ranges,
+                                                                  this.writer.getTileOrigin(),
+                                                                  this.writer.getTileScheme(),
+                                                                  this.tileDimensions);
 //
 //            final Range<Integer> range = new Range<>(this.writer.getTileScheme()
 //                                                                .getZoomLevels()
@@ -179,7 +177,7 @@ public class GdalTileJob implements Runnable
             inputDataset.delete();
             outputDataset.delete();
         }
-        catch(final TilingException | DataFormatException/* | TileStoreException*/ ex)
+        catch(final TilingException | DataFormatException | TileStoreException ex)
         {
             throw new RuntimeException(ex);
         }
@@ -261,11 +259,12 @@ public class GdalTileJob implements Runnable
      * @return The current amount of tiles created to-date
      * @throws TilingException Thrown when the {@link TileStoreWriter} fails to
      *                            add a tile
+     * @throws TileStoreException
      */
     private int generateTiles(final Dataset dataset,
                               final Range<Coordinate<Integer>> zoomRange,
                               final int zoom,
-                              final int tilesComplete) throws TilingException
+                              final int tilesComplete) throws TilingException, TileStoreException
     {
         // Set the tile progress accumulator
         int tileProgress = tilesComplete;
@@ -291,7 +290,7 @@ public class GdalTileJob implements Runnable
             for (int tileX = tileMinX; tileX <= tileMaxX; tileX++)
             {
                 // Create a bounding box from the tile coordinate
-                final BoundingBox tileBBox = this.crsProfile.getTileBounds(tileX, tileY, this.crsProfile.getBounds(), zoomDimensions, TileOrigin.LowerLeft);
+                final BoundingBox tileBBox = this.writer.getTileBoundingBox(tileX, tileY, zoom); // this.crsProfile.getTileBounds(tileX, tileY, this.crsProfile.getBounds(), zoomDimensions, TileOrigin.LowerLeft);
 
                 // Build the parameters for GDAL read raster call
                 final GdalRasterParameters params = GdalUtility.getGdalRasterParameters(dataset.GetGeoTransform(), tileBBox, this.tileDimensions, dataset);

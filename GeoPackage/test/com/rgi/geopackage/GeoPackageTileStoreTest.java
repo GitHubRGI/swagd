@@ -1393,17 +1393,20 @@ public class GeoPackageTileStoreTest
         final int column    = 1;
         final int zoomLevel = 0;
 
+        final Dimensions<Integer> tileRasterDimensions = new Dimensions<>(256, 256);
+
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
                                                                new CoordinateReferenceSystem("EPSG", 4326),
                                                                tableName,
                                                                "identifier",
                                                                "description",
                                                                new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               tileRasterDimensions,
                                                                new ZoomTimesTwo(0, 0, 4, 2),
                                                                new MimeType("image/jpeg"),
                                                                null))
         {
-            final BufferedImage bufferedImage = new BufferedImage(256, 256, BufferedImage.TYPE_BYTE_GRAY);
+            final BufferedImage bufferedImage = new BufferedImage(tileRasterDimensions.getWidth(), tileRasterDimensions.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
 
             gpkgWriter.addTile(column, row, zoomLevel, bufferedImage);
         }
@@ -1442,6 +1445,7 @@ public class GeoPackageTileStoreTest
                                                                "identifier",
                                                                "description",
                                                                new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new Dimensions<>(256, 256),
                                                                new ZoomTimesTwo(0, 0, 4, 2),
                                                                new MimeType("image/jpeg"),
                                                                null))
@@ -1477,6 +1481,7 @@ public class GeoPackageTileStoreTest
                                                                "identifier",
                                                                "description",
                                                                new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new Dimensions<>(256, 256),
                                                                new ZoomTimesTwo(0, 0, 4, 2),
                                                                new MimeType("image/jpeg"),
                                                                null))
@@ -1506,18 +1511,21 @@ public class GeoPackageTileStoreTest
     {
         final File testFile = this.getRandomFile(6);
 
+        final Dimensions<Integer> tileRasterDimensions = new Dimensions<>(256, 256);
+
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
                                                                new CoordinateReferenceSystem("EPSG", 4326),
                                                                "foo",
                                                                "identifier",
                                                                "description",
                                                                new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               tileRasterDimensions,
                                                                new ZoomTimesTwo(0, 0, 4, 2),
                                                                new MimeType("image/jpeg"),
                                                                null))
         {
 
-            gpkgWriter.addTile(null, 0, new BufferedImage(256,256, BufferedImage.TYPE_INT_ARGB));
+            gpkgWriter.addTile(null, 0, new BufferedImage(tileRasterDimensions.getWidth(), tileRasterDimensions.getHeight(), BufferedImage.TYPE_INT_ARGB));
             fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user puts in a null value for the parameter crsCoordinate.");
         }
         finally
@@ -1542,18 +1550,21 @@ public class GeoPackageTileStoreTest
     {
         final File testFile = this.getRandomFile(6);
 
+        final Dimensions<Integer> tileRasterDimensions = new Dimensions<>(256, 256);
+
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
                                                                new CoordinateReferenceSystem("EPSG", 4326),
                                                                "foo",
                                                                "identifier",
                                                                "description",
                                                                new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               tileRasterDimensions,
                                                                new ZoomTimesTwo(0, 0, 4, 2),
                                                                new MimeType("image/jpeg"),
                                                                null))
         {
 
-            gpkgWriter.addTile(new CrsCoordinate(30.0, 20.0, "epsg", 3395), 0, new BufferedImage(256,256, BufferedImage.TYPE_INT_ARGB));
+            gpkgWriter.addTile(new CrsCoordinate(30.0, 20.0, "epsg", 3395), 0, new BufferedImage(tileRasterDimensions.getWidth(), tileRasterDimensions.getHeight(), BufferedImage.TYPE_INT_ARGB));
             fail("Expected GeoPackageWriter to throw an IllegalArgumentException if a user adds a tile that is a different crs coordinate reference system than the profile.");
         }
         finally
@@ -1584,6 +1595,7 @@ public class GeoPackageTileStoreTest
                                                                "identifier",
                                                                "description",
                                                                new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new Dimensions<>(256, 256),
                                                                new ZoomTimesTwo(0, 0, 4, 2),
                                                                new MimeType("image/jpeg"),
                                                                null))
@@ -1619,6 +1631,7 @@ public class GeoPackageTileStoreTest
                                                                "identifier",
                                                                "description",
                                                                new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new Dimensions<>(256, 256),
                                                                new ZoomTimesTwo(0, 0, 4, 2),
                                                                new MimeType("image/jpeg"),
                                                                null))
@@ -1653,6 +1666,7 @@ public class GeoPackageTileStoreTest
                                                                "identifier",
                                                                "description",
                                                                new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new Dimensions<>(256, 256),
                                                                new ZoomTimesTwo(0, 0, 4, 2),
                                                                null,
                                                                null))
@@ -1688,6 +1702,7 @@ public class GeoPackageTileStoreTest
                                                                "identifier",
                                                                "description",
                                                                new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new Dimensions<>(256, 256),
                                                                new ZoomTimesTwo(0, 0, 4, 2),
                                                                new MimeType("text/xml"),
                                                                null))
@@ -1722,6 +1737,7 @@ public class GeoPackageTileStoreTest
                                                                "identifier",
                                                                "description",
                                                                new BoundingBox(0.0,0.0,90.0,90.0),
+                                                               new Dimensions<>(256, 256),
                                                                new ZoomTimesTwo(0, 0, 4, 2),
                                                                new MimeType("image/jpeg"),
                                                                null))
@@ -1767,6 +1783,7 @@ public class GeoPackageTileStoreTest
                                                                     identifier,
                                                                     description,
                                                                     boundingBox,
+                                                                    new Dimensions<>(256, 256),
                                                                     new ZoomTimesTwo(0, 0, 4, 2),
                                                                     new MimeType("image/jpeg"),
                                                                     null))
@@ -1821,6 +1838,7 @@ public class GeoPackageTileStoreTest
                                                                tileSetName,
                                                                "description",
                                                                tileSetBounds,
+                                                               new Dimensions<>(256, 256),
                                                                new ZoomTimesTwo(5, 8, 5, 3),
                                                                new MimeType("image/png"),
                                                                null);)
@@ -1855,6 +1873,7 @@ public class GeoPackageTileStoreTest
                                                            "tileSetIdentifier",
                                                            "tileSetDescription",
                                                            bBox,
+                                                           new Dimensions<>(256, 256),
                                                            new ZoomTimesTwo(1, 10, 2, 3),
                                                            new MimeType("image/png"),
                                                            null))
@@ -1866,7 +1885,7 @@ public class GeoPackageTileStoreTest
             final int column    = 7;
             writer.addTile(column, row, zoomLevel, createBufferedImage(BufferedImage.TYPE_BYTE_GRAY));
             final Coordinate<Integer> expectedTileCoordinate = new Coordinate<>(column, row);
-            final CrsCoordinate       crsCoordinate          = geodeticCrsProfile.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoomLevel ), GeoPackageTiles.Origin);
+            final CrsCoordinate       crsCoordinate          = geodeticCrsProfile.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoomLevel), GeoPackageTiles.Origin);
             final Coordinate<Integer> tileCoordinate         = writer.crsToTileCoordinate(crsCoordinate, zoomLevel);
 
             assertEquals("The coordinate returned was not as expected.",expectedTileCoordinate, tileCoordinate);
@@ -1906,6 +1925,7 @@ public class GeoPackageTileStoreTest
                                                            "tileSetIdentifier",
                                                            "tileSetDescription",
                                                            bBox,
+                                                           new Dimensions<>(256, 256),
                                                            new ZoomTimesTwo(1, 10, 2, 3),
                                                            new MimeType("image/png"),
                                                            null))
@@ -2112,7 +2132,16 @@ public class GeoPackageTileStoreTest
         final CoordinateReferenceSystem crs = new CoordinateReferenceSystem("EPSG", 4326);
         final BoundingBox bBox =  new BoundingBox(0.0,0.0,0.0,0.0);
         final TileScheme tileScheme = new ZoomTimesTwo(0, 10, 2, 4);
-        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile, crs, "tableName","identifier", "description", bBox, tileScheme, new MimeType("image/png"), null))
+        try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
+                                                               crs,
+                                                               "tableName",
+                                                               "identifier",
+                                                               "description",
+                                                               bBox,
+                                                               new Dimensions<>(256, 256),
+                                                               tileScheme,
+                                                               new MimeType("image/png"),
+                                                               null))
         {
             gpkgWriter.tileToCrsCoordinate(1, 1, 1, null);
             fail("Expected an IllegalArgumentException when giving a null value for TileOrigin.");
@@ -2142,6 +2171,7 @@ public class GeoPackageTileStoreTest
                                                                "identifier",
                                                                "description",
                                                                bBox,
+                                                               new Dimensions<>(256, 256),
                                                                tileScheme,
                                                                new MimeType("image/png"),
                                                                null))
@@ -2152,13 +2182,14 @@ public class GeoPackageTileStoreTest
             gpkgWriter.addTile(column, row, zoom, createBufferedImage(BufferedImage.TYPE_3BYTE_BGR));
 
             final BoundingBox tileBBoxReturned = gpkgWriter.getTileBoundingBox(column, row, zoom);
-            final CrsCoordinate upperLeftCorner = globalGeodetic.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoom), TileOrigin.UpperLeft);
+
+            final CrsCoordinate upperLeftCorner  = globalGeodetic.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoom), TileOrigin.UpperLeft);
             final CrsCoordinate lowerRightCorner = globalGeodetic.tileToCrsCoordinate(column, row, bBox, tileScheme.dimensions(zoom), TileOrigin.LowerRight);
 
-            final CrsCoordinate upperLeftReturned = new CrsCoordinate(tileBBoxReturned.getTopLeft(), globalGeodetic.getCoordinateReferenceSystem());
+            final CrsCoordinate upperLeftReturned  = new CrsCoordinate(tileBBoxReturned.getTopLeft(),     globalGeodetic.getCoordinateReferenceSystem());
             final CrsCoordinate lowerRightReturned = new CrsCoordinate(tileBBoxReturned.getBottomRight(), globalGeodetic.getCoordinateReferenceSystem());
 
-            assertCrsCoordinatesEqual(upperLeftReturned, upperLeftCorner);
+            assertCrsCoordinatesEqual(upperLeftReturned,  upperLeftCorner);
             assertCrsCoordinatesEqual(lowerRightReturned, lowerRightCorner);
         }
         finally
@@ -2197,6 +2228,7 @@ public class GeoPackageTileStoreTest
                                                                "identifier",
                                                                "description",
                                                                tileSetBounds,
+                                                               new Dimensions<>(256, 256),
                                                                new ZoomTimesTwo(5, 8, 5, 3),
                                                                new MimeType("image/png"),
                                                                null);)
@@ -2240,6 +2272,7 @@ public class GeoPackageTileStoreTest
                                                            "tileSetIdentifier",
                                                            "tileSetDescription",
                                                            bBox,
+                                                           new Dimensions<>(256, 256),
                                                            tileScheme,
                                                            new MimeType("image/png"),
                                                            null))

@@ -386,17 +386,13 @@ public class GdalUtility
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
         final double[] outputGeotransform = dataset.GetGeoTransform();
-        // Report error in case rotation/skew is in geotransform (only for raster profile)
-        // gdal2tiles.py only checks for (ogt[2], ogt[4]) != (0,0), it does not seem to care if only
-        // one has a value
-        if (outputGeotransform[2] != 0 || outputGeotransform[4] != 0)
+        if(outputGeotransform[2] != 0 || outputGeotransform[4] != 0)
         {
-            throw new DataFormatException("Georeference of the raster contains rotation or skew. " +
-                                          "Such raster is not supported.  Please use gdalwarp first.");
+            throw new DataFormatException("Raster's georeference contains a rotation or skew, which is not supported.  Please use gdalwarp first.");
         }
 
         return new BoundingBox(outputGeotransform[0],
-                               outputGeotransform[3] - dataset.GetRasterYSize() * outputGeotransform[5],
+                               outputGeotransform[3] + dataset.GetRasterYSize() * outputGeotransform[5],
                                outputGeotransform[0] + dataset.GetRasterXSize() * outputGeotransform[1],
                                outputGeotransform[3]);
     }
@@ -531,8 +527,10 @@ public class GdalUtility
                          .stream()
                          .collect(Collectors.toMap(zoom -> zoom,
                                                    zoom -> { final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
+
                                                              final Coordinate<Integer>     topLeftTile = crsProfile.crsToTileCoordinate(topLeft,     crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
                                                              final Coordinate<Integer> bottomRightTile = crsProfile.crsToTileCoordinate(bottomRight, crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
+
                                                              return new Range<>(topLeftTile, bottomRightTile);
                                                             }));
     }
@@ -700,7 +698,7 @@ public class GdalUtility
 
         try
         {
-            final BoundingBox datasetBounds = GdalUtility.getBoundsForDataset    (dataset); // todo/temp check to see if GeoTransform gives the same dimension values as dataset.getrastersize calls
+            final BoundingBox datasetBounds = GdalUtility.getBoundsForDataset    (dataset);
             final CrsProfile  crsProfile    = GdalUtility.getCrsProfileForDataset(dataset);
 
             final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
@@ -711,7 +709,9 @@ public class GdalUtility
             final int minZoom = GdalUtility.minimalZoomForDataset(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
             final int maxZoom = GdalUtility.maximalZoomForDataset(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
 
-            return IntStream.rangeClosed(minZoom, maxZoom).boxed().collect(Collectors.toSet());
+            return IntStream.rangeClosed(minZoom, maxZoom)
+                            .boxed()
+                            .collect(Collectors.toSet());
         }
         catch (final DataFormatException dfe)
         {
@@ -1149,13 +1149,12 @@ public class GdalUtility
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
 
-        // TODO: investigate replacing readX/Y with boundingBox.getWidth/Height calls
         // This is sorcery of the darkest kind.  It works but it not fully understood.
         final int readX = (int)((boundingBox.getMinX() - geoTransform[0]) / geoTransform[1] + 0.001);
         final int readY = (int)((boundingBox.getMaxY() - geoTransform[3]) / geoTransform[5] + 0.001);
 
-        final int readXSize = (int)((boundingBox.getMaxX() - boundingBox.getMinX()) / geoTransform[1] + 0.5);
-        final int readYSize = (int)((boundingBox.getMinY() - boundingBox.getMaxY()) / geoTransform[5] + 0.5);
+        final int readXSize = (int)(boundingBox.getWidth()  /  geoTransform[1] + 0.5);
+        final int readYSize = (int)(boundingBox.getHeight() / -geoTransform[5] + 0.5);
 
         return new GdalRasterParameters(readX, readY, readXSize, readYSize, dimensions, dataset);
     }
