@@ -25,7 +25,6 @@ package com.rgi.g2t;
 
 import java.awt.Color;
 import java.io.File;
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -298,11 +297,11 @@ public class GdalTileJob implements Runnable
                 final GdalRasterParameters params = GdalUtility.getGdalRasterParameters(dataset.GetGeoTransform(), tileBBox, this.tileDimensions, dataset);
 
                 // Read image data directly from the raster
-                final ByteBuffer imageData = GdalUtility.readRasterDirect(params, dataset);
+                final byte[] imageData = GdalUtility.readRaster(params, dataset);
 
                 // TODO: logic goes here in the case that the querysize == tile size (gdalconstConstants.GRA_NearestNeighbour) (write directly)
                 // Time to start writing the tile
-                final Dataset querySizeImageCanvas = GdalUtility.writeRasterDirect(params, imageData, dataset.GetRasterCount());
+                final Dataset querySizeImageCanvas = GdalUtility.writeRaster(params, imageData, dataset.GetRasterCount());
 
                 // Scale each band of tileDataInMemory down to the tile size (down from the query size)
                 final Dataset tileDataInMemory = GdalUtility.scaleQueryToTileSize(querySizeImageCanvas, this.tileDimensions);
