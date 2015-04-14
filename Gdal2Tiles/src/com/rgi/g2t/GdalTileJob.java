@@ -48,6 +48,7 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreWriter;
 
@@ -122,7 +123,7 @@ public class GdalTileJob implements Runnable
 
             final BoundingBox outputBounds = GdalUtility.getBoundsForDataset(outputDataset);
 
-            final Map<Integer, Range<Coordinate<Integer>>> ranges = GdalUtility.calculateTileRanges(this.writer.getTileScheme(),
+            final Map<Integer, Range<Coordinate<Integer>>> ranges = GdalUtility.calculateTileRanges(new ZoomTimesTwo(0, 31, 1, 1), //this.writer.getTileScheme(),
                                                                                                     outputBounds,
                                                                                                     this.crsProfile,
                                                                                                     this.writer.getTileOrigin());
@@ -147,7 +148,7 @@ public class GdalTileJob implements Runnable
             // Set the total tile count in monitor
             final int maxTiles = ranges.entrySet()
                                        .stream()
-                                       //.filter(entrySet -> entrySet.getKey() >= minZoom && entrySet.getKey() <= maxZoom)    // Select the subset of zooms that will actually be tiled, so we can generate the total tile count from it
+                                       .filter(entrySet -> entrySet.getKey() >= minZoom && entrySet.getKey() <= maxZoom)    // Select the subset of zooms that will actually be tiled, so we can generate the total tile count from it
                                        .map(entrySet -> entrySet.getValue())
                                        .mapToInt(range -> { // range.getMinimum is the TopLeft corner of the bounding box and
                                                             // range.getMaximum is the BottomRight corner of the bounding box
@@ -164,6 +165,7 @@ public class GdalTileJob implements Runnable
             // Tile all levels
             for(final Entry<Integer, Range<Coordinate<Integer>>> entry : ranges.entrySet()
                                                                                .stream()
+                                                                               .filter(entrySet -> entrySet.getKey() >= minZoom && entrySet.getKey() <= maxZoom)    // Select the subset of zooms that will actually be tiled, so we can generate the total tile count from it
                                                                                .sorted((a, b) -> (Integer.compare(a.getKey(), b.getKey()) * -1)) // sort max to min
                                                                                .collect(Collectors.toList()))
             {
