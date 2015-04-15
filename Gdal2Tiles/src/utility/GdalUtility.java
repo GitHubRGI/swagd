@@ -589,16 +589,16 @@ public class GdalUtility
             throw new IllegalArgumentException("Tile size cannot be null");
         }
 
-        final Dimensions<Double> datasetPixelDimensions = new GeoTransformation(dataset.GetGeoTransform()).getPixelDimensions();
+        final Dimensions<Double> datasetPixelResolution = new GeoTransformation(dataset.GetGeoTransform()).getPixelResolution();
         final double zoomPixelSize;
 
         if(tileSize.getWidth() > tileSize.getHeight())
         {
-            zoomPixelSize = (datasetPixelDimensions.getWidth()  * dataset.GetRasterXSize()) / tileSize.getWidth();
+            zoomPixelSize = (datasetPixelResolution.getWidth()  * dataset.GetRasterXSize()) / tileSize.getWidth();
         }
         else
         {
-            zoomPixelSize = (datasetPixelDimensions.getHeight() * dataset.GetRasterYSize()) / tileSize.getHeight();
+            zoomPixelSize = (datasetPixelResolution.getHeight() * dataset.GetRasterYSize()) / tileSize.getHeight();
         }
 
         try

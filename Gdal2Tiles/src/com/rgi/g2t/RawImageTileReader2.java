@@ -2,13 +2,19 @@ package com.rgi.g2t;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.zip.DataFormatException;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.naming.OperationNotSupportedException;
 
 import org.gdal.gdal.Dataset;
@@ -18,6 +24,7 @@ import org.gdal.osr.SpatialReference;
 import org.gdal.osr.osr;
 
 import utility.GdalUtility;
+import utility.GdalUtility.GdalRasterParameters;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
@@ -38,19 +45,6 @@ import com.rgi.common.util.FileUtility;
 
 public class RawImageTileReader2 implements TileStoreReader
 {
-    private static final TileOrigin         tileOrigin = TileOrigin.LowerLeft;
-
-    private final File                                     rawImage;
-    private final CoordinateReferenceSystem                coordinateReferenceSystem;
-    private final Dimensions<Integer>                      tileSize;
-    private final Dataset                                  dataset;
-    private final BoundingBox                              bounds;
-    private final Set<Integer>                             zoomLevels;
-    private final ZoomTimesTwo                             tileScheme;
-    private final CrsProfile                               profile;
-    private final int                                      tileCount;
-    private final Map<Integer, Range<Coordinate<Integer>>> tileRanges;
-
     static
     {
         osr.UseExceptions();
@@ -86,7 +80,6 @@ public class RawImageTileReader2 implements TileStoreReader
      * @param coordinateReferenceSystem
      *            The {@link CoordinateReferenceSystem} the tiles should be
      *            output in
-     *
      * @throws TileStoreException
      *             Thrown when GDAL could not get the correct
      *             {@link CoordinateReferenceSystem} of the input raster OR if
@@ -135,7 +128,7 @@ public class RawImageTileReader2 implements TileStoreReader
                 this.dataset                   = GdalUtility.warpDatasetToSrs(inputDataset, inputSrs, GdalUtility.getSpatialReferenceFromCrs(this.coordinateReferenceSystem));
             }
 
-            this.bounds  = GdalUtility.getBoundsForDataset(this.dataset);
+            this.dataBounds  = GdalUtility.getBoundsForDataset(this.dataset);
             this.profile = CrsProfileFactory.create(this.coordinateReferenceSystem);
         }
         catch(final DataFormatException dfe)
@@ -148,28 +141,28 @@ public class RawImageTileReader2 implements TileStoreReader
             inputDataset.delete();
         }
 
-        this.zoomLevels = GdalUtility.getZoomLevels(this.dataset, RawImageTileReader2.tileOrigin, this.tileSize);
-
-        final Range<Integer> tileRange = new Range<>(this.zoomLevels, Integer::compare);
-
-        this.tileScheme = new ZoomTimesTwo(tileRange.getMinimum(),
-                                           tileRange.getMaximum(),
-                                           1,
-                                           1);
+        this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1);    // Use absolute tile numbering
 
         this.tileRanges = GdalUtility.calculateTileRanges(this.tileScheme,
-                                                          this.bounds,
-                                                          need final bounds of tile set
+                                                          this.dataBounds,
+                                                          this.profile.getBounds(),
                                                           this.profile,
-                                                          RawImageTileReader2.tileOrigin);
+                                                          RawImageTileReader2.Origin);
 
-        this.tileCount = ranges.entrySet()
-                               .stream()
-                               .map(entrySet -> entrySet.getValue())
-                               .mapToInt(range -> { return (range.getMaximum().getX() - range.getMinimum().getX() + 1) *
-                                                           (range.getMinimum().getY() - range.getMaximum().getY() + 1);
-                                                  })
-                               .sum();
+        final int minimumZoom = GdalUtility.minimalZoomForDataset(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
+        final int maximumZoom = GdalUtility.maximalZoomForDataset(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
+
+        this.zoomLevels = IntStream.rangeClosed(minimumZoom, maximumZoom)
+                                   .boxed()
+                                   .collect(Collectors.toSet());
+
+        this.tileCount = IntStream.rangeClosed(minimumZoom, maximumZoom)
+                                  .map(zoomLevel -> { final Range<Coordinate<Integer>> range = this.tileRanges.get(zoomLevel);
+
+                                                      return (range.getMaximum().getX() - range.getMinimum().getX() + 1) *
+                                                             (range.getMinimum().getY() - range.getMaximum().getY() + 1);
+                                                })
+                                  .sum();
     }
 
     @Override
@@ -182,21 +175,21 @@ public class RawImageTileReader2 implements TileStoreReader
     }
 
     @Override
-    public BoundingBox getBounds() throws TileStoreException
+    public BoundingBox getBounds()
     {
-        return this.bounds;
+        return this.dataBounds;
     }
 
     @Override
-    public long countTiles() throws TileStoreException
+    public long countTiles()
     {
         return this.tileCount;
     }
 
     @Override
-    public long getByteSize() throws TileStoreException
+    public long getByteSize()
     {
-        throw new TileStoreException(new OperationNotSupportedException());
+        return this.rawImage.length();
     }
 
     @Override
@@ -212,7 +205,7 @@ public class RawImageTileReader2 implements TileStoreReader
     }
 
     @Override
-    public Set<Integer> getZoomLevels() throws TileStoreException
+    public Set<Integer> getZoomLevels()
     {
         return this.zoomLevels;
     }
@@ -220,11 +213,39 @@ public class RawImageTileReader2 implements TileStoreReader
     @Override
     public Stream<TileHandle> stream() throws TileStoreException
     {
-        throw new TileStoreException(new OperationNotSupportedException());
+        final List<TileHandle> tileHandles = new ArrayList<>();
+
+        final Range<Integer> zoomRange = new Range<>(this.zoomLevels, Integer::compare);
+
+        for(int zoomLevel = zoomRange.getMaximum(); zoomLevel >= zoomRange.getMinimum(); --zoomLevel) //for(final int zoomLevel : this.zoomLevels)
+        {
+            final Range<Coordinate<Integer>> zoomInfo = this.tileRanges.get(zoomLevel);
+
+            // Get the coordinate information
+            final Coordinate<Integer> topLeftCoordinate     = zoomInfo.getMinimum();
+            final Coordinate<Integer> bottomRightCoordinate = zoomInfo.getMaximum();
+
+            // Parse each coordinate into min/max tiles for X/Y
+            final int zoomMinXTile =     topLeftCoordinate.getX();
+            final int zoomMaxXTile = bottomRightCoordinate.getX();
+            final int zoomMinYTile = bottomRightCoordinate.getY();
+            final int zoomMaxYTile =     topLeftCoordinate.getY();
+
+            for(int tileY = zoomMaxYTile; tileY >= zoomMinYTile; --tileY)
+            {
+                for(int tileX = zoomMinXTile; tileX <= zoomMaxXTile; ++tileX)
+                {
+                    tileHandles.add(new RawImageTileHandle(zoomLevel, tileX, tileY));
+                }
+            }
+        }
+
+        // Return the entire tile handle list as a stream
+        return tileHandles.stream();
     }
 
     @Override
-    public Stream<TileHandle> stream(final int zoomLevel) throws TileStoreException
+    public Stream<TileHandle> stream(final int zoomLevel)
     {
         final Range<Coordinate<Integer>> zoomInfo = this.tileRanges.get(zoomLevel);
 
@@ -253,7 +274,7 @@ public class RawImageTileReader2 implements TileStoreReader
     }
 
     @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() throws TileStoreException
+    public CoordinateReferenceSystem getCoordinateReferenceSystem()
     {
         return this.coordinateReferenceSystem;
     }
@@ -267,7 +288,21 @@ public class RawImageTileReader2 implements TileStoreReader
     @Override
     public String getImageType() throws TileStoreException
     {
-        return null;
+        try
+        {
+            final MimeType mimeType = new MimeType(Files.probeContentType(this.rawImage.toPath()));
+
+            if(mimeType.getPrimaryType().toLowerCase().equals("image"))
+            {
+               return mimeType.getSubType();
+            }
+
+            return null;
+        }
+        catch(final MimeTypeParseException | IOException ex)
+        {
+            throw new TileStoreException(ex);
+        }
     }
 
     @Override
@@ -282,23 +317,35 @@ public class RawImageTileReader2 implements TileStoreReader
         return this.tileScheme;
     }
 
+    @Override
+    public TileOrigin getTileOrigin()
+    {
+        return Origin;
+    }
+
     private class RawImageTileHandle implements TileHandle
     {
-        private final int zoom;
+        private final TileMatrixDimensions matrix;
+
+        private boolean gotImage = false;
+        private BufferedImage image;
+
+        private final int zoomLevel;
         private final int column;
         private final int row;
 
         RawImageTileHandle(final int zoom, final int column, final int row)
         {
-            this.zoom   = zoom;
-            this.column = column;
-            this.row    = row;
+            this.zoomLevel = zoom;
+            this.column    = column;
+            this.row       = row;
+            this.matrix    = RawImageTileReader2.this.tileScheme.dimensions(this.zoomLevel);
         }
 
         @Override
         public int getZoomLevel()
         {
-            return this.zoom;
+            return this.zoomLevel;
         }
 
         @Override
@@ -316,37 +363,116 @@ public class RawImageTileReader2 implements TileStoreReader
         @Override
         public TileMatrixDimensions getMatrix() throws TileStoreException
         {
-            throw new TileStoreException(new OperationNotSupportedException());
+            return this.matrix;
         }
 
         @Override
         public CrsCoordinate getCrsCoordinate() throws TileStoreException
         {
-            throw new TileStoreException(new OperationNotSupportedException());
+            return RawImageTileReader2.this.tileToCrsCoordinate(this.column,
+                                                                this.row,
+                                                                this.matrix,
+                                                                RawImageTileReader2.Origin);
         }
 
         @Override
         public CrsCoordinate getCrsCoordinate(final TileOrigin corner) throws TileStoreException
         {
-            throw new TileStoreException(new OperationNotSupportedException());
+            return RawImageTileReader2.this.tileToCrsCoordinate(this.column,
+                                                                this.row,
+                                                                this.matrix,
+                                                                corner);
         }
 
         @Override
         public BoundingBox getBounds() throws TileStoreException
         {
-            throw new TileStoreException(new OperationNotSupportedException());
+             return RawImageTileReader2.this.getTileBoundingBox(this.column,
+                                                                this.row,
+                                                                this.matrix);
         }
 
         @Override
         public BufferedImage getImage() throws TileStoreException
         {
-            throw new TileStoreException(new OperationNotSupportedException());
+            if(this.gotImage == true)
+            {
+                return this.image;
+            }
+
+            // Build the parameters for GDAL read raster call
+            final GdalRasterParameters params = GdalUtility.getGdalRasterParameters(RawImageTileReader2.this.dataset.GetGeoTransform(),
+                                                                                    this.getBounds(),
+                                                                                    RawImageTileReader2.this.tileSize,
+                                                                                    RawImageTileReader2.this.dataset);
+            try
+            {
+                // Read image data directly from the raster
+                final byte[] imageData = GdalUtility.readRaster(params, RawImageTileReader2.this.dataset);
+
+                // TODO: logic goes here in the case that the querysize == tile size (gdalconstConstants.GRA_NearestNeighbour) (write directly)
+                final Dataset querySizeImageCanvas = GdalUtility.writeRaster(params, imageData, RawImageTileReader2.this.dataset.GetRasterCount());
+
+                try
+                {
+                    // Scale each band of tileDataInMemory down to the tile size (down from the query size)
+                    final Dataset tileDataInMemory = GdalUtility.scaleQueryToTileSize(querySizeImageCanvas, RawImageTileReader2.this.tileSize);
+
+                    this.image = GdalUtility.convert(tileDataInMemory);
+                    tileDataInMemory.delete();
+                    this.gotImage = true;
+                    return this.image;
+                }
+                catch(final TilingException ex)
+                {
+                    throw new TileStoreException(ex);
+                }
+                finally
+                {
+                    querySizeImageCanvas.delete();
+                }
+
+            }
+            catch(final TilingException ex)
+            {
+                throw new TileStoreException(ex);
+            }
         }
     }
 
-    @Override
-    public TileOrigin getTileOrigin()
+    private CrsCoordinate tileToCrsCoordinate(final int column, final int row, final TileMatrixDimensions tileMatrixDimensions, final TileOrigin corner)
     {
-        return tileOrigin;
+        if(corner == null)
+        {
+            throw new IllegalArgumentException("Corner may not be null");
+        }
+
+        return this.profile.tileToCrsCoordinate(column + corner.getHorizontal(),
+                                                row    + corner.getVertical(),
+                                                this.profile.getBounds(),    // RawImageTileReader uses absolute tiling, which covers the whole globe
+                                                tileMatrixDimensions,
+                                                RawImageTileReader2.Origin);
     }
+
+    private BoundingBox getTileBoundingBox(final int column, final int row, final TileMatrixDimensions tileMatrixDimensions)
+    {
+        return this.profile.getTileBounds(column,
+                                          row,
+                                          this.profile.getBounds(),
+                                          tileMatrixDimensions,
+                                          RawImageTileReader2.Origin);
+    }
+
+    private final File                                     rawImage;
+    private final CoordinateReferenceSystem                coordinateReferenceSystem;
+    private final Dimensions<Integer>                      tileSize;
+    private final Dataset                                  dataset;
+    private final BoundingBox                              dataBounds;
+    private final Set<Integer>                             zoomLevels;
+    private final ZoomTimesTwo                             tileScheme;
+    private final CrsProfile                               profile;
+    private final int                                      tileCount;
+    private final Map<Integer, Range<Coordinate<Integer>>> tileRanges;
+
+    private static final TileOrigin Origin = TileOrigin.LowerLeft;
 }

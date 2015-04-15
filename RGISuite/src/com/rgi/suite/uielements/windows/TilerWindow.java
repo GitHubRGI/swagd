@@ -53,9 +53,8 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
-import com.rgi.g2t.RawImageTileReader;
 import com.rgi.g2t.RawImageTileReader2;
-import com.rgi.g2t.Tiler;
+import com.rgi.packager.Packager;
 import com.rgi.suite.Settings;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
 import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreWriterAdapter;
@@ -89,9 +88,9 @@ public class TilerWindow extends NavigationWindow
     private final JLabel     nativeReferenceSystem = new JLabel();
 
     private final JComboBox<CoordinateReferenceSystem> referenceSystems = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
-                                                                                                      .stream()
-                                                                                                      .sorted()
-                                                                                                      .toArray(CoordinateReferenceSystem[]::new));
+                                                                                                           .stream()
+                                                                                                           .sorted()
+                                                                                                           .toArray(CoordinateReferenceSystem[]::new));
     // Output stuff
     private final JPanel outputPanel = new JPanel(new GridBagLayout());
     private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>();
@@ -110,18 +109,6 @@ public class TilerWindow extends NavigationWindow
      */
     public TilerWindow(final Settings settings)
     {
-
-        try(final RawImageTileReader2 reader = new RawImageTileReader2(new File("C:/Users/corp/Desktop/sample data/tif/20140916_rgb_227m_RTK_Control.tif"),
-                                                                       new Dimensions<>(256, 256),
-                                                                       new CoordinateReferenceSystem("EPSG", 3857)))
-        {
-            System.out.println(reader.countTiles());
-        }
-        catch(final Throwable th)
-        {
-            th.printStackTrace();
-        }
-
         this.setTitle(this.processName() + " Settings");
         this.setResizable(false);
 
@@ -135,7 +122,7 @@ public class TilerWindow extends NavigationWindow
         this.contentPanel.setLayout(new BoxLayout(this.contentPanel, BoxLayout.PAGE_AXIS));
 
         // Input stuff
-        this.inputPanel .setBorder(BorderFactory.createTitledBorder("Input"));
+        this.inputPanel.setBorder(BorderFactory.createTitledBorder("Input"));
 
         this.inputFileNameButton.addActionListener(e -> { final String startDirectory = this.settings.get(LastInputLocationSettingName, System.getProperty("user.home"));
 
@@ -345,15 +332,20 @@ public class TilerWindow extends NavigationWindow
                                      this.processName() + "...",
                                      taskMonitor -> { final File file = new File(this.inputFileName.getText());
 
-                                                      try(final TileStoreReader tileStoreReader = new RawImageTileReader(file, tileDimensions, crs))
+                                                      try(final TileStoreReader tileStoreReader = new RawImageTileReader2(file, tileDimensions, crs))
                                                       {
                                                           try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
                                                           {
-                                                              (new Tiler(file,
-                                                                         tileStoreWriter,
-                                                                         tileDimensions,
-                                                                         color,
-                                                                         taskMonitor)).execute();
+//                                                              (new Tiler(file,
+//                                                                         tileStoreWriter,
+//                                                                         tileDimensions,
+//                                                                         color,
+//                                                                         taskMonitor)).execute();
+
+                                                              (new Packager(taskMonitor,
+                                                                            tileStoreReader,
+                                                                            tileStoreWriter)).execute();
+
                                                           }
                                                           catch(final Exception ex)
                                                           {

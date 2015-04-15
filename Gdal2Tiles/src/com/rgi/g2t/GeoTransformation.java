@@ -60,7 +60,7 @@ public class GeoTransformation
         this.topLeft = new Coordinate<>(this.affineTransform[0],
                                         this.affineTransform[3]);
 
-        this.pixelDimensions = new Dimensions<>( this.affineTransform[1],
+        this.pixelResolution = new Dimensions<>( this.affineTransform[1],
                                                 -this.affineTransform[5]); // Height is stored as a negative number...
     }
 
@@ -90,11 +90,11 @@ public class GeoTransformation
     }
 
     /**
-     * @return the pixelDimensions
+     * @return The width and height of the transform in units per pixel
      */
-    public Dimensions<Double> getPixelDimensions()
+    public Dimensions<Double> getPixelResolution()
     {
-        return this.pixelDimensions;
+        return this.pixelResolution;
     }
 
     /**
@@ -119,5 +119,5 @@ public class GeoTransformation
 
     private final double[]           affineTransform;
     private final Coordinate<Double> topLeft;
-    private final Dimensions<Double> pixelDimensions;
+    private final Dimensions<Double> pixelResolution;
 }

@@ -223,6 +223,7 @@ public class RawImageTileReader implements TileStoreReader
         // Calculate the tile ranges for all the zoom levels (0-31)
         final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
                                                                                                     this.getBounds(),
+                                                                                                    null,   // TODO !!WARNING!! null is a placeholder
                                                                                                     crsProfile,
                                                                                                     TileOrigin.LowerLeft);
         // Pick out the zoom level range for this particular zoom

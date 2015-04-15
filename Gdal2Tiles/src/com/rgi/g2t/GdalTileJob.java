@@ -272,7 +272,7 @@ public class GdalTileJob implements Runnable
         int tileProgress = tilesComplete;
 
         // Create a tile folder name
-        final Coordinate<Integer> topLeftCoordinate = zoomRange.getMinimum();
+        final Coordinate<Integer> topLeftCoordinate     = zoomRange.getMinimum();
         final Coordinate<Integer> bottomRightCoordinate = zoomRange.getMaximum();
 
         // Set x/y min/max values
@@ -309,7 +309,7 @@ public class GdalTileJob implements Runnable
                 try
                 {
                     // Write the tile to the tile store
-                    this.writer.addTile(tileX, tileY, zoom, GdalUtility.convert(tileDataInMemory));
+                    this.writer.addTile(tileX, tileY, zoom, GdalUtility.convert(tileDataInMemory)); // TODO !!ERROR!! this assumes the writer has the same tile numbering as the reader.  don't use addtile x/y/z, use based on crs coordinate.
                     // Iterate the tile progress bar
                     this.monitor.setProgress(++tileProgress);
                 }
