@@ -54,6 +54,7 @@ import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.g2t.RawImageTileReader;
+import com.rgi.g2t.RawImageTileReader2;
 import com.rgi.g2t.Tiler;
 import com.rgi.suite.Settings;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
@@ -109,6 +110,18 @@ public class TilerWindow extends NavigationWindow
      */
     public TilerWindow(final Settings settings)
     {
+
+        try(final RawImageTileReader2 reader = new RawImageTileReader2(new File("C:/Users/corp/Desktop/sample data/tif/20140916_rgb_227m_RTK_Control.tif"),
+                                                                       new Dimensions<>(256, 256),
+                                                                       new CoordinateReferenceSystem("EPSG", 3857)))
+        {
+            System.out.println(reader.countTiles());
+        }
+        catch(final Throwable th)
+        {
+            th.printStackTrace();
+        }
+
         this.setTitle(this.processName() + " Settings");
         this.setResizable(false);
 

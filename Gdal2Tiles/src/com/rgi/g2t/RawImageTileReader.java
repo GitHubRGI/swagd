@@ -203,7 +203,7 @@ public class RawImageTileReader implements TileStoreReader
     public Set<Integer> getZoomLevels() throws TileStoreException
     {
         // Return the Set of zoom levels, with a LowerLeft origin
-        return GdalUtility.getZoomLevelsForDataset(this.dataset,
+        return GdalUtility.getZoomLevels(this.dataset,
                                                    RawImageTileReader.tileOrigin,
                                                    this.tileSize);
     }

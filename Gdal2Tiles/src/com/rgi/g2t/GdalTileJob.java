@@ -124,6 +124,7 @@ public class GdalTileJob implements Runnable
 
             final Map<Integer, Range<Coordinate<Integer>>> ranges = GdalUtility.calculateTileRanges(new ZoomTimesTwo(0, 31, 1, 1), //this.writer.getTileScheme(),
                                                                                                     outputBounds,
+                                                                                                    this.crsProfile.getBounds(),
                                                                                                     this.crsProfile,
                                                                                                     this.writer.getTileOrigin());
 
