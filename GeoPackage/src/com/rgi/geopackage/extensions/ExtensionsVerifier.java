@@ -324,7 +324,7 @@ public class ExtensionsVerifier extends Verifier
             final Set<String> invalidExtensionNames = this.gpkgExtensionsDataAndColumnName.keySet()
                                                                                           .stream()
                                                                                           .map(extensionData -> ExtensionsVerifier.verifyExtensionName(extensionData.extensionName))
-                                                                                          .filter(data -> data != null)
+                                                                                          .filter(Objects::nonNull)
                                                                                           .collect(Collectors.toSet());
 
             Assert.assertTrue(String.format("The following extension_name(s) are invalid: \n%s",
