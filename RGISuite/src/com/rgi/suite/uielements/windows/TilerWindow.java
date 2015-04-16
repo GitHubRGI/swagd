@@ -146,7 +146,7 @@ public class TilerWindow extends NavigationWindow
 
                                                                   final SpatialReference srs = GdalUtility.getDatasetSpatialReference(file);
 
-                                                                  final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(srs);
+                                                                  final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystem(srs);
 
                                                                   String crsName;
 
@@ -309,7 +309,7 @@ public class TilerWindow extends NavigationWindow
 
         final CoordinateReferenceSystem crs = (CoordinateReferenceSystem)this.referenceSystems.getSelectedItem();
 
-        final Color color = this.clearColorButton.getColor();
+        final Color noDataColor = this.clearColorButton.getColor();
 
         this.settings.set(TileWidthSettingName,  Integer.toString(tileWidth));
         this.settings.set(TileHeightSettingName, Integer.toString(tileHeight));
@@ -332,20 +332,13 @@ public class TilerWindow extends NavigationWindow
                                      this.processName() + "...",
                                      taskMonitor -> { final File file = new File(this.inputFileName.getText());
 
-                                                      try(final TileStoreReader tileStoreReader = new RawImageTileReader2(file, tileDimensions, crs))
+                                                      try(final TileStoreReader tileStoreReader = new RawImageTileReader2(file, tileDimensions, noDataColor, crs))
                                                       {
                                                           try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
                                                           {
-//                                                              (new Tiler(file,
-//                                                                         tileStoreWriter,
-//                                                                         tileDimensions,
-//                                                                         color,
-//                                                                         taskMonitor)).execute();
-
                                                               (new Packager(taskMonitor,
                                                                             tileStoreReader,
                                                                             tileStoreWriter)).execute();
-
                                                           }
                                                           catch(final Exception ex)
                                                           {

@@ -259,7 +259,7 @@ public class GdalUtility
      * @return Returns a GDAL {@link SpatialReference} that the input dataset has
      * @throws DataFormatException  Thrown when GDAL has exhausted all means to get the WKT and failed.
      */
-    public static SpatialReference getDatasetSpatialReference(final Dataset dataset) throws DataFormatException
+    public static SpatialReference getSpatialReference(final Dataset dataset) throws DataFormatException
     {
         if(dataset == null)
         {
@@ -291,7 +291,7 @@ public class GdalUtility
      *             Image file
      * @return The {@link SpatialReference} of the image file
      * @throws DataFormatException
-     *             when {@link GdalUtility#getDatasetSpatialReference(Dataset)} throws
+     *             when {@link GdalUtility#getSpatialReference(Dataset)} throws
      */
     public static SpatialReference getDatasetSpatialReference(final File file) throws DataFormatException
     {
@@ -308,7 +308,7 @@ public class GdalUtility
 
         try
         {
-            return GdalUtility.getDatasetSpatialReference(dataset);
+            return GdalUtility.getSpatialReference(dataset);
         }
         finally
         {
@@ -323,7 +323,7 @@ public class GdalUtility
      * @param crs An input {@link CoordinateReferenceSystem}
      * @return A {@link SpatialReference} built from the input CRS WKT
      */
-    public static SpatialReference getSpatialReferenceFromCrs(final CoordinateReferenceSystem crs)
+    public static SpatialReference getSpatialReference(final CoordinateReferenceSystem crs)
     {
         if(crs == null)
         {
@@ -340,13 +340,13 @@ public class GdalUtility
      * @param crsProfile A {@link CrsProfile} from which a {@link SpatialReference} should be built
      * @return A {@link SpatialReference} built from the input CrsProfile
      */
-    public static SpatialReference getSpatialReferenceFromCrsProfile(final CrsProfile crsProfile)
+    public static SpatialReference getSpatialReference(final CrsProfile crsProfile)
     {
         if(crsProfile == null)
         {
             throw new IllegalArgumentException("Crs Profile cannot be null.");
         }
-        return GdalUtility.getSpatialReferenceFromCrs(crsProfile.getCoordinateReferenceSystem());
+        return GdalUtility.getSpatialReference(crsProfile.getCoordinateReferenceSystem());
     }
 
     /**
@@ -355,7 +355,7 @@ public class GdalUtility
      * @param dataset An input {@link Dataset}
      * @return A boolean where true means the dataset has a georeference and false otherwise
      */
-    public static boolean datasetHasGeoReference(final Dataset dataset)
+    public static boolean hasGeoReference(final Dataset dataset)
     {
         if(dataset == null)
         {
@@ -379,7 +379,7 @@ public class GdalUtility
      *             input raster with the <code>gdalwarp</code> utility
      *             manually.
      */
-    public static BoundingBox getBoundsForDataset(final Dataset dataset) throws DataFormatException
+    public static BoundingBox getBounds(final Dataset dataset) throws DataFormatException
     {
         if(dataset == null)
         {
@@ -404,7 +404,7 @@ public class GdalUtility
      * @return A {@link CoordinateReferenceSystem} built from the input {@link SpatialReference} using the
      *            authority name and code.
      */
-    public static CoordinateReferenceSystem getCoordinateReferenceSystemFromSpatialReference(final SpatialReference srs)
+    public static CoordinateReferenceSystem getCoordinateReferenceSystem(final SpatialReference srs)
     {
         if(srs == null)
         {
@@ -463,7 +463,7 @@ public class GdalUtility
      * @return A {@link CrsProfile} built from the input {@link Dataset}
      * @throws TileStoreException Thrown when a {@link CrsProfile} could not be built from the input {@link Dataset}
      */
-    public static CrsProfile getCrsProfileForDataset(final Dataset dataset) throws TileStoreException
+    public static CrsProfile getCrsProfile(final Dataset dataset) throws TileStoreException
     {
         if(dataset == null)
         {
@@ -471,7 +471,7 @@ public class GdalUtility
         }
         try
         {
-            return CrsProfileFactory.create(GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSpatialReference(dataset)));
+            return CrsProfileFactory.create(GdalUtility.getCoordinateReferenceSystem(GdalUtility.getSpatialReference(dataset)));
         }
         catch(final DataFormatException dfe)
         {
@@ -558,11 +558,11 @@ public class GdalUtility
      * @return The zoom level for this dataset that produces only one tile.
      *            Defaults to 0 if an error occurs.
      */
-    public static int minimalZoomForDataset(final Dataset                                  dataset,
-                                            final Map<Integer, Range<Coordinate<Integer>>> tileRanges,
-                                            final TileOrigin                               tileOrigin,
-                                            final TileScheme                               tileScheme,
-                                            final Dimensions<Integer>                      tileSize)
+    public static int getMinimalZoom(final Dataset                                  dataset,
+                                     final Map<Integer, Range<Coordinate<Integer>>> tileRanges,
+                                     final TileOrigin                               tileOrigin,
+                                     final TileScheme                               tileScheme,
+                                     final Dimensions<Integer>                      tileSize)
     {
         if(dataset == null)
         {
@@ -603,7 +603,7 @@ public class GdalUtility
 
         try
         {
-            final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(dataset);
+            final CrsProfile crsProfile = GdalUtility.getCrsProfile(dataset);
             final int zoom = GdalUtility.zoomLevelForPixelSize(zoomPixelSize, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
             // TODO: We could probably come up with a better way of doing this
             // The resolution returned ensures that a raster could exist within a single tile, but that raster could still produce
@@ -634,13 +634,13 @@ public class GdalUtility
      *             A {@link Dimensions} Integer object that describes what the tiles should look like
      * @return The zoom level for this dataset that is closest to the actual
      *             resolution
-     * @throws TileStoreException Thrown when a {@link GdalUtility#getCrsProfileForDataset(Dataset)} throws
+     * @throws TileStoreException Thrown when a {@link GdalUtility#getCrsProfile(Dataset)} throws
      */
-    public static int maximalZoomForDataset(final Dataset                                  dataset,
-                                            final Map<Integer, Range<Coordinate<Integer>>> tileRanges,
-                                            final TileOrigin                               tileOrigin,
-                                            final TileScheme                               tileScheme,
-                                            final Dimensions<Integer>                      tileSize) throws TileStoreException
+    public static int getMaximalZoom(final Dataset                                  dataset,
+                                     final Map<Integer, Range<Coordinate<Integer>>> tileRanges,
+                                     final TileOrigin                               tileOrigin,
+                                     final TileScheme                               tileScheme,
+                                     final Dimensions<Integer>                      tileSize) throws TileStoreException
     {
         if(dataset == null)
         {
@@ -671,7 +671,7 @@ public class GdalUtility
 
         try
         {
-            final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(dataset);
+            final CrsProfile crsProfile = GdalUtility.getCrsProfile(dataset);
             return GdalUtility.zoomLevelForPixelSize(zoomPixelSize, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
         }
         catch(final TileStoreException e)
@@ -718,8 +718,8 @@ public class GdalUtility
 
         try
         {
-            final BoundingBox datasetBounds = GdalUtility.getBoundsForDataset    (dataset);
-            final CrsProfile  crsProfile    = GdalUtility.getCrsProfileForDataset(dataset);
+            final BoundingBox datasetBounds = GdalUtility.getBounds    (dataset);
+            final CrsProfile  crsProfile    = GdalUtility.getCrsProfile(dataset);
 
             final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
                                                                                                         datasetBounds,
@@ -727,8 +727,8 @@ public class GdalUtility
                                                                                                         crsProfile,
                                                                                                         tileOrigin);
 
-            final int minZoom = GdalUtility.minimalZoomForDataset(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
-            final int maxZoom = GdalUtility.maximalZoomForDataset(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+            final int minZoom = GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+            final int maxZoom = GdalUtility.getMaximalZoom(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
 
             return IntStream.rangeClosed(minZoom, maxZoom)
                             .boxed()
@@ -802,7 +802,7 @@ public class GdalUtility
 
         try
         {
-            final BoundingBox boundingBox = GdalUtility.getBoundsForDataset(dataset);
+            final BoundingBox boundingBox = GdalUtility.getBounds(dataset);
             final int zoomLevelForPixelSize = tileRanges.entrySet()
                                                         .stream()
                                                         .filter(entrySet -> { return zoomLevelForPixelSize(tileScheme.dimensions(entrySet.getKey()),
@@ -1009,7 +1009,7 @@ public class GdalUtility
      * @param dataset An input {@link Dataset} that possibly has NODATA values
      * @return The NODATA values as a {@link Double} array
      */
-    public static Double[] getDatasetNoDataValues(final Dataset dataset)
+    public static Double[] getNoDataValues(final Dataset dataset)
     {
         if(dataset == null)
         {
@@ -1097,7 +1097,7 @@ public class GdalUtility
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
-        final boolean datasetHasAlphaBand = GdalUtility.datasetHasAlpha(dataset);
+        final boolean datasetHasAlphaBand = GdalUtility.hasAlpha(dataset);
 
         // If the dataset actually has an alpha band, return it
         if(datasetHasAlphaBand)
@@ -1131,7 +1131,7 @@ public class GdalUtility
      * @return True if the input {@link Dataset} has an alpha {@link Band},
      *            false otherwise.
      */
-    public static boolean datasetHasAlpha(final Dataset dataset)
+    public static boolean hasAlpha(final Dataset dataset)
     {
         if(dataset == null)
         {

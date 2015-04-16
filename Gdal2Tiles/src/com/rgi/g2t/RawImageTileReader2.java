@@ -1,5 +1,6 @@
 package com.rgi.g2t;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -43,10 +44,29 @@ import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.util.FileUtility;
 
+/**
+ * TileStoreReader implementation for GDAL-readable image files
+ *
+ * @author Steven D. Lander
+ * @author Luke D. Lambert
+ *
+ */
 public class RawImageTileReader2 implements TileStoreReader
 {
     static
     {
+        // GDAL_DATA needs to be a valid path
+        if(System.getenv("GDAL_DATA") == null)
+        {
+            throw new RuntimeException("Tiling will not work without GDAL_DATA environment variable.");
+        }
+        // Get the system path
+        //String paths = System.getenv("PATH");
+        // TODO
+        // Parse the path entries
+        // Check each path entry for the required dll's/so's
+        // Throw an error if any of the required ones are missing
+
         osr.UseExceptions();
         gdal.AllRegister(); // Register GDAL extensions
     }
@@ -55,37 +75,49 @@ public class RawImageTileReader2 implements TileStoreReader
      * Constructor
      *
      * @param rawImage
-     *            A raster image
+     *             A raster image
      * @param tileSize
-     *            A {@link Dimensions} that describes what an individual tile
-     *            looks like
+     *             A {@link Dimensions} that describes what an individual tile
+     *             looks like
+     * @param noDataColor
+     *             The {@link Color} of the NODATA fields within the raster image
      * @throws TileStoreException
      *             Thrown when GDAL could not get the correct
      *             {@link CoordinateReferenceSystem} of the input raster OR if
      *             the raw image could not be loaded as a {@link Dataset}
      */
-    public RawImageTileReader2(final File rawImage, final Dimensions<Integer> tileSize) throws TileStoreException
+    public RawImageTileReader2(final File                rawImage,
+                               final Dimensions<Integer> tileSize,
+                               final Color               noDataColor) throws TileStoreException
     {
-        this(rawImage, tileSize, null);
+        this(rawImage,
+             tileSize,
+             noDataColor,
+             null);
     }
 
     /**
      * Constructor
      *
      * @param rawImage
-     *            A raster image {@link File}
+     *             A raster image {@link File}
      * @param tileSize
-     *            A {@link Dimensions} that describes what an individual tile
-     *            looks like
+     *             A {@link Dimensions} that describes what an individual tile
+     *             looks like
+     * @param noDataColor
+     *             The {@link Color} of the NODATA fields within the raster image
      * @param coordinateReferenceSystem
-     *            The {@link CoordinateReferenceSystem} the tiles should be
-     *            output in
+     *             The {@link CoordinateReferenceSystem} the tiles should be
+     *             output in
      * @throws TileStoreException
      *             Thrown when GDAL could not get the correct
      *             {@link CoordinateReferenceSystem} of the input raster OR if
      *             the raw image could not be loaded as a {@link Dataset}
      */
-    public RawImageTileReader2(final File rawImage, final Dimensions<Integer> tileSize, final CoordinateReferenceSystem coordinateReferenceSystem) throws TileStoreException
+    public RawImageTileReader2(final File                      rawImage,
+                               final Dimensions<Integer>       tileSize,
+                               final Color                     noDataColor,
+                               final CoordinateReferenceSystem coordinateReferenceSystem) throws TileStoreException
     {
         if(rawImage == null || !rawImage.canRead())
         {
@@ -97,8 +129,9 @@ public class RawImageTileReader2 implements TileStoreReader
             throw new IllegalArgumentException("Tile size may not be null.");
         }
 
-        this.rawImage = rawImage;
-        this.tileSize = tileSize;
+        this.rawImage    = rawImage;
+        this.tileSize    = tileSize;
+        this.noDataColor = noDataColor;
 
         final Dataset inputDataset = gdal.Open(this.rawImage.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
@@ -113,7 +146,7 @@ public class RawImageTileReader2 implements TileStoreReader
             if(coordinateReferenceSystem == null)
             {
                 this.dataset                   = inputDataset;
-                this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSpatialReference(this.dataset));
+                this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystem(GdalUtility.getSpatialReference(this.dataset));
 
                 if(this.coordinateReferenceSystem == null)
                 {
@@ -122,17 +155,17 @@ public class RawImageTileReader2 implements TileStoreReader
             }
             else
             {
-                final SpatialReference inputSrs = GdalUtility.getDatasetSpatialReference(inputDataset);
+                final SpatialReference inputSrs = GdalUtility.getSpatialReference(inputDataset);
 
                 this.coordinateReferenceSystem = coordinateReferenceSystem;
-                this.dataset                   = GdalUtility.warpDatasetToSrs(inputDataset, inputSrs, GdalUtility.getSpatialReferenceFromCrs(this.coordinateReferenceSystem));
+                this.dataset                   = GdalUtility.warpDatasetToSrs(inputDataset, inputSrs, GdalUtility.getSpatialReference(this.coordinateReferenceSystem));
             }
 
             this.profile = CrsProfileFactory.create(this.coordinateReferenceSystem);
 
             this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1);    // Use absolute tile numbering
 
-            final BoundingBox datasetBounds = GdalUtility.getBoundsForDataset(this.dataset);
+            final BoundingBox datasetBounds = GdalUtility.getBounds(this.dataset);
 
             this.tileRanges = GdalUtility.calculateTileRanges(this.tileScheme,
                                                               datasetBounds,
@@ -140,17 +173,20 @@ public class RawImageTileReader2 implements TileStoreReader
                                                               this.profile,
                                                               RawImageTileReader2.Origin);
 
-            final int minimumZoom = GdalUtility.minimalZoomForDataset(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
-            final int maximumZoom = GdalUtility.maximalZoomForDataset(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
+            final int minimumZoom = GdalUtility.getMinimalZoom(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
+            final int maximumZoom = GdalUtility.getMaximalZoom(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
 
             // The bounds of the dataset is **almost never** the bounds of the
             // data.  The bounds of the dataset fit inside the bounds of the
             // data because the bounds of the data must align to the tile grid.
             // The minimum zoom level is selected such that the entire dataset
-            // fits inside a single tile.  This single tile (0,0, at the
-            // minimum zoom) is the minimum data bounds.
-            this.dataBounds = this.getTileBoundingBox(0,
-                                                      0,
+            // fits inside a single tile.  that single tile is the minimum data
+            // bounds.
+
+            final Coordinate<Integer> minimumTile = this.tileRanges.get(minimumZoom).getMinimum();  // The minimum and maximum for the range returned from tileRanges.get() should be identical (it's a single tile)
+
+            this.dataBounds = this.getTileBoundingBox(minimumTile.getX(),
+                                                      minimumTile.getY(),
                                                       this.tileScheme.dimensions(minimumZoom));
 
             this.zoomLevels = IntStream.rangeClosed(minimumZoom, maximumZoom)
@@ -477,6 +513,7 @@ public class RawImageTileReader2 implements TileStoreReader
     private final File                                     rawImage;
     private final CoordinateReferenceSystem                coordinateReferenceSystem;
     private final Dimensions<Integer>                      tileSize;
+    private final Color                                    noDataColor; // TODO implement no-data color handling
     private final Dataset                                  dataset;
     private final BoundingBox                              dataBounds;
     private final Set<Integer>                             zoomLevels;
