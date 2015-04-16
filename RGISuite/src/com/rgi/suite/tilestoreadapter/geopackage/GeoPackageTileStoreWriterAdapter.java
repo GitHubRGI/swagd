@@ -200,7 +200,6 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
                                     this.tileSetName.getText(),
                                     this.tileSetDescription.getText(),
                                     tileStoreReader.getBounds(),
-                                    tileStoreReader.getImageDimensions(),
                                     getRelativeZoomTimesTwoTileScheme(tileStoreReader),
                                     mimeType,
                                     this.getImageWriteParameter());

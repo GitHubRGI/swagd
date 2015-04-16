@@ -38,7 +38,6 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
@@ -97,7 +96,6 @@ public class GeoPackageWriter implements TileStoreWriter
                             final String                    tileSetIdentifier,
                             final String                    tileSetDescription,
                             final BoundingBox               tileSetBounds,
-                            final Dimensions<Integer>       tileRasterSize,
                             final TileScheme                tileScheme,
                             final MimeType                  imageOutputFormat,
                             final ImageWriteParam           imageWriteOptions) throws TileStoreException
@@ -167,21 +165,11 @@ public class GeoPackageWriter implements TileStoreWriter
 
             this.tileScheme = tileScheme;
 
-            this.tileRasterSize = tileRasterSize;
-
-            this.tileMatrices = this.tileScheme
-                                    .getZoomLevels()
-                                    .stream()
-                                    .collect(Collectors.toMap(zoomLevel -> zoomLevel,
-                                                              zoomLevel -> { try
-                                                                             {
-                                                                                 return this.addTileMatrix(zoomLevel);
-                                                                             }
-                                                                             catch(final SQLException ex)
-                                                                             {
-                                                                                 throw new RuntimeException(ex);
-                                                                             }
-                                                                           }));
+            this.tileMatrices = this.geoPackage.tiles()
+                                           .getTileMatrices(this.tileSet)
+                                           .stream()
+                                           .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
+                                                                     tileMatrix -> tileMatrix));
         }
         catch(final Exception ex)
         {
@@ -282,7 +270,7 @@ public class GeoPackageWriter implements TileStoreWriter
             this.geoPackage
                 .tiles()
                 .addTile(this.tileSet,
-                         this.getTileMatrix(zoomLevel),
+                         this.getTileMatrix(zoomLevel, image.getWidth(), image.getHeight()),
                          coordinate,
                          this.crsProfile.getPrecision(),
                          ImageUtility.bufferedImageToBytes(image, this.imageWriter, this.imageWriteOptions));
@@ -301,22 +289,12 @@ public class GeoPackageWriter implements TileStoreWriter
             throw new IllegalArgumentException("Image may not be null");
         }
 
-        if(image.getWidth() != this.tileRasterSize.getWidth())
-        {
-            throw new IllegalArgumentException("Tile pixel width does not match the value the GeoPackageWriter was created with");
-        }
-
-        if(image.getHeight() != this.tileRasterSize.getHeight())
-        {
-            throw new IllegalArgumentException("Tile pixel height does not match the value the GeoPackageWriter was created with");
-        }
-
         try
         {
             this.geoPackage
                 .tiles()
                 .addTile(this.tileSet,
-                         this.getTileMatrix(zoomLevel),
+                         this.getTileMatrix(zoomLevel, image.getWidth(), image.getHeight()),
                          column,
                          row,
                          ImageUtility.bufferedImageToBytes(image, this.imageWriter, this.imageWriteOptions));
@@ -351,13 +329,13 @@ public class GeoPackageWriter implements TileStoreWriter
         return GeoPackageTiles.Origin;
     }
 
-    private TileMatrix getTileMatrix(final int zoomLevel) throws SQLException
+    private TileMatrix getTileMatrix(final int zoomLevel, final int imageWidth, final int imageHeight) throws SQLException
     {
         TileMatrix tileMatrix = null;
 
         if(!this.tileMatrices.containsKey(zoomLevel))
         {
-            tileMatrix = this.addTileMatrix(zoomLevel);
+            tileMatrix = this.addTileMatrix(zoomLevel, imageHeight, imageWidth);
             this.tileMatrices.put(zoomLevel, tileMatrix);
         }
         else
@@ -368,7 +346,7 @@ public class GeoPackageWriter implements TileStoreWriter
         return tileMatrix;
     }
 
-    private TileMatrix addTileMatrix(final int zoomLevel) throws SQLException
+    private TileMatrix addTileMatrix(final int zoomLevel, final int tilePixelHeight, final int tilePixelWidth) throws SQLException
     {
         final TileMatrixDimensions tileMatrixDimensions = this.tileScheme.dimensions(zoomLevel);
 
@@ -379,10 +357,10 @@ public class GeoPackageWriter implements TileStoreWriter
                                              zoomLevel,
                                              tileMatrixDimensions.getWidth(),
                                              tileMatrixDimensions.getHeight(),
-                                             this.tileRasterSize.getWidth(),
-                                             this.tileRasterSize.getHeight(),
-                                             tileSetBounds.getWidth()  / tileMatrixDimensions.getWidth()  / this.tileRasterSize.getWidth(),
-                                             tileSetBounds.getHeight() / tileMatrixDimensions.getHeight() / this.tileRasterSize.getHeight());
+                                             tilePixelWidth,
+                                             tilePixelHeight,
+                                             tileSetBounds.getWidth()  / tileMatrixDimensions.getWidth()  / tilePixelWidth,
+                                             tileSetBounds.getHeight() / tileMatrixDimensions.getHeight() / tilePixelHeight);
     }
 
     private final GeoPackage               geoPackage;
@@ -391,7 +369,6 @@ public class GeoPackageWriter implements TileStoreWriter
     private final Map<Integer, TileMatrix> tileMatrices;
     private final ImageWriter              imageWriter;
     private final ImageWriteParam          imageWriteOptions;
-    private final Dimensions<Integer>      tileRasterSize;
     private final TileScheme               tileScheme;
 
     /**
