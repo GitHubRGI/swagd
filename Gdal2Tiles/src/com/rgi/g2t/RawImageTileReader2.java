@@ -128,8 +128,42 @@ public class RawImageTileReader2 implements TileStoreReader
                 this.dataset                   = GdalUtility.warpDatasetToSrs(inputDataset, inputSrs, GdalUtility.getSpatialReferenceFromCrs(this.coordinateReferenceSystem));
             }
 
-            this.dataBounds  = GdalUtility.getBoundsForDataset(this.dataset);
             this.profile = CrsProfileFactory.create(this.coordinateReferenceSystem);
+
+            this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1);    // Use absolute tile numbering
+
+            final BoundingBox datasetBounds = GdalUtility.getBoundsForDataset(this.dataset);
+
+            this.tileRanges = GdalUtility.calculateTileRanges(this.tileScheme,
+                                                              datasetBounds,
+                                                              this.profile.getBounds(),
+                                                              this.profile,
+                                                              RawImageTileReader2.Origin);
+
+            final int minimumZoom = GdalUtility.minimalZoomForDataset(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
+            final int maximumZoom = GdalUtility.maximalZoomForDataset(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
+
+            // The bounds of the dataset is **almost never** the bounds of the
+            // data.  The bounds of the dataset fit inside the bounds of the
+            // data because the bounds of the data must align to the tile grid.
+            // The minimum zoom level is selected such that the entire dataset
+            // fits inside a single tile.  This single tile (0,0, at the
+            // minimum zoom) is the minimum data bounds.
+            this.dataBounds = this.getTileBoundingBox(0,
+                                                      0,
+                                                      this.tileScheme.dimensions(minimumZoom));
+
+            this.zoomLevels = IntStream.rangeClosed(minimumZoom, maximumZoom)
+                                       .boxed()
+                                       .collect(Collectors.toSet());
+
+            this.tileCount = IntStream.rangeClosed(minimumZoom, maximumZoom)
+                                      .map(zoomLevel -> { final Range<Coordinate<Integer>> range = this.tileRanges.get(zoomLevel);
+
+                                                          return (range.getMaximum().getX() - range.getMinimum().getX() + 1) *
+                                                                 (range.getMinimum().getY() - range.getMaximum().getY() + 1);
+                                                    })
+                                      .sum();
         }
         catch(final DataFormatException dfe)
         {
@@ -140,29 +174,6 @@ public class RawImageTileReader2 implements TileStoreReader
         {
             inputDataset.delete();
         }
-
-        this.tileScheme = new ZoomTimesTwo(0, 31, 1, 1);    // Use absolute tile numbering
-
-        this.tileRanges = GdalUtility.calculateTileRanges(this.tileScheme,
-                                                          this.dataBounds,
-                                                          this.profile.getBounds(),
-                                                          this.profile,
-                                                          RawImageTileReader2.Origin);
-
-        final int minimumZoom = GdalUtility.minimalZoomForDataset(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
-        final int maximumZoom = GdalUtility.maximalZoomForDataset(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
-
-        this.zoomLevels = IntStream.rangeClosed(minimumZoom, maximumZoom)
-                                   .boxed()
-                                   .collect(Collectors.toSet());
-
-        this.tileCount = IntStream.rangeClosed(minimumZoom, maximumZoom)
-                                  .map(zoomLevel -> { final Range<Coordinate<Integer>> range = this.tileRanges.get(zoomLevel);
-
-                                                      return (range.getMaximum().getX() - range.getMinimum().getX() + 1) *
-                                                             (range.getMinimum().getY() - range.getMaximum().getY() + 1);
-                                                })
-                                  .sum();
     }
 
     @Override
