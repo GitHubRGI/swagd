@@ -1258,16 +1258,22 @@ public class TilesVerifier extends Verifier
             // SHOULD be null otherwise those fields are in violation
             // of the range
 
-            final String query2 = String.format("SELECT DISTINCT gtmm.zoom_level   AS udt_zoom,"
-                                                        + "gtmm.matrix_width AS gtmm_width,"
-                                                        + "udt.id            AS udt_id, "
-                                                        + "udt.tile_column   AS udt_column "
-                                               + "FROM %s AS gtmm "
-                                               + "LEFT OUTER JOIN %s AS udt ON"
-                                                                     + " udt.zoom_level  = gtmm.zoom_level  AND"
-                                                                     + " gtmm.table_name = ?             AND"
-                                                                     + " (udt_column < 0 OR udt_column > (gtmm_width - 1));",
-                                              GeoPackageTiles.MatrixTableName, pyramidName);
+                final String query2 = String.format("SELECT zoom_level as zl, "       +
+                                                           "matrix_width as width " +
+
+                                                    "FROM   %1$s "        +
+
+                                                    "WHERE  table_name = ? "       +
+                                                    "AND"                             +
+                                                        "("                           +
+                                                             "zoom_level in (SELECT zoom_level FROM %2$s WHERE tile_row < 0) "                    +
+                                                             "OR "    +
+                                                             "("      +
+                                                                   "EXISTS(SELECT NULL FROM %2$s WHERE zoom_level = zl AND tile_row > width - 1)" +
+                                                             " )"     +
+                                                       " );",
+                                                    GeoPackageTiles.MatrixTableName,
+                                                    pyramidName);
 
                 try (PreparedStatement stmt2            = this.getSqliteConnection().prepareStatement(query2))
                 {
@@ -1275,43 +1281,30 @@ public class TilesVerifier extends Verifier
 
                     try(ResultSet         incorrectColumns = stmt2.executeQuery())
                     {
-                        final Map<Integer, List<TileData>> incorrectColumnSet = ResultSetStream.getStream(incorrectColumns)
-                                                                                               .map(resultSet -> { try
-                                                                                                                     {
-                                                                                                                          final TileData tileData   = new TileData();
-                                                                                                                          tileData.tileColumn = resultSet.getInt("udt_column");
-                                                                                                                          //if tileColumn is null, then it is a a correct value
-                                                                                                                          if(resultSet.wasNull())
-                                                                                                                          {
-                                                                                                                              return null;
-                                                                                                                          }
-                                                                                                                          tileData.matrixWidth = resultSet.getInt("gtmm_width");
-                                                                                                                          tileData.zoomLevel   = resultSet.getInt("udt_zoom");
-                                                                                                                          tileData.tileID      = resultSet.getInt("udt_id");
+                        final List<TileData> incorrectColumnSet = ResultSetStream.getStream(incorrectColumns)
+                                                                                 .map(resultSet -> { try
+                                                                                                       {
+                                                                                                             final TileData tileData = new TileData();
 
-                                                                                                                          return tileData;
+                                                                                                             tileData.matrixWidth = resultSet.getInt("width");
+                                                                                                             tileData.zoomLevel    = resultSet.getInt("zl");
 
-                                                                                                                     }
-                                                                                                                     catch(final SQLException ex)
-                                                                                                                     {
-                                                                                                                         return null;
-                                                                                                                     }
-                                                                                                                   })
-                                                                                               .filter(Objects::nonNull)
-                                                                                               .collect(Collectors.groupingBy(tileData -> tileData.zoomLevel));
-                        Assert.assertTrue(String.format("  The following tiles in table '%s' have incorrect tile column values: %s",
+                                                                                                             return tileData;
+                                                                                                       }
+                                                                                                       catch(final SQLException ex)
+                                                                                                       {
+                                                                                                           return null;
+                                                                                                       }
+                                                                                                     })
+                                                                                 .filter(Objects::nonNull)
+                                                                                 .collect(Collectors.toList());
+                        Assert.assertTrue(String.format("The table '%s' there are tiles with a tile_column values oustide the ranges for a particular zoom_level. %s\n",
                                                         pyramidName,
-                                                        incorrectColumnSet.entrySet()
-                                                                          .stream()
-                                                                          .map(tileData -> String.format("\n    Zoom level %d:\n%s",
-                                                                                                           tileData.getKey(),
-                                                                                                           tileData.getValue()
-                                                                                                                   .stream()
-                                                                                                                   .sorted()
-                                                                                                                   .map(tileInfo ->tileInfo.columnInvalidToString())
-                                                                                                                   .collect(Collectors.joining("\n"))))
-                                                                          .collect(Collectors.joining("\n"))),
-                                         incorrectColumnSet.isEmpty());
+                                                        incorrectColumnSet.stream()
+                                                                           .map(tileData -> String.format("\tZoom level %d  invalid tiles with values: tile_column < 0 OR tile_column > %d.",
+                                                                                                           tileData.zoomLevel, tileData.matrixWidth -1))
+                                                                           .collect(Collectors.joining("\n"))),
+                                                                           incorrectColumnSet.isEmpty());
                         }
                 }
             }
@@ -1396,16 +1389,21 @@ public class TilesVerifier extends Verifier
                 // of the tile_row value for the pyramid user data table
                 // SHOULD be null otherwise those fields are in violation
                 // of the range
-                final String query2 = String.format("SELECT DISTINCT gtmm.zoom_level    AS gtmm_zoom, "
-                                                                  + "gtmm.matrix_height AS gtmm_height,"
-                                                                  + "udt.zoom_level     AS udt_zoom, "
-                                                                  + "udt.tile_row       AS udt_row, "
-                                                                  + "udt.id             AS udt_id "
-                                                        + "FROM gpkg_tile_matrix AS gtmm "
-                                                        + "LEFT OUTER JOIN %s AS udt ON "
-                                                                    + "udt.zoom_level = gtmm.zoom_level "
-                                                                    + "AND gtmm.table_name = ? "
-                                                                    + "AND (udt_row < 0 OR udt_row > (gtmm_height- 1));",
+                final String query2 = String.format("SELECT zoom_level as zl, "       +
+                                                           "matrix_height as height " +
+
+                                                    "FROM   %1$s "        +
+
+                                                    "WHERE  table_name = ? "       +
+                                                    "AND"                             +
+                                                        "("                           +
+                                                             "zoom_level in (SELECT zoom_level FROM %2$s WHERE tile_row < 0) "                    +
+                                                             "OR "    +
+                                                             "("      +
+                                                                   "EXISTS(SELECT NULL FROM %2$s WHERE zoom_level = zl AND tile_row > height - 1)" +
+                                                             " )"     +
+                                                       " );",
+                                                    GeoPackageTiles.MatrixTableName,
                                                     pyramidName);
 
                 try (PreparedStatement stmt2            = this.getSqliteConnection().prepareStatement(query2))
@@ -1415,42 +1413,31 @@ public class TilesVerifier extends Verifier
                     try(ResultSet incorrectTileRow = stmt2.executeQuery())
                     {
 
-                        final Map<Integer, List<TileData>> incorrectTileRowSet = ResultSetStream.getStream(incorrectTileRow)
-                                                                                                .map(resultSet -> {    try
-                                                                                                                       {
-                                                                                                                           final TileData tileData = new TileData();
-                                                                                                                           tileData.tileRow = resultSet.getInt("udt_row");
-                                                                                                                           //if tileRow is null, then it is a a correct value
-                                                                                                                           if(resultSet.wasNull())
-                                                                                                                           {
-                                                                                                                               return null;
-                                                                                                                           }
-                                                                                                                           tileData.matrixHeight = resultSet.getInt("gtmm_height");
-                                                                                                                           tileData.zoomLevel = resultSet.getInt("udt_zoom");
-                                                                                                                           tileData.tileID     = resultSet.getInt("udt_id");
+                        final List<TileData> incorrectTileRowSet = ResultSetStream.getStream(incorrectTileRow)
+                                                                                  .map(resultSet -> {    try
+                                                                                                         {
+                                                                                                             final TileData tileData = new TileData();
 
-                                                                                                                           return tileData;
+                                                                                                             tileData.matrixHeight = resultSet.getInt("height");
+                                                                                                             tileData.zoomLevel    = resultSet.getInt("zl");
 
-                                                                                                                      }
-                                                                                                                      catch(final SQLException ex)
-                                                                                                                      {
-                                                                                                                            return null;
-                                                                                                                      }
-                                                                                                                })
-                                                                                                .filter(Objects::nonNull)
-                                                                                                .collect(Collectors.groupingBy(tileData -> tileData.zoomLevel));
+                                                                                                             return tileData;
 
-                        Assert.assertTrue(String.format("  The following tiles in table '%s' have incorrect tile row values: %s",
+                                                                                                        }
+                                                                                                        catch(final SQLException ex)
+                                                                                                        {
+                                                                                                              return null;
+                                                                                                        }
+                                                                                                  })
+                                                                                  .filter(Objects::nonNull)
+                                                                                  .collect(Collectors.toList());
+
+                        Assert.assertTrue(String.format("The table '%s' there are tiles with a tile_row values oustide the ranges for a particular zoom_level. %s \n",
                                                          pyramidName,
-                                                         incorrectTileRowSet.entrySet()
-                                                                             .stream()
-                                                                             .map(tileData -> String.format("\n    Zoom level %d:\n%s",
-                                                                                                       tileData.getKey(),
-                                                                                                       tileData.getValue().stream()
-                                                                                                                          .sorted()
-                                                                                                                          .map(tileInfo -> tileInfo.rowInvalidToString())
-                                                                                                                          .collect(Collectors.joining("\n"))))
-                                                                             .collect(Collectors.joining("\n"))),
+                                                         incorrectTileRowSet.stream()
+                                                                            .map(tileData -> String.format("\tZoom level %d  invalid tiles with values: tile_row < 0 OR tile_row > %d.",
+                                                                                                            tileData.zoomLevel, tileData.matrixHeight -1))
+                                                                            .collect(Collectors.joining("\n"))),
                                         incorrectTileRowSet.isEmpty());
                     }
                 }
