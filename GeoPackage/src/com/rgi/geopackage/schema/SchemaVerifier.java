@@ -203,29 +203,25 @@ public class SchemaVerifier extends Verifier
             {
                 if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), dataColumn.tableName))
                 {
-                    final String query = "PRAGMA table_info(?);";
+                    final String query = String.format("PRAGMA table_info(%s);", dataColumn.tableName);
 
-                    try(PreparedStatement stmt        = this.getSqliteConnection().prepareStatement(query))
+                    try(PreparedStatement stmt        = this.getSqliteConnection().prepareStatement(query);
+                        ResultSet         tableInfoRS = stmt.executeQuery())
                     {
-                        stmt.setString(1, dataColumn.tableName);
-
-                        try( ResultSet tableInfoRS = stmt.executeQuery())
-                        {
-                             final boolean columnExists = ResultSetStream.getStream(tableInfoRS)
-                                                                         .anyMatch(resultSet -> { try
-                                                                                                  {
-                                                                                                     return resultSet.getString("name").equals(dataColumn.columnName);
-                                                                                                  }
-                                                                                                  catch(final SQLException ex)
-                                                                                                  {
-                                                                                                      return false;
-                                                                                                  }
-                                                                                                 });
-                             Assert.assertTrue(String.format("The column %s does not exist in the table %s.",
-                                                             dataColumn.columnName,
-                                                             dataColumn.tableName),
-                                               columnExists);
-                        }
+                         final boolean columnExists = ResultSetStream.getStream(tableInfoRS)
+                                                                     .anyMatch(resultSet -> { try
+                                                                                              {
+                                                                                                 return resultSet.getString("name").equals(dataColumn.columnName);
+                                                                                              }
+                                                                                              catch(final SQLException ex)
+                                                                                              {
+                                                                                                  return false;
+                                                                                              }
+                                                                                             });
+                         Assert.assertTrue(String.format("The column %s does not exist in the table %s.",
+                                                         dataColumn.columnName,
+                                                         dataColumn.tableName),
+                                           columnExists);
                     }
                 }
             }
