@@ -42,10 +42,14 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import utility.DatabaseUtility;
 
+import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.ColumnDefinition;
 import com.rgi.geopackage.verification.ForeignKeyDefinition;
@@ -451,23 +455,26 @@ public class CoreVerifier extends Verifier
     {
         if(this.hasContentsTable && this.hasSpatialReferenceSystemTable)
         {
-            final String query = "SELECT DISTINCT gc.srs_id AS gc_srid, srs.srs_name, srs.srs_id, srs.organization, srs.organization_coordsys_id, "
-                                  + " srs.definition FROM gpkg_contents AS gc LEFT OUTER JOIN gpkg_spatial_ref_sys AS srs ON srs.srs_id = gc.srs_id;";
+            final String query = String.format("SELECT DISTINCT srs_id as srsContents "+
+                                               "FROM            %s "+
+                                               "WHERE           srsContents " +
+                                               "NOT IN "+
+                                                       "(SELECT  srs_id as srsSpatialRefSys "+
+                                                        "FROM    %s "+
+                                                         "WHERE  srsSpatialRefSys = srsContents);",
+                                               GeoPackageCore.ContentsTableName,
+                                               GeoPackageCore.SpatialRefSysTableName);
+
 
             try(PreparedStatement stmt       = this.getSqliteConnection().prepareStatement(query);
                 ResultSet         srsdefined = stmt.executeQuery())
             {
 
-                while(srsdefined.next())
-                {
-                    final String srsGC  = srsdefined.getString("gc_srid");
-                    final String srsSRS = srsdefined.getString("srs_id");
+                    final String srsGC  = srsdefined.getString("srsContents");
 
-                    assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined.\n gpkg_contents srs_id: %s gpkg_spatial_ref_sys srs_id: %s",
-                                             srsGC,
-                                             srsSRS),
-                               srsGC != null && srsSRS !=null);
-                }
+                    assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined.\n gpkg_contents srs_id: %s not in gpkg_spatial_ref_sys",
+                                             srsGC),
+                               srsGC == null);
             }
         }
     }
@@ -514,23 +521,37 @@ public class CoreVerifier extends Verifier
     {
         if(this.hasContentsTable)
         {
-            final String query = "SELECT DISTINCT gc.table_name AS gc_table, sm.tbl_name "
-                               + "FROM gpkg_contents AS gc "
-                               + "LEFT OUTER JOIN sqlite_master AS sm "
-                               + "ON gc.table_name = sm.tbl_name;";
+            final String query =  String.format("SELECT DISTINCT table_name AS gc_table " +
+                                                "FROM            %s " +
+                                                "WHERE           gc_table NOT IN "+
+                                                                               "(SELECT tbl_name"+
+                                                                               " FROM   sqlite_master " +
+                                                                                "WHERE  tbl_name = gc_table);",
+                                               GeoPackageCore.ContentsTableName);
 
             try(PreparedStatement stmt        = this.getSqliteConnection().prepareStatement(query);
                 ResultSet         gctablename = stmt.executeQuery();)
             {
                 // check runtime options (foreign keys)
-                while(gctablename.next())
-                {
-                    final String gctable  = gctablename.getString("gc_table");
-                    final String tbl_name = gctablename.getString("tbl_name");
-                    assertTrue(String.format("The table_name value in gpkg_contents table is invalid for the table: %s",
-                                             gctable),
-                               tbl_name != null);
-                }
+                List<String> invalidContentsTableNames = ResultSetStream.getStream(gctablename)
+                                                                        .map(result->{ try
+                                                                                       {
+                                                                                            return result.getString("gc_table");
+                                                                                       }
+                                                                                       catch(SQLException ex)
+                                                                                       {
+                                                                                           return null;
+                                                                                       }
+                                                                                     })
+                                                                        .filter(Objects::nonNull)
+                                                                        .collect(Collectors.toList());
+
+                    assertTrue(String.format("The following table_name(s) in %s are invalid: \n%s.",
+                                             GeoPackageCore.ContentsTableName,
+                                             invalidContentsTableNames.stream()
+                                                                      .map(table_name->String.format("\t%s",table_name))
+                                                                      .collect(Collectors.joining("\n"))),
+                               invalidContentsTableNames.isEmpty());
             }
         }
     }
