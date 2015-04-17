@@ -470,11 +470,24 @@ public class CoreVerifier extends Verifier
                 ResultSet         srsdefined = stmt.executeQuery())
             {
 
-                    final String srsGC  = srsdefined.getString("srsContents");
+                    List<String> invalidTables = ResultSetStream.getStream(srsdefined)
+                                                                .map(result-> { try
+                                                                                {
+                                                                                      return result.getString("srsContents");
+                                                                                }
+                                                                                catch(SQLException ex)
+                                                                                {
+                                                                                      return null;
+                                                                                }
+                                                                               })
+                                                                .filter(Objects::nonNull)
+                                                                .collect(Collectors.toList());
 
-                    assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined.\n gpkg_contents srs_id: %s not in gpkg_spatial_ref_sys",
-                                             srsGC),
-                               srsGC == null);
+                    assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined. The following srs_id(s) are not in the gpkg_spatial_ref_sys: \n%s",
+                                             invalidTables.stream()
+                                                          .map(table-> String.format("gpkg_contents srs_id: %s", table))
+                                                          .collect(Collectors.joining("\n"))),
+                               invalidTables.isEmpty());
             }
         }
     }
