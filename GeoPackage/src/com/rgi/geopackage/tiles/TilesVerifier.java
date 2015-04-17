@@ -1316,7 +1316,7 @@ public class TilesVerifier extends Verifier
                         Assert.assertTrue(String.format("The table '%s' there are tiles with a tile_column values oustide the ranges for a particular zoom_level. \n%s",
                                                         pyramidName,
                                                         incorrectColumnSet.stream()
-                                                                           .map(tileData -> String.format("\tZoom level %d  Zoom level %d  Expected Range tile_column: [0, %d]..",
+                                                                           .map(tileData -> String.format("\tZoom level %d  Expected Range tile_column: [0, %d].",
                                                                                                            tileData.zoomLevel, tileData.matrixWidth -1))
                                                                            .collect(Collectors.joining("\n"))),
                                                                            incorrectColumnSet.isEmpty());
