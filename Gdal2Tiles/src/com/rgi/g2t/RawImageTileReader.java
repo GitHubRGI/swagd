@@ -130,8 +130,11 @@ public class RawImageTileReader implements TileStoreReader
             throw new IllegalArgumentException("Tile size may not be null.");
         }
 
-        this.rawImage    = rawImage;
-        this.tileSize    = tileSize;
+        this.rawImage = rawImage;
+        this.tileSize = tileSize;
+
+        // TODO check noDataColor for null when the feature is implemented
+
         this.noDataColor = noDataColor;
 
         this.dataset = GdalUtility.open(rawImage, coordinateReferenceSystem);
