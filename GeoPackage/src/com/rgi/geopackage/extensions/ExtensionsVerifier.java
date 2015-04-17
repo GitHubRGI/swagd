@@ -230,7 +230,8 @@ public class ExtensionsVerifier extends Verifier
                                                                                .collect(Collectors.toList());
 
                 Assert.assertTrue(String.format("The following table(s) does not exist in the sqlite master table. "
-                                                 + "Either create table following table(s) or delete this entry in gpkg_extensions.",
+                                                 + "Either create table following table(s) or delete this entry in %s.\n %s",
+                                                 GeoPackageExtensions.ExtensionsTableName,
                                                nonExistantExtensionsTable.stream()
                                                                          .map(table-> String.format("\t%s", table))
                                                                          .collect(Collectors.joining("\n"))),
@@ -281,9 +282,10 @@ public class ExtensionsVerifier extends Verifier
 
                          Assert.assertTrue(String.format("The column %s does not exist in the table %s. "
                                                              + "Please either add this column to this table "
-                                                             + "or delete the record in gpkg_extensions.",
+                                                             + "or delete the record in %s.",
                                                          columnName,
-                                                         extensionData.tableName),
+                                                         extensionData.tableName,
+                                                         GeoPackageExtensions.ExtensionsTableName),
                                            columnExists);
                     }
                 }
@@ -389,7 +391,8 @@ public class ExtensionsVerifier extends Verifier
                                                                        .filter(Objects::nonNull)
                                                                        .collect(Collectors.toList());
 
-                Assert.assertTrue(String.format("The following table_name values in gpkg_extension table have invalid values for the definition column: %s.",
+                Assert.assertTrue(String.format("The following table_name values in %s table have invalid values for the definition column: %s.",
+                                                GeoPackageExtensions.ExtensionsTableName,
                                                 invalidDefinitions.stream()
                                                                   .collect(Collectors.joining(", "))),
                                   invalidDefinitions.isEmpty());
@@ -418,7 +421,8 @@ public class ExtensionsVerifier extends Verifier
     {
         if (this.hasGpkgExtensionsTable)
         {
-            final String query = "SELECT scope FROM gpkg_extensions WHERE scope != 'read-write' AND scope != 'write-only'";
+            final String query = String.format("SELECT scope FROM %s WHERE scope != 'read-write' AND scope != 'write-only'",
+                                               GeoPackageExtensions.ExtensionsTableName);
 
             try (PreparedStatement stmt               = this.getSqliteConnection().prepareStatement(query);
                  ResultSet         invalidScopeValues = stmt.executeQuery())
@@ -438,9 +442,10 @@ public class ExtensionsVerifier extends Verifier
                                                                  .filter(Objects::nonNull)
                                                                  .collect(Collectors.toList());
 
-                Assert.assertTrue(String.format("There is(are) value(s) in the column scope in gpkg_extensions"
+                Assert.assertTrue(String.format("There is(are) value(s) in the column scope in %s"
                                                     + " table that is not 'read-write' or 'write-only' in all "
                                                     + "lowercase letters. The following value(s)  is(are) incorrect: %s",
+                                                GeoPackageExtensions.ExtensionsTableName,
                                                 invalidScope.stream()
                                                             .collect(Collectors.joining(", "))),
                                   invalidScope.isEmpty());

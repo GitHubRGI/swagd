@@ -497,7 +497,7 @@ public class TilesVerifier extends Verifier
 
               for(final String table: this.pyramidTablesInContents)
               {
-                  Assert.assertTrue(String.format("The table_name %1$s in the %2$s is not referenced in the gpkg_contents table. Either delete the table %1$s "
+                  Assert.assertTrue(String.format("The table_name %1$s in the %2$s is not referenced in the %3$s table. Either delete the table %1$s "
                                                       + "or create a record for that table in the %3$s table",
                                                   table,
                                                   GeoPackageTiles.MatrixSetTableName,

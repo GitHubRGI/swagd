@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import utility.DatabaseUtility;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.verification.Assert;
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.ColumnDefinition;
@@ -151,10 +152,12 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsTable)
         {
-            final String query = "SELECT dc.table_name "
-                            + "FROM gpkg_data_columns AS dc "
-                            + "WHERE dc.table_name NOT IN(SELECT gc.table_name "
-                                                       + "FROM gpkg_contents AS gc);";
+            final String query = String.format("SELECT dc.table_name "
+                                             + "FROM %s AS dc "
+                                             + "WHERE dc.table_name NOT IN(SELECT gc.table_name "
+                                                                        + "FROM %s AS gc);",
+                                              GeoPackageSchema.DataColumnsTableName,
+                                              GeoPackageCore.ContentsTableName);
 
             try(PreparedStatement stmt                = this.getSqliteConnection().prepareStatement(query);
                 ResultSet         invalidTableNamesRS = stmt.executeQuery())
@@ -172,7 +175,9 @@ public class SchemaVerifier extends Verifier
                                                                        .filter(Objects::nonNull)
                                                                        .collect(Collectors.toList());
 
-                Assert.assertTrue(String.format("The following table_name(s) is(are) from gpkg_data_columns and is(are) not referenced in the gpkg_contents table_name: %s",
+                Assert.assertTrue(String.format("The following table_name(s) is(are) from %s and is(are) not referenced in the %s table_name: %s",
+                                                GeoPackageSchema.DataColumnsTableName,
+                                                GeoPackageCore.ContentsTableName,
                                                 invalidTableNames.stream()
                                                                  .collect(Collectors.joining(", "))),
                                   invalidTableNames.isEmpty());
@@ -252,8 +257,10 @@ public class SchemaVerifier extends Verifier
                                                                              .filter(dataColumn -> dataColumn.constraintName != null)
                                                                              .anyMatch(dataColumn -> dataColumn.constraintName.equals(dataColumnConstraints.constraintName));
 
-                   Assert.assertTrue(String.format("The constraint_name %s in gpkg_data_columns is not referenced in gpkg_data_constraints table in the column constraint_name.",
-                                                   dataColumnConstraints.constraintName),
+                   Assert.assertTrue(String.format("The constraint_name %s in %s is not referenced in %s table in the column constraint_name.",
+                                                   dataColumnConstraints.constraintName,
+                                                   GeoPackageSchema.DataColumnsTableName,
+                                                   GeoPackageSchema.DataColumnConstraintsTableName),
                                      containsConstraint);
                }
             }
@@ -307,7 +314,8 @@ public class SchemaVerifier extends Verifier
             final boolean validConstraintType = this.dataColumnConstraintsValues.stream()
                                                                           .allMatch(dataColumnConstraintValue -> SchemaVerifier.validConstraintType(dataColumnConstraintValue.constraintType));
 
-            Assert.assertTrue(String.format("There is(are) value(s) in gpkg_data_column_constraints table constraint_type that does not match \"range\" or \"enum\" or \"glob\". The invalid value(s): %s.",
+            Assert.assertTrue(String.format("There is(are) value(s) in %s table constraint_type that does not match \"range\" or \"enum\" or \"glob\". The invalid value(s): %s.",
+                                            GeoPackageSchema.DataColumnConstraintsTableName,
                                             this.dataColumnConstraintsValues.stream()
                                                                             .filter(dataColumnConstraintValue -> !SchemaVerifier.validConstraintType(dataColumnConstraintValue.constraintType))
                                                                             .map(value -> value.constraintType).collect(Collectors.joining(", "))),
@@ -332,7 +340,8 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsConstraintsTable)
         {
-           final String query = "SELECT DISTINCT constraint_name AS cs FROM gpkg_data_column_constraints WHERE constraint_type IN ('range', 'glob');";
+           final String query = String.format("SELECT DISTINCT constraint_name AS cs FROM %s WHERE constraint_type IN ('range', 'glob');",
+                                              GeoPackageSchema.DataColumnConstraintsTableName);
 
            try(PreparedStatement stmt                             = this.getSqliteConnection().prepareStatement(query);
                ResultSet         constraintNamesWithRangeOrGlobRS = stmt.executeQuery())
@@ -351,7 +360,8 @@ public class SchemaVerifier extends Verifier
                                                                                  .collect(Collectors.toList());
                for(final String constraintName: constraintNamesWithRangeOrGlob)
                {
-                   final String query2 = String.format("SELECT count(*) FROM gpkg_data_column_constraints WHERE constraint_name = '?'");
+                   final String query2 = String.format("SELECT count(*) FROM %s WHERE constraint_name = '?'",
+                                                       GeoPackageSchema.DataColumnConstraintsTableName);
 
                    try(PreparedStatement stmt2 = this.getSqliteConnection().prepareStatement(query2))
                    {
@@ -361,8 +371,9 @@ public class SchemaVerifier extends Verifier
                        {
                            final int count = countConstraintNameRS.getInt("count(*)");
 
-                           Assert.assertTrue(String.format("There are constraint_name values in gpkg_data_column_constraints with a constraint_type of 'glob' or 'range' are not unique. "
+                           Assert.assertTrue(String.format("There are constraint_name values in %s with a constraint_type of 'glob' or 'range' are not unique. "
                                                              + "Non-unique constraint_name: %s",
+                                                           GeoPackageSchema.DataColumnConstraintsTableName,
                                                            constraintName),
                                              count <= 1);
                        }
@@ -395,8 +406,9 @@ public class SchemaVerifier extends Verifier
                                                                                                          .filter(dataColumnConstraint -> dataColumnConstraint.value != null)
                                                                                                          .collect(Collectors.toList());
 
-            Assert.assertTrue(String.format("There are records in gpkg_data_column_constraints that have a constraint_type of \"range\" "
+            Assert.assertTrue(String.format("There are records in %s that have a constraint_type of \"range\" "
                                                 + "but does not have a corresponding null value for the column value. \nInvalid value(s): %s",
+                                            GeoPackageSchema.DataColumnConstraintsTableName,
                                             invalidColumnConstraintRecords.stream().map(columnValue -> columnValue.value).collect(Collectors.joining(", "))),
                              invalidColumnConstraintRecords.isEmpty());
         }
@@ -428,7 +440,8 @@ public class SchemaVerifier extends Verifier
                                                                                                                                       constraintValue.min >= constraintValue.max)
                                                                                                            .collect(Collectors.toList());
 
-            Assert.assertTrue(String.format("The following records in gpkg_data_column_constraints have invalid values for min, or max or both:\n%s",
+            Assert.assertTrue(String.format("The following records in %s have invalid values for min, or max or both:\n%s",
+                                            GeoPackageSchema.DataColumnConstraintsTableName,
                                             invalidConstraintValuesWithRange.stream()
                                                                             .map(constraintValue -> constraintValue.invalidMinMaxWithRangeType())
                                                                             .collect(Collectors.joining("\n"))),
@@ -469,7 +482,8 @@ public class SchemaVerifier extends Verifier
                                                                                                        .collect(Collectors.toList());
 
             Assert.assertTrue(String.format("The following are violations on either the minIsInclusive or maxIsIclusive columns "
-                                            + "in the gpkg_data_column_constraints table for which the values are not 0 or 1. %s. \n%s.",
+                                            + "in the %s table for which the values are not 0 or 1. %s. \n%s.",
+                                            GeoPackageSchema.DataColumnConstraintsTableName,
                                             invalidMinIsInclusiveRecords.stream()
                                                                         .map(record -> String.format("Invalid minIsInclusive for constraint_name: %10s.", record.constraintName))
                                                                         .collect(Collectors.joining(", ")),
@@ -539,9 +553,10 @@ public class SchemaVerifier extends Verifier
                                                                                                                                 Type.Glob.equals(columnValue.constraintType))
                                                                                                          .filter(columnValue -> columnValue.value == null)
                                                                                                          .collect(Collectors.toList());
-            Assert.assertTrue(String.format("The following constraint_name(s) from the gpkg_data_column_constraints "
+            Assert.assertTrue(String.format("The following constraint_name(s) from the %s "
                                               + "table have invalid values for the column value. \nInvalid value with "
                                               + "constraint_name as: %s.",
+                                            GeoPackageSchema.DataColumnConstraintsTableName,
                                             invalidValueRecords.stream()
                                                                .map(columnValue -> columnValue.constraintName)
                                                                .collect(Collectors.joining(", "))),
@@ -659,7 +674,7 @@ public class SchemaVerifier extends Verifier
 
         DataColumnsTableDefinition = new TableDefinition(GeoPackageSchema.DataColumnsTableName,
                                                          dataColumnsTableColumns,
-                                                         new HashSet<>(Arrays.asList(new ForeignKeyDefinition("gpkg_contents", "table_name", "table_name"))));
+                                                         new HashSet<>(Arrays.asList(new ForeignKeyDefinition(GeoPackageCore.ContentsTableName, "table_name", "table_name"))));
 
 
         final Map<String, ColumnDefinition> dataColumnConstraintsColumns = new HashMap<>();
