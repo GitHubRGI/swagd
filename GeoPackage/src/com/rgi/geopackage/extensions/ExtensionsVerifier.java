@@ -204,7 +204,7 @@ public class ExtensionsVerifier extends Verifier
                 Assert.assertTrue("The value in table_name can only be null if column_name is also null.",
                                    validEntry);
             }
-            // Check that the table_name in GeoPackage Extensions references a table in sqlite master
+            // Check that the table_name in GeoPackage Extensions references a table in sqlite master //TODO fix join
             final String query2 = "SELECT DISTINCT ge.table_name AS ge_table, "
                                           + "sm.tbl_name   AS sm_table "
                                 + "FROM  gpkg_extensions AS ge "
