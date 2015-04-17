@@ -51,7 +51,7 @@ import com.rgi.common.util.FileUtility;
  * @author Luke D. Lambert
  *
  */
-public class RawImageTileReader2 implements TileStoreReader
+public class RawImageTileReader implements TileStoreReader
 {
     static
     {
@@ -86,7 +86,7 @@ public class RawImageTileReader2 implements TileStoreReader
      *             {@link CoordinateReferenceSystem} of the input raster OR if
      *             the raw image could not be loaded as a {@link Dataset}
      */
-    public RawImageTileReader2(final File                rawImage,
+    public RawImageTileReader(final File                rawImage,
                                final Dimensions<Integer> tileSize,
                                final Color               noDataColor) throws TileStoreException
     {
@@ -114,7 +114,7 @@ public class RawImageTileReader2 implements TileStoreReader
      *             {@link CoordinateReferenceSystem} of the input raster OR if
      *             the raw image could not be loaded as a {@link Dataset}
      */
-    public RawImageTileReader2(final File                      rawImage,
+    public RawImageTileReader(final File                      rawImage,
                                final Dimensions<Integer>       tileSize,
                                final Color                     noDataColor,
                                final CoordinateReferenceSystem coordinateReferenceSystem) throws TileStoreException
@@ -171,7 +171,7 @@ public class RawImageTileReader2 implements TileStoreReader
                                                               datasetBounds,
                                                               this.profile.getBounds(),
                                                               this.profile,
-                                                              RawImageTileReader2.Origin);
+                                                              RawImageTileReader.Origin);
 
             final int minimumZoom = GdalUtility.getMinimalZoom(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
             final int maximumZoom = GdalUtility.getMaximalZoom(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
@@ -386,7 +386,7 @@ public class RawImageTileReader2 implements TileStoreReader
             this.zoomLevel = zoom;
             this.column    = column;
             this.row       = row;
-            this.matrix    = RawImageTileReader2.this.tileScheme.dimensions(this.zoomLevel);
+            this.matrix    = RawImageTileReader.this.tileScheme.dimensions(this.zoomLevel);
         }
 
         @Override
@@ -416,16 +416,16 @@ public class RawImageTileReader2 implements TileStoreReader
         @Override
         public CrsCoordinate getCrsCoordinate() throws TileStoreException
         {
-            return RawImageTileReader2.this.tileToCrsCoordinate(this.column,
+            return RawImageTileReader.this.tileToCrsCoordinate(this.column,
                                                                 this.row,
                                                                 this.matrix,
-                                                                RawImageTileReader2.Origin);
+                                                                RawImageTileReader.Origin);
         }
 
         @Override
         public CrsCoordinate getCrsCoordinate(final TileOrigin corner) throws TileStoreException
         {
-            return RawImageTileReader2.this.tileToCrsCoordinate(this.column,
+            return RawImageTileReader.this.tileToCrsCoordinate(this.column,
                                                                 this.row,
                                                                 this.matrix,
                                                                 corner);
@@ -434,7 +434,7 @@ public class RawImageTileReader2 implements TileStoreReader
         @Override
         public BoundingBox getBounds() throws TileStoreException
         {
-             return RawImageTileReader2.this.getTileBoundingBox(this.column,
+             return RawImageTileReader.this.getTileBoundingBox(this.column,
                                                                 this.row,
                                                                 this.matrix);
         }
@@ -448,22 +448,22 @@ public class RawImageTileReader2 implements TileStoreReader
             }
 
             // Build the parameters for GDAL read raster call
-            final GdalRasterParameters params = GdalUtility.getGdalRasterParameters(RawImageTileReader2.this.dataset.GetGeoTransform(),
+            final GdalRasterParameters params = GdalUtility.getGdalRasterParameters(RawImageTileReader.this.dataset.GetGeoTransform(),
                                                                                     this.getBounds(),
-                                                                                    RawImageTileReader2.this.tileSize,
-                                                                                    RawImageTileReader2.this.dataset);
+                                                                                    RawImageTileReader.this.tileSize,
+                                                                                    RawImageTileReader.this.dataset);
             try
             {
                 // Read image data directly from the raster
-                final byte[] imageData = GdalUtility.readRaster(params, RawImageTileReader2.this.dataset);
+                final byte[] imageData = GdalUtility.readRaster(params, RawImageTileReader.this.dataset);
 
                 // TODO: logic goes here in the case that the querysize == tile size (gdalconstConstants.GRA_NearestNeighbour) (write directly)
-                final Dataset querySizeImageCanvas = GdalUtility.writeRaster(params, imageData, RawImageTileReader2.this.dataset.GetRasterCount());
+                final Dataset querySizeImageCanvas = GdalUtility.writeRaster(params, imageData, RawImageTileReader.this.dataset.GetRasterCount());
 
                 try
                 {
                     // Scale each band of tileDataInMemory down to the tile size (down from the query size)
-                    final Dataset tileDataInMemory = GdalUtility.scaleQueryToTileSize(querySizeImageCanvas, RawImageTileReader2.this.tileSize);
+                    final Dataset tileDataInMemory = GdalUtility.scaleQueryToTileSize(querySizeImageCanvas, RawImageTileReader.this.tileSize);
 
                     this.image = GdalUtility.convert(tileDataInMemory);
                     tileDataInMemory.delete();
@@ -498,7 +498,7 @@ public class RawImageTileReader2 implements TileStoreReader
                                                 row    + corner.getVertical(),
                                                 this.profile.getBounds(),    // RawImageTileReader uses absolute tiling, which covers the whole globe
                                                 tileMatrixDimensions,
-                                                RawImageTileReader2.Origin);
+                                                RawImageTileReader.Origin);
     }
 
     private BoundingBox getTileBoundingBox(final int column, final int row, final TileMatrixDimensions tileMatrixDimensions)
@@ -507,7 +507,7 @@ public class RawImageTileReader2 implements TileStoreReader
                                           row,
                                           this.profile.getBounds(),
                                           tileMatrixDimensions,
-                                          RawImageTileReader2.Origin);
+                                          RawImageTileReader.Origin);
     }
 
     private final File                                     rawImage;

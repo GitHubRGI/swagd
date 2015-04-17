@@ -42,7 +42,7 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.common.tile.store.TileStoreReader;
-import com.rgi.g2t.RawImageTileReader2;
+import com.rgi.g2t.RawImageTileReader;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 
 /**
@@ -124,7 +124,7 @@ public class RawImageTileStoreReaderAdapter extends TileStoreReaderAdapter
     @Override
     public TileStoreReader getTileStoreReader() throws TileStoreException
     {
-        return new RawImageTileReader2(this.file,
+        return new RawImageTileReader(this.file,
                                       this.tileDimensionsSupplier.get(),
                                       null,                                 // TODO dynamic UI for getting no-data color
                                       (CoordinateReferenceSystem)this.referenceSystems.getSelectedItem());

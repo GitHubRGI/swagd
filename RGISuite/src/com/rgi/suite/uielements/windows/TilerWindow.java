@@ -53,7 +53,7 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
-import com.rgi.g2t.RawImageTileReader2;
+import com.rgi.g2t.RawImageTileReader;
 import com.rgi.packager.Packager;
 import com.rgi.suite.Settings;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
@@ -332,7 +332,7 @@ public class TilerWindow extends NavigationWindow
                                      this.processName() + "...",
                                      taskMonitor -> { final File file = new File(this.inputFileName.getText());
 
-                                                      try(final TileStoreReader tileStoreReader = new RawImageTileReader2(file, tileDimensions, noDataColor, crs))
+                                                      try(final TileStoreReader tileStoreReader = new RawImageTileReader(file, tileDimensions, noDataColor, crs))
                                                       {
                                                           try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
                                                           {
