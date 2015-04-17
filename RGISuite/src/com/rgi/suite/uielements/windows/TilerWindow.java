@@ -144,7 +144,7 @@ public class TilerWindow extends NavigationWindow
                                                                   this.settings.set(LastInputLocationSettingName, file.getParent());
                                                                   this.settings.save();
 
-                                                                  final SpatialReference srs = GdalUtility.getDatasetSpatialReference(file);
+                                                                  final SpatialReference srs = GdalUtility.getSpatialReference(file);
 
                                                                   final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystem(srs);
 

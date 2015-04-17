@@ -67,15 +67,87 @@ import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.g2t.GeoTransformation;
 import com.rgi.g2t.TilingException;
 
-
 /**
- * Common functionality of the GDAL Library made into helper functions.
+ * Common functionality of the GDAL library made into helper functions
  *
- * @author Luke Lambert
+ * @author Luke D. Lambert
  * @author Steven D. Lander
  */
 public class GdalUtility
 {
+    static
+    {
+        // GDAL_DATA needs to be a valid path
+        if(System.getenv("GDAL_DATA") == null)
+        {
+            throw new RuntimeException("Tiling will not work without GDAL_DATA environment variable.");
+        }
+        // Get the system path
+        //String paths = System.getenv("PATH");
+        // TODO
+        // Parse the path entries
+        // Check each path entry for the required dll's/so's
+        // Throw an error if any of the required ones are missing
+
+        osr.UseExceptions();
+        gdal.AllRegister(); // Register GDAL extensions
+    }
+
+    /**
+     * Opens an image file, and returns a {@link Dataset}
+     *
+     * @param rawImage
+     *             A raster image {@link File}
+     * @return A {@link Dataset} warped to the input coordinate reference system
+     */
+    public static Dataset open(final File rawImage)
+    {
+        return GdalUtility.open(rawImage, null);
+    }
+
+    /**
+     * Opens an image file, and returns a {@link Dataset}
+     *
+     * @param rawImage
+     *             A raster image {@link File}
+     * @param coordinateReferenceSystem
+     *             The {@link CoordinateReferenceSystem} the tiles should be
+     *             output in
+     * @return A {@link Dataset} warped to the input coordinate reference system
+     */
+    public static Dataset open(final File rawImage, final CoordinateReferenceSystem coordinateReferenceSystem)
+    {
+        final Dataset dataset = gdal.Open(rawImage.getAbsolutePath()); // Opening is read-only by default
+
+        if(dataset == null)
+        {
+            throw new RuntimeException(new GdalError().getMessage());
+        }
+
+        if(coordinateReferenceSystem == null)
+        {
+            return dataset;
+        }
+
+        try
+        {
+            final SpatialReference inputSrs = GdalUtility.getSpatialReference(dataset);
+
+            final Dataset warpedDataset = GdalUtility.warpDatasetToSrs(dataset, inputSrs, GdalUtility.getSpatialReference(coordinateReferenceSystem));
+
+            if(warpedDataset == null)
+            {
+                throw new RuntimeException(new GdalError().getMessage());
+            }
+
+            return warpedDataset;
+        }
+        finally
+        {
+            dataset.delete();
+        }
+    }
+
     /**
      * Converts a GDAL {@link Dataset} into a {@link BufferedImage} <br>
      * <br>
@@ -255,33 +327,27 @@ public class GdalUtility
     /**
      * Gets the GDAL {@link SpatialReference} from the input {@link Dataset}
      *
-     * @param dataset A GDAL {@link Dataset}
-     * @return Returns a GDAL {@link SpatialReference} that the input dataset has
-     * @throws DataFormatException  Thrown when GDAL has exhausted all means to get the WKT and failed.
+     * @param dataset
+     *             A GDAL {@link Dataset}
+     * @return Returns the GDAL {@link SpatialReference} of the dataset
      */
-    public static SpatialReference getSpatialReference(final Dataset dataset) throws DataFormatException
+    public static SpatialReference getSpatialReference(final Dataset dataset)
     {
         if(dataset == null)
         {
             throw new IllegalArgumentException("Dataset may not be null.");
         }
 
-        final SpatialReference srs = new SpatialReference();
-        // Get the well-known-text of this dataset
-        String wkt = dataset.GetProjection();
+        String wkt = dataset.GetProjection(); // Get the well-known-text of this dataset
 
-        if(wkt.isEmpty() && dataset.GetGCPCount() != 0)
+        if(wkt.isEmpty() && dataset.GetGCPCount() != 0) // If the WKT is empty and there are GCPs...
         {
-            // If the wkt is empty and there are GCPs...
             wkt = dataset.GetGCPProjection();
         }
-        if(!wkt.isEmpty())
-        {
-            // Initialize the srs from the non-empt wkt string
-            srs.ImportFromWkt(wkt);
-            return srs;
-        }
-        throw new DataFormatException("Cannot get source file spatial reference system.");
+
+        final SpatialReference srs = new SpatialReference();
+        srs.ImportFromWkt(wkt); // Returns 0 on success. Otherwise throws a RuntimeException() (or an error code if DontUseExceptions() has been called).
+        return srs;
     }
 
     /**
@@ -290,21 +356,15 @@ public class GdalUtility
      * @param file
      *             Image file
      * @return The {@link SpatialReference} of the image file
-     * @throws DataFormatException
-     *             when {@link GdalUtility#getSpatialReference(Dataset)} throws
      */
-    public static SpatialReference getDatasetSpatialReference(final File file) throws DataFormatException
+    public static SpatialReference getSpatialReference(final File file)
     {
         if(file == null || !file.canRead())
         {
             throw new IllegalArgumentException("File may not be null, and must be readable");
         }
 
-        osr.UseExceptions();
-        // Register gdal for use
-        gdal.AllRegister();
-
-        final Dataset dataset = gdal.Open(file.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = GdalUtility.open(file);
 
         try
         {
@@ -313,7 +373,6 @@ public class GdalUtility
         finally
         {
             dataset.delete();
-            //gdal.GDALDestroyDriverManager(); Causes fatal error: exception access violation
         }
     }
 
@@ -362,10 +421,9 @@ public class GdalUtility
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
         final double[] identityTransform = { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
-        // Compare dataset geotransform to an empty identity transform and ensure there are no GCPs
+
+        // Compare the dataset's transform to the identity transform and ensure there are no GCPs
         return !Arrays.equals(dataset.GetGeoTransform(), identityTransform) || dataset.GetGCPCount() != 0;
-        // below is the negation of HasGeoReference
-        //return Arrays.equals(dataset.GetGeoTransform(), emptyGeoReference) && dataset.GetGCPCount() == 0;
     }
 
     /**
@@ -459,24 +517,21 @@ public class GdalUtility
     /**
      * Build a {@link CrsProfile} from an input {@link Dataset}
      *
-     * @param dataset An input {@link Dataset}
+     * @param dataset
+     *             An input {@link Dataset}
      * @return A {@link CrsProfile} built from the input {@link Dataset}
-     * @throws TileStoreException Thrown when a {@link CrsProfile} could not be built from the input {@link Dataset}
      */
-    public static CrsProfile getCrsProfile(final Dataset dataset) throws TileStoreException
+    public static CrsProfile getCrsProfile(final Dataset dataset)
     {
         if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
-        try
-        {
-            return CrsProfileFactory.create(GdalUtility.getCoordinateReferenceSystem(GdalUtility.getSpatialReference(dataset)));
-        }
-        catch(final DataFormatException dfe)
-        {
-            throw new TileStoreException(dfe);
-        }
+
+        final SpatialReference          srs = GdalUtility.getSpatialReference(dataset);
+        final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystem(srs);
+
+        return CrsProfileFactory.create(crs);
     }
 
     /**
@@ -930,29 +985,36 @@ public class GdalUtility
      * @param toSrs
      *             Spatial reference system to warp the <code>dataset</code> to
      * @return A {@link Dataset} in the input {@link SpatialReference} requested
-     * @throws DataFormatException Thrown when the AutoCreateWarpedVRT method returns null
      */
-    public static Dataset warpDatasetToSrs(final Dataset dataset,
+    public static Dataset warpDatasetToSrs(final Dataset          dataset,
                                            final SpatialReference fromSrs,
-                                           final SpatialReference toSrs) throws DataFormatException
+                                           final SpatialReference toSrs)
     {
         if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
+
         if(fromSrs == null)
         {
             throw new IllegalArgumentException("From-Srs cannot be null.");
         }
+
         if(toSrs == null)
         {
             throw new IllegalArgumentException("To-Srs cannot be null.");
         }
-        final Dataset output = gdal.AutoCreateWarpedVRT(dataset, fromSrs.ExportToWkt(), toSrs.ExportToWkt(), gdalconstConstants.GRA_Average);
+
+        final Dataset output = gdal.AutoCreateWarpedVRT(dataset,
+                                                        fromSrs.ExportToWkt(),
+                                                        toSrs.ExportToWkt(),
+                                                        gdalconstConstants.GRA_Average);
+
         if(output == null)
         {
-            throw new DataFormatException();
+            throw new RuntimeException(new GdalError().getMessage());
         }
+
         return output;
     }
 

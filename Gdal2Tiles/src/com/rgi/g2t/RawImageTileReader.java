@@ -19,10 +19,6 @@ import javax.activation.MimeTypeParseException;
 import javax.naming.OperationNotSupportedException;
 
 import org.gdal.gdal.Dataset;
-import org.gdal.gdal.gdal;
-import org.gdal.gdalconst.gdalconstConstants;
-import org.gdal.osr.SpatialReference;
-import org.gdal.osr.osr;
 
 import utility.GdalUtility;
 import utility.GdalUtility.GdalRasterParameters;
@@ -53,24 +49,6 @@ import com.rgi.common.util.FileUtility;
  */
 public class RawImageTileReader implements TileStoreReader
 {
-    static
-    {
-        // GDAL_DATA needs to be a valid path
-        if(System.getenv("GDAL_DATA") == null)
-        {
-            throw new RuntimeException("Tiling will not work without GDAL_DATA environment variable.");
-        }
-        // Get the system path
-        //String paths = System.getenv("PATH");
-        // TODO
-        // Parse the path entries
-        // Check each path entry for the required dll's/so's
-        // Throw an error if any of the required ones are missing
-
-        osr.UseExceptions();
-        gdal.AllRegister(); // Register GDAL extensions
-    }
-
     /**
      * Constructor
      *
@@ -87,8 +65,8 @@ public class RawImageTileReader implements TileStoreReader
      *             the raw image could not be loaded as a {@link Dataset}
      */
     public RawImageTileReader(final File                rawImage,
-                               final Dimensions<Integer> tileSize,
-                               final Color               noDataColor) throws TileStoreException
+                              final Dimensions<Integer> tileSize,
+                              final Color               noDataColor) throws TileStoreException
     {
         this(rawImage,
              tileSize,
@@ -115,9 +93,9 @@ public class RawImageTileReader implements TileStoreReader
      *             the raw image could not be loaded as a {@link Dataset}
      */
     public RawImageTileReader(final File                      rawImage,
-                               final Dimensions<Integer>       tileSize,
-                               final Color                     noDataColor,
-                               final CoordinateReferenceSystem coordinateReferenceSystem) throws TileStoreException
+                              final Dimensions<Integer>       tileSize,
+                              final Color                     noDataColor,
+                              final CoordinateReferenceSystem coordinateReferenceSystem) throws TileStoreException
     {
         if(rawImage == null || !rawImage.canRead())
         {
@@ -133,32 +111,15 @@ public class RawImageTileReader implements TileStoreReader
         this.tileSize    = tileSize;
         this.noDataColor = noDataColor;
 
-        final Dataset inputDataset = gdal.Open(this.rawImage.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
-
-        if(inputDataset == null)
-        {
-            this.close();
-            throw new TileStoreException("Could not open the raw image as a dataset in GDAL.");
-        }
+        this.dataset = GdalUtility.open(rawImage, coordinateReferenceSystem);
 
         try
         {
-            if(coordinateReferenceSystem == null)
-            {
-                this.dataset                   = inputDataset;
-                this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystem(GdalUtility.getSpatialReference(this.dataset));
+            this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystem(GdalUtility.getSpatialReference(this.dataset));
 
-                if(this.coordinateReferenceSystem == null)
-                {
-                    throw new IllegalArgumentException("Image file is not in a recognized coordinate reference system");
-                }
-            }
-            else
+            if(this.coordinateReferenceSystem == null)
             {
-                final SpatialReference inputSrs = GdalUtility.getSpatialReference(inputDataset);
-
-                this.coordinateReferenceSystem = coordinateReferenceSystem;
-                this.dataset                   = GdalUtility.warpDatasetToSrs(inputDataset, inputSrs, GdalUtility.getSpatialReference(this.coordinateReferenceSystem));
+                throw new IllegalArgumentException("Image file is not in a recognized coordinate reference system");
             }
 
             this.profile = CrsProfileFactory.create(this.coordinateReferenceSystem);
@@ -205,10 +166,6 @@ public class RawImageTileReader implements TileStoreReader
         {
             this.close();
             throw new TileStoreException(dfe);
-        }
-        finally
-        {
-            inputDataset.delete();
         }
     }
 

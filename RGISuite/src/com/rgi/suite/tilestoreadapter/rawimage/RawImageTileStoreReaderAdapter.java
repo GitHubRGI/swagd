@@ -27,7 +27,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
-import java.util.zip.DataFormatException;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -76,18 +75,15 @@ public class RawImageTileStoreReaderAdapter extends TileStoreReaderAdapter
      * @param forceInput
      *             If true, {@link #needsInput} will always return true. This
      *             forces the selection of a coordinate reference system.
-     * @throws DataFormatException
-     *             Rethrown from {@link GdalUtility#getDatasetSpatialReference}
      */
-    public RawImageTileStoreReaderAdapter(final File file, final Supplier<Dimensions<Integer>> tileDimensionsSupplier, final boolean forceInput) throws DataFormatException
+    public RawImageTileStoreReaderAdapter(final File file, final Supplier<Dimensions<Integer>> tileDimensionsSupplier, final boolean forceInput)
     {
         super(file, false);
 
         this.tileDimensionsSupplier = tileDimensionsSupplier;
         this.forceInput             = forceInput;
 
-        final SpatialReference srs = GdalUtility.getDatasetSpatialReference(file);
-
+        final SpatialReference          srs = GdalUtility.getSpatialReference(file);
         final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystem(srs);
 
         String crsName;
