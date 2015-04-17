@@ -416,26 +416,26 @@ public class RawImageTileReader implements TileStoreReader
         public CrsCoordinate getCrsCoordinate() throws TileStoreException
         {
             return RawImageTileReader.this.tileToCrsCoordinate(this.column,
-                                                                this.row,
-                                                                this.matrix,
-                                                                RawImageTileReader.Origin);
+                                                               this.row,
+                                                               this.matrix,
+                                                               RawImageTileReader.Origin);
         }
 
         @Override
         public CrsCoordinate getCrsCoordinate(final TileOrigin corner) throws TileStoreException
         {
             return RawImageTileReader.this.tileToCrsCoordinate(this.column,
-                                                                this.row,
-                                                                this.matrix,
-                                                                corner);
+                                                               this.row,
+                                                               this.matrix,
+                                                               corner);
         }
 
         @Override
         public BoundingBox getBounds() throws TileStoreException
         {
              return RawImageTileReader.this.getTileBoundingBox(this.column,
-                                                                this.row,
-                                                                this.matrix);
+                                                               this.row,
+                                                               this.matrix);
         }
 
         @Override
@@ -486,7 +486,10 @@ public class RawImageTileReader implements TileStoreReader
         }
     }
 
-    private CrsCoordinate tileToCrsCoordinate(final int column, final int row, final TileMatrixDimensions tileMatrixDimensions, final TileOrigin corner)
+    private CrsCoordinate tileToCrsCoordinate(final int                  column,
+                                              final int                  row,
+                                              final TileMatrixDimensions tileMatrixDimensions,
+                                              final TileOrigin           corner)
     {
         if(corner == null)
         {
@@ -500,7 +503,9 @@ public class RawImageTileReader implements TileStoreReader
                                                 RawImageTileReader.Origin);
     }
 
-    private BoundingBox getTileBoundingBox(final int column, final int row, final TileMatrixDimensions tileMatrixDimensions)
+    private BoundingBox getTileBoundingBox(final int                  column,
+                                           final int                  row,
+                                           final TileMatrixDimensions tileMatrixDimensions)
     {
         return this.profile.getTileBounds(column,
                                           row,
