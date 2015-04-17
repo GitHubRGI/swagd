@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -183,32 +184,34 @@ public class Verifier
         try(final Statement statement = this.sqliteConnection.createStatement();
             final ResultSet tableInfo = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName)))
         {
-            final Map<String, ColumnDefinition> columns = ResultSetStream.getStream(tableInfo)
-                                                                         .map(resultSet -> { try
-                                                                                             {
-                                                                                                 final String columnName = resultSet.getString("name");
-                                                                                                 return new AbstractMap.SimpleImmutableEntry<>(columnName,
-                                                                                                                                               new ColumnDefinition(tableInfo.getString ("type"),
-                                                                                                                                                                    tableInfo.getBoolean("notnull"),
-                                                                                                                                                                    tableInfo.getBoolean("pk"),
-                                                                                                                                                                    uniques.stream().anyMatch(unique -> unique.equals(columnName)),
-                                                                                                                                                                    tableInfo.getString ("dflt_value")));   // TODO manipulate values so that they're "normalized" sql expressions, e.g. "" -> '', strftime ( '%Y-%m-%dT%H:%M:%fZ' , 'now' ) -> strftime('%Y-%m-%dT%H:%M:%fZ','now')
-                                                                                             }
-                                                                                             catch(final SQLException ex)
-                                                                                             {
-                                                                                                 ex.printStackTrace();
-                                                                                                 return null;
-                                                                                             }
-                                                                                           })
-                                                                         .filter(Objects::nonNull)
-                                                                         .collect(Collectors.toMap(entry -> entry.getKey(),
-                                                                                                   entry -> entry.getValue()));
+            final TreeMap<String, ColumnDefinition> columns = ResultSetStream.getStream(tableInfo)
+                                                                             .map(resultSet -> { try
+                                                                                                 {
+                                                                                                     final String columnName = resultSet.getString("name");
+                                                                                                     return new AbstractMap.SimpleImmutableEntry<>(columnName,
+                                                                                                                                                   new ColumnDefinition(tableInfo.getString ("type"),
+                                                                                                                                                                        tableInfo.getBoolean("notnull"),
+                                                                                                                                                                        tableInfo.getBoolean("pk"),
+                                                                                                                                                                        uniques.stream().anyMatch(unique -> unique.equals(columnName)),
+                                                                                                                                                                        tableInfo.getString ("dflt_value")));   // TODO manipulate values so that they're "normalized" sql expressions, e.g. "" -> '', strftime ( '%Y-%m-%dT%H:%M:%fZ' , 'now' ) -> strftime('%Y-%m-%dT%H:%M:%fZ','now')
+                                                                                                 }
+                                                                                                 catch(final SQLException ex)
+                                                                                                 {
+                                                                                                     ex.printStackTrace();
+                                                                                                     return null;
+                                                                                                 }
+                                                                                               })
+                                                                             .collect(Collectors.toMap(entry  -> entry.getKey(),
+                                                                                                       entry  -> entry.getValue(),
+                                                                                                       (a, b) -> a,
+                                                                                                       ()     -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
             // Make sure the required fields exist in the table
             for(final Entry<String, ColumnDefinition> column : requiredColumns.entrySet())
             {
-                final ColumnDefinition columnDefinition = columns.get(column.getKey());
                 Assert.assertTrue(String.format("Required column: %s.%s is missing", tableName, column.getKey()),
-                                  columnDefinition != null);
+                                  columns.containsKey(column.getKey()));
+
+                final ColumnDefinition columnDefinition = columns.get(column.getKey());
 
                 if(columnDefinition != null)
                 {
