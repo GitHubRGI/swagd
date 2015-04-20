@@ -24,15 +24,30 @@
 package com.rgi.geopackage.verification;
 
 /**
+ * Indication of the level of problem encountered when testing the conformity
+ * of a file to the <a href="http://www.geopackage.org/spec/">GeoPackage
+ * Standards</a> specification
+ *
  * @author Luke Lambert
  *
  */
 public enum Severity
 {
     /**
+     * Unexpected (non-test) error
+     */
+    Unknown,
+
+    /**
+     * An indication that a test was skipped
+     */
+    Skipped,
+
+    /**
      * A minor violation of the <a href="http://www.geopackage.org/spec/">GeoPackage Standards</a>
      */
     Warning,
+
     /**
      * A major violation of the <a href="http://www.geopackage.org/spec/">GeoPackage Standards</a>
      */

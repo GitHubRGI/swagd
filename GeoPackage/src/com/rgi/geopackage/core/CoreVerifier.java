@@ -126,7 +126,9 @@ public class CoreVerifier extends Verifier
 
         try(FileInputStream fileInputStream = new FileInputStream(this.file))
         {
-            assertTrue("The header information of the file does not contain enough bytes to include necessary information", fileInputStream.read(data, 0, header.length) == header.length);
+            assertTrue("The header information of the file does not contain enough bytes to include necessary information",
+                       fileInputStream.read(data, 0, header.length) == header.length);
+
             assertArrayEquals("The database file is not using a version 3 of the SQLite format.  Or does not include the SQLite version in the file header.", header, data);
         }
     }

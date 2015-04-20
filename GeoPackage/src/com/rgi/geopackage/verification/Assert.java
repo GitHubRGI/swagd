@@ -32,52 +32,84 @@ import java.util.Arrays;
 public class Assert
 {
     /**
-     * @param message The error message that is displayed when the arrays do not equal
-     * @param expecteds The expected values of the array
-     * @param actuals the actual values of the array
+     * @param message
+     *             The error message that is displayed when the arrays do not equal
+     * @param expected
+     *             The expected values of the array
+     * @param actual
+     *             The actual values of the array
+     * @param severity
+     *             Indication of the level of problem encountered when testing
+     *             the conformity of a file to the
+     *             <a href="http://www.geopackage.org/spec/">GeoPackage
+     *             Standards</a> specification
      * @throws AssertionError throws when the arrays are not equal
      */
-    public static void assertArrayEquals(final String message, final byte[] expecteds, final byte[] actuals) throws AssertionError
+    public static void assertArrayEquals(final String   message,
+                                         final byte[]   expected,
+                                         final byte[]   actual,
+                                         final Severity severity) throws AssertionError
     {
-        if(Arrays.equals(expecteds, actuals) == false)
+        if(Arrays.equals(expected, actual) == false)
         {
-            throw new AssertionError(message);
+            throw new AssertionError(message, severity);
         }
     }
 
     /**
-     * @param condition a relational expression that returns true or false
+     * @param condition
+     *             A relational expression that returns true or false
+     * @param severity
+     *             Indication of the level of problem encountered when testing
+     *             the conformity of a file to the
+     *             <a href="http://www.geopackage.org/spec/">GeoPackage
+     *             Standards</a> specification
      * @throws AssertionError throws when the condition is false
      */
-    static public void assertTrue(final boolean condition) throws AssertionError
+    static public void assertTrue(final boolean condition, final Severity severity) throws AssertionError
     {
-        Assert.assertTrue(null, condition);
+        Assert.assertTrue(null, condition, severity);
     }
 
     /**
-     * @param message the message that is displayed when the Assertion Error is thrown
-     * @param condition the relational expression that returns true or false
+     * @param message
+     *             The message that is displayed when the Assertion Error is thrown
+     * @param condition
+     *             The relational expression that returns true or false
+     * @param severity
+     *             Indication of the level of problem encountered when testing
+     *             the conformity of a file to the
+     *             <a href="http://www.geopackage.org/spec/">GeoPackage
+     *             Standards</a> specification
      * @throws AssertionError throws when the condition is false
      */
-    static public void assertTrue(final String message, final boolean condition) throws AssertionError
+    static public void assertTrue(final String   message,
+                                  final boolean  condition,
+                                  final Severity severity) throws AssertionError
     {
         if(condition == false)
         {
-            Assert.fail(message);
+            Assert.fail(message, severity);
         }
     }
 
     /**
-     * @param message the message that is displayed when the Assertion Error is thrown
+     * @param message
+     *             The message that is displayed when the Assertion Error is thrown
+     * @param severity
+     *             Indication of the level of problem encountered when testing
+     *             the conformity of a file to the
+     *             <a href="http://www.geopackage.org/spec/">GeoPackage
+     *             Standards</a> specification
      * @throws AssertionError always is thrown
      */
-    static public void fail(final String message) throws AssertionError
+    static public void fail(final String message, final Severity severity) throws AssertionError
     {
         if(message == null)
         {
-            throw new AssertionError();
+            throw new AssertionError((String)null, severity);
         }
 
-        throw new AssertionError(message);
+        throw new AssertionError(message, severity);
     }
 }

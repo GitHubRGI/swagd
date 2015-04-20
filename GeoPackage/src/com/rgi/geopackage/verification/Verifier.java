@@ -86,15 +86,20 @@ public class Verifier
                                                    catch(final InvocationTargetException ex)
                                                    {
                                                        final Requirement requirement = requirementTestMethod.getAnnotation(Requirement.class);
-                                                       // The ruling on the field, right now,  is that everything will be wrapped in a failed requirement, even if it's an issue in the test code.
-                                                       //if(ex.getCause() instanceof AssertionError)
-                                                       //{
-                                                           return new VerificationIssue(ex.getCause().getMessage(),  requirement);
-                                                       //}
 
-                                                       //throw new RuntimeException(String.format("Unexpected exception thrown when testing requirement %d for GeoPackage verification: %s",
-                                                       //                                         requirement.number(),
-                                                       //                                         ex.getCause().getMessage()));
+                                                       final Throwable cause = ex.getCause();
+
+                                                       if(cause != null && cause instanceof AssertionError)
+                                                       {
+                                                           final AssertionError assertionError = (AssertionError)cause;
+                                                           return new VerificationIssue(assertionError.getMessage(),
+                                                                                        requirement);
+                                                       }
+
+                                                       return new VerificationIssue(String.format("Unexpected exception thrown when testing requirement %d for GeoPackage verification: %s",
+                                                                                                  requirement.number(),
+                                                                                                  ex.getMessage()),
+                                                                                    requirement);
                                                    }
                                                    catch(final IllegalAccessException ex)
                                                    {
@@ -167,9 +172,10 @@ public class Verifier
             try(ResultSet gpkgContents = statement.executeQuery())
             {
                 final String sql = gpkgContents.getString("sql");
-                Assert.assertTrue(String.format("The sql field must include the %s Table SQL Definition.",
-                                         tableName),
-                           sql != null);
+                Assert.assertTrue(String.format("The `sql` field must include the %s table SQL Definition.",
+                                                tableName),
+                                  sql != null,
+                                  Severity.Error);
             }
         }
     }
@@ -209,17 +215,19 @@ public class Verifier
             for(final Entry<String, ColumnDefinition> column : requiredColumns.entrySet())
             {
                 Assert.assertTrue(String.format("Required column: %s.%s is missing", tableName, column.getKey()),
-                                  columns.containsKey(column.getKey()));
+                                  columns.containsKey(column.getKey()),
+                                  Severity.Error);
 
                 final ColumnDefinition columnDefinition = columns.get(column.getKey());
 
                 if(columnDefinition != null)
                 {
                     Assert.assertTrue(String.format("Required column %s is defined as:\n%s\nbut should be:\n%s",
-                                             column.getKey(),
-                                             columnDefinition.toString(),
-                                             column.getValue().toString()),
-                               columnDefinition.equals(column.getValue()));
+                                                    column.getKey(),
+                                                    columnDefinition.toString(),
+                                                    column.getValue().toString()),
+                                      columnDefinition.equals(column.getValue()),
+                                      Severity.Error);
                 }
             }
         }
@@ -251,11 +259,12 @@ public class Verifier
                 for(final ForeignKeyDefinition foreignKey : requiredForeignKeys)
                 {
                     Assert.assertTrue(String.format("The table %s is missing the foreign key constraint: %1$s.%s => %s.%s",
-                                             tableName,
-                                             foreignKey.getFromColumnName(),
-                                             foreignKey.getReferenceTableName(),
-                                             foreignKey.getToColumnName()),
-                              foreignKeys.contains(foreignKey));
+                                                     tableName,
+                                                     foreignKey.getFromColumnName(),
+                                                     foreignKey.getReferenceTableName(),
+                                                     foreignKey.getToColumnName()),
+                                      foreignKeys.contains(foreignKey),
+                                      Severity.Error);
                 }
             }
             catch(final SQLException ex)
@@ -278,9 +287,10 @@ public class Verifier
         for(final UniqueDefinition groupUnique : requiredGroupUniques)
         {
             Assert.assertTrue(String.format("The table %s is missing the column group unique constraint: (%s)",
-                                     tableName,
-                                     String.join(", ", groupUnique.getColumnNames())),
-                       uniques.contains(groupUnique));
+                                            tableName,
+                                            String.join(", ", groupUnique.getColumnNames())),
+                              uniques.contains(groupUnique),
+                              Severity.Error);
         }
     }
 
