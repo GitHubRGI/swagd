@@ -143,11 +143,33 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
     @Override
     public TileStoreWriter getTileStoreWriter(final TileStoreReader tileStoreReader) throws TileStoreException
     {
+        final File file = new File(this.directory.getText());
+
+        final String parent = file.getParent();
+
+        if(parent != null)
+        {
+            this.settings.set(TmsOutputLocationSettingName, parent);
+            this.settings.save();
+        }
+
         final MimeType mimeType = (MimeType)this.imageFormat.getSelectedItem();
 
         return new TmsWriter(tileStoreReader.getCoordinateReferenceSystem(),
-                             new File(this.directory.getText()).toPath(),
+                             file.toPath(),
                              mimeType,
                              this.getImageWriteParameter());
+    }
+
+    @Override
+    public void removeStore() throws TileStoreException
+    {
+        final File newDirectory = new File(this.directory.getText());
+
+        if(newDirectory.delete() == false)
+        {
+            throw new TileStoreException(String.format("Unable to remove directory '%s'",
+                                                       newDirectory.getAbsolutePath()));
+        }
     }
 }

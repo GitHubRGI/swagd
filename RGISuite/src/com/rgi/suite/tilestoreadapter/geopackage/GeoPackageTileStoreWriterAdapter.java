@@ -93,7 +93,7 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
                                                              final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
                                                              fileChooser.setMultiSelectionEnabled(false);
-                                                             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                                                             fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
                                                              final int option = fileChooser.showOpenDialog(null);
 
@@ -101,10 +101,23 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
                                                              {
                                                                  final File file = fileChooser.getSelectedFile();
 
-                                                                 this.settings.set(GeoPackageOutputLocationSettingName, file.getParent());
-                                                                 this.settings.save();
+                                                                 if(file.isDirectory())
+                                                                 {
+                                                                     final File oldFileSelection = new File(this.filename.getText());
 
-                                                                 this.filename.setText(fileChooser.getSelectedFile().getPath());
+                                                                     this.filename.setText(String.format("%s%c%s",
+                                                                                                         file.getPath(),
+                                                                                                         File.separatorChar,
+                                                                                                         (oldFileSelection.isDirectory() ? "geopackage.gpkg"
+                                                                                                                                         : oldFileSelection.getName())));
+                                                                 }
+                                                                 else
+                                                                 {
+                                                                     this.filename.setText(file.getPath());
+                                                                 }
+
+                                                                 this.settings.set(GeoPackageOutputLocationSettingName, (new File(this.filename.getText()).getParent()));
+                                                                 this.settings.save();
                                                              }
                                                            });
     }
@@ -144,11 +157,10 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
 
         name = name.replaceAll("^gpkg_", "");
 
-        if(name.startsWith("[0-9]"))
+        if(name.matches("^[0-9].*"))
         {
             name = "_" + name;
         }
-
 
         this.filename.setText(FileUtility.appendForUnique(String.format("%s%c%s.gpkg",
                                                                         this.settings.get(GeoPackageOutputLocationSettingName, DefaultGeoPackageOutputLocation),
@@ -170,9 +182,19 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
     @Override
     public TileStoreWriter getTileStoreWriter(final TileStoreReader tileStoreReader) throws TileStoreException
     {
+        final File file = new File(this.filename.getText());
+
+        final String parent = file.getParent();
+
+        if(parent != null)
+        {
+            this.settings.set(GeoPackageOutputLocationSettingName, parent);
+                              this.settings.save();
+        }
+
         final MimeType mimeType = (MimeType)this.imageFormat.getSelectedItem();
 
-        return new GeoPackageWriter(new File(this.filename.getText()),
+        return new GeoPackageWriter(file,
                                     tileStoreReader.getCoordinateReferenceSystem(),
                                     this.tileSetName.getText(),
                                     this.tileSetName.getText(),
@@ -181,6 +203,18 @@ public class GeoPackageTileStoreWriterAdapter extends ImageFormatTileStoreAdapte
                                     getRelativeZoomTimesTwoTileScheme(tileStoreReader),
                                     mimeType,
                                     this.getImageWriteParameter());
+    }
+
+    @Override
+    public void removeStore() throws TileStoreException
+    {
+        final File file = new File(this.filename.getText());
+
+        if(file.delete() == false)
+        {
+            throw new TileStoreException(String.format("Unable to remove file '%s'",
+                                                       file.getAbsolutePath()));
+        }
     }
 
     private static TileScheme getRelativeZoomTimesTwoTileScheme(final TileStoreReader tileStoreReader) throws TileStoreException

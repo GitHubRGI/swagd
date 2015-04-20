@@ -27,6 +27,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -164,12 +165,6 @@ public class GeoPackageWriter implements TileStoreWriter
             this.imageWriteOptions = imageWriteOptions; // May be null
 
             this.tileScheme = tileScheme;
-
-            this.tileMatrices = this.geoPackage.tiles()
-                                           .getTileMatrices(this.tileSet)
-                                           .stream()
-                                           .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
-                                                                     tileMatrix -> tileMatrix));
         }
         catch(final Exception ex)
         {
@@ -363,13 +358,14 @@ public class GeoPackageWriter implements TileStoreWriter
                                              tileSetBounds.getHeight() / tileMatrixDimensions.getHeight() / tilePixelHeight);
     }
 
-    private final GeoPackage               geoPackage;
-    private final TileSet                  tileSet;
-    private final CrsProfile               crsProfile;
-    private final Map<Integer, TileMatrix> tileMatrices;
-    private final ImageWriter              imageWriter;
-    private final ImageWriteParam          imageWriteOptions;
-    private final TileScheme               tileScheme;
+    private final GeoPackage      geoPackage;
+    private final TileSet         tileSet;
+    private final CrsProfile      crsProfile;
+    private final ImageWriter     imageWriter;
+    private final ImageWriteParam imageWriteOptions;
+    private final TileScheme      tileScheme;
+
+    private final Map<Integer, TileMatrix> tileMatrices = new HashMap<>();
 
     /**
      * Image formats supported by an unextended GeoPackage

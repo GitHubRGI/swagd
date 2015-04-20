@@ -94,6 +94,31 @@ public interface CrsProfile
                                              final TileOrigin           tileOrigin);
 
     /**
+     * Determines the bounding box, in the units of the coordinate reference
+     * system, for the specified tile.
+     *
+     * @param column
+     *             Horizontal portion of the tile's coordinate
+     * @param row
+     *             Vertical portion of the tile's coordinate
+     * @param bounds
+     *             The area, in the units of the coordinate reference system,
+     *             that represents the valid area for tiling numbering (bounds
+     *             of the tile matrix dimensions)
+     * @param dimensions
+     *             Height and width of the tile matrix
+     * @param tileOrigin
+     *             Specifies where tile (0, 0) is in the tile matrix
+     *
+     * @return Returns the bounding box of the tile
+     */
+    public BoundingBox getTileBounds(final int                  column,
+                                     final int                  row,
+                                     final BoundingBox          bounds,
+                                     final TileMatrixDimensions dimensions,
+                                     final TileOrigin           tileOrigin);
+
+    /**
      * @return Returns the {@link CoordinateReferenceSystem} object that
      * corresponds to this profile
      */

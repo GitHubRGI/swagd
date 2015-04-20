@@ -23,6 +23,8 @@
 
 package com.rgi.common.tile.scheme;
 
+import java.util.Collection;
+
 /**
  * Mechanism to describe the number of tiles in a tile set, at a given zoom
  * level
@@ -40,5 +42,11 @@ public interface TileScheme
      * @return Returns a {@link TileMatrixDimensions} specifying the width and
      *             height of a tile matrix at the given zoom level
      */
-    public abstract TileMatrixDimensions dimensions(final int zoomLevel);
+    public TileMatrixDimensions dimensions(final int zoomLevel);
+
+    /**
+     * @return Returns a {@link Collection} of all unique valid zoom levels for
+     *             this tile scheme
+     */
+    public Collection<Integer> getZoomLevels();
 }

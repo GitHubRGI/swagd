@@ -139,7 +139,7 @@ public class PackagerWindow extends NavigationWindow
                                                               }
                                                               catch(final Exception ex)
                                                               {
-                                                                  this.error(ex.getMessage());
+                                                                  this.error(ex);
                                                               }
                                                               finally
                                                               {
@@ -274,8 +274,14 @@ public class PackagerWindow extends NavigationWindow
                                                               (new Packager(taskMonitor,
                                                                             tileStoreReader,
                                                                             tileStoreWriter)).execute();
-                                                              return null;
                                                           }
+                                                          catch(final Exception ex)
+                                                          {
+                                                              this.tileStoreWriterAdapter.removeStore();
+                                                              throw ex;
+                                                          }
+
+                                                          return null;
                                                       }
                                                     });
 
