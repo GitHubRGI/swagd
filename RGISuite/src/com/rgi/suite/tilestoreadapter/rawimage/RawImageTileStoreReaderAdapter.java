@@ -76,7 +76,9 @@ public class RawImageTileStoreReaderAdapter extends TileStoreReaderAdapter
      *             If true, {@link #needsInput} will always return true. This
      *             forces the selection of a coordinate reference system.
      */
-    public RawImageTileStoreReaderAdapter(final File file, final Supplier<Dimensions<Integer>> tileDimensionsSupplier, final boolean forceInput)
+    public RawImageTileStoreReaderAdapter(final File                          file,
+                                          final Supplier<Dimensions<Integer>> tileDimensionsSupplier,
+                                          final boolean                       forceInput)
     {
         super(file, false);
 

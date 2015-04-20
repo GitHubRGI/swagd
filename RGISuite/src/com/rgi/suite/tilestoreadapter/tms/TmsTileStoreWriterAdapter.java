@@ -150,7 +150,7 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
         if(parent != null)
         {
             this.settings.set(TmsOutputLocationSettingName, parent);
-                              this.settings.save();
+            this.settings.save();
         }
 
         final MimeType mimeType = (MimeType)this.imageFormat.getSelectedItem();
