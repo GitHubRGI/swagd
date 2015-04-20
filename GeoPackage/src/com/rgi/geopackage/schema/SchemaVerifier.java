@@ -109,23 +109,28 @@ public class SchemaVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 56</div> <blockquote> A GeoPackage MAY
-     * contain a table or updateable view named <code>gpkg_data_columns</code>.
-     * If present it SHALL be defined per clause 2.3.2.1.1 <a href=
+     * Requirement 56
+     *
+     * <blockquote>
+     * A GeoPackage MAY contain a table or updateable view named
+     * <code>gpkg_data_columns</code>. If present it SHALL be defined per
+     * clause 2.3.2.1.1 <a href=
      * "http://www.geopackage.org/spec/#schema_data_columns_table_definition"
      * >Table Definition</a>, <a
      * href="http://www.geopackage.org/spec/#gpkg_data_columns_cols">Data
      * Columns Table or View Definition</a> and <a
      * href="http://www.geopackage.org/spec/#gpkg_data_columns_sql"
-     * >gpkg_data_columns Table Definition SQL</a>. </blockquote> </div>
+     * >gpkg_data_columns Table Definition SQL</a>.
+     * </blockquote>
+     *
      * @throws SQLException throws if the method verifyTable throws an SQLException
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement(heading = "Requirement 56",
-                 text    = "A GeoPackage MAY contain a table or updateable view named "
-                           + "gpkg_data_columns. If present it SHALL be defined per "
-                           + "clause 2.3.2.1.1 Table Definition, Data Columns Table or"
-                           + " View Definition and gpkg_data_columns Table Definition SQL. ")
+    @Requirement(reference = "Requirement 56",
+                 text      = "A GeoPackage MAY contain a table or updateable view named "
+                             + "gpkg_data_columns. If present it SHALL be defined per "
+                             + "clause 2.3.2.1.1 Table Definition, Data Columns Table or"
+                             + " View Definition and gpkg_data_columns Table Definition SQL. ")
     public void Requirement56() throws AssertionError, SQLException
     {
         if(this.hasDataColumnsTable)
@@ -135,16 +140,20 @@ public class SchemaVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 57</div> <blockquote> Values of the
-     * <code>gpkg_data_columns</code> table <code>table_name</code> column value
-     * SHALL reference values in the <code>gpkg_contents</code>
-     * <code>table_name</code> column. </blockquote> </div>
+     * Requirement 57
+     *
+     * <blockquote>
+     * Values of the <code>gpkg_data_columns</code> table <code>
+     * table_name</code> column value SHALL reference values in the <code>
+     * gpkg_contents</code> <code>table_name</code> column.
+     * </blockquote>
+     *
      * @throws SQLException throws if various SQLExceptions occur
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement(heading = "Requirement 57",
-                 text     = "Values of the gpkg_data_columns table table_name column value "
-                            + "SHALL reference values in the gpkg_contents table_name column.")
+    @Requirement(reference = "Requirement 57",
+                 text      = "Values of the gpkg_data_columns table table_name column value "
+                             + "SHALL reference values in the gpkg_contents table_name column.")
     public void Requirement57() throws SQLException, AssertionError
     {
         if(this.hasDataColumnsTable)
@@ -180,19 +189,21 @@ public class SchemaVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 58</div> <blockquote> The
-     * <code>column_name</code> column value in a <code>gpkg_data_columns</code>
-     * table row SHALL contain the name of a column in the SQLite table or view
-     * identified by the <code>table_name</code> column value. </blockquote>
-     * </div>
+     * Requirement 58
+     *
+     * <blockquote>
+     * The <code>column_name</code> column value in a <code>gpkg_data_columns
+     * </code> table row SHALL contain the name of a column in the SQLite table
+     * or view identified by the <code>table_name</code> column value.
+     * </blockquote>
      *
      * @throws SQLException throws if various SQLExceptions occur
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement(heading = "Requirement 58",
-                 text    = "The column_name column value in a gpkg_data_columns table row "
-                           + "SHALL contain the name of a column in the SQLite table or view "
-                           + "identified by the table_name column value. ")
+    @Requirement(reference = "Requirement 58",
+                 text      = "The column_name column value in a gpkg_data_columns table row "
+                             + "SHALL contain the name of a column in the SQLite table or view "
+                             + "identified by the table_name column value. ")
     public void Requirement58() throws SQLException, AssertionError
     {
         if(this.hasDataColumnsTable)
@@ -228,16 +239,21 @@ public class SchemaVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 59</div> <blockquote> The constraint_name
-     * column value in a gpkg_data_columns table MAY be NULL. If it is not NULL,
-     * it SHALL contain a case sensitive constraint_name column value from the
-     * gpkg_data_column_constraints table. </blockquote> </div>
+     * Requirement 59
+     *
+     * <blockquote>
+     * The constraint_name column value in a gpkg_data_columns table MAY be
+     * NULL. If it is not NULL, it SHALL contain a case sensitive
+     * constraint_name column value from the gpkg_data_column_constraints
+     * table.
+     * </blockquote>
+     *
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement(heading = "Requirement 59",
-                 text    = "The constraint_name column value in a gpkg_data_columns table MAY be NULL. "
-                           + "If it is not NULL, it SHALL contain a case sensitive constraint_name "
-                           + "column value from the gpkg_data_column_constraints table. ")
+    @Requirement(reference = "Requirement 59",
+                 text      = "The constraint_name column value in a gpkg_data_columns table MAY be NULL. "
+                             + "If it is not NULL, it SHALL contain a case sensitive constraint_name "
+                             + "column value from the gpkg_data_column_constraints table. ")
     public void Requirement59() throws AssertionError
     {
         if(this.hasDataColumnsTable && this.hasDataColumnsConstraintsTable)
@@ -260,23 +276,28 @@ public class SchemaVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 60</div> <blockquote> A GeoPackage MAY
-     * contain a table or updateable view named gpkg_data_column_constraints. If
-     * present it SHALL be defined per clause 2.3.3.1.1 <a href=
+     * Requirement 60
+     *
+     * <blockquote>
+     * A GeoPackage MAY contain a table or updateable view named
+     * gpkg_data_column_constraints. If present it SHALL be defined per clause
+     * 2.3.3.1.1 <a href=
      * "http://www.geopackage.org/spec/#data_column_constraints_table_definition"
      * >Table Definition</a>, <a href=
      * "http://www.geopackage.org/spec/#gpkg_data_column_constraints_cols">Data
      * Column Constraints Table or View Definition</a> and <a
      * href="http://www.geopackage.org/spec/#gpkg_data_column_constraints_sql"
-     * >gpkg_data_columns Table Definition SQL</a>. </blockquote> </div>
+     * >gpkg_data_columns Table Definition SQL</a>.
+     * </blockquote>
+     *
      * @throws SQLException throws if the method verifyTable throws
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement(heading = "Requirement 60",
-                 text    = "A GeoPackage MAY contain a table or updateable view named "
-                           + "gpkg_data_column_constraints. If present it SHALL be defined "
-                           + "per clause 2.3.3.1.1 Table Definition, Data Column Constraints "
-                           + "Table or View Definition and gpkg_data_columns Table Definition SQL. ")
+    @Requirement(reference = "Requirement 60",
+                 text      = "A GeoPackage MAY contain a table or updateable view named "
+                             + "gpkg_data_column_constraints. If present it SHALL be defined "
+                             + "per clause 2.3.3.1.1 Table Definition, Data Column Constraints "
+                             + "Table or View Definition and gpkg_data_columns Table Definition SQL. ")
     public void Requirement60() throws AssertionError, SQLException
     {
         if(this.hasDataColumnsConstraintsTable)
@@ -286,17 +307,21 @@ public class SchemaVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 61</div> <blockquote> The
-     * <code>gpkg_data_column_constraints</code> table MAY be empty. If it
+     * Requirement 61
+     *
+     * <blockquote>
+     * The <code>gpkg_data_column_constraints</code> table MAY be empty. If it
      * contains data, the lowercase <code>constraint_type</code> column values
-     * SHALL be one of "range", "enum", or "glob". </blockquote> </div>
+     * SHALL be one of "range", "enum", or "glob".
+     * </blockquote>
+     *
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement(heading = "Requirement 61",
-                 text    = "The gpkg_data_column_constraints table MAY be empty. "
-                           + "If it contains data, the lowercase constraint_type "
-                           + "column values SHALL be one of \"range\", \"enum\", or "
-                           + "\"glob\". ")
+    @Requirement(reference = "Requirement 61",
+                 text      = "The gpkg_data_column_constraints table MAY be empty. "
+                             + "If it contains data, the lowercase constraint_type "
+                             + "column values SHALL be one of \"range\", \"enum\", or "
+                             + "\"glob\". ")
     public void Requirement61() throws AssertionError
     {
         if(this.hasDataColumnsConstraintsTable)
@@ -314,17 +339,21 @@ public class SchemaVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 62</div> <blockquote>
+     * Requirement 62
+     *
+     * <blockquote>
      * gpkg_data_column_constraint constraint_name values for rows with
      * constraint_type values of <em>range</em> and <em>glob</em> SHALL be
-     * unique. </blockquote> </div>
+     * unique.
+     * </blockquote>
+     *
      * @throws SQLException throws if various SQLExceptions occur
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement(heading = "Requirement 62",
-                 text    = "gpkg_data_column_constraint constraint_name values "
-                           + "for rows with constraint_type values of range and "
-                           + "glob SHALL be unique. ")
+    @Requirement(reference = "Requirement 62",
+                 text      = "gpkg_data_column_constraint constraint_name values "
+                             + "for rows with constraint_type values of range and "
+                             + "glob SHALL be unique. ")
     public void Requirement62() throws SQLException, AssertionError
     {
         if(this.hasDataColumnsConstraintsTable)
@@ -366,18 +395,21 @@ public class SchemaVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 63</div> <blockquote> The
-     * <code>gpkg_data_column_constraints</code> table MAY be empty. If it
+     * Requirement 63
+     *
+     * <blockquote>
+     * The <code>gpkg_data_column_constraints</code> table MAY be empty. If it
      * contains rows with constraint_type column values of "range", the
      * <code>value</code> column values for those rows SHALL be NULL.
-     * </blockquote> </div>
+     * </blockquote>
+     *
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement(heading = "Requirement 63",
-                 text    = "The gpkg_data_column_constraints table MAY be empty. "
-                           + "If it contains rows with constraint_type column "
-                           + "values of \"range\", the value column values for "
-                           + "those rows SHALL be NULL. ")
+    @Requirement(reference = "Requirement 63",
+                 text      = "The gpkg_data_column_constraints table MAY be empty. "
+                             + "If it contains rows with constraint_type column "
+                             + "values of \"range\", the value column values for "
+                             + "those rows SHALL be NULL. ")
     public void Requirement63() throws AssertionError
     {
         if(this.hasDataColumnsConstraintsTable)
@@ -397,19 +429,23 @@ public class SchemaVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 64</div> <blockquote> The
-     * <code>gpkg_data_column_constraints</code> table MAY be empty. If it
-     * contains rows with <code>constraint_type</code> column values of "range",
-     * the <code>min</code> column values for those rows SHALL be NOT NULL and
-     * less than the <code>max</code> column value which shall be NOT NULL.
-     * </blockquote> </div>
+     * Requirement 64
+     *
+     * <blockquote>
+     * The <code>gpkg_data_column_constraints</code> table MAY be empty. If it
+     * contains rows with <code>constraint_type</code> column values of
+     * "range", the <code>min</code> column values for those rows SHALL be NOT
+     * NULL and less than the <code>max</code> column value which shall be NOT
+     * NULL.
+     * </blockquote>
+     *
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      *
      */
-    @Requirement(heading = "Requirement 64",
-                 text    = "The gpkg_data_column_constraints table MAY be empty. If it contains rows with "
-                           + "constraint_type column values of \"range\", the min column values for those "
-                           + "rows SHALL be NOT NULL and less than the max column value which shall be NOT NULL.")
+    @Requirement(reference = "Requirement 64",
+                 text      = "The gpkg_data_column_constraints table MAY be empty. If it contains rows with "
+                             + "constraint_type column values of \"range\", the min column values for those "
+                             + "rows SHALL be NOT NULL and less than the max column value which shall be NOT NULL.")
     public void Requirement64() throws AssertionError
     {
         if(this.hasDataColumnsConstraintsTable)
@@ -432,19 +468,22 @@ public class SchemaVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 65</div> <blockquote> The
-     * <code>gpkg_data_column_constraints</code> table MAY be empty. If it
-     * contains rows with <code>constraint_type</code> column values of "range",
-     * the <code>minIsInclusive</code> and <code>maxIsInclusive</code> column
-     * values for those rows SHALL be 0 or 1. </blockquote> </div>
+     * Requirement 65
+     *
+     * <blockquote>
+     * The <code>gpkg_data_column_constraints</code> table MAY be empty. If it
+     * contains rows with <code>constraint_type</code> column values of
+     * "range", the <code>minIsInclusive</code> and <code>maxIsInclusive
+     * </code> column values for those rows SHALL be 0 or 1.
+     * </blockquote>
      *
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
 
-    @Requirement(heading = "Requirement 65",
-                 text    = "The gpkg_data_column_constraints table MAY be empty. If it contains "
-                           + "rows with constraint_type column values of \"range\", the minIsInclusive "
-                           + "and maxIsInclusive column values for those rows SHALL be 0 or 1. ")
+    @Requirement(reference = "Requirement 65",
+                 text      = "The gpkg_data_column_constraints table MAY be empty. If it contains "
+                             + "rows with constraint_type column values of \"range\", the minIsInclusive "
+                             + "and maxIsInclusive column values for those rows SHALL be 0 or 1. ")
     public void Requirement65() throws AssertionError
     {
         if(this.hasDataColumnsConstraintsTable)
@@ -477,18 +516,22 @@ public class SchemaVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 66</div> <blockquote> The
-     * <code>gpkg_data_column_constraints</code> table MAY be empty. If it
+     * Requirement 66
+     *
+     * <blockquote>
+     * The <code>gpkg_data_column_constraints</code> table MAY be empty. If it
      * contains rows with <code>constraint_type</code> column values of "enum"
-     * or "glob", the <code>min</code>, <code>max</code>,
-     * <code>minIsInclusive</code> and <code>maxIsInclusive</code> column values
-     * for those rows SHALL be NULL. </blockquote> </div>
+     * or "glob", the <code>min</code>, <code>max</code>, <code>minIsInclusive
+     * </code> and <code>maxIsInclusive</code> column values for those rows
+     * SHALL be NULL.
+     * </blockquote>
+     *
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement(heading = "Requirement 66",
-                 text    = "The gpkg_data_column_constraints table MAY be empty. If it contains "
-                           + "rows with constraint_type column values of \"enum\" or \"glob\", the min,"
-                           + " max, minIsInclusive and maxIsInclusive column values for those rows SHALL be NULL.")
+    @Requirement(reference = "Requirement 66",
+                 text      = "The gpkg_data_column_constraints table MAY be empty. If it contains "
+                             + "rows with constraint_type column values of \"enum\" or \"glob\", the min,"
+                             + " max, minIsInclusive and maxIsInclusive column values for those rows SHALL be NULL.")
     public void Requirement66() throws AssertionError
     {
         if(this.hasDataColumnsConstraintsTable)
@@ -515,17 +558,20 @@ public class SchemaVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 67</div> <blockquote> The
-     * <code>gpkg_data_column_constraints</code> table MAY be empty. If it
+     * Requirement 67
+     *
+     * <blockquote>
+     * The <code>gpkg_data_column_constraints</code> table MAY be empty. If it
      * contains rows with <code>constraint_type</code> column values of "enum"
-     * or "glob", the <code>value</code> column SHALL NOT be NULL. </blockquote>
-     * </div>
+     * or "glob", the <code>value</code> column SHALL NOT be NULL.
+     * </blockquote>
+     *
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement(heading = "Requirement 67",
-                 text    = "The gpkg_data_column_constraints table MAY be empty. "
-                           + "If it contains rows with constraint_type column values "
-                           + "of \"enum\" or \"glob\", the value column SHALL NOT be NULL. ")
+    @Requirement(reference = "Requirement 67",
+                 text      = "The gpkg_data_column_constraints table MAY be empty. "
+                             + "If it contains rows with constraint_type column values "
+                             + "of \"enum\" or \"glob\", the value column SHALL NOT be NULL. ")
     public void Requirement67() throws AssertionError
     {
         if(this.hasDataColumnsConstraintsTable)
@@ -607,7 +653,6 @@ public class SchemaVerifier extends Verifier
         }
     }
 
-
     private List<DataColumns> getDataColumnValues()
     {
         final String query = "SELECT table_name, column_name, constraint_name FROM gpkg_data_columns;";
@@ -642,17 +687,18 @@ public class SchemaVerifier extends Verifier
 
     private static final TableDefinition DataColumnsTableDefinition;
     private static final TableDefinition DataColumnConstraintsTableDefinition;
+
     static
     {
         final Map<String, ColumnDefinition> dataColumnsTableColumns = new HashMap<>();
 
-        dataColumnsTableColumns.put("table_name",        new ColumnDefinition("TEXT", true,  true, true, null));
-        dataColumnsTableColumns.put("column_name",       new ColumnDefinition("TEXT", true,  true, true, null));
-        dataColumnsTableColumns.put("name",              new ColumnDefinition("TEXT", false, false, false, null));
-        dataColumnsTableColumns.put("title",             new ColumnDefinition("TEXT", false, false, false, null));
-        dataColumnsTableColumns.put("description",       new ColumnDefinition("TEXT", false, false, false, null));
-        dataColumnsTableColumns.put("mime_type",         new ColumnDefinition("TEXT", false, false, false, null));
-        dataColumnsTableColumns.put("constraint_name",   new ColumnDefinition("TEXT", false, false, false, null));
+        dataColumnsTableColumns.put("table_name",      new ColumnDefinition("TEXT", true,  true,  true,  null));
+        dataColumnsTableColumns.put("column_name",     new ColumnDefinition("TEXT", true,  true,  true,  null));
+        dataColumnsTableColumns.put("name",            new ColumnDefinition("TEXT", false, false, false, null));
+        dataColumnsTableColumns.put("title",           new ColumnDefinition("TEXT", false, false, false, null));
+        dataColumnsTableColumns.put("description",     new ColumnDefinition("TEXT", false, false, false, null));
+        dataColumnsTableColumns.put("mime_type",       new ColumnDefinition("TEXT", false, false, false, null));
+        dataColumnsTableColumns.put("constraint_name", new ColumnDefinition("TEXT", false, false, false, null));
 
         DataColumnsTableDefinition = new TableDefinition(GeoPackageSchema.DataColumnsTableName,
                                                          dataColumnsTableColumns,
@@ -661,14 +707,14 @@ public class SchemaVerifier extends Verifier
 
         final Map<String, ColumnDefinition> dataColumnConstraintsColumns = new HashMap<>();
 
-        dataColumnConstraintsColumns.put("constraint_name",   new ColumnDefinition("TEXT",    true,  false, false, null));
-        dataColumnConstraintsColumns.put("constraint_type",   new ColumnDefinition("TEXT",    true,  false, false, null));
-        dataColumnConstraintsColumns.put("value",             new ColumnDefinition("TEXT",    false, false, false, null));
-        dataColumnConstraintsColumns.put("min",               new ColumnDefinition("NUMERIC", false, false, false, null));
-        dataColumnConstraintsColumns.put("minIsInclusive",    new ColumnDefinition("BOOLEAN", false, false, false, null));
-        dataColumnConstraintsColumns.put("max",               new ColumnDefinition("NUMERIC", false, false, false, null));
-        dataColumnConstraintsColumns.put("maxIsInclusive",    new ColumnDefinition("BOOLEAN", false, false, false, null));
-        dataColumnConstraintsColumns.put("description",       new ColumnDefinition("TEXT",    false, false, false, null));
+        dataColumnConstraintsColumns.put("constraint_name", new ColumnDefinition("TEXT",    true,  false, false, null));
+        dataColumnConstraintsColumns.put("constraint_type", new ColumnDefinition("TEXT",    true,  false, false, null));
+        dataColumnConstraintsColumns.put("value",           new ColumnDefinition("TEXT",    false, false, false, null));
+        dataColumnConstraintsColumns.put("min",             new ColumnDefinition("NUMERIC", false, false, false, null));
+        dataColumnConstraintsColumns.put("minIsInclusive",  new ColumnDefinition("BOOLEAN", false, false, false, null));
+        dataColumnConstraintsColumns.put("max",             new ColumnDefinition("NUMERIC", false, false, false, null));
+        dataColumnConstraintsColumns.put("maxIsInclusive",  new ColumnDefinition("BOOLEAN", false, false, false, null));
+        dataColumnConstraintsColumns.put("description",     new ColumnDefinition("TEXT",    false, false, false, null));
 
         DataColumnConstraintsTableDefinition = new TableDefinition(GeoPackageSchema.DataColumnConstraintsTableName,
                                                                    dataColumnConstraintsColumns,
@@ -676,7 +722,4 @@ public class SchemaVerifier extends Verifier
                                                                    new HashSet<>(Arrays.asList(new UniqueDefinition("constraint_name", "constraint_type", "value"))));
 
     }
-
-
-
 }

@@ -132,8 +132,10 @@ public class Verifier
     {
         return Stream.of(this.getClass().getDeclaredMethods())
                      .filter(method -> method.isAnnotationPresent(Requirement.class))
-                     .sorted((method1, method2) -> Integer.compare(method1.getAnnotation(Requirement.class).reference(),
-                                                                   method2.getAnnotation(Requirement.class).reference()));
+                     .sorted((method1, method2) -> method1.getAnnotation(Requirement.class)
+                                                          .reference()
+                                                          .compareTo(method2.getAnnotation(Requirement.class)
+                                                                            .reference()));
     }
 
     /**

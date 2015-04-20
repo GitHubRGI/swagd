@@ -41,7 +41,7 @@ public @interface Requirement
      * @return the requirement number or paragraph heading (Referring to the
      *         OGC Requirement numbering http://www.geopackage.org/spec/)
      */
-    String heading();
+    String reference();
 
     /**
      *

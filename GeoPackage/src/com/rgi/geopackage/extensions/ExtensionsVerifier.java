@@ -49,6 +49,7 @@ import com.rgi.geopackage.verification.TableDefinition;
 import com.rgi.geopackage.verification.UniqueDefinition;
 import com.rgi.geopackage.verification.VerificationLevel;
 import com.rgi.geopackage.verification.Verifier;
+
 /**
  *
  * @author Jenifer Cochran
@@ -67,6 +68,8 @@ public class ExtensionsVerifier extends Verifier
     private Map<ExtensionData, String> gpkgExtensionsDataAndColumnName;
 
     /**
+     * Constructor
+     *
      * @param verificationLevel
      *             Controls the level of verification testing performed
      * @param sqliteConnection A connection handle to the database
@@ -118,25 +121,28 @@ public class ExtensionsVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 78</div> <blockquote> A GeoPackage MAY
-     * contain a table or update table view named gpkg_extensions. If present
-     * this table SHALL be defined per clause 2.5.2.1.1 <a
+     * Requirement 78
+     *
+     * <blockquote> A GeoPackage MAY contain a table or update table view named
+     * gpkg_extensions. If present this table SHALL be defined per clause
+     * 2.5.2.1.1 <a
      * href="http://www.geopackage.org/spec/#extensions_table_definition">Table
      * Definition</a>, <a
      * href="http://www.geopackage.org/spec/#gpkg_extensions_cols">GeoPackage
      * Extensions Table or View Definition (Table or View Name:
      * gpkg_extensions)</a> and <a
-     * href="http://www.geopackage.org/spec/#gpkg_extensions_sql"
-     * >gpkg_extensions Table Definition SQL</a>. </blockquote> </div>
+     * href="http://www.geopackage.org/spec/#gpkg_extensions_sql">
+     * gpkg_extensions Table Definition SQL</a>.
+     * </blockquote>
      *
      * @throws SQLException  throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(heading = "Requirement 78",
-                 text    = "A GeoPackage MAY contain a table or updateable view named gpkg_extensions."
-                           + " If present this table SHALL be defined per clause 2.5.2.1.1 Table Definition, "
-                           + "GeoPackage Extensions Table or View Definition (Table or View Name: gpkg_extensions) "
-                           + "and gpkg_extensions Table Definition SQL. ")
+    @Requirement(reference = "Requirement 78",
+                 text      = "A GeoPackage MAY contain a table or updateable view named gpkg_extensions."
+                             + " If present this table SHALL be defined per clause 2.5.2.1.1 Table Definition, "
+                             + "GeoPackage Extensions Table or View Definition (Table or View Name: gpkg_extensions) "
+                             + "and gpkg_extensions Table Definition SQL. ")
     public void Requirement78() throws AssertionError, SQLException
     {
         if (this.hasGpkgExtensionsTable)
@@ -147,19 +153,20 @@ public class ExtensionsVerifier extends Verifier
 
 
     /**
-     * <div class="title">Requirement 79</div>
+     * Requirement 79
+     *
      * <blockquote>
-     * Every extension of a GeoPackage SHALL be registered in a corresponding row in the gpkg_extensions table.
-     * The absence of a gpkg_extensions table or the absence of rows in gpkg_extnsions table SHALL both indicate
-     * the absence of extensions to a GeoPackage.
+     * Every extension of a GeoPackage SHALL be registered in a corresponding
+     * row in the gpkg_extensions table. The absence of a gpkg_extensions table
+     * or the absence of rows in gpkg_extnsions table SHALL both indicate the
+     * absence of extensions to a GeoPackage.
      * </blockquote>
-     * </div>
      */
-    @Requirement(heading = "Requirement 79",
-                 text    = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
-                            + "in the gpkg_extensions table. The absence of a gpkg_extensions table or "
-                            + "the absence of rows in gpkg_extnsions table SHALL both indicate the absence "
-                            + "of extensions to a GeoPackage.")
+    @Requirement(reference = "Requirement 79",
+                 text      = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
+                              + "in the gpkg_extensions table. The absence of a gpkg_extensions table or "
+                              + "the absence of rows in gpkg_extnsions table SHALL both indicate the absence "
+                              + "of extensions to a GeoPackage.")
     public void Requirement79()
     {
         // TODO implement this requirement
@@ -178,18 +185,18 @@ public class ExtensionsVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 80</div>
+     * Requirement 80
+     *
      * <blockquote> Values of the <code>gpkg_extensions</code> <code>table_name
      * </code> column SHALL reference values in the <code>gpkg_contents</code>
      * <code>table_name</code> column or be NULL. They SHALL NOT be NULL for
      * rows where the <code>column_name</code> value is not NULL.
      * </blockquote>
-     * </div>
      *
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(heading = "Requirement 80",
+    @Requirement(reference = "Requirement 80",
                  text    = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
                             + "in the gpkg_extensions table. The absence of a gpkg_extensions table or "
                             + "the absence of rows in gpkg_extnsions table SHALL both indicate the absence "
@@ -246,16 +253,16 @@ public class ExtensionsVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 81</div> <blockquote> The
+     * Requirement 81 <blockquote> The
      * <code>column_name</code> column value in a <code>gpkg_extensions</code>
      * row SHALL be the name of a column in the table specified by the
      * <code>table_name</code> column value for that row, or be NULL.
-     * </blockquote> </div>
+     * </blockquote>
      *
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(heading = "Requirement 81",
+    @Requirement(reference = "Requirement 81",
                  text    = "The column_name column value in a gpkg_extensions row SHALL"
                            + " be the name of a column in the table specified by the "
                            + "table_name column value for that row, or be NULL.")
@@ -297,20 +304,20 @@ public class ExtensionsVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 82</div> <blockquote> Each
+     * Requirement 82 <blockquote> Each
      * <code>extension_name</code> column value in a
      * <code>gpkg_extensions</code> row SHALL be a unique case sensitive value
      * of the form &lt;author&gt;_&lt;extension_name&gt; where &lt;author&gt;
      * indicates the person or organization that developed and maintains the
      * extension. The valid character set for <author> SHALL be [a-zA-Z0-9]. The
      * valid character set for &lt;extension_name&gt; SHALL be [a-zA-Z0-9_]. An
-     * <code>extension_name</code> for the �gpkg� author name SHALL be one of
+     * <code>extension_name</code> for the "gpkg" author name SHALL be one of
      * those defined in this encoding standard or in an OGC Best Practices
-     * Document that extends it. </blockquote> </div>
+     * Document that extends it. </blockquote>
      *
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(heading = "Requirement 82",
+    @Requirement(reference = "Requirement 82",
                  text    = "Each extension_name column value in a gpkg_extensions row SHALL be a "
                            + "unique case sensitive value of the form <author>_<extension_name> "
                            + "where <author> indicates the person or organization that developed "
@@ -348,17 +355,17 @@ public class ExtensionsVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 83</div> <blockquote> The definition
+     * Requirement 83 <blockquote> The definition
      * column value in a <code>gpkg_extensions</code> row SHALL contain or
      * reference the text that results from documenting an extension by filling
      * out the GeoPackage Extension Template in <a
      * href="http://www.geopackage.org/spec/#extension_template"> GeoPackage
-     * Extension Template (Normative)</a>. </blockquote> </div>
+     * Extension Template (Normative)</a>. </blockquote>
      *
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(heading = "Requirement 83",
+    @Requirement(reference = "Requirement 83",
                  text    = "The definition column value in a gpkg_extensions row SHALL "
                            + "contain or reference the text that results from documenting "
                            + "an extension by filling out the GeoPackage Extension Template "
@@ -402,17 +409,17 @@ public class ExtensionsVerifier extends Verifier
 
 
     /**
-     * <div class="title">Requirement 84</div>
+     * Requirement 84
+     *
      * <blockquote>
      * The scope column value in a <code>gpkg_extensions</code> row SHALL be
-     * lowercase "read-write" for an extension that affects both readers and writers,
-     * or "write-only" for an extension that affects only writers.
+     * lowercase "read-write" for an extension that affects both readers and
+     * writers, or "write-only" for an extension that affects only writers.
      * </blockquote>
-     * </div>
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(heading = "Requirement 84",
+    @Requirement(reference = "Requirement 84",
                  text    = "The scope column value in a gpkg_extensions row SHALL be lowercase "
                            + "\"read-write\" for an extension that affects both readers and writers, "
                            + "or \"write-only\" for an extension that affects only writers. ")

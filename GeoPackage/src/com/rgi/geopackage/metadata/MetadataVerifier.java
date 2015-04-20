@@ -82,7 +82,9 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 68</div> <blockquote> A GeoPackage MAY
+     * Requirement 68
+     *
+     * <blockquote> A GeoPackage MAY
      * contain a table named gpkg_metadata. If present it SHALL be defined per
      * clause 2.4.2.1.1 <a
      * href="http://www.geopackage.org/spec/#metadata_table_table_definition"
@@ -90,15 +92,16 @@ public class MetadataVerifier extends Verifier
      * href="http://www.geopackage.org/spec/#gpkg_metadata_cols">Metadata Table
      * Definition</a> and <a
      * href="http://www.geopackage.org/spec/#gpkg_metadata_sql">gpkg_metadata
-     * Table Definition SQL</a>. </blockquote> </div>
+     * Table Definition SQL</a>.
+     * </blockquote>
      * @throws SQLException throws if the method verifyTable throws
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
-    @Requirement(heading = "Requirement 68",
-                 text    = "A GeoPackage MAY contain a table named gpkg_metadata."
-                           + " If present it SHALL be defined per clause 2.4.2.1.1 "
-                           + "Table Definition, Metadata Table Definition and gpkg_metadata "
-                           + "Table Definition SQL. ")
+    @Requirement(reference = "Requirement 68",
+                 text      = "A GeoPackage MAY contain a table named gpkg_metadata."
+                             + " If present it SHALL be defined per clause 2.4.2.1.1 "
+                             + "Table Definition, Metadata Table Definition and gpkg_metadata "
+                             + "Table Definition SQL. ")
     public void Requirement68() throws AssertionError, SQLException
     {
         if(this.hasMetadataTable)
@@ -108,16 +111,19 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 69</div> <blockquote> Each
-     * <code>md_scope</code> column value in a <code>gpkg_metadata</code> table
-     * or updateable view SHALL be one of the name column values from <a
-     * href="http://www.geopackage.org/spec/#metadata_scopes">Metadata
-     * Scopes</a>. </blockquote> </div>
+     * Requirement 69
+     *
+     * <blockquote> Each <code>md_scope</code> column value in a <code>
+     * gpkg_metadata</code> table or updateable view SHALL be one of the name
+     * column values from <a
+     * href="http://www.geopackage.org/spec/#metadata_scopes">Metadata Scopes
+     * </a>.
+     * </blockquote>
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
-    @Requirement(heading = "Requirement 69",
-                 text    = "Each md_scope column value in a gpkg_metadata table or "
-                              + "updateable view SHALL be one of the name column values from Metadata Scopes. ")
+    @Requirement(reference = "Requirement 69",
+                 text      = "Each md_scope column value in a gpkg_metadata table or "
+                             + "updateable view SHALL be one of the name column values from Metadata Scopes.")
     public void Requirement69() throws AssertionError
     {
         if(this.hasMetadataTable)
@@ -136,7 +142,9 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 70</div> <blockquote> A GeoPackage that
+     * Requirement 70
+     *
+     * <blockquote> A GeoPackage that
      * contains a <code>gpkg_metadata</code> table SHALL contain a
      * <code>gpkg_metadata_reference</code> table per clause 2.4.3.1.1 <a href=
      * "http://www.geopackage.org/spec/#metadata_reference_table_table_definition"
@@ -145,16 +153,17 @@ public class MetadataVerifier extends Verifier
      * >Metadata Reference Table Definition (Table Name:
      * gpkg_metadata_reference)</a> and <a
      * href="http://www.geopackage.org/spec/#gpkg_metadata_reference_sql"
-     * >gpkg_metadata_reference Table Definition SQL</a>. </blockquote> </div>
+     * >gpkg_metadata_reference Table Definition SQL</a>.
+     * </blockquote>
      *
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      * @throws SQLException throws if the method verifyTable throws
      */
-    @Requirement(heading = "Requirement 70",
-                 text    = "A GeoPackage that contains a gpkg_metadata table SHALL contain a "
-                           + "gpkg_metadata_reference table per clause 2.4.3.1.1 Table Definition, "
-                           + "Metadata Reference Table Definition (Table Name: gpkg_metadata_reference) "
-                           + "and gpkg_metadata_reference Table Definition SQL. ")
+    @Requirement(reference = "Requirement 70",
+                 text      = "A GeoPackage that contains a gpkg_metadata table SHALL contain a "
+                             + "gpkg_metadata_reference table per clause 2.4.3.1.1 Table Definition, "
+                             + "Metadata Reference Table Definition (Table Name: gpkg_metadata_reference) "
+                             + "and gpkg_metadata_reference Table Definition SQL.")
     public void Requirement70() throws AssertionError, SQLException
     {
         if(this.hasMetadataTable)
@@ -168,16 +177,16 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 71</div> <blockquote> Every
-     * <code>gpkg_metadata_reference</code> table reference scope column value
-     * SHALL be one of 'geopackage', 'table', 'column', 'row', 'row/col' in
-     * lowercase. </blockquote> </div>
+     * Requirement 71
+     *
+     * <blockquote> Every <code>gpkg_metadata_reference</code> table reference
+     * scope column value SHALL be one of 'geopackage', 'table', 'column',
+     * 'row', 'row/col' in lowercase.
+     * </blockquote>
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
-    @Requirement(heading = "Requirement 71",
-                 text    = "Every gpkg_metadata_reference table reference scope column "
-                           + "value SHALL be one of 'geopackage', 'table', 'column', 'row', "
-                           + "'row/col' in lowercase. ")
+    @Requirement(reference = "Requirement 71",
+                 text      = "Every gpkg_metadata_reference table reference scope column value SHALL be one of 'geopackage', 'table', 'column', 'row', 'row/col' in lowercase. ")
     public void Requirement71() throws AssertionError
     {
         if(this.hasMetadataReferenceTable)
@@ -196,22 +205,25 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 72</div> <blockquote> Every
-     * <code>gpkg_metadata_reference</code> table row with a
-     * <code>reference_scope</code> column value of 'geopackage' SHALL have a
-     * <code>table_name</code> column value that is NULL. Every other
-     * <code>gpkg_metadata_reference</code> table row SHALL have a
-     * <code>table_name</code> column value that references a value in the
-     * <code>gpkg_contents</code> <code>table_name</code> column. </blockquote>
-     * </div>
+     * Requirement 72
+     *
+     * <blockquote> Every
+     * <code>gpkg_metadata_reference</code> table row with a <code>
+     * reference_scope</code> column value of 'geopackage' SHALL have a <code>
+     * table_name</code> column value that is NULL. Every other <code>
+     * gpkg_metadata_reference</code> table row SHALL have a <code>table_name
+     * </code> column value that references a value in the <code>gpkg_contents
+     * </code> <code>table_name</code> column.
+     * </blockquote>
+     *
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      * @throws SQLException throws if various SQLExceptions occur
      */
-    @Requirement(heading = "Requirement 72",
-                 text    = "Every gpkg_metadata_reference table row with a reference_scope column "
-                         + "value of 'geopackage' SHALL have a table_name column value that is NULL. "
-                         + "Every other gpkg_metadata_reference table row SHALL have a table_name column"
-                         + " value that references a value in the gpkg_contents table_name column. ")
+    @Requirement(reference = "Requirement 72",
+                 text      = "Every gpkg_metadata_reference table row with a reference_scope column "
+                           + "value of 'geopackage' SHALL have a table_name column value that is NULL. "
+                           + "Every other gpkg_metadata_reference table row SHALL have a table_name column"
+                           + " value that references a value in the gpkg_contents table_name column. ")
     public void Requirement72() throws AssertionError, SQLException
     {
         if(this.hasMetadataReferenceTable)
@@ -269,18 +281,21 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 73</div> <blockquote> Every
+     * Requirement 73
+     *
+     * <blockquote> Every
      * <code>gpkg_metadata_reference</code> table row with a
      * <code>reference_scope</code> column value of 'geopackage','table' or
      * 'row' SHALL have a <code>column_name</code> column value that is NULL.
      * Every other <code>gpkg_metadata_reference</code> table row SHALL have a
      * <code>column_name</code> column value that contains the name of a column
      * in the SQLite table or view identified by the <code>table_name</code>
-     * column value. </blockquote> </div>
+     * column value.
+     * <blockquote>
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      * @throws SQLException throws if various SQLExceptions occur
      */
-    @Requirement(heading = "Requirement 73",
+    @Requirement(reference = "Requirement 73",
                  text    = "Every gpkg_metadata_reference table row with a reference_scope column "
                            + "value of 'geopackage','table' or 'row' SHALL have a column_name column"
                            + " value that is NULL. Every other gpkg_metadata_reference table row SHALL"
@@ -341,18 +356,21 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 74</div> <blockquote> Every
+     * Requirement 74
+     *
+     * <blockquote> Every
      * <code>gpkg_metadata_reference</code> table row with a
      * <code>reference_scope</code> column value of 'geopackage', 'table' or
      * 'column' SHALL have a <code>row_id_value</code> column value that is
      * NULL. Every other <code>gpkg_metadata_reference</code> table row SHALL
      * have a <code>row_id_value</code> column value that contains the ROWID of
      * a row in the SQLite table or view identified by the
-     * <code>table_name</code> column value. </blockquote> </div>
+     * <code>table_name</code> column value.
+     * <blockquote>
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      * @throws SQLException throws if various SQLExceptions occur
      */
-    @Requirement(heading = "Requirement 74",
+    @Requirement(reference = "Requirement 74",
                  text    = "Every gpkg_metadata_reference table row with a reference_scope column value "
                            + "of 'geopackage', 'table' or 'column' SHALL have a row_id_value column value "
                            + "that is NULL. Every other gpkg_metadata_reference table row SHALL have a row_id_value"
@@ -399,19 +417,21 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 75</div> <blockquote> Every
+     * Requirement 75
+     *
+     * <blockquote> Every
      * <code>gpkg_metadata_reference</code> table row timestamp column value
-     * SHALL be in ISO 8601 format containing a complete
-     * date plus UTC hours, minutes, seconds and a decimal fraction of a second,
-     * with a 'Z' ('zulu') suffix indicating UTC.
-     * </blockquote> </div>
+     * SHALL be in ISO 8601 format containing a complete date plus UTC hours,
+     * minutes, seconds and a decimal fraction of a second, with a 'Z' ('zulu')
+     * suffix indicating UTC.
+     * </blockquote>
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
-    @Requirement(heading = "Requirement 75",
-                 text    = "Every gpkg_metadata_reference table row timestamp column value "
-                           + "SHALL be in ISO 8601 [29] format containing a complete date plus "
-                           + "UTC hours, minutes, seconds and a decimal fraction of a second, with "
-                           + "a 'Z' ('zulu') suffix indicating UTC.")
+    @Requirement(reference = "Requirement 75",
+                 text      = "Every gpkg_metadata_reference table row timestamp column value "
+                             + "SHALL be in ISO 8601 [29] format containing a complete date plus "
+                             + "UTC hours, minutes, seconds and a decimal fraction of a second, with "
+                             + "a 'Z' ('zulu') suffix indicating UTC.")
     public void Requirement75() throws AssertionError
     {
         if (this.hasMetadataReferenceTable)
@@ -444,13 +464,16 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 76</div> <blockquote> Every
-     * <code>gpkg_metadata_reference</code> table row <code>md_file_id</code>
-     * column value SHALL be an id column value from the
-     * <code>gpkg_metadata</code> table. </blockquote> </div>
+     * Requirement 76
+     *
+     * <blockquote>
+     * Every <code>gpkg_metadata_reference</code> table row <code>md_file_id
+     * </code> column value SHALL be an id column value from the <code>
+     * gpkg_metadata</code> table.
+     * <blockquote>
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
-    @Requirement(heading = "Requirement 76",
+    @Requirement(reference = "Requirement 76",
                  text    = "Every gpkg_metadata_reference table row md_file_id column "
                            + "value SHALL be an id column value from the gpkg_metadata table. ")
     public void Requirement76() throws AssertionError
@@ -476,17 +499,20 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * <div class="title">Requirement 77</div> <blockquote> Every
-     * <code>gpkg_metadata_reference</code> table row <code>md_parent_id</code>
-     * column value that is NOT NULL SHALL be an id column value from the
-     * <code>gpkg_metadata</code> table that is not equal to the
-     * <code>md_file_id</code> column value for that row. </blockquote> </div>
+     * Requirement 77
+     *
+     * <blockquote>
+     * Every <code>gpkg_metadata_reference</code> table row <code>md_parent_id
+     * </code> column value that is NOT NULL SHALL be an id column value from
+     * the <code>gpkg_metadata</code> table that is not equal to the <code>
+     * md_file_id</code> column value for that row.
+     * <blockquote>
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
-    @Requirement(heading = "Requirement 77",
-                 text    = "Every gpkg_metadata_reference table row md_parent_id column value "
-                           + "that is NOT NULL SHALL be an id column value from the gpkg_metadata "
-                           + "table that is not equal to the md_file_id column value for that row. ")
+    @Requirement(reference = "Requirement 77",
+                 text      = "Every gpkg_metadata_reference table row md_parent_id column value "
+                             + "that is NOT NULL SHALL be an id column value from the gpkg_metadata "
+                             + "table that is not equal to the md_file_id column value for that row. ")
     public void Requirement77() throws AssertionError
     {
         if(this.hasMetadataReferenceTable)
@@ -520,9 +546,9 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * This will provide a List of MetadataReferences
-     * records in the current GeoPackage from the
-     * gpkg_metadata_references table
+     * This will provide a List of MetadataReferences records in the current
+     * GeoPackage from the gpkg_metadata_references table
+     *
      * @return a list of MetadataReference's records
      */
     private List<MetadataReference> getMetadataReferenceValues()
@@ -536,40 +562,40 @@ public class MetadataVerifier extends Verifier
                 return ResultSetStream.getStream(metadataValueRS)
                                       .map(resultSet -> {  try
                                                            {
-                                                                final MetadataReference metadataReference = new MetadataReference();
+                                                               final MetadataReference metadataReference = new MetadataReference();
 
-                                                                metadataReference.reference_scope   = resultSet.getString("reference_scope");
-                                                                metadataReference.table_name        = resultSet.getString("table_name");
+                                                               metadataReference.reference_scope   = resultSet.getString("reference_scope");
+                                                               metadataReference.table_name        = resultSet.getString("table_name");
 
-                                                                if(resultSet.wasNull())
-                                                                {
-                                                                    metadataReference.table_name = null;
-                                                                }
+                                                               if(resultSet.wasNull())
+                                                               {
+                                                                   metadataReference.table_name = null;
+                                                               }
 
-                                                                metadataReference.column_name       = resultSet.getString("column_name");
+                                                               metadataReference.column_name       = resultSet.getString("column_name");
 
-                                                                if(resultSet.wasNull())
-                                                                {
-                                                                    metadataReference.column_name = null;
-                                                                }
+                                                               if(resultSet.wasNull())
+                                                               {
+                                                                   metadataReference.column_name = null;
+                                                               }
 
-                                                                metadataReference.row_id_value      = resultSet.getInt("row_id_value");
+                                                               metadataReference.row_id_value      = resultSet.getInt("row_id_value");
 
-                                                                if(resultSet.wasNull())
-                                                                {
-                                                                    metadataReference.row_id_value = null;
-                                                                }
+                                                               if(resultSet.wasNull())
+                                                               {
+                                                                   metadataReference.row_id_value = null;
+                                                               }
 
-                                                                metadataReference.timestamp         = resultSet.getString("timestamp");
-                                                                metadataReference.md_file_id        = resultSet.getInt("md_file_id");
-                                                                metadataReference.md_parent_id      = resultSet.getInt("md_parent_id");
+                                                               metadataReference.timestamp         = resultSet.getString("timestamp");
+                                                               metadataReference.md_file_id        = resultSet.getInt("md_file_id");
+                                                               metadataReference.md_parent_id      = resultSet.getInt("md_parent_id");
 
-                                                                if(resultSet.wasNull())
-                                                                {
-                                                                    metadataReference.md_parent_id = null;
-                                                                }
+                                                               if(resultSet.wasNull())
+                                                               {
+                                                                   metadataReference.md_parent_id = null;
+                                                               }
 
-                                                                return metadataReference;
+                                                               return metadataReference;
                                                            }
                                                            catch(final SQLException ex)
                                                            {
@@ -586,9 +612,9 @@ public class MetadataVerifier extends Verifier
             }
     }
     /**
-     * This will provide a List of Metadata
-     * records in the current GeoPackage from
-     * the gpkg_metadata table
+     * This will provide a List of Metadata records in the current GeoPackage
+     * from the gpkg_metadata table
+     *
      * @return a list of Metadata's records
      */
     private List<Metadata> getMetadataValues()
@@ -623,9 +649,9 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * Verifies that the reference_scope
-     * value given is a valid value
-     * (one of the predefined scope values)
+     * Verifies that the reference_scope value given is a valid value (one of
+     * the predefined scope values)
+     *
      * @param referenceScope
      * @return true if the scope is allowed
      */
@@ -635,9 +661,9 @@ public class MetadataVerifier extends Verifier
     }
 
     /**
-     * Verifies that the metadata scope
-     * value given is a valid value
-     * (one of the predefined scope values)
+     * Verifies that the metadata scope value given is a valid value (one of
+     * the predefined scope values)
+     *
      * @param mdScope
      * @return true if the scope is allowed
      */
@@ -670,6 +696,7 @@ public class MetadataVerifier extends Verifier
 
     private static final TableDefinition MetadataTableDefinition;
     private static final TableDefinition MetadataReferenceTableDefinition;
+
     static
     {
         final Map<String, ColumnDefinition> metadataTableColumns = new HashMap<>();
