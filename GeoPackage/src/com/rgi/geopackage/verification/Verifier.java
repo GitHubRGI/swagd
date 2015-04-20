@@ -97,7 +97,7 @@ public class Verifier
                                                        }
 
                                                        return new VerificationIssue(String.format("Unexpected exception thrown when testing requirement %d for GeoPackage verification: %s",
-                                                                                                  requirement.number(),
+                                                                                                  requirement.reference(),
                                                                                                   ex.getMessage()),
                                                                                     requirement);
                                                    }
@@ -132,8 +132,8 @@ public class Verifier
     {
         return Stream.of(this.getClass().getDeclaredMethods())
                      .filter(method -> method.isAnnotationPresent(Requirement.class))
-                     .sorted((method1, method2) -> Integer.compare(method1.getAnnotation(Requirement.class).number(),
-                                                                   method2.getAnnotation(Requirement.class).number()));
+                     .sorted((method1, method2) -> Integer.compare(method1.getAnnotation(Requirement.class).reference(),
+                                                                   method2.getAnnotation(Requirement.class).reference()));
     }
 
     /**

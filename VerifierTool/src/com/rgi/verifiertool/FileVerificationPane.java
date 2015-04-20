@@ -226,11 +226,11 @@ public class FileVerificationPane extends TitledPane
     private static String getVerificationIssuesForSubsystem(final String subsystemName, final Collection<VerificationIssue> issues)
     {
           final String failedMessages = issues.stream()
-                                        .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
+                                        .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().reference(), requirement2.getRequirement().reference()))
                                         .map(issue -> {
                                                         return String.format("\t\r(%s) Requirement %d: \"%s\"\n\n\t\r%s\n",
                                                                              issue.getRequirement().severity(),
-                                                                             issue.getRequirement().number(),
+                                                                             issue.getRequirement().reference(),
                                                                              issue.getRequirement().text(),
                                                                              issue.getReason());
                                                       })

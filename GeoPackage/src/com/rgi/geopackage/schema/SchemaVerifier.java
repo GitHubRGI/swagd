@@ -121,7 +121,7 @@ public class SchemaVerifier extends Verifier
      * @throws SQLException throws if the method verifyTable throws an SQLException
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement (number   = 56,
+    @Requirement (reference   = 56,
                   text     = "A GeoPackage MAY contain a table or updateable view named "
                               + "gpkg_data_columns. If present it SHALL be defined per "
                               + "clause 2.3.2.1.1 Table Definition, Data Columns Table or"
@@ -143,7 +143,7 @@ public class SchemaVerifier extends Verifier
      * @throws SQLException throws if various SQLExceptions occur
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement(number   = 57,
+    @Requirement(reference   = 57,
                  text     = "Values of the gpkg_data_columns table table_name column value "
                              + "SHALL reference values in the gpkg_contents table_name column.",
                  severity = Severity.Error)
@@ -190,7 +190,7 @@ public class SchemaVerifier extends Verifier
      * @throws SQLException throws if various SQLExceptions occur
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement (number   = 58,
+    @Requirement (reference   = 58,
                   text     = "The column_name column value in a gpkg_data_columns table row "
                               + "SHALL contain the name of a column in the SQLite table or view "
                               + "identified by the table_name column value. ",
@@ -235,7 +235,7 @@ public class SchemaVerifier extends Verifier
      * gpkg_data_column_constraints table. </blockquote> </div>
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement (number    = 59,
+    @Requirement (reference    = 59,
                   text      = "The constraint_name column value in a gpkg_data_columns table MAY be NULL. "
                                   + "If it is not NULL, it SHALL contain a case sensitive constraint_name "
                                   + "column value from the gpkg_data_column_constraints table. ",
@@ -273,7 +273,7 @@ public class SchemaVerifier extends Verifier
      * @throws SQLException throws if the method verifyTable throws
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement (number   = 60,
+    @Requirement (reference   = 60,
                   text     = "A GeoPackage MAY contain a table or updateable view named "
                               + "gpkg_data_column_constraints. If present it SHALL be defined "
                               + "per clause 2.3.3.1.1 Table Definition, Data Column Constraints "
@@ -294,7 +294,7 @@ public class SchemaVerifier extends Verifier
      * SHALL be one of "range", "enum", or "glob". </blockquote> </div>
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement (number   = 61,
+    @Requirement (reference   = 61,
                   text     = "The gpkg_data_column_constraints table MAY be empty. "
                               + "If it contains data, the lowercase constraint_type "
                               + "column values SHALL be one of \"range\", \"enum\", or "
@@ -323,7 +323,7 @@ public class SchemaVerifier extends Verifier
      * @throws SQLException throws if various SQLExceptions occur
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement (number   = 62,
+    @Requirement (reference   = 62,
                   text     = "gpkg_data_column_constraint constraint_name values "
                               + "for rows with constraint_type values of range and "
                               + "glob SHALL be unique. ",
@@ -376,7 +376,7 @@ public class SchemaVerifier extends Verifier
      * </blockquote> </div>
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement (number   = 63,
+    @Requirement (reference   = 63,
                   text     = "The gpkg_data_column_constraints table MAY be empty. "
                                   + "If it contains rows with constraint_type column "
                                   + "values of \"range\", the value column values for "
@@ -408,7 +408,7 @@ public class SchemaVerifier extends Verifier
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      *
      */
-    @Requirement (number   = 64,
+    @Requirement (reference   = 64,
                   text     = "The gpkg_data_column_constraints table MAY be empty. If it contains rows with "
                                   + "constraint_type column values of \"range\", the min column values for those "
                                   + "rows SHALL be NOT NULL and less than the max column value which shall be NOT NULL.",
@@ -443,7 +443,7 @@ public class SchemaVerifier extends Verifier
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
 
-    @Requirement (number   = 65,
+    @Requirement (reference   = 65,
                   text     = "The gpkg_data_column_constraints table MAY be empty. If it contains "
                               + "rows with constraint_type column values of \"range\", the minIsInclusive "
                               + "and maxIsInclusive column values for those rows SHALL be 0 or 1. ",
@@ -486,7 +486,7 @@ public class SchemaVerifier extends Verifier
      * for those rows SHALL be NULL. </blockquote> </div>
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement (number   = 66,
+    @Requirement (reference   = 66,
                   text     = "The gpkg_data_column_constraints table MAY be empty. If it contains "
                              + "rows with constraint_type column values of \"enum\" or \"glob\", the min,"
                              + " max, minIsInclusive and maxIsInclusive column values for those rows SHALL be NULL.",
@@ -521,7 +521,7 @@ public class SchemaVerifier extends Verifier
      * </div>
      * @throws AssertionError throws if the GeoPackage fails to meet this Requirement
      */
-    @Requirement (number = 67,
+    @Requirement (reference = 67,
                   text     = "The gpkg_data_column_constraints table MAY be empty. "
                               + "If it contains rows with constraint_type column values "
                               + "of \"enum\" or \"glob\", the value column SHALL NOT be NULL. ",

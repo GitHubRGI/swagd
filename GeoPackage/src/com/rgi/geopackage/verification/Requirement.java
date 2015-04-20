@@ -38,10 +38,10 @@ public @interface Requirement
 {
     /**
      *
-     * @return the number of the corresponding Requirement (Referring to the OGC
-     *         Requirement numbering http://www.geopackage.org/spec/)
+     * @return the requirement number or paragraph heading (Referring to the
+     *         OGC Requirement numbering http://www.geopackage.org/spec/)
      */
-    int number();
+    String heading();
 
     /**
      *
@@ -49,12 +49,4 @@ public @interface Requirement
      *         Requirement wording http://www.geopackage.org/spec/)
      */
     String text();
-
-    /**
-     *
-     * @return the level of severity of the requirement. (note: A requirement
-     *         with a Severity.Warning is not as important as a Requirement with
-     *         a Severity.Error)
-     */
-    Severity severity() default Severity.Error;
 }

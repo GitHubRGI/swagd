@@ -177,7 +177,7 @@ public class TilesVerifier extends Verifier
      * </blockquote>
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement(number   = 33,
+    @Requirement(reference   = 33,
                  text     = "The gpkg_contents table SHALL contain a row with a "
                              + "data_type column value of \"tiles\" for each "
                              + "tile pyramid user data table or view.",
@@ -205,7 +205,7 @@ public class TilesVerifier extends Verifier
      * @throws AssertionError  throws if the GeoPackage fails to meet the requirement
      * @throws SQLException throws if an SQLException occurs
      */
-    @Requirement(number = 34,
+    @Requirement(reference = 34,
                  text = "In a GeoPackage that contains a tile pyramid user data table "
                          + "that contains tile data, by default, zoom level pixel sizes for that "
                          + "table SHALL vary by a factor of 2 between zoom levels in tile matrix metadata table.",
@@ -326,7 +326,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement(number   = 35,
+    @Requirement(reference   = 35,
                  text     = "In a GeoPackage that contains a tile pyramid user data table that contains tile data SHALL store that tile data in MIME type image/jpeg or image/png",
                  severity = Severity.Warning)
     public void Requirement35() throws AssertionError
@@ -406,7 +406,7 @@ public class TilesVerifier extends Verifier
      * </blockquote>
      *
      */
-    @Requirement(number   = 36,
+    @Requirement(reference   = 36,
                  text     = "In a GeoPackage that contains a tile pyramid user data table that "
                              + "contains tile data that is not MIME type image png, "
                              + "by default SHALL store that tile data in MIME type image jpeg",
@@ -429,7 +429,7 @@ public class TilesVerifier extends Verifier
      * @throws SQLException throws if an SQLException occurs
      * @throws AssertionError  throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement(number  = 37,
+    @Requirement(reference  = 37,
                  text    = "A GeoPackage that contains a tile pyramid user data table SHALL "
                             + "contain gpkg_tile_matrix_set table or view per Table Definition, "
                             + "Tile Matrix Set Table or View Definition and gpkg_tile_matrix_set Table Creation SQL. ",
@@ -458,7 +458,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement(number  = 38,
+    @Requirement(reference  = 38,
                  text    = "Values of the gpkg_tile_matrix_set table_name column "
                             + "SHALL reference values in the gpkg_contents table_name "
                             + "column for rows with a data type of \"tiles\".",
@@ -512,7 +512,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement(number   = 39,
+    @Requirement(reference   = 39,
                  text     = "The gpkg_tile_matrix_set table or view SHALL "
                             + "contain one row record for each tile "
                             + "pyramid user data table. ",
@@ -561,7 +561,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement (number   = 40,
+    @Requirement (reference   = 40,
                   text     = "Values of the gpkg_tile_matrix_set srs_id column "
                               + "SHALL reference values in the gpkg_spatial_ref_sys srs_id column. ",
                   severity = Severity.Error)
@@ -605,7 +605,7 @@ public class TilesVerifier extends Verifier
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      * @throws SQLException throws if an SQLException occurs
      */
-    @Requirement (number  = 41,
+    @Requirement (reference  = 41,
                   text    = "A GeoPackage that contains a tile pyramid user data table "
                             + "SHALL contain a gpkg_tile_matrix table or view per clause "
                             + "2.2.7.1.1 Table Definition, Table Tile Matrix Metadata Table "
@@ -636,7 +636,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement (number    = 42,
+    @Requirement (reference    = 42,
                   text      = "Values of the gpkg_tile_matrix table_name column "
                               + "SHALL reference values in the gpkg_contents table_name "
                               + "column for rows with a data_type of 'tiles'. ",
@@ -680,7 +680,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement (number    = 43,
+    @Requirement (reference    = 43,
                   text      = "The gpkg_tile_matrix table or view SHALL contain "
                               + "one row record for each zoom level that contains "
                               + "one or more tiles in each tile pyramid user data table or view. ",
@@ -750,7 +750,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement (number   = 44,
+    @Requirement (reference   = 44,
                   text     = "The zoom_level column value in a gpkg_tile_matrix table row SHALL not be negative." ,
                   severity = Severity.Error)
     public void Requirement44() throws AssertionError
@@ -786,7 +786,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement (number   = 45,
+    @Requirement (reference   = 45,
                   text     = "The matrix_width column value in a gpkg_tile_matrix table row SHALL be greater than 0.",
                   severity = Severity.Error)
     public void Requirement45() throws AssertionError
@@ -822,7 +822,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement (number   = 46,
+    @Requirement (reference   = 46,
                   text     = "The matrix_height column value in a gpkg_tile_matrix table row SHALL be greater than 0.",
                   severity = Severity.Error)
     public void Requirement46() throws AssertionError
@@ -858,7 +858,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement (number   = 47,
+    @Requirement (reference   = 47,
                   text     = "The tile_width column value in a gpkg_tile_matrix table row SHALL be greater than 0.",
                   severity = Severity.Error)
     public void Requirement47() throws AssertionError
@@ -894,7 +894,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement(number = 48,
+    @Requirement(reference = 48,
                  text = "The tile_height column value in a gpkg_tile_matrix table row SHALL be greater than 0.",
                  severity = Severity.Error)
     public void Requirement48() throws AssertionError
@@ -931,7 +931,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement (number = 49,
+    @Requirement (reference = 49,
                   text   =  "The pixel_x_size column value in a gpkg_tile_matrix table row SHALL be greater than 0." ,
                   severity = Severity.Error)
     public void Requirement49() throws AssertionError
@@ -971,7 +971,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement (number   = 50,
+    @Requirement (reference   = 50,
                   text     = "The pixel_y_size column value in a gpkg_tile_matrix table row SHALL be greater than 0.",
                   severity = Severity.Error)
     public void Requirement50() throws AssertionError
@@ -1011,7 +1011,7 @@ public class TilesVerifier extends Verifier
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      */
-    @Requirement (number = 51,
+    @Requirement (reference = 51,
                   text   = "The pixel_x_size and pixel_y_size column values for zoom_level "
                           + "column values in a gpkg_tile_matrix table sorted in ascending "
                           + "order SHALL be sorted in descending order.",
@@ -1085,7 +1085,7 @@ public class TilesVerifier extends Verifier
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      * @throws SQLException throws when an SQLException occurs
      */
-    @Requirement (number = 52,
+    @Requirement (reference = 52,
                   text   = "Each tile matrix set in a GeoPackage SHALL "
                            + "be stored in a different tile pyramid user "
                            + "data table or updateable view with a unique "
@@ -1152,7 +1152,7 @@ public class TilesVerifier extends Verifier
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      * @throws SQLException throws if an SQLException occurs
      */
-    @Requirement (number = 53,
+    @Requirement (reference = 53,
                   text   = "For each distinct table_name from the gpkg_tile_matrix (tm) table, "
                           + "the tile pyramid (tp) user data table zoom_level column value in a "
                           + "GeoPackage SHALL be in the range min(tm.zoom_level) less than or equal "
@@ -1212,7 +1212,7 @@ public class TilesVerifier extends Verifier
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      * @throws SQLException throws if an SQLException occurs
      */
-    @Requirement(number  = 54,
+    @Requirement(reference  = 54,
                  text    = "For each distinct table_name from the gpkg_tile_matrix (tm) table, "
                              + "the tile pyramid (tp) user data table tile_column column value in a "
                              + "GeoPackage SHALL be in the range 0 <= tp.tile_column <= tm.matrix_width - 1 "
@@ -1343,7 +1343,7 @@ public class TilesVerifier extends Verifier
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      * @throws SQLException throws if an SQLException occurs
      */
-    @Requirement (number   = 55,
+    @Requirement (reference   = 55,
                   text     = "For each distinct table_name from the gpkg_tile_matrix (tm) table, the tile pyramid (tp) "
                                 + "user data table tile_row column value in a GeoPackage SHALL be in the range 0 <= tp.tile_row <= tm.matrix_height - 1 "
                                 + "where the tm and tp zoom_level column values are equal. ",

@@ -231,7 +231,7 @@ public class SubsystemVerificationPane extends VBox
         final Text text = new Text();
 
         text.setText(String.format(" Requirement %d: \"%s\"\n\n",
-                                    requirement.number(),
+                                    requirement.reference(),
                                     requirement.text()));
 
         text.setFont(Font.font(Style.getMainFont(), FontWeight.EXTRA_BOLD, 12));

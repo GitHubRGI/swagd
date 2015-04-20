@@ -94,7 +94,7 @@ public class MetadataVerifier extends Verifier
      * @throws SQLException throws if the method verifyTable throws
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
-    @Requirement (number   = 68,
+    @Requirement (reference   = 68,
                   text     = "A GeoPackage MAY contain a table named gpkg_metadata."
                               + " If present it SHALL be defined per clause 2.4.2.1.1 "
                               + "Table Definition, Metadata Table Definition and gpkg_metadata "
@@ -116,7 +116,7 @@ public class MetadataVerifier extends Verifier
      * Scopes</a>. </blockquote> </div>
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
-    @Requirement (number    = 69,
+    @Requirement (reference    = 69,
                   text      = "Each md_scope column value in a gpkg_metadata table or "
                               + "updateable view SHALL be one of the name column values from Metadata Scopes. ",
                   severity  = Severity.Warning)
@@ -151,7 +151,7 @@ public class MetadataVerifier extends Verifier
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      * @throws SQLException throws if the method verifyTable throws
      */
-    @Requirement (number   = 70,
+    @Requirement (reference   = 70,
                   text     = "A GeoPackage that contains a gpkg_metadata table SHALL contain a "
                               + "gpkg_metadata_reference table per clause 2.4.3.1.1 Table Definition, "
                               + "Metadata Reference Table Definition (Table Name: gpkg_metadata_reference) "
@@ -176,7 +176,7 @@ public class MetadataVerifier extends Verifier
      * lowercase. </blockquote> </div>
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
-    @Requirement (number   = 71,
+    @Requirement (reference   = 71,
                   text     = "Every gpkg_metadata_reference table reference scope column "
                               + "value SHALL be one of ‘geopackage’, ‘table’, ‘column’, ’row’, "
                               + "’row/col’ in lowercase. ",
@@ -208,7 +208,7 @@ public class MetadataVerifier extends Verifier
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      * @throws SQLException throws if various SQLExceptions occur
      */
-    @Requirement (number   = 72,
+    @Requirement (reference   = 72,
                   text     = "Every gpkg_metadata_reference table row with a reference_scope column "
                               + "value of ‘geopackage’ SHALL have a table_name column value that is NULL. "
                               + "Every other gpkg_metadata_reference table row SHALL have a table_name column"
@@ -280,7 +280,7 @@ public class MetadataVerifier extends Verifier
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      * @throws SQLException throws if various SQLExceptions occur
      */
-    @Requirement (number   = 73,
+    @Requirement (reference   = 73,
                   text     = "Every gpkg_metadata_reference table row with a reference_scope column "
                               + "value of ‘geopackage’,‘table’ or ‘row’ SHALL have a column_name column"
                               + " value that is NULL. Every other gpkg_metadata_reference table row SHALL"
@@ -352,7 +352,7 @@ public class MetadataVerifier extends Verifier
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      * @throws SQLException throws if various SQLExceptions occur
      */
-    @Requirement (number    = 74,
+    @Requirement (reference    = 74,
                   text      = "Every gpkg_metadata_reference table row with a reference_scope column value "
                                   + "of ‘geopackage’, ‘table’ or ‘column’ SHALL have a row_id_value column value "
                                   + "that is NULL. Every other gpkg_metadata_reference table row SHALL have a row_id_value"
@@ -406,7 +406,7 @@ public class MetadataVerifier extends Verifier
      * </blockquote> </div>
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
-    @Requirement (number   = 75,
+    @Requirement (reference   = 75,
                   text     = "Every gpkg_metadata_reference table row timestamp column value "
                               + "SHALL be in ISO 8601 [29] format containing a complete date plus "
                               + "UTC hours, minutes, seconds and a decimal fraction of a second, with "
@@ -449,7 +449,7 @@ public class MetadataVerifier extends Verifier
      * <code>gpkg_metadata</code> table. </blockquote> </div>
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
-    @Requirement (number   = 76,
+    @Requirement (reference   = 76,
                   text     = "Every gpkg_metadata_reference table row md_file_id column "
                                + "value SHALL be an id column value from the gpkg_metadata table. ",
                   severity = Severity.Warning)
@@ -483,7 +483,7 @@ public class MetadataVerifier extends Verifier
      * <code>md_file_id</code> column value for that row. </blockquote> </div>
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
-    @Requirement(number  = 77,
+    @Requirement(reference  = 77,
                  text    = "Every gpkg_metadata_reference table row md_parent_id column value "
                              + "that is NOT NULL SHALL be an id column value from the gpkg_metadata "
                              + "table that is not equal to the md_file_id column value for that row. ",

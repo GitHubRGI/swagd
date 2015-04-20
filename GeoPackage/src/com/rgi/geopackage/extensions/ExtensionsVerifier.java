@@ -132,7 +132,7 @@ public class ExtensionsVerifier extends Verifier
      * @throws SQLException  throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(number = 78, text = "A GeoPackage MAY contain a table or updateable view named gpkg_extensions."
+    @Requirement(reference = 78, text = "A GeoPackage MAY contain a table or updateable view named gpkg_extensions."
             + " If present this table SHALL be defined per clause 2.5.2.1.1 Table Definition, "
             + "GeoPackage Extensions Table or View Definition (Table or View Name: gpkg_extensions) "
             + "and gpkg_extensions Table Definition SQL. ", severity = Severity.Error)
@@ -154,7 +154,7 @@ public class ExtensionsVerifier extends Verifier
      * </blockquote>
      * </div>
      */
-    @Requirement(number   = 79,
+    @Requirement(reference   = 79,
      text     = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
      + "in the gpkg_extensions table. The absence of a gpkg_extensions table or "
      + "the absence of rows in gpkg_extnsions table SHALL both indicate the absence "
@@ -187,7 +187,7 @@ public class ExtensionsVerifier extends Verifier
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(number = 80,
+    @Requirement(reference = 80,
                  text   = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
                             + "in the gpkg_extensions table. The absence of a gpkg_extensions table or "
                             + "the absence of rows in gpkg_extnsions table SHALL both indicate the absence "
@@ -252,7 +252,7 @@ public class ExtensionsVerifier extends Verifier
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(number = 81, text = "The column_name column value in a gpkg_extensions row SHALL"
+    @Requirement(reference = 81, text = "The column_name column value in a gpkg_extensions row SHALL"
             + " be the name of a column in the table specified by the "
             + "table_name column value for that row, or be NULL.", severity = Severity.Warning)
     public void Requirement81() throws SQLException, AssertionError
@@ -308,7 +308,7 @@ public class ExtensionsVerifier extends Verifier
      *
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(number = 82, text = "Each extension_name column value in a gpkg_extensions row SHALL be a "
+    @Requirement(reference = 82, text = "Each extension_name column value in a gpkg_extensions row SHALL be a "
             + "unique case sensitive value of the form <author>_<extension_name> "
             + "where <author> indicates the person or organization that developed "
             + "and maintains the extension. The valid character set for <author> "
@@ -356,7 +356,7 @@ public class ExtensionsVerifier extends Verifier
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(number = 83,
+    @Requirement(reference = 83,
                  text   = "The definition column value in a gpkg_extensions row SHALL "
                             + "contain or reference the text that results from documenting "
                             + "an extension by filling out the GeoPackage Extension Template "
@@ -411,7 +411,7 @@ public class ExtensionsVerifier extends Verifier
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(number = 84, text = "The scope column value in a gpkg_extensions row SHALL be lowercase "
+    @Requirement(reference = 84, text = "The scope column value in a gpkg_extensions row SHALL be lowercase "
             + "\"read-write\" for an extension that affects both readers and writers, "
             + "or \"write-only\" for an extension that affects only writers. ", severity = Severity.Warning)
     public void Requirement84() throws SQLException, AssertionError
