@@ -26,6 +26,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
@@ -89,8 +90,8 @@ public class ExtensionsVerifier extends Verifier
 
             final String query = String.format("SELECT table_name, column_name, extension_name FROM %s;", GeoPackageExtensions.ExtensionsTableName);
 
-            try (PreparedStatement stmt                  = this.getSqliteConnection().prepareStatement(query);
-                 ResultSet         tableNameColumnNameRS = stmt.executeQuery())
+            try (Statement stmt                  = this.getSqliteConnection().createStatement();
+                 ResultSet tableNameColumnNameRS = stmt.executeQuery(query))
             {
                 this.gpkgExtensionsDataAndColumnName = ResultSetStream.getStream(tableNameColumnNameRS)
                                                                       .map(resultSet ->
@@ -212,8 +213,8 @@ public class ExtensionsVerifier extends Verifier
                                                                                   "FROM   sqlite_master "+
                                                                                   "WHERE  tbl_name = extensionsTableName);",
                                                  GeoPackageExtensions.ExtensionsTableName);
-            try (PreparedStatement stmt2         = this.getSqliteConnection().prepareStatement(query2);
-                 ResultSet         tablesNotInSM = stmt2.executeQuery())
+            try (Statement stmt2         = this.getSqliteConnection().createStatement();
+                 ResultSet tablesNotInSM = stmt2.executeQuery(query2))
             {
                 final List<String> nonExistantExtensionsTable = ResultSetStream.getStream(tablesNotInSM)
                                                                                .map(resultSet ->
@@ -337,7 +338,7 @@ public class ExtensionsVerifier extends Verifier
                                                                                       })
                                                                  .filter(Objects::nonNull)
                                                                  .collect(Collectors.joining(", "))),
-                                          invalidExtensionNames.isEmpty());
+                               invalidExtensionNames.isEmpty());
         }
     }
 
@@ -374,8 +375,8 @@ public class ExtensionsVerifier extends Verifier
                                              "mailto%",
                                              "Extension Title%");
 
-            try (PreparedStatement stmt                    = this.getSqliteConnection().prepareStatement(query);
-                 ResultSet         invalidDefinitionValues = stmt.executeQuery())
+            try (Statement stmt                    = this.getSqliteConnection().createStatement();
+                 ResultSet invalidDefinitionValues = stmt.executeQuery(query))
             {
                 final List<String> invalidDefinitions = ResultSetStream.getStream(invalidDefinitionValues)
                                                                        .map(resultSet ->
@@ -424,8 +425,8 @@ public class ExtensionsVerifier extends Verifier
             final String query = String.format("SELECT scope FROM %s WHERE scope != 'read-write' AND scope != 'write-only'",
                                                GeoPackageExtensions.ExtensionsTableName);
 
-            try (PreparedStatement stmt               = this.getSqliteConnection().prepareStatement(query);
-                 ResultSet         invalidScopeValues = stmt.executeQuery())
+            try (Statement stmt               = this.getSqliteConnection().createStatement();
+                 ResultSet invalidScopeValues = stmt.executeQuery(query))
             {
                 final List<String> invalidScope = ResultSetStream.getStream(invalidScopeValues)
                                                                  .map(resultSet ->
