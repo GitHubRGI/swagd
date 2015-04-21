@@ -338,7 +338,7 @@ public class TilesVerifier extends Verifier
     {
         Assert.assertTrue("Test skipped when verification level is not set to " + VerificationLevel.Full,
                           this.verificationLevel == VerificationLevel.Full,
-                          Severity.Warning);
+                          Severity.Skipped);
 
         for (final String tableName : this.allPyramidUserDataTables)
         {

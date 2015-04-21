@@ -52,10 +52,10 @@ public class ConformanceException extends Exception
     {
         return String.format("GeoPackage failed to meet the following requirements:\n%s",
                              this.verificationIssues.stream()
-                                                    .sorted((requirement1, requirement2) -> requirement1.getRequirement()
-                                                                                                        .reference()
-                                                                                                        .compareTo(requirement2.getRequirement()
-                                                                                                                               .reference()))
+                                                    .sorted((issue1, issue2) -> issue1.getRequirement()
+                                                                                      .reference()
+                                                                                      .compareTo(issue2.getRequirement()
+                                                                                                       .reference()))
                                                     .map(verificationIssue -> String.format("* (%s) %s: \"%s\"\n%s",
                                                                                             verificationIssue.getSeverity(),
                                                                                             verificationIssue.getRequirement().reference(),

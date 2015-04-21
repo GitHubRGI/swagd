@@ -92,9 +92,11 @@ public class Verifier
                                                        if(cause != null && cause instanceof AssertionError)
                                                        {
                                                            final AssertionError assertionError = (AssertionError)cause;
-                                                           return new VerificationIssue(assertionError.getMessage(),
-                                                                                        requirement,
-                                                                                        assertionError.getSeverity());
+
+                                                           return assertionError.getSeverity() == Severity.Skipped ? null
+                                                                                                                   : new VerificationIssue(assertionError.getMessage(),
+                                                                                                                                           requirement,
+                                                                                                                                           assertionError.getSeverity());
                                                        }
 
                                                        return new VerificationIssue(String.format("Unexpected exception thrown when testing requirement %d for GeoPackage verification: %s",
