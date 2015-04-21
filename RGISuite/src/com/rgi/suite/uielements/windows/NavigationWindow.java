@@ -111,7 +111,14 @@ public abstract class NavigationWindow extends JFrame
 
     protected void error(final Throwable th)
     {
-        this.error("An error has occurred: " + ThrowableUtility.getRoot(th).getMessage());
+        if(ThrowableUtility.getRoot(th) != null)
+        {
+            this.error("An error has occurred: " + ThrowableUtility.getRoot(th).getMessage());
+        }
+        else
+        {
+            this.error("An error has occurred ");
+        }
     }
 
     protected void closeFrame()
