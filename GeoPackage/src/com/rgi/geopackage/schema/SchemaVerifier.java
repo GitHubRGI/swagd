@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -83,7 +84,6 @@ public class SchemaVerifier extends Verifier
                                  this.max);
         }
     }
-
 
     private final boolean                     hasDataColumnsTable;
     private final boolean                     hasDataColumnsConstraintsTable;
@@ -159,8 +159,8 @@ public class SchemaVerifier extends Verifier
                                               GeoPackageSchema.DataColumnsTableName,
                                               GeoPackageCore.ContentsTableName);
 
-            try(PreparedStatement stmt                = this.getSqliteConnection().prepareStatement(query);
-                ResultSet         invalidTableNamesRS = stmt.executeQuery())
+            try(Statement stmt                = this.getSqliteConnection().createStatement();
+                ResultSet invalidTableNamesRS = stmt.executeQuery(query))
             {
                 final List<String> invalidTableNames = ResultSetStream.getStream(invalidTableNamesRS)
                                                                       .map(resultSet -> { try
@@ -343,8 +343,8 @@ public class SchemaVerifier extends Verifier
            final String query = String.format("SELECT DISTINCT constraint_name AS cs FROM %s WHERE constraint_type IN ('range', 'glob');",
                                               GeoPackageSchema.DataColumnConstraintsTableName);
 
-           try(PreparedStatement stmt                             = this.getSqliteConnection().prepareStatement(query);
-               ResultSet         constraintNamesWithRangeOrGlobRS = stmt.executeQuery())
+           try(Statement stmt                             = this.getSqliteConnection().createStatement();
+               ResultSet constraintNamesWithRangeOrGlobRS = stmt.executeQuery(query))
            {
                final List<String> constraintNamesWithRangeOrGlob = ResultSetStream.getStream(constraintNamesWithRangeOrGlobRS)
                                                                                   .map(resultSet -> { try
@@ -573,8 +573,8 @@ public class SchemaVerifier extends Verifier
     {
         final String query = String.format("SELECT constraint_name, constraint_type, value, min, minIsInclusive, max, maxIsInclusive FROM %s;", GeoPackageSchema.DataColumnConstraintsTableName);
 
-        try(PreparedStatement stmt                   = this.getSqliteConnection().prepareStatement(query);
-            ResultSet         tableNamesAndColumnsRS = stmt.executeQuery())
+        try(Statement stmt                   = this.getSqliteConnection().createStatement();
+            ResultSet tableNamesAndColumnsRS = stmt.executeQuery(query))
         {
             return ResultSetStream.getStream(tableNamesAndColumnsRS)
                                   .map(resultSet -> { try
@@ -625,13 +625,12 @@ public class SchemaVerifier extends Verifier
         }
     }
 
-
     private List<DataColumns> getDataColumnValues()
     {
         final String query = String.format("SELECT table_name, column_name, constraint_name FROM %s;", GeoPackageSchema.DataColumnsTableName);
 
-        try(PreparedStatement stmt                   = this.getSqliteConnection().prepareStatement(query);
-            ResultSet         tableNamesAndColumnsRS = stmt.executeQuery())
+        try(Statement stmt                   = this.getSqliteConnection().createStatement();
+            ResultSet tableNamesAndColumnsRS = stmt.executeQuery(query))
         {
             return ResultSetStream.getStream(tableNamesAndColumnsRS)
                                   .map(resultSet -> { try
@@ -694,7 +693,4 @@ public class SchemaVerifier extends Verifier
                                                                    new HashSet<>(Arrays.asList(new UniqueDefinition("constraint_name", "constraint_type", "value"))));
 
     }
-
-
-
 }
