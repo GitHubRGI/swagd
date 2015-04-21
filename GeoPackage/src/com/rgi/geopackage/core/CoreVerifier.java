@@ -235,7 +235,7 @@ public class CoreVerifier extends Verifier
                  severity = Severity.Error)
     public void Requirement5() throws SQLException, AssertionError
     {
-        if (this.hasContentsTable)
+        if(this.hasContentsTable)
         {
             final String query = String.format("SELECT table_name FROM %s;", GeoPackageCore.ContentsTableName);
 
