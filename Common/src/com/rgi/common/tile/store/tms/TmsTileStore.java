@@ -26,7 +26,6 @@ package com.rgi.common.tile.store.tms;
 import java.nio.file.Path;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
@@ -123,13 +122,11 @@ abstract class TmsTileStore
 
     public BoundingBox getTileBoundingBox(final int column, final int row, final int zoomLevel)
     {
-        final Coordinate<Double> lowerLeft  = this.tileToCrsCoordinate(column, row, zoomLevel, TileOrigin.LowerLeft);
-        final Coordinate<Double> upperRight = this.tileToCrsCoordinate(column, row, zoomLevel, TileOrigin.UpperRight);
-
-        return new BoundingBox(lowerLeft.getX(),
-                               lowerLeft.getY(),
-                               upperRight.getX(),
-                               upperRight.getY());
+        return this.profile.getTileBounds(column,
+                                          row,
+                                          this.profile.getBounds(),
+                                          this.tileScheme.dimensions(zoomLevel),
+                                          TmsTileStore.Origin);
     }
 
     protected static Path tmsPath(final Path path, final int... tmsSubDirectories)

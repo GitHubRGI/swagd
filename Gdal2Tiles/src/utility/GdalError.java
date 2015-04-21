@@ -184,5 +184,4 @@ public class GdalError
     private final String message;
     private final int    number;
     private final int    type;
-
 }

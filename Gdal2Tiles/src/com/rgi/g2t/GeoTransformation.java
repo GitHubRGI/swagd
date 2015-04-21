@@ -60,8 +60,8 @@ public class GeoTransformation
         this.topLeft = new Coordinate<>(this.affineTransform[0],
                                         this.affineTransform[3]);
 
-        this.pixelDimensions = new Dimensions<>(this.affineTransform[1],  // Height is stored as a negative number...
-                                                 -this.affineTransform[5]);
+        this.pixelResolution = new Dimensions<>( this.affineTransform[1],
+                                                -this.affineTransform[5]); // Height is stored as a negative number...
     }
 
     /**
@@ -90,11 +90,11 @@ public class GeoTransformation
     }
 
     /**
-     * @return the pixelDimensions
+     * @return The width and height of the transform in units per pixel
      */
-    public Dimensions<Double> getPixelDimensions()
+    public Dimensions<Double> getPixelResolution()
     {
-        return this.pixelDimensions;
+        return this.pixelResolution;
     }
 
     /**
@@ -102,11 +102,11 @@ public class GeoTransformation
      *             GDAL {@link Dataset}
      * @return Returns the geographic bounds of a dataset based on the geotransformation
      */
-    public BoundingBox getBounds(final Dataset dataset)
+    public BoundingBox getBounds(final Dataset dataset) // TODO take pixel dimensions instead
     {
         return new BoundingBox(this.affineTransform[0],
+                               this.affineTransform[3] - this.affineTransform[5] * dataset.getRasterYSize(),
                                this.affineTransform[0] + this.affineTransform[1] * dataset.getRasterXSize(),
-                               this.affineTransform[3] + this.affineTransform[5] * dataset.getRasterYSize(),
                                this.affineTransform[3]);
     }
 
@@ -119,5 +119,5 @@ public class GeoTransformation
 
     private final double[]           affineTransform;
     private final Coordinate<Double> topLeft;
-    private final Dimensions<Double> pixelDimensions;
+    private final Dimensions<Double> pixelResolution;
 }

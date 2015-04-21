@@ -54,7 +54,7 @@ import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.g2t.RawImageTileReader;
-import com.rgi.g2t.Tiler;
+import com.rgi.packager.Packager;
 import com.rgi.suite.Settings;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
 import com.rgi.suite.tilestoreadapter.geopackage.GeoPackageTileStoreWriterAdapter;
@@ -88,9 +88,9 @@ public class TilerWindow extends NavigationWindow
     private final JLabel     nativeReferenceSystem = new JLabel();
 
     private final JComboBox<CoordinateReferenceSystem> referenceSystems = new JComboBox<>(CrsProfileFactory.getSupportedCoordinateReferenceSystems()
-                                                                                                      .stream()
-                                                                                                      .sorted()
-                                                                                                      .toArray(CoordinateReferenceSystem[]::new));
+                                                                                                           .stream()
+                                                                                                           .sorted()
+                                                                                                           .toArray(CoordinateReferenceSystem[]::new));
     // Output stuff
     private final JPanel outputPanel = new JPanel(new GridBagLayout());
     private final JComboBox<TileStoreWriterAdapter> outputStoreType = new JComboBox<>();
@@ -122,7 +122,7 @@ public class TilerWindow extends NavigationWindow
         this.contentPanel.setLayout(new BoxLayout(this.contentPanel, BoxLayout.PAGE_AXIS));
 
         // Input stuff
-        this.inputPanel .setBorder(BorderFactory.createTitledBorder("Input"));
+        this.inputPanel.setBorder(BorderFactory.createTitledBorder("Input"));
 
         this.inputFileNameButton.addActionListener(e -> { final String startDirectory = this.settings.get(LastInputLocationSettingName, System.getProperty("user.home"));
 
@@ -144,9 +144,9 @@ public class TilerWindow extends NavigationWindow
                                                                   this.settings.set(LastInputLocationSettingName, file.getParent());
                                                                   this.settings.save();
 
-                                                                  final SpatialReference srs = GdalUtility.getDatasetSpatialReference(file);
+                                                                  final SpatialReference srs = GdalUtility.getSpatialReference(file);
 
-                                                                  final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystemFromSpatialReference(srs);
+                                                                  final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystem(srs);
 
                                                                   String crsName;
 
@@ -170,7 +170,7 @@ public class TilerWindow extends NavigationWindow
                                                               }
                                                               catch(final Exception ex)
                                                               {
-                                                                  this.error(ex.getMessage());
+                                                                  this.error(ex);
                                                               }
                                                           }
                                                         });
@@ -309,7 +309,7 @@ public class TilerWindow extends NavigationWindow
 
         final CoordinateReferenceSystem crs = (CoordinateReferenceSystem)this.referenceSystems.getSelectedItem();
 
-        final Color color = this.clearColorButton.getColor();
+        final Color noDataColor = this.clearColorButton.getColor();
 
         this.settings.set(TileWidthSettingName,  Integer.toString(tileWidth));
         this.settings.set(TileHeightSettingName, Integer.toString(tileHeight));
@@ -332,17 +332,21 @@ public class TilerWindow extends NavigationWindow
                                      this.processName() + "...",
                                      taskMonitor -> { final File file = new File(this.inputFileName.getText());
 
-                                                      try(final TileStoreReader tileStoreReader = new RawImageTileReader(file, tileDimensions, crs))
+                                                      try(final TileStoreReader tileStoreReader = new RawImageTileReader(file, tileDimensions, noDataColor, crs))
                                                       {
                                                           try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
                                                           {
-                                                              (new Tiler(file,
-                                                                         tileStoreWriter,
-                                                                         tileDimensions,
-                                                                         color,
-                                                                         taskMonitor)).execute();
-                                                              return null;
+                                                              (new Packager(taskMonitor,
+                                                                            tileStoreReader,
+                                                                            tileStoreWriter)).execute();
                                                           }
+                                                          catch(final Exception ex)
+                                                          {
+                                                              this.tileStoreWriterAdapter.removeStore();
+                                                              throw ex;
+                                                          }
+
+                                                          return null;
                                                       }
                                                     });
 

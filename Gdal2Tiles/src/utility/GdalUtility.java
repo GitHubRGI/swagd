@@ -36,9 +36,8 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -65,17 +64,90 @@ import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.tile.store.TileStoreException;
+import com.rgi.g2t.GeoTransformation;
 import com.rgi.g2t.TilingException;
 
-
 /**
- * Common functionality of the GDAL Library made into helper functions.
+ * Common functionality of the GDAL library made into helper functions
  *
- * @author Luke Lambert
+ * @author Luke D. Lambert
  * @author Steven D. Lander
  */
 public class GdalUtility
 {
+    static
+    {
+        // GDAL_DATA needs to be a valid path
+        if(System.getenv("GDAL_DATA") == null)
+        {
+            throw new RuntimeException("Tiling will not work without GDAL_DATA environment variable.");
+        }
+        // Get the system path
+        //String paths = System.getenv("PATH");
+        // TODO
+        // Parse the path entries
+        // Check each path entry for the required dll's/so's
+        // Throw an error if any of the required ones are missing
+
+        osr.UseExceptions();
+        gdal.AllRegister(); // Register GDAL extensions
+    }
+
+    /**
+     * Opens an image file, and returns a {@link Dataset}
+     *
+     * @param rawImage
+     *             A raster image {@link File}
+     * @return A {@link Dataset} warped to the input coordinate reference system
+     */
+    public static Dataset open(final File rawImage)
+    {
+        return GdalUtility.open(rawImage, null);
+    }
+
+    /**
+     * Opens an image file, and returns a {@link Dataset}
+     *
+     * @param rawImage
+     *             A raster image {@link File}
+     * @param coordinateReferenceSystem
+     *             The {@link CoordinateReferenceSystem} the tiles should be
+     *             output in
+     * @return A {@link Dataset} warped to the input coordinate reference system
+     */
+    public static Dataset open(final File rawImage, final CoordinateReferenceSystem coordinateReferenceSystem)
+    {
+        final Dataset dataset = gdal.Open(rawImage.getAbsolutePath()); // Opening is read-only by default
+
+        if(dataset == null)
+        {
+            throw new RuntimeException(new GdalError().getMessage());
+        }
+
+        if(coordinateReferenceSystem == null)
+        {
+            return dataset;
+        }
+
+        try
+        {
+            final SpatialReference inputSrs = GdalUtility.getSpatialReference(dataset);
+
+            final Dataset warpedDataset = GdalUtility.warpDatasetToSrs(dataset, inputSrs, GdalUtility.getSpatialReference(coordinateReferenceSystem));
+
+            if(warpedDataset == null)
+            {
+                throw new RuntimeException(new GdalError().getMessage());
+            }
+
+            return warpedDataset;
+        }
+        finally
+        {
+            dataset.delete();
+        }
+    }
+
     /**
      * Converts a GDAL {@link Dataset} into a {@link BufferedImage} <br>
      * <br>
@@ -255,33 +327,27 @@ public class GdalUtility
     /**
      * Gets the GDAL {@link SpatialReference} from the input {@link Dataset}
      *
-     * @param dataset A GDAL {@link Dataset}
-     * @return Returns a GDAL {@link SpatialReference} that the input dataset has
-     * @throws DataFormatException  Thrown when GDAL has exhausted all means to get the WKT and failed.
+     * @param dataset
+     *             A GDAL {@link Dataset}
+     * @return Returns the GDAL {@link SpatialReference} of the dataset
      */
-    public static SpatialReference getDatasetSpatialReference(final Dataset dataset) throws DataFormatException
+    public static SpatialReference getSpatialReference(final Dataset dataset)
     {
         if(dataset == null)
         {
             throw new IllegalArgumentException("Dataset may not be null.");
         }
 
-        final SpatialReference srs = new SpatialReference();
-        // Get the well-known-text of this dataset
-        String wkt = dataset.GetProjection();
+        String wkt = dataset.GetProjection(); // Get the well-known-text of this dataset
 
-        if (wkt.isEmpty() && dataset.GetGCPCount() != 0)
+        if(wkt.isEmpty() && dataset.GetGCPCount() != 0) // If the WKT is empty and there are GCPs...
         {
-            // If the wkt is empty and there are GCPs...
             wkt = dataset.GetGCPProjection();
         }
-        if (!wkt.isEmpty())
-        {
-            // Initialize the srs from the non-empt wkt string
-            srs.ImportFromWkt(wkt);
-            return srs;
-        }
-        throw new DataFormatException("Cannot get source file spatial reference system.");
+
+        final SpatialReference srs = new SpatialReference();
+        srs.ImportFromWkt(wkt); // Returns 0 on success. Otherwise throws a RuntimeException() (or an error code if DontUseExceptions() has been called).
+        return srs;
     }
 
     /**
@@ -290,30 +356,23 @@ public class GdalUtility
      * @param file
      *             Image file
      * @return The {@link SpatialReference} of the image file
-     * @throws DataFormatException
-     *             when {@link GdalUtility#getDatasetSpatialReference(Dataset)} throws
      */
-    public static SpatialReference getDatasetSpatialReference(final File file) throws DataFormatException
+    public static SpatialReference getSpatialReference(final File file)
     {
         if(file == null || !file.canRead())
         {
             throw new IllegalArgumentException("File may not be null, and must be readable");
         }
 
-        osr.UseExceptions();
-        // Register gdal for use
-        gdal.AllRegister();
-
-        final Dataset dataset = gdal.Open(file.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = GdalUtility.open(file);
 
         try
         {
-            return GdalUtility.getDatasetSpatialReference(dataset);
+            return GdalUtility.getSpatialReference(dataset);
         }
         finally
         {
             dataset.delete();
-            //gdal.GDALDestroyDriverManager(); Causes fatal error: exception access violation
         }
     }
 
@@ -323,9 +382,9 @@ public class GdalUtility
      * @param crs An input {@link CoordinateReferenceSystem}
      * @return A {@link SpatialReference} built from the input CRS WKT
      */
-    public static SpatialReference getSpatialReferenceFromCrs(final CoordinateReferenceSystem crs)
+    public static SpatialReference getSpatialReference(final CoordinateReferenceSystem crs)
     {
-        if (crs == null)
+        if(crs == null)
         {
             throw new IllegalArgumentException("Coordinate reference system cannot be null.");
         }
@@ -340,13 +399,13 @@ public class GdalUtility
      * @param crsProfile A {@link CrsProfile} from which a {@link SpatialReference} should be built
      * @return A {@link SpatialReference} built from the input CrsProfile
      */
-    public static SpatialReference getSpatialReferenceFromCrsProfile(final CrsProfile crsProfile)
+    public static SpatialReference getSpatialReference(final CrsProfile crsProfile)
     {
-        if (crsProfile == null)
+        if(crsProfile == null)
         {
             throw new IllegalArgumentException("Crs Profile cannot be null.");
         }
-        return GdalUtility.getSpatialReferenceFromCrs(crsProfile.getCoordinateReferenceSystem());
+        return GdalUtility.getSpatialReference(crsProfile.getCoordinateReferenceSystem());
     }
 
     /**
@@ -355,47 +414,45 @@ public class GdalUtility
      * @param dataset An input {@link Dataset}
      * @return A boolean where true means the dataset has a georeference and false otherwise
      */
-    public static boolean datasetHasGeoReference(final Dataset dataset)
+    public static boolean hasGeoReference(final Dataset dataset)
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
         final double[] identityTransform = { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
-        // Compare dataset geotransform to an empty identity transform and ensure there are no GCPs
+
+        // Compare the dataset's transform to the identity transform and ensure there are no GCPs
         return !Arrays.equals(dataset.GetGeoTransform(), identityTransform) || dataset.GetGCPCount() != 0;
-        // below is the negation of HasGeoReference
-        //return Arrays.equals(dataset.GetGeoTransform(), emptyGeoReference) && dataset.GetGCPCount() == 0;
     }
 
     /**
      * Get the bounding box for an input {@link Dataset}
      *
-     * @param dataset An input {@link Dataset}
+     * @param dataset
+     *             An input {@link Dataset}
      * @return A {@link BoundingBox} built from the bounds of the input {@link Dataset}
-     * @throws DataFormatException Thrown when the input dataset contains rotation or skew.  Fix
-     *                                the input raster with the gdalwarp utility manually.
+     * @throws DataFormatException
+     *             When the input dataset contains rotation or skew.  Fix the
+     *             input raster with the <code>gdalwarp</code> utility
+     *             manually.
      */
-    public static BoundingBox getBoundsForDataset(final Dataset dataset) throws DataFormatException
+    public static BoundingBox getBounds(final Dataset dataset) throws DataFormatException
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
         final double[] outputGeotransform = dataset.GetGeoTransform();
-        // Report error in case rotation/skew is in geotransform (only for raster profile)
-        // gdal2tiles.py only checks for (ogt[2], ogt[4]) != (0,0), it does not seem to care if only
-        // one has a value
-        if (outputGeotransform[2] != 0 || outputGeotransform[4] != 0)
+        if(outputGeotransform[2] != 0 || outputGeotransform[4] != 0)
         {
-            throw new DataFormatException("Georeference of the raster contains rotation or skew. " +
-                                          "Such raster is not supported.  Please use gdalwarp first.");
+            throw new DataFormatException("Raster's georeference contains a rotation or skew, which is not supported.  Please use gdalwarp first.");
         }
-        final double minX = outputGeotransform[0];
-        final double maxX = outputGeotransform[0] + dataset.GetRasterXSize() * outputGeotransform[1];
-        final double maxY = outputGeotransform[3];
-        final double minY = outputGeotransform[3] - dataset.GetRasterYSize() * outputGeotransform[1];
-        return new BoundingBox(minX, minY, maxX, maxY);
+
+        return new BoundingBox(outputGeotransform[0],
+                               outputGeotransform[3] + dataset.GetRasterYSize() * outputGeotransform[5],
+                               outputGeotransform[0] + dataset.GetRasterXSize() * outputGeotransform[1],
+                               outputGeotransform[3]);
     }
 
     /**
@@ -405,9 +462,9 @@ public class GdalUtility
      * @return A {@link CoordinateReferenceSystem} built from the input {@link SpatialReference} using the
      *            authority name and code.
      */
-    public static CoordinateReferenceSystem getCoordinateReferenceSystemFromSpatialReference(final SpatialReference srs)
+    public static CoordinateReferenceSystem getCoordinateReferenceSystem(final SpatialReference srs)
     {
-        if (srs == null)
+        if(srs == null)
         {
             throw new IllegalArgumentException("Input spatial reference system cannot be null.");
         }
@@ -445,7 +502,7 @@ public class GdalUtility
      */
     public static String getName(final SpatialReference spatialReference)
     {
-        if (spatialReference == null)
+        if(spatialReference == null)
         {
             throw new IllegalArgumentException("Input spatial reference cannot be null.");
         }
@@ -460,126 +517,148 @@ public class GdalUtility
     /**
      * Build a {@link CrsProfile} from an input {@link Dataset}
      *
-     * @param dataset An input {@link Dataset}
+     * @param dataset
+     *             An input {@link Dataset}
      * @return A {@link CrsProfile} built from the input {@link Dataset}
-     * @throws TileStoreException Thrown when a {@link CrsProfile} could not be built from the input {@link Dataset}
      */
-    public static CrsProfile getCrsProfileForDataset(final Dataset dataset) throws TileStoreException
+    public static CrsProfile getCrsProfile(final Dataset dataset)
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
-        try
-        {
-            return CrsProfileFactory.create(GdalUtility.getCoordinateReferenceSystemFromSpatialReference(GdalUtility.getDatasetSpatialReference(dataset)));
-        }
-        catch (final DataFormatException dfe)
-        {
-            throw new TileStoreException(dfe);
-        }
+
+        final SpatialReference          srs = GdalUtility.getSpatialReference(dataset);
+        final CoordinateReferenceSystem crs = GdalUtility.getCoordinateReferenceSystem(srs);
+
+        return CrsProfileFactory.create(crs);
     }
 
     /**
-     * Calculate all the tile ranges for the data in the input {@link BoundingBox} for all zoom levels.
+     * Calculate all the tile ranges for the data in the input {@link
+     * BoundingBox} for the given zoom levels.
      *
-     * @param bounds A {@link BoundingBox} describing the data area
-     * @param crsProfile A {@link CrsProfile} for the input area
-     * @param tileScheme A {@link TileScheme} representing the way in which the tiles should be arranged
-     * @param tileOrigin A {@link TileOrigin} that represents which corner tiling begins from
-     * @return A list of zoom-level-numbered indices containing tile coordinate info for the topLeft and bottomRight
-     *            corners of the grid
+     * @param tileScheme
+     *             A {@link TileScheme} describing tile matrices for a set of
+     *             zoom levels
+     * @param datasetBounds
+     *             A {@link BoundingBox} describing the data area
+     * @param tileMatrixBounds
+     *             A {@link BoundingBox} describing the area of the tile
+     *             matrix.
+     * @param crsProfile
+     *             A {@link CrsProfile} for the input area
+     * @param tileOrigin
+     *             A {@link TileOrigin} that represents which corner tiling
+     *             begins from
+     *
+     * @return A {@link Map} of zoom levels to tile coordinate info for the
+     *             top left and bottom right corners of the matrix
      */
-    public static List<Range<Coordinate<Integer>>> calculateTileRangesForAllZooms(final BoundingBox bounds,
-                                                                                  final CrsProfile crsProfile,
-                                                                                  final TileScheme tileScheme,
-                                                                                  final TileOrigin tileOrigin)
+    public static Map<Integer, Range<Coordinate<Integer>>> calculateTileRanges(final TileScheme  tileScheme,
+                                                                               final BoundingBox datasetBounds,
+                                                                               final BoundingBox tileMatrixBounds,
+                                                                               final CrsProfile  crsProfile,
+                                                                               final TileOrigin  tileOrigin)
     {
-        if (bounds == null)
+        if(datasetBounds == null)
         {
             throw new IllegalArgumentException("Input bounds cannot be null.");
         }
-        if (crsProfile == null)
+
+        if(crsProfile == null)
         {
             throw new IllegalArgumentException("Input crs profile cannot be null.");
         }
-        if (tileScheme == null)
+
+        if(tileScheme == null)
         {
             throw new IllegalArgumentException("Input tile scheme cannot be null.");
         }
-        if (tileOrigin == null)
+
+        if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Input tile origin cannot be null.");
         }
-        final List<Range<Coordinate<Integer>>> tileRangesByZoom = new ArrayList<>();
 
-        // Get the crs coordinates of the bounds
-        final CrsCoordinate topLeft = new CrsCoordinate(bounds.getTopLeft(), crsProfile.getCoordinateReferenceSystem());
-        final CrsCoordinate bottomRight = new CrsCoordinate(bounds.getBottomRight(), crsProfile.getCoordinateReferenceSystem());
+        // Get the CRS coordinates of the bounds
+        final CrsCoordinate topLeft     = new CrsCoordinate(datasetBounds.getTopLeft(),     crsProfile.getCoordinateReferenceSystem());
+        final CrsCoordinate bottomRight = new CrsCoordinate(datasetBounds.getBottomRight(), crsProfile.getCoordinateReferenceSystem());
 
-        // Iterate through all possible zooms
-        IntStream.rangeClosed(0, 31)
-                 .forEach(zoom -> { final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
-                                     final Coordinate<Integer> topLeftTile = crsProfile.crsToTileCoordinate(topLeft, crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
-                                     final Coordinate<Integer> bottomRightTile = crsProfile.crsToTileCoordinate(bottomRight, crsProfile.getBounds(), tileMatrixDimensions, tileOrigin);
-                                     tileRangesByZoom.add(zoom, new Range<>(topLeftTile, bottomRightTile));
-                                   });
+        return tileScheme.getZoomLevels()
+                         .stream()
+                         .collect(Collectors.toMap(zoom -> zoom,
+                                                   zoom -> { final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
 
-        return tileRangesByZoom;
+                                                             final Coordinate<Integer>     topLeftTile = crsProfile.crsToTileCoordinate(topLeft,     tileMatrixBounds, tileMatrixDimensions, tileOrigin);
+                                                             final Coordinate<Integer> bottomRightTile = crsProfile.crsToTileCoordinate(bottomRight, tileMatrixBounds, tileMatrixDimensions, tileOrigin);
+
+                                                             return new Range<>(topLeftTile, bottomRightTile);
+                                                            }));
     }
 
     /**
      * Get the lowest-integer zoom level for the input {@link Dataset}
      *
-     * @param dataset An input {@link Dataset}
-     * @param tileRanges The calculated list of tile numbers and zooms
-     * @param tileOrigin The {@link TileOrigin} of the tile grid
-     * @param tileScheme The {@link TileScheme} of the tile grid
-     * @param tileSize A {@link Dimensions} Integer object that describes what the tiles should look like
-     * @return The zoom level for this dataset that produces only one tile.  Defaults to 0 if
-     *            an error occurs
+     * @param dataset
+     *             An input {@link Dataset}
+     * @param tileRanges
+     *             The calculated list of tile numbers and zooms
+     * @param tileOrigin
+     *             The {@link TileOrigin} of the tile grid
+     * @param tileScheme
+     *             The {@link TileScheme} of the tile grid
+     * @param tileSize
+     *             A {@link Dimensions} Integer object that describes what the tiles should look like
+     * @return The zoom level for this dataset that produces only one tile.
+     *            Defaults to 0 if an error occurs.
      */
-    public static int minimalZoomForDataset(final Dataset dataset,
-                                            final List<Range<Coordinate<Integer>>> tileRanges,
-                                            final TileOrigin tileOrigin,
-                                            final TileScheme tileScheme,
-                                            final Dimensions<Integer> tileSize)
+    public static int getMinimalZoom(final Dataset                                  dataset,
+                                     final Map<Integer, Range<Coordinate<Integer>>> tileRanges,
+                                     final TileOrigin                               tileOrigin,
+                                     final TileScheme                               tileScheme,
+                                     final Dimensions<Integer>                      tileSize)
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null");
         }
-        if (tileRanges == null || tileRanges.isEmpty())
+
+        if(tileRanges == null || tileRanges.isEmpty())
         {
             throw new IllegalArgumentException("Tile range list cannot be null or empty.");
         }
-        if (tileOrigin == null)
+
+        if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Tile origin cannot be null.");
         }
-        if (tileScheme == null)
+
+        if(tileScheme == null)
         {
             throw new IllegalArgumentException("Tile scheme cannot be null.");
         }
-        if (tileSize == null)
+
+        if(tileSize == null)
         {
             throw new IllegalArgumentException("Tile size cannot be null");
         }
-        final double pixelSize = dataset.GetGeoTransform()[1];
+
+        final Dimensions<Double> datasetPixelResolution = new GeoTransformation(dataset.GetGeoTransform()).getPixelResolution();
         final double zoomPixelSize;
-        if (tileSize.getWidth() == tileSize.getHeight())
+
+        if(tileSize.getWidth() > tileSize.getHeight())
         {
-            zoomPixelSize = (pixelSize * Math.max(dataset.GetRasterXSize(), dataset.GetRasterYSize()) / tileSize.getWidth());
+            zoomPixelSize = (datasetPixelResolution.getWidth()  * dataset.GetRasterXSize()) / tileSize.getWidth();
         }
         else
         {
-            // Pixel resolution of the dimension with the most units per pixel will be used to calculate the zoom
-            final int largestResolution = tileSize.getWidth() > tileSize.getHeight() ? tileSize.getWidth() : tileSize.getHeight();
-            zoomPixelSize = (pixelSize * Math.max(dataset.GetRasterXSize(), dataset.GetRasterYSize()) / largestResolution);
+            zoomPixelSize = (datasetPixelResolution.getHeight() * dataset.GetRasterYSize()) / tileSize.getHeight();
         }
+
         try
         {
-            final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(dataset);
+            final CrsProfile crsProfile = GdalUtility.getCrsProfile(dataset);
             final int zoom = GdalUtility.zoomLevelForPixelSize(zoomPixelSize, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
             // TODO: We could probably come up with a better way of doing this
             // The resolution returned ensures that a raster could exist within a single tile, but that raster could still produce
@@ -590,6 +669,7 @@ public class GdalUtility
         {
             System.out.println("Could not determine minimal zoom, defaulting to 0.");
         }
+
         // Worst case scenario, return zoom level 0
         return 0;
     }
@@ -597,89 +677,119 @@ public class GdalUtility
     /**
      * Get the highest-integer zoom level for the input {@link Dataset}
      *
-     * @param dataset An input {@link Dataset}
-     * @param tileRanges The calculated list of tile numbers and zooms
-     * @param tileOrigin The {@link TileOrigin} of the tile grid
-     * @param tileScheme The {@link TileScheme} of the tile grid
-     * @param tileSize A {@link Dimensions} Integer object that describes what the tiles should look like
-     * @return The zoom level for this dataset that is closest to the actual resolution
-     * @throws TileStoreException Thrown when the
+     * @param dataset
+     *             An input {@link Dataset}
+     * @param tileRanges
+     *             The calculated list of tile numbers and zooms
+     * @param tileOrigin
+     *             The {@link TileOrigin} of the tile grid
+     * @param tileScheme
+     *             The {@link TileScheme} of the tile grid
+     * @param tileSize
+     *             A {@link Dimensions} Integer object that describes what the tiles should look like
+     * @return The zoom level for this dataset that is closest to the actual
+     *             resolution
+     * @throws TileStoreException Thrown when a {@link GdalUtility#getCrsProfile(Dataset)} throws
      */
-    public static int maximalZoomForDataset(final Dataset dataset,
-                                            final List<Range<Coordinate<Integer>>> tileRanges,
-                                            final TileOrigin tileOrigin,
-                                            final TileScheme tileScheme,
-                                            final Dimensions<Integer> tileSize) throws TileStoreException
+    public static int getMaximalZoom(final Dataset                                  dataset,
+                                     final Map<Integer, Range<Coordinate<Integer>>> tileRanges,
+                                     final TileOrigin                               tileOrigin,
+                                     final TileScheme                               tileScheme,
+                                     final Dimensions<Integer>                      tileSize) throws TileStoreException
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
-        if (tileRanges == null || tileRanges.isEmpty())
+
+        if(tileRanges == null || tileRanges.isEmpty())
         {
             throw new IllegalArgumentException("Tile range list cannot be null or empty.");
         }
-        if (tileOrigin == null)
+
+        if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Tile origin cannot be null.");
         }
-        if (tileScheme == null)
+
+        if(tileScheme == null)
         {
             throw new IllegalArgumentException("Tile scheme cannot be null.");
         }
-        if (tileSize == null)
+
+        if(tileSize == null)
         {
             throw new IllegalArgumentException("Tile dimensions cannot be null.");
         }
+
         final double zoomPixelSize = dataset.GetGeoTransform()[1];
+
         try
         {
-            final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(dataset);
+            final CrsProfile crsProfile = GdalUtility.getCrsProfile(dataset);
             return GdalUtility.zoomLevelForPixelSize(zoomPixelSize, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
         }
-        catch (final TileStoreException e)
+        catch(final TileStoreException e)
         {
-            throw new TileStoreException("Could not determine maximal zoom for input raster pixel size (dataset.GetGeoTransform()[1]).");
+            throw new TileStoreException("Could not determine maximum zoom level.");
         }
     }
 
     /**
      * Return a {@link Set} of all the zoom levels in the input {@link Dataset}
      *
-     * @param dataset An input {@link Dataset}
-     * @param tileOrigin The {@link TileOrigin} of the tile grid
-     * @param tileSize A {@link Dimensions} Integer object that describes what the tiles should look like
+     * @param dataset
+     *             An input {@link Dataset}
+     * @param tileOrigin
+     *             The {@link TileOrigin} of the tile grid
+     * @param tileSize
+     *              A {@link Dimensions} Integer object that describes what the
+     *              tiles should look like
      * @return A set of integers for all the zoom levels in the input dataset
-     * @throws TileStoreException Thrown if the input dataset bounds could not be retrieved
+     * @throws TileStoreException Thrown if the input dataset bounds could not
+     *             be retrieved
      */
-    public static Set<Integer> getZoomLevelsForDataset(final Dataset dataset,
-                                                       final TileOrigin tileOrigin,
-                                                       final Dimensions<Integer> tileSize) throws TileStoreException
+    public static Set<Integer> getZoomLevels(final Dataset             dataset,
+                                             final TileOrigin          tileOrigin,
+                                             final Dimensions<Integer> tileSize) throws TileStoreException
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
-        if (tileOrigin == null)
+
+        if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Tile origin cannot be null.");
         }
-        if (tileSize == null)
+
+        if(tileSize == null)
         {
             throw new IllegalArgumentException("Tile dimensions cannot be null.");
         }
+
         // World extent tile scheme
-        final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
+        final ZoomTimesTwo tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
+
         try
         {
-            final BoundingBox datasetBounds = GdalUtility.getBoundsForDataset(dataset);
-            final CrsProfile crsProfile = GdalUtility.getCrsProfileForDataset(dataset);
-            final List<Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRangesForAllZooms(datasetBounds, crsProfile, tileScheme, tileOrigin);
-            final int minZoom = GdalUtility.minimalZoomForDataset(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
-            final int maxZoom = GdalUtility.maximalZoomForDataset(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
-            return IntStream.rangeClosed(minZoom, maxZoom).boxed().collect(Collectors.toSet());
+            final BoundingBox datasetBounds = GdalUtility.getBounds    (dataset);
+            final CrsProfile  crsProfile    = GdalUtility.getCrsProfile(dataset);
+
+            final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
+                                                                                                        datasetBounds,
+                                                                                                        crsProfile.getBounds(),
+                                                                                                        crsProfile,
+                                                                                                        tileOrigin);
+
+            final int minZoom = GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+            final int maxZoom = GdalUtility.getMaximalZoom(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+
+            return IntStream.rangeClosed(minZoom, maxZoom)
+                            .boxed()
+                            .collect(Collectors.toSet());
         }
-        catch (final DataFormatException dfe)
+        catch(final DataFormatException dfe)
         {
             throw new TileStoreException(dfe);
         }
@@ -688,136 +798,170 @@ public class GdalUtility
     /**
      * Return the appropriate zoom level based on the input pixel resolution
      *
-     * @param zoomPixelSize The pixel resolution of the zoom level
-     * @param tileRanges The calculated list of tile numbers and zooms
-     * @param dataset An input {@link Dataset}
-     * @param crsProfile A {@link CrsProfile} for the input area
-     * @param tileScheme The {@link TileScheme} of the tile grid
-     * @param tileOrigin The {@link TileOrigin} of the tile grid
-     * @param tileSize A {@link Dimensions} Integer object that describes what the tiles should look like
+     * @param zoomPixelSize
+     *             The pixel resolution of the zoom level
+     * @param tileRanges
+     *             The calculated list of tile numbers and zooms
+     * @param dataset
+     *             An input {@link Dataset}
+     * @param crsProfile
+     *             A {@link CrsProfile} for the input area
+     * @param tileScheme
+     *             The {@link TileScheme} of the tile grid
+     * @param tileOrigin
+     *             The {@link TileOrigin} of the tile grid
+     * @param tileSize
+     *             A {@link Dimensions} Integer object that describes what the
+     *             tiles should look like
      * @return The integer zoom matched to the pixel resolution
-     * @throws TileStoreException Thrown when the bounds of the dataset could not be determined
+     * @throws TileStoreException
+     *             When the bounds of the dataset could not be determined
      */
-    public static int zoomLevelForPixelSize(final double zoomPixelSize,
-                                            final List<Range<Coordinate<Integer>>> tileRanges,
-                                            final Dataset dataset,
-                                            final CrsProfile crsProfile,
-                                            final TileScheme tileScheme,
-                                            final TileOrigin tileOrigin,
-                                            final Dimensions<Integer> tileSize) throws TileStoreException
+    public static int zoomLevelForPixelSize(final double                                   zoomPixelSize,
+                                            final Map<Integer, Range<Coordinate<Integer>>> tileRanges,
+                                            final Dataset                                  dataset,
+                                            final CrsProfile                               crsProfile,
+                                            final TileScheme                               tileScheme,
+                                            final TileOrigin                               tileOrigin,
+                                            final Dimensions<Integer>                      tileSize) throws TileStoreException
     {
-        if (tileRanges == null || tileRanges.isEmpty())
+        if(tileRanges == null || tileRanges.isEmpty())
         {
             throw new IllegalArgumentException("Tile range list cannot be null.");
         }
-        if (dataset == null)
+
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
-        if (crsProfile == null)
+
+        if(crsProfile == null)
         {
             throw new IllegalArgumentException("Crs profile cannot be null.");
         }
-        if (tileScheme == null)
+
+        if(tileScheme == null)
         {
             throw new IllegalArgumentException("Tile scheme cannot be null.");
         }
-        if (tileOrigin == null)
+
+        if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Tile origin cannot be null.");
         }
-        if (tileSize == null)
+
+        if(tileSize == null)
         {
             throw new IllegalArgumentException("Tile dimensions cannot be null.");
         }
+
         try
         {
-            final BoundingBox boundingBox = GdalUtility.getBoundsForDataset(dataset);
-            final int zoomLevelForPixelSize = IntStream.rangeClosed(0, 31)
-                                                       .filter(zoom -> zoomLevelForPixelSize(zoom,
-                                                                                                zoomPixelSize,
-                                                                                                tileRanges,
-                                                                                                crsProfile,
-                                                                                                tileScheme,
-                                                                                                tileOrigin,
-                                                                                                tileSize,
-                                                                                                boundingBox))
-                                                       .findFirst()
-                                                       .orElseThrow(() -> new NumberFormatException("Could not determine zoom level for pizel size: " + String.valueOf(zoomPixelSize)));
+            final BoundingBox boundingBox = GdalUtility.getBounds(dataset);
+            final int zoomLevelForPixelSize = tileRanges.entrySet()
+                                                        .stream()
+                                                        .filter(entrySet -> { return zoomLevelForPixelSize(tileScheme.dimensions(entrySet.getKey()),
+                                                                                                           zoomPixelSize,
+                                                                                                           entrySet.getValue(),
+                                                                                                           crsProfile,
+                                                                                                           tileScheme,
+                                                                                                           tileOrigin,
+                                                                                                           tileSize,
+                                                                                                           boundingBox);
+                                                                            })
+                                                        .map(entrySet -> entrySet.getKey())
+                                                        .findFirst()
+                                                        .orElseThrow(() -> new NumberFormatException("Could not determine zoom level for pizel size: " + String.valueOf(zoomPixelSize)));
+
             return zoomLevelForPixelSize == 0 ? 0 : zoomLevelForPixelSize - 1;
         }
-        catch (DataFormatException | NumberFormatException ex)
+        catch(DataFormatException | NumberFormatException ex)
         {
             throw new TileStoreException(ex);
         }
     }
 
-    private static boolean zoomLevelForPixelSize(final int zoom,
-                                                 final double zoomPixelSize,
-                                                 final List<Range<Coordinate<Integer>>> tileRanges,
-                                                 final CrsProfile crsProfile,
-                                                 final TileScheme tileScheme,
-                                                 final TileOrigin tileOrigin,
-                                                 final Dimensions<Integer> tileSize,
-                                                 final BoundingBox boundingBox)
+    private static boolean zoomLevelForPixelSize(final TileMatrixDimensions       tileMatrixDimensions,
+                                                 final double                     zoomPixelSize,
+                                                 final Range<Coordinate<Integer>> tileRange,
+                                                 final CrsProfile                 crsProfile,
+                                                 final TileScheme                 tileScheme,
+                                                 final TileOrigin                 tileOrigin,
+                                                 final Dimensions<Integer>        tileSize,
+                                                 final BoundingBox                boundingBox)
     {
-        if (tileRanges == null || tileRanges.isEmpty())
+        if(tileMatrixDimensions == null)
         {
-            throw new IllegalArgumentException("Tile range list cannot be null.");
+            throw new IllegalArgumentException();
         }
-        if (crsProfile == null)
+
+        if(tileRange == null)
+        {
+            throw new IllegalArgumentException("Tile range cannot be null.");
+        }
+
+        if(crsProfile == null)
         {
             throw new IllegalArgumentException("Crs profile cannot be null.");
         }
-        if (tileScheme == null)
+
+        if(tileScheme == null)
         {
             throw new IllegalArgumentException("Tile scheme cannot be null.");
         }
-        if (tileOrigin == null)
+
+        if(tileOrigin == null)
         {
             throw new IllegalArgumentException("Tile origin cannot be null.");
         }
-        if (tileSize == null)
+
+        if(tileSize == null)
         {
             throw new IllegalArgumentException("Tile dimensions cannot be null.");
         }
-        final TileMatrixDimensions tileMatrixDimensions = tileScheme.dimensions(zoom);
+
         // Get the tile coordinates of the top-left and bottom-right tiles
         final Coordinate<Integer> topLeftTile = crsProfile.crsToTileCoordinate(new CrsCoordinate(boundingBox.getTopLeft(),
                                                                                crsProfile.getCoordinateReferenceSystem()),
                                                                                crsProfile.getBounds(), // Use bounds of the world here
                                                                                tileMatrixDimensions,
                                                                                tileOrigin);
+
         final Coordinate<Integer> bottomRightTile = crsProfile.crsToTileCoordinate(new CrsCoordinate(boundingBox.getBottomRight(),
-                                                                                    crsProfile.getCoordinateReferenceSystem()),
-                                                                                    crsProfile.getBounds(), //boundingBox, Use bounds of the world here
-                                                                                    tileMatrixDimensions,
-                                                                                    tileOrigin);
+                                                                                   crsProfile.getCoordinateReferenceSystem()),
+                                                                                   crsProfile.getBounds(), //boundingBox, Use bounds of the world here
+                                                                                   tileMatrixDimensions,
+                                                                                   tileOrigin);
+
         // Convert tile coordinates to crs coordinates: this will give us correct units-of-measure-per-pixel
         final Coordinate<Integer> topLeftCoord = tileOrigin.transform(TileOrigin.UpperLeft,
-                                                                       topLeftTile.getX(),
-                                                                       topLeftTile.getY(),
-                                                                       tileMatrixDimensions);
+                                                                      topLeftTile.getX(),
+                                                                      topLeftTile.getY(),
+                                                                      tileMatrixDimensions);
+
         final Coordinate<Integer> bottomRightCoord = tileOrigin.transform(TileOrigin.LowerRight,
-                                                                           bottomRightTile.getX(),
-                                                                           bottomRightTile.getY(),
-                                                                           tileMatrixDimensions);
+                                                                          bottomRightTile.getX(),
+                                                                          bottomRightTile.getY(),
+                                                                          tileMatrixDimensions);
+
         final CrsCoordinate topLeftCrsFull = crsProfile.tileToCrsCoordinate(topLeftCoord.getX(),
-                                                                             topLeftCoord.getY(),
-                                                                             crsProfile.getBounds(),
-                                                                             tileMatrixDimensions,
-                                                                             TileOrigin.UpperLeft);
+                                                                            topLeftCoord.getY(),
+                                                                            crsProfile.getBounds(),
+                                                                            tileMatrixDimensions,
+                                                                            TileOrigin.UpperLeft);
+
         final CrsCoordinate bottomRightCrsFull = crsProfile.tileToCrsCoordinate(bottomRightCoord.getX(),
-                                                                                 bottomRightCoord.getY(),
-                                                                                 crsProfile.getBounds(),
-                                                                                 tileMatrixDimensions,
-                                                                                 TileOrigin.LowerRight);
+                                                                                bottomRightCoord.getY(),
+                                                                                crsProfile.getBounds(),
+                                                                                tileMatrixDimensions,
+                                                                                TileOrigin.LowerRight);
+
         // get how many tiles wide this zoom will be so that number can be multiplied by tile size
-        final int zoomTilesWide = tileRanges.get(zoom).getMaximum().getX() - tileRanges.get(zoom).getMinimum().getX() + 1;
+        // TODO *WARNING* 'tiles wide' is used for both width and height calculations!
+        final int zoomTilesWide = tileRange.getMaximum().getX() - tileRange.getMinimum().getX() + 1;
         final double zoomResolution;
-        if (tileSize.getWidth() == tileSize.getHeight() || tileSize.getWidth() > tileSize.getHeight())
+        if(tileSize.getWidth() >= tileSize.getHeight())
         {
-            //final double width = (new BoundingBox(topLeftCrsFull.getX(), bottomRightCrsFull.getY(), bottomRightCrsFull.getX(), topLeftCrsFull.getY())).getWidth();
             final double width = bottomRightCrsFull.getX() - topLeftCrsFull.getX();
             zoomResolution = width / (zoomTilesWide * tileSize.getWidth());
         }
@@ -826,7 +970,7 @@ public class GdalUtility
             final double height = topLeftCrsFull.getY() - bottomRightCrsFull.getY();
             zoomResolution = height / (zoomTilesWide * tileSize.getHeight());
         }
-        // bounding box is made with minx, miny, maxx, maxy
+
         return zoomPixelSize > zoomResolution;
     }
 
@@ -841,29 +985,36 @@ public class GdalUtility
      * @param toSrs
      *             Spatial reference system to warp the <code>dataset</code> to
      * @return A {@link Dataset} in the input {@link SpatialReference} requested
-     * @throws DataFormatException Thrown when the AutoCreateWarpedVRT method returns null
      */
-    public static Dataset warpDatasetToSrs(final Dataset dataset,
+    public static Dataset warpDatasetToSrs(final Dataset          dataset,
                                            final SpatialReference fromSrs,
-                                           final SpatialReference toSrs) throws DataFormatException
+                                           final SpatialReference toSrs)
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
-        if (fromSrs == null)
+
+        if(fromSrs == null)
         {
             throw new IllegalArgumentException("From-Srs cannot be null.");
         }
-        if (toSrs == null)
+
+        if(toSrs == null)
         {
             throw new IllegalArgumentException("To-Srs cannot be null.");
         }
-        final Dataset output = gdal.AutoCreateWarpedVRT(dataset, fromSrs.ExportToWkt(), toSrs.ExportToWkt(), gdalconstConstants.GRA_Average);
-        if (output == null)
+
+        final Dataset output = gdal.AutoCreateWarpedVRT(dataset,
+                                                        fromSrs.ExportToWkt(),
+                                                        toSrs.ExportToWkt(),
+                                                        gdalconstConstants.GRA_Average);
+
+        if(output == null)
         {
-            throw new DataFormatException();
+            throw new RuntimeException(new GdalError().getMessage());
         }
+
         return output;
     }
 
@@ -881,11 +1032,11 @@ public class GdalUtility
     public static Dataset scaleQueryToTileSize(final Dataset queryDataset,
                                                final Dimensions<Integer> dimensions) throws TilingException
     {
-        if (queryDataset == null)
+        if(queryDataset == null)
         {
             throw new IllegalArgumentException("Query dataset cannot be null.");
         }
-        if (dimensions == null)
+        if(dimensions == null)
         {
             throw new IllegalArgumentException("Tile dimensions cannot be null.");
         }
@@ -901,13 +1052,13 @@ public class GdalUtility
                          final int resolution = gdal.RegenerateOverview(queryDataset.GetRasterBand(index),
                                                                          tileDataInMemory.GetRasterBand(index),
                                                                          "average");
-                         if (resolution != 0)
+                         if(resolution != 0)
                          {
                              throw new RuntimeException("Could not regenerate overview on band: " + String.valueOf(index));
                          }
                      });
         }
-        catch (final RuntimeException ex)
+        catch(final RuntimeException ex)
         {
             throw new TilingException(ex);
         }
@@ -920,9 +1071,9 @@ public class GdalUtility
      * @param dataset An input {@link Dataset} that possibly has NODATA values
      * @return The NODATA values as a {@link Double} array
      */
-    public static Double[] getDatasetNoDataValues(final Dataset dataset)
+    public static Double[] getNoDataValues(final Dataset dataset)
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
@@ -933,20 +1084,20 @@ public class GdalUtility
                  .forEach(band -> {
                                     final Double[] noDataValue = new Double[1];
                                     dataset.GetRasterBand(band).GetNoDataValue(noDataValue);
-                                    if (noDataValue.length != 0 && noDataValue[0] != null)
+                                    if(noDataValue.length != 0 && noDataValue[0] != null)
                                     {
                                         // Assumes only one value coming back from the band
                                         noDataValues[band-1] = noDataValue[0];
                                     }
                                    });
         // Is array still using the initialized values?
-        if (noDataValues[0] == null && noDataValues[1] == null && noDataValues[2] == null)
+        if(noDataValues[0] == null && noDataValues[1] == null && noDataValues[2] == null)
         {
             return new Double[0];
         }
         // TODO: Is it possible to see a raster from GDAL with 2 bands? I think
         // only Mono and RGB options are possible
-        if (noDataValues[0] != null)
+        if(noDataValues[0] != null)
         {
             noDataValues[1] = noDataValues[0];
             noDataValues[2] = noDataValues[0];
@@ -964,11 +1115,11 @@ public class GdalUtility
     public static int getRasterBandCount(final Dataset dataset,
                                          final Band alphaBand)
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
-        if (alphaBand == null)
+        if(alphaBand == null)
         {
             throw new IllegalArgumentException("Alpha band cannot be null.");
         }
@@ -986,7 +1137,7 @@ public class GdalUtility
      */
     public static int getAlphaBandIndex(final Dataset dataset) throws TileStoreException
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
@@ -1004,20 +1155,20 @@ public class GdalUtility
      */
     public static Dataset correctNoDataSimple(final Dataset dataset)
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
-        final boolean datasetHasAlphaBand = GdalUtility.datasetHasAlpha(dataset);
+        final boolean datasetHasAlphaBand = GdalUtility.hasAlpha(dataset);
 
         // If the dataset actually has an alpha band, return it
-        if (datasetHasAlphaBand)
+        if(datasetHasAlphaBand)
         {
             return dataset;
         }
 
         // Dataset has no alpha and is NOT a VRT
-        if (!dataset.GetDriver().getShortName().equalsIgnoreCase("VRT"))
+        if(!dataset.GetDriver().getShortName().equalsIgnoreCase("VRT"))
         {
             // Create a vrt of this dataset
             final Dataset vrtCopy = gdal.AutoCreateWarpedVRT(dataset);
@@ -1042,9 +1193,9 @@ public class GdalUtility
      * @return True if the input {@link Dataset} has an alpha {@link Band},
      *            false otherwise.
      */
-    public static boolean datasetHasAlpha(final Dataset dataset)
+    public static boolean hasAlpha(final Dataset dataset)
     {
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
@@ -1068,28 +1219,33 @@ public class GdalUtility
                                                                final Dimensions<Integer> dimensions,
                                                                final Dataset dataset)
     {
-        if (geoTransform.length == 0)
+        if(geoTransform.length == 0)
         {
             throw new IllegalArgumentException("Geotransform cannot be empty.");
         }
-        if (boundingBox == null)
+
+        if(boundingBox == null)
         {
             throw new IllegalArgumentException("Bounding box cannot be null.");
         }
-        if (dimensions == null)
+
+        if(dimensions == null)
         {
             throw new IllegalArgumentException("Tile dimensions cannot be null.");
         }
-        if (dataset == null)
+
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
-        // TODO: investigate replacing readX/Y with boundingBox.getWidth/Height calls
+
         // This is sorcery of the darkest kind.  It works but it not fully understood.
         final int readX = (int)((boundingBox.getMinX() - geoTransform[0]) / geoTransform[1] + 0.001);
         final int readY = (int)((boundingBox.getMaxY() - geoTransform[3]) / geoTransform[5] + 0.001);
-        final int readXSize = (int)((boundingBox.getMaxX() - boundingBox.getMinX()) / geoTransform[1] + 0.5);
-        final int readYSize = (int)((boundingBox.getMinY() - boundingBox.getMaxY()) / geoTransform[5] + 0.5);
+
+        final int readXSize = (int)(boundingBox.getWidth()  /  geoTransform[1] + 0.5);
+        final int readYSize = (int)(boundingBox.getHeight() / -geoTransform[5] + 0.5);
+
         return new GdalRasterParameters(readX, readY, readXSize, readYSize, dimensions, dataset);
     }
 
@@ -1106,11 +1262,11 @@ public class GdalUtility
     public static byte[] readRaster(final GdalRasterParameters params,
                                     final Dataset dataset) throws TilingException
     {
-        if (params == null)
+        if(params == null)
         {
             throw new IllegalArgumentException("GDAL parameters cannot be null.");
         }
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
@@ -1126,7 +1282,7 @@ public class GdalUtility
                                               imageData, // array into which the data will be written, must
                                                            // contain at least buffer_xSize * buffer_ySize * nBandCount
                                               null); // Per documentation, will select the first nBandCount bands
-        if (result != gdalconstConstants.CE_None)
+        if(result != gdalconstConstants.CE_None)
         {
             throw new TilingException("Failure reported by ReadRaster call in GdalUtility.");
         }
@@ -1146,26 +1302,26 @@ public class GdalUtility
     public static ByteBuffer readRasterDirect(final GdalRasterParameters params,
                                               final Dataset dataset) throws TilingException
     {
-        if (params == null)
+        if(params == null)
         {
             throw new IllegalArgumentException("GDAL parameters cannot be null.");
         }
-        if (dataset == null)
+        if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
         final int bandCount = dataset.GetRasterCount(); // correctNoDataSimple should have added an alpha band
         final ByteBuffer imageData = ByteBuffer.allocateDirect(params.getWriteXSize() * params.getWriteYSize() * bandCount);
         final int result = dataset.ReadRaster_Direct(params.getReadX(),
-                                                       params.getReadY(),
-                                                       params.getReadXSize(),
-                                                       params.getReadYSize(),
-                                                       params.getWriteXSize(),
-                                                       params.getWriteYSize(),
-                                                       gdalconstConstants.GDT_Byte,
-                                                       imageData,
-                                                       null); // Per documentation, will select the first nBandCount bands
-        if (result != gdalconstConstants.CE_None)
+                                                     params.getReadY(),
+                                                     params.getReadXSize(),
+                                                     params.getReadYSize(),
+                                                     params.getWriteXSize(),
+                                                     params.getWriteYSize(),
+                                                     gdalconstConstants.GDT_Byte,
+                                                     imageData,
+                                                     null); // Per documentation, will select the first nBandCount bands
+        if(result != gdalconstConstants.CE_None)
         {
             throw new TilingException("Failure reported by ReadRaster call in GdalUtility.");
         }
@@ -1187,11 +1343,11 @@ public class GdalUtility
                                       final byte[] imageData,
                                       final int bandCount) throws TilingException
     {
-        if (params == null)
+        if(params == null)
         {
             throw new IllegalArgumentException("GDAL parameters cannot be null.");
         }
-        if (imageData.length == 0)
+        if(imageData.length == 0)
         {
             throw new IllegalArgumentException("Image data must be non-zero length.");
         }
@@ -1205,7 +1361,7 @@ public class GdalUtility
                                                                 gdalconstConstants.GDT_Byte,
                                                                 imageData,
                                                                 null); // Per documentation, will select the first nBandCount bands
-        if (result != gdalconstConstants.CE_None)
+        if(result != gdalconstConstants.CE_None)
         {
             throw new TilingException("Failure reported by WriteRaster call in GdalUtility.");
         }
@@ -1226,11 +1382,11 @@ public class GdalUtility
                                             final ByteBuffer imageData,
                                             final int bandCount) throws TilingException
     {
-        if (params == null)
+        if(params == null)
         {
             throw new IllegalArgumentException("GDAL parameters cannot be null.");
         }
-        if (imageData == null)
+        if(imageData == null)
         {
             throw new IllegalArgumentException("Image data must be non-zero length.");
         }
@@ -1244,7 +1400,7 @@ public class GdalUtility
                                                                        gdalconstConstants.GDT_Byte,
                                                                        imageData,
                                                                        null); // Per documentation, will select the first nBandCount bands
-        if (result != gdalconstConstants.CE_None)
+        if(result != gdalconstConstants.CE_None)
         {
             throw new TilingException("Failure reported by WriteRasterDirect call in GdalUtility.");
         }
@@ -1285,28 +1441,34 @@ public class GdalUtility
                                     final Dimensions<Integer> dimensions,
                                     final Dataset dataset)
         {
-            if (dimensions == null)
+            if(dimensions == null)
             {
                 throw new IllegalArgumentException("Dimensions of the tile system cannot be null.");
             }
-            if (dataset == null)
+
+            if(dataset == null)
             {
                 throw new IllegalArgumentException("Input dataset must be supplied to GdalRasterParameters.");
             }
+
             // Points that dictate where a tile read occurs on the dataset
             this.readX = readX;
             this.readY = readY;
+
             // Size values that dictate how much data should be read from the dataset for
             // a tile read operation
             this.readXSize = readXSize;
             this.readYSize = readYSize;
+
             // Points on the write canvas that dictate where the read data should be written
             this.writeX = 0;
             this.writeY = 0;
+
             // Size values that indicate how large the tile query canvas should be
-            // Hardcoding the query to be larger size for later down-scaling
+            // Hard coding the query to be larger size for later down-scaling
             this.queryXSize = 4 * dimensions.getWidth();
             this.queryYSize = 4 * dimensions.getHeight();
+
             // Size values that dictate how large the write canvas should be
             this.writeXSize = this.queryXSize;
             this.writeYSize = this.queryYSize;
@@ -1401,7 +1563,7 @@ public class GdalUtility
          */
         private void adjust(final Dataset dataset)
         {
-            if (this.readX < 0)
+            if(this.readX < 0)
             {
                 final int readXShift = Math.abs(this.readX);
                 this.writeX = (int)(this.writeXSize * ((float)readXShift / this.readXSize));
@@ -1409,12 +1571,14 @@ public class GdalUtility
                 this.readXSize -= (int)(this.readXSize * ((float)readXShift) / this.readXSize);
                 this.readX = 0;
             }
-            if (this.readX + this.readXSize > dataset.GetRasterXSize())
+
+            if(this.readX + this.readXSize > dataset.GetRasterXSize())
             {
                 this.writeXSize = (int)(this.writeXSize * ((float)(dataset.GetRasterXSize() - this.readX) / this.readXSize));
                 this.readXSize = dataset.GetRasterXSize() - this.readX;
             }
-            if (this.readY < 0)
+
+            if(this.readY < 0)
             {
                 final int readYShift = Math.abs(this.readY);
                 this.writeY = (int)(this.writeYSize * ((float)readYShift / this.readYSize));
@@ -1422,7 +1586,8 @@ public class GdalUtility
                 this.readYSize -= (int)(this.readYSize * ((float)readYShift / this.readYSize));
                 this.readY = 0;
             }
-            if (this.readY + this.readYSize > dataset.GetRasterYSize())
+
+            if(this.readY + this.readYSize > dataset.GetRasterYSize())
             {
                 this.writeYSize = (int)(this.writeYSize * ((float)(dataset.GetRasterYSize() - this.readY) / this.readYSize));
                 this.readYSize = dataset.GetRasterYSize() - this.readY;

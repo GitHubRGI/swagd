@@ -23,6 +23,10 @@
 
 package com.rgi.common.tile.scheme;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 
 /**
  * A {@link TileScheme} implementation of a common convention where a tile
@@ -110,6 +114,15 @@ public class ZoomTimesTwo implements TileScheme
         }
 
         return this.zoomLevelDimensions[zoomLevel - this.minimumZoomLevel];
+    }
+
+    @Override
+    public Collection<Integer> getZoomLevels()
+    {
+        return IntStream.rangeClosed(this.minimumZoomLevel,
+                                     this.maximumZoomLevel)
+                        .boxed()
+                        .collect(Collectors.toList());
     }
 
     private final TileMatrixDimensions[] zoomLevelDimensions;

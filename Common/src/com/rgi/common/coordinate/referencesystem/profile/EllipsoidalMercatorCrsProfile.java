@@ -116,10 +116,10 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
 
         final GlobalGeodeticCrsProfile globalGeodetic = new GlobalGeodeticCrsProfile();
         final Coordinate<Integer>      tileCoordinate = globalGeodetic.crsToTileCoordinate(new CrsCoordinate(geodeticCoordinate,
-                                                                                                       globalGeodetic.getCoordinateReferenceSystem()),
-                                                                                     geodeticBounds,
-                                                                                     dimensions,
-                                                                                     tileOrigin);
+                                                                                                             globalGeodetic.getCoordinateReferenceSystem()),
+                                                                                           geodeticBounds,
+                                                                                           dimensions,
+                                                                                           tileOrigin);
         return tileCoordinate;
     }
 
@@ -172,6 +172,39 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
         return new CrsCoordinate(metersCoordinate.getX(),
                                  metersCoordinate.getY(),
                                  this.getCoordinateReferenceSystem());
+    }
+
+    @Override
+    public BoundingBox getTileBounds(final int                  column,
+                                     final int                  row,
+                                     final BoundingBox          bounds,
+                                     final TileMatrixDimensions dimensions,
+                                     final TileOrigin           tileOrigin)
+    {
+        if(bounds == null)
+        {
+            throw new IllegalArgumentException("Bounds may not be null");
+        }
+
+        if(dimensions == null)
+        {
+            throw new IllegalArgumentException("Tile matrix dimensions may not be null");
+        }
+
+        if(!dimensions.contains(column, row))
+        {
+            throw new IllegalArgumentException("The row and column must be within the tile matrix dimensions");
+        }
+
+        if(tileOrigin == null)
+        {
+            throw new IllegalArgumentException("Origin may not be null");
+        }
+
+        final GlobalGeodeticCrsProfile geodeticCrs    = new GlobalGeodeticCrsProfile();
+        final BoundingBox              geodeticBounds = this.getBoundsInLatitudeLongitude(bounds);
+
+        return this.fromGlobalGeodetic(geodeticCrs.getTileBounds(column, row, geodeticBounds, dimensions, tileOrigin));
     }
 
     @Override
@@ -252,6 +285,17 @@ public class EllipsoidalMercatorCrsProfile implements CrsProfile
 
         //initialize the meter's coordinate
         return new Coordinate<>(xmeter, ymeter);
+    }
+
+    private BoundingBox fromGlobalGeodetic(final BoundingBox bounds)
+    {
+        final Coordinate<Double> bottomLeft = this.fromGlobalGeodetic(bounds.getBottomLeft());
+        final Coordinate<Double> topRight   = this.fromGlobalGeodetic(bounds.getTopRight());
+
+        return new BoundingBox(bottomLeft.getX(),
+                               bottomLeft.getY(),
+                               topRight  .getX(),
+                               topRight  .getY());
     }
 
     /**

@@ -34,6 +34,8 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import com.rgi.common.util.ThrowableUtility;
+
 /**
  * Abstract base window with a simple content panel, and OK/Cancel buttons
  *
@@ -72,10 +74,10 @@ public abstract class NavigationWindow extends JFrame
                                                        this.closeFrame();
                                                    }
                                                }
-                                               catch(final Exception ex)
+                                               catch(final Throwable th)
                                                {
-                                                   ex.printStackTrace();
-                                                   this.error("An error has occurred: " + ex.getMessage());
+                                                   th.printStackTrace();
+                                                   this.error(th);
                                                }
                                              });
 
@@ -105,6 +107,11 @@ public abstract class NavigationWindow extends JFrame
                                       message,
                                       this.processName(),
                                       JOptionPane.ERROR_MESSAGE);
+    }
+
+    protected void error(final Throwable th)
+    {
+        this.error("An error has occurred: " + ThrowableUtility.getRoot(th).getMessage());
     }
 
     protected void closeFrame()
