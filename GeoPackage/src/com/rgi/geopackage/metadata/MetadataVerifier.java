@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -399,12 +400,12 @@ public class MetadataVerifier extends Verifier
             {
                 final String query = "SELECT * FROM ? WHERE ROWID = ?;";
 
-                try(PreparedStatement stmt            = this.getSqliteConnection().prepareStatement(query))
+                try(PreparedStatement stmt = this.getSqliteConnection().prepareStatement(query))
                 {
                     stmt.setString(1, value.table_name);
                     stmt.setInt(2, value.row_id_value);
 
-                    try(ResultSet         matchingRowIdRS = stmt.executeQuery())
+                    try(ResultSet matchingRowIdRS = stmt.executeQuery())
                     {
                         Assert.assertTrue(String.format("The row_id_value %d in the %s table does not reference a row id in the table %s.",
                                                         value.row_id_value,
@@ -553,8 +554,8 @@ public class MetadataVerifier extends Verifier
 
         final String query = String.format("SELECT reference_scope, table_name, column_name, row_id_value, timestamp, md_file_id, md_parent_id FROM %s;", GeoPackageMetadata.MetadataReferenceTableName);
 
-        try(PreparedStatement stmt            = this.getSqliteConnection().prepareStatement(query);
-            ResultSet         metadataValueRS = stmt.executeQuery())
+        try(Statement stmt            = this.getSqliteConnection().createStatement();
+            ResultSet metadataValueRS = stmt.executeQuery(query))
             {
                 return ResultSetStream.getStream(metadataValueRS)
                                       .map(resultSet -> {  try
@@ -611,8 +612,8 @@ public class MetadataVerifier extends Verifier
     {
         final String query = String.format("SELECT md_scope, id FROM %s;", GeoPackageMetadata.MetadataTableName);
 
-        try(PreparedStatement stmt            = this.getSqliteConnection().prepareStatement(query);
-            ResultSet         metadataValueRS = stmt.executeQuery())
+        try(Statement stmt            = this.getSqliteConnection().createStatement();
+            ResultSet metadataValueRS = stmt.executeQuery(query))
             {
                 return ResultSetStream.getStream(metadataValueRS)
                                       .map(resultSet -> {  try
