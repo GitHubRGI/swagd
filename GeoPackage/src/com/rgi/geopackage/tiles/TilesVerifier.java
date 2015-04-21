@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -92,8 +93,8 @@ public class TilesVerifier extends Verifier
         final String queryTables = "SELECT tbl_name FROM sqlite_master " +
                                    "WHERE tbl_name NOT LIKE 'gpkg_%' "   +
                                                       "AND (type = 'table' OR type = 'view');";
-        try(PreparedStatement createStmt             = this.getSqliteConnection().prepareStatement(queryTables);
-            ResultSet         possiblePyramidTables  = createStmt.executeQuery();)
+        try(Statement createStmt             = this.getSqliteConnection().createStatement();
+            ResultSet possiblePyramidTables  = createStmt.executeQuery(queryTables);)
         {
            this.allPyramidUserDataTables = ResultSetStream.getStream(possiblePyramidTables)
                                                           .map(resultSet ->
@@ -117,8 +118,8 @@ public class TilesVerifier extends Verifier
         }
 
         final String query2 = String.format("SELECT table_name FROM %s WHERE data_type = 'tiles';", GeoPackageCore.ContentsTableName);
-        try(PreparedStatement createStmt2           = this.getSqliteConnection().prepareStatement(query2);
-            ResultSet         contentsPyramidTables = createStmt2.executeQuery())
+        try(Statement createStmt2           = this.getSqliteConnection().createStatement();
+            ResultSet contentsPyramidTables = createStmt2.executeQuery(query2))
         {
             this.pyramidTablesInContents = ResultSetStream.getStream(contentsPyramidTables)
                                                           .map(resultSet -> {  try
@@ -140,8 +141,8 @@ public class TilesVerifier extends Verifier
 
         final String query3 = String.format("SELECT DISTINCT table_name FROM %s;", GeoPackageTiles.MatrixTableName);
 
-        try(PreparedStatement createStmt3             = this.getSqliteConnection().prepareStatement(query3);
-            ResultSet         tileMatrixPyramidTables = createStmt3.executeQuery())
+        try(Statement createStmt3             = this.getSqliteConnection().createStatement();
+            ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(query3))
         {
             this.pyramidTablesInTileMatrix = ResultSetStream.getStream(tileMatrixPyramidTables)
                                                             .map(resultSet -> {  try
@@ -479,8 +480,8 @@ public class TilesVerifier extends Verifier
         {
             final String queryMatrixSetPyramid = String.format("SELECT table_name FROM %s;", GeoPackageTiles.MatrixSetTableName);
 
-            try (PreparedStatement stmt                      = this.getSqliteConnection().prepareStatement(queryMatrixSetPyramid);
-                 ResultSet         tileTablesInTileMatrixSet = stmt.executeQuery())
+            try (Statement stmt                      = this.getSqliteConnection().createStatement();
+                 ResultSet tileTablesInTileMatrixSet = stmt.executeQuery(queryMatrixSetPyramid))
             {
                final Set<String> tileMatrixSetTables = ResultSetStream.getStream(tileTablesInTileMatrixSet)
                                                                       .map(resultSet -> { try
@@ -532,8 +533,8 @@ public class TilesVerifier extends Verifier
         {
             final String queryMatrixSet =  String.format("SELECT table_name FROM %s;", GeoPackageTiles.MatrixSetTableName);
 
-            try (PreparedStatement stmt                        = this.getSqliteConnection().prepareStatement(queryMatrixSet);
-                 ResultSet         tileTablesInTileMatrixSet   = stmt.executeQuery())
+            try (Statement stmt                        = this.getSqliteConnection().createStatement();
+                 ResultSet tileTablesInTileMatrixSet   = stmt.executeQuery(queryMatrixSet))
             {
                 final Set<String> tileMatrixSetTables = ResultSetStream.getStream(tileTablesInTileMatrixSet)
                                                                        .map(resultSet -> { try
@@ -585,8 +586,8 @@ public class TilesVerifier extends Verifier
                                               GeoPackageTiles.MatrixSetTableName,
                                               GeoPackageCore.SpatialRefSysTableName);
 
-            try (PreparedStatement stmt            = this.getSqliteConnection().prepareStatement(query1);
-                 ResultSet         unreferencedSRS = stmt.executeQuery())
+            try (Statement stmt            = this.getSqliteConnection().createStatement();
+                 ResultSet unreferencedSRS = stmt.executeQuery(query1))
             {
                 if (unreferencedSRS.next())
                 {
@@ -667,8 +668,8 @@ public class TilesVerifier extends Verifier
                                               GeoPackageTiles.MatrixTableName,
                                               GeoPackageCore.ContentsTableName);
 
-            try(PreparedStatement stmt               = this.getSqliteConnection().prepareStatement(query);
-                ResultSet         unreferencedTables = stmt.executeQuery())
+            try(Statement stmt               = this.getSqliteConnection().createStatement();
+                ResultSet unreferencedTables = stmt.executeQuery(query))
             {
                     if (unreferencedTables.next())
                     {
@@ -782,8 +783,8 @@ public class TilesVerifier extends Verifier
         {
             final String query = String.format("SELECT min(zoom_level) FROM %s;", GeoPackageTiles.MatrixTableName);
 
-            try (PreparedStatement stmt     = this.getSqliteConnection().prepareStatement(query);
-                 ResultSet         minZoom  = stmt.executeQuery())
+            try (Statement stmt     = this.getSqliteConnection().createStatement();
+                 ResultSet minZoom  = stmt.executeQuery(query))
             {
                 final int minZoomLevel = minZoom.getInt("min(zoom_level)");
 
@@ -818,8 +819,8 @@ public class TilesVerifier extends Verifier
         {
             final String query = String.format("SELECT min(matrix_width) FROM %s;", GeoPackageTiles.MatrixTableName);
 
-            try (PreparedStatement stmt             = this.getSqliteConnection().prepareStatement(query);
-                 ResultSet         minMatrixWidthRS = stmt.executeQuery();)
+            try (Statement stmt             = this.getSqliteConnection().createStatement();
+                 ResultSet minMatrixWidthRS = stmt.executeQuery(query);)
             {
                 final int minMatrixWidth = minMatrixWidthRS.getInt("min(matrix_width)");
 
@@ -854,8 +855,8 @@ public class TilesVerifier extends Verifier
         {
             final String query = String.format("SELECT min(matrix_height) FROM %s;", GeoPackageTiles.MatrixTableName);
 
-            try (PreparedStatement stmt              = this.getSqliteConnection().prepareStatement(query);
-                 ResultSet         minMatrixHeightRS = stmt.executeQuery();)
+            try (Statement stmt              = this.getSqliteConnection().createStatement();
+                 ResultSet minMatrixHeightRS = stmt.executeQuery(query);)
             {
                 final int minMatrixHeight = minMatrixHeightRS.getInt("min(matrix_height)");
 
@@ -890,8 +891,8 @@ public class TilesVerifier extends Verifier
         {
             final String query = String.format("SELECT min(tile_width) FROM %s;", GeoPackageTiles.MatrixTableName);
 
-            try (PreparedStatement stmt           = this.getSqliteConnection().prepareStatement(query);
-                 ResultSet         minTileWidthRS = stmt.executeQuery();)
+            try (Statement stmt           = this.getSqliteConnection().createStatement();
+                 ResultSet minTileWidthRS = stmt.executeQuery(query);)
             {
                 final int minTileWidth = minTileWidthRS.getInt("min(tile_width)");
 
@@ -926,8 +927,8 @@ public class TilesVerifier extends Verifier
         {
             final String query = String.format("SELECT min(tile_height) FROM %s;", GeoPackageTiles.MatrixTableName);
 
-            try (PreparedStatement stmt            = this.getSqliteConnection().prepareStatement(query);
-                 ResultSet         minTileHeightRS = stmt.executeQuery();)
+            try (Statement stmt            = this.getSqliteConnection().createStatement();
+                 ResultSet minTileHeightRS = stmt.executeQuery(query);)
             {
                 final int testMinTileHeight = minTileHeightRS.getInt("min(tile_height)");
 
@@ -964,8 +965,8 @@ public class TilesVerifier extends Verifier
         {
             final String query = String.format("SELECT min(pixel_x_size) FROM %s;", GeoPackageTiles.MatrixTableName);
 
-            try (PreparedStatement stmt            = this.getSqliteConnection().prepareStatement(query);
-                 ResultSet         minPixelXSizeRS = stmt.executeQuery();)
+            try (Statement stmt            = this.getSqliteConnection().createStatement();
+                 ResultSet minPixelXSizeRS = stmt.executeQuery(query);)
             {
 
                 final double minPixelXSize = minPixelXSizeRS.getDouble("min(pixel_x_size)");
@@ -1005,8 +1006,8 @@ public class TilesVerifier extends Verifier
         {
            final String query = String.format("SELECT min(pixel_y_size) FROM %s;", GeoPackageTiles.MatrixTableName);
 
-           try (PreparedStatement stmt            = this.getSqliteConnection().prepareStatement(query);
-                ResultSet         minPixelYSizeRS = stmt.executeQuery();)
+           try (Statement stmt            = this.getSqliteConnection().createStatement();
+                ResultSet minPixelYSizeRS = stmt.executeQuery(query);)
            {
                final double minPixelYSize = minPixelYSizeRS.getDouble("min(pixel_y_size)");
 
