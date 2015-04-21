@@ -297,8 +297,8 @@ public class TilesVerifier extends Verifier
 
                                 Assert.assertTrue(String.format("\nNote: This next message is an additional concern that is related to this requirement but not the requirement itself."+
                                                                 "\nThe pixel_x_size and pixel_y_size should satisfy these two equations:"
-                                                                + "\n\tpixel_x_size = (bounding box width  / matrix_width)  / tile_width "
-                                                                + "AND \n\tpixel_y_size = (bounding box height / matrix_height)/ tile_height.  "
+                                                                + "\n\tpixel_x_size = (bounding box width  / matrix_width)  / tile_width"
+                                                                + "\n\tpixel_y_size = (bounding box height / matrix_height) / tile_height.  "
                                                                 + "\nBased on these two equations, the following pixel values are invalid for the table '%s'.:\n%s ",
                                                                 tableName,
                                                                 invalidPixelValues.stream()

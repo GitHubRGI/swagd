@@ -328,7 +328,7 @@ public class GeoPackage implements AutoCloseable
         verificationIssues.addAll(this.core.getVerificationIssues(this.file, this.verificationLevel));
 
         // Skip verifying GeoPackage subsystems if there are fatal errors in core
-        if(continueAfterCoreErrors || !verificationIssues.stream().anyMatch(failedRequirement -> failedRequirement.getRequirement().severity() == Severity.Error))
+        if(continueAfterCoreErrors || !verificationIssues.stream().anyMatch(verificationIssue -> verificationIssue.getSeverity() == Severity.Error))
         {
             verificationIssues.addAll(this.features  .getVerificationIssues(this.verificationLevel));
             verificationIssues.addAll(this.tiles     .getVerificationIssues(this.verificationLevel));
@@ -360,7 +360,7 @@ public class GeoPackage implements AutoCloseable
 
             System.out.println(conformanceException.toString());
 
-            if(verificationIssues.stream().anyMatch(failedRequirement -> failedRequirement.getRequirement().severity() == Severity.Error))
+            if(verificationIssues.stream().anyMatch(verificationIssue -> verificationIssue.getSeverity() == Severity.Error))
             {
                 throw conformanceException;
             }

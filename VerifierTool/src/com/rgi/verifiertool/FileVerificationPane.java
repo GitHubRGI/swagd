@@ -124,14 +124,14 @@ public class FileVerificationPane extends TitledPane
     private void createTitleAndButton()
     {
         //this sets the text to the left and the copy button to the right in the titled pane
-        Text fileTitle = new Text();
+        final Text fileTitle = new Text();
         //binds the text position and other properties to the anchor pane
         fileTitle.textProperty().bind(this.textProperty());
         fileTitle.fillProperty().bind(this.textFillProperty());
         fileTitle.fontProperty().bind(this.fontProperty());
         fileTitle.setLayoutY(this.getLayoutY() + 20);
         //file name left copy button right
-        AnchorPane title = new AnchorPane();
+        final AnchorPane title = new AnchorPane();
         AnchorPane.setLeftAnchor(fileTitle, 1.0);
         AnchorPane.setRightAnchor(this.createCopyButton(), 0.0);
 
@@ -146,8 +146,8 @@ public class FileVerificationPane extends TitledPane
 
             @Override
             protected double computeValue() {
-                double breathingSpace = 90 ;
-                double value = VerifierMainWindow.getRootWidth()- breathingSpace ;
+                final double breathingSpace = 90 ;
+                final double value = VerifierMainWindow.getRootWidth()- breathingSpace ;
                 return value;
             }
         });
@@ -187,12 +187,12 @@ public class FileVerificationPane extends TitledPane
 
     private String getVerificationIssues()
     {
-        String header = String.format("RGi\u00AE GeoPackage Verifier Tool Version %s.\nGeoPackage Encoding Standard Specification Version %s.\nFile: %s\n\n\n",
+        final String header = String.format("RGi\u00AE GeoPackage Verifier Tool Version %s.\nGeoPackage Encoding Standard Specification Version %s.\nFile: %s\n\n\n",
                                       VerifierMainWindow.rgiToolVersionNumber,
                                       VerifierMainWindow.geoPackageSpecificationVersionNumber,
                                       this.getText());
 
-        String body = this.fileErrorMessages.keySet().stream()
+        final String body = this.fileErrorMessages.keySet().stream()
                                                      .sorted((subsystem1, susbystem2) -> compareSubsystems(subsystem1, susbystem2))
                                                      .map(subsystem -> {
                                                                            return getVerificationIssuesForSubsystem(subsystem, this.fileErrorMessages.get(subsystem));
@@ -203,8 +203,8 @@ public class FileVerificationPane extends TitledPane
 
     private static Integer compareSubsystems(final String subsystem1, final String susbystem2)
     {
-        int firstSubInt = findSubsystemValue(subsystem1);
-        int seconSubInt = findSubsystemValue(susbystem2);
+        final int firstSubInt = findSubsystemValue(subsystem1);
+        final int seconSubInt = findSubsystemValue(susbystem2);
 
         return Integer.compare(firstSubInt, seconSubInt);
     }
@@ -226,15 +226,17 @@ public class FileVerificationPane extends TitledPane
     private static String getVerificationIssuesForSubsystem(final String subsystemName, final Collection<VerificationIssue> issues)
     {
           final String failedMessages = issues.stream()
-                                        .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().reference(), requirement2.getRequirement().reference()))
-                                        .map(issue -> {
-                                                        return String.format("\t\r(%s) Requirement %d: \"%s\"\n\n\t\r%s\n",
-                                                                             issue.getRequirement().severity(),
-                                                                             issue.getRequirement().reference(),
-                                                                             issue.getRequirement().text(),
-                                                                             issue.getReason());
-                                                      })
-                                        .collect(Collectors.joining("\n"));
+                                              .sorted((issue1, issue2) -> issue1.getRequirement()
+                                                                                .reference()
+                                                                                .compareTo(issue2.getRequirement()
+                                                                                                 .reference()))
+                                              .map(issue -> { return String.format("\t\r(%s) %s: \"%s\"\n\n\t\r%s\n",
+                                                                                   issue.getSeverity(),
+                                                                                   issue.getRequirement().reference(),
+                                                                                   issue.getRequirement().text(),
+                                                                                   issue.getReason());
+                                                            })
+                                              .collect(Collectors.joining("\n"));
 
          return  String.format("%s Issues:\n\n%s",
                                 subsystemName,
