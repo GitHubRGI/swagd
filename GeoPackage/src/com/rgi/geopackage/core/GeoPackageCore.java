@@ -174,12 +174,12 @@ public class GeoPackageCore
                 throw new IllegalArgumentException("A spatial reference system already exists with this organization and organization-assigned numeric identifier, but has different values for its other fields");
             }
 
-            Integer identifier = DatabaseUtility.nextValue(this.databaseConnection,
-                                                           GeoPackageCore.SpatialRefSysTableName,
-                                                           GeoPackageCore.SpatialRefSystemSrsIdColumnName);
-            if(identifier == null) //TODO when does it return null??
+            final Integer identifier = DatabaseUtility.nextValue(this.databaseConnection,
+                                                                 GeoPackageCore.SpatialRefSysTableName,
+                                                                 GeoPackageCore.SpatialRefSystemSrsIdColumnName);
+            if(identifier == null)
             {
-                identifier = 0;
+                throw new RuntimeException("There are no more available integer values to represent the column \"identifier\".");
             }
 
             final SpatialReferenceSystem spatialReferenceSystem = this.addSpatialReferenceSystemNoCommit(name,
