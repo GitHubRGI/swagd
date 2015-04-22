@@ -113,6 +113,7 @@ public abstract class NavigationWindow extends JFrame
     {
         if (th == null)
         {
+           throw new IllegalArgumentException("Throwable cannot be null.");
         }
 
         this.error("An error has occurred: " + ThrowableUtility.getRoot(th).getMessage());
