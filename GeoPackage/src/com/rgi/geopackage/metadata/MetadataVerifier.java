@@ -26,6 +26,7 @@ package com.rgi.geopackage.metadata;
 import static com.rgi.geopackage.verification.Assert.fail;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -44,6 +45,7 @@ import java.util.stream.Stream;
 import utility.DatabaseUtility;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.verification.Assert;
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.ColumnDefinition;
@@ -84,16 +86,17 @@ public class MetadataVerifier extends Verifier
     /**
      * Requirement 68
      *
-     * <blockquote> A GeoPackage MAY
-     * contain a table named gpkg_metadata. If present it SHALL be defined per
-     * clause 2.4.2.1.1 <a
-     * href="http://www.geopackage.org/spec/#metadata_table_table_definition"
-     * >Table Definition</a>, <a
-     * href="http://www.geopackage.org/spec/#gpkg_metadata_cols">Metadata Table
-     * Definition</a> and <a
-     * href="http://www.geopackage.org/spec/#gpkg_metadata_sql">gpkg_metadata
-     * Table Definition SQL</a>.
+     * <blockquote>
+     * A GeoPackage MAY contain a table named gpkg_metadata. If present it
+     * SHALL be defined per clause 2.4.2.1.1 <a href=
+     * "http://www.geopackage.org/spec/#metadata_table_table_definition">Table
+     * Definition</a>, <a href=
+     * "http://www.geopackage.org/spec/#gpkg_metadata_cols">Metadata Table
+     * Definition</a> and <a href=
+     * "http://www.geopackage.org/spec/#gpkg_metadata_sql">gpkg_metadata Table
+     * Definition SQL</a>.
      * </blockquote>
+     *
      * @throws SQLException throws if the method verifyTable throws
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
@@ -113,12 +116,13 @@ public class MetadataVerifier extends Verifier
     /**
      * Requirement 69
      *
-     * <blockquote> Each <code>md_scope</code> column value in a <code>
-     * gpkg_metadata</code> table or updateable view SHALL be one of the name
-     * column values from <a
+     * <blockquote>
+     * Each <code>md_scope</code> column value in a <code>gpkg_metadata</code>
+     * table or updateable view SHALL be one of the name column values from <a
      * href="http://www.geopackage.org/spec/#metadata_scopes">Metadata Scopes
      * </a>.
      * </blockquote>
+     *
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
     @Requirement(reference = "Requirement 69",
@@ -129,10 +133,11 @@ public class MetadataVerifier extends Verifier
         if(this.hasMetadataTable)
         {
             final List<Metadata> invalidMetadataValues = this.metadataValues.stream()
-                                                                     .filter(metadata -> !MetadataVerifier.validMdScope(metadata.md_scope))
-                                                                     .collect(Collectors.toList());
+                                                                            .filter(metadata -> !MetadataVerifier.validMdScope(metadata.md_scope))
+                                                                            .collect(Collectors.toList());
 
-            Assert.assertTrue(String.format("The following md_scope(s) are invalid values in the gpkg_metadata table: %s",
+            Assert.assertTrue(String.format("The following md_scope(s) are invalid values in the %s table: %s",
+                                            GeoPackageMetadata.MetadataTableName,
                                             invalidMetadataValues.stream()
                                                                  .map(value -> value.md_scope)
                                                                  .collect(Collectors.joining(", "))),
@@ -144,16 +149,16 @@ public class MetadataVerifier extends Verifier
     /**
      * Requirement 70
      *
-     * <blockquote> A GeoPackage that
-     * contains a <code>gpkg_metadata</code> table SHALL contain a
-     * <code>gpkg_metadata_reference</code> table per clause 2.4.3.1.1 <a href=
+     * <blockquote>
+     * A GeoPackage that contains a <code>gpkg_metadata</code> table SHALL
+     * contain a <code>gpkg_metadata_reference</code> table per clause
+     * 2.4.3.1.1 <a href=
      * "http://www.geopackage.org/spec/#metadata_reference_table_table_definition"
-     * >Table Definition</a>, <a
-     * href="http://www.geopackage.org/spec/#gpkg_metadata_reference_cols"
-     * >Metadata Reference Table Definition (Table Name:
-     * gpkg_metadata_reference)</a> and <a
-     * href="http://www.geopackage.org/spec/#gpkg_metadata_reference_sql"
-     * >gpkg_metadata_reference Table Definition SQL</a>.
+     * >Table Definition</a>, <a href=
+     * "http://www.geopackage.org/spec/#gpkg_metadata_reference_cols">Metadata
+     * Reference Table Definition (Table Name: gpkg_metadata_reference)</a> and
+     * <a href="http://www.geopackage.org/spec/#gpkg_metadata_reference_sql">
+     * gpkg_metadata_reference Table Definition SQL</a>.
      * </blockquote>
      *
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
@@ -168,7 +173,10 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataTable)
         {
-            Assert.assertTrue("This contains a gpkg_metadata table but not a gpkg_metadata_reference table. Either drop the gpkg_metadata table or add a gpkg_metadata_reference table",
+            Assert.assertTrue(String.format("This contains a %1$s table but not a %2$s table.  "
+                                            + "Either drop the %1$s table or add a %2$s table",
+                                            GeoPackageMetadata.MetadataTableName,
+                                            GeoPackageMetadata.MetadataReferenceTableName),
                               this.hasMetadataReferenceTable,
                               Severity.Error);
 
@@ -179,10 +187,12 @@ public class MetadataVerifier extends Verifier
     /**
      * Requirement 71
      *
-     * <blockquote> Every <code>gpkg_metadata_reference</code> table reference
-     * scope column value SHALL be one of 'geopackage', 'table', 'column',
-     * 'row', 'row/col' in lowercase.
+     * <blockquote>
+     * Every <code>gpkg_metadata_reference</code> table reference scope column
+     * value SHALL be one of 'geopackage', 'table', 'column', 'row', 'row/col'
+     * in lowercase.
      * </blockquote>
+     *
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
     @Requirement(reference = "Requirement 71",
@@ -191,11 +201,11 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            final List<MetadataReference> invalidMetadataReferenceValues = this.metadataReferenceValues.stream()
-                                                                                                 .filter(value -> !MetadataVerifier.validReferenceScope(value.reference_scope))
-                                                                                                 .collect(Collectors.toList());
-
-            Assert.assertTrue(String.format("The following reference_scope value(s) are invalid from the gpkg_metadata_reference table: %s",
+            final List<MetadataReference>  invalidMetadataReferenceValues = this.metadataReferenceValues.stream()
+                                                                                                        .filter(value -> !MetadataVerifier.validReferenceScope(value.reference_scope))
+                                                                                                        .collect(Collectors.toList());
+            Assert.assertTrue(String.format("The following reference_scope value(s) are invalid from the %s table: %s",
+                                            GeoPackageMetadata.MetadataReferenceTableName,
                                             invalidMetadataReferenceValues.stream()
                                                                            .map(value -> value.reference_scope)
                                                                            .collect(Collectors.joining(", "))),
@@ -207,8 +217,8 @@ public class MetadataVerifier extends Verifier
     /**
      * Requirement 72
      *
-     * <blockquote> Every
-     * <code>gpkg_metadata_reference</code> table row with a <code>
+     * <blockquote>
+     * Every <code>gpkg_metadata_reference</code> table row with a <code>
      * reference_scope</code> column value of 'geopackage' SHALL have a <code>
      * table_name</code> column value that is NULL. Every other <code>
      * gpkg_metadata_reference</code> table row SHALL have a <code>table_name
@@ -228,13 +238,14 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            //check reference_scope column that has 'geopackage'
+            // Check reference_scope column that has 'geopackage'
             final List<MetadataReference> invalidGeoPackageValue = this.metadataReferenceValues.stream()
                                                                                          .filter(columnValue -> columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()))
                                                                                          .filter(columnValue -> columnValue.column_name != null)
                                                                                          .collect(Collectors.toList());
 
-            Assert.assertTrue(String.format("The following column_name value(s) from gpkg_metadata_reference table are invalid. They have a reference_scope = 'geopackage' and a non-null value in column_name: %s.",
+            Assert.assertTrue(String.format("The following column_name value(s) from %s table are invalid. They have a reference_scope = 'geopackage' and a non-null value in column_name: %s.",
+                                            GeoPackageMetadata.MetadataReferenceTableName,
                                             invalidGeoPackageValue.stream()
                                                                   .map(columnValue -> columnValue.column_name)
                                                                   .collect(Collectors.joining(", "))),
@@ -242,40 +253,40 @@ public class MetadataVerifier extends Verifier
                               Severity.Warning);
 
             // Get table_name values from the gpkg_contents table
-            final String query = "SELECT table_name FROM gpkg_contents;";
+            final String query = String.format("SELECT table_name FROM %s;", GeoPackageCore.ContentsTableName);
 
-            try(Statement statement            = this.getSqliteConnection().createStatement();
-                ResultSet contentsTableNamesRS = statement.executeQuery(query))
+            try(PreparedStatement stmt                 = this.getSqliteConnection().prepareStatement(query);
+                ResultSet         contentsTableNamesRS = stmt.executeQuery())
             {
-              final List<String> contentsTableNames = ResultSetStream.getStream(contentsTableNamesRS)
-                                                               .map(resultSet ->  { try
-                                                                                    {
-                                                                                        return resultSet.getString("table_name");
-                                                                                    }
-                                                                                    catch(final SQLException ex)
-                                                                                    {
-                                                                                        return null;
-                                                                                    }
-                                                                                  })
-                                                               .filter(Objects::nonNull)
-                                                               .collect(Collectors.toList());
+                final List<String> contentsTableNames = ResultSetStream.getStream(contentsTableNamesRS)
+                                                                       .map(resultSet ->  { try
+                                                                                            {
+                                                                                                return resultSet.getString("table_name");
+                                                                                            }
+                                                                                            catch(final SQLException ex)
+                                                                                            {
+                                                                                                return null;
+                                                                                            }
+                                                                                          })
+                                                                       .filter(Objects::nonNull)
+                                                                       .collect(Collectors.toList());
 
-              //check other records that does not have 'geopackage' as a value
-              final List<MetadataReference> invalidTableNameValues = this.metadataReferenceValues.stream()
-                                                                                           .filter(columnValue -> !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()))
-                                                                                           .filter(columnValue -> contentsTableNames.stream().anyMatch(contentsTableName -> !columnValue.table_name.equals(contentsTableName)))
-                                                                                           .collect(Collectors.toList());
-              Assert.assertTrue(String.format("The following table_name value(s) in gpkg_metadata_reference table are invalid. "
-                                               + "The table_name value(s) must reference the table_name(s) in gpkg_contents table. "
-                                               + " \n%s",
-                                              invalidTableNameValues.stream()
-                                                                    .map(tableName -> String.format("reference_scope: %s, invalid table_name: %s.",
-                                                                                                    tableName.reference_scope,
-                                                                                                    tableName.table_name))
-                                                                    .collect(Collectors.joining("\n"))),
-                                invalidTableNameValues.isEmpty(),
-                                Severity.Warning);
+                //check other records that does not have 'geopackage' as a value
+                final List<MetadataReference> invalidTableNameValues = this.metadataReferenceValues.stream()
+                                                                                                   .filter(columnValue -> !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()))
+                                                                                                   .filter(columnValue -> contentsTableNames.stream().anyMatch(contentsTableName -> !columnValue.table_name.equals(contentsTableName)))
+                                                                                                   .collect(Collectors.toList());
 
+                Assert.assertTrue(String.format("The following table_name value(s) in %s table are invalid. The table_name value(s) must reference the table_name(s) in %s table.\n%s",
+                                                GeoPackageMetadata.MetadataReferenceTableName,
+                                                GeoPackageCore.ContentsTableName,
+                                                invalidTableNameValues.stream()
+                                                                      .map(tableName -> String.format("reference_scope: %s, invalid table_name: %s.",
+                                                                                                      tableName.reference_scope,
+                                                                                                      tableName.table_name))
+                                                                      .collect(Collectors.joining("\n"))),
+                                  invalidTableNameValues.isEmpty(),
+                                  Severity.Warning);
             }
         }
     }
@@ -283,15 +294,16 @@ public class MetadataVerifier extends Verifier
     /**
      * Requirement 73
      *
-     * <blockquote> Every
-     * <code>gpkg_metadata_reference</code> table row with a
-     * <code>reference_scope</code> column value of 'geopackage','table' or
-     * 'row' SHALL have a <code>column_name</code> column value that is NULL.
-     * Every other <code>gpkg_metadata_reference</code> table row SHALL have a
-     * <code>column_name</code> column value that contains the name of a column
-     * in the SQLite table or view identified by the <code>table_name</code>
+     * <blockquote>
+     * Every <code>gpkg_metadata_reference</code> table row with a <code>
+     * reference_scope</code> column value of 'geopackage','table' or 'row'
+     * SHALL have a <code>column_name</code> column value that is NULL. Every
+     * other <code>gpkg_metadata_reference</code> table row SHALL have a <code>
+     * column_name</code> column value that contains the name of a column in
+     * the SQLite table or view identified by the <code>table_name</code>
      * column value.
      * <blockquote>
+     *
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      * @throws SQLException throws if various SQLExceptions occur
      */
@@ -306,13 +318,14 @@ public class MetadataVerifier extends Verifier
         if(this.hasMetadataReferenceTable)
         {
             final List<MetadataReference> invalidColumnNameValues = this.metadataReferenceValues.stream()
-                                                                                          .filter(columnValue -> columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) ||
-                                                                                                                 columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      ||
-                                                                                                                 columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Row.toString()))
-                                                                                          .filter(columnValue -> columnValue.column_name != null)
-                                                                                          .collect(Collectors.toList());
+                                                                                                .filter(columnValue -> columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) ||
+                                                                                                                       columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      ||
+                                                                                                                       columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Row.toString()))
+                                                                                                .filter(columnValue -> columnValue.column_name != null)
+                                                                                                .collect(Collectors.toList());
 
-            Assert.assertTrue(String.format("The following column_name values from gpkg_metadata_reference table are invalid. They contain a reference_scope of either 'geopackage', 'table' or 'row' and need to have a column_value of NULL.\n%s",
+            Assert.assertTrue(String.format("The following column_name values from %s table are invalid. They contain a reference_scope of either 'geopackage', 'table' or 'row' and need to have a column_value of NULL.\n%s",
+                                            GeoPackageMetadata.MetadataReferenceTableName,
                                             invalidColumnNameValues.stream()
                                                                    .map(value -> String.format("reference_scope: %s, invalid column_name: %s.", value.reference_scope, value.column_name))
                                                                    .collect(Collectors.joining("\n"))),
@@ -324,31 +337,35 @@ public class MetadataVerifier extends Verifier
                                                                                                                          !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      &&
                                                                                                                          !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Row.toString()))
                                                                                                   .collect(Collectors.toList());
-            for(final MetadataReference value: otherReferenceScopeValues)
+            for(final MetadataReference value : otherReferenceScopeValues)
             {
                 if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), value.table_name))
                 {
-                    final String query = String.format("PRAGMA table_info(%s);", value.table_name);
+                    final String query = "PRAGMA table_info('?');";
 
-                    try(Statement statement = this.getSqliteConnection().createStatement();
-                        ResultSet tableInfo = statement.executeQuery(query))
+                    try(PreparedStatement statement = this.getSqliteConnection().prepareStatement(query))
                     {
-                        final boolean columnExists = ResultSetStream.getStream(tableInfo)
-                                                                    .anyMatch(resultSet -> { try
-                                                                                             {
-                                                                                                 return resultSet.getString("name").equals(value.column_name);
-                                                                                             }
-                                                                                             catch(final SQLException ex)
-                                                                                             {
-                                                                                                 return false;
-                                                                                             }
-                                                                                            });
+                        statement.setString(1, value.table_name);
 
-                         Assert.assertTrue(String.format("The column_name %s referenced in the gpkg_metadata_reference table doesn't exist in the table %s.",
-                                                         value.column_name,
-                                                         value.table_name),
-                                           columnExists,
-                                           Severity.Warning);
+                        try( ResultSet tableInfo = statement.executeQuery(query))
+                        {
+                           final boolean columnExists = ResultSetStream.getStream(tableInfo)
+                                                                       .anyMatch(resultSet -> {  try
+                                                                                                 {
+                                                                                                     return resultSet.getString("name").equals(value.column_name);
+                                                                                                 }
+                                                                                                 catch(final SQLException ex)
+                                                                                                 {
+                                                                                                     return false;
+                                                                                                 }
+                                                                                               });
+                            Assert.assertTrue(String.format("The column_name %s referenced in the %s table doesn't exist in the table %s.",
+                                                            value.column_name,
+                                                            GeoPackageMetadata.MetadataReferenceTableName,
+                                                            value.table_name),
+                                             columnExists,
+                                             Severity.Warning);
+                        }
                     }
                 }
             }
@@ -358,34 +375,35 @@ public class MetadataVerifier extends Verifier
     /**
      * Requirement 74
      *
-     * <blockquote> Every
-     * <code>gpkg_metadata_reference</code> table row with a
-     * <code>reference_scope</code> column value of 'geopackage', 'table' or
-     * 'column' SHALL have a <code>row_id_value</code> column value that is
-     * NULL. Every other <code>gpkg_metadata_reference</code> table row SHALL
-     * have a <code>row_id_value</code> column value that contains the ROWID of
-     * a row in the SQLite table or view identified by the
-     * <code>table_name</code> column value.
      * <blockquote>
+     * Every <code>gpkg_metadata_reference</code> table row with a <code>
+     * reference_scope</code> column value of 'geopackage', 'table' or 'column'
+     * SHALL have a <code>row_id_value</code> column value that is NULL. Every
+     * other <code>gpkg_metadata_reference</code> table row SHALL have a <code>
+     * row_id_value</code> column value that contains the ROWID of a row in the
+     * SQLite table or view identified by the <code>table_name</code> column
+     * value.
+     * <blockquote>
+     *
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      * @throws SQLException throws if various SQLExceptions occur
      */
     @Requirement(reference = "Requirement 74",
-                 text    = "Every gpkg_metadata_reference table row with a reference_scope column value "
-                           + "of 'geopackage', 'table' or 'column' SHALL have a row_id_value column value "
-                           + "that is NULL. Every other gpkg_metadata_reference table row SHALL have a row_id_value"
-                           + " column value that contains the ROWID of a row in the SQLite table or view identified "
-                           + "by the table_name column value. ")
+                 text      = "Every gpkg_metadata_reference table row with a reference_scope column value "
+                             + "of 'geopackage', 'table' or 'column' SHALL have a row_id_value column value "
+                             + "that is NULL. Every other gpkg_metadata_reference table row SHALL have a row_id_value"
+                             + " column value that contains the ROWID of a row in the SQLite table or view identified "
+                             + "by the table_name column value.")
     public void Requirement74() throws AssertionError, SQLException
     {
         if(this.hasMetadataReferenceTable)
         {
             final List<MetadataReference> invalidColumnValues = this.metadataReferenceValues.stream()
-                                                                                      .filter(columnValue -> columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) ||
-                                                                                                             columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      ||
-                                                                                                             columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Column.toString()))
-                                                                                      .filter(columnValue -> columnValue.row_id_value != null)
-                                                                                      .collect(Collectors.toList());
+                                                                                            .filter(columnValue -> columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) ||
+                                                                                                                   columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      ||
+                                                                                                                   columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Column.toString()))
+                                                                                            .filter(columnValue -> columnValue.row_id_value != null)
+                                                                                            .collect(Collectors.toList());
             Assert.assertTrue(String.format("The following row_id_value(s) has(have) a reference_scope value of 'geopackage', "
                                                 + "'table' or 'column and do not have a value of NULL in row_id_value.\n %s",
                                             invalidColumnValues.stream()
@@ -401,16 +419,22 @@ public class MetadataVerifier extends Verifier
                                                                                           .collect(Collectors.toList());
             for(final MetadataReference value: invalidColumnNameValues)
             {
-                final String query = String.format("SELECT * FROM %s WHERE ROWID = %d;", value.table_name, value.row_id_value);
+                final String query = "SELECT * FROM ? WHERE ROWID = ?;";
 
-                try(Statement statement       = this.getSqliteConnection().createStatement();
-                    ResultSet matchingRowIdRS = statement.executeQuery(query))
+                try(PreparedStatement statement = this.getSqliteConnection().prepareStatement(query))
                 {
-                    Assert.assertTrue(String.format("The row_id_value %d in the gpkg_metadata_reference table does not reference a row id in the table %s.",
-                                                    value.row_id_value,
-                                                    value.table_name),
-                                     matchingRowIdRS.next(),
-                                     Severity.Warning);
+                    statement.setString(1, value.table_name);
+                    statement.setInt   (2, value.row_id_value);
+
+                    try(ResultSet matchingRowIdRS = statement.executeQuery())
+                    {
+                        Assert.assertTrue(String.format("The row_id_value %d in the %s table does not reference a row id in the table %s.",
+                                                        value.row_id_value,
+                                                        GeoPackageMetadata.MetadataReferenceTableName,
+                                                        value.table_name),
+                                          matchingRowIdRS.next(),
+                                          Severity.Warning);
+                    }
                 }
             }
         }
@@ -419,12 +443,13 @@ public class MetadataVerifier extends Verifier
     /**
      * Requirement 75
      *
-     * <blockquote> Every
-     * <code>gpkg_metadata_reference</code> table row timestamp column value
-     * SHALL be in ISO 8601 format containing a complete date plus UTC hours,
-     * minutes, seconds and a decimal fraction of a second, with a 'Z' ('zulu')
-     * suffix indicating UTC.
+     * <blockquote>
+     * Every <code>gpkg_metadata_reference</code> table row timestamp column
+     * value SHALL be in ISO 8601 format containing a complete date plus UTC
+     * hours, minutes, seconds and a decimal fraction of a second, with a 'Z'
+     * ('zulu') suffix indicating UTC.
      * </blockquote>
+     *
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
     @Requirement(reference = "Requirement 75",
@@ -454,8 +479,9 @@ public class MetadataVerifier extends Verifier
                     }
                     catch (final ParseException e)
                     {
-                        fail(String.format("The timestamp %s in the gpkg_metadata_reference table is not in the correct format.",
-                                           value.timestamp),
+                        fail(String.format("The timestamp %s in the %s table is not in the correct format.",
+                                           value.timestamp,
+                                           GeoPackageMetadata.MetadataReferenceTableName),
                              Severity.Warning);
                     }
                 }
@@ -471,22 +497,24 @@ public class MetadataVerifier extends Verifier
      * </code> column value SHALL be an id column value from the <code>
      * gpkg_metadata</code> table.
      * <blockquote>
+     *
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
     @Requirement(reference = "Requirement 76",
-                 text    = "Every gpkg_metadata_reference table row md_file_id column "
-                           + "value SHALL be an id column value from the gpkg_metadata table. ")
+                 text      = "Every gpkg_metadata_reference table row md_file_id column "
+                             + "value SHALL be an id column value from the gpkg_metadata table. ")
     public void Requirement76() throws AssertionError
     {
         if(this.hasMetadataReferenceTable)
         {
             final List<MetadataReference> invalidIds = this.metadataReferenceValues.stream()
-                                                                              .filter(metadataReferenceValue -> !(this.metadataValues.stream()
-                                                                                                                                     .anyMatch(metadataValue -> metadataReferenceValue.md_file_id.equals(metadataValue.id))))
-                                                                              .collect(Collectors.toList());
+                                                                                   .filter(metadataReferenceValue -> !(this.metadataValues.stream()
+                                                                                                                                          .anyMatch(metadataValue -> metadataReferenceValue.md_file_id.equals(metadataValue.id))))
+                                                                                   .collect(Collectors.toList());
 
-            Assert.assertTrue(String.format("The following md_file_id(s) from gpkg_metadata_reference table "
-                                            + "do not reference an id column value from the gpkg_metadata table.\n%s",
+            Assert.assertTrue(String.format("The following md_file_id(s) from %s table do not reference an id column value from the %s table.\n%s",
+                                            GeoPackageMetadata.MetadataReferenceTableName,
+                                            GeoPackageMetadata.MetadataTableName,
                                             invalidIds.stream()
                                                       .map(invalidId -> String.format("invalid md_file_id: %s, md_parent_id: %d, reference_scope: %s.",
                                                                                       invalidId.md_file_id,
@@ -507,6 +535,7 @@ public class MetadataVerifier extends Verifier
      * the <code>gpkg_metadata</code> table that is not equal to the <code>
      * md_file_id</code> column value for that row.
      * <blockquote>
+     *
      * @throws AssertionError throws when the GeoPackage fails to meet this requirement
      */
     @Requirement(reference = "Requirement 77",
@@ -521,27 +550,30 @@ public class MetadataVerifier extends Verifier
                                                                                                   .filter(metadataReferenceValue -> metadataReferenceValue.md_file_id.equals(metadataReferenceValue.md_parent_id))
                                                                                                   .collect(Collectors.toList());
 
-            Assert.assertTrue(String.format("The following md_parent_id(s) are invalid because they cannot be equivalent "
-                                                + "to their correspoding md_file_id.\n%s",
+            Assert.assertTrue(String.format("The following md_parent_id(s) are invalid because they cannot be equivalent to their correspoding md_file_id.\n%s",
                                             invalidParentIdsBcFileIds.stream()
-                                                                     .map(value -> String.format("Invalid md_parent_id: %d,  md_file_id: %d.", value.md_parent_id, value.md_file_id))
+                                                                     .map(value -> String.format("Invalid md_parent_id: %d, md_file_id: %d.",
+                                                                                                 value.md_parent_id,
+                                                                                                 value.md_file_id))
                                                                      .collect(Collectors.joining("\n"))),
                               invalidParentIdsBcFileIds.isEmpty(),
                               Severity.Warning);
 
             final List<MetadataReference> invalidParentIds = this.metadataReferenceValues.stream()
-                                                                                   .filter(metadataReferenceValue -> metadataReferenceValue.md_parent_id != null)
-                                                                                   .filter(metadataReferenceValue -> !(this.metadataValues.stream()
-                                                                                                                                          .anyMatch(metadataValue ->  metadataReferenceValue.md_parent_id.equals(metadataValue.id))))
-                                                                                   .collect(Collectors.toList());
+                                                                                         .filter(metadataReferenceValue -> metadataReferenceValue.md_parent_id != null)
+                                                                                         .filter(metadataReferenceValue -> !(this.metadataValues.stream()
+                                                                                                                                                .anyMatch(metadataValue ->  metadataReferenceValue.md_parent_id.equals(metadataValue.id))))
+                                                                                         .collect(Collectors.toList());
 
-            Assert.assertTrue(String.format("The following md_parent_id value(s) are invalid because they do not equal id column value from the gpkg_metadata table. \n%s",
+            Assert.assertTrue(String.format("The following md_parent_id value(s) are invalid because they do not equal id column value from the %s table. \n%s",
+                                            GeoPackageMetadata.MetadataTableName,
                                             invalidParentIds.stream()
-                                                            .map(value -> String.format("Invalid md_parent_id: %d,  md_file_id: %d.", value.md_parent_id, value.md_file_id))
+                                                            .map(value -> String.format("Invalid md_parent_id: %d,  md_file_id: %d.",
+                                                                                        value.md_parent_id,
+                                                                                        value.md_file_id))
                                                             .collect(Collectors.joining("\n"))),
                               invalidParentIds.isEmpty(),
                               Severity.Warning);
-
         }
     }
 
@@ -554,7 +586,7 @@ public class MetadataVerifier extends Verifier
     private List<MetadataReference> getMetadataReferenceValues()
     {
 
-        final String query = "SELECT reference_scope, table_name, column_name, row_id_value, timestamp, md_file_id, md_parent_id FROM gpkg_metadata_reference;";
+        final String query = String.format("SELECT reference_scope, table_name, column_name, row_id_value, timestamp, md_file_id, md_parent_id FROM %s;", GeoPackageMetadata.MetadataReferenceTableName);
 
         try(Statement statement       = this.getSqliteConnection().createStatement();
             ResultSet metadataValueRS = statement.executeQuery(query))
@@ -619,7 +651,7 @@ public class MetadataVerifier extends Verifier
      */
     private List<Metadata> getMetadataValues()
     {
-        final String query = "SELECT md_scope, id FROM gpkg_metadata;";
+        final String query = String.format("SELECT md_scope, id FROM %s;", GeoPackageMetadata.MetadataTableName);
 
         try(Statement statement       = this.getSqliteConnection().createStatement();
             ResultSet metadataValueRS = statement.executeQuery(query))

@@ -34,6 +34,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -42,10 +43,14 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import utility.DatabaseUtility;
 
+import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.ColumnDefinition;
 import com.rgi.geopackage.verification.ForeignKeyDefinition;
@@ -241,23 +246,24 @@ public class CoreVerifier extends Verifier
     {
         if(this.hasContentsTable)
         {
-            final String query = "SELECT table_name FROM gpkg_contents;";
+            final String query = String.format("SELECT table_name FROM %s;", GeoPackageCore.ContentsTableName);
 
-            try(Statement stmt      = this.getSqliteConnection().createStatement();
-                ResultSet tableName = stmt.executeQuery(query);)
+            try (Statement stmt       = this.getSqliteConnection().createStatement();
+                 ResultSet tableName  = stmt.executeQuery(query);)
             {
-                while(tableName.next())
+                while (tableName.next())
                 {
                     final String table_name = tableName.getString("table_name");
 
-                    if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), table_name))
+                    if (DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), table_name))
                     {
-                        try(Statement stmt2           = this.getSqliteConnection().createStatement();
-                            ResultSet pragmaTableinfo = stmt2.executeQuery(String.format("PRAGMA table_info(%s);", table_name));)
+
+                        try (PreparedStatement stmt2           = this.getSqliteConnection().prepareStatement(String.format("PRAGMA table_info('%s');", table_name));
+                             ResultSet         pragmaTableinfo = stmt2.executeQuery())
                         {
-                            while(pragmaTableinfo.next())
+                            while (pragmaTableinfo.next())
                             {
-                                final String dataType         = pragmaTableinfo.getString("type");
+                                final String dataType = pragmaTableinfo.getString("type");
                                 final boolean correctDataType = Verifier.checkDataType(dataType);
 
                                 assertTrue(String.format("Incorrect data type encountered: %s  From table: %s",
@@ -338,15 +344,13 @@ public class CoreVerifier extends Verifier
     public void Requirement8() throws AssertionError
     {
         final String query = "SELECT * FROM sqlite_master;";
-
-        try(Statement stmt = this.getSqliteConnection().createStatement();
-            ResultSet set = stmt.executeQuery(query);)
+        try(final Statement stmt   = this.getSqliteConnection().createStatement();
+            final ResultSet result = stmt.executeQuery(query))
         {
             // If the statement can execute it has implemented the SQLite SQL API interface
         }
         catch(final SQLException e)
         {
-            e.printStackTrace();
             fail("GeoPackage needs to provide the SQLite SQL API interface.",
                  Severity.Error);
         }
@@ -402,7 +406,8 @@ public class CoreVerifier extends Verifier
         }
         else
         {
-            throw new AssertionError("The GeoPackage does not contain a gpkg_spatial_ref_sys table. This is a required table for all GeoPackages.",
+            throw new AssertionError(String.format("The GeoPackage does not contain a %s table. This is a required table for all GeoPackages.",
+                                                   GeoPackageCore.SpatialRefSysTableName),
                                      Severity.Error);
         }
     }
@@ -436,33 +441,37 @@ public class CoreVerifier extends Verifier
     {
         if(this.hasSpatialReferenceSystemTable)
         {
-            final String wgs1984Sql = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE organization_coordsys_id = 4326 AND (organization = 'EPSG' OR organization = 'epsg');";
+            final String wgs1984Sql = String.format("SELECT srs_id FROM %s WHERE organization_coordsys_id = 4326 AND (organization = 'EPSG' OR organization = 'epsg');",    // TODO figure out case insensitive comparison
+                                                    GeoPackageCore.SpatialRefSysTableName);
 
             try(Statement statement       = this.getSqliteConnection().createStatement();
                 ResultSet srsDefaultValue = statement.executeQuery(wgs1984Sql))
             {
-                assertTrue("The gpkg_spatial_ref_sys table shall contain a record for organization \"EPSG\" or \"epsg\" and organization_coordsys_id 4326 for WGS-84",
+                assertTrue(String.format("The %s table shall contain a record for organization \"EPSG\" or \"epsg\" and organization_coordsys_id 4326 for WGS-84",
+                                         GeoPackageCore.SpatialRefSysTableName),
                            srsDefaultValue.next(),
                            Severity.Warning);
             }
 
-            final String undefinedCartesianSql = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = -1 AND organization = 'NONE' AND organization_coordsys_id = -1 AND definition = 'undefined';";
+            final String undefinedCartesianSql = String.format("SELECT srs_id FROM %s WHERE srs_id = -1 AND organization = 'NONE' AND organization_coordsys_id = -1 AND definition = 'undefined';", GeoPackageCore.SpatialRefSysTableName);
 
             try(Statement statement       = this.getSqliteConnection().createStatement();
                 ResultSet srsDefaultValue = statement.executeQuery(undefinedCartesianSql))
             {
-                assertTrue("The gpkg_spatial_ref_sys table shall contain a record with an srs_id of -1, an organization of \"NONE\", an organization_coordsys_id of -1, and definition \"undefined\" for undefined Cartesian coordinate reference systems",
+                assertTrue(String.format("The %s table shall contain a record with an srs_id of -1, an organization of \"NONE\", an organization_coordsys_id of -1, and definition \"undefined\" for undefined Cartesian coordinate reference systems",
+                                         GeoPackageCore.SpatialRefSysTableName),
                            srsDefaultValue.next(),
                            Severity.Warning);
             }
 
-            final String undefinedGeographicSql = "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = 0 AND organization = 'NONE' AND organization_coordsys_id =  0 AND definition = 'undefined';";
+            final String undefinedGeographicSql = String.format("SELECT srs_id FROM %s WHERE srs_id = 0 AND organization = 'NONE' AND organization_coordsys_id =  0 AND definition = 'undefined';", GeoPackageCore.SpatialRefSysTableName);
 
             try(Statement statement       = this.getSqliteConnection().createStatement();
                 ResultSet srsDefaultValue = statement.executeQuery(undefinedGeographicSql))
             {
-                assertTrue("The gpkg_spatial_ref_sys table shall contain a record with an srs_id of 0, an organization of \"NONE\", an organization_coordsys_id of 0, and definition \"undefined\" for undefined geographic coordinate reference systems.",
-                           srsDefaultValue.next(),
+                assertTrue(String.format("The %s table shall contain a record with an srs_id of 0, an organization of \"NONE\", an organization_coordsys_id of 0, and definition \"undefined\" for undefined geographic coordinate reference systems.",
+                                         GeoPackageCore.SpatialRefSysTableName),
+                                         srsDefaultValue.next(),
                            Severity.Warning);
             }
         }
@@ -483,24 +492,41 @@ public class CoreVerifier extends Verifier
     {
         if(this.hasContentsTable && this.hasSpatialReferenceSystemTable)
         {
-            final String query = "SELECT DISTINCT gc.srs_id AS gc_srid, srs.srs_name, srs.srs_id, srs.organization, srs.organization_coordsys_id, "
-                                  + " srs.definition FROM gpkg_contents AS gc LEFT OUTER JOIN gpkg_spatial_ref_sys AS srs ON srs.srs_id = gc.srs_id;";
+            final String query = String.format("SELECT DISTINCT srs_id as srsContents "+
+                                               "FROM            %s "+
+                                               "WHERE           srsContents " +
+                                               "NOT IN "+
+                                                       "(SELECT  srs_id as srsSpatialRefSys "+
+                                                        "FROM    %s "+
+                                                         "WHERE  srsSpatialRefSys = srsContents);",
+                                               GeoPackageCore.ContentsTableName,
+                                               GeoPackageCore.SpatialRefSysTableName);
 
-            try(Statement stmt       = this.getSqliteConnection().createStatement();
-                ResultSet srsdefined = stmt.executeQuery(query))
+
+            try(final Statement stmt       = this.getSqliteConnection().createStatement();
+                final ResultSet srsdefined = stmt.executeQuery(query))
             {
+                final List<String> invalidTables = ResultSetStream.getStream(srsdefined)
+                                                                  .map(result-> { try
+                                                                                  {
+                                                                                        return result.getString("srsContents");
+                                                                                  }
+                                                                                  catch(final SQLException ex)
+                                                                                  {
+                                                                                        return null;
+                                                                                  }
+                                                                                 })
+                                                                  .filter(Objects::nonNull)
+                                                                  .collect(Collectors.toList());
 
-                while(srsdefined.next())
-                {
-                    final String srsGC  = srsdefined.getString("gc_srid");
-                    final String srsSRS = srsdefined.getString("srs_id");
-
-                    assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined.\n gpkg_contents srs_id: %s gpkg_spatial_ref_sys srs_id: %s",
-                                             srsGC,
-                                             srsSRS),
-                               srsGC != null && srsSRS !=null,
+                    assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined. The following srs_id(s) are not in the %s: \n%s",
+                                             GeoPackageCore.SpatialRefSysTableName,
+                                             invalidTables.stream()
+                                                          .map(table-> String.format("%s srs_id: %s",GeoPackageCore.ContentsTableName, table))
+                                                          .collect(Collectors.joining("\n"))),
+                               invalidTables.isEmpty(),
                                Severity.Error);
-                }
+
             }
         }
     }
@@ -526,7 +552,8 @@ public class CoreVerifier extends Verifier
         }
         else
         {
-            throw new AssertionError("The GeoPackage does not contain a gpkg_contents table. This is a required table for all GeoPackages.",
+            throw new AssertionError(String.format("The GeoPackage does not contain a %s table. This is a required table for all GeoPackages.",
+                                                   GeoPackageCore.ContentsTableName),
                                      Severity.Error);
         }
     }
@@ -547,24 +574,38 @@ public class CoreVerifier extends Verifier
     {
         if(this.hasContentsTable)
         {
-            final String query = "SELECT DISTINCT gc.table_name AS gc_table, sm.tbl_name "
-                               + "FROM gpkg_contents AS gc "
-                               + "LEFT OUTER JOIN sqlite_master AS sm "
-                               + "ON gc.table_name = sm.tbl_name;";
+            final String query =  String.format("SELECT DISTINCT table_name AS gc_table " +
+                                                "FROM            %s " +
+                                                "WHERE           gc_table NOT IN "+
+                                                                               "(SELECT tbl_name"+
+                                                                               " FROM   sqlite_master " +
+                                                                                "WHERE  tbl_name = gc_table);",
+                                               GeoPackageCore.ContentsTableName);
 
-            try(Statement stmt        = this.getSqliteConnection().createStatement();
-                ResultSet gctablename = stmt.executeQuery(query);)
+            try(final Statement stmt        = this.getSqliteConnection().createStatement();
+                final ResultSet gctablename = stmt.executeQuery(query);)
             {
                 // check runtime options (foreign keys)
-                while(gctablename.next())
-                {
-                    final String gctable  = gctablename.getString("gc_table");
-                    final String tbl_name = gctablename.getString("tbl_name");
-                    assertTrue(String.format("The table_name value in gpkg_contents table is invalid for the table: %s",
-                                             gctable),
-                               tbl_name != null,
-                               Severity.Warning);
-                }
+                final List<String> invalidContentsTableNames = ResultSetStream.getStream(gctablename)
+                                                                              .map(result -> { try
+                                                                                               {
+                                                                                                    return result.getString("gc_table");
+                                                                                               }
+                                                                                               catch(final SQLException ex)
+                                                                                               {
+                                                                                                   return null;
+                                                                                               }
+                                                                                             })
+                                                                              .filter(Objects::nonNull)
+                                                                              .collect(Collectors.toList());
+
+                assertTrue(String.format("The following table_name(s) in %s are invalid: \n%s.",
+                                         GeoPackageCore.ContentsTableName,
+                                         invalidContentsTableNames.stream()
+                                                                  .map(table_name->String.format("\t%s",table_name))
+                                                                  .collect(Collectors.joining("\n"))),
+                           invalidContentsTableNames.isEmpty(),
+                           Severity.Warning);
             }
         }
     }
@@ -591,7 +632,7 @@ public class CoreVerifier extends Verifier
     {
         if(this.hasContentsTable)
         {
-            final String query = "SELECT last_change FROM gpkg_contents;";
+            final String query = String.format("SELECT last_change FROM %s;", GeoPackageCore.ContentsTableName);
 
             try(Statement stmt       = this.getSqliteConnection().createStatement();
                 ResultSet lastchange = stmt.executeQuery(query);)
@@ -618,7 +659,9 @@ public class CoreVerifier extends Verifier
                         }
                         catch(final ParseException e)
                         {
-                            fail("A field in the last_change column in gpkg_contents table was not in the correct format. " + ex.getMessage(),
+                            fail(String.format("A field in the last_change column in %s table was not in the correct format. %s",
+                                               GeoPackageCore.ContentsTableName,
+                                               ex.getMessage()),
                                  Severity.Warning);
                         }
                     }
@@ -645,13 +688,15 @@ public class CoreVerifier extends Verifier
     {
         if(this.hasContentsTable)
         {
-            final String query = "PRAGMA foreign_key_check('gpkg_contents');";
+            final String query = String.format("PRAGMA foreign_key_check('%s');",
+                                               GeoPackageCore.ContentsTableName);
 
             try(Statement statement  = this.getSqliteConnection().createStatement();
                 ResultSet foreignKey = statement.executeQuery(query);)
             {
                 // check runtime options (foreign keys)
-                assertTrue("There are violations on the foreign keys in the table gpkg_contents",
+                assertTrue(String.format("There are violations on the foreign keys in the table %s",
+                                         GeoPackageCore.ContentsTableName),
                            !foreignKey.next(),
                            Severity.Error);
             }
@@ -678,9 +723,9 @@ public class CoreVerifier extends Verifier
         contentColumns.put("max_y",       new ColumnDefinition("DOUBLE",   false, false, false, null));
         contentColumns.put("srs_id",      new ColumnDefinition("INTEGER",  false, false, false, null));
 
-        ContentTableDefinition = new TableDefinition("gpkg_contents",
+        ContentTableDefinition = new TableDefinition(GeoPackageCore.ContentsTableName,
                                                      contentColumns,
-                                                     new HashSet<>(Arrays.asList(new ForeignKeyDefinition("gpkg_spatial_ref_sys", "srs_id", "srs_id"))));
+                                                     new HashSet<>(Arrays.asList(new ForeignKeyDefinition(GeoPackageCore.SpatialRefSysTableName, "srs_id", "srs_id"))));
 
         final Map<String, ColumnDefinition> spatialReferenceSystemColumns = new HashMap<>();
 
@@ -691,7 +736,7 @@ public class CoreVerifier extends Verifier
         spatialReferenceSystemColumns.put("definition",               new ColumnDefinition("TEXT",    true,  false, false, null));
         spatialReferenceSystemColumns.put("description",              new ColumnDefinition("TEXT",    false, false, false, null));
 
-        SpatialReferenceSystemDefinition = new TableDefinition("gpkg_spatial_ref_sys",
+        SpatialReferenceSystemDefinition = new TableDefinition(GeoPackageCore.SpatialRefSysTableName,
                                                                spatialReferenceSystemColumns);
     }
 

@@ -67,6 +67,7 @@ public class SphericalMercatorCrsProfileTest
 
        }
     }
+
     /**
      * Tests if spherical mercator throws an IllegalArgumentException
      * when passing a null value to crsToTileCoordinate
