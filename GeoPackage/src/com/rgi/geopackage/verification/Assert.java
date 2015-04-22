@@ -105,11 +105,6 @@ public class Assert
      */
     static public void fail(final String message, final Severity severity) throws AssertionError
     {
-        if(message == null)
-        {
-            throw new AssertionError((String)null, severity);
-        }
-
         throw new AssertionError(message, severity);
     }
 }
