@@ -23,6 +23,7 @@
 package com.rgi.geopackage.extensions;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -87,7 +88,7 @@ public class ExtensionsVerifier extends Verifier
         if (this.hasGpkgExtensionsTable)
         {
 
-            final String query = "SELECT table_name, column_name, extension_name FROM gpkg_extensions;";
+            final String query = String.format("SELECT table_name, column_name, extension_name FROM %s;", GeoPackageExtensions.ExtensionsTableName);
 
             try (Statement stmt                  = this.getSqliteConnection().createStatement();
                  ResultSet tableNameColumnNameRS = stmt.executeQuery(query))
@@ -205,39 +206,37 @@ public class ExtensionsVerifier extends Verifier
                                    validEntry);
             }
             // Check that the table_name in GeoPackage Extensions references a table in sqlite master
-            final String query2 = "SELECT DISTINCT ge.table_name AS ge_table, "
-                                          + "sm.tbl_name   AS sm_table "
-                                + "FROM  gpkg_extensions AS ge "
-                                + "LEFT OUTER JOIN sqlite_master AS sm ON "
-                                                                        + "ge.table_name = sm.tbl_name";
-            try (Statement stmt2                = this.getSqliteConnection().createStatement();
-                 ResultSet tablesReferencedInSM = stmt2.executeQuery(query2))
+            final String query2 = String.format("SELECT table_name as extensionsTableName "+
+                                                "FROM   %s "+
+                                                "WHERE  extensionsTableName NOT IN"+
+                                                                                 "(SELECT tbl_name "+
+                                                                                  "FROM   sqlite_master "+
+                                                                                  "WHERE  tbl_name = extensionsTableName);",
+                                                 GeoPackageExtensions.ExtensionsTableName);
+            try (Statement stmt2         = this.getSqliteConnection().createStatement();
+                 ResultSet tablesNotInSM = stmt2.executeQuery(query2))
             {
-                final Map<String, String> tablesMatchesFound = ResultSetStream.getStream(tablesReferencedInSM)
-                                                                        .map(resultSet ->
-                                                                                        {  try
-                                                                                            {
-                                                                                                final String geTableName = resultSet.getString("ge_table");
-                                                                                                final String smTableName = resultSet.getString("sm_table");
-                                                                                                return new AbstractMap.SimpleImmutableEntry<>(geTableName, smTableName);
-                                                                                            }
-                                                                                            catch(final SQLException ex)
-                                                                                            {
-                                                                                                return null;
-                                                                                            }
-                                                                                        })
-                                                                        .filter(Objects::nonNull)
-                                                                        .collect(Collectors.toMap(entry -> entry.getKey(),
-                                                                                                  entry -> entry.getValue()));
+                final List<String> nonExistantExtensionsTable = ResultSetStream.getStream(tablesNotInSM)
+                                                                               .map(resultSet ->
+                                                                                               {  try
+                                                                                                   {
+                                                                                                       return  resultSet.getString("extensionsTableName");
+                                                                                                   }
+                                                                                                   catch(final SQLException ex)
+                                                                                                   {
+                                                                                                       return null;
+                                                                                                   }
+                                                                                               })
+                                                                               .filter(Objects::nonNull)
+                                                                               .collect(Collectors.toList());
 
-                for (final String geTable : tablesMatchesFound.keySet())
-                {
-                    Assert.assertTrue(String.format("The table %s does not exist in the sqlite master table. "
-                                                       + "Either create table %s or delete this entry.",
-                                                    geTable,
-                                                    geTable),
-                                      ExtensionsVerifier.equals(geTable, tablesMatchesFound.get(geTable)));
-                }
+                Assert.assertTrue(String.format("The following table(s) does not exist in the sqlite master table. "
+                                                 + "Either create table following table(s) or delete this entry in %s.\n %s",
+                                                 GeoPackageExtensions.ExtensionsTableName,
+                                               nonExistantExtensionsTable.stream()
+                                                                         .map(table-> String.format("\t%s", table))
+                                                                         .collect(Collectors.joining("\n"))),
+                                      nonExistantExtensionsTable.isEmpty());
             }
         }
     }
@@ -265,29 +264,30 @@ public class ExtensionsVerifier extends Verifier
 
                 if (extensionData.tableName != null && columnName != null)
                 {
-                    final String query = String.format("PRAGMA table_info(%s);", extensionData.tableName);
+                    final String query = String.format("PRAGMA table_info(%s);", extensionData.tableName );
 
-                    try (Statement stmt      = this.getSqliteConnection().createStatement();
-                         ResultSet tableInfo = stmt.executeQuery(query))
+                    try (PreparedStatement stmt      = this.getSqliteConnection().prepareStatement(query);
+                         ResultSet         tableInfo = stmt.executeQuery())
                     {
-                        final boolean columnExists = ResultSetStream.getStream(tableInfo)
-                                                                    .anyMatch(resultSet ->
-                                                                                          {   try
-                                                                                              {
-                                                                                                  return resultSet.getString("name").equals(columnName);
-                                                                                              }
-                                                                                              catch (final SQLException ex)
-                                                                                              {
-                                                                                                  return false;
-                                                                                              }
-                                                                                          });
+                         final boolean columnExists = ResultSetStream.getStream(tableInfo)
+                                                                     .anyMatch(resultSet ->
+                                                                                           {   try
+                                                                                               {
+                                                                                                   return resultSet.getString("name").equals(columnName);
+                                                                                               }
+                                                                                               catch (final SQLException ex)
+                                                                                               {
+                                                                                                   return false;
+                                                                                               }
+                                                                                           });
 
-                        Assert.assertTrue(String.format("The column %s does not exist in the table %s. "
-                                                            + "Please either add this column to this table "
-                                                            + "or delete the record in gpkg_extensions.",
-                                                        columnName,
-                                                        extensionData.tableName),
-                                          columnExists);
+                         Assert.assertTrue(String.format("The column %s does not exist in the table %s. "
+                                                             + "Please either add this column to this table "
+                                                             + "or delete the record in %s.",
+                                                         columnName,
+                                                         extensionData.tableName,
+                                                         GeoPackageExtensions.ExtensionsTableName),
+                                           columnExists);
                     }
                 }
             }
@@ -322,26 +322,23 @@ public class ExtensionsVerifier extends Verifier
         {
 
             final Set<String> invalidExtensionNames = this.gpkgExtensionsDataAndColumnName.keySet()
-                                                                                    .stream()
-                                                                                    .map(extensionData -> ExtensionsVerifier.verifyExtensionName(extensionData.extensionName))
-                                                                                    .filter(data -> data != null)
-                                                                                    .collect(Collectors.toSet());
+                                                                                          .stream()
+                                                                                          .map(extensionData -> ExtensionsVerifier.verifyExtensionName(extensionData.extensionName))
+                                                                                          .filter(Objects::nonNull)
+                                                                                          .collect(Collectors.toSet());
 
             Assert.assertTrue(String.format("The following extension_name(s) are invalid: \n%s",
-                                       invalidExtensionNames.stream()
-                                                                           .map(extensionName ->{
-                                                                                                     if(extensionName.isEmpty())
-                                                                                                     {
-                                                                                                         return "\t<empty string>";
-                                                                                                     }
-
-                                                                                                     return String.format("\t%s", extensionName);
-                                                                                                })
-                                                                           .filter(Objects::nonNull)
-                                                                           .collect(Collectors.joining(", "))
-                                                      ),
-                              invalidExtensionNames.isEmpty());
-
+                                            invalidExtensionNames.stream()
+                                                                 .map(extensionName ->{
+                                                                                           if(extensionName.isEmpty())
+                                                                                           {
+                                                                                               return "\t<empty string>";
+                                                                                           }
+                                                                                            return String.format("\t%s", extensionName);
+                                                                                      })
+                                                                 .filter(Objects::nonNull)
+                                                                 .collect(Collectors.joining(", "))),
+                               invalidExtensionNames.isEmpty());
         }
     }
 
@@ -366,11 +363,17 @@ public class ExtensionsVerifier extends Verifier
     {
         if (this.hasGpkgExtensionsTable)
         {
-            final String query = "SELECT table_name " + "FROM gpkg_extensions "
-                    + "WHERE definition NOT LIKE 'Annex%' "
-                    + "AND   definition NOT LIKE 'http%' "
-                    + "AND   definition NOT LIKE 'mailto%' "
-                    + "AND   definition NOT LIKE 'Extension Title%';";
+            final String query = String.format("SELECT table_name "
+                                             + "FROM %s "
+                                             + "WHERE definition NOT LIKE '%s' "
+                                             + "AND   definition NOT LIKE '%s' "
+                                             + "AND   definition NOT LIKE '%s' "
+                                             + "AND   definition NOT LIKE '%s';",
+                                             GeoPackageExtensions.ExtensionsTableName,
+                                             "Annex%",
+                                             "http%",
+                                             "mailto%",
+                                             "Extension Title%");
 
             try (Statement stmt                    = this.getSqliteConnection().createStatement();
                  ResultSet invalidDefinitionValues = stmt.executeQuery(query))
@@ -389,7 +392,8 @@ public class ExtensionsVerifier extends Verifier
                                                                        .filter(Objects::nonNull)
                                                                        .collect(Collectors.toList());
 
-                Assert.assertTrue(String.format("The following table_name values in gpkg_extension table have invalid values for the definition column: %s.",
+                Assert.assertTrue(String.format("The following table_name values in %s table have invalid values for the definition column: %s.",
+                                                GeoPackageExtensions.ExtensionsTableName,
                                                 invalidDefinitions.stream()
                                                                   .collect(Collectors.joining(", "))),
                                   invalidDefinitions.isEmpty());
@@ -418,10 +422,11 @@ public class ExtensionsVerifier extends Verifier
     {
         if (this.hasGpkgExtensionsTable)
         {
-            final String query = "SELECT scope FROM gpkg_extensions WHERE scope != 'read-write' AND scope != 'write-only'";
+            final String query = String.format("SELECT scope FROM %s WHERE scope != 'read-write' AND scope != 'write-only'",
+                                               GeoPackageExtensions.ExtensionsTableName);
 
-            try (Statement stmt = this.getSqliteConnection().createStatement();
-                    ResultSet invalidScopeValues = stmt.executeQuery(query))
+            try (Statement stmt               = this.getSqliteConnection().createStatement();
+                 ResultSet invalidScopeValues = stmt.executeQuery(query))
             {
                 final List<String> invalidScope = ResultSetStream.getStream(invalidScopeValues)
                                                                  .map(resultSet ->
@@ -438,14 +443,14 @@ public class ExtensionsVerifier extends Verifier
                                                                  .filter(Objects::nonNull)
                                                                  .collect(Collectors.toList());
 
-                Assert.assertTrue(String.format("There is(are) value(s) in the column scope in gpkg_extensions"
+                Assert.assertTrue(String.format("There is(are) value(s) in the column scope in %s"
                                                     + " table that is not 'read-write' or 'write-only' in all "
                                                     + "lowercase letters. The following value(s)  is(are) incorrect: %s",
+                                                GeoPackageExtensions.ExtensionsTableName,
                                                 invalidScope.stream()
                                                             .collect(Collectors.joining(", "))),
                                   invalidScope.isEmpty());
             }
-
         }
     }
 
@@ -476,11 +481,6 @@ public class ExtensionsVerifier extends Verifier
     private static boolean isRegisteredExtension(final String extensionName)
     {
         return RegisteredExtensions.stream().anyMatch(registeredExtension -> registeredExtension.equals(extensionName));
-    }
-
-    private static boolean equals(final String first, final String second)
-    {
-        return first == null ? second == null : first.equals(second);
     }
 
     private static final TableDefinition ExtensionsTableDefinition;
