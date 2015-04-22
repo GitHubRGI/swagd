@@ -53,7 +53,7 @@ public class GeoPackageCore
     /**
      * The Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
      */
-    public static final SimpleDateFormat DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    public final SimpleDateFormat DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     /**
      * The name of the GeoPackage Spatial Reference System Table "gpkg_spatial_ref_sys"
@@ -174,9 +174,13 @@ public class GeoPackageCore
                 throw new IllegalArgumentException("A spatial reference system already exists with this organization and organization-assigned numeric identifier, but has different values for its other fields");
             }
 
-            final int identifier = DatabaseUtility.nextValue(this.databaseConnection,
-                                                             GeoPackageCore.SpatialRefSysTableName,
-                                                             GeoPackageCore.SpatialRefSystemSrsIdColumnName);
+            final Integer identifier = DatabaseUtility.nextValue(this.databaseConnection,
+                                                                 GeoPackageCore.SpatialRefSysTableName,
+                                                                 GeoPackageCore.SpatialRefSystemSrsIdColumnName);
+            if(identifier == null)
+            {
+                throw new RuntimeException("There are no more available integer values to represent the column \"identifier\".");
+            }
 
             final SpatialReferenceSystem spatialReferenceSystem = this.addSpatialReferenceSystemNoCommit(name,
                                                                                                          identifier,
