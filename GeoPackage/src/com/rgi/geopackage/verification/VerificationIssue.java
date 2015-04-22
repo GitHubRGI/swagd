@@ -30,7 +30,8 @@ package com.rgi.geopackage.verification;
 public class VerificationIssue
 {
     /**
-     * Constructor
+     * Constructor for unexpected non-assertion error  issues in the
+     * verification process
      *
      * @param reason
      *             The explanation of how a GeoPackage didn't conform to a specific requirement
@@ -39,8 +40,30 @@ public class VerificationIssue
      */
     public VerificationIssue(final String reason, final Requirement requirement)
     {
-        this.reason     = reason;
+        this(reason, requirement, Severity.Unknown);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param reason
+     *             The explanation of how a GeoPackage didn't conform to a
+     *             specific requirement
+     * @param requirement
+     *             The requirement that the GeoPackage didn't fully conform to
+     * @param severity
+     *             Indication of the level of problem encountered when testing
+     *             the conformity of a file to the
+     *             <a href="http://www.geopackage.org/spec/">GeoPackage
+     *             Standards</a> specification
+     */
+    public VerificationIssue(final String      reason,
+                             final Requirement requirement,
+                             final Severity    severity)
+    {
+        this.reason      = reason;
         this.requirement = requirement;
+        this.severity    = severity;
     }
 
     /**
@@ -58,6 +81,15 @@ public class VerificationIssue
         return this.requirement;
     }
 
+    /**
+     * @return the severity
+     */
+    public Severity getSeverity()
+    {
+        return this.severity;
+    }
+
     final private String      reason;
     final private Requirement requirement;
+    final private Severity    severity;
 }

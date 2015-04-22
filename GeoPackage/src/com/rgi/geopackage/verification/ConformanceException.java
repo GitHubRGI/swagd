@@ -34,11 +34,11 @@ import java.util.stream.Collectors;
 public class ConformanceException extends Exception
 {
     /**
-     * @param conformanceIssues a collection of all the failed requirements of the GeoPackage that did not pass
+     * @param verificationIssue a collection of all the failed requirements of the GeoPackage that did not pass
      */
-    public ConformanceException(final Collection<VerificationIssue> conformanceIssues)
+    public ConformanceException(final Collection<VerificationIssue> verificationIssue)
     {
-        this.conformanceIssues = conformanceIssues;
+        this.verificationIssues = verificationIssue;
     }
 
     @Override
@@ -51,15 +51,18 @@ public class ConformanceException extends Exception
     public String toString()
     {
         return String.format("GeoPackage failed to meet the following requirements:\n%s",
-                             this.conformanceIssues.stream()
-                                                   .sorted((requirement1, requirement2) -> Integer.compare(requirement1.getRequirement().number(), requirement2.getRequirement().number()))
-                                                   .map(failedRequirement -> String.format("* (%s) Requirement %d: \"%s\"\n%s",
-                                                                                     failedRequirement.getRequirement().severity(),
-                                                                                     failedRequirement.getRequirement().number(),
-                                                                                     failedRequirement.getRequirement().text(),
-                                                                                     failedRequirement.getReason()))
-                                                   .collect(Collectors.joining("\n\n")));
+                             this.verificationIssues.stream()
+                                                    .sorted((issue1, issue2) -> issue1.getRequirement()
+                                                                                      .reference()
+                                                                                      .compareTo(issue2.getRequirement()
+                                                                                                       .reference()))
+                                                    .map(verificationIssue -> String.format("* (%s) %s: \"%s\"\n%s",
+                                                                                            verificationIssue.getSeverity(),
+                                                                                            verificationIssue.getRequirement().reference(),
+                                                                                            verificationIssue.getRequirement().text(),
+                                                                                            verificationIssue.getReason()))
+                                                    .collect(Collectors.joining("\n\n")));
     }
 
-    private final Collection<VerificationIssue> conformanceIssues;
+    private final Collection<VerificationIssue> verificationIssues;
 }

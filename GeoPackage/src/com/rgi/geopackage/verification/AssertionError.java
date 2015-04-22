@@ -30,26 +30,36 @@ package com.rgi.geopackage.verification;
 public class AssertionError extends Exception
 {
     /**
-     * Assertion Error Constructor
+     * @param message
+     *             the message that is displayed if this type of exception occurs
+     * @param severity
+     *             the {@link Severity} of the error
      */
-    public AssertionError()
-    {
-
-    }
-
-    /**
-     * @param message the message that is displayed if this type of exception occurs
-     */
-    public AssertionError(final String message)
+    public AssertionError(final String message, final Severity severity)
     {
         super(message);
+        this.severity = severity;
     }
 
     /**
-     * @param exception the message that is displayed if this type of exception occurs
+     * @param exception
+     *             the message that is displayed if this type of exception occurs
+     * @param severity
+     *             the {@link Severity} of the error
      */
-    public AssertionError(final Exception exception)
+    public AssertionError(final Exception exception, final Severity severity)
     {
         super(exception);
+        this.severity = severity;
     }
+
+    /**
+     * @return the {@link Severity} of the error
+     */
+    public Severity getSeverity()
+    {
+        return this.severity;
+    }
+
+    private final Severity severity;
 }

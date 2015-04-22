@@ -139,12 +139,11 @@ public class SubsystemVerificationPane extends VBox
 
             for(final VerificationIssue issue : issues)
             {
-                final Text severity    = getSeverityText   (issue.getRequirement().severity());
-                final Text requirement = getRequirementText(issue.getRequirement());
-                final Text reason      = getReasonText     (issue.getReason());
-
-                textBox.getChildren().addAll(severity, requirement, reason);
+                textBox.getChildren().addAll(getSeverityText   (issue.getSeverity()),
+                                             getRequirementText(issue.getRequirement()),
+                                             getReasonText     (issue.getReason()));
             }
+
             this.gridPane.add(getSeverityLevel(issues), 1, 0);
             this.getChildren().add(textBox);
         }
@@ -152,18 +151,18 @@ public class SubsystemVerificationPane extends VBox
         {
             //add pass
             this.gridPane.add(createIconAndText(getPassText(), "passedIcon.png", Style.lightGreen), 1, 0);
-
         }
-        this.snapshot(new SnapshotParameters(), new WritableImage(1,1));//added to refresh scroll pane
+
+        this.snapshot(new SnapshotParameters(), new WritableImage(1,1)); // Added to refresh scroll pane
 
     }
 
 
     private static Node getSeverityLevel(final Collection<VerificationIssue> issues)
     {
-        final boolean hasError = issues.stream().anyMatch(issue -> issue.getRequirement().severity().equals(Severity.Error));
+        final boolean hasError = issues.stream().anyMatch(issue -> issue.getSeverity().equals(Severity.Error));
 
-        //add correct label
+        // Add correct label
         if(hasError)
         {
             return createIconAndText(getSeverityText(Severity.Error), "errorIcon.png", Style.lightRed);
@@ -174,15 +173,16 @@ public class SubsystemVerificationPane extends VBox
 
     private static Node createIconAndText(final Text passingLevel, final String imageFileName, final Style backgroundColor)
     {
-        //set up pane
-        GridPane severityLevelPane = new GridPane();
-        final ColumnConstraints columnLeft   = new ColumnConstraints();
-        final ColumnConstraints columnCenter = new ColumnConstraints();
+        // Set up pane
+        final GridPane          severityLevelPane = new GridPane();
+        final ColumnConstraints columnLeft        = new ColumnConstraints();
+        final ColumnConstraints columnCenter      = new ColumnConstraints();
+
         severityLevelPane.setVgap(5);
         severityLevelPane.setHgap(5);
         severityLevelPane.getColumnConstraints().addAll(columnLeft,columnCenter);
 
-        ImageView errorImage = new ImageView( new Image(SubsystemVerificationPane.class.getResourceAsStream(imageFileName)));
+        final ImageView errorImage = new ImageView( new Image(SubsystemVerificationPane.class.getResourceAsStream(imageFileName)));
         errorImage.setFitHeight(20);
         errorImage.setFitWidth(20);
         severityLevelPane.add(passingLevel, 1, 0);
@@ -230,9 +230,9 @@ public class SubsystemVerificationPane extends VBox
     {
         final Text text = new Text();
 
-        text.setText(String.format(" Requirement %d: \"%s\"\n\n",
-                                    requirement.number(),
-                                    requirement.text()));
+        text.setText(String.format(" %s: \"%s\"\n\n",
+                                   requirement.reference(),
+                                   requirement.text()));
 
         text.setFont(Font.font(Style.getMainFont(), FontWeight.EXTRA_BOLD, 12));
         text.setFill(Style.white.toColor());

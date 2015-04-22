@@ -68,6 +68,7 @@ public class CoreVerifier extends Verifier
 {
     private boolean hasContentsTable;
     private boolean hasSpatialReferenceSystemTable;
+
     /**
      * Constructor
      *
@@ -110,6 +111,7 @@ public class CoreVerifier extends Verifier
 
     /**
      * Requirement 1
+     *
      * <blockquote>
      * A GeoPackage SHALL be a <a href="http://www.sqlite.org/">SQLite</a>
      * database file using <a href="http://sqlite.org/fileformat2.html">version
@@ -120,9 +122,8 @@ public class CoreVerifier extends Verifier
      * @throws IOException throws if an I/O error occurs when reading the file header
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number = 1,
-                 text = "A GeoPackage SHALL be a SQLite database file using version 3 of the SQLite file format. The first 16 bytes of a GeoPackage SHALL contain \"SQLite format 3\" in ASCII.",
-                 severity = Severity.Warning)
+    @Requirement(reference = "Requirement 1",
+                 text      = "A GeoPackage SHALL be a SQLite database file using version 3 of the SQLite file format. The first 16 bytes of a GeoPackage SHALL contain \"SQLite format 3\" in ASCII.")
     public void Requirement1() throws IOException, AssertionError
     {
         final byte[] header = "SQLite format 3\0".getBytes(StandardCharsets.US_ASCII);    // The GeoPackage spec says it's StandardCharsets.US_ASCII, but the SQLite spec (https://www.sqlite.org/fileformat.html - 1.2.1 Magic Header String) says it's UTF8, i.e, StandardCharsets.UTF_8
@@ -131,13 +132,20 @@ public class CoreVerifier extends Verifier
 
         try(FileInputStream fileInputStream = new FileInputStream(this.file))
         {
-            assertTrue("The header information of the file does not contain enough bytes to include necessary information", fileInputStream.read(data, 0, header.length) == header.length);
-            assertArrayEquals("The database file is not using a version 3 of the SQLite format.  Or does not include the SQLite version in the file header.", header, data);
+            assertTrue("The header information of the file does not contain enough bytes to include necessary information",
+                       fileInputStream.read(data, 0, header.length) == header.length,
+                       Severity.Error);
+
+            assertArrayEquals("The database file is not using a version 3 of the SQLite format.  Or does not include the SQLite version in the file header.",
+                              header,
+                              data,
+                              Severity.Warning);
         }
     }
 
     /**
      * Requirement 2
+     *
      * <blockquote>
      * A GeoPackage SHALL contain 0x47503130 ("GP10" in ASCII)
      * in the application id field of the SQLite database header
@@ -145,9 +153,8 @@ public class CoreVerifier extends Verifier
      * </blockquote>
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number = 2,
-                 text = "A GeoPackage SHALL contain 0x47503130 ('GP10' in ASCII) in the application id field of the SQLite database header to indicate a GeoPackage version 1.0 file.",
-                 severity = Severity.Warning)
+    @Requirement(reference = "Requirement 2",
+                 text      = "A GeoPackage SHALL contain 0x47503130 ('GP10' in ASCII) in the application id field of the SQLite database header to indicate a GeoPackage version 1.0 file.")
     public void Requirement2() throws AssertionError
     {
         final int  sizeOfInt = 4;
@@ -167,30 +174,32 @@ public class CoreVerifier extends Verifier
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(this.file, "r"))
         {
             randomAccessFile.seek(applicationIdByteOffset);
-            assertTrue("The file does not have enough bytes to include a header for the GeoPackage to check the valid information.",
-                       randomAccessFile.read(data, 0, sizeOfInt) == sizeOfInt);
+            assertTrue("The file does not have enough bytes to contain a GeoPackage.",
+                       randomAccessFile.read(data, 0, sizeOfInt) == sizeOfInt,
+                       Severity.Warning);
         }
         catch(final Exception ex)
         {
-            throw new AssertionError(ex);
+            throw new AssertionError(ex, Severity.Error);
         }
 
         final int applicationId = ByteBuffer.wrap(data).asIntBuffer().get();
 
         assertTrue(String.format("Bad Application ID: 0x%08x Expected: 0x%08x", applicationId, expectedAppId),
-                   applicationId == expectedAppId);
+                   applicationId == expectedAppId,
+                   Severity.Warning);
     }
 
     /**
      * Requirement 3
+     *
      * <blockquote>
      * A GeoPackage SHALL have the file extension name ".gpkg".
      * </blockquote>
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number = 3,
-                 text = "A GeoPackage SHALL have the file extension name '.gpkg'",
-                 severity = Severity.Warning)
+    @Requirement(reference = "Requirement 3",
+                 text      = "A GeoPackage SHALL have the file extension name '.gpkg'")
     public void Requirement3() throws AssertionError
     {
         final String fileName          = this.file.getName();
@@ -198,19 +207,19 @@ public class CoreVerifier extends Verifier
         final String expectedExtension = "gpkg";
 
         assertTrue(String.format("Not a GeoPackage File: %s \nExpected a file with the extension: %s", fileName, expectedExtension),
-                   extension.equals(expectedExtension));
+                   extension.equals(expectedExtension),
+                   Severity.Warning);
     }
 
     /**
-     * Requirment 4
+     * Requirement 4
+     *
      * <blockquote>
      * A GeoPackage SHALL only contain data elements, SQL constructs and GeoPackage extensions with the "gpkg" author name specified in this encoding standard.
      * </blockquote>
-     *
      */
-    @Requirement(number = 4,
-                 text = "A GeoPackage SHALL only contain data elements, SQL constructs and GeoPackage extensions with the \"gpkg\" author name specified in this encoding standard.",
-                 severity = Severity.Warning)
+    @Requirement(reference = "Requirement 4",
+                 text      = "A GeoPackage SHALL only contain data elements, SQL constructs and GeoPackage extensions with the \"gpkg\" author name specified in this encoding standard.")
     public static void Requirement4()
     {
         // This requirement is tested through other test cases.
@@ -224,15 +233,15 @@ public class CoreVerifier extends Verifier
 
     /**
      * Requirement 5
+     *
      * <blockquote>
      * The columns of tables in a GeoPackage SHALL only be declared using one of the data types specified in table <a href="http://www.geopackage.org/spec/#table_column_data_types">GeoPackage Data Types</a>.
      * </blockquote>
      * @throws SQLException throws if an SQLException occurs
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number = 5,
-                 text = "The columns of tables in a GeoPackage SHALL only be declared using one of the data types specified in table GeoPackage Data Types.",
-                 severity = Severity.Error)
+    @Requirement(reference = "Requirement 5",
+                 text      = "The columns of tables in a GeoPackage SHALL only be declared using one of the data types specified in table GeoPackage Data Types.")
     public void Requirement5() throws SQLException, AssertionError
     {
         if(this.hasContentsTable)
@@ -257,7 +266,11 @@ public class CoreVerifier extends Verifier
                                 final String dataType = pragmaTableinfo.getString("type");
                                 final boolean correctDataType = Verifier.checkDataType(dataType);
 
-                                assertTrue(String.format("Incorrect data type encountered: %s  From table: %s",dataType, table_name), correctDataType);
+                                assertTrue(String.format("Incorrect data type encountered: %s  From table: %s",
+                                                         dataType,
+                                                         table_name),
+                                           correctDataType,
+                                           Severity.Error);
                             }
                         }
                     }
@@ -268,6 +281,7 @@ public class CoreVerifier extends Verifier
 
     /**
      * Requirement 6
+     *
      * <blockquote>
      * The SQLite PRAGMA integrity_check SQL command SHALL return "ok" for a GeoPackage file.
      * </blockquote>
@@ -275,9 +289,8 @@ public class CoreVerifier extends Verifier
      * @throws SQLException throws if SQLException occurs
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number = 6,
-                 text = "The SQLite PRAGMA integrity_check SQL command SHALL return \"ok\" for a GeoPackage file.",
-                 severity = Severity.Error)
+    @Requirement(reference = "Requirement 6",
+                 text      = "The SQLite PRAGMA integrity_check SQL command SHALL return \"ok\" for a GeoPackage file.")
     public void Requirement6() throws SQLException, AssertionError
     {
         final String query = "PRAGMA integrity_check;";
@@ -287,21 +300,23 @@ public class CoreVerifier extends Verifier
         {
             integrityCheck.next();
             final String integrity_check = integrityCheck.getString("integrity_check");
-            assertTrue("PRAGMA integrity_check failed.", integrity_check.equals("ok"));
+            assertTrue("PRAGMA integrity_check failed.",
+                       integrity_check.toLowerCase().equals("ok"),
+                       Severity.Error);
         }
     }
 
     /**
      * Requirement 7
+     *
      * <blockquote>
      * The SQLite PRAGMA foreign_key_check SQL with no parameter value SHALL return an empty result set indicating no invalid foreign key values for a GeoPackage file.
      * </blockquote>
      * @throws SQLException throws if SQLException occurs
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number = 7,
-                 text = "The SQLite PRAGMA foreign_key_check SQL with no parameter value SHALL return an empty result set indicating no invalid foreign key values for a GeoPackage file.",
-                 severity = Severity.Error)
+    @Requirement(reference = "Requirement 7",
+                 text      = "The SQLite PRAGMA foreign_key_check SQL with no parameter value SHALL return an empty result set indicating no invalid foreign key values for a GeoPackage file.")
     public void Requirement7() throws SQLException, AssertionError
     {
         final String query = "PRAGMA foreign_key_check;";
@@ -310,36 +325,40 @@ public class CoreVerifier extends Verifier
             ResultSet foreignCheck = stmt.executeQuery(query);)
         {
             final boolean badfk = foreignCheck.next();
-            assertTrue("PRAGMA foreign_key_check failed.", badfk != true);
+            assertTrue("PRAGMA foreign_key_check failed.",
+                       badfk != true,
+                       Severity.Error);
         }
     }
 
     /**
      * Requirement 8
+     *
      * <blockquote>
      * A GeoPackage SQLite Configuration SHALL provide SQL access to GeoPackage contents via software APIs.
      * </blockquote>
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number = 8,
-                 text = " A GeoPackage SQLite Configuration SHALL provide SQL access to GeoPackage contents via software APIs.",
-                 severity = Severity.Error)
+    @Requirement(reference = "Requirement 8",
+                 text      = " A GeoPackage SQLite Configuration SHALL provide SQL access to GeoPackage contents via software APIs.")
     public void Requirement8() throws AssertionError
     {
         final String query = "SELECT * FROM sqlite_master;";
-        try(Statement stmt   = this.getSqliteConnection().createStatement();
-            ResultSet result = stmt.executeQuery(query))
+        try(final Statement stmt   = this.getSqliteConnection().createStatement();
+            final ResultSet result = stmt.executeQuery(query))
         {
-            assertTrue(true);  // If the statement can execute it has implemented the SQLite SQL API interface
+            // If the statement can execute it has implemented the SQLite SQL API interface
         }
         catch(final SQLException e)
         {
-            fail("GeoPackage needs to provide the SQLite SQL API interface.");
+            fail("GeoPackage needs to provide the SQLite SQL API interface.",
+                 Severity.Error);
         }
     }
 
     /**
      * Requirement 9
+     *
      * <blockquote>
      * Every GeoPackage SQLite Configuration SHALL have the SQLite library compile and
      * run time options specified in table <a href="http://www.geopackage.org/spec/#every_gpkg_sqlite_config_table">
@@ -348,9 +367,8 @@ public class CoreVerifier extends Verifier
      * @throws SQLException throws if SQLException occurs
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number = 9,
-                 text = "Every GeoPackage SQLite Configuration SHALL have the SQLite library compile and run time options specified in table http://www.geopackage.org/spec/#every_gpkg_sqlite_config_table.",
-                 severity = Severity.Warning)
+    @Requirement(reference = "Requirement 9",
+                 text      = "Every GeoPackage SQLite Configuration SHALL have the SQLite library compile and run time options specified in table http://www.geopackage.org/spec/#every_gpkg_sqlite_config_table.")
     public void Requirement9() throws SQLException, AssertionError
     {
         final String query2 = "SELECT sqlite_compileoption_used('SQLITE_OMIT_*')";
@@ -358,13 +376,17 @@ public class CoreVerifier extends Verifier
         try(Statement stmt     = this.getSqliteConnection().createStatement();
             ResultSet omitUsed = stmt.executeQuery(query2);)
         {
-            assertTrue("For a GeoPackage you are not allowed to use any omit options during compile time."
-                    + "  Please remove any SQLITE_OMIT options used.", 1 != omitUsed.getInt("sqlite_compileoption_used('SQLITE_OMIT_*')"));
+            final int result = omitUsed.getInt("sqlite_compileoption_used('SQLITE_OMIT_*')");
+
+            assertTrue("SQLite library compilations shall not include any OMIT options.",
+                       result != 1,
+                       Severity.Warning);
         }
     }
 
     /**
      * Requirement 10
+     *
      * <blockquote>
      * A GeoPackage SHALL include a <code>gpkg_spatial_ref_sys</code> table per clause 1.1.2.1.1
      * <a href="http://www.geopackage.org/spec/#spatial_ref_sys_data_table_definition">Table Definition</a>,
@@ -374,9 +396,8 @@ public class CoreVerifier extends Verifier
      * @throws SQLException throws if SQLException occurs
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number = 10,
-                 text = "A GeoPackage SHALL include a gpkg_spatial_ref_sys table per clause 1.1.2.1.1 Table Definition, Table Spatial Ref Sys Table Definition and Table gpkg_spatial_ref_sys Table Definition SQL.",
-                 severity = Severity.Error)
+    @Requirement(reference = "Requirement 10",
+                 text      = "A GeoPackage SHALL include a gpkg_spatial_ref_sys table per clause 1.1.2.1.1 Table Definition, Table Spatial Ref Sys Table Definition and Table gpkg_spatial_ref_sys Table Definition SQL.")
     public void Requirement10() throws AssertionError, SQLException
     {
         if(this.hasSpatialReferenceSystemTable)
@@ -385,72 +406,88 @@ public class CoreVerifier extends Verifier
         }
         else
         {
-            throw new AssertionError(String.format("The GeoPackage does not contain a %s table."
-                                       + "  This is a required table for all GeoPackages.", GeoPackageCore.SpatialRefSysTableName));
+            throw new AssertionError(String.format("The GeoPackage does not contain a %s table. This is a required table for all GeoPackages.",
+                                                   GeoPackageCore.SpatialRefSysTableName),
+                                     Severity.Error);
         }
     }
 
     /**
      * Requirement 11
+     *
      * <blockquote>The <code>gpkg_spatial_ref_sys</code> table in a GeoPackage SHALL contain a record for
      * organization <a href="http://www.epsg.org/Geodetic.html">EPSG</a> or epsg</a>
      * and <code>organization_coordsys_id</code>
-     * <a href="http://www.epsg-registry.org/report.htm?type=selection&amp;entity=urn:ogc:def:crs:EPSG::4326&amp;reportDetail=long&amp;title=WGS%2084&amp;style=urn:uuid:report-style:default-with-code&amp;style_name=OGP%20Default%20With%20Code">4326</a>
-     * </a><a href="#14"></a> for <a href="http://www.google.com/search?as_q=WGS-84">WGS-84</a> <a href="#15"></a>, a record with an <code>srs_id</code> of -1, an organization of "NONE", an <code>organization_coordsys_id</code>
-     * of -1, and definition "undefined" for undefined Cartesian coordinate reference systems, and a record with an <code>srs_id</code> of 0, an organization of "NONE", an <code>organization_coordsys_id</code> of 0,
-     * and definition "undefined" for undefined geographic coordinate reference systems.
+     * <a
+     * href="http://www.epsg-registry.org/report.htm?type=selection&amp;entity=urn:ogc:def:crs:EPSG::4326&amp;reportDetail=long&amp;title=WGS%2084&amp;style=urn:uuid:report-style:default-with-code&amp;style_name=OGP%20Default%20With%20Code"
+     * >4326</a> for <a href="http://www.google.com/search?as_q=WGS-84">WGS-84
+     * </a>, a record with an <code>srs_id</code> of -1, an organization of
+     * "NONE", an <code>organization_coordsys_id</code> of -1, and definition
+     * "undefined" for undefined Cartesian coordinate reference systems, and a
+     * record with an <code>srs_id</code> of 0, an organization of "NONE", an
+     * <code>organization_coordsys_id</code> of 0, and definition "undefined"
+     * for undefined geographic coordinate reference systems.
      * </blockquote>
      * @throws SQLException throws if SQLException occurs
-     * @throws AssertionError throws if it fails to meet the specified requirement;
+     * @throws AssertionError throws if it fails to meet the specified requirement
      */
-    @Requirement(number = 11,
-                 text = "The gpkg_spatial_ref_sys table in a GeoPackage SHALL contain a record for organization EPSG or epsg" +
-                        " and organization_coordsys_id 4326 for WGS-84, a record with an srs_id of -1, an organization of \"NONE\", " +
-                        "an organization_coordsys_id of -1, and definition \"undefined\" for undefined Cartesian coordinate reference systems, " +
-                        "and a record with an srs_id of 0, an organization of \"NONE\", an organization_coordsys_id of 0, and definition \"undefined\" " +
-                        "for undefined geographic coordinate reference systems. ",
-                 severity = Severity.Warning)
+    @Requirement(reference = "Requirement 11",
+                 text      = "The gpkg_spatial_ref_sys table in a GeoPackage SHALL contain a record for organization EPSG or epsg " +
+                             "and organization_coordsys_id 4326 for WGS-84, a record with an srs_id of -1, an organization of \"NONE\", " +
+                             "an organization_coordsys_id of -1, and definition \"undefined\" for undefined Cartesian coordinate reference systems, " +
+                             "and a record with an srs_id of 0, an organization of \"NONE\", an organization_coordsys_id of 0, and definition \"undefined\" " +
+                             "for undefined geographic coordinate reference systems.")
     public void Requirement11() throws SQLException, AssertionError
     {
         if(this.hasSpatialReferenceSystemTable)
         {
-            final String wgs1984Sql = String.format("SELECT srs_id FROM %s WHERE organization_coordsys_id =  4326 AND (organization = 'EPSG' OR organization = 'epsg');", GeoPackageCore.SpatialRefSysTableName);
+            final String wgs1984Sql = String.format("SELECT srs_id FROM %s WHERE organization_coordsys_id = 4326 AND (organization = 'EPSG' OR organization = 'epsg');",    // TODO figure out case insensitive comparison
+                                                    GeoPackageCore.SpatialRefSysTableName);
 
-            try(Statement stmt3            = this.getSqliteConnection().createStatement();
-                ResultSet srsdefaultvalue3 = stmt3.executeQuery(wgs1984Sql))
+            try(Statement statement       = this.getSqliteConnection().createStatement();
+                ResultSet srsDefaultValue = statement.executeQuery(wgs1984Sql))
             {
-                assertTrue(String.format("The %s table shall contain a record for organization \"EPSG\" or \"epsg\" and organization_coordsys_id 4326 for WGS-84", GeoPackageCore.SpatialRefSysTableName), srsdefaultvalue3.next());
+                assertTrue(String.format("The %s table shall contain a record for organization \"EPSG\" or \"epsg\" and organization_coordsys_id 4326 for WGS-84",
+                                         GeoPackageCore.SpatialRefSysTableName),
+                           srsDefaultValue.next(),
+                           Severity.Warning);
             }
 
             final String undefinedCartesianSql = String.format("SELECT srs_id FROM %s WHERE srs_id = -1 AND organization = 'NONE' AND organization_coordsys_id = -1 AND definition = 'undefined';", GeoPackageCore.SpatialRefSysTableName);
 
-            try(Statement stmt             = this.getSqliteConnection().createStatement();
-                ResultSet srsdefaultvalues = stmt.executeQuery(undefinedCartesianSql))
+            try(Statement statement       = this.getSqliteConnection().createStatement();
+                ResultSet srsDefaultValue = statement.executeQuery(undefinedCartesianSql))
             {
-                assertTrue(String.format("The %s table shall contain a record with an srs_id of -1, an organization of \"NONE\", an organization_coordsys_id of -1, and definition \"undefined\" for undefined Cartesian coordinate reference systems", GeoPackageCore.SpatialRefSysTableName), srsdefaultvalues.next());
+                assertTrue(String.format("The %s table shall contain a record with an srs_id of -1, an organization of \"NONE\", an organization_coordsys_id of -1, and definition \"undefined\" for undefined Cartesian coordinate reference systems",
+                                         GeoPackageCore.SpatialRefSysTableName),
+                           srsDefaultValue.next(),
+                           Severity.Warning);
             }
 
             final String undefinedGeographicSql = String.format("SELECT srs_id FROM %s WHERE srs_id = 0 AND organization = 'NONE' AND organization_coordsys_id =  0 AND definition = 'undefined';", GeoPackageCore.SpatialRefSysTableName);
 
-            try(Statement stmt2            = this.getSqliteConnection().createStatement();
-                ResultSet srsdefaultvalue2 = stmt2.executeQuery(undefinedGeographicSql))
+            try(Statement statement       = this.getSqliteConnection().createStatement();
+                ResultSet srsDefaultValue = statement.executeQuery(undefinedGeographicSql))
             {
-                assertTrue(String.format("The %s table shall contain a record with an srs_id of 0, an organization of \"NONE\", an organization_coordsys_id of 0, and definition \"undefined\" for undefined geographic coordinate reference systems.", GeoPackageCore.SpatialRefSysTableName), srsdefaultvalue2.next());
+                assertTrue(String.format("The %s table shall contain a record with an srs_id of 0, an organization of \"NONE\", an organization_coordsys_id of 0, and definition \"undefined\" for undefined geographic coordinate reference systems.",
+                                         GeoPackageCore.SpatialRefSysTableName),
+                                         srsDefaultValue.next(),
+                           Severity.Warning);
             }
         }
     }
 
     /**
      * Requirement 12
+     *
      * <blockquote>
      * The <code>gpkg_spatial_ref_sys</code> table in a GeoPackage SHALL contain records to define all spatial reference systems used by features and tiles in a GeoPackage.
      * </blockquote>
      * @throws SQLException throws if SQLException occurs
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number = 12,
-                 text = "The gpkg_spatial_ref_sys table in a GeoPackage SHALL contain records to define all spatial reference systems used by features and tiles in a GeoPackage.",
-                 severity = Severity.Error)
+    @Requirement(reference = "Requirement 12",
+                 text      = "The gpkg_spatial_ref_sys table in a GeoPackage SHALL contain records to define all spatial reference systems used by features and tiles in a GeoPackage.")
     public void Requirement12() throws SQLException, AssertionError
     {
         if(this.hasContentsTable && this.hasSpatialReferenceSystemTable)
@@ -466,35 +503,37 @@ public class CoreVerifier extends Verifier
                                                GeoPackageCore.SpatialRefSysTableName);
 
 
-            try(Statement stmt       = this.getSqliteConnection().createStatement();
-                ResultSet srsdefined = stmt.executeQuery(query))
+            try(final Statement stmt       = this.getSqliteConnection().createStatement();
+                final ResultSet srsdefined = stmt.executeQuery(query))
             {
-
-                    List<String> invalidTables = ResultSetStream.getStream(srsdefined)
-                                                                .map(result-> { try
-                                                                                {
-                                                                                      return result.getString("srsContents");
-                                                                                }
-                                                                                catch(SQLException ex)
-                                                                                {
-                                                                                      return null;
-                                                                                }
-                                                                               })
-                                                                .filter(Objects::nonNull)
-                                                                .collect(Collectors.toList());
+                final List<String> invalidTables = ResultSetStream.getStream(srsdefined)
+                                                                  .map(result-> { try
+                                                                                  {
+                                                                                        return result.getString("srsContents");
+                                                                                  }
+                                                                                  catch(final SQLException ex)
+                                                                                  {
+                                                                                        return null;
+                                                                                  }
+                                                                                 })
+                                                                  .filter(Objects::nonNull)
+                                                                  .collect(Collectors.toList());
 
                     assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined. The following srs_id(s) are not in the %s: \n%s",
                                              GeoPackageCore.SpatialRefSysTableName,
                                              invalidTables.stream()
                                                           .map(table-> String.format("%s srs_id: %s",GeoPackageCore.ContentsTableName, table))
                                                           .collect(Collectors.joining("\n"))),
-                               invalidTables.isEmpty());
+                               invalidTables.isEmpty(),
+                               Severity.Error);
+
             }
         }
     }
 
     /**
      * Requirement 13
+     *
      * <blockquote>
      * A GeoPackage file SHALL include a <code>gpkg_contents</code> table per table
      *  <a href="http://www.geopackage.org/spec/#gpkg_contents_cols">Contents Table or View Definition</a>
@@ -503,9 +542,8 @@ public class CoreVerifier extends Verifier
      * @throws SQLException throws if SQLException occurs
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number   = 13,
-                 text     = "A GeoPackage file SHALL include a gpkg_contents table per table Contents Table or View Definition and gpkg_contents Table Definition SQL.",
-                 severity = Severity.Error)
+    @Requirement(reference = "Requirement 13",
+                 text      = "A GeoPackage file SHALL include a gpkg_contents table per table Contents Table or View Definition and gpkg_contents Table Definition SQL.")
     public void Requirement13() throws SQLException, AssertionError
     {
         if(this.hasContentsTable)
@@ -514,14 +552,15 @@ public class CoreVerifier extends Verifier
         }
         else
         {
-            throw new AssertionError(String.format("The GeoPackage does not contain a %s table.  "
-                                                    + "This is a required table for all GeoPackages.",
-                                                   GeoPackageCore.ContentsTableName));
+            throw new AssertionError(String.format("The GeoPackage does not contain a %s table. This is a required table for all GeoPackages.",
+                                                   GeoPackageCore.ContentsTableName),
+                                     Severity.Error);
         }
     }
 
     /**
      * Requirement 14
+     *
      * <blockquote>
      * The <code>table_name</code> column value in a <code>gpkg_contents</code> table row SHALL contain the name of a SQLite table or view.
      * </blockquote>
@@ -529,9 +568,8 @@ public class CoreVerifier extends Verifier
      * @throws SQLException throws if an SQLException occurs;
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number = 14,
-                 text = "The table_name column value in a gpkg_contents table row SHALL contain the name of a SQLite table or view.",
-                 severity = Severity.Warning)
+    @Requirement(reference = "Requirement 14",
+                 text      = "The table_name column value in a gpkg_contents table row SHALL contain the name of a SQLite table or view.")
     public void Requirement14() throws SQLException, AssertionError
     {
         if(this.hasContentsTable)
@@ -544,49 +582,52 @@ public class CoreVerifier extends Verifier
                                                                                 "WHERE  tbl_name = gc_table);",
                                                GeoPackageCore.ContentsTableName);
 
-            try(Statement stmt        = this.getSqliteConnection().createStatement();
-                ResultSet gctablename = stmt.executeQuery(query);)
+            try(final Statement stmt        = this.getSqliteConnection().createStatement();
+                final ResultSet gctablename = stmt.executeQuery(query);)
             {
                 // check runtime options (foreign keys)
-                List<String> invalidContentsTableNames = ResultSetStream.getStream(gctablename)
-                                                                        .map(result->{ try
-                                                                                       {
-                                                                                            return result.getString("gc_table");
-                                                                                       }
-                                                                                       catch(SQLException ex)
-                                                                                       {
-                                                                                           return null;
-                                                                                       }
-                                                                                     })
-                                                                        .filter(Objects::nonNull)
-                                                                        .collect(Collectors.toList());
+                final List<String> invalidContentsTableNames = ResultSetStream.getStream(gctablename)
+                                                                              .map(result -> { try
+                                                                                               {
+                                                                                                    return result.getString("gc_table");
+                                                                                               }
+                                                                                               catch(final SQLException ex)
+                                                                                               {
+                                                                                                   return null;
+                                                                                               }
+                                                                                             })
+                                                                              .filter(Objects::nonNull)
+                                                                              .collect(Collectors.toList());
 
-                    assertTrue(String.format("The following table_name(s) in %s are invalid: \n%s.",
-                                             GeoPackageCore.ContentsTableName,
-                                             invalidContentsTableNames.stream()
-                                                                      .map(table_name->String.format("\t%s",table_name))
-                                                                      .collect(Collectors.joining("\n"))),
-                               invalidContentsTableNames.isEmpty());
+                assertTrue(String.format("The following table_name(s) in %s are invalid: \n%s.",
+                                         GeoPackageCore.ContentsTableName,
+                                         invalidContentsTableNames.stream()
+                                                                  .map(table_name->String.format("\t%s",table_name))
+                                                                  .collect(Collectors.joining("\n"))),
+                           invalidContentsTableNames.isEmpty(),
+                           Severity.Warning);
             }
         }
     }
 
     /**
      * Requirement 15
+     *
      * <blockquote>
-     * Values of the <code>gpkg_contents</code> table <code>last_change</code> column SHALL be in
-     * <a href="http://www.iso.org/iso/catalogue_detail?csnumber=40874">ISO 8601 </a></a>
-     * format containing a complete date plus UTC hours, minutes, seconds and a decimal fraction of a second,
-     * with a 'Z' ('zulu') suffix indicating UTC.
+     * Values of the <code>gpkg_contents</code> table <code>last_change</code>
+     * column SHALL be in <a
+     * href="http://www.iso.org/iso/catalogue_detail?csnumber=40874">ISO 8601
+     * </a> format containing a complete date plus UTC hours, minutes, seconds
+     * and a decimal fraction of a second, with a 'Z' ('zulu') suffix
+     * indicating UTC.
      * </blockquote>
      * @throws SQLException throws if an SQLException occurs;
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number   = 15,
-                 text     = "Values of the gpkg_contents table last_change column SHALL be in ISO 8601 "
+    @Requirement(reference = "Requirement 15",
+                 text      = "Values of the gpkg_contents table last_change column SHALL be in ISO 8601 "
                              + "format containing a complete date plus UTC hours, minutes, seconds and a "
-                             + "decimal fraction of a second, with a 'Z' ('zulu') suffix indicating UTC.",
-                 severity = Severity.Warning)
+                             + "decimal fraction of a second, with a 'Z' ('zulu') suffix indicating UTC.")
     public void Requirement15() throws SQLException, AssertionError
     {
         if(this.hasContentsTable)
@@ -618,7 +659,10 @@ public class CoreVerifier extends Verifier
                         }
                         catch(final ParseException e)
                         {
-                            fail(String.format("A field in the last_change column in %s table was not in the correct format. %s", GeoPackageCore.ContentsTableName, ex.getMessage()));
+                            fail(String.format("A field in the last_change column in %s table was not in the correct format. %s",
+                                               GeoPackageCore.ContentsTableName,
+                                               ex.getMessage()),
+                                 Severity.Warning);
                         }
                     }
                 }
@@ -628,27 +672,33 @@ public class CoreVerifier extends Verifier
 
     /**
      * Requirement 16
+     *
      * <blockquote>
-     * Values of the <code>gpkg_contents</code> table <code>srs_id</code> column SHALL reference values in the <code>gpkg_spatial_ref_sys</code> table <code>srs_id</code> column.
+     * Values of the <code>gpkg_contents</code> table <code>srs_id</code>
+     * column SHALL reference values in the <code>gpkg_spatial_ref_sys</code>
+     * table <code>srs_id</code> column.
      * </blockquote>
      *
      * @throws SQLException throws if an SQLException occurs;
      * @throws AssertionError throws if it fails to meet the specified requirement;
      */
-    @Requirement(number = 16,
-                 text = "Values of the gpkg_contents table srs_id column SHALL reference values in the gpkg_spatial_ref_sys table srs_id column.",
-                 severity = Severity.Error)
+    @Requirement(reference = "Requirement 16",
+                 text      = "Values of the gpkg_contents table srs_id column SHALL reference values in the gpkg_spatial_ref_sys table srs_id column.")
     public void Requirement16() throws SQLException, AssertionError
     {
         if(this.hasContentsTable)
         {
-            final String query = String.format("PRAGMA foreign_key_check('%s');", GeoPackageCore.ContentsTableName);
+            final String query = String.format("PRAGMA foreign_key_check('%s');",
+                                               GeoPackageCore.ContentsTableName);
 
-            try(Statement stmt       = this.getSqliteConnection().createStatement();
-                ResultSet foreignKey = stmt.executeQuery(query);)
+            try(Statement statement  = this.getSqliteConnection().createStatement();
+                ResultSet foreignKey = statement.executeQuery(query);)
             {
                 // check runtime options (foreign keys)
-                assertTrue(String.format("There are violations on the foreign keys in the table %s", GeoPackageCore.ContentsTableName), !foreignKey.next());
+                assertTrue(String.format("There are violations on the foreign keys in the table %s",
+                                         GeoPackageCore.ContentsTableName),
+                           !foreignKey.next(),
+                           Severity.Error);
             }
         }
     }
