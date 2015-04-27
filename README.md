@@ -11,6 +11,9 @@ A Java-based application for converting geospatial images into tiles, packaging 
 ## Release 2.0 Progress
 [See current status towards Release 2.0 here.](https://github.com/GitHubRGI/swagd/milestones/Release%202.0)
 
+## Release 1.1 fixes tiling directly to a GeoPackage
+* [See notes for Release 1.0 here.](https://github.com/GitHubRGI/swagd/releases/tag/v1.1)
+
 ## Release 1.0 Complete!
 * [See notes for Release 1.0 here.](https://github.com/GitHubRGI/swagd/releases/tag/v1.0)
 * Windows executable download link will be available soon.
