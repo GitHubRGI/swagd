@@ -123,11 +123,10 @@ public class GeoPackageExtensions
      * @return Returns an instance of {@link Extension} that represents an entry
      *         in the GeoPackage extensions table
      * @throws SQLException
-     *             throws if the methods
-     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
-     *             or
-     *             {@link SelectBuilder#SelectBuilder(Connection, String, Collection, Collection)}
-     *             throws or other various SQLExceptions occur
+     *             throws if the methods {@link DatabaseUtility#
+     *             tableOrViewExists(Connection, String)} or {@link
+     *             SelectBuilder#SelectBuilder(Connection, String, Collection,
+     *             Collection)} throws or other various SQLExceptions occur
      */
     public Extension getExtension(final String tableName, final String columnName, final String extensionName) throws SQLException
     {
@@ -168,11 +167,11 @@ public class GeoPackageExtensions
      * extension objects
      *
      * @return Returns a collection of {@link Extension} objects that represent
-     *         all of the entries in the GeoPackage extensions table
+     *             all of the entries in the GeoPackage extensions table
      * @throws SQLException
-     *             throws if the method
-     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
-     *             throws or other various SQLExceptions occur
+     *             throws if the method {@link DatabaseUtility
+     *             #tableOrViewExists(Connection, String)} throws or other
+     *             various SQLExceptions occur
      */
     public Collection<Extension> getExtensions() throws SQLException
     {
