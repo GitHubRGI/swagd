@@ -34,13 +34,21 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 
 import utility.DatabaseUtility;
 import utility.SelectBuilder;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
+import com.rgi.geopackage.extensions.implementation.ImplementsExtension;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
@@ -348,12 +356,17 @@ public class GeoPackageExtensions
      *             An object that uniquely identifies an extension
      * @return a handle to an {@link ExtensionImplementation}
      */
-    public <T extends ExtensionImplementation> T getExtensionImplementation(final Extension extension)
+    public <T extends ExtensionImplementation> T getExtensionImplementation(final Extension extension, final Class<T> type)
     {
         if(extension == null)
         {
             throw new IllegalArgumentException("Extension may not be null");
         }
+
+        final Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forJavaClassPath())
+                                                                            .setScanners(new SubTypesScanner(),
+                                                                                         new TypeAnnotationsScanner().filterResultsBy(name -> name.equals(ImplementsExtension.class.getName()))));
+        final Set<Class<? extends T>> foo = (new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forJavaClassPath()))).getSubTypesOf(type);
 
 
 

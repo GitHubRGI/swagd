@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
+import com.rgi.geopackage.extensions.Extension;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.VerificationLevel;
 
@@ -22,7 +23,16 @@ public class Main
 
         try(final GeoPackage gpkg = new GeoPackage(file, VerificationLevel.None, OpenMode.Create))
         {
+            Extension extension = gpkg.extensions().getExtension(null, null, "rgi_network");
 
+            if(extension == null)
+            {
+                extension = GeoPackageNetworkExtension.enableExtension(gpkg.extensions());
+            }
+
+            final GeoPackageNetworkExtension foo = gpkg.extensions().getExtensionImplementation(extension, GeoPackageNetworkExtension.class);
+
+            final int a = 2;
         }
         catch(ClassNotFoundException | SQLException | ConformanceException | IOException ex)
         {

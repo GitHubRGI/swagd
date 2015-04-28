@@ -23,6 +23,11 @@
 
 package com.rgi.geopackage.extensions.network;
 
+import java.sql.SQLException;
+
+import com.rgi.geopackage.extensions.Extension;
+import com.rgi.geopackage.extensions.GeoPackageExtensions;
+import com.rgi.geopackage.extensions.Scope;
 import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
 import com.rgi.geopackage.extensions.implementation.ImplementsExtension;
 
@@ -35,6 +40,21 @@ import com.rgi.geopackage.extensions.implementation.ImplementsExtension;
 @ImplementsExtension(name = "rgi_network")
 public class GeoPackageNetworkExtension implements ExtensionImplementation
 {
+    public static Extension enableExtension(final GeoPackageExtensions geoPackageExtensions) throws SQLException
+    {
+        if(geoPackageExtensions == null)
+        {
+            throw new IllegalArgumentException("GeoPackage extension handle may not be null");
+        }
+
+        return geoPackageExtensions.addExtension(null,
+                                                 null,
+                                                 GeoPackageNetworkExtension.ExtensionName,
+                                                 "foo",
+                                                 Scope.ReadWrite);
+    }
+
+    public static final String ExtensionName = "rgi_network";
 //    public Coordinate<Double> closestPoint(final Coordinate<Double> coordinate)
 //    {
 //
