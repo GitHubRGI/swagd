@@ -111,7 +111,7 @@ public class DatabaseUtility
     }
 
     /**
-   * @param connection
+     * @param connection
      *            the connection to the database
      * @param names
      *            the names of the tables
@@ -198,6 +198,22 @@ public class DatabaseUtility
             statement.execute(String.format("PRAGMA foreign_keys = %d;",
                                             (state ? 1 : 0)));
         }
+    }
+    
+    /**
+     * @param connection
+     * 			  connection to the database
+     * @throws SQLException
+     * 		  	  throws if various SQLExceptions occur
+     */
+    public static void setPragmaJournalModeMemory(final Connection connection) throws SQLException
+    {
+    	DatabaseUtility.verify(connection);
+    	
+    	try(Statement statement = connection.createStatement())
+    	{
+    		statement.execute(String.format("PRAGMA journal_mode = MEMORY;"));
+    	}
     }
 
     /**
