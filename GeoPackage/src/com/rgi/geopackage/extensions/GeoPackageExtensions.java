@@ -40,6 +40,7 @@ import utility.DatabaseUtility;
 import utility.SelectBuilder;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
@@ -49,6 +50,12 @@ import com.rgi.geopackage.verification.VerificationLevel;
  */
 public class GeoPackageExtensions
 {
+    /**
+     * The String name "gpkg_extensions" of the database Extensions table
+     * containing the extensions of the GeoPackage (http://www.geopackage.org/spec/#_extensions)
+     */
+    public final static String ExtensionsTableName = "gpkg_extensions";
+
     /**
      * Constructor
      *
@@ -333,6 +340,26 @@ public class GeoPackageExtensions
                              scope.toString());
     }
 
+    /**
+     * Gets a handle to an {@link ExtensionImplementation} which exposes
+     * extension specific functionality
+     *
+     * @param extension
+     *             An object that uniquely identifies an extension
+     * @return a handle to an {@link ExtensionImplementation}
+     */
+    public <T extends ExtensionImplementation> T getExtensionImplementation(final Extension extension)
+    {
+        if(extension == null)
+        {
+            throw new IllegalArgumentException("Extension may not be null");
+        }
+
+
+
+        return null;
+    }
+
     @SuppressWarnings("static-method")
     protected String getExtensionsTableCreationSql()
     {
@@ -370,10 +397,4 @@ public class GeoPackageExtensions
     }
 
     private final Connection databaseConnection;
-
-    /**
-     * The String name "gpkg_extensions" of the database Extensions table
-     * containing the extensions of the GeoPackage (http://www.geopackage.org/spec/#_extensions)
-     */
-    public final static String ExtensionsTableName = "gpkg_extensions";
 }
