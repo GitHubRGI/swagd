@@ -3,6 +3,12 @@ package com.rgi.geopackage.extensions.network;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Set;
+
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
@@ -14,6 +20,14 @@ public class Main
 {
     public static void main(final String[] args)
     {
+                final Set<String> poo = (new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forJavaClassPath())
+                                                                           .setScanners(new SubTypesScanner(false)))).getAllTypes();
+
+
+        poo.stream()
+           .sorted()
+           .forEach(tipe -> System.out.println(tipe));
+
         final File file = new File("test.gpkg");
 
         if(file.exists())

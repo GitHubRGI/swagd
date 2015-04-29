@@ -34,7 +34,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.reflections.Reflections;
@@ -364,10 +363,16 @@ public class GeoPackageExtensions
         }
 
         final Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forJavaClassPath())
-                                                                            .setScanners(new SubTypesScanner(),
-                                                                                         new TypeAnnotationsScanner().filterResultsBy(name -> name.equals(ImplementsExtension.class.getName()))));
-        final Set<Class<? extends T>> foo = (new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forJavaClassPath()))).getSubTypesOf(type);
+                                                                                  .setScanners(new SubTypesScanner(),
+                                                                                               new TypeAnnotationsScanner().filterResultsBy(name -> name.equals(ImplementsExtension.class.getName()))));
 
+//        final Set<String> foo = (new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forJavaClassPath())
+//                                                                           .setScanners(new SubTypesScanner(false)))).getAllTypes();
+//
+//
+//        foo.stream()
+//           .sorted()
+//           .forEach(tipe -> System.out.println(tipe));
 
 
         return null;

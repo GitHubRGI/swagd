@@ -3,4 +3,13 @@
   <groupId>com.rgi.NetworkExtension</groupId>
   <artifactId>NetworkExtension</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  
+  <dependencies>
+    <dependency>
+        <groupId>org.reflections</groupId>
+        <artifactId>reflections</artifactId>
+        <version>0.9.9</version>
+    </dependency>
+  </dependencies>
+  
 </project>
