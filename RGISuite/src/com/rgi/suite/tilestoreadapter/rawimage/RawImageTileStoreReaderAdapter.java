@@ -39,9 +39,9 @@ import utility.GdalUtility;
 import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.g2t.RawImageTileReader;
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 
 /**

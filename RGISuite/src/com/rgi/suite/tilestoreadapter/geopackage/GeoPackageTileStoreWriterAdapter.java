@@ -40,16 +40,15 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-import store.GeoPackageWriter;
-
 import com.rgi.common.Range;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
-import com.rgi.common.tile.store.TileHandle;
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
-import com.rgi.common.tile.store.TileStoreWriter;
 import com.rgi.common.util.FileUtility;
+import com.rgi.store.tiles.TileHandle;
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
+import com.rgi.store.tiles.TileStoreWriter;
+import com.rgi.store.tiles.geopackage.GeoPackageWriter;
 import com.rgi.suite.Settings;
 import com.rgi.suite.tilestoreadapter.ImageFormatTileStoreAdapter;
 import com.rgi.suite.tilestoreadapter.TileStoreWriterAdapter;
