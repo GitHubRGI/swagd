@@ -34,16 +34,13 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.rgi.android.common.util.jdbc.ResultSetStream;
 
 /**
  * @author Luke Lambert
@@ -77,42 +74,45 @@ public class Verifier
      */
     public Collection<VerificationIssue> getVerificationIssues()
     {
-        return this.getRequirements()
-                   .map(requirementTestMethod -> { try
-                                                   {
-                                                       requirementTestMethod.invoke(this);
-                                                       return null;
-                                                   }
-                                                   catch(final InvocationTargetException ex)
-                                                   {
-                                                       final Requirement requirement = requirementTestMethod.getAnnotation(Requirement.class);
+        final List<VerificationIssue> verificationsIssues = new ArrayList<VerificationIssue>();
 
-                                                       final Throwable cause = ex.getCause();
+        for(final Method requirementTestMethod : this.getRequirements())
+        {
+            try
+            {
+                requirementTestMethod.invoke(this);
+            }
+            catch(final InvocationTargetException ex)
+            {
+                final Requirement requirement = requirementTestMethod.getAnnotation(Requirement.class);
 
-                                                       if(cause != null && cause instanceof AssertionError)
-                                                       {
-                                                           final AssertionError assertionError = (AssertionError)cause;
+                final Throwable cause = ex.getCause();
 
-                                                           return assertionError.getSeverity() == Severity.Skipped ? null
-                                                                                                                   : new VerificationIssue(assertionError.getMessage(),
-                                                                                                                                           requirement,
-                                                                                                                                           assertionError.getSeverity());
-                                                       }
+                if(cause != null && cause instanceof AssertionError)
+                {
+                    final AssertionError assertionError = (AssertionError)cause;
 
-                                                       return new VerificationIssue(String.format("Unexpected exception thrown when testing requirement %d for GeoPackage verification: %s",
-                                                                                                  requirement.reference(),
-                                                                                                  ex.getMessage()),
-                                                                                    requirement);
-                                                   }
-                                                   catch(final IllegalAccessException ex)
-                                                   {
-                                                       // TODO
-                                                       ex.printStackTrace();
-                                                       return null;
-                                                   }
-                                                 })
-                   .filter(Objects::nonNull)
-                   .collect(Collectors.toCollection(ArrayList::new));
+                    if(assertionError.getSeverity() != Severity.Skipped)
+                    {
+                        verificationsIssues.add(new VerificationIssue(assertionError.getMessage(),
+                                                                      requirement,
+                                                                      assertionError.getSeverity()));
+                    }
+                }
+
+                verificationsIssues.add(new VerificationIssue(String.format("Unexpected exception thrown when testing requirement %d for GeoPackage verification: %s",
+                                                                            requirement.reference(),
+                                                                            ex.getMessage()),
+                                                              requirement));
+            }
+            catch(final IllegalAccessException ex)
+            {
+                // TODO
+                ex.printStackTrace();
+            }
+        }
+
+        return verificationsIssues;
     }
 
     /**
@@ -123,22 +123,40 @@ public class Verifier
      */
     protected static boolean checkDataType(final String dataType)
     {
-        return Verifier.AllowedSqlTypes.contains(dataType)   ||
-               dataType.matches("TEXT\\([0-9]+\\)") ||
+        return Verifier.AllowedSqlTypes.contains(dataType) ||
+               dataType.matches("TEXT\\([0-9]+\\)")        ||
                dataType.matches("BLOB\\([0-9]+\\)");
     }
 
     /**
      * @return Returns a stream of methods that are annotated with @Requirement
      */
-    protected Stream<Method> getRequirements()
+    protected Collection<Method> getRequirements()
     {
-        return Stream.of(this.getClass().getDeclaredMethods())
-                     .filter(method -> method.isAnnotationPresent(Requirement.class))
-                     .sorted((method1, method2) -> method1.getAnnotation(Requirement.class)
-                                                          .reference()
-                                                          .compareTo(method2.getAnnotation(Requirement.class)
-                                                                            .reference()));
+        final List<Method> requirements = new ArrayList<Method>();
+
+        for(final Method method : this.getClass().getDeclaredMethods())
+        {
+            if(method.isAnnotationPresent(Requirement.class))
+            {
+                requirements.add(method);
+            }
+        }
+
+        Collections.sort(requirements,
+                         new Comparator<Method>()
+                         {
+                            @Override
+                            public int compare(final Method o1, final Method o2)
+                            {
+                                return o1.getAnnotation(Requirement.class)
+                                         .reference()
+                                         .compareTo(o2.getAnnotation(Requirement.class)
+                                                      .reference());
+                            }
+                         });
+
+        return requirements;
     }
 
     /**
@@ -171,10 +189,15 @@ public class Verifier
      */
     protected void verifyTableDefinition(final String tableName) throws SQLException, AssertionError
     {
-        try(final PreparedStatement statement = this.sqliteConnection.prepareStatement("SELECT sql FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND tbl_name = ?;"))
+        final PreparedStatement statement = this.sqliteConnection.prepareStatement("SELECT sql FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND tbl_name = ?;");
+
+        try
         {
             statement.setString(1, tableName);
-            try(ResultSet gpkgContents = statement.executeQuery())
+
+            final ResultSet gpkgContents = statement.executeQuery();
+
+            try
             {
                 final String sql = gpkgContents.getString("sql");
                 Assert.assertTrue(String.format("The `sql` field must include the %s table SQL Definition.",
@@ -182,6 +205,14 @@ public class Verifier
                                   sql != null,
                                   Severity.Error);
             }
+            finally
+            {
+                gpkgContents.close();
+            }
+        }
+        finally
+        {
+            statement.close();
         }
     }
 
@@ -192,49 +223,63 @@ public class Verifier
      */
     protected void verifyColumns(final String tableName, final Map<String, ColumnDefinition> requiredColumns, final Set<UniqueDefinition> uniques) throws SQLException, AssertionError
     {
-        try(final Statement statement = this.sqliteConnection.createStatement();
-            final ResultSet tableInfo = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName)))
+        final Statement statement = this.sqliteConnection.createStatement();
+
+        try
         {
-            final TreeMap<String, ColumnDefinition> columns = ResultSetStream.getStream(tableInfo)
-                                                                             .map(resultSet -> { try
-                                                                                                 {
-                                                                                                     final String columnName = resultSet.getString("name");
-                                                                                                     return new AbstractMap.SimpleImmutableEntry<>(columnName,
-                                                                                                                                                   new ColumnDefinition(tableInfo.getString ("type"),
-                                                                                                                                                                        tableInfo.getBoolean("notnull"),
-                                                                                                                                                                        tableInfo.getBoolean("pk"),
-                                                                                                                                                                        uniques.stream().anyMatch(unique -> unique.equals(columnName)),
-                                                                                                                                                                        tableInfo.getString ("dflt_value")));   // TODO manipulate values so that they're "normalized" sql expressions, e.g. "" -> '', strftime ( '%Y-%m-%dT%H:%M:%fZ' , 'now' ) -> strftime('%Y-%m-%dT%H:%M:%fZ','now')
-                                                                                                 }
-                                                                                                 catch(final SQLException ex)
-                                                                                                 {
-                                                                                                     ex.printStackTrace();
-                                                                                                     return null;
-                                                                                                 }
-                                                                                               })
-                                                                             .collect(Collectors.toMap(entry  -> entry.getKey(),
-                                                                                                       entry  -> entry.getValue(),
-                                                                                                       (a, b) -> a,
-                                                                                                       ()     -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
-            // Make sure the required fields exist in the table
-            for(final Entry<String, ColumnDefinition> column : requiredColumns.entrySet())
+            final ResultSet tableInfo = statement.executeQuery(String.format("PRAGMA table_info(%s);",
+                                                                             tableName));
+
+            try
             {
-                Assert.assertTrue(String.format("Required column: %s.%s is missing", tableName, column.getKey()),
-                                  columns.containsKey(column.getKey()),
-                                  Severity.Error);
+                final TreeMap<String, ColumnDefinition> columns = new TreeMap<String, ColumnDefinition>(String.CASE_INSENSITIVE_ORDER);
 
-                final ColumnDefinition columnDefinition = columns.get(column.getKey());
-
-                if(columnDefinition != null)
+                while(tableInfo.next())
                 {
-                    Assert.assertTrue(String.format("Required column %s is defined as:\n%s\nbut should be:\n%s",
-                                                    column.getKey(),
-                                                    columnDefinition.toString(),
-                                                    column.getValue().toString()),
-                                      columnDefinition.equals(column.getValue()),
+                    try
+                    {
+                        final String columnName = tableInfo.getString("name");
+                        columns.put(columnName,
+                                    new ColumnDefinition(tableInfo.getString ("type"),
+                                                         tableInfo.getBoolean("notnull"),
+                                                         tableInfo.getBoolean("pk"),
+                                                         uniques.stream().anyMatch(unique -> unique.equals(columnName)),
+                                                         tableInfo.getString ("dflt_value")));   // TODO manipulate values so that they're "normalized" sql expressions, e.g. "" -> '', strftime ( '%Y-%m-%dT%H:%M:%fZ' , 'now' ) -> strftime('%Y-%m-%dT%H:%M:%fZ','now')
+                    }
+                    catch(final SQLException ex)
+                    {
+                        ex.printStackTrace();
+                    }
+                }
+
+                // Make sure the required fields exist in the table
+                for(final Entry<String, ColumnDefinition> column : requiredColumns.entrySet())
+                {
+                    Assert.assertTrue(String.format("Required column: %s.%s is missing", tableName, column.getKey()),
+                                      columns.containsKey(column.getKey()),
                                       Severity.Error);
+
+                    final ColumnDefinition columnDefinition = columns.get(column.getKey());
+
+                    if(columnDefinition != null)
+                    {
+                        Assert.assertTrue(String.format("Required column %s is defined as:\n%s\nbut should be:\n%s",
+                                                        column.getKey(),
+                                                        columnDefinition.toString(),
+                                                        column.getValue().toString()),
+                                          columnDefinition.equals(column.getValue()),
+                                          Severity.Error);
+                    }
                 }
             }
+            finally
+            {
+                tableInfo.close();
+            }
+        }
+        finally
+        {
+            statement.close();
         }
     }
 

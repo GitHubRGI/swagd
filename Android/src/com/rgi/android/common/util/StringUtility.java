@@ -23,32 +23,39 @@
 
 package com.rgi.android.common.util;
 
+import java.util.Iterator;
+
+
 /**
- * Utilities for {@link Throwable} objects
- *
  * @author Luke Lambert
  *
  */
-public class ThrowableUtility
+public class StringUtility
 {
     /**
-     * Calls {@link Throwable#getCause()} recursively and to return the root
-     * cause of a {@link Throwable}, or null if the input was null
+     * Joins a collection of strings with the given delimiter
      *
-     * @param th
-     *             {@link Throwable} object
-     * @return the root cause of a {@link Throwable}, or null if the input was
-     *             null
+     * @param delimiter
+     *             String to interpose between the members of the string
+     *             collection
+     * @param iterator
+     *             Collection of strings
+     * @return A single string composed of the collection of strings with the
+     *             delimiter between each element
      */
-    public static Throwable getRoot(final Throwable th)
+    public static String join(final String delimiter, final Iterator<String> iterator)
     {
-        Throwable root = th;
+        final StringBuilder stringBuilder = new StringBuilder();
 
-        while(root != null && root.getCause() != null)
+        while(iterator.hasNext())
         {
-            root = root.getCause();
+            stringBuilder.append(iterator.next());
+            if(iterator.hasNext())
+            {
+                stringBuilder.append(delimiter);
+            }
         }
 
-        return root;
+        return stringBuilder.toString();
     }
 }
