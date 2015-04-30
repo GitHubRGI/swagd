@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -296,25 +297,29 @@ public class Verifier
 
     protected void verifyForeignKeys(final String tableName, final Set<ForeignKeyDefinition> requiredForeignKeys) throws AssertionError, SQLException
     {
-        try(Statement statement = this.sqliteConnection.createStatement())
+        final Statement statement = this.sqliteConnection.createStatement();
+
+        try
         {
-            try(ResultSet fkInfo = statement.executeQuery(String.format("PRAGMA foreign_key_list(%s);", tableName)))
+            final ResultSet fkInfo = statement.executeQuery(String.format("PRAGMA foreign_key_list(%s);", tableName));
+
+            try
             {
-                final Set<ForeignKeyDefinition> foreignKeys = ResultSetStream.getStream(fkInfo)
-                                                                             .map(resultSet -> { try
-                                                                                                 {
-                                                                                                     return new ForeignKeyDefinition(resultSet.getString("table"),
-                                                                                                                                     resultSet.getString("from"),
-                                                                                                                                     resultSet.getString("to"));
-                                                                                                 }
-                                                                                                 catch(final SQLException ex)
-                                                                                                 {
-                                                                                                     ex.printStackTrace();
-                                                                                                     return null;
-                                                                                                 }
-                                                                                               })
-                                                                             .filter(Objects::nonNull)
-                                                                             .collect(Collectors.toSet());
+                final Set<ForeignKeyDefinition> foreignKeys = new HashSet<ForeignKeyDefinition>();
+
+                while(fkInfo.next())
+                {
+                    try
+                    {
+                        foreignKeys.add(new ForeignKeyDefinition(fkInfo.getString("table"),
+                                                                 fkInfo.getString("from"),
+                                                                 fkInfo.getString("to")));
+                    }
+                    catch(final SQLException ex)
+                    {
+                        ex.printStackTrace();
+                    }
+                }
 
                 // check to see if the correct foreign key constraints are placed
                 for(final ForeignKeyDefinition foreignKey : requiredForeignKeys)
@@ -340,6 +345,14 @@ public class Verifier
                 // SQLException for other reasons that may require some
                 // attention.
             }
+            finally
+            {
+                fkInfo.close();
+            }
+        }
+        finally
+        {
+            statement.close();
         }
     }
 
@@ -357,9 +370,12 @@ public class Verifier
 
     protected Set<UniqueDefinition> getUniques(final String tableName) throws SQLException
     {
-        try(final Statement statement = this.sqliteConnection.createStatement();
-            final ResultSet indices   = statement.executeQuery(String.format("PRAGMA index_list(%s);", tableName)))
+        final Statement statement = this.sqliteConnection.createStatement()
+
+        try
         {
+            final ResultSet indices   = statement.executeQuery(String.format("PRAGMA index_list(%s);", tableName));
+
             return ResultSetStream.getStream(indices)
                                   .map(resultSet -> { try
                                                       {
@@ -391,6 +407,10 @@ public class Verifier
                                   .filter(Objects::nonNull)
                                   .collect(Collectors.toSet());
 
+        }
+        finally
+        {
+            statement.close();
         }
     }
 
