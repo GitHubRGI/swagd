@@ -23,13 +23,17 @@
 
 package com.rgi.android.geopackage.utility;
 
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
+
+import com.rgi.android.common.util.StringUtility;
+import com.rgi.android.common.util.functional.FunctionalUtility;
+import com.rgi.android.common.util.functional.Predicate;
 
 /**
  * This class is used to facilitate the creation and execution of
@@ -41,7 +45,7 @@ import java.util.stream.Collectors;
  * @author Luke Lambert
  *
  */
-public class SelectBuilder implements AutoCloseable
+public class SelectBuilder implements Closeable
 {
     /**
      * @param connection
@@ -71,7 +75,13 @@ public class SelectBuilder implements AutoCloseable
             throw new IllegalArgumentException("The selected columns collection may not be null or empty");
         }
 
-        if(selectColumns.stream().anyMatch(columnName -> columnName == null || columnName.isEmpty()))
+        if(FunctionalUtility.anyMatch(selectColumns.iterator(), new Predicate<String>(){
+                                                                                            @Override
+                                                                                            public boolean apply(final String columnName)
+                                                                                            {
+                                                                                                return columnName == null || columnName.isEmpty();
+                                                                                            }
+                                                                                        }))
         {
             throw new IllegalArgumentException("No column name in the selected columns may be null or empty");
         }
@@ -81,17 +91,35 @@ public class SelectBuilder implements AutoCloseable
             throw new IllegalArgumentException("The where columns collection may not be null or empty");
         }
 
-        if(where.stream().anyMatch(entry -> entry.getKey() == null || entry.getKey().isEmpty()))
+        if(FunctionalUtility.anyMatch(where.iterator(), new Predicate<Entry<String, Object>>(){
+                                                                                                  @Override
+                                                                                                  public boolean apply(final Entry<String, Object> entry)
+                                                                                                  {
+                                                                                                      return entry.getKey() == null || entry.getKey().isEmpty();
+                                                                                                  }
+                                                                                              }))
         {
             throw new IllegalArgumentException("No column name in a where clause may be null or empty");
         }
 
+        StringBuilder whereSQL = new StringBuilder();
+        int count = 1;
+
+        for(Entry<String, Object> entry : where)
+        {
+            whereSQL.append(entry.getKey() + (entry.getValue() == null ? " IS NULL" : " = ?"));
+
+            if(where.size() != count)
+            {
+                whereSQL.append(" AND ");
+            }
+            count++;
+        }
+
         final String querySql = String.format("SELECT %s FROM %s WHERE %s;",
-                                              String.join(", ", selectColumns),
+                                              StringUtility.join(", ", selectColumns.iterator()),
                                               tableName,
-                                              where.stream()
-                                                   .map(entry -> entry.getKey() + (entry.getValue() == null ? " IS NULL" : " = ?"))
-                                                   .collect(Collectors.joining(" AND ")));
+                                              whereSQL);
 
         this.preparedStatement = connection.prepareStatement(querySql);
 
@@ -119,9 +147,16 @@ public class SelectBuilder implements AutoCloseable
     }
 
     @Override
-    public void close() throws SQLException
+    public void close()
     {
-        this.preparedStatement.close();
+        try
+        {
+            this.preparedStatement.close();
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     private final PreparedStatement preparedStatement;
