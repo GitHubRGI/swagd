@@ -37,19 +37,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import utility.DatabaseUtility;
-
 import com.rgi.android.common.BoundingBox;
 import com.rgi.android.common.coordinate.Coordinate;
 import com.rgi.android.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.android.common.coordinate.CrsCoordinate;
 import com.rgi.android.common.tile.TileOrigin;
 import com.rgi.android.common.util.BoundsUtility;
-import com.rgi.android.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.core.GeoPackageCore;
-import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.verification.VerificationIssue;
-import com.rgi.geopackage.verification.VerificationLevel;
+import com.rgi.android.geopackage.core.GeoPackageCore;
+import com.rgi.android.geopackage.core.SpatialReferenceSystem;
+import com.rgi.android.geopackage.verification.VerificationIssue;
+import com.rgi.android.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
@@ -164,9 +161,15 @@ public class GeoPackageTiles
             this.createTilesTablesNoCommit(); // Create the tile metadata tables
 
             // Create the tile set table
-            try(Statement statement = this.databaseConnection.createStatement())
+            Statement statement;
+            try
             {
+                statement = this.databaseConnection.createStatement();
                 statement.executeUpdate(this.getTileSetCreationSql(tableName));
+            }
+            finally
+            {
+                statement.close();
             }
 
             // Add tile set to the content table
@@ -211,13 +214,16 @@ public class GeoPackageTiles
         final String zoomLevelQuerySql = String.format("SELECT zoom_level FROM %s WHERE table_name = ?;",
                                                        GeoPackageTiles.MatrixTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(zoomLevelQuerySql))
+        PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(zoomLevelQuerySql);
+
+        try
         {
             preparedStatement.setString(1, tileSet.getTableName());
+            ResultSet results = preparedStatement.executeQuery();
 
-            try(ResultSet results = preparedStatement.executeQuery())
+            try
             {
-                final Set<Integer> zoomLevels = new HashSet<>();
+                final Set<Integer> zoomLevels = new HashSet<Integer>();
 
                 while(results.next())
                 {
@@ -226,6 +232,14 @@ public class GeoPackageTiles
 
                 return zoomLevels;
             }
+            finally
+            {
+                results.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -257,6 +271,7 @@ public class GeoPackageTiles
      */
     public Collection<TileSet> getTileSets(final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
     {
+
         return this.core.getContent(TileSet.TileContentType,
                                     (tableName, dataType, identifier, description, lastChange, boundingBox, spatialReferenceSystem) -> new TileSet(tableName, identifier, description, lastChange, boundingBox, spatialReferenceSystem),
                                     matchingSpatialReferenceSystem);
@@ -400,7 +415,9 @@ public class GeoPackageTiles
                                                           "pixel_x_size",
                                                           "pixel_y_size");
 
-            try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileMatrix))
+            PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileMatrix);
+
+            try
             {
                 preparedStatement.setString(1, tileSet.getTableName());
                 preparedStatement.setInt   (2, zoomLevel);
@@ -412,6 +429,10 @@ public class GeoPackageTiles
                 preparedStatement.setDouble(8, pixelYSize);
 
                 preparedStatement.executeUpdate();
+            }
+            finally
+            {
+                preparedStatement.close();
             }
 
             this.databaseConnection.commit();
@@ -498,7 +519,9 @@ public class GeoPackageTiles
                                                    "tile_row",
                                                    "tile_data");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileSql))
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileSql);
+
+        try
         {
             preparedStatement.setInt  (1, tileMatrix.getZoomLevel());
             preparedStatement.setInt  (2, column);
@@ -506,6 +529,10 @@ public class GeoPackageTiles
             preparedStatement.setBytes(4, imageData);  // .setBlob() does not work as advertised in the sqlite-jdbc driver.  See this post by the developer: https://groups.google.com/d/msg/xerial/FfNOo-dPlsE/hUQWDPrZvSYJ
 
             preparedStatement.executeUpdate();
+        }
+        finally
+        {
+            preparedStatement.close();
         }
 
         this.databaseConnection.commit();
@@ -567,7 +594,7 @@ public class GeoPackageTiles
      *             when SQLException thrown by automatic close() invocation on
      *             preparedStatement or if other SQLExceptions occur
      */
-    public Stream<TileCoordinate> getTiles(final TileSet tileSet) throws SQLException
+    public Collection<TileCoordinate> getTiles(final TileSet tileSet) throws SQLException
     {
         if(tileSet == null)
         {
@@ -580,25 +607,33 @@ public class GeoPackageTiles
                                                "tile_row",
                                                tileSet.getTableName());
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
-        {
-            return ResultSetStream.getStream(preparedStatement.executeQuery(),
-                                             resultSet -> { try
-                                                            {
-                                                                final int zoomLevel = resultSet.getInt(1);
-                                                                final int column    = resultSet.getInt(2);
-                                                                final int row       = resultSet.getInt(3);
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery);
 
-                                                                return new TileCoordinate(column, row, zoomLevel);
-                                                            }
-                                                            catch(final Exception ex)
-                                                            {
-                                                                return null;
-                                                            }
-                                                          })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toList()) // By collecting here, we prevent the problem of the prepared statement being closed before we've read the results
-                                  .stream();
+        try
+        {
+            List<TileCoordinate> tiles = new ArrayList<TileCoordinate>();
+
+            ResultSet results = preparedStatement.executeQuery();
+
+            try
+            {
+                while(results.next())
+                {
+                    final int zoomLevel = results.getInt(1);
+                    final int column    = results.getInt(2);
+                    final int row       = results.getInt(3);
+
+                    tiles.add(new TileCoordinate(column, row, zoomLevel));
+                }
+            }
+            finally
+            {
+                results.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -618,7 +653,7 @@ public class GeoPackageTiles
      *             when SQLException thrown by automatic close() invocation on
      *             preparedStatement or if other SQLExceptions occur
      */
-    public Stream<Coordinate<Integer>> getTiles(final TileSet tileSet, final int zoomLevel) throws SQLException
+    public Collection<Coordinate<Integer>> getTiles(final TileSet tileSet, final int zoomLevel) throws SQLException
     {
         if(tileSet == null)
         {
@@ -630,23 +665,31 @@ public class GeoPackageTiles
                                                "tile_row",
                                                tileSet.getTableName());
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery);
+
+        try
         {
             preparedStatement.setInt(1, zoomLevel);
 
-            return ResultSetStream.getStream(preparedStatement.executeQuery(),
-                                             resultSet -> { try
-                                                            {
-                                                                return new Coordinate<>(resultSet.getInt(1), resultSet.getInt(2));
-                                                            }
-                                                            catch(final Exception ex)
-                                                            {
-                                                                return null;
-                                                            }
-                                                          })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toList()) // By collecting here, we prevent the problem of the prepared statement being closed before we've read the results
-                                  .stream();
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            try
+            {
+                List<Coordinate<Integer>> tileCoordinates = new ArrayList<Coordinate<Integer>>();
+
+                while(resultSet.next())
+                {
+                    tileCoordinates.add(new Coordinate<Integer>(resultSet.getInt(1), resultSet.getInt(2)));
+                }
+            }
+            finally
+            {
+                resultSet.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -685,13 +728,17 @@ public class GeoPackageTiles
                                                "tile_data",
                                                tileSet.getTableName());
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
+        PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery);
+
+        try
         {
             preparedStatement.setInt(1, zoomLevel);
             preparedStatement.setInt(2, column);
             preparedStatement.setInt(3, row);
 
-            try(ResultSet tileResult = preparedStatement.executeQuery())
+            ResultSet tileResult = preparedStatement.executeQuery();
+
+            try
             {
                 if(tileResult.isBeforeFirst())
                 {
@@ -704,6 +751,14 @@ public class GeoPackageTiles
 
                 return null; // No tile exists for this coordinate and zoom level
             }
+            finally
+            {
+                tileResult.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -772,11 +827,14 @@ public class GeoPackageTiles
                                               "max_y",
                                               GeoPackageTiles.MatrixSetTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(querySql))
+        PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(querySql);
+
+        try
         {
             preparedStatement.setString(1, tileSet.getTableName());
+            ResultSet result = preparedStatement.executeQuery();
 
-            try(ResultSet result = preparedStatement.executeQuery())
+            try
             {
                 return new TileMatrixSet(result.getString(1),                                   // table name
                                          this.core.getSpatialReferenceSystem(result.getInt(2)), // srs id
@@ -785,6 +843,14 @@ public class GeoPackageTiles
                                                          result.getDouble(5),                   // max x
                                                          result.getDouble(6)));                 // max y
             }
+            finally
+            {
+                result.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -850,7 +916,9 @@ public class GeoPackageTiles
                                                             "max_x",
                                                             "max_y");
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileMatrixSetSql))
+        PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileMatrixSetSql);
+
+        try
         {
             preparedStatement.setString(1, tableName);
             preparedStatement.setInt   (2, spatialReferenceSystem.getIdentifier());
@@ -860,6 +928,10 @@ public class GeoPackageTiles
             preparedStatement.setDouble(6, boundingBox.getMaxY());
 
             preparedStatement.executeUpdate();
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -893,12 +965,16 @@ public class GeoPackageTiles
                                                "pixel_y_size",
                                                GeoPackageTiles.MatrixTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
+        PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery);
+
+        try
         {
             preparedStatement.setString(1, tileSet.getTableName());
             preparedStatement.setInt   (2, zoomLevel);
 
-            try(ResultSet result = preparedStatement.executeQuery())
+            ResultSet result = preparedStatement.executeQuery();
+
+            try
             {
                 if(result.isBeforeFirst())
                 {
@@ -914,6 +990,14 @@ public class GeoPackageTiles
 
                 return null; // No matrix exists for this table name and zoom level
             }
+            finally
+            {
+                result.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -946,13 +1030,16 @@ public class GeoPackageTiles
                                                "pixel_y_size",
                                                GeoPackageTiles.MatrixTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
+        PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery);
+
+        try
         {
             preparedStatement.setString(1, tileSet.getTableName());
+            ResultSet results = preparedStatement.executeQuery();
 
-            try(ResultSet results = preparedStatement.executeQuery())
+            try
             {
-                final List<TileMatrix> tileMatrices = new ArrayList<>();
+                final List<TileMatrix> tileMatrices = new ArrayList<TileMatrix>();
 
                 while(results.next())
                 {
@@ -968,6 +1055,14 @@ public class GeoPackageTiles
 
                 return tileMatrices;
             }
+            finally
+            {
+                results.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -1048,7 +1143,7 @@ public class GeoPackageTiles
         final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
         final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);
 
-        return new Coordinate<>(tileX, tileY);
+        return new Coordinate<Integer>(tileX, tileY);
     }
 
     /**
@@ -1135,18 +1230,30 @@ public class GeoPackageTiles
         // Create the tile matrix set table or view
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixSetTableName))
         {
-            try(Statement statement = this.databaseConnection.createStatement())
+            Statement statement = this.databaseConnection.createStatement();
+
+            try
             {
                 statement.executeUpdate(this.getTileMatrixSetCreationSql());
+            }
+            finally
+            {
+                statement.close();
             }
         }
 
         // Create the tile matrix table or view
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixTableName))
         {
-            try(Statement statement = this.databaseConnection.createStatement())
+            Statement statement = this.databaseConnection.createStatement();
+
+            try
             {
                 statement.executeUpdate(this.getTileMatrixCreationSql());
+            }
+            finally
+            {
+                statement.close();
             }
         }
     }
