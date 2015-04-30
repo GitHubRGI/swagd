@@ -37,6 +37,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.rgi.android.common.util.StringUtility;
+
 /**
  * @author Luke Lambert
  *
@@ -68,7 +70,9 @@ public class DatabaseUtility
             throw new IllegalArgumentException("File must be at least 100 bytes to be an SQLite file.");
         }
 
-        try(RandomAccessFile randomAccessFile = new RandomAccessFile(sqliteFile, "r"))
+        RandomAccessFile randomAccessFile = new RandomAccessFile(sqliteFile, "r");
+
+        try
         {
             // https://www.sqlite.org/fileformat2.html
             // Bytes 96 -> 100 are an int representing the sqlite version
@@ -84,6 +88,10 @@ public class DatabaseUtility
                                  major,
                                  minor,
                                  revision);
+        }
+        finally
+        {
+            randomAccessFile.close();
         }
     }
 
@@ -102,11 +110,17 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        try(PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;"))
+        PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;");
+
+        try
         {
             preparedStatement.setString(1, name);
 
             return preparedStatement.executeQuery().getInt(1) > 0;
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -125,10 +139,12 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        final Set<String> uniqueNames = new HashSet<>(Arrays.asList(names));
+        final Set<String> uniqueNames = new HashSet<String>(Arrays.asList(names));
 
-        try(PreparedStatement preparedStatement = connection.prepareStatement(String.format("SELECT COUNT(*) AS count FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name IN (%s);",
-                                                                                            String.join(", ", Collections.nCopies(uniqueNames.size(), "?")))))
+        PreparedStatement preparedStatement = connection.prepareStatement(String.format("SELECT COUNT(*) AS count FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name IN (%s);",
+                StringUtility.join(", ", Collections.nCopies(uniqueNames.size(), "?").iterator())));
+
+        try
         {
             int index = 1;
             for(final String name : uniqueNames)
@@ -137,6 +153,10 @@ public class DatabaseUtility
             }
 
             return preparedStatement.executeQuery().getInt("count") == uniqueNames.size();
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -152,10 +172,16 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        try(Statement statement = connection.createStatement())
+        Statement statement = connection.createStatement();
+
+        try
         {
             statement.execute(String.format("PRAGMA application_id = %d;",
                                             applicationId));
+        }
+        finally
+        {
+            statement.close();
         }
     }
 
@@ -170,13 +196,26 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        try(Statement statement = connection.createStatement())
+        Statement statement = connection.createStatement();
+
+        try
         {
             final String sql = "PRAGMA application_id;";
-            try(ResultSet rs = statement.executeQuery(sql))
+
+            ResultSet rs = statement.executeQuery(sql);
+
+            try
             {
                 return rs.getInt("application_id");
             }
+            finally
+            {
+                rs.close();
+            }
+        }
+        finally
+        {
+            statement.close();
         }
     }
 
@@ -193,10 +232,16 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        try(Statement statement = connection.createStatement())
+        Statement statement = connection.createStatement();
+
+        try
         {
             statement.execute(String.format("PRAGMA foreign_keys = %d;",
                                             (state ? 1 : 0)));
+        }
+        finally
+        {
+            statement.close();
         }
     }
 
@@ -210,9 +255,15 @@ public class DatabaseUtility
     {
     	DatabaseUtility.verify(connection);
 
-    	try(Statement statement = connection.createStatement())
+    	Statement statement = connection.createStatement();
+
+    	try
     	{
     		statement.execute(String.format("PRAGMA journal_mode = MEMORY;"));
+    	}
+    	finally
+    	{
+    	    statement.close();
     	}
     }
 
@@ -241,9 +292,13 @@ public class DatabaseUtility
                                                               columnName,
                                                               tableName);
 
-        try(PreparedStatement preparedStatement = connection.prepareStatement(smallestNonexistentValue))
+        PreparedStatement preparedStatement = connection.prepareStatement(smallestNonexistentValue);
+
+        try
         {
-            try(ResultSet result = preparedStatement.executeQuery())
+            ResultSet result = preparedStatement.executeQuery();
+
+            try
             {
                 if(result.isBeforeFirst())
                 {
@@ -252,6 +307,14 @@ public class DatabaseUtility
 
                 return null;
             }
+            finally
+            {
+                result.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
