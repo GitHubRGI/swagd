@@ -21,9 +21,36 @@
  * SOFTWARE.
  */
 
-package com.rgi.android.common.util;
+package com.rgi.android.common.util.functional;
 
+import java.util.Iterator;
+
+/**
+ * @author Luke Lambert
+ *
+ */
 public class FunctionalUtility
 {
+    public static <T> boolean anyMatch(final Iterator<T> iterator, final Predicate<T> predicate)
+    {
+        if(iterator == null)
+        {
+            throw new IllegalArgumentException("Iterator may not be null");
+        }
 
+        if(predicate == null)
+        {
+            throw new IllegalArgumentException("Predicate may not be null");
+        }
+
+        while(iterator.hasNext())
+        {
+            if(predicate.apply(iterator.next()))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

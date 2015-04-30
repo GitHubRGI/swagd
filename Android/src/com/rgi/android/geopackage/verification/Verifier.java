@@ -42,6 +42,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.rgi.android.common.util.functional.FunctionalUtility;
+import com.rgi.android.common.util.functional.Predicate;
+
 /**
  * @author Luke Lambert
  * @author Jenifer Cochran
@@ -243,7 +246,15 @@ public class Verifier
                                     new ColumnDefinition(tableInfo.getString ("type"),
                                                          tableInfo.getBoolean("notnull"),
                                                          tableInfo.getBoolean("pk"),
-                                                         uniques.stream().anyMatch(unique -> unique.equals(columnName)),
+                                                         FunctionalUtility.anyMatch(uniques.iterator(),
+                                                                                    new Predicate<UniqueDefinition>()
+                                                                                    {
+                                                                                        @Override
+                                                                                        public boolean apply(final UniqueDefinition t)
+                                                                                        {
+                                                                                            return t.equals(columnName);
+                                                                                        }
+                                                                                    }),
                                                          tableInfo.getString ("dflt_value")));   // TODO manipulate values so that they're "normalized" sql expressions, e.g. "" -> '', strftime ( '%Y-%m-%dT%H:%M:%fZ' , 'now' ) -> strftime('%Y-%m-%dT%H:%M:%fZ','now')
                     }
                     catch(final SQLException ex)
