@@ -30,7 +30,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.rgi.android.common.util.StringUtility;
 import com.rgi.android.common.util.functional.FunctionalUtility;
 import com.rgi.android.common.util.functional.Predicate;
 
@@ -362,7 +362,7 @@ public class Verifier
         {
             Assert.assertTrue(String.format("The table %s is missing the column group unique constraint: (%s)",
                                             tableName,
-                                            String.join(", ", groupUnique.getColumnNames())),
+                                            StringUtility.join(", ", groupUnique.getColumnNames().iterator())),
                               uniques.contains(groupUnique),
                               Severity.Error);
         }
@@ -370,43 +370,68 @@ public class Verifier
 
     protected Set<UniqueDefinition> getUniques(final String tableName) throws SQLException
     {
-        final Statement statement = this.sqliteConnection.createStatement()
+        final Statement statement = this.sqliteConnection.createStatement();
 
         try
         {
-            final ResultSet indices   = statement.executeQuery(String.format("PRAGMA index_list(%s);", tableName));
+            final ResultSet indices = statement.executeQuery(String.format("PRAGMA index_list(%s);", tableName));
 
-            return ResultSetStream.getStream(indices)
-                                  .map(resultSet -> { try
-                                                      {
-                                                          final String indexName = resultSet.getString("name");
-                                                          try(Statement nameStatement = this.sqliteConnection.createStatement();
-                                                              ResultSet namesSet      = nameStatement.executeQuery(String.format("PRAGMA index_info(%s);", indexName));)
-                                                          {
-                                                              return new UniqueDefinition(ResultSetStream.getStream(namesSet)
-                                                                                                         .map(names -> { try
-                                                                                                                         {
-                                                                                                                             return names.getString("name");
-                                                                                                                         }
-                                                                                                                         catch(final Exception ex)
-                                                                                                                         {
-                                                                                                                             ex.printStackTrace();
-                                                                                                                             return null;
-                                                                                                                         }
-                                                                                                                        })
-                                                                                                         .filter(Objects::nonNull)
-                                                                                                         .collect(Collectors.toList()));
-                                                          }
-                                                      }
-                                                      catch(final Exception ex)
-                                                      {
-                                                          ex.printStackTrace();
-                                                          return null;
-                                                      }
-                                                     })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toSet());
+            try
+            {
+                final Set<UniqueDefinition> uniqueDefinitions = new HashSet<UniqueDefinition>();
 
+                while(indices.next())
+                {
+                    try
+                    {
+                        final String indexName = indices.getString("name");
+
+                        final Statement nameStatement = this.sqliteConnection.createStatement();
+
+                        try
+                        {
+                            final ResultSet namesSet = nameStatement.executeQuery(String.format("PRAGMA index_info(%s);", indexName));
+
+                            try
+                            {
+                                final List<String> columnNames = new ArrayList<String>();
+
+                                while(namesSet.next())
+                                {
+                                    try
+                                    {
+                                        columnNames.add(namesSet.getString("name"));
+                                    }
+                                    catch(final Exception ex)
+                                    {
+                                        ex.printStackTrace();
+                                    }
+                                }
+
+                                uniqueDefinitions.add(new UniqueDefinition(columnNames));
+                            }
+                            finally
+                            {
+                                namesSet.close();
+                            }
+                        }
+                        finally
+                        {
+                            nameStatement.close();
+                        }
+                    }
+                    catch(final Exception ex)
+                    {
+                        ex.printStackTrace();
+                    }
+                }
+
+                return uniqueDefinitions;
+            }
+            finally
+            {
+                indices.close();
+            }
         }
         finally
         {
