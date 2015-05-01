@@ -43,12 +43,13 @@ import java.util.Random;
 
 import org.junit.Test;
 
-import com.rgi.geopackage.GeoPackage.OpenMode;
-import com.rgi.geopackage.extensions.Extension;
-import com.rgi.geopackage.extensions.GeoPackageExtensions;
-import com.rgi.geopackage.extensions.Scope;
-import com.rgi.geopackage.verification.ConformanceException;
-import com.rgi.geopackage.verification.VerificationLevel;
+import com.rgi.android.geopackage.GeoPackage;
+import com.rgi.android.geopackage.GeoPackage.OpenMode;
+import com.rgi.android.geopackage.extensions.Extension;
+import com.rgi.android.geopackage.extensions.GeoPackageExtensions;
+import com.rgi.android.geopackage.extensions.Scope;
+import com.rgi.android.geopackage.verification.ConformanceException;
+import com.rgi.android.geopackage.verification.VerificationLevel;
 
 @SuppressWarnings({"static-method", "javadoc"})
 public class GeoPackageExtensionsAPITest
@@ -71,7 +72,10 @@ public class GeoPackageExtensionsAPITest
     public void getExtensionWithNullParameters() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             final String extensionName = "something_extension";
 
@@ -102,7 +106,7 @@ public class GeoPackageExtensionsAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -118,7 +122,9 @@ public class GeoPackageExtensionsAPITest
     public void getExtension2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             final String tableName = "TableName";
             final String columnName = "columnName";
@@ -147,7 +153,7 @@ public class GeoPackageExtensionsAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -166,7 +172,9 @@ public class GeoPackageExtensionsAPITest
     public void getExtensionUsingExtensionGetters() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             final String extensionName = "something_extension";
 
@@ -197,7 +205,7 @@ public class GeoPackageExtensionsAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -213,7 +221,9 @@ public class GeoPackageExtensionsAPITest
     public void getExtension() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             final String tableName = "TableName";
             final String columnName = "columnName";
@@ -242,7 +252,7 @@ public class GeoPackageExtensionsAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -261,14 +271,16 @@ public class GeoPackageExtensionsAPITest
     public void addExtensionIllegalArgumentException() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             gpkg.extensions().addExtension(null, "ColumnNameShouldBeNull", "extension_Name", "definition", Scope.ReadWrite);
             fail("Expected GeoPackageExtensions to throw an IllegalArgumentException when trying to add an extension with a null value for tableName and not columnName.");
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -286,14 +298,16 @@ public class GeoPackageExtensionsAPITest
     public void addExtensionIllegalArgumentException2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             gpkg.extensions().addExtension("", "columnName", "extension_Name", "definition", Scope.ReadWrite);
             fail("Expected GeoPackageExtensions to throw an IllegalArgumentException when trying to add an extension with a empty string for tableName.");
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -311,14 +325,16 @@ public class GeoPackageExtensionsAPITest
     public void addExtensionIllegalArgumentException3() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             gpkg.extensions().addExtension(null, "columnName", "extension_Name", "definition", Scope.ReadWrite);
             fail("Expected GeoPackageExtensions to throw an IllegalArgumentException when trying to add an extension with a empty string for tableName.");
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
     /**
@@ -336,14 +352,16 @@ public class GeoPackageExtensionsAPITest
     public void addExtensionIllegalARgumentException4() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(14);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             gpkg.extensions().addExtension("", null, "extension_Name", "definition", Scope.WriteOnly);
             fail("Expected GeoPackageExtensions to throw an Illegal argument exception when column name is null and table name is an empty string.");
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -361,14 +379,16 @@ public class GeoPackageExtensionsAPITest
     public void addExtensionIllegalArgumentException5() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(17);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
            gpkg.extensions().addExtension("TableName", "" , "extension_Name", "definition", Scope.ReadWrite);
            fail("Expected GeoPackageExtensions to throw an Illegal argument exception when column name and table name are empty strings.");
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -386,14 +406,16 @@ public class GeoPackageExtensionsAPITest
     public void addExtensionIllegalArgumentException6() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             gpkg.extensions().addExtension("tableName", "columnName", null, "definition", Scope.ReadWrite);
             fail("Expected GeoPackage to throw an IllegalArgumentException when trying to add an extension with a null value for extension name");
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -411,14 +433,16 @@ public class GeoPackageExtensionsAPITest
     public void addExtensionIllegalArgumentException7() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(8);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             gpkg.extensions().addExtension(null, null, "", "Definition", Scope.ReadWrite);
             fail("Expected GeoPackage to throw an IllegalArgumentException when trying to add an extension with an emptry string for extension name.");
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -436,14 +460,16 @@ public class GeoPackageExtensionsAPITest
     public void addExtensionIllegalArgumentException8() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(9);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             gpkg.extensions().addExtension("tablename", "columnName", "illegalExtensionName", "definition", Scope.WriteOnly);
             fail("Expected GeoPackage to throw an IllegalArgumentException when adding an extension that has an invalid extension name.");
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
     /**
@@ -460,7 +486,9 @@ public class GeoPackageExtensionsAPITest
     public void addExtensionWithoutNullParameters() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             final String tableName ="tablename";
             final String columnName = "columnName";
@@ -480,7 +508,7 @@ public class GeoPackageExtensionsAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -502,7 +530,9 @@ public class GeoPackageExtensionsAPITest
         testFile.createNewFile();
         //Create Extensions table
         GeoPackageExtensionsAPITest.createExtensionsTable(testFile);
-        try(GeoPackage gpkg = new GeoPackage(testFile, VerificationLevel.None, OpenMode.OpenOrCreate))
+        GeoPackage gpkg = new GeoPackage(testFile, VerificationLevel.None, OpenMode.OpenOrCreate);
+
+        try
         {
             final String tableName ="tablename";
             final String columnName = "columnName";
@@ -521,7 +551,7 @@ public class GeoPackageExtensionsAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -539,8 +569,9 @@ public class GeoPackageExtensionsAPITest
     public void addExistingExtension() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
 
             final String tableName = "tableName";
@@ -562,7 +593,7 @@ public class GeoPackageExtensionsAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -581,8 +612,9 @@ public class GeoPackageExtensionsAPITest
     public void addExtensionWithSameUniqueValuesButDifferentOtherValues() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final String tableName = null;
             final String columnName = null;
@@ -600,7 +632,7 @@ public class GeoPackageExtensionsAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -618,8 +650,9 @@ public class GeoPackageExtensionsAPITest
     public void hasExtension() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(14);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final boolean hasExtensionShouldBeFalse = gpkg.extensions().hasExtension("extension_Name");
 
@@ -634,7 +667,7 @@ public class GeoPackageExtensionsAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -651,7 +684,9 @@ public class GeoPackageExtensionsAPITest
     public void getExtensions() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(7);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
            final Extension extension1 = gpkg.extensions().addExtension(null,          null, "extension_name1", "definition", Scope.ReadWrite);
            final Extension extension2 = gpkg.extensions().addExtension("table_name",  null, "extension_Name2", "definition", Scope.WriteOnly);
@@ -676,7 +711,7 @@ public class GeoPackageExtensionsAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -695,8 +730,9 @@ public class GeoPackageExtensionsAPITest
     public void getExtensionsWithNoExtensions() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
            final Collection<Extension> shouldBeNull = gpkg.extensions().getExtensions();
            assertTrue("Expected GeoPackage Extensions to return an empty collection when there are no extensions "
@@ -705,7 +741,7 @@ public class GeoPackageExtensionsAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            deleteFile(testFile, gpkg);
         }
     }
 
@@ -722,8 +758,9 @@ public class GeoPackageExtensionsAPITest
     public void testEqualsExtension() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
        final File testFile = this.getRandomFile(9);
+       GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-       try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+       try
        {
             final String tableName     = "table_name";
             final String columnName    = null;
@@ -741,7 +778,7 @@ public class GeoPackageExtensionsAPITest
        }
        finally
        {
-           deleteFile(testFile);
+           deleteFile(testFile, gpkg);
        }
     }
 
@@ -758,8 +795,9 @@ public class GeoPackageExtensionsAPITest
     public void testEqualsExtension2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
        final File testFile = this.getRandomFile(9);
+       GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-       try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+       try
        {
             final String tableName     = "table_name";
             final String columnName    = null;
@@ -777,7 +815,7 @@ public class GeoPackageExtensionsAPITest
        }
        finally
        {
-           deleteFile(testFile);
+           deleteFile(testFile, gpkg);
        }
     }
 
@@ -794,8 +832,9 @@ public class GeoPackageExtensionsAPITest
     public void testEqualsExtension3() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
        final File testFile = this.getRandomFile(9);
+       GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-       try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+       try
        {
             final String tableName     = "table_name";
             final String columnName    = "column_name";
@@ -813,7 +852,7 @@ public class GeoPackageExtensionsAPITest
        }
        finally
        {
-           deleteFile(testFile);
+           deleteFile(testFile, gpkg);
        }
     }
 
@@ -833,10 +872,25 @@ public class GeoPackageExtensionsAPITest
                      " definition     TEXT NOT NULL, -- Definition of the extension in the form specfied by the template in GeoPackage Extension Template (Normative) or reference thereto.\n"                                +
                      " scope          TEXT NOT NULL, -- Indicates scope of extension effects on readers / writers: read-write or write-only in lowercase.\n"                                                                  +
                      " CONSTRAINT ge_tce UNIQUE (table_name, column_name, extension_name))";
-        try(Connection con = GeoPackageExtensionsAPITest.getConnection(testFile);
-            Statement stmt = con.createStatement();)
+
+        Connection con = GeoPackageExtensionsAPITest.getConnection(testFile);
+
+        try
         {
-            stmt.executeUpdate(sql);
+            Statement stmt = con.createStatement();
+
+            try
+            {
+                stmt.executeUpdate(sql);
+            }
+            finally
+            {
+                stmt.close();
+            }
+        }
+        finally
+        {
+            con.close();
         }
     }
 
@@ -847,8 +901,10 @@ public class GeoPackageExtensionsAPITest
 
         return DriverManager.getConnection("jdbc:sqlite:" + testFile.getPath()); // Initialize the database connection
     }
-    private static void deleteFile(final File testFile)
+    private static void deleteFile(final File testFile, final GeoPackage gpkg)
     {
+        gpkg.close();
+
         if (testFile.exists())
         {
             if (!testFile.delete())
