@@ -23,16 +23,16 @@
 
 package com.rgi.android.geopackage.core;
 
-import static com.rgi.geopackage.verification.Assert.assertArrayEquals;
-import static com.rgi.geopackage.verification.Assert.assertTrue;
-import static com.rgi.geopackage.verification.Assert.fail;
+import static com.rgi.android.geopackage.verification.Assert.assertArrayEquals;
+import static com.rgi.android.geopackage.verification.Assert.assertTrue;
+import static com.rgi.android.geopackage.verification.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,25 +40,23 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
-import utility.DatabaseUtility;
-
-import com.rgi.android.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.verification.AssertionError;
-import com.rgi.geopackage.verification.ColumnDefinition;
-import com.rgi.geopackage.verification.ForeignKeyDefinition;
-import com.rgi.geopackage.verification.Requirement;
-import com.rgi.geopackage.verification.Severity;
-import com.rgi.geopackage.verification.TableDefinition;
-import com.rgi.geopackage.verification.VerificationLevel;
-import com.rgi.geopackage.verification.Verifier;
+import com.rgi.android.common.util.StringUtility;
+import com.rgi.android.geopackage.utility.DatabaseUtility;
+import com.rgi.android.geopackage.verification.AssertionError;
+import com.rgi.android.geopackage.verification.ColumnDefinition;
+import com.rgi.android.geopackage.verification.ForeignKeyDefinition;
+import com.rgi.android.geopackage.verification.Requirement;
+import com.rgi.android.geopackage.verification.Severity;
+import com.rgi.android.geopackage.verification.TableDefinition;
+import com.rgi.android.geopackage.verification.VerificationLevel;
+import com.rgi.android.geopackage.verification.Verifier;
 
 /**
  * @author Luke Lambert
@@ -126,11 +124,13 @@ public class CoreVerifier extends Verifier
                  text      = "A GeoPackage SHALL be a SQLite database file using version 3 of the SQLite file format. The first 16 bytes of a GeoPackage SHALL contain \"SQLite format 3\" in ASCII.")
     public void Requirement1() throws IOException, AssertionError
     {
-        final byte[] header = "SQLite format 3\0".getBytes(StandardCharsets.US_ASCII);    // The GeoPackage spec says it's StandardCharsets.US_ASCII, but the SQLite spec (https://www.sqlite.org/fileformat.html - 1.2.1 Magic Header String) says it's UTF8, i.e, StandardCharsets.UTF_8
+        final byte[] header = "SQLite format 3\0".getBytes(Charset.forName("US-ASCII"));    // The GeoPackage spec says it's StandardCharsets.US_ASCII, but the SQLite spec (https://www.sqlite.org/fileformat.html - 1.2.1 Magic Header String) says it's UTF8, i.e, StandardCharsets.UTF_8
 
         final byte[] data = new byte[header.length];
 
-        try(FileInputStream fileInputStream = new FileInputStream(this.file))
+        final FileInputStream fileInputStream = new FileInputStream(this.file);
+
+        try
         {
             assertTrue("The header information of the file does not contain enough bytes to include necessary information",
                        fileInputStream.read(data, 0, header.length) == header.length,
@@ -140,6 +140,10 @@ public class CoreVerifier extends Verifier
                               header,
                               data,
                               Severity.Warning);
+        }
+        finally
+        {
+            fileInputStream.close();
         }
     }
 
@@ -151,11 +155,14 @@ public class CoreVerifier extends Verifier
      * in the application id field of the SQLite database header
      * to indicate a GeoPackage version 1.0 file.
      * </blockquote>
-     * @throws AssertionError throws if it fails to meet the specified requirement;
+     * @throws AssertionError
+     *             if it fails to meet the specified requirement;
+     * @throws IOException
+     *             if the file is not found, or if close the opened file fails
      */
     @Requirement(reference = "Requirement 2",
                  text      = "A GeoPackage SHALL contain 0x47503130 ('GP10' in ASCII) in the application id field of the SQLite database header to indicate a GeoPackage version 1.0 file.")
-    public void Requirement2() throws AssertionError
+    public void Requirement2() throws AssertionError, IOException
     {
         final int  sizeOfInt = 4;
         final long applicationIdByteOffset = 68;
@@ -171,7 +178,9 @@ public class CoreVerifier extends Verifier
         // The bytes 'G', 'P', '1', '0' are equivalent to 0x47503130
         final int expectedAppId = 0x47503130;
 
-        try(RandomAccessFile randomAccessFile = new RandomAccessFile(this.file, "r"))
+        final RandomAccessFile randomAccessFile = new RandomAccessFile(this.file, "r");
+
+        try
         {
             randomAccessFile.seek(applicationIdByteOffset);
             assertTrue("The file does not have enough bytes to contain a GeoPackage.",
@@ -181,6 +190,10 @@ public class CoreVerifier extends Verifier
         catch(final Exception ex)
         {
             throw new AssertionError(ex, Severity.Error);
+        }
+        finally
+        {
+            randomAccessFile.close();
         }
 
         final int applicationId = ByteBuffer.wrap(data).asIntBuffer().get();
@@ -248,33 +261,59 @@ public class CoreVerifier extends Verifier
         {
             final String query = String.format("SELECT table_name FROM %s;", GeoPackageCore.ContentsTableName);
 
-            try (Statement stmt       = this.getSqliteConnection().createStatement();
-                 ResultSet tableName  = stmt.executeQuery(query);)
+            final Statement stmt = this.getSqliteConnection().createStatement();
+
+            try
             {
-                while (tableName.next())
+                final ResultSet tableName = stmt.executeQuery(query);
+                try
                 {
-                    final String table_name = tableName.getString("table_name");
-
-                    if (DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), table_name))
+                    while(tableName.next())
                     {
+                        final String table_name = tableName.getString("table_name");
 
-                        try (PreparedStatement stmt2           = this.getSqliteConnection().prepareStatement(String.format("PRAGMA table_info('%s');", table_name));
-                             ResultSet         pragmaTableinfo = stmt2.executeQuery())
+                        if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), table_name))
                         {
-                            while (pragmaTableinfo.next())
-                            {
-                                final String dataType = pragmaTableinfo.getString("type");
-                                final boolean correctDataType = Verifier.checkDataType(dataType);
+                            final PreparedStatement stmt2 = this.getSqliteConnection().prepareStatement(String.format("PRAGMA table_info('%s');", table_name));
 
-                                assertTrue(String.format("Incorrect data type encountered: %s  From table: %s",
-                                                         dataType,
-                                                         table_name),
-                                           correctDataType,
-                                           Severity.Error);
+                            try
+                            {
+                                final ResultSet pragmaTableinfo = stmt2.executeQuery();
+
+                                try
+                                {
+                                    while(pragmaTableinfo.next())
+                                    {
+                                        final String dataType = pragmaTableinfo.getString("type");
+                                        final boolean correctDataType = Verifier.checkDataType(dataType);
+
+                                        assertTrue(String.format("Incorrect data type encountered: %s  From table: %s",
+                                                                 dataType,
+                                                                 table_name),
+                                                   correctDataType,
+                                                   Severity.Error);
+                                    }
+                                }
+                                finally
+                                {
+                                    pragmaTableinfo.close();
+                                }
+                            }
+                            finally
+                            {
+                                stmt2.close();
                             }
                         }
                     }
                 }
+                finally
+                {
+                    tableName.close();
+                }
+            }
+            finally
+            {
+                stmt.close();
             }
         }
     }
@@ -295,14 +334,28 @@ public class CoreVerifier extends Verifier
     {
         final String query = "PRAGMA integrity_check;";
 
-        try(Statement stmt           = this.getSqliteConnection().createStatement();
-            ResultSet integrityCheck = stmt.executeQuery(query);)
+        final Statement stmt = this.getSqliteConnection().createStatement();
+
+        try
         {
-            integrityCheck.next();
-            final String integrity_check = integrityCheck.getString("integrity_check");
-            assertTrue("PRAGMA integrity_check failed.",
-                       integrity_check.toLowerCase().equals("ok"),
-                       Severity.Error);
+            final ResultSet integrityCheck = stmt.executeQuery(query);
+
+            try
+            {
+                integrityCheck.next();
+                final String integrity_check = integrityCheck.getString("integrity_check");
+                assertTrue("PRAGMA integrity_check failed.",
+                           integrity_check.toLowerCase().equals("ok"),
+                           Severity.Error);
+            }
+            finally
+            {
+                integrityCheck.close();
+            }
+        }
+        finally
+        {
+            stmt.close();
         }
     }
 
@@ -321,13 +374,27 @@ public class CoreVerifier extends Verifier
     {
         final String query = "PRAGMA foreign_key_check;";
 
-        try(Statement stmt         = this.getSqliteConnection().createStatement();
-            ResultSet foreignCheck = stmt.executeQuery(query);)
+        final Statement stmt = this.getSqliteConnection().createStatement();
+
+        try
         {
-            final boolean badfk = foreignCheck.next();
-            assertTrue("PRAGMA foreign_key_check failed.",
-                       badfk != true,
-                       Severity.Error);
+            final ResultSet foreignCheck = stmt.executeQuery(query);
+
+            try
+            {
+                final boolean badfk = foreignCheck.next();
+                assertTrue("PRAGMA foreign_key_check failed.",
+                           badfk != true,
+                           Severity.Error);
+            }
+            finally
+            {
+                foreignCheck.close();
+            }
+        }
+        finally
+        {
+            stmt.close();
         }
     }
 
@@ -344,10 +411,14 @@ public class CoreVerifier extends Verifier
     public void Requirement8() throws AssertionError
     {
         final String query = "SELECT * FROM sqlite_master;";
-        try(final Statement stmt   = this.getSqliteConnection().createStatement();
-            final ResultSet result = stmt.executeQuery(query))
+
+        try
         {
             // If the statement can execute it has implemented the SQLite SQL API interface
+            this.getSqliteConnection()
+                .createStatement()
+                .executeQuery(query)
+                .close();
         }
         catch(final SQLException e)
         {
@@ -373,14 +444,28 @@ public class CoreVerifier extends Verifier
     {
         final String query2 = "SELECT sqlite_compileoption_used('SQLITE_OMIT_*')";
 
-        try(Statement stmt     = this.getSqliteConnection().createStatement();
-            ResultSet omitUsed = stmt.executeQuery(query2);)
-        {
-            final int result = omitUsed.getInt("sqlite_compileoption_used('SQLITE_OMIT_*')");
+        final Statement stmt = this.getSqliteConnection().createStatement();
 
-            assertTrue("SQLite library compilations shall not include any OMIT options.",
-                       result != 1,
-                       Severity.Warning);
+        try
+        {
+            final ResultSet omitUsed = stmt.executeQuery(query2);
+
+            try
+            {
+                final int result = omitUsed.getInt("sqlite_compileoption_used('SQLITE_OMIT_*')");
+
+                assertTrue("SQLite library compilations shall not include any OMIT options.",
+                           result != 1,
+                           Severity.Warning);
+            }
+            finally
+            {
+                omitUsed.close();
+            }
+        }
+        finally
+        {
+            stmt.close();
         }
     }
 
@@ -444,35 +529,77 @@ public class CoreVerifier extends Verifier
             final String wgs1984Sql = String.format("SELECT srs_id FROM %s WHERE organization_coordsys_id = 4326 AND (organization = 'EPSG' OR organization = 'epsg');",    // TODO figure out case insensitive comparison
                                                     GeoPackageCore.SpatialRefSysTableName);
 
-            try(Statement statement       = this.getSqliteConnection().createStatement();
-                ResultSet srsDefaultValue = statement.executeQuery(wgs1984Sql))
+            final Statement statement = this.getSqliteConnection().createStatement();
+
+            try
             {
-                assertTrue(String.format("The %s table shall contain a record for organization \"EPSG\" or \"epsg\" and organization_coordsys_id 4326 for WGS-84",
-                                         GeoPackageCore.SpatialRefSysTableName),
-                           srsDefaultValue.next(),
-                           Severity.Warning);
+                final ResultSet srsDefaultValue = statement.executeQuery(wgs1984Sql);
+
+                try
+                {
+                    assertTrue(String.format("The %s table shall contain a record for organization \"EPSG\" or \"epsg\" and organization_coordsys_id 4326 for WGS-84",
+                                             GeoPackageCore.SpatialRefSysTableName),
+                               srsDefaultValue.next(),
+                               Severity.Warning);
+                }
+                finally
+                {
+                    srsDefaultValue.close();
+                }
+            }
+            finally
+            {
+                statement.close();
             }
 
             final String undefinedCartesianSql = String.format("SELECT srs_id FROM %s WHERE srs_id = -1 AND organization = 'NONE' AND organization_coordsys_id = -1 AND definition = 'undefined';", GeoPackageCore.SpatialRefSysTableName);
 
-            try(Statement statement       = this.getSqliteConnection().createStatement();
-                ResultSet srsDefaultValue = statement.executeQuery(undefinedCartesianSql))
+            final Statement cartesianStatement = this.getSqliteConnection().createStatement();
+
+            try
             {
-                assertTrue(String.format("The %s table shall contain a record with an srs_id of -1, an organization of \"NONE\", an organization_coordsys_id of -1, and definition \"undefined\" for undefined Cartesian coordinate reference systems",
-                                         GeoPackageCore.SpatialRefSysTableName),
-                           srsDefaultValue.next(),
-                           Severity.Warning);
+                final ResultSet srsDefaultValue = cartesianStatement.executeQuery(undefinedCartesianSql);
+
+                try
+                {
+                    assertTrue(String.format("The %s table shall contain a record with an srs_id of -1, an organization of \"NONE\", an organization_coordsys_id of -1, and definition \"undefined\" for undefined Cartesian coordinate reference systems",
+                                             GeoPackageCore.SpatialRefSysTableName),
+                               srsDefaultValue.next(),
+                               Severity.Warning);
+                }
+                finally
+                {
+                    srsDefaultValue.close();
+                }
+            }
+            finally
+            {
+                cartesianStatement.close();
             }
 
             final String undefinedGeographicSql = String.format("SELECT srs_id FROM %s WHERE srs_id = 0 AND organization = 'NONE' AND organization_coordsys_id =  0 AND definition = 'undefined';", GeoPackageCore.SpatialRefSysTableName);
 
-            try(Statement statement       = this.getSqliteConnection().createStatement();
-                ResultSet srsDefaultValue = statement.executeQuery(undefinedGeographicSql))
+            final Statement geographicStatement = this.getSqliteConnection().createStatement();
+
+            try
             {
-                assertTrue(String.format("The %s table shall contain a record with an srs_id of 0, an organization of \"NONE\", an organization_coordsys_id of 0, and definition \"undefined\" for undefined geographic coordinate reference systems.",
-                                         GeoPackageCore.SpatialRefSysTableName),
-                                         srsDefaultValue.next(),
-                           Severity.Warning);
+                final ResultSet srsDefaultValue = geographicStatement.executeQuery(undefinedGeographicSql);
+
+                try
+                {
+                    assertTrue(String.format("The %s table shall contain a record with an srs_id of 0, an organization of \"NONE\", an organization_coordsys_id of 0, and definition \"undefined\" for undefined geographic coordinate reference systems.",
+                                             GeoPackageCore.SpatialRefSysTableName),
+                                             srsDefaultValue.next(),
+                               Severity.Warning);
+                }
+                finally
+                {
+                    srsDefaultValue.close();
+                }
+            }
+            finally
+            {
+                geographicStatement.close();
             }
         }
     }
@@ -503,30 +630,46 @@ public class CoreVerifier extends Verifier
                                                GeoPackageCore.SpatialRefSysTableName);
 
 
-            try(final Statement stmt       = this.getSqliteConnection().createStatement();
-                final ResultSet srsdefined = stmt.executeQuery(query))
+            final Statement stmt = this.getSqliteConnection().createStatement();
+
+            try
             {
-                final List<String> invalidTables = ResultSetStream.getStream(srsdefined)
-                                                                  .map(result-> { try
-                                                                                  {
-                                                                                        return result.getString("srsContents");
-                                                                                  }
-                                                                                  catch(final SQLException ex)
-                                                                                  {
-                                                                                        return null;
-                                                                                  }
-                                                                                 })
-                                                                  .filter(Objects::nonNull)
-                                                                  .collect(Collectors.toList());
+                final ResultSet srsdefined = stmt.executeQuery(query);
 
-                    assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined. The following srs_id(s) are not in the %s: \n%s",
-                                             GeoPackageCore.SpatialRefSysTableName,
-                                             invalidTables.stream()
-                                                          .map(table-> String.format("%s srs_id: %s",GeoPackageCore.ContentsTableName, table))
-                                                          .collect(Collectors.joining("\n"))),
-                               invalidTables.isEmpty(),
-                               Severity.Error);
+                try
+                {
+                    final List<String> invalidTables = new ArrayList<String>();
 
+                    while(srsdefined.next())
+                    {
+                        invalidTables.add(srsdefined.getString("srsContents"));
+                    }
+
+                    if(!invalidTables.isEmpty())
+                    {
+                        final StringBuilder stringBuilder = new StringBuilder();
+
+                        for(final String invalidTableName : invalidTables)
+                        {
+                            stringBuilder.append(String.format("%s srs_id: %s",
+                                                               GeoPackageCore.ContentsTableName,
+                                                               invalidTableName));
+                        }
+
+                        fail(String.format("Not all srs_id's being used in a GeoPackage are defined. The following srs_id(s) are not in the %s: \n%s",
+                                           GeoPackageCore.SpatialRefSysTableName,
+                                           stringBuilder.toString()),
+                             Severity.Error);
+                    }
+                }
+                finally
+                {
+                    srsdefined.close();
+                }
+            }
+            finally
+            {
+                stmt.close();
             }
         }
     }
@@ -582,30 +725,37 @@ public class CoreVerifier extends Verifier
                                                                                 "WHERE  tbl_name = gc_table);",
                                                GeoPackageCore.ContentsTableName);
 
-            try(final Statement stmt        = this.getSqliteConnection().createStatement();
-                final ResultSet gctablename = stmt.executeQuery(query);)
-            {
-                // check runtime options (foreign keys)
-                final List<String> invalidContentsTableNames = ResultSetStream.getStream(gctablename)
-                                                                              .map(result -> { try
-                                                                                               {
-                                                                                                    return result.getString("gc_table");
-                                                                                               }
-                                                                                               catch(final SQLException ex)
-                                                                                               {
-                                                                                                   return null;
-                                                                                               }
-                                                                                             })
-                                                                              .filter(Objects::nonNull)
-                                                                              .collect(Collectors.toList());
+            final Statement stmt = this.getSqliteConnection().createStatement();
 
-                assertTrue(String.format("The following table_name(s) in %s are invalid: \n%s.",
-                                         GeoPackageCore.ContentsTableName,
-                                         invalidContentsTableNames.stream()
-                                                                  .map(table_name->String.format("\t%s",table_name))
-                                                                  .collect(Collectors.joining("\n"))),
-                           invalidContentsTableNames.isEmpty(),
-                           Severity.Warning);
+            try
+            {
+                final ResultSet gctablename = stmt.executeQuery(query);
+
+                try
+                {
+                    // check runtime options (foreign keys)
+                    final List<String> invalidContentsTableNames = new ArrayList<String>();
+
+                    while(gctablename.next())
+                    {
+                        invalidContentsTableNames.add(gctablename.getString("gc_table"));
+                    }
+
+
+                    assertTrue(String.format("The following table_name(s) in %s are invalid: \n%s.",
+                                             GeoPackageCore.ContentsTableName,
+                                             StringUtility.join(", ", invalidContentsTableNames)),
+                               invalidContentsTableNames.isEmpty(),
+                               Severity.Warning);
+                }
+                finally
+                {
+                    gctablename.close();
+                }
+            }
+            finally
+            {
+                stmt.close();
             }
         }
     }
@@ -634,38 +784,52 @@ public class CoreVerifier extends Verifier
         {
             final String query = String.format("SELECT last_change FROM %s;", GeoPackageCore.ContentsTableName);
 
-            try(Statement stmt       = this.getSqliteConnection().createStatement();
-                ResultSet lastchange = stmt.executeQuery(query);)
+            final Statement stmt = this.getSqliteConnection().createStatement();
+
+            try
             {
-                // check format of last_change column
-                while(lastchange.next())
+                final ResultSet lastchange = stmt.executeQuery(query);
+
+                try
                 {
-                    final String data       = lastchange.getString("last_change");
-                    final String formatdate = data;
-
-                    try
+                    // check format of last_change column
+                    while(lastchange.next())
                     {
-                        final SimpleDateFormat formatter  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.'SS'Z'");
-
-                        formatter.parse(formatdate);
-                    }
-                    catch(final ParseException ex)
-                    {
-                        final SimpleDateFormat formatter2  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                        final String data       = lastchange.getString("last_change");
+                        final String formatdate = data;
 
                         try
                         {
-                            formatter2.parse(data);
+                            final SimpleDateFormat formatter  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.'SS'Z'");
+
+                            formatter.parse(formatdate);
                         }
-                        catch(final ParseException e)
+                        catch(final ParseException ex)
                         {
-                            fail(String.format("A field in the last_change column in %s table was not in the correct format. %s",
-                                               GeoPackageCore.ContentsTableName,
-                                               ex.getMessage()),
-                                 Severity.Warning);
+                            final SimpleDateFormat formatter2  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+                            try
+                            {
+                                formatter2.parse(data);
+                            }
+                            catch(final ParseException e)
+                            {
+                                fail(String.format("A field in the last_change column in %s table was not in the correct format. %s",
+                                                   GeoPackageCore.ContentsTableName,
+                                                   ex.getMessage()),
+                                     Severity.Warning);
+                            }
                         }
                     }
                 }
+                finally
+                {
+                    lastchange.close();
+                }
+            }
+            finally
+            {
+                stmt.close();
             }
         }
     }
@@ -691,14 +855,28 @@ public class CoreVerifier extends Verifier
             final String query = String.format("PRAGMA foreign_key_check('%s');",
                                                GeoPackageCore.ContentsTableName);
 
-            try(Statement statement  = this.getSqliteConnection().createStatement();
-                ResultSet foreignKey = statement.executeQuery(query);)
+            final Statement statement = this.getSqliteConnection().createStatement();
+
+            try
             {
-                // check runtime options (foreign keys)
-                assertTrue(String.format("There are violations on the foreign keys in the table %s",
-                                         GeoPackageCore.ContentsTableName),
-                           !foreignKey.next(),
-                           Severity.Error);
+                final ResultSet foreignKey = statement.executeQuery(query);
+
+                try
+                {
+                    // check runtime options (foreign keys)
+                    assertTrue(String.format("There are violations on the foreign keys in the table %s",
+                                             GeoPackageCore.ContentsTableName),
+                               !foreignKey.next(),
+                               Severity.Error);
+                }
+                finally
+                {
+                    foreignKey.close();
+                }
+            }
+            finally
+            {
+                statement.close();
             }
         }
     }
@@ -710,7 +888,7 @@ public class CoreVerifier extends Verifier
 
     static
     {
-        final Map<String, ColumnDefinition> contentColumns = new HashMap<>();
+        final Map<String, ColumnDefinition> contentColumns = new HashMap<String, ColumnDefinition>();
 
         contentColumns.put("table_name",  new ColumnDefinition("TEXT",     true,  true,  true,  null));
         contentColumns.put("data_type",   new ColumnDefinition("TEXT",     true,  false, false, null));
@@ -725,9 +903,9 @@ public class CoreVerifier extends Verifier
 
         ContentTableDefinition = new TableDefinition(GeoPackageCore.ContentsTableName,
                                                      contentColumns,
-                                                     new HashSet<>(Arrays.asList(new ForeignKeyDefinition(GeoPackageCore.SpatialRefSysTableName, "srs_id", "srs_id"))));
+                                                     new HashSet<ForeignKeyDefinition>(Arrays.asList(new ForeignKeyDefinition(GeoPackageCore.SpatialRefSysTableName, "srs_id", "srs_id"))));
 
-        final Map<String, ColumnDefinition> spatialReferenceSystemColumns = new HashMap<>();
+        final Map<String, ColumnDefinition> spatialReferenceSystemColumns = new HashMap<String, ColumnDefinition>();
 
         spatialReferenceSystemColumns.put("srs_name",                 new ColumnDefinition("TEXT",    true,  false, false, null));
         spatialReferenceSystemColumns.put("srs_id",                   new ColumnDefinition("INTEGER", true,  true,  true,  null));
