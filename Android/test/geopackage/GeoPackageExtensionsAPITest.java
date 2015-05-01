@@ -29,8 +29,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -43,6 +41,8 @@ import java.util.Random;
 
 import org.junit.Test;
 
+import com.rgi.android.common.util.functional.FunctionalUtility;
+import com.rgi.android.common.util.functional.Predicate;
 import com.rgi.android.geopackage.GeoPackage;
 import com.rgi.android.geopackage.GeoPackage.OpenMode;
 import com.rgi.android.geopackage.extensions.Extension;
@@ -692,22 +692,28 @@ public class GeoPackageExtensionsAPITest
            final Extension extension2 = gpkg.extensions().addExtension("table_name",  null, "extension_Name2", "definition", Scope.WriteOnly);
            final Extension extension3 = gpkg.extensions().addExtension("table_name2", null, "extension_Name3", "definition", Scope.ReadWrite);
 
-           final List<Extension> extensionsExpected = new ArrayList<>(Arrays.asList(extension1, extension2, extension3));
+           final List<Extension> extensionsExpected = new ArrayList<Extension>(Arrays.asList(extension1, extension2, extension3));
 
            final Collection<Extension> extensionsReturned = gpkg.extensions().getExtensions();
 
-           assertTrue("The method getExtensions did not return the extensions expected.",
-                       extensionsReturned.stream()
-                                         .allMatch(extensionReturned ->
-                                                       extensionsExpected.stream()
-                                                                         .anyMatch(extensionExpected ->
-                                                                                         extensionReturned.equals(extensionExpected.getTableName(),
-                                                                                                                  extensionExpected.getColumnName(),
-                                                                                                                  extensionExpected.getExtensionName(),
-                                                                                                                  extensionExpected.getDefinition(),
-                                                                                                                  Scope.fromText(extensionExpected.getScope())))) &&
-                      extensionsReturned.size() == 3);
+           for(final Extension extensionReturned: extensionsReturned)
+           {
+               boolean extensionMatches = FunctionalUtility.anyMatch(extensionsExpected.iterator(),
+                                                                     new Predicate<Extension>()
+                                                                     {
+                                                                          @Override
+                                                                          public boolean apply(final Extension extensionExpected)
+                                                                          {
+                                                                              return extensionReturned.equals(extensionExpected.getTableName(),
+                                                                                                              extensionExpected.getColumnName(),
+                                                                                                              extensionExpected.getExtensionName(),
+                                                                                                              extensionExpected.getDefinition(),
+                                                                                                              Scope.fromText(extensionExpected.getScope()));
+                                                                          }
+                                                                     });
 
+               assertTrue("The method getExtensions did not return the extensions expected.", extensionMatches && extensionsReturned.size() == 3);
+           }
         }
         finally
         {
