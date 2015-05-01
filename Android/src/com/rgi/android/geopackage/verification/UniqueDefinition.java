@@ -50,7 +50,7 @@ public class UniqueDefinition
      */
     public UniqueDefinition(final Collection<String> columnNames)
     {
-        this.columnNames = new HashSet<>(columnNames);
+        this.columnNames = new HashSet<String>(columnNames);
     }
 
     /**
