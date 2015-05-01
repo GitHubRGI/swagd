@@ -247,7 +247,7 @@ public class Verifier
                                     new ColumnDefinition(tableInfo.getString ("type"),
                                                          tableInfo.getBoolean("notnull"),
                                                          tableInfo.getBoolean("pk"),
-                                                         FunctionalUtility.anyMatch(uniques.iterator(),
+                                                         FunctionalUtility.anyMatch(uniques,
                                                                                     new Predicate<UniqueDefinition>()
                                                                                     {
                                                                                         @Override
@@ -362,7 +362,7 @@ public class Verifier
         {
             Assert.assertTrue(String.format("The table %s is missing the column group unique constraint: (%s)",
                                             tableName,
-                                            StringUtility.join(", ", groupUnique.getColumnNames().iterator())),
+                                            StringUtility.join(", ", groupUnique.getColumnNames())),
                               uniques.contains(groupUnique),
                               Severity.Error);
         }

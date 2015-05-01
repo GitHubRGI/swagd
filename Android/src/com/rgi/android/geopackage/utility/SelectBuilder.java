@@ -75,13 +75,15 @@ public class SelectBuilder implements Closeable
             throw new IllegalArgumentException("The selected columns collection may not be null or empty");
         }
 
-        if(FunctionalUtility.anyMatch(selectColumns.iterator(), new Predicate<String>(){
-                                                                                            @Override
-                                                                                            public boolean apply(final String columnName)
-                                                                                            {
-                                                                                                return columnName == null || columnName.isEmpty();
-                                                                                            }
-                                                                                        }))
+        if(FunctionalUtility.anyMatch(selectColumns,
+                                      new Predicate<String>()
+                                      {
+                                          @Override
+                                          public boolean apply(final String columnName)
+                                          {
+                                              return columnName == null || columnName.isEmpty();
+                                          }
+                                      }))
         {
             throw new IllegalArgumentException("No column name in the selected columns may be null or empty");
         }
@@ -91,21 +93,23 @@ public class SelectBuilder implements Closeable
             throw new IllegalArgumentException("The where columns collection may not be null or empty");
         }
 
-        if(FunctionalUtility.anyMatch(where.iterator(), new Predicate<Entry<String, Object>>(){
-                                                                                                  @Override
-                                                                                                  public boolean apply(final Entry<String, Object> entry)
-                                                                                                  {
-                                                                                                      return entry.getKey() == null || entry.getKey().isEmpty();
-                                                                                                  }
-                                                                                              }))
+        if(FunctionalUtility.anyMatch(where,
+                                      new Predicate<Entry<String, Object>>()
+                                      {
+                                          @Override
+                                          public boolean apply(final Entry<String, Object> entry)
+                                          {
+                                              return entry.getKey() == null || entry.getKey().isEmpty();
+                                          }
+                                      }))
         {
             throw new IllegalArgumentException("No column name in a where clause may be null or empty");
         }
 
-        StringBuilder whereSQL = new StringBuilder();
+        final StringBuilder whereSQL = new StringBuilder();
         int count = 1;
 
-        for(Entry<String, Object> entry : where)
+        for(final Entry<String, Object> entry : where)
         {
             whereSQL.append(entry.getKey() + (entry.getValue() == null ? " IS NULL" : " = ?"));
 
@@ -117,7 +121,7 @@ public class SelectBuilder implements Closeable
         }
 
         final String querySql = String.format("SELECT %s FROM %s WHERE %s;",
-                                              StringUtility.join(", ", selectColumns.iterator()),
+                                              StringUtility.join(", ", selectColumns),
                                               tableName,
                                               whereSQL);
 
@@ -153,7 +157,7 @@ public class SelectBuilder implements Closeable
         {
             this.preparedStatement.close();
         }
-        catch (SQLException e)
+        catch (final SQLException e)
         {
             throw new RuntimeException(e);
         }

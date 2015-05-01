@@ -23,6 +23,7 @@
 
 package com.rgi.android.common.util;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 
@@ -38,14 +39,16 @@ public class StringUtility
      * @param delimiter
      *             String to interpose between the members of the string
      *             collection
-     * @param iterator
+     * @param collection
      *             Collection of strings
      * @return A single string composed of the collection of strings with the
      *             delimiter between each element
      */
-    public static String join(final String delimiter, final Iterator<String> iterator)
+    public static String join(final String delimiter, final Collection<String> collection)
     {
         final StringBuilder stringBuilder = new StringBuilder();
+
+        final Iterator<String> iterator = collection.iterator();
 
         while(iterator.hasNext())
         {

@@ -27,7 +27,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import com.rgi.android.common.util.StringUtility;
+import com.rgi.android.common.util.functional.FunctionalUtility;
+import com.rgi.android.common.util.functional.Predicate;
 
 /**
  * @author Luke Lambert
@@ -47,7 +50,7 @@ public class TableDefinition
     public TableDefinition(final String                        name,
                            final Map<String, ColumnDefinition> columns)
     {
-        this(name, columns, Collections.emptySet(), Collections.emptySet());
+        this(name, columns, Collections.<ForeignKeyDefinition>emptySet());
     }
 
     /**
@@ -65,7 +68,7 @@ public class TableDefinition
                            final Map<String, ColumnDefinition> columns,
                            final Set<ForeignKeyDefinition>     foreignKeys)
     {
-        this(name, columns, foreignKeys, Collections.emptySet());
+        this(name, columns, foreignKeys, Collections.<UniqueDefinition>emptySet());
     }
 
 
@@ -125,23 +128,31 @@ public class TableDefinition
         if(badForeignKeyFromColumns.size() > 0)
         {
             throw new IllegalArgumentException(String.format("Foreign key definitions reference a the following 'from' columns that do not exist in this table: %s",
-                                                             String.join(", ", badForeignKeyFromColumns)));
+                                                             StringUtility.join(", ", badForeignKeyFromColumns)));
         }
 
-        final Set<String> groupUniqueColumns = groupUniques.stream()
-                                                            .collect(HashSet<String>::new,
-                                                                     (set,  groupUnique) -> set.addAll(groupUnique.getColumnNames()),
-                                                                     (set1, set2)        -> set1.addAll(set2));
+        final Set<String> groupUniqueColumns = new HashSet<String>();
 
-        final Set<String> badGroupUniqueColumns = groupUniqueColumns.stream()
-                                                            .filter(columnName -> !columnNames.contains(columnName))
-                                                            .collect(Collectors.toSet());
+        for(final UniqueDefinition uniqueDefinition : groupUniques)
+        {
+            groupUniqueColumns.addAll(uniqueDefinition.getColumnNames());
+        }
+
+        final Set<String> badGroupUniqueColumns = new HashSet<String>(FunctionalUtility.filter(groupUniqueColumns,
+                                                                                               new Predicate<String>()
+                                                                                               {
+                                                                                                   @Override
+                                                                                                   public boolean apply(final String t)
+                                                                                                   {
+                                                                                                       return !columnNames.contains(t);
+                                                                                                   }
+                                                                                               }));
 
 
         if(badGroupUniqueColumns.size() > 0)
         {
             throw new IllegalArgumentException(String.format("Group unique definitions reference the following columns that do not exist in this table: %s",
-                                                             String.join(", ", badGroupUniqueColumns)));
+                                                             StringUtility.join(", ", badGroupUniqueColumns)));
         }
 
         this.name         = name;

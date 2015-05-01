@@ -70,7 +70,7 @@ public class DatabaseUtility
             throw new IllegalArgumentException("File must be at least 100 bytes to be an SQLite file.");
         }
 
-        RandomAccessFile randomAccessFile = new RandomAccessFile(sqliteFile, "r");
+        final RandomAccessFile randomAccessFile = new RandomAccessFile(sqliteFile, "r");
 
         try
         {
@@ -110,7 +110,7 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;");
+        final PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;");
 
         try
         {
@@ -141,8 +141,8 @@ public class DatabaseUtility
 
         final Set<String> uniqueNames = new HashSet<String>(Arrays.asList(names));
 
-        PreparedStatement preparedStatement = connection.prepareStatement(String.format("SELECT COUNT(*) AS count FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name IN (%s);",
-                StringUtility.join(", ", Collections.nCopies(uniqueNames.size(), "?").iterator())));
+        final PreparedStatement preparedStatement = connection.prepareStatement(String.format("SELECT COUNT(*) AS count FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name IN (%s);",
+                                                                                StringUtility.join(", ", Collections.nCopies(uniqueNames.size(), "?"))));
 
         try
         {
@@ -172,7 +172,7 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        Statement statement = connection.createStatement();
+        final Statement statement = connection.createStatement();
 
         try
         {
@@ -196,13 +196,13 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        Statement statement = connection.createStatement();
+        final Statement statement = connection.createStatement();
 
         try
         {
             final String sql = "PRAGMA application_id;";
 
-            ResultSet rs = statement.executeQuery(sql);
+            final ResultSet rs = statement.executeQuery(sql);
 
             try
             {
@@ -232,7 +232,7 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        Statement statement = connection.createStatement();
+        final Statement statement = connection.createStatement();
 
         try
         {
@@ -255,7 +255,7 @@ public class DatabaseUtility
     {
     	DatabaseUtility.verify(connection);
 
-    	Statement statement = connection.createStatement();
+    	final Statement statement = connection.createStatement();
 
     	try
     	{
@@ -292,11 +292,11 @@ public class DatabaseUtility
                                                               columnName,
                                                               tableName);
 
-        PreparedStatement preparedStatement = connection.prepareStatement(smallestNonexistentValue);
+        final PreparedStatement preparedStatement = connection.prepareStatement(smallestNonexistentValue);
 
         try
         {
-            ResultSet result = preparedStatement.executeQuery();
+            final ResultSet result = preparedStatement.executeQuery();
 
             try
             {

@@ -23,7 +23,8 @@
 
 package com.rgi.android.common.util.functional;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Luke Lambert
@@ -31,11 +32,11 @@ import java.util.Iterator;
  */
 public class FunctionalUtility
 {
-    public static <T> boolean anyMatch(final Iterator<T> iterator, final Predicate<T> predicate)
+    public static <T> boolean anyMatch(final Collection<T> collection, final Predicate<T> predicate)
     {
-        if(iterator == null)
+        if(collection == null)
         {
-            throw new IllegalArgumentException("Iterator may not be null");
+            throw new IllegalArgumentException("Collection may not be null");
         }
 
         if(predicate == null)
@@ -43,14 +44,39 @@ public class FunctionalUtility
             throw new IllegalArgumentException("Predicate may not be null");
         }
 
-        while(iterator.hasNext())
+        for(final T t : collection)
         {
-            if(predicate.apply(iterator.next()))
+            if(predicate.apply(t))
             {
                 return true;
             }
         }
 
         return false;
+    }
+
+    public static <T> Collection<T> filter(final Collection<T> collection, final Predicate<T> predicate)
+    {
+        if(collection == null)
+        {
+            throw new IllegalArgumentException("Collection may not be null");
+        }
+
+        if(predicate == null)
+        {
+            throw new IllegalArgumentException("Predicate may not be null");
+        }
+
+        final Collection<T> newCollection = new ArrayList<T>();
+
+        for(final T t : collection)
+        {
+            if(predicate.apply(t))
+            {
+                collection.add(t);
+            }
+        }
+
+        return collection;
     }
 }
