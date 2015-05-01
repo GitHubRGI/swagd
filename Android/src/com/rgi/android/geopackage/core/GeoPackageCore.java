@@ -124,10 +124,24 @@ public class GeoPackageCore
 
         final String rowCountSql = String.format("SELECT COUNT(*) FROM %s;", content.getTableName());
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(rowCountSql);
-            final ResultSet         tileResult        = preparedStatement.executeQuery();)
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(rowCountSql);
+
+        try
         {
-            return tileResult.getLong(1);
+            final ResultSet tileResult = preparedStatement.executeQuery();
+
+            try
+            {
+                return tileResult.getLong(1);
+            }
+            finally
+            {
+                tileResult.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -189,7 +203,7 @@ public class GeoPackageCore
 
             return spatialReferenceSystem;
         }
-        catch(final Exception ex)
+        catch(final SQLException ex)
         {
             this.databaseConnection.rollback();
             throw ex;
@@ -221,12 +235,16 @@ public class GeoPackageCore
                                                  "description",
                                                  GeoPackageCore.SpatialRefSysTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(srsQuerySql))
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(srsQuerySql);
+
+        try
         {
             preparedStatement.setString(1, organization);
             preparedStatement.setInt   (2, organizationSrsId);
 
-            try(ResultSet srsResult = preparedStatement.executeQuery())
+            final ResultSet srsResult = preparedStatement.executeQuery();
+
+            try
             {
                 if(srsResult.isBeforeFirst())
                 {
@@ -238,6 +256,14 @@ public class GeoPackageCore
                                                       srsResult.getString(6));
                 }
             }
+            finally
+            {
+                srsResult.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
 
         return null;
@@ -265,11 +291,15 @@ public class GeoPackageCore
                                                  "description",
                                                  GeoPackageCore.SpatialRefSysTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(srsQuerySql))
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(srsQuerySql);
+
+        try
         {
             preparedStatement.setInt(1, identifier);
 
-            try(ResultSet srsResult = preparedStatement.executeQuery())
+            final ResultSet srsResult = preparedStatement.executeQuery();
+
+            try
             {
                 if(srsResult.isBeforeFirst())
                 {
@@ -281,6 +311,14 @@ public class GeoPackageCore
                                                       srsResult.getString(6));
                 }
             }
+            finally
+            {
+                srsResult.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
 
         return null;
@@ -370,7 +408,9 @@ public class GeoPackageCore
                                                    "max_y",
                                                    "srs_id");
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertContent))
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertContent);
+
+        try
         {
             final Integer srsId = spatialReferenceSystem == null ? null
                                                                  : spatialReferenceSystem.getIdentifier();
@@ -386,6 +426,10 @@ public class GeoPackageCore
             preparedStatement.setObject(9, srsId, Types.INTEGER);                // Using setObject because the spec allows the srs id be null
 
             preparedStatement.executeUpdate();
+        }
+        finally
+        {
+            preparedStatement.close();
         }
 
         return this.getContent(tableName);
@@ -433,7 +477,9 @@ public class GeoPackageCore
                                            spatialReferenceSystem != null ? " AND srs_id = ?"
                                                                                   : "");
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(query))
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(query);
+
+        try
         {
             preparedStatement.setString(1, dataType);
 
@@ -466,6 +512,10 @@ public class GeoPackageCore
                                       .filter(Objects::nonNull)
                                       .collect(Collectors.toCollection(ArrayList::new));
             }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
