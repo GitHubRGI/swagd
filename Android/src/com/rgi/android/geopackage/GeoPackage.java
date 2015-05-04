@@ -22,11 +22,11 @@
  */
 package com.rgi.android.geopackage;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.FileAlreadyExistsException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -34,18 +34,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import utility.DatabaseUtility;
-
-import com.rgi.geopackage.core.GeoPackageCore;
-import com.rgi.geopackage.extensions.GeoPackageExtensions;
-import com.rgi.geopackage.features.GeoPackageFeatures;
-import com.rgi.geopackage.metadata.GeoPackageMetadata;
-import com.rgi.geopackage.schema.GeoPackageSchema;
-import com.rgi.geopackage.tiles.GeoPackageTiles;
-import com.rgi.geopackage.verification.ConformanceException;
-import com.rgi.geopackage.verification.Severity;
-import com.rgi.geopackage.verification.VerificationIssue;
-import com.rgi.geopackage.verification.VerificationLevel;
+import com.rgi.android.geopackage.utility.DatabaseUtility;
+import com.rgi.android.geopackage.core.GeoPackageCore;
+import com.rgi.android.geopackage.extensions.GeoPackageExtensions;
+import com.rgi.android.geopackage.features.GeoPackageFeatures;
+import com.rgi.android.geopackage.metadata.GeoPackageMetadata;
+import com.rgi.android.geopackage.schema.GeoPackageSchema;
+import com.rgi.android.geopackage.tiles.GeoPackageTiles;
+import com.rgi.android.geopackage.verification.ConformanceException;
+import com.rgi.android.geopackage.verification.Severity;
+import com.rgi.android.geopackage.verification.VerificationIssue;
+import com.rgi.android.geopackage.verification.VerificationLevel;
 
 /**
  * Implementation of the <a href="http://www.geopackage.org/spec/">OGC GeoPackage specification</a>
@@ -53,7 +52,7 @@ import com.rgi.geopackage.verification.VerificationLevel;
  * @author Luke Lambert
  *
  */
-public class GeoPackage implements AutoCloseable
+public class GeoPackage implements Closeable
 {
     /**
      * @param file
@@ -152,9 +151,6 @@ public class GeoPackage implements AutoCloseable
      *             when openMode is set to OpenMode.Create, and the file already
      *             exists, openMode is set to OpenMode.Open, and the file does
      *             not exist, or if there is a file read error
-     * @throws FileAlreadyExistsException
-     *             when openMode is set to OpenMode.Create, and the file already
-     *             exists
      * @throws FileNotFoundException
      *             when openMode is set to OpenMode.Open, and the file does not
      *             exist
@@ -183,7 +179,7 @@ public class GeoPackage implements AutoCloseable
 
         if(openMode == OpenMode.Create && !isNewFile)
         {
-            throw new FileAlreadyExistsException(file.getAbsolutePath());
+            throw new IOException("File already exists: " + file.getAbsolutePath());
         }
 
         if(openMode == OpenMode.Open && isNewFile)

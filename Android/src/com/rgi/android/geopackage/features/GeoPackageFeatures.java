@@ -28,10 +28,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
 
-import com.rgi.geopackage.core.GeoPackageCore;
-import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.verification.VerificationIssue;
-import com.rgi.geopackage.verification.VerificationLevel;
+import com.rgi.android.common.BoundingBox;
+import com.rgi.android.geopackage.core.ContentFactory;
+import com.rgi.android.geopackage.core.GeoPackageCore;
+import com.rgi.android.geopackage.core.SpatialReferenceSystem;
+import com.rgi.android.geopackage.verification.VerificationIssue;
+import com.rgi.android.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
@@ -66,10 +68,16 @@ public class GeoPackageFeatures
     @SuppressWarnings("unused")
     private void createFeaturesTables() throws SQLException
     {
+        final Statement statement = this.databaseConnection.createStatement();
+
         // TODO
-        try(Statement statement = this.databaseConnection.createStatement())
+        try
         {
             // TODO
+        }
+        finally
+        {
+            statement.close();
         }
     }
 
@@ -84,7 +92,14 @@ public class GeoPackageFeatures
     public static Collection<FeatureSet> getFeatureSets(final GeoPackageCore core, final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
     {
         return core.getContent(FeatureSet.FeatureContentType,
-                               (tableName, dataType, identifier, description, lastChange, boundingBox, spatialReferenceSystem) -> new FeatureSet(tableName, identifier, description, lastChange, boundingBox, spatialReferenceSystem),
+                               new ContentFactory<FeatureSet>()
+                               {
+                                   @Override
+                                   public FeatureSet create(final String inTableName, final String dataType, final String identifier, final String description, final String lastChange, final BoundingBox boundingBox, final Integer spatialReferenceSystemIdentifier)
+                                   {
+                                       return new FeatureSet(inTableName, identifier, description, lastChange, boundingBox, spatialReferenceSystemIdentifier);
+                                   }
+                               },
                                matchingSpatialReferenceSystem);
     }
 

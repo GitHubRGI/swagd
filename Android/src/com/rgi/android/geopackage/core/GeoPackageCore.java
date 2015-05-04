@@ -475,7 +475,7 @@ public class GeoPackageCore
                                            "srs_id",
                                            GeoPackageCore.ContentsTableName,
                                            spatialReferenceSystem != null ? " AND srs_id = ?"
-                                                                                  : "");
+                                                                          : "");
 
         final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(query);
 

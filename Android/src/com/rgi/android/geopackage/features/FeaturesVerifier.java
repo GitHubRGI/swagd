@@ -25,8 +25,8 @@ package com.rgi.android.geopackage.features;
 
 import java.sql.Connection;
 
-import com.rgi.geopackage.verification.VerificationLevel;
-import com.rgi.geopackage.verification.Verifier;
+import com.rgi.android.geopackage.verification.VerificationLevel;
+import com.rgi.android.geopackage.verification.Verifier;
 
 /**
  * @author Jenifer Cochran
