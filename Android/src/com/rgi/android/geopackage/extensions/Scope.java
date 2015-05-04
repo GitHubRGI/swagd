@@ -73,13 +73,18 @@ public enum Scope
             throw new IllegalArgumentException("Text may not be null");
         }
 
-        switch(text.toLowerCase())
-        {
-            case "read-write": return ReadWrite;
-            case "write-only": return WriteOnly;
+        final String lowerText = text.toLowerCase();
 
-            default: throw new IllegalArgumentException("Scope must either be \"read-write\" or \"write-only\".");
+        if(lowerText.equals("read-write"))
+        {
+            return ReadWrite;
         }
+        else if(lowerText.equals("write-only"))
+        {
+            return WriteOnly;
+        }
+
+        throw new IllegalArgumentException("Scope must either be \"read-write\" or \"write-only\".");
     }
 
     private final String text;

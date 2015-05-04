@@ -33,15 +33,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
-import utility.DatabaseUtility;
-import utility.SelectBuilder;
+import com.rgi.android.geopackage.utility.DatabaseUtility;
+import com.rgi.android.geopackage.utility.SelectBuilder;
 
-import com.rgi.android.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.verification.VerificationIssue;
-import com.rgi.geopackage.verification.VerificationLevel;
+import com.rgi.android.geopackage.verification.VerificationIssue;
+import com.rgi.android.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert

@@ -31,16 +31,17 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import com.rgi.android.geopackage.utility.DatabaseUtility;
+import com.rgi.android.common.util.functional.FunctionalUtility;
+import com.rgi.android.common.util.functional.Predicate;
 import com.rgi.android.geopackage.core.GeoPackageCore;
 import com.rgi.android.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.android.geopackage.features.GeoPackageFeatures;
 import com.rgi.android.geopackage.metadata.GeoPackageMetadata;
 import com.rgi.android.geopackage.schema.GeoPackageSchema;
 import com.rgi.android.geopackage.tiles.GeoPackageTiles;
+import com.rgi.android.geopackage.utility.DatabaseUtility;
 import com.rgi.android.geopackage.verification.ConformanceException;
 import com.rgi.android.geopackage.verification.Severity;
 import com.rgi.android.geopackage.verification.VerificationIssue;
@@ -232,7 +233,31 @@ public class GeoPackage implements Closeable
                 throw new IOException("Unable to read SQLite version: " + ex.getMessage());
             }
         }
-        catch(final SQLException | ConformanceException | IOException ex)
+        catch(final SQLException ex)
+        {
+            this.close();
+
+            // If anything goes wrong, clean up the new file that may have been created
+            if(isNewFile && file.exists())
+            {
+                file.delete();
+            }
+
+            throw ex;
+        }
+        catch(final ConformanceException ex)
+        {
+            this.close();
+
+            // If anything goes wrong, clean up the new file that may have been created
+            if(isNewFile && file.exists())
+            {
+                file.delete();
+            }
+
+            throw ex;
+        }
+        catch(final IOException ex)
         {
             this.close();
 
@@ -283,13 +308,20 @@ public class GeoPackage implements Closeable
      * @throws SQLException throws if SQLException occurs
      */
     @Override
-    public void close() throws SQLException
+    public void close() throws IOException
     {
-        if(this.databaseConnection            != null &&
-           this.databaseConnection.isClosed() == false)
+        try
         {
-            this.databaseConnection.rollback(); // When Connection.close() is called, pending transactions are either automatically committed or rolled back depending on implementation defined behavior.  Make the call explicitly to avoid relying on implementation defined behavior.
-            this.databaseConnection.close();
+            if(this.databaseConnection            != null &&
+               this.databaseConnection.isClosed() == false)
+            {
+                this.databaseConnection.rollback(); // When Connection.close() is called, pending transactions are either automatically committed or rolled back depending on implementation defined behavior.  Make the call explicitly to avoid relying on implementation defined behavior.
+                this.databaseConnection.close();
+            }
+        }
+        catch(final SQLException ex)
+        {
+            throw new IOException(ex);
         }
     }
 
@@ -299,7 +331,7 @@ public class GeoPackage implements Closeable
      * @return the GeoPackage requirements this GeoPackage fails to conform to
      * @throws SQLException throws if SQLException occurs
      */
-    public Collection<VerificationIssue> getVerificationIssues() throws SQLException
+    public List<VerificationIssue> getVerificationIssues() throws SQLException
     {
         return this.getVerificationIssues(false);
     }
@@ -318,14 +350,23 @@ public class GeoPackage implements Closeable
      * @return the GeoPackage requirements this GeoPackage fails to conform to
      * @throws SQLException throws if SQLException occurs
      */
-    public Collection<VerificationIssue> getVerificationIssues(final boolean continueAfterCoreErrors) throws SQLException
+    public List<VerificationIssue> getVerificationIssues(final boolean continueAfterCoreErrors) throws SQLException
     {
-        final List<VerificationIssue> verificationIssues = new ArrayList<>();
+        final List<VerificationIssue> verificationIssues = new ArrayList<VerificationIssue>();
 
         verificationIssues.addAll(this.core.getVerificationIssues(this.file, this.verificationLevel));
 
         // Skip verifying GeoPackage subsystems if there are fatal errors in core
-        if(continueAfterCoreErrors || !verificationIssues.stream().anyMatch(verificationIssue -> verificationIssue.getSeverity() == Severity.Error))
+        if(continueAfterCoreErrors ||
+           !FunctionalUtility.anyMatch(verificationIssues,
+                                       new Predicate<VerificationIssue>()
+                                       {
+                                           @Override
+                                           public boolean apply(final VerificationIssue t)
+                                           {
+                                               return t.getSeverity() == Severity.Error;
+                                           }
+                                       }))
         {
             verificationIssues.addAll(this.features  .getVerificationIssues(this.verificationLevel));
             verificationIssues.addAll(this.tiles     .getVerificationIssues(this.verificationLevel));
@@ -347,7 +388,7 @@ public class GeoPackage implements Closeable
     {
         //final long startTime = System.nanoTime();
 
-        final Collection<VerificationIssue> verificationIssues = this.getVerificationIssues();
+        final List<VerificationIssue> verificationIssues = this.getVerificationIssues();
 
         //System.out.println(String.format("GeoPackage took %.2f seconds to verify.", (System.nanoTime() - startTime)/1.0e9));
 
@@ -357,7 +398,15 @@ public class GeoPackage implements Closeable
 
             System.out.println(conformanceException.toString());
 
-            if(verificationIssues.stream().anyMatch(verificationIssue -> verificationIssue.getSeverity() == Severity.Error))
+            if(FunctionalUtility.anyMatch(verificationIssues,
+                                          new Predicate<VerificationIssue>()
+                                          {
+                                              @Override
+                                              public boolean apply(final VerificationIssue t)
+                                              {
+                                                  return t.getSeverity() == Severity.Error;
+                                              }
+                                          }))
             {
                 throw conformanceException;
             }
