@@ -29,7 +29,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -64,19 +63,20 @@ public class DatabaseUtilityTest
     {
         final File testFile = this.getRandomFile(4);
         testFile.createNewFile();
-        try(Connection con = this.getConnection(testFile.getAbsolutePath()))
+        Connection con = this.getConnection(testFile.getAbsolutePath());
+        try
         {
             final int appId = DatabaseUtility.getApplicationId(con);
             assertTrue("DatabaseUtility did not return the expected application Id.",appId == 0);
         }
         finally
         {
-            if(testFile.exists())
-            {
-                testFile.delete();
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
+
+
 
     /**
      * Tests if the application Id can be set correctly through the
@@ -92,17 +92,15 @@ public class DatabaseUtilityTest
     {
         final File testFile = this.getRandomFile(4);
         testFile.createNewFile();
-        try(Connection con = this.getConnection(testFile.getAbsolutePath()))
+        Connection con = this.getConnection(testFile.getAbsolutePath());
+        try
         {
             DatabaseUtility.setApplicationId(con, 12345);
             assertTrue("DatabaseUtility did not return the expected application Id.", DatabaseUtility.getApplicationId(con) == 12345);
         }
         finally
         {
-            if(testFile.exists())
-            {
-                testFile.delete();
-            }
+            this.deleteFile(testFile);
         }
     }
 
@@ -115,28 +113,42 @@ public class DatabaseUtilityTest
     public void databaseUtilitySetPragmaForiegnKeys() throws Exception
     {
         final File testFile = this.getRandomFile(5);
-             testFile.createNewFile();
+        testFile.createNewFile();
+        Connection con = this.getConnection(testFile.getAbsolutePath());
 
-        try(Connection con = this.getConnection(testFile.getAbsolutePath());)
+        try
         {
             //set it false using database utility
             DatabaseUtility.setPragmaForeignKeys(con, false);
             //pragma the database
             final String query = "PRAGMA foreign_keys;";
+            Statement stmt     = con.createStatement();
 
-            try(Statement stmt     = con.createStatement();
-                 ResultSet fkPragma = stmt.executeQuery(query);)
+            try
             {
-                final int off = fkPragma.getInt("foreign_keys");
-                assertTrue("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to off when given the parameter false.", off == 0);
+                ResultSet fkPragma = stmt.executeQuery(query);
+
+                try
+                {
+                    final int off = fkPragma.getInt("foreign_keys");
+                    assertTrue("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to off when given the parameter false.", off == 0);
+
+                }
+                finally
+                {
+                    fkPragma.close();
+                }
+
+            }
+            finally
+            {
+                stmt.close();
             }
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -150,28 +162,40 @@ public class DatabaseUtilityTest
     public void databaseUtilitySetPragmaForiegnKeys2() throws Exception
     {
         final File testFile = this.getRandomFile(5);
-             testFile.createNewFile();
+        testFile.createNewFile();
+        Connection con = this.getConnection(testFile.getAbsolutePath());
 
-        try(Connection con = this.getConnection(testFile.getAbsolutePath());)
+        try
         {
             //set it false using database utility
             DatabaseUtility.setPragmaForeignKeys(con, true);
             //pragma the database
             final String query = "PRAGMA foreign_keys;";
+            Statement stmt     = con.createStatement();
 
-            try(Statement stmt     = con.createStatement();
-                ResultSet fkPragma = stmt.executeQuery(query);)
+            try
             {
-                final int on = fkPragma.getInt("foreign_keys");
-                assertTrue("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to on when given the parameter true.", on == 1);
+                ResultSet fkPragma = stmt.executeQuery(query);
+
+                try
+                {
+                    final int on = fkPragma.getInt("foreign_keys");
+                    assertTrue("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to on when given the parameter true.", on == 1);
+                }
+                finally
+                {
+                    fkPragma.close();
+                }
+            }
+            finally
+            {
+                stmt.close();
             }
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -187,18 +211,17 @@ public class DatabaseUtilityTest
     {
         final File testFile = this.getRandomFile(12);
         testFile.createNewFile();
+        Connection con  = this.getConnection(testFile.getAbsolutePath());
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
+        try
         {
             final boolean tableFound = DatabaseUtility.tableOrViewExists(con, "non_existant_table");
             assertTrue("The Database BoundsUtility method table or view exists method returned true when it should have returned false.", !tableFound);
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -216,18 +239,17 @@ public class DatabaseUtilityTest
         testFile.createNewFile();
 
         final String tableName = "gpkg_tile_matrix";
+        Connection con  = this.getConnection(testFile.getAbsolutePath());
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
+        try
         {
             this.addTable(con, tableName);
             assertTrue("The Database BoundsUtility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tableOrViewExists(con, tableName));
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -242,20 +264,18 @@ public class DatabaseUtilityTest
     public void databaseUtilityTableorViewExists3() throws Exception
     {
         final File testFile = this.getRandomFile(3);
-             testFile.createNewFile();
+        testFile.createNewFile();
+        Connection con  = this.getConnection(testFile.getAbsolutePath());
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath());
-            )
+        try
         {
             final boolean tableFound = DatabaseUtility.tableOrViewExists(con, null);
             assertTrue("The Database BoundsUtility method table or view exists method returned true when it should have returned false.", !tableFound);
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -284,10 +304,11 @@ public class DatabaseUtilityTest
     public void databaseUtilityTableorViewExists5() throws Exception
     {
         final File testFile = this.getRandomFile(3);
-             testFile.createNewFile();
+        testFile.createNewFile();
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath());
-            )
+        Connection con  = this.getConnection(testFile.getAbsolutePath());
+
+        try
         {
             con.close();
             DatabaseUtility.tableOrViewExists(con, null);
@@ -295,10 +316,7 @@ public class DatabaseUtilityTest
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            this.deleteFile(testFile);
         }
     }
 
@@ -313,9 +331,10 @@ public class DatabaseUtilityTest
     public void databaseUtilityTablesorViewsExists() throws Exception
     {
         final File testFile = this.getRandomFile(3);
-             testFile.createNewFile();
+        testFile.createNewFile();
+        Connection con  = this.getConnection(testFile.getAbsolutePath());
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
+        try
         {
             final String tableName = "gpkg_tile_matrix";
             this.addTable(con, tableName);
@@ -325,10 +344,8 @@ public class DatabaseUtilityTest
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -343,9 +360,10 @@ public class DatabaseUtilityTest
     public void databaseUtilityTablesorViewsExists2() throws Exception
     {
         final File testFile = this.getRandomFile(3);
-             testFile.createNewFile();
+        testFile.createNewFile();
+        Connection con  = this.getConnection(testFile.getAbsolutePath());
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
+        try
         {
             final String tableName = "gpkg_tile_matrix";
             this.addTable(con, tableName);
@@ -354,10 +372,8 @@ public class DatabaseUtilityTest
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -372,9 +388,10 @@ public class DatabaseUtilityTest
     public void databaseUtilityTablesorViewsExists3() throws Exception
     {
         final File testFile = this.getRandomFile(3);
-             testFile.createNewFile();
+        testFile.createNewFile();
+        Connection con  = this.getConnection(testFile.getAbsolutePath());
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
+        try
         {
             final String tableName1 = "gpkg_tile_matrix";
             final String tableName2 = "gpkg_contents";
@@ -387,10 +404,8 @@ public class DatabaseUtilityTest
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -406,19 +421,17 @@ public class DatabaseUtilityTest
     {
         final File testFile = this.getRandomFile(3);
         testFile.createNewFile();
+        Connection con  = this.getConnection(testFile.getAbsolutePath());
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath());
-            )
+        try
         {
             DatabaseUtility.getSqliteVersion(testFile);
             fail("Expected an IllegalArgumentException from DatabaseUtility when gave an empty file to getSqliteVersion");
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -434,8 +447,9 @@ public class DatabaseUtilityTest
     {
         final File testFile = this.getRandomFile(3);
         testFile.createNewFile();
+        Connection con  = this.getConnection(testFile.getAbsolutePath());
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
+        try
         {
             this.addTable(con, "foo");
             final String sqliteVersion =  DatabaseUtility.getSqliteVersion(testFile);
@@ -445,10 +459,8 @@ public class DatabaseUtilityTest
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -511,11 +523,24 @@ public class DatabaseUtilityTest
         return new String(text);
     }
 
+    private void deleteFile(final File testFile)
+    {
+        if(testFile.exists())
+        {
+            testFile.delete();
+        }
+    }
+
     private void addTable(final Connection con, final String tableName) throws Exception
     {
-        try(Statement statement = con.createStatement())
+        Statement statement = con.createStatement();
+        try
         {
             statement.executeUpdate("CREATE TABLE " + tableName + " (foo INTEGER);");
+        }
+        finally
+        {
+            statement.close();
         }
     }
 
