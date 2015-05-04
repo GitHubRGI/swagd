@@ -29,7 +29,6 @@ import static org.junit.Assert.fail;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -41,6 +40,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import javax.swing.filechooser.FileSystemView;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -511,7 +512,8 @@ public class GeoPackageTilesAPITest
                 Assert.assertTrue("The tile entry's information in the GeoPackage does not match what was originally given to a GeoPackage",
                                   FunctionalUtility.anyMatch(tileSetContnentEntries,
                                                              new Predicate<TileSet>(){
-                                                                                         public boolean apply(final TileSet tileEntry)
+                                                                                         @Override
+                                                                                        public boolean apply(final TileSet tileEntry)
                                                                                          {
                                                                                              return  tileEntry.getBoundingBox().equals(gpkgEntry.getBoundingBox())  &&
                                                                                                      tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
@@ -886,7 +888,8 @@ public class GeoPackageTilesAPITest
                 Assert.assertTrue("The tile entry's information in the GeoPackage does not match what was originally given to a GeoPackage",
                                   FunctionalUtility.anyMatch(tileSetContnentEntries,
                                                              new Predicate<TileSet>(){
-                                                                                          public boolean apply(final TileSet tileEntry)
+                                                                                          @Override
+                                                                                        public boolean apply(final TileSet tileEntry)
                                                                                           {
                                                                                               return tileEntry.getBoundingBox().equals(gpkgEntry.getBoundingBox()) &&
                                                                                                      tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
@@ -1902,7 +1905,8 @@ public class GeoPackageTilesAPITest
                Assert.assertTrue("The GeoPackage's get zoom levels method did not return expected values.",
                                   FunctionalUtility.anyMatch(expectedZooms,
                                                              new Predicate<Integer>(){
-                                                                                          public boolean apply(final Integer currentZoom)
+                                                                                          @Override
+                                                                                        public boolean apply(final Integer currentZoom)
                                                                                           {
                                                                                               return currentZoom.equals(zoom);
                                                                                           }
@@ -2128,7 +2132,8 @@ public class GeoPackageTilesAPITest
                 Assert.assertTrue("The tile entry's information in the GeoPackage does not match what was originally given to a GeoPackage",
                                   FunctionalUtility.anyMatch(expectedTileMatrix,
                                                              new Predicate<TileMatrix>(){
-                                                                                           public boolean apply(final TileMatrix expectedTM)
+                                                                                           @Override
+                                                                                        public boolean apply(final TileMatrix expectedTM)
                                                                                            {
                                                                                                return expectedTM.getTableName()    .equals(gpkgTileMatrix.getTableName())   &&
                                                                                                        expectedTM.getMatrixHeight() ==      gpkgTileMatrix.getMatrixHeight() &&
@@ -4580,7 +4585,8 @@ public class GeoPackageTilesAPITest
 
         do
         {
-            testFile = new File(String.format(FileSystems.getDefault().getPath(this.getRanString(length)).toString() + ".gpkg"));
+            String filename = FileSystemView.getFileSystemView().getDefaultDirectory().getAbsolutePath() + "/" +  this.getRanString(length) + ".gpkg";
+            testFile = new File(filename);
         }
         while (testFile.exists());
 

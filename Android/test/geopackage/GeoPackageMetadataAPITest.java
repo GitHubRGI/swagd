@@ -38,6 +38,7 @@ import java.util.Random;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
+import javax.swing.filechooser.FileSystemView;
 
 import org.junit.Test;
 
@@ -926,7 +927,8 @@ public class GeoPackageMetadataAPITest
 
         do
         {
-            testFile = new File(String.format(FileSystems.getDefault().getPath(this.getRanString(length)).toString() + ".gpkg"));
+            String filename = FileSystemView.getFileSystemView().getDefaultDirectory().getAbsolutePath() + "/" +  this.getRanString(length) + ".gpkg";
+            testFile = new File(filename);
         }
         while (testFile.exists());
 

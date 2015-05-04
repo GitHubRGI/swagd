@@ -36,6 +36,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Random;
 
+import javax.swing.filechooser.FileSystemView;
+
 import org.junit.Test;
 
 import com.rgi.android.common.BoundingBox;
@@ -86,8 +88,8 @@ public class GeoPackageCoreAPITest
     * @throws FileAlreadyExistsException
     * @throws Exception
     */
-   @Test(expected = FileAlreadyExistsException.class)
-   public void createMethod2FileExistsExceptionThrown() throws FileAlreadyExistsException, Exception
+   @Test(expected = IOException.class) //TODO if this test fails it could be due to the fact that this use to be a FileAlreadyExistsException
+   public void createMethod2FileExistsExceptionThrown() throws Exception
    {
        final File testFile = this.getRandomFile(10);
        testFile.createNewFile();
@@ -1552,7 +1554,8 @@ public class GeoPackageCoreAPITest
 
         do
         {
-            testFile = new File(String.format(FileSystems.getDefault().getPath(this.getRanString(length)).toString() + ".gpkg"));
+            String filename = FileSystemView.getFileSystemView().getDefaultDirectory().getAbsolutePath() + "/" +  this.getRanString(length) + ".gpkg";
+            testFile = new File(filename);
         }
         while (testFile.exists());
 

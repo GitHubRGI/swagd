@@ -29,8 +29,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -42,6 +40,7 @@ import java.util.Random;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
+import javax.swing.filechooser.FileSystemView;
 
 import org.junit.Test;
 
@@ -438,7 +437,8 @@ public class GeoPackageSchemaAPITest
             {
                 boolean columnMatches = FunctionalUtility.anyMatch(columnsExpected,
                                                                    new Predicate<DataColumn>(){
-                                                                                                  public boolean apply(final DataColumn expected)
+                                                                                                  @Override
+                                                                                                public boolean apply(final DataColumn expected)
                                                                                                   {
                                                                                                       return dataColumnsEqual(expected, returned);
                                                                                                   }
@@ -1457,7 +1457,8 @@ public class GeoPackageSchemaAPITest
            {
                boolean dataColumnConstraintMatches = FunctionalUtility.anyMatch(expectedCollection,
                                                                                 new Predicate<DataColumnConstraint>(){
-                                                                                                                         public boolean apply(final DataColumnConstraint expected)
+                                                                                                                         @Override
+                                                                                                                        public boolean apply(final DataColumnConstraint expected)
                                                                                                                          {
                                                                                                                              return  dataColumnConstraintsEqual(expected, returned);
                                                                                                                          }
@@ -1578,7 +1579,8 @@ public class GeoPackageSchemaAPITest
 
         do
         {
-            testFile = new File(String.format(FileSystems.getDefault().getPath(this.getRanString(length)).toString() + ".gpkg"));
+            String filename = FileSystemView.getFileSystemView().getDefaultDirectory().getAbsolutePath() + "/" +  this.getRanString(length) + ".gpkg";
+            testFile = new File(filename);
         }
         while (testFile.exists());
 

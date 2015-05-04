@@ -36,6 +36,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Random;
 
+import javax.swing.filechooser.FileSystemView;
+
 import org.junit.Test;
 
 import com.rgi.android.geopackage.utility.DatabaseUtility;
@@ -506,7 +508,8 @@ public class DatabaseUtilityTest
 
         do
         {
-            testFile = new File(String.format(FileSystems.getDefault().getPath(this.getRandomString(length)).toString() + ".gpkg"));
+            String filename = FileSystemView.getFileSystemView().getDefaultDirectory().getAbsolutePath() + "/" +  this.getRandomString(length) + ".gpkg";
+            testFile = new File(filename);
         }
         while (testFile.exists());
 
