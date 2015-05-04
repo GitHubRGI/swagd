@@ -24,7 +24,7 @@
 package com.rgi.android.geopackage.tiles;
 
 import com.rgi.android.common.BoundingBox;
-import com.rgi.geopackage.core.Content;
+import com.rgi.android.geopackage.core.Content;
 
 /**
  * @author Luke Lambert

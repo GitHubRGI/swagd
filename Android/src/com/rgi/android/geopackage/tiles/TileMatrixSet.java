@@ -24,7 +24,7 @@
 package com.rgi.android.geopackage.tiles;
 
 import com.rgi.android.common.BoundingBox;
-import com.rgi.geopackage.core.SpatialReferenceSystem;
+import com.rgi.android.geopackage.core.SpatialReferenceSystem;
 
 /**
  * @author Luke Lambert

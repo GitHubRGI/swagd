@@ -39,7 +39,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
-import utility.DatabaseUtility;
+import com.rgi.android.geopackage.utility.DatabaseUtility;
 
 /**
  * @author Jenifer Cochran
