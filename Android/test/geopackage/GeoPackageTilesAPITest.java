@@ -45,24 +45,27 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.rgi.common.BoundingBox;
-import com.rgi.common.coordinate.Coordinate;
-import com.rgi.common.coordinate.CoordinateReferenceSystem;
-import com.rgi.common.coordinate.CrsCoordinate;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
-import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsProfile;
-import com.rgi.common.coordinate.referencesystem.profile.GlobalGeodeticCrsProfile;
-import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
-import com.rgi.common.util.ImageUtility;
-import com.rgi.geopackage.GeoPackage.OpenMode;
-import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.tiles.Tile;
-import com.rgi.geopackage.tiles.TileMatrix;
-import com.rgi.geopackage.tiles.TileMatrixSet;
-import com.rgi.geopackage.tiles.TileSet;
-import com.rgi.geopackage.verification.ConformanceException;
-import com.rgi.geopackage.verification.VerificationLevel;
+import com.rgi.android.common.BoundingBox;
+import com.rgi.android.common.coordinate.Coordinate;
+import com.rgi.android.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.android.common.coordinate.CrsCoordinate;
+import com.rgi.android.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.android.common.coordinate.referencesystem.profile.CrsProfileFactory;
+import com.rgi.android.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsProfile;
+import com.rgi.android.common.coordinate.referencesystem.profile.GlobalGeodeticCrsProfile;
+import com.rgi.android.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
+import com.rgi.android.common.util.ImageUtility;
+import com.rgi.android.common.util.functional.FunctionalUtility;
+import com.rgi.android.common.util.functional.Predicate;
+import com.rgi.android.geopackage.GeoPackage;
+import com.rgi.android.geopackage.GeoPackage.OpenMode;
+import com.rgi.android.geopackage.core.SpatialReferenceSystem;
+import com.rgi.android.geopackage.tiles.Tile;
+import com.rgi.android.geopackage.tiles.TileMatrix;
+import com.rgi.android.geopackage.tiles.TileMatrixSet;
+import com.rgi.android.geopackage.tiles.TileSet;
+import com.rgi.android.geopackage.verification.ConformanceException;
+import com.rgi.android.geopackage.verification.VerificationLevel;
 
 /**
  * @author Jenifer Cochran
@@ -82,8 +85,9 @@ public class GeoPackageTilesAPITest
     public void addTileSet() throws SQLException, Exception
     {
         final File testFile = this.getRandomFile(5);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
            final TileSet tileSet = gpkg.tiles()
                                        .addTileSet("pyramid",
@@ -107,26 +111,43 @@ public class GeoPackageTilesAPITest
                                        (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
         }
+        finally
+        {
+            gpkg.close();
+        }
 
         final String query = "SELECT table_name FROM gpkg_tile_matrix_set WHERE table_name = 'pyramid';";
 
-        try(Connection con       = this.getConnection(testFile.getAbsolutePath());
-            Statement  stmt      = con.createStatement();
-            ResultSet  tileName  = stmt.executeQuery(query);)
+        Connection con       = this.getConnection(testFile.getAbsolutePath());
+
+        try
         {
-            Assert.assertTrue("The GeoPackage did not set the table_name into the gpkg_tile_matrix_set when adding a new set of tiles.", tileName.next());
-            final String tableName = tileName.getString("table_name");
-            Assert.assertTrue("The GeoPackage did not insert the correct table name into the gpkg_tile_matrix_set when adding a new set of tiles.", tableName.equals("pyramid"));
+            Statement  stmt      = con.createStatement();
+
+            try
+            {
+                ResultSet  tileName  = stmt.executeQuery(query);
+
+                try
+                {
+                    Assert.assertTrue("The GeoPackage did not set the table_name into the gpkg_tile_matrix_set when adding a new set of tiles.", tileName.next());
+                    final String tableName = tileName.getString("table_name");
+                    Assert.assertTrue("The GeoPackage did not insert the correct table name into the gpkg_tile_matrix_set when adding a new set of tiles.", tableName.equals("pyramid"));
+                }
+                finally
+                {
+                    tileName.close();
+                }
+            }
+            finally
+            {
+                stmt.close();
+            }
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -139,7 +160,9 @@ public class GeoPackageTilesAPITest
     public void addTileSetWithNullTileSetEntry() throws Exception
     {
         final File testFile = this.getRandomFile(3);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
             gpkg.tiles().addTile(null, gpkg.tiles().getTileMatrix(tileSet, 0), 0, 0, GeoPackageTilesAPITest.createImageBytes());
@@ -147,13 +170,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -168,7 +186,9 @@ public class GeoPackageTilesAPITest
     public void addTileSetWithNullBoundingBox() throws Exception
     {
         final File testFile = this.getRandomFile(3);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             gpkg.tiles()
                 .addTileSet("tableName",
@@ -182,13 +202,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -201,8 +216,9 @@ public class GeoPackageTilesAPITest
     public void addTileSetWithNullSRS() throws Exception
     {
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             gpkg.tiles()
                 .addTileSet("name",
@@ -215,13 +231,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -233,8 +244,9 @@ public class GeoPackageTilesAPITest
     public void addTileSetWithNewSpatialReferenceSystem() throws Exception
     {
         final File testFile = this.getRandomFile(5);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
 
              gpkg.core().addSpatialReferenceSystem("scaled world mercator",
@@ -243,6 +255,10 @@ public class GeoPackageTilesAPITest
                                                    "definition",
                                                    "description");
         }
+        finally
+        {
+            gpkg.close();
+        }
 
         final String query = "SELECT srs_name FROM gpkg_spatial_ref_sys "+
                              "WHERE srs_name     = 'scaled world mercator' AND "+
@@ -250,22 +266,34 @@ public class GeoPackageTilesAPITest
                                    "definition   = 'definition'            AND "+
                                    "description  = 'description';";
 
-        try(Connection con     = this.getConnection(testFile.getAbsolutePath());
-            Statement  stmt    = con.createStatement();
-            ResultSet  srsInfo = stmt.executeQuery(query);)
+        Connection con     = this.getConnection(testFile.getAbsolutePath());
+
+        try
         {
-            Assert.assertTrue("The Spatial Reference System added to the GeoPackage by the user did not contain the same information given.", srsInfo.next());
+            Statement  stmt    = con.createStatement();
+
+            try
+            {
+                ResultSet  srsInfo = stmt.executeQuery(query);
+
+                try
+                {
+                    Assert.assertTrue("The Spatial Reference System added to the GeoPackage by the user did not contain the same information given.", srsInfo.next());
+                }
+                finally
+                {
+                    srsInfo.close();
+                }
+            }
+            finally
+            {
+                stmt.close();
+            }
         }
         finally
         {
-
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
      }
 
@@ -280,7 +308,9 @@ public class GeoPackageTilesAPITest
     {
         final File testFile = this.getRandomFile(5);
         //create a geopackage with tiles inside
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tileSetONE",
@@ -305,7 +335,9 @@ public class GeoPackageTilesAPITest
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
             //open a file with tiles inside and add more tiles
-            try(GeoPackage gpkgWithTiles = new GeoPackage(testFile, OpenMode.Open))
+            GeoPackage gpkgWithTiles = new GeoPackage(testFile, OpenMode.Open);
+
+            try
             {
                 final TileSet tileSetEntry2 = gpkgWithTiles.tiles()
                                                            .addTileSet("newTileSetTWO",
@@ -326,35 +358,56 @@ public class GeoPackageTilesAPITest
                                                     pixelXSize,
                                                     pixelYSize);
             }
+            finally
+            {
+                gpkgWithTiles.close();
+            }
+        }
+        finally
+        {
+            gpkg.close();
         }
         //make sure the information was added to contents table and tile matrix set table
         final String query = "SELECT cnts.table_name FROM gpkg_contents        AS cnts WHERE cnts.table_name"+
                              " IN(SELECT tms.table_name  FROM gpkg_tile_matrix_set AS tms  WHERE cnts.table_name = tms.table_name);";
 
-        try(Connection con            = this.getConnection(testFile.getAbsolutePath());
-            Statement  stmt           = con.createStatement();
-            ResultSet  tileTableNames = stmt.executeQuery(query);)
+        Connection con            = this.getConnection(testFile.getAbsolutePath());
+
+        try
         {
-            if(!tileTableNames.next())
+            Statement  stmt           = con.createStatement();
+
+            try
             {
-                Assert.fail("The two tiles tables where not successfully added to both the gpkg_contents table and the gpkg_tile_matrix_set.");
+                ResultSet  tileTableNames = stmt.executeQuery(query);
+
+                try
+                {
+                    if(!tileTableNames.next())
+                    {
+                        Assert.fail("The two tiles tables where not successfully added to both the gpkg_contents table and the gpkg_tile_matrix_set.");
+                    }
+                    while (tileTableNames.next())
+                    {
+                        final String tilesTableName = tileTableNames.getString("table_name");
+                        Assert.assertTrue("The tiles table names did not match what was being added to the GeoPackage",
+                                    tilesTableName.equals("newTileSetTWO") || tilesTableName.equals("tileSetONE"));
+                    }
+                }
+                finally
+                {
+                    tileTableNames.close();
+                }
             }
-            while (tileTableNames.next())
+            finally
             {
-                final String tilesTableName = tileTableNames.getString("table_name");
-                Assert.assertTrue("The tiles table names did not match what was being added to the GeoPackage",
-                            tilesTableName.equals("newTileSetTWO") || tilesTableName.equals("tileSetONE"));
+                stmt.close();
             }
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -369,8 +422,9 @@ public class GeoPackageTilesAPITest
     public void addTileSetWithRepeatedTileSetName() throws Exception
     {
         final File testFile = this.getRandomFile(5);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("repeated_name",
@@ -394,13 +448,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -413,8 +462,9 @@ public class GeoPackageTilesAPITest
     public void addTileSetToExistingTilesTable() throws Exception
     {
         final File testFile = this.getRandomFile(9);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tileSetName",
@@ -424,7 +474,7 @@ public class GeoPackageTilesAPITest
                                                     gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
 
 
-            final ArrayList<TileSet> tileSetContnentEntries = new ArrayList<>();
+            final ArrayList<TileSet> tileSetContnentEntries = new ArrayList<TileSet>();
 
             tileSetContnentEntries.add(tileSet);
             tileSetContnentEntries.add(tileSet);
@@ -459,24 +509,24 @@ public class GeoPackageTilesAPITest
             for(final TileSet gpkgEntry : gpkg.tiles().getTileSets())
             {
                 Assert.assertTrue("The tile entry's information in the GeoPackage does not match what was originally given to a GeoPackage",
-                           tileSetContnentEntries.stream()
-                                                 .anyMatch(tileEntry -> tileEntry.getBoundingBox().equals(gpkgEntry.getBoundingBox()) &&
-                                                                        tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
-                                                                        tileEntry.getDescription().equals(gpkgEntry.getDescription()) &&
-                                                                        tileEntry.getIdentifier() .equals(gpkgEntry.getIdentifier())  &&
-                                                                        tileEntry.getTableName()  .equals(gpkgEntry.getTableName())   &&
-                                                                        tileEntry.getSpatialReferenceSystemIdentifier().equals(gpkgEntry.getSpatialReferenceSystemIdentifier())));
+                                  FunctionalUtility.anyMatch(tileSetContnentEntries,
+                                                             new Predicate<TileSet>(){
+                                                                                         public boolean apply(final TileSet tileEntry)
+                                                                                         {
+                                                                                             return  tileEntry.getBoundingBox().equals(gpkgEntry.getBoundingBox())  &&
+                                                                                                     tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
+                                                                                                     tileEntry.getDescription().equals(gpkgEntry.getDescription()) &&
+                                                                                                     tileEntry.getIdentifier() .equals(gpkgEntry.getIdentifier())  &&
+                                                                                                     tileEntry.getTableName()  .equals(gpkgEntry.getTableName())   &&
+                                                                                                     tileEntry.getSpatialReferenceSystemIdentifier().equals(gpkgEntry.getSpatialReferenceSystemIdentifier());
+                                                                                         }
+                                                                                       }));
             }
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delte testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -498,7 +548,9 @@ public class GeoPackageTilesAPITest
     public void addSameTileSetTwice() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final String      tableName   = "tableName";
             final String      identifier  = "identifier";
@@ -520,22 +572,17 @@ public class GeoPackageTilesAPITest
                                                           srs);
 
             Assert.assertTrue("The GeoPackage did not return the same tile set when trying to add the same tile set twice.",
-                       sameTileSet.equals(tileSet.getTableName(),
-                                             tileSet.getDataType(),
-                                             tileSet.getIdentifier(),
-                                             tileSet.getDescription(),
-                                             tileSet.getBoundingBox(),
-                                             tileSet.getSpatialReferenceSystemIdentifier()));
+                              sameTileSet.equals(tileSet.getTableName(),
+                                                    tileSet.getDataType(),
+                                                    tileSet.getIdentifier(),
+                                                    tileSet.getDescription(),
+                                                    tileSet.getBoundingBox(),
+                                                    tileSet.getSpatialReferenceSystemIdentifier()));
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
 
     }
@@ -556,8 +603,9 @@ public class GeoPackageTilesAPITest
     public void addTileSetBadTableName() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             gpkg.tiles()
                 .addTileSet("TableName",
@@ -570,13 +618,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -597,8 +640,9 @@ public class GeoPackageTilesAPITest
     public void addTileSetBadSRS() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             gpkg.tiles()
                 .addTileSet("TableName",
@@ -610,13 +654,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -637,8 +676,9 @@ public class GeoPackageTilesAPITest
     public void addTileSetBadBoundingBox() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             gpkg.tiles()
                 .addTileSet("TableName",
@@ -650,13 +690,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -669,7 +704,9 @@ public class GeoPackageTilesAPITest
      public void addTileSetContentEntryInvalidTableName() throws Exception
      {
          final File testFile = this.getRandomFile(5);
-         try(GeoPackage gpkg = new GeoPackage(testFile))
+         GeoPackage gpkg = new GeoPackage(testFile);
+
+         try
          {
              gpkg.tiles()
                  .addTileSet("",
@@ -682,13 +719,8 @@ public class GeoPackageTilesAPITest
          }
          finally
          {
-             if(testFile.exists())
-             {
-                 if(!testFile.delete())
-                 {
-                     throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                 }
-             }
+             gpkg.close();
+             this.deleteFile(testFile);
          }
      }
 
@@ -709,21 +741,17 @@ public class GeoPackageTilesAPITest
      public void addTileIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException
      {
          final File testFile = this.getRandomFile(18);
+         GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+         try
          {
              gpkg.tiles().addTileSet("badTableName^", "identifier", "description", new BoundingBox(0.0,0.0,2.0,2.0), gpkg.core().getSpatialReferenceSystem(0));
              fail("Expected to get an IllegalArgumentException for giving an illegal tablename (with symbols not allowed by GeoPackage)");
          }
          finally
          {
-             if(testFile.exists())
-             {
-                 if(!testFile.delete())
-                 {
-                     throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                 }
-             }
+             gpkg.close();
+             this.deleteFile(testFile);
          }
      }
 
@@ -744,21 +772,17 @@ public class GeoPackageTilesAPITest
      public void addTileIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
      {
          final File testFile = this.getRandomFile(18);
+         GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+         try
          {
              gpkg.tiles().addTileSet("gpkg_bad_tablename", "identifier", "description", new BoundingBox(0.0,0.0,2.0,2.0), gpkg.core().getSpatialReferenceSystem(0));
              fail("Expected to get an IllegalArgumentException for giving an illegal tablename (starting with gpkg_ which is not allowed by GeoPackage)");
          }
          finally
          {
-             if(testFile.exists())
-             {
-                 if(!testFile.delete())
-                 {
-                     throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                 }
-             }
+             gpkg.close();
+             this.deleteFile(testFile);
          }
      }
 
@@ -779,21 +803,17 @@ public class GeoPackageTilesAPITest
      public void addTileIllegalArgumentException3() throws SQLException, ClassNotFoundException, ConformanceException, IOException
      {
          final File testFile = this.getRandomFile(18);
+         GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-         try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+         try
          {
              gpkg.tiles().addTileSet(null, "identifier", "description", new BoundingBox(0.0,0.0,2.0,2.0), gpkg.core().getSpatialReferenceSystem(0));
              fail("Expected to get an IllegalArgumentException for giving an illegal tablename (a null value)");
          }
          finally
          {
-             if(testFile.exists())
-             {
-                 if(!testFile.delete())
-                 {
-                     throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                 }
-             }
+             gpkg.close();
+             this.deleteFile(testFile);
          }
      }
 
@@ -806,7 +826,9 @@ public class GeoPackageTilesAPITest
     public void getTileSetsFromGpkg() throws Exception
     {
         final File testFile = this.getRandomFile(6);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tileSetName",
@@ -822,7 +844,7 @@ public class GeoPackageTilesAPITest
                                                      new BoundingBox(1.0,1.0,122.0,111.0),
                                                      gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
 
-            final ArrayList<TileSet> tileSetContnentEntries = new ArrayList<>();
+            final ArrayList<TileSet> tileSetContnentEntries = new ArrayList<TileSet>();
 
             tileSetContnentEntries.add(tileSet);
             tileSetContnentEntries.add(tileSet2);
@@ -862,24 +884,24 @@ public class GeoPackageTilesAPITest
             for(final TileSet gpkgEntry : tileSetsFromGpkg)
             {
                 Assert.assertTrue("The tile entry's information in the GeoPackage does not match what was originally given to a GeoPackage",
-                           tileSetContnentEntries.stream()
-                                                 .anyMatch(tileEntry -> tileEntry.getBoundingBox().equals(gpkgEntry.getBoundingBox()) &&
-                                                                        tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
-                                                                        tileEntry.getDescription().equals(gpkgEntry.getDescription()) &&
-                                                                        tileEntry.getIdentifier() .equals(gpkgEntry.getIdentifier())  &&
-                                                                        tileEntry.getTableName()  .equals(gpkgEntry.getTableName())   &&
-                                                                        tileEntry.getSpatialReferenceSystemIdentifier().equals(gpkgEntry.getSpatialReferenceSystemIdentifier())));
+                                  FunctionalUtility.anyMatch(tileSetContnentEntries,
+                                                             new Predicate<TileSet>(){
+                                                                                          public boolean apply(final TileSet tileEntry)
+                                                                                          {
+                                                                                              return tileEntry.getBoundingBox().equals(gpkgEntry.getBoundingBox()) &&
+                                                                                                     tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
+                                                                                                     tileEntry.getDescription().equals(gpkgEntry.getDescription()) &&
+                                                                                                     tileEntry.getIdentifier() .equals(gpkgEntry.getIdentifier())  &&
+                                                                                                     tileEntry.getTableName()  .equals(gpkgEntry.getTableName())   &&
+                                                                                                     tileEntry.getSpatialReferenceSystemIdentifier().equals(gpkgEntry.getSpatialReferenceSystemIdentifier());
+                                                                                          }
+                                                                                      }));
             }
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -891,7 +913,9 @@ public class GeoPackageTilesAPITest
     public void getTileSetWithNewSRS() throws Exception
     {
         final File testFile = this.getRandomFile(7);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
           final Collection<TileSet> gpkgTileSets = gpkg.tiles().getTileSets(gpkg.core().addSpatialReferenceSystem("name", "org", 123, "def", "desc"));
           Assert.assertTrue("Should not have found any tile sets because there weren't any in "
@@ -900,13 +924,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -926,8 +945,9 @@ public class GeoPackageTilesAPITest
     public void getTileSetVerifyReturnNull()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(4);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet = gpkg.tiles().getTileSet("table_not_here");
 
@@ -935,13 +955,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -961,8 +976,9 @@ public class GeoPackageTilesAPITest
     public void getTileSetVerifyReturnCorrectTileSet()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet         = gpkg.tiles().addTileSet("ttable","identifier", "Desc", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
             final TileSet returnedTileSet = gpkg.tiles().getTileSet("ttable");
@@ -978,13 +994,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -999,8 +1010,9 @@ public class GeoPackageTilesAPITest
     public void addTilesIllegalArgumentException() throws Exception
     {
         final File testFile = this.getRandomFile(4);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tableName",
@@ -1018,13 +1030,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1038,8 +1045,9 @@ public class GeoPackageTilesAPITest
     public void addTilesIllegalArgumentException2() throws Exception
     {
         final File testFile = this.getRandomFile(4);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tableName",
@@ -1056,13 +1064,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1076,8 +1079,9 @@ public class GeoPackageTilesAPITest
     public void addTilesIllegalArgumentException3() throws Exception
     {
         final File      testFile = this.getRandomFile(4);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tableName",
@@ -1094,13 +1098,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1114,7 +1113,9 @@ public class GeoPackageTilesAPITest
     public void addTilesIllegalArgumentException4() throws Exception
     {
         final File testFile = this.getRandomFile(4);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tableName",
@@ -1132,13 +1133,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1152,7 +1148,9 @@ public class GeoPackageTilesAPITest
     public void addTilesIllegalArgumentException5() throws Exception
     {
         final File testFile = this.getRandomFile(4);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tableName",
@@ -1169,13 +1167,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1190,8 +1183,9 @@ public class GeoPackageTilesAPITest
     {
         final File testFile = this.getRandomFile(37);
         testFile.createNewFile();
+        GeoPackage gpkg = new GeoPackage(testFile, VerificationLevel.None, OpenMode.Open);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, VerificationLevel.None, OpenMode.Open))
+        try
         {
             gpkg.tiles()
                 .addTileSet("diff_tile_set",
@@ -1203,26 +1197,43 @@ public class GeoPackageTilesAPITest
             Assert.fail("The GeoPackage was expected to throw an IOException due to the file being empty.");
 
         }
-        catch(final IOException ex)
+        catch(final Exception ex)
         {
             final String query = "SELECT table_name FROM gpkg_contents WHERE table_name = 'diff_tile_set';";
 
-            try(Connection con           = this.getConnection(testFile.getAbsolutePath());
-                Statement  stmt          = con.createStatement();
-                ResultSet  tileTableName = stmt.executeQuery(query);)
+            Connection con           = this.getConnection(testFile.getAbsolutePath());
+
+            try
             {
-                Assert.assertTrue("The data should not be in the contents table since it throws an SQLException", tileTableName.getString("table_name") == null);
+                Statement  stmt          = con.createStatement();
+
+                try
+                {
+                    ResultSet  tileTableName = stmt.executeQuery(query);
+
+                    try
+                    {
+                        Assert.assertTrue("The data should not be in the contents table since it throws an SQLException", tileTableName.getString("table_name") == null);
+                    }
+                    finally
+                    {
+                        tileTableName.close();
+                    }
+                }
+                finally
+                {
+                    stmt.close();
+                }
+            }
+            finally
+            {
+                con.close();
             }
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1243,7 +1254,9 @@ public class GeoPackageTilesAPITest
     public void addTileMethodByCrsTileCoordinate() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(18);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -1287,13 +1300,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1306,8 +1314,9 @@ public class GeoPackageTilesAPITest
     public void addNonEmptyTile() throws Exception
     {
         final File testFile = this.getRandomFile(6);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tileSetName",
@@ -1333,30 +1342,46 @@ public class GeoPackageTilesAPITest
 
             gpkg.tiles().addTile(tileSet, tileMatrix, 0, 0, new byte[] {1, 2, 3, 4});
         }
+        finally
+        {
+            gpkg.close();
+        }
 
         //use a query to test if the tile was inserted into database and to correct if the image is the same
         final String query = "SELECT tile_data FROM tileSetName WHERE zoom_level = 2 AND tile_column = 0 AND tile_row =0;";
 
-        try(Connection con      = this.getConnection(testFile.getAbsolutePath());
-            Statement  stmt     = con.createStatement();
-            ResultSet  tileData = stmt.executeQuery(query);)
-        {
-            // assert the image was inputed into the file
-            Assert.assertTrue("The GeoPackage did not successfully write the tile_data into the GeoPackage", tileData.next());
-            final byte[] bytes = tileData.getBytes("tile_data");
+        Connection con      = this.getConnection(testFile.getAbsolutePath());
 
-            // compare images
-            Assert.assertTrue("The GeoPackage tile_data does not match the tile_data of the one given", Arrays.equals(bytes, new byte[] {1, 2, 3, 4}));
+        try
+        {
+            Statement  stmt     = con.createStatement();
+
+            try
+            {
+                ResultSet  tileData = stmt.executeQuery(query);
+                try
+                {
+                    // assert the image was inputed into the file
+                    Assert.assertTrue("The GeoPackage did not successfully write the tile_data into the GeoPackage", tileData.next());
+                    final byte[] bytes = tileData.getBytes("tile_data");
+
+                    // compare images
+                    Assert.assertTrue("The GeoPackage tile_data does not match the tile_data of the one given", Arrays.equals(bytes, new byte[] {1, 2, 3, 4}));
+                }
+                finally
+                {
+                    tileData.close();
+                }
+            }
+            finally
+            {
+                stmt.close();
+            }
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1379,8 +1404,9 @@ public class GeoPackageTilesAPITest
     public void addDuplicateTiles()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                             "ident",
@@ -1415,13 +1441,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1442,8 +1463,9 @@ public class GeoPackageTilesAPITest
     public void addBadTile()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
 
             final TileSet tileSet = gpkg.tiles()
@@ -1461,13 +1483,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1488,8 +1505,9 @@ public class GeoPackageTilesAPITest
     public void addBadTile2()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tileSetName",
@@ -1506,13 +1524,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1533,8 +1546,9 @@ public class GeoPackageTilesAPITest
     public void addBadTile4()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
 
             final TileSet tileSet = gpkg.tiles()
@@ -1551,13 +1565,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1572,8 +1581,9 @@ public class GeoPackageTilesAPITest
         final File testFile = this.getRandomFile(6);
         final byte[] originalTile1 = new byte[] {1, 2, 3, 4};
         final byte[] originalTile2 = new byte[] {1, 2, 3, 4};
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
 
             final TileSet tileSet = gpkg.tiles()
@@ -1615,8 +1625,8 @@ public class GeoPackageTilesAPITest
                                                                       (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
                                                                       (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
 
-            final Coordinate<Integer> tile1 = new Coordinate<>(3, 0);
-            final Coordinate<Integer> tile2 = new Coordinate<>(7, 0);
+            final Coordinate<Integer> tile1 = new Coordinate<Integer>(3, 0);
+            final Coordinate<Integer> tile2 = new Coordinate<Integer>(7, 0);
 
             gpkg.tiles().addTile(tileSet, tileMatrix1, tile1.getX(), tile1.getY(), originalTile1);
             gpkg.tiles().addTile(tileSet, tileMatrix2, tile2.getX(), tile2.getY(), originalTile2);
@@ -1632,13 +1642,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1650,8 +1655,9 @@ public class GeoPackageTilesAPITest
     public void getTile2() throws Exception
     {
         final File testFile = this.getRandomFile(6);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tileSetName",
@@ -1668,13 +1674,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1686,8 +1687,9 @@ public class GeoPackageTilesAPITest
     public void getTile3() throws Exception
     {
         final File testFile = this.getRandomFile(6);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tileSetName",
@@ -1714,7 +1716,7 @@ public class GeoPackageTilesAPITest
 
             //Tile coords
 
-            final Coordinate<Integer> coord1 = new Coordinate<>(2, 1);
+            final Coordinate<Integer> coord1 = new Coordinate<Integer>(2, 1);
             final byte[] imageData = new byte[]{1,2,3,4};
 
             //Retrieve tile from gpkg
@@ -1722,23 +1724,18 @@ public class GeoPackageTilesAPITest
             final Tile gpkgTileRecieved = gpkg.tiles().getTile(tileSet, coord1.getX(), coord1.getY(), zoom);
 
             Assert.assertTrue("GeoPackage did not return the same tile added to the gpkg.",
-                       gpkgTileAdded.getColumn()                 == gpkgTileRecieved.getColumn()            &&
-                       gpkgTileAdded.getRow()                    == gpkgTileRecieved.getRow()               &&
-                       gpkgTileAdded.getIdentifier()             ==(gpkgTileRecieved.getIdentifier())       &&
-                       gpkgTileAdded.getColumn()                 == gpkgTileRecieved.getColumn()            &&
-                       gpkgTileAdded.getRow()                    == gpkgTileRecieved.getRow()               &&
-                       gpkgTileAdded.getZoomLevel()              == gpkgTileRecieved.getZoomLevel()         &&
-                       Arrays.equals(gpkgTileAdded.getImageData(), gpkgTileRecieved.getImageData()));
+                              gpkgTileAdded.getColumn()                 == gpkgTileRecieved.getColumn()            &&
+                              gpkgTileAdded.getRow()                    == gpkgTileRecieved.getRow()               &&
+                              gpkgTileAdded.getIdentifier()             ==(gpkgTileRecieved.getIdentifier())       &&
+                              gpkgTileAdded.getColumn()                 == gpkgTileRecieved.getColumn()            &&
+                              gpkgTileAdded.getRow()                    == gpkgTileRecieved.getRow()               &&
+                              gpkgTileAdded.getZoomLevel()              == gpkgTileRecieved.getZoomLevel()         &&
+                              Arrays.equals(gpkgTileAdded.getImageData(), gpkgTileRecieved.getImageData()));
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1751,7 +1748,9 @@ public class GeoPackageTilesAPITest
     public void getTileThatIsNotInGpkg() throws Exception
     {
         final File testFile = this.getRandomFile(4);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tileSetName",
@@ -1779,13 +1778,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1798,20 +1792,17 @@ public class GeoPackageTilesAPITest
     {
         final File testFile = this.getRandomFile(5);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             gpkg.tiles().getTile(null, 2, 2, 0);
             Assert.fail("GeoPackage did not throw an IllegalArgumentException when giving a null value to table name (using getTile method)");
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1832,7 +1823,9 @@ public class GeoPackageTilesAPITest
     public void getTileRelativeTileCoordinateNonExistent() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(18);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -1849,13 +1842,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1868,8 +1856,9 @@ public class GeoPackageTilesAPITest
     public void getZoomLevels() throws Exception
     {
         final File testFile = this.getRandomFile(6);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                           .addTileSet("tableName",
@@ -1903,7 +1892,7 @@ public class GeoPackageTilesAPITest
 
            final Set<Integer> zooms  = gpkg.tiles().getTileZoomLevels(tileSet);
 
-           final ArrayList<Integer> expectedZooms = new ArrayList<>();
+           final ArrayList<Integer> expectedZooms = new ArrayList<Integer>();
 
            expectedZooms.add(new Integer(12));
            expectedZooms.add(new Integer(0));
@@ -1911,19 +1900,19 @@ public class GeoPackageTilesAPITest
            for(final Integer zoom : zooms)
            {
                Assert.assertTrue("The GeoPackage's get zoom levels method did not return expected values.",
-                          expectedZooms.stream()
-                                       .anyMatch(currentZoom -> currentZoom.equals(zoom)));
+                                  FunctionalUtility.anyMatch(expectedZooms,
+                                                             new Predicate<Integer>(){
+                                                                                          public boolean apply(final Integer currentZoom)
+                                                                                          {
+                                                                                              return currentZoom.equals(zoom);
+                                                                                          }
+                                                                                      }));
            }
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1944,21 +1933,17 @@ public class GeoPackageTilesAPITest
     public void getZoomLevelsNullTileSetContentEntry()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(7);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             gpkg.tiles().getTileZoomLevels(null);
             Assert.fail("Expected the GeoPackage to throw an IllegalArgumentException when givinga null parameter to getTileZoomLevels");
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1971,21 +1956,17 @@ public class GeoPackageTilesAPITest
     public void getRowCountNullContentEntry() throws  Exception
     {
         final File testFile = this.getRandomFile(9);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             gpkg.core().getRowCount(null);
             Assert.fail("GeoPackage should have thrown an IllegalArgumentException.");
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -1998,7 +1979,9 @@ public class GeoPackageTilesAPITest
     public void getRowCountVerify() throws Exception
     {
         final File testFile = this.getRandomFile(8);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tableName",
@@ -2042,13 +2025,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2069,8 +2047,9 @@ public class GeoPackageTilesAPITest
     public void getTileMatrixSetEntryNullTileSetContentEntry()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(7);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             gpkg.tiles().getTileMatrixSet(null);
 
@@ -2078,13 +2057,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2105,7 +2079,9 @@ public class GeoPackageTilesAPITest
     public void getTileMatricesVerify() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(5);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet    tileSet     = gpkg.tiles().addTileSet("tables", "identifier", "description", new BoundingBox(0.0,0.0,80.0,80.0), gpkg.core().getSpatialReferenceSystem(-1));
 
@@ -2140,7 +2116,7 @@ public class GeoPackageTilesAPITest
             gpkg.tiles().addTile(tileSet, tileMatrix, 0, 0, GeoPackageTilesAPITest.createImageBytes());
             gpkg.tiles().addTile(tileSet, tileMatrix, 1, 0, GeoPackageTilesAPITest.createImageBytes());
 
-            final ArrayList<TileMatrix> expectedTileMatrix = new ArrayList<>();
+            final ArrayList<TileMatrix> expectedTileMatrix = new ArrayList<TileMatrix>();
             expectedTileMatrix.add(tileMatrix);
             expectedTileMatrix.add(tileMatrix2);
 
@@ -2150,24 +2126,24 @@ public class GeoPackageTilesAPITest
             for(final TileMatrix gpkgTileMatrix : gpkg.tiles().getTileMatrices(tileSet))
             {
                 Assert.assertTrue("The tile entry's information in the GeoPackage does not match what was originally given to a GeoPackage",
-                           expectedTileMatrix.stream()
-                                             .anyMatch(expectedTM -> expectedTM.getTableName()    .equals(gpkgTileMatrix.getTableName())   &&
-                                                                     expectedTM.getMatrixHeight() ==      gpkgTileMatrix.getMatrixHeight() &&
-                                                                     expectedTM.getMatrixWidth()  ==      gpkgTileMatrix.getMatrixWidth()  &&
-                                                                     expectedTM.getPixelXSize()   ==      gpkgTileMatrix.getPixelXSize()   &&
-                                                                     expectedTM.getPixelYSize()   ==      gpkgTileMatrix.getPixelYSize()   &&
-                                                                     expectedTM.getZoomLevel()    ==      gpkgTileMatrix.getZoomLevel()));
+                                  FunctionalUtility.anyMatch(expectedTileMatrix,
+                                                             new Predicate<TileMatrix>(){
+                                                                                           public boolean apply(final TileMatrix expectedTM)
+                                                                                           {
+                                                                                               return expectedTM.getTableName()    .equals(gpkgTileMatrix.getTableName())   &&
+                                                                                                       expectedTM.getMatrixHeight() ==      gpkgTileMatrix.getMatrixHeight() &&
+                                                                                                       expectedTM.getMatrixWidth()  ==      gpkgTileMatrix.getMatrixWidth()  &&
+                                                                                                       expectedTM.getPixelXSize()   ==      gpkgTileMatrix.getPixelXSize()   &&
+                                                                                                       expectedTM.getPixelYSize()   ==      gpkgTileMatrix.getPixelYSize()   &&
+                                                                                                       expectedTM.getZoomLevel()    ==      gpkgTileMatrix.getZoomLevel();
+                                                                                           }
+                                                                                          }));
             }
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2188,7 +2164,9 @@ public class GeoPackageTilesAPITest
     public void getTileMatricesNonExistant() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
            final TileSet tileSet = gpkg.tiles()
                                        .addTileSet("tables",
@@ -2201,13 +2179,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2228,7 +2201,9 @@ public class GeoPackageTilesAPITest
     public void addTileMatricesIllegalArgumentException()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("name", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             gpkg.tiles().addTileMatrix(tileSet, 0, 0, 5, 6, 7, 8, 9);
@@ -2236,13 +2211,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2263,7 +2233,9 @@ public class GeoPackageTilesAPITest
     public void addTileMatricesIllegalArgumentException2()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("name",
@@ -2277,13 +2249,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2304,22 +2271,18 @@ public class GeoPackageTilesAPITest
     public void addTileMatricesIllegalArgumentException3()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("name", "identifier", "description", new BoundingBox(0.0, 0.0, 0.0, 0.0), gpkg.core().getSpatialReferenceSystem(-1));
             gpkg.tiles().addTileMatrix(tileSet, 0, 4, 5, 0, 7, 8, 9);
             Assert.fail("Expected GeoPackage to throw an IllegalArgumentException when giving a Tile Matrix a tile width that is <= 0");
-
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2340,7 +2303,9 @@ public class GeoPackageTilesAPITest
     public void addTileMatricesIllegalArgumentException4()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("name", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             gpkg.tiles().addTileMatrix(tileSet, 0, 4, 5, 6, 0, 8, 9);
@@ -2348,13 +2313,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2375,7 +2335,9 @@ public class GeoPackageTilesAPITest
     public void addTileMatricesIllegalArgumentException5()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("name", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             gpkg.tiles().addTileMatrix(tileSet, 0, 4, 5, 6, 7, 0, 9);
@@ -2384,13 +2346,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2411,7 +2368,9 @@ public class GeoPackageTilesAPITest
     public void addTileMatricesIllegalArgumentException6()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("name", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             gpkg.tiles().addTileMatrix(tileSet, 0, 4, 5, 6, 7, 8, 0);
@@ -2419,13 +2378,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2447,7 +2401,9 @@ public class GeoPackageTilesAPITest
     public void addTileMatrixSameZoomDifferentOtherFields()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("name", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
 
@@ -2457,13 +2413,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2484,7 +2435,9 @@ public class GeoPackageTilesAPITest
     public void addTileMatrixTwiceVerify()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("name", "identifier", "description", new BoundingBox(0.0,0.0,90.0,90.0), gpkg.core().getSpatialReferenceSystem(-1));
             final int matrixHeight = 2;
@@ -2521,13 +2474,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2548,20 +2496,17 @@ public class GeoPackageTilesAPITest
     public void addTileMatrixNullTileSet()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             gpkg.tiles().addTileMatrix(null, 0, 2, 3, 4, 5, 6, 7);
             Assert.fail("Expected the GeoPackage to throw an IllegalArgumentException when giving a null parameter TileSet to addTileMatrix");
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2583,7 +2528,9 @@ public class GeoPackageTilesAPITest
     public void addTileMatrixWithNegativeZoomLevel()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -2594,13 +2541,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if (testFile.exists())
-            {
-                if (!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2614,8 +2556,9 @@ public class GeoPackageTilesAPITest
     public void addNonEmptyTileMatrix() throws SQLException, Exception
     {
         final File testFile = this.getRandomFile(5);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             //add information to gpkg
             final TileSet tileSet = gpkg.tiles()
@@ -2639,6 +2582,10 @@ public class GeoPackageTilesAPITest
                                        (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
         }
+        finally
+        {
+            gpkg.close();
+        }
         //test if information added is accurate
         final int matrixWidth = 4;
         final int matrixHeight = 8;
@@ -2657,21 +2604,34 @@ public class GeoPackageTilesAPITest
                                            tileHeight,
                                            tileWidth);
 
-        try(Connection con      = this.getConnection(testFile.getAbsolutePath());
-            Statement stmt      = con.createStatement();
-            ResultSet tableName = stmt.executeQuery(query);)
+        Connection con      = this.getConnection(testFile.getAbsolutePath());
+
+        try
         {
-            Assert.assertTrue("The GeoPackage did not enter the correct record into the gpkg_tile_matrix table", tableName.getString("table_name").equals("tileSetName"));
+            Statement stmt      = con.createStatement();
+
+            try
+            {
+                ResultSet tableName = stmt.executeQuery(query);
+
+                try
+                {
+                    Assert.assertTrue("The GeoPackage did not enter the correct record into the gpkg_tile_matrix table", tableName.getString("table_name").equals("tileSetName"));
+                }
+                finally
+                {
+                    tableName.close();
+                }
+            }
+            finally
+            {
+                stmt.close();
+            }
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            con.close();
+            this.deleteFile(testFile);
         }
      }
 
@@ -2692,8 +2652,9 @@ public class GeoPackageTilesAPITest
     public void addTileMatrixIllegalBounds() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(7);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                   .addTileSet("tableName",
@@ -2714,13 +2675,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2741,8 +2697,9 @@ public class GeoPackageTilesAPITest
     public void addTileMatrixIllegalBounds2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(7);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                   .addTileSet("tableName",
@@ -2763,13 +2720,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
 
     }
@@ -2791,21 +2743,17 @@ public class GeoPackageTilesAPITest
     public void getTileMatricesNullParameter() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             gpkg.tiles().getTileMatrices(null);
             Assert.fail("Expected the GeoPackage to throw an IllegalArgumentException when giving getTileMatrices a TileSet that is null.");
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2826,7 +2774,9 @@ public class GeoPackageTilesAPITest
     public void getTileMatrixVerify()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("tableName",
@@ -2875,13 +2825,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2902,7 +2847,9 @@ public class GeoPackageTilesAPITest
     public void getTileMatrixNonExistant()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(8);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles()
                                         .addTileSet("TableName",
@@ -2916,13 +2863,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2943,20 +2885,17 @@ public class GeoPackageTilesAPITest
     public void getTileMatrixNullParameter()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(10);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             gpkg.tiles().getTileMatrix(null, 8);
             Assert.fail("GeoPackage should have thrown an IllegalArgumentException when giving a null parameter for TileSet in the method getTileMatrix");
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -2976,8 +2915,9 @@ public class GeoPackageTilesAPITest
     public void getTileMatrixSetVerify()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             //values for tileMatrixSet
             final String                 tableName   = "tableName";
@@ -2997,13 +2937,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3019,19 +2954,16 @@ public class GeoPackageTilesAPITest
     {
         final File testFile = this.getRandomFile(19);
         testFile.createNewFile();
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Open))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Open);
+
+        try
         {
             Assert.fail("GeoPackage did not throw a geoPackageConformanceException as expected.");
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3057,7 +2989,9 @@ public class GeoPackageTilesAPITest
 
         final File testFile = this.getRandomFile(8);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3087,13 +3021,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3118,8 +3047,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(-180, 85, geodeticRefSys);//upper left tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                             "identifier",
@@ -3149,13 +3079,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3180,8 +3105,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(-90, 41, geodeticRefSys);//lower left tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3211,13 +3137,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3242,8 +3163,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(-0.000001, 12, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3272,13 +3194,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3303,15 +3220,16 @@ public class GeoPackageTilesAPITest
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = mercator.fromGlobalGeodetic(new Coordinate<>(-45.0, 5.0));
+        final Coordinate<Double>        coordInMeters    = mercator.fromGlobalGeodetic(new Coordinate<Double>(-45.0, 5.0));
         final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
-            final Coordinate<Double> minBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>(-90.0, -60.0));
-            final Coordinate<Double> maxBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>( 5.0,   10.0));
+            final Coordinate<Double> minBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<Double>(-90.0, -60.0));
+            final Coordinate<Double> maxBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<Double>( 5.0,   10.0));
 
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3348,13 +3266,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
 
     }
@@ -3380,15 +3293,16 @@ public class GeoPackageTilesAPITest
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = mercator.fromGlobalGeodetic(new Coordinate<>(-42.0, 5.0));
+        final Coordinate<Double>        coordInMeters    = mercator.fromGlobalGeodetic(new Coordinate<Double>(-42.0, 5.0));
         final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
-            final Coordinate<Double> minBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>(-90.0, -60.0));
-            final Coordinate<Double> maxBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>( 5.0,   10.0));
+            final Coordinate<Double> minBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<Double>(-90.0, -60.0));
+            final Coordinate<Double> maxBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<Double>( 5.0,   10.0));
 
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3424,13 +3338,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
 
     }
@@ -3456,15 +3365,16 @@ public class GeoPackageTilesAPITest
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = mercator.fromGlobalGeodetic(new Coordinate<>(-47.0, -45.0));
+        final Coordinate<Double>        coordInMeters    = mercator.fromGlobalGeodetic(new Coordinate<Double>(-47.0, -45.0));
         final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
-            final Coordinate<Double> minBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>(-90.0, -60.0));
-            final Coordinate<Double> maxBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>( 5.0,   10.0));
+            final Coordinate<Double> minBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<Double>(-90.0, -60.0));
+            final Coordinate<Double> maxBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<Double>( 5.0,   10.0));
 
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3500,13 +3410,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3531,15 +3436,16 @@ public class GeoPackageTilesAPITest
         final int zoomLevel = 6;
 
         final CoordinateReferenceSystem globalMercator   = new CoordinateReferenceSystem("EPSG", 3395);
-        final Coordinate<Double>        coordInMeters    = mercator.fromGlobalGeodetic(new Coordinate<>(4.999, -55.0));
+        final Coordinate<Double>        coordInMeters    = mercator.fromGlobalGeodetic(new Coordinate<Double>(4.999, -55.0));
         final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
-            final Coordinate<Double> minBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>(-90.0, -60.0));
-            final Coordinate<Double> maxBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<>(  5.0,  10.0));
+            final Coordinate<Double> minBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<Double>(-90.0, -60.0));
+            final Coordinate<Double> maxBoundingBoxCoord = mercator.fromGlobalGeodetic(new Coordinate<Double>(  5.0,  10.0));
 
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                             "identifier",
@@ -3575,13 +3481,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3607,8 +3508,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(-27.5, -1.25, geodeticRefSys);
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3664,13 +3566,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3695,8 +3592,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(76.4875, 36.45, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3725,13 +3623,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3757,8 +3650,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(10, 25, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3787,13 +3681,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3818,8 +3707,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(0, 40, geodeticRefSys);//upper Left tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                             "identifier",
@@ -3850,13 +3740,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3881,8 +3766,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(29.9, 30, geodeticRefSys);//upper right tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3911,13 +3797,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -3942,8 +3823,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(20, 50, geodeticRefSys);//upper right tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -3972,13 +3854,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -4003,8 +3880,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(20, 0.01, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                             "identifier",
@@ -4033,13 +3911,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -4065,7 +3938,9 @@ public class GeoPackageTilesAPITest
                 "epsg",
                 4326);
         final File testFile = this.getRandomFile(8);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                             "identifier",
@@ -4094,13 +3969,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
 
     }
@@ -4122,8 +3992,9 @@ public class GeoPackageTilesAPITest
     public void crsToRelativeTileCoordException() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -4137,13 +4008,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -4164,8 +4030,9 @@ public class GeoPackageTilesAPITest
     public void crsToRelativeTileCoordException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final int zoomLevel = 1;
             final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("Police", 99);
@@ -4177,13 +4044,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -4208,8 +4070,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(20, 50, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -4236,13 +4099,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -4267,8 +4125,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(20, 50, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -4294,13 +4153,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -4325,8 +4179,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(20, -50, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -4351,13 +4206,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -4382,8 +4232,9 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(20, 50, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
+        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try
         {
             final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                       "identifier",
@@ -4410,13 +4261,8 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
-            if(testFile.exists())
-            {
-                if(!testFile.delete())
-                {
-                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-                }
-            }
+            gpkg.close();
+            this.deleteFile(testFile);
         }
     }
 
@@ -4431,8 +4277,9 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(5);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final BoundingBox bBox         =  new BoundingBox(0, 0.0, 180.0,90.0);
             final int         row          = 3;
@@ -4451,6 +4298,7 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
+            gpkg.close();
             this.deleteFile(testFile);
         }
     }
@@ -4466,8 +4314,9 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinate2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(5);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final SphericalMercatorCrsProfile spherMercator = new SphericalMercatorCrsProfile();
             final BoundingBox bBox = new BoundingBox(spherMercator.getBounds().getMinX()/2,
@@ -4499,6 +4348,7 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
+            gpkg.close();
             this.deleteFile(testFile);
         }
     }
@@ -4514,8 +4364,9 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinate3() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(5);
+        GeoPackage gpkg = new GeoPackage(testFile);
 
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        try
         {
             final BoundingBox bBox         =  new BoundingBox(-22.1258, -15.325, 43.125, 78.248);
             final int         row          = 2;
@@ -4534,6 +4385,7 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
+            gpkg.close();
             this.deleteFile(testFile);
         }
     }
@@ -4549,13 +4401,16 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinateIllegalArgumentException() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
             gpkg.tiles().tileToCrsCoordinate(null, 0, 0, 0);
             fail("Expected an IllegalArgumentException when giving a null value for tileSet");
         }
         finally
         {
+            gpkg.close();
             this.deleteFile(testFile);
         }
     }
@@ -4571,7 +4426,9 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinateIllegalArgumentException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
            final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                      "identifier",
@@ -4583,6 +4440,7 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
+            gpkg.close();
             this.deleteFile(testFile);
         }
     }
@@ -4598,7 +4456,9 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinateIllegalArgumentException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
            final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                      "identifier",
@@ -4610,6 +4470,7 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
+            gpkg.close();
             this.deleteFile(testFile);
         }
     }
@@ -4625,7 +4486,9 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinateIllegalArgumentException4() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        try(GeoPackage gpkg = new GeoPackage(testFile))
+        GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
         {
            final TileSet tileSet = gpkg.tiles().addTileSet("tableName",
                                                      "identifier",
@@ -4638,6 +4501,7 @@ public class GeoPackageTilesAPITest
         }
         finally
         {
+            gpkg.close();
             this.deleteFile(testFile);
         }
     }
@@ -4656,17 +4520,6 @@ public class GeoPackageTilesAPITest
                                    crsCoordReturned.getCoordinateReferenceSystem().getIdentifier()),
                       crsCoordExpected,
                       crsCoordReturned);
-    }
-
-    private void deleteFile(final File testFile)
-    {
-        if(testFile.exists())
-        {
-            if(!testFile.delete())
-            {
-                throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-            }
-        }
     }
 
     private static TileMatrix createTileSetAndTileMatrix(final GeoPackage gpkg, final BoundingBox bBox, final int zoomLevel, final int matrixWidth, final int matrixHeight) throws SQLException
@@ -4708,6 +4561,17 @@ public class GeoPackageTilesAPITest
             text[i] = characters.charAt(this.randomGenerator.nextInt(characters.length()));
         }
         return new String(text);
+    }
+
+    private void deleteFile(final File testFile)
+    {
+        if(testFile.exists())
+        {
+            if(!testFile.delete())
+            {
+                throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+            }
+        }
     }
 
     private File getRandomFile(final int length)

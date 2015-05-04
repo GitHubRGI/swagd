@@ -113,7 +113,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -149,7 +150,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -188,7 +190,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -228,7 +231,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -276,7 +280,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -304,7 +309,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -336,7 +342,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -368,7 +375,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -430,7 +438,6 @@ public class GeoPackageSchemaAPITest
             {
                 boolean columnMatches = FunctionalUtility.anyMatch(columnsExpected,
                                                                    new Predicate<DataColumn>(){
-                                                                                                  @Override
                                                                                                   public boolean apply(final DataColumn expected)
                                                                                                   {
                                                                                                       return dataColumnsEqual(expected, returned);
@@ -443,7 +450,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -502,7 +510,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -543,7 +552,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -582,7 +592,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -620,7 +631,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -658,7 +670,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -696,7 +709,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -734,7 +748,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -772,7 +787,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -810,7 +826,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -848,7 +865,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -886,7 +904,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -924,7 +943,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -962,7 +982,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1000,7 +1021,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1038,7 +1060,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1076,7 +1099,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1114,7 +1138,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1152,7 +1177,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1198,7 +1224,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1244,7 +1271,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1276,7 +1304,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1308,7 +1337,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1340,7 +1370,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1365,7 +1396,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1425,7 +1457,6 @@ public class GeoPackageSchemaAPITest
            {
                boolean dataColumnConstraintMatches = FunctionalUtility.anyMatch(expectedCollection,
                                                                                 new Predicate<DataColumnConstraint>(){
-                                                                                                                         @Override
                                                                                                                          public boolean apply(final DataColumnConstraint expected)
                                                                                                                          {
                                                                                                                              return  dataColumnConstraintsEqual(expected, returned);
@@ -1437,7 +1468,8 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile, gpkg);
+            gpkg.close();
+            deleteFile(testFile);
         }
     }
 
@@ -1447,13 +1479,10 @@ public class GeoPackageSchemaAPITest
     {
         GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
-        try
-        {
-            gpkg.close();
-            createTable(tableName, columnName, testFile);
+        gpkg.close();
+        createTable(tableName, columnName, testFile);
 
-            return new GeoPackage(testFile, VerificationLevel.None, OpenMode.Open);
-        }
+        return new GeoPackage(testFile, VerificationLevel.None, OpenMode.Open);
     }
 
     private static void createTable(final String tableName, final String columnName, final File testFile) throws ClassNotFoundException, SQLException
@@ -1521,10 +1550,8 @@ public class GeoPackageSchemaAPITest
         return first == null ? second == null
                              : first.equals(second);
     }
-    private static void deleteFile(final File testFile, final GeoPackage gpkg)
+    private static void deleteFile(final File testFile)
     {
-        gpkg.close();
-
         if (testFile.exists())
         {
             if (!testFile.delete())
