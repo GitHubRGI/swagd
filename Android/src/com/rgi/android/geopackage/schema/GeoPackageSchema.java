@@ -41,9 +41,9 @@ import utility.DatabaseUtility;
 import utility.SelectBuilder;
 
 import com.rgi.android.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.core.Content;
-import com.rgi.geopackage.verification.VerificationIssue;
-import com.rgi.geopackage.verification.VerificationLevel;
+import com.rgi.android.geopackage.core.Content;
+import com.rgi.android.geopackage.verification.VerificationIssue;
+import com.rgi.android.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
