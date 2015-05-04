@@ -97,6 +97,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -130,6 +131,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -162,6 +164,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -194,6 +197,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -227,6 +231,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -277,6 +282,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -317,6 +323,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -360,6 +367,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -402,6 +410,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -444,6 +453,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -486,6 +496,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -528,6 +539,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -566,6 +578,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -615,10 +628,10 @@ public class GeoPackageMetadataAPITest
 
             for(final Metadata returned : metadataReturned)
             {
-                boolean metadataMatches = FunctionalUtility.anyMatch(metadataExpected.iterator(),
+                boolean metadataMatches = FunctionalUtility.anyMatch(metadataExpected,
                                                                      new Predicate<Metadata>(){
                                                                                                @Override
-                                                                                               public boolean apply(final Metadata expected)
+                                                                                            public boolean apply(final Metadata expected)
                                                                                                {
                                                                                                    return GeoPackageMetadataAPITest.metadatasEqual(expected, returned);
                                                                                                }
@@ -630,6 +643,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -679,6 +693,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -717,6 +732,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
 
@@ -781,7 +797,7 @@ public class GeoPackageMetadataAPITest
                 boolean metadataMatches = FunctionalUtility.anyMatch(expectedReferences,
                                                                      new Predicate<MetadataReference>(){
                                                                                                            @Override
-                                                                                                           public boolean apply(final MetadataReference expected)
+                                                                                                        public boolean apply(final MetadataReference expected)
                                                                                                            {
                                                                                                                // TODO Auto-generated method stub
                                                                                                                return GeoPackageMetadataAPITest.metadataReferencesEqual(expected, returned);
@@ -794,6 +810,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
+            gpkg.close();
             deleteFile(testFile, gpkg);
         }
     }
@@ -883,8 +900,6 @@ public class GeoPackageMetadataAPITest
 
     private static void deleteFile(final File testFile, final GeoPackage gpkg)
     {
-        gpkg.close();
-
         if (testFile.exists())
         {
             if (!testFile.delete())

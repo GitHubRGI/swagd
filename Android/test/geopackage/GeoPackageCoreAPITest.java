@@ -76,7 +76,8 @@ public class GeoPackageCoreAPITest
        }
        finally
        {
-           deleteAndCloseGeoPackage(testFile, gpkg);
+           gpkg.close();
+           deleteAndCloseGeoPackage(testFile);
        }
    }
 
@@ -99,7 +100,8 @@ public class GeoPackageCoreAPITest
        }
        finally
        {
-           deleteAndCloseGeoPackage(testFile, gpkg);
+           gpkg.close();
+           deleteAndCloseGeoPackage(testFile);
        }
    }
 
@@ -121,7 +123,8 @@ public class GeoPackageCoreAPITest
        }
        finally
        {
-          deleteAndCloseGeoPackage(testFile, gpkg);
+          gpkg.close();
+          deleteAndCloseGeoPackage(testFile);
        }
    }
 
@@ -169,7 +172,8 @@ public class GeoPackageCoreAPITest
        }
        finally
        {
-          deleteAndCloseGeoPackage(testFile, gpkg);
+          gpkg.close();
+          deleteAndCloseGeoPackage(testFile);
        }
    }
 
@@ -201,7 +205,8 @@ public class GeoPackageCoreAPITest
        }
        finally
        {
-           deleteAndCloseGeoPackage(testFile, gpkg);
+           gpkg.close();
+           deleteAndCloseGeoPackage(testFile);
        }
    }
 
@@ -253,7 +258,8 @@ public class GeoPackageCoreAPITest
        }
        finally
        {
-          deleteAndCloseGeoPackage(testFile, gpkg);
+          gpkg.close();
+          deleteAndCloseGeoPackage(testFile);
        }
    }
 
@@ -296,7 +302,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -326,7 +333,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -353,7 +361,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -379,7 +388,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -405,7 +415,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -431,7 +442,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -457,7 +469,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -483,7 +496,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -517,7 +531,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-           deleteAndCloseGeoPackage(testFile, gpkg);
+           gpkg.close();
+           deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -550,7 +565,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -585,8 +601,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -622,7 +638,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -659,7 +676,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -702,7 +720,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -739,7 +758,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -765,7 +785,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -789,7 +810,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -820,7 +842,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -865,7 +888,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -900,7 +924,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -925,7 +950,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -948,7 +974,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -971,7 +998,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -994,7 +1022,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
     /**
@@ -1020,7 +1049,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
 
     }
@@ -1044,7 +1074,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -1067,7 +1098,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -1090,7 +1122,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -1112,7 +1145,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -1134,7 +1168,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -1156,7 +1191,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -1178,7 +1214,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -1205,7 +1242,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -1248,7 +1286,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
 
     }
@@ -1294,7 +1333,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-           deleteAndCloseGeoPackage(testFile, gpkg);
+           gpkg.close();
+           deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -1336,7 +1376,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -1380,7 +1421,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -1422,7 +1464,8 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-            deleteAndCloseGeoPackage(testFile, gpkg);
+            gpkg.close();
+            deleteAndCloseGeoPackage(testFile);
         }
     }
 
@@ -1474,10 +1517,8 @@ public class GeoPackageCoreAPITest
         }
     }
 
-    private static void deleteAndCloseGeoPackage(final File testFile, final GeoPackage gpkg)
+    private static void deleteAndCloseGeoPackage(final File testFile)
     {
-        gpkg.close();
-
         if(testFile.exists())
         {
             if(!testFile.delete())
