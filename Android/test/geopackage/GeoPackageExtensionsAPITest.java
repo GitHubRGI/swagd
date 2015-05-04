@@ -109,7 +109,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -157,7 +157,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -210,7 +210,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -258,7 +258,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -287,7 +287,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -315,7 +315,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -343,7 +343,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
     /**
@@ -371,7 +371,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -399,7 +399,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -427,7 +427,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -455,7 +455,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -483,7 +483,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
     /**
@@ -523,7 +523,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -567,7 +567,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -610,7 +610,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -650,7 +650,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -686,7 +686,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -737,7 +737,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -768,7 +768,7 @@ public class GeoPackageExtensionsAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -806,7 +806,7 @@ public class GeoPackageExtensionsAPITest
        finally
        {
            gpkg.close();
-           deleteFile(testFile, gpkg);
+           deleteFile(testFile);
        }
     }
 
@@ -844,7 +844,7 @@ public class GeoPackageExtensionsAPITest
        finally
        {
            gpkg.close();
-           deleteFile(testFile, gpkg);
+           deleteFile(testFile);
        }
     }
 
@@ -882,7 +882,7 @@ public class GeoPackageExtensionsAPITest
        finally
        {
            gpkg.close();
-           deleteFile(testFile, gpkg);
+           deleteFile(testFile);
        }
     }
 
@@ -931,7 +931,7 @@ public class GeoPackageExtensionsAPITest
 
         return DriverManager.getConnection("jdbc:sqlite:" + testFile.getPath()); // Initialize the database connection
     }
-    private static void deleteFile(final File testFile, final GeoPackage gpkg)
+    private static void deleteFile(final File testFile)
     {
         if (testFile.exists())
         {

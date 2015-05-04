@@ -99,7 +99,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -133,7 +133,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
     /**
@@ -166,7 +166,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
     /**
@@ -199,7 +199,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -233,7 +233,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -284,7 +284,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -325,7 +325,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -369,7 +369,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -412,7 +412,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -455,7 +455,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -498,7 +498,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -541,7 +541,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -580,7 +580,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -645,7 +645,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -690,12 +690,12 @@ public class GeoPackageMetadataAPITest
 
             assertTrue("The geopackage metadata getMetadata(identifier) did not return the expected metadata object",
                        shouldBeNull == null &&
-                       this.metadatasEqual(metadataExpected, metadataReturned));
+                       metadatasEqual(metadataExpected, metadataReturned));
         }
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -734,7 +734,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
 
     }
@@ -812,7 +812,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile, gpkg);
+            deleteFile(testFile);
         }
     }
 
@@ -899,7 +899,7 @@ public class GeoPackageMetadataAPITest
                expected.getMimeType()   .equalsIgnoreCase(returned.getMimeType());
     }
 
-    private static void deleteFile(final File testFile, final GeoPackage gpkg)
+    private static void deleteFile(final File testFile)
     {
         if (testFile.exists())
         {
