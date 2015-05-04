@@ -305,7 +305,7 @@ public class GeoPackage implements Closeable
     /**
      * Closes the connection to the underlying SQLite database file
      *
-     * @throws SQLException throws if SQLException occurs
+     * @throws IOException throws if an SQLException occurs
      */
     @Override
     public void close() throws IOException

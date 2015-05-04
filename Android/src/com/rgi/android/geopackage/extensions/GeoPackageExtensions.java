@@ -28,15 +28,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
+import com.rgi.android.common.util.functional.jdbc.ResultSetMapper;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
 import com.rgi.android.geopackage.utility.SelectBuilder;
-
 import com.rgi.android.geopackage.verification.VerificationIssue;
 import com.rgi.android.geopackage.verification.VerificationLevel;
 
@@ -63,8 +64,9 @@ public class GeoPackageExtensions
      * @param verificationLevel
      *             Controls the level of verification testing performed
      * @return The extension GeoPackage requirements this GeoPackage fails to conform to
+     * @throws SQLException
      */
-    public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel)
+    public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel) throws SQLException
     {
         return new ExtensionsVerifier(this.databaseConnection, verificationLevel).getVerificationIssues();
     }
@@ -91,11 +93,17 @@ public class GeoPackageExtensions
         final String extensionNameQuerySql = String.format("SELECT COUNT(*) FROM %s WHERE extension_name = ?",
                                                            GeoPackageExtensions.ExtensionsTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(extensionNameQuerySql))
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(extensionNameQuerySql);
+
+        try
         {
             preparedStatement.setString(1, name);
 
             return preparedStatement.executeQuery().getInt(1) > 0;
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -123,7 +131,7 @@ public class GeoPackageExtensions
      *             throws if the methods
      *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
      *             or
-     *             {@link SelectBuilder#SelectBuilder(Connection, String, Collection, Collection)}
+     *             {@link SelectBuilder#SelectBuilder(Connection, String, Collection, Map)}
      *             throws or other various SQLExceptions occur
      */
     public Extension getExtension(final String tableName, final String columnName, final String extensionName) throws SQLException
@@ -133,28 +141,44 @@ public class GeoPackageExtensions
             return null;
         }
 
-        // tableName, and columnName can be null which is why we need to use
-        // the SelectBuilder rather a simpler prepared statement
-        try(final SelectBuilder selectStatement = new SelectBuilder(this.databaseConnection,
-                                                                    GeoPackageExtensions.ExtensionsTableName,
-                                                                    Arrays.asList("table_name",
-                                                                                  "column_name",
-                                                                                  "extension_name",
-                                                                                  "definition",
-                                                                                  "scope"),
-                                                                    Arrays.asList(new AbstractMap.SimpleImmutableEntry<>("table_name",     tableName),
-                                                                                  new AbstractMap.SimpleImmutableEntry<>("column_name",    columnName),
-                                                                                  new AbstractMap.SimpleImmutableEntry<>("extension_name", extensionName)));
-            final ResultSet result = selectStatement.executeQuery())
+        final Map<String, Object> wheres = new HashMap<String, Object>();
+        wheres.put("table_name",     tableName);
+        wheres.put("column_name",    columnName);
+        wheres.put("extension_name", extensionName);
+
+        // tableName, and columnName can be null which is why we need to use the SelectBuilder rather a simpler prepared statement
+        final SelectBuilder selectStatement = new SelectBuilder(this.databaseConnection,
+                                                                GeoPackageExtensions.ExtensionsTableName,
+                                                                Arrays.asList("table_name",
+                                                                              "column_name",
+                                                                              "extension_name",
+                                                                              "definition",
+                                                                              "scope"),
+                                                                wheres);
+
+        try
         {
-            if(result.isBeforeFirst())
+            final ResultSet result = selectStatement.executeQuery();
+
+            try
             {
-                return new Extension(result.getString(1),
-                                     result.getString(2),
-                                     result.getString(3),
-                                     result.getString(4),
-                                     result.getString(5));
+                if(result.isBeforeFirst())
+                {
+                    return new Extension(result.getString(1),
+                                         result.getString(2),
+                                         result.getString(3),
+                                         result.getString(4),
+                                         result.getString(5));
+                }
             }
+            finally
+            {
+                result.close();
+            }
+        }
+        finally
+        {
+           selectStatement.close();
         }
 
         return null;
@@ -186,28 +210,36 @@ public class GeoPackageExtensions
                                                        "scope",
                                                        GeoPackageExtensions.ExtensionsTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(extensionQuerySql))
-        {
-            try(ResultSet results = preparedStatement.executeQuery())
-            {
-                return ResultSetStream.getStream(results)
-                                      .map(result -> { try
-                                                       {
-                                                           return new Extension(result.getString(1),
-                                                                                result.getString(2),
-                                                                                result.getString(3),
-                                                                                result.getString(4),
-                                                                                result.getString(5));
-                                                       }
-                                                       catch(final SQLException ex)
-                                                       {
-                                                           return null;
-                                                       }
-                                                     })
-                                      .filter(Objects::nonNull)
-                                      .collect(Collectors.toCollection(ArrayList<Extension>::new));
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(extensionQuerySql);
 
+        try
+        {
+            final ResultSet results = preparedStatement.executeQuery();
+
+            try
+            {
+                return JdbcUtility.map(results,
+                                       new ResultSetMapper<Extension>()
+                                       {
+                                           @Override
+                                           public Extension apply(final ResultSet resultSet) throws SQLException
+                                           {
+                                               return new Extension(resultSet.getString(1),
+                                                                    resultSet.getString(2),
+                                                                    resultSet.getString(3),
+                                                                    resultSet.getString(4),
+                                                                    resultSet.getString(5));
+                                           }
+                                       });
             }
+            finally
+            {
+                results.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -306,7 +338,9 @@ public class GeoPackageExtensions
                                                      "scope");
         this.createExtensionTableNoCommit(); // Create the extension table
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertExtension))
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertExtension);
+
+        try
         {
             preparedStatement.setString(1, tableName);
             preparedStatement.setString(2, columnName);
@@ -318,10 +352,14 @@ public class GeoPackageExtensions
 
             this.databaseConnection.commit();
         }
-        catch(final Exception ex)
+        catch(final SQLException ex)
         {
             this.databaseConnection.rollback();
             throw ex;
+        }
+        finally
+        {
+            preparedStatement.close();
         }
 
         return new Extension(tableName,
@@ -360,9 +398,15 @@ public class GeoPackageExtensions
         // Create the tile matrix set table or view
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageExtensions.ExtensionsTableName))
         {
-            try(Statement statement = this.databaseConnection.createStatement())
+            final Statement statement = this.databaseConnection.createStatement();
+
+            try
             {
                 statement.executeUpdate(this.getExtensionsTableCreationSql());
+            }
+            finally
+            {
+                statement.close();
             }
         }
     }

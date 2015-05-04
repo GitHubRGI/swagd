@@ -60,12 +60,54 @@ public class ExtensionsVerifier extends Verifier
 {
     private class ExtensionData
     {
-        String tableName;
-        String columnName;
-        String extensionName;
+        /**
+         * Constructor
+         *
+         * @param tableName
+         * @param columnName
+         * @param extensionName
+         */
+        public ExtensionData(final String tableName,
+                             final String columnName,
+                             final String extensionName)
+        {
+            this.tableName = tableName;
+            this.columnName = columnName;
+            this.extensionName = extensionName;
+        }
+
+        /**
+         * @return the tableName
+         */
+        public String getTableName()
+        {
+            return this.tableName;
+        }
+
+        /**
+         * @return the columnName
+         */
+        public String getColumnName()
+        {
+            return this.columnName;
+        }
+
+        /**
+         * @return the extensionName
+         */
+        public String getExtensionName()
+        {
+            return this.extensionName;
+        }
+
+        private final String tableName;
+        private final String columnName;
+        private final String extensionName;
     }
 
     private boolean hasGpkgExtensionsTable;
+
+    // TODO reconsider this mapping.  it should at least be String, ExtensionData, but the column name is repeated as the key...
     private Map<ExtensionData, String> gpkgExtensionsDataAndColumnName;
 
     /**
@@ -100,10 +142,9 @@ public class ExtensionsVerifier extends Verifier
                                                                       .map(resultSet ->
                                                                                         {   try
                                                                                             {
-                                                                                                final ExtensionData extensionData = new ExtensionData();
-                                                                                                extensionData.tableName     = resultSet.getString("table_name");
-                                                                                                extensionData.columnName    = resultSet.getString("column_name");
-                                                                                                extensionData.extensionName = resultSet.getString("extension_name");
+                                                                                                 final ExtensionData extensionData = new ExtensionData(tableNameColumnNameRS.getString("table_name"),
+                                                                                                                                                       tableNameColumnNameRS.getString("column_name"),
+                                                                                                                                                       tableNameColumnNameRS.getString("extension_name"));
                                                                                                 return new AbstractMap.SimpleImmutableEntry<>(extensionData, extensionData.columnName);
                                                                                             }
                                                                                             catch(final SQLException ex)
@@ -486,10 +527,9 @@ public class ExtensionsVerifier extends Verifier
         return null;
     }
 
-
     private static boolean isRegisteredExtension(final String extensionName)
     {
-        return RegisteredExtensions.stream().anyMatch(registeredExtension -> registeredExtension.equals(extensionName));
+        return RegisteredExtensions.contains(extensionName);
     }
 
     private static final TableDefinition ExtensionsTableDefinition;

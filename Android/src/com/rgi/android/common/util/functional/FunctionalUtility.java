@@ -55,7 +55,7 @@ public class FunctionalUtility
         return false;
     }
 
-    public static <T> Collection<T> filter(final Collection<T> collection, final Predicate<T> predicate)
+    public static <T> ArrayList<T> filter(final Collection<T> collection, final Predicate<T> predicate)
     {
         if(collection == null)
         {
@@ -67,16 +67,60 @@ public class FunctionalUtility
             throw new IllegalArgumentException("Predicate may not be null");
         }
 
-        final Collection<T> newCollection = new ArrayList<T>();
+        final ArrayList<T> newCollection = new ArrayList<T>();
 
         for(final T t : collection)
         {
             if(predicate.apply(t))
             {
-                collection.add(t);
+                newCollection.add(t);
             }
         }
 
-        return collection;
+        return newCollection;
+    }
+
+    public static <I, O> ArrayList<O> map(final Collection<I> collection, final Mapper<I, O> mapper)
+    {
+        if(collection == null)
+        {
+            throw new IllegalArgumentException("Collection may not be null");
+        }
+
+        if(mapper == null)
+        {
+            throw new IllegalArgumentException("Mapper may not be null");
+        }
+
+        final ArrayList<O> newCollection = new ArrayList<O>();
+
+        for(final I i : collection)
+        {
+            newCollection.add(mapper.apply(i));
+        }
+
+        return newCollection;
+    }
+
+    public static <I, O> ArrayList<O> mapFilter(final Collection<I> collection,
+                                                final Mapper<I, O>  mapper,
+                                                final Predicate<O>  predicate)
+    {
+        if(collection == null)
+        {
+            throw new IllegalArgumentException("Collection may not be null");
+        }
+
+        if(mapper == null)
+        {
+            throw new IllegalArgumentException("Mapper may not be null");
+        }
+
+        if(predicate == null)
+        {
+            throw new IllegalArgumentException("Predicate may not be null");
+        }
+
+        return FunctionalUtility.filter(FunctionalUtility.map(collection, mapper), predicate);
     }
 }

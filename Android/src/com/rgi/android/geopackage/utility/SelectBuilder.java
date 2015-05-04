@@ -29,7 +29,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.rgi.android.common.util.StringUtility;
 import com.rgi.android.common.util.functional.FunctionalUtility;
@@ -60,10 +62,10 @@ public class SelectBuilder implements Closeable
      * @throws SQLException
      *             throws if various SQLExceptions occur
      */
-    public SelectBuilder(final Connection                        connection,
-                         final String                            tableName,
-                         final Collection<String>                selectColumns,
-                         final Collection<Entry<String, Object>> where) throws SQLException
+    public SelectBuilder(final Connection          connection,
+                         final String              tableName,
+                         final Collection<String>  selectColumns,
+                         final Map<String, Object> where) throws SQLException
     {
         if(tableName == null || tableName.isEmpty())
         {
@@ -93,7 +95,9 @@ public class SelectBuilder implements Closeable
             throw new IllegalArgumentException("The where columns collection may not be null or empty");
         }
 
-        if(FunctionalUtility.anyMatch(where,
+        final Set<Entry<String, Object>> whereSet = where.entrySet();
+
+        if(FunctionalUtility.anyMatch(whereSet,
                                       new Predicate<Entry<String, Object>>()
                                       {
                                           @Override
@@ -109,7 +113,7 @@ public class SelectBuilder implements Closeable
         final StringBuilder whereSQL = new StringBuilder();
         int count = 1;
 
-        for(final Entry<String, Object> entry : where)
+        for(final Entry<String, Object> entry : whereSet)
         {
             whereSQL.append(entry.getKey() + (entry.getValue() == null ? " IS NULL" : " = ?"));
 
@@ -128,7 +132,7 @@ public class SelectBuilder implements Closeable
         this.preparedStatement = connection.prepareStatement(querySql);
 
         int parameterIndex = 1;    // 1-indexed
-        for(final Entry<String, Object> whereClause : where)
+        for(final Entry<String, Object> whereClause : whereSet)
         {
             final Object value = whereClause.getValue();
             if(value != null)
