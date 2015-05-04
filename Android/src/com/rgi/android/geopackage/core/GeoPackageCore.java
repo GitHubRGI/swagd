@@ -33,10 +33,10 @@ import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-
-import com.rgi.android.geopackage.utility.DatabaseUtility;
+import java.util.List;
 
 import com.rgi.android.common.BoundingBox;
+import com.rgi.android.geopackage.utility.DatabaseUtility;
 import com.rgi.android.geopackage.verification.VerificationIssue;
 import com.rgi.android.geopackage.verification.VerificationLevel;
 
@@ -488,29 +488,31 @@ public class GeoPackageCore
                 preparedStatement.setInt(2, spatialReferenceSystem.getIdentifier());
             }
 
-            try(ResultSet         results         = preparedStatement.executeQuery();
-                Stream<ResultSet> resultSetStream = ResultSetStream.getStream(results))
+            final ResultSet results = preparedStatement.executeQuery();
+
+            try
             {
-                return resultSetStream.map(result -> { try
-                                                       {
-                                                           return contentFactory.create(result.getString(1),                          // table name
-                                                                                        result.getString(2),                          // data type
-                                                                                        result.getString(3),                          // identifier
-                                                                                        result.getString(4),                          // description
-                                                                                        result.getString(5),                          // last change
-                                                                                        new BoundingBox((Double)result.getObject(6),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                                                                                        (Double)result.getObject(7),  // min y
-                                                                                                        (Double)result.getObject(8),  // max x
-                                                                                                        (Double)result.getObject(9)), // max y
-                                                                                        (Integer)result.getObject(10));               // srs id
-                                                       }
-                                                       catch(final SQLException ex)
-                                                       {
-                                                           return null;
-                                                       }
-                                                      })
-                                      .filter(Objects::nonNull)
-                                      .collect(Collectors.toCollection(ArrayList::new));
+                final List<T> content = new ArrayList<T>();
+
+                while(results.next())
+                {
+                    content.add(contentFactory.create(results.getString(1),                          // table name
+                                                      results.getString(2),                          // data type
+                                                      results.getString(3),                          // identifier
+                                                      results.getString(4),                          // description
+                                                      results.getString(5),                          // last change
+                                                      new BoundingBox((Double)results.getObject(6),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
+                                                                      (Double)results.getObject(7),  // min y
+                                                                      (Double)results.getObject(8),  // max x
+                                                                      (Double)results.getObject(9)), // max y
+                                                      (Integer)results.getObject(10)));              // srs id
+                }
+
+                return content;
+            }
+            finally
+            {
+                results.close();
             }
         }
         finally
@@ -553,11 +555,15 @@ public class GeoPackageCore
                                                      "srs_id",
                                                      GeoPackageCore.ContentsTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(contentQuerySql))
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(contentQuerySql);
+
+        try
         {
             preparedStatement.setString(1, tableName);
 
-            try(ResultSet result = preparedStatement.executeQuery())
+            final ResultSet result = preparedStatement.executeQuery();
+
+            try
             {
                 if(result.isBeforeFirst())
                 {
@@ -575,6 +581,14 @@ public class GeoPackageCore
 
                 return null;
             }
+            finally
+            {
+                result.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -655,7 +669,9 @@ public class GeoPackageCore
                                                       "definition",
                                                       "description");
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertSpatialRef))
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertSpatialRef);
+
+        try
         {
             preparedStatement.setString(1, name);
             preparedStatement.setInt   (2, identifier);
@@ -673,6 +689,10 @@ public class GeoPackageCore
                                               definition,
                                               description);
         }
+        finally
+        {
+            preparedStatement.close();
+        }
     }
 
     /**
@@ -687,9 +707,15 @@ public class GeoPackageCore
             // Create the spatial reference system table
             if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageCore.SpatialRefSysTableName))
             {
-                try(Statement statement = this.databaseConnection.createStatement())
+                final Statement statement = this.databaseConnection.createStatement();
+
+                try
                 {
                     statement.executeUpdate(this.getSpatialReferenceSystemCreationSql());
+                }
+                finally
+                {
+                    statement.close();
                 }
             }
 
@@ -719,17 +745,23 @@ public class GeoPackageCore
             // Create the package contents table or view
             if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageCore.ContentsTableName))
             {
-                try(Statement statement = this.databaseConnection.createStatement())
+                final Statement statement = this.databaseConnection.createStatement();
+
+                try
                 {
                     // http://www.geopackage.org/spec/#gpkg_contents_sql
                     // http://www.geopackage.org/spec/#_contents
                     statement.executeUpdate(this.getContentsCreationSql());
                 }
+                finally
+                {
+                    statement.close();
+                }
             }
 
             this.databaseConnection.commit();
         }
-        catch(final Exception ex)
+        catch(final SQLException ex)
         {
             this.databaseConnection.rollback();
             throw ex;
@@ -780,7 +812,14 @@ public class GeoPackageCore
     private Content getContent(final String tableName) throws SQLException
     {
         return this.getContent(tableName,
-                               (inTableName, inDataType, inIdentifier, inDescription, inLastChange, inBoundingBox, inSpatialReferenceSystem) -> new Content(inTableName, inDataType, inIdentifier, inDescription, inLastChange, inBoundingBox, inSpatialReferenceSystem));
+                               new ContentFactory<Content>()
+                               {
+                                   @Override
+                                   public Content create(final String inTableName, final String dataType, final String identifier, final String description, final String lastChange, final BoundingBox boundingBox, final Integer spatialReferenceSystemIdentifier)
+                                   {
+                                       return new Content(inTableName, dataType, identifier, description, lastChange, boundingBox, spatialReferenceSystemIdentifier);
+                                   }
+                               });
     }
 
     private final Connection databaseConnection;
