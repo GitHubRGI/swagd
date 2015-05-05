@@ -123,4 +123,26 @@ public class FunctionalUtility
 
         return FunctionalUtility.filter(FunctionalUtility.map(collection, mapper), predicate);
     }
+
+    public static <I, O> ArrayList<O> filterMap(final Collection<I> collection,
+                                                final Predicate<I>  predicate,
+                                                final Mapper<I, O>  mapper)
+    {
+        if(collection == null)
+        {
+            throw new IllegalArgumentException("Collection may not be null");
+        }
+
+        if(mapper == null)
+        {
+            throw new IllegalArgumentException("Mapper may not be null");
+        }
+
+        if(predicate == null)
+        {
+            throw new IllegalArgumentException("Predicate may not be null");
+        }
+
+        return FunctionalUtility.map(FunctionalUtility.filter(collection, predicate), mapper);
+    }
 }

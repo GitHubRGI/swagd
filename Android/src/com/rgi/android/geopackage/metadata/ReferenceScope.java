@@ -78,16 +78,31 @@ public enum ReferenceScope
             throw new IllegalArgumentException("Text may not be null");
         }
 
-        switch(text.toLowerCase())
-        {
-            case "geopackage": return ReferenceScope.GeoPackage;
-            case "table":      return ReferenceScope.Table;
-            case "column":     return ReferenceScope.Column;
-            case "row":        return ReferenceScope.Row;
-            case "row/col":    return ReferenceScope.RowCol;
+        final String textLower = text.toLowerCase();
 
-            default: throw new IllegalArgumentException("Text does not match any valid values for GeoPackage reference scopes");
+        if(textLower.equals("geopackage"))
+        {
+            return ReferenceScope.GeoPackage;
         }
+        else if(textLower.equals("table"))
+        {
+            return ReferenceScope.Table;
+        }
+        else if(textLower.equals("column"))
+        {
+            return ReferenceScope.Column;
+        }
+        else if(textLower.equals("row"))
+        {
+            return ReferenceScope.Row;
+        }
+        else if(textLower.equals("row/col"))
+        {
+            return ReferenceScope.RowCol;
+        }
+
+        throw new IllegalArgumentException("Text does not match any valid values for GeoPackage reference scopes");
+
     }
 
     /**
