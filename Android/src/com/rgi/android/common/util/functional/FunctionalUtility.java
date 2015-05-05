@@ -138,10 +138,20 @@ public class FunctionalUtility
     }
 
     /**
+     * Returns an {@Link ArrayList} of the output type parameter consisting of the results
+     * of mapping the elements  in the given {@Link Collection} that are based on the given Mapper
+     * then filtering the elements that satisfy the given {@Link Predicate} to the output type parameter
+     *
      * @param collection
+     *      The {@Link Collection} of elements that the given Predicate and Mapper will be applied
      * @param mapper
+     *      Contains the apply function that will map each element in the given {@Link Collection} of the input type to an output of a different type
      * @param predicate
+     *       The filter that will retrieve the elements in the given {@Link Collection} that satisfy the condition in the function apply
      * @return
+     *       Returns an {@Link ArrayList} of the output type parameter consisting of the results
+     * of mapping the elements  in the given {@Link Collection} that are based on the given Mapper
+     * then filtering the elements that satisfy the given {@Link Predicate} to the output type parameter
      */
     public static <I, O> ArrayList<O> mapFilter(final Collection<I> collection,
                                                 final Mapper<I, O>  mapper,
@@ -166,10 +176,20 @@ public class FunctionalUtility
     }
 
     /**
+     * Returns an {@Link ArrayList} of the output type parameter consisting of the results
+     * of filtering the elements  in the given {@Link Collection} that only satisfy the given {@Link Predicate} then applying
+     * the filtered elements to the Mapper function to the elements to the output type parameter
+     *
      * @param collection
-     * @param predicate
+     *      The {@Link Collection} of elements that the given Predicate and Mapper will be applied
      * @param mapper
+     *      Contains the apply function that will map each element in the given {@Link Collection} of the input type to an output of a different type
+     * @param predicate
+     *       The filter that will retrieve the elements in the given {@Link Collection} that satisfy the condition in the function apply
      * @return
+     *       Returns an {@Link ArrayList} of the output type parameter consisting of the results
+     * of filtering the elements  in the given {@Link Collection} that only satisfy the given {@Link Predicate} then applying
+     * the filtered elements to the Mapper function to the elements to the output type parameter
      */
     public static <I, O> ArrayList<O> filterMap(final Collection<I> collection,
                                                 final Predicate<I>  predicate,
