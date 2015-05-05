@@ -30,10 +30,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.rgi.geopackage.verification.ColumnDefinition;
-import com.rgi.geopackage.verification.ForeignKeyDefinition;
-import com.rgi.geopackage.verification.TableDefinition;
-import com.rgi.geopackage.verification.UniqueDefinition;
+import com.rgi.android.geopackage.verification.ColumnDefinition;
+import com.rgi.android.geopackage.verification.ForeignKeyDefinition;
+import com.rgi.android.geopackage.verification.TableDefinition;
+import com.rgi.android.geopackage.verification.UniqueDefinition;
 
 /**
  * @author Jenifer Cochran
@@ -47,7 +47,7 @@ public class TilePyramidUserDataTableDefinition extends TableDefinition
 
     static
     {
-        Columns = new HashMap<>();
+        Columns = new HashMap<String, ColumnDefinition>();
 
         Columns.put("id",           new ColumnDefinition("INTEGER", false, true,  true, null));
         Columns.put("zoom_level",   new ColumnDefinition("INTEGER", true, false, false, null));
@@ -56,7 +56,7 @@ public class TilePyramidUserDataTableDefinition extends TableDefinition
         Columns.put("tile_data",    new ColumnDefinition("BLOB",    true, false, false, null));
 
         ForeignKeys = Collections.emptySet();
-        UniqueColumnGroups =  new HashSet<>(Arrays.asList(new UniqueDefinition("zoom_level", "tile_column", "tile_row")));
+        UniqueColumnGroups =  new HashSet<UniqueDefinition>(Arrays.asList(new UniqueDefinition("zoom_level", "tile_column", "tile_row")));
     }
 
     /**

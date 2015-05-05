@@ -32,10 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.rgi.android.common.BoundingBox;
 import com.rgi.android.common.coordinate.Coordinate;
@@ -45,6 +42,7 @@ import com.rgi.android.common.tile.TileOrigin;
 import com.rgi.android.common.util.BoundsUtility;
 import com.rgi.android.geopackage.core.GeoPackageCore;
 import com.rgi.android.geopackage.core.SpatialReferenceSystem;
+import com.rgi.android.geopackage.utility.DatabaseUtility;
 import com.rgi.android.geopackage.verification.VerificationIssue;
 import com.rgi.android.geopackage.verification.VerificationLevel;
 
@@ -161,10 +159,9 @@ public class GeoPackageTiles
             this.createTilesTablesNoCommit(); // Create the tile metadata tables
 
             // Create the tile set table
-            Statement statement;
+            final Statement statement = this.databaseConnection.createStatement();
             try
             {
-                statement = this.databaseConnection.createStatement();
                 statement.executeUpdate(this.getTileSetCreationSql(tableName));
             }
             finally
@@ -188,7 +185,7 @@ public class GeoPackageTiles
 
             return this.getTileSet(tableName);
         }
-        catch(final Exception ex)
+        catch(final SQLException ex)
         {
             this.databaseConnection.rollback();
             throw ex;
@@ -214,12 +211,12 @@ public class GeoPackageTiles
         final String zoomLevelQuerySql = String.format("SELECT zoom_level FROM %s WHERE table_name = ?;",
                                                        GeoPackageTiles.MatrixTableName);
 
-        PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(zoomLevelQuerySql);
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(zoomLevelQuerySql);
 
         try
         {
             preparedStatement.setString(1, tileSet.getTableName());
-            ResultSet results = preparedStatement.executeQuery();
+            final ResultSet results = preparedStatement.executeQuery();
 
             try
             {
@@ -415,7 +412,7 @@ public class GeoPackageTiles
                                                           "pixel_x_size",
                                                           "pixel_y_size");
 
-            PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileMatrix);
+            final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileMatrix);
 
             try
             {
@@ -611,9 +608,9 @@ public class GeoPackageTiles
 
         try
         {
-            List<TileCoordinate> tiles = new ArrayList<TileCoordinate>();
+            final List<TileCoordinate> tiles = new ArrayList<TileCoordinate>();
 
-            ResultSet results = preparedStatement.executeQuery();
+            final ResultSet results = preparedStatement.executeQuery();
 
             try
             {
@@ -671,11 +668,11 @@ public class GeoPackageTiles
         {
             preparedStatement.setInt(1, zoomLevel);
 
-            ResultSet resultSet = preparedStatement.executeQuery();
+            final ResultSet resultSet = preparedStatement.executeQuery();
 
             try
             {
-                List<Coordinate<Integer>> tileCoordinates = new ArrayList<Coordinate<Integer>>();
+                final List<Coordinate<Integer>> tileCoordinates = new ArrayList<Coordinate<Integer>>();
 
                 while(resultSet.next())
                 {
@@ -728,7 +725,7 @@ public class GeoPackageTiles
                                                "tile_data",
                                                tileSet.getTableName());
 
-        PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery);
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery);
 
         try
         {
@@ -736,7 +733,7 @@ public class GeoPackageTiles
             preparedStatement.setInt(2, column);
             preparedStatement.setInt(3, row);
 
-            ResultSet tileResult = preparedStatement.executeQuery();
+            final ResultSet tileResult = preparedStatement.executeQuery();
 
             try
             {
@@ -827,12 +824,12 @@ public class GeoPackageTiles
                                               "max_y",
                                               GeoPackageTiles.MatrixSetTableName);
 
-        PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(querySql);
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(querySql);
 
         try
         {
             preparedStatement.setString(1, tileSet.getTableName());
-            ResultSet result = preparedStatement.executeQuery();
+            final ResultSet result = preparedStatement.executeQuery();
 
             try
             {
@@ -916,7 +913,7 @@ public class GeoPackageTiles
                                                             "max_x",
                                                             "max_y");
 
-        PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileMatrixSetSql);
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileMatrixSetSql);
 
         try
         {
@@ -965,14 +962,14 @@ public class GeoPackageTiles
                                                "pixel_y_size",
                                                GeoPackageTiles.MatrixTableName);
 
-        PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery);
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery);
 
         try
         {
             preparedStatement.setString(1, tileSet.getTableName());
             preparedStatement.setInt   (2, zoomLevel);
 
-            ResultSet result = preparedStatement.executeQuery();
+            final ResultSet result = preparedStatement.executeQuery();
 
             try
             {
@@ -1030,12 +1027,12 @@ public class GeoPackageTiles
                                                "pixel_y_size",
                                                GeoPackageTiles.MatrixTableName);
 
-        PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery);
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery);
 
         try
         {
             preparedStatement.setString(1, tileSet.getTableName());
-            ResultSet results = preparedStatement.executeQuery();
+            final ResultSet results = preparedStatement.executeQuery();
 
             try
             {
@@ -1230,7 +1227,7 @@ public class GeoPackageTiles
         // Create the tile matrix set table or view
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixSetTableName))
         {
-            Statement statement = this.databaseConnection.createStatement();
+            final Statement statement = this.databaseConnection.createStatement();
 
             try
             {
@@ -1245,7 +1242,7 @@ public class GeoPackageTiles
         // Create the tile matrix table or view
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixTableName))
         {
-            Statement statement = this.databaseConnection.createStatement();
+            final Statement statement = this.databaseConnection.createStatement();
 
             try
             {

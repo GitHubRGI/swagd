@@ -39,32 +39,26 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
-import utility.DatabaseUtility;
+import com.rgi.android.geopackage.utility.DatabaseUtility;
 
 import com.rgi.android.common.BoundingBox;
-import com.rgi.android.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.core.GeoPackageCore;
-import com.rgi.geopackage.verification.Assert;
-import com.rgi.geopackage.verification.AssertionError;
-import com.rgi.geopackage.verification.ColumnDefinition;
-import com.rgi.geopackage.verification.ForeignKeyDefinition;
-import com.rgi.geopackage.verification.Requirement;
-import com.rgi.geopackage.verification.Severity;
-import com.rgi.geopackage.verification.TableDefinition;
-import com.rgi.geopackage.verification.VerificationLevel;
-import com.rgi.geopackage.verification.Verifier;
+import com.rgi.android.geopackage.core.GeoPackageCore;
+import com.rgi.android.geopackage.verification.Assert;
+import com.rgi.android.geopackage.verification.AssertionError;
+import com.rgi.android.geopackage.verification.ColumnDefinition;
+import com.rgi.android.geopackage.verification.ForeignKeyDefinition;
+import com.rgi.android.geopackage.verification.Requirement;
+import com.rgi.android.geopackage.verification.Severity;
+import com.rgi.android.geopackage.verification.TableDefinition;
+import com.rgi.android.geopackage.verification.VerificationLevel;
+import com.rgi.android.geopackage.verification.Verifier;
 
 /**
  * @author Jenifer Cochran
