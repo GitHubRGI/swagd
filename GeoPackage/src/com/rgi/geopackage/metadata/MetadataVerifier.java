@@ -419,7 +419,8 @@ public class MetadataVerifier extends Verifier
                                                                                           .collect(Collectors.toList());
             for(final MetadataReference value: invalidColumnNameValues)
             {
-                final String query = "SELECT * FROM ? WHERE ROWID = ?;";
+                final String query = String.format("SELECT COUNT(1) FROM %s WHERE ROWID = ?;",  // TODO make sure COUNT(1) works the way I think it does...
+                                     value.table_name);
 
                 try(PreparedStatement statement = this.getSqliteConnection().prepareStatement(query))
                 {
