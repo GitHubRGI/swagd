@@ -23,8 +23,6 @@
 
 package com.rgi.android.geopackage.metadata;
 
-import java.util.stream.Stream;
-
 /**
  * GeoPackage Metadata Scopes
  *
@@ -42,97 +40,116 @@ import java.util.stream.Stream;
 
 public enum Scope
 {
+    // http://www.geopackage.org/spec/#metadata_scopes
+
     /**
      * Scope with the following values: "undefined", "NA",
      * "Metadata information scope is undefined"
      */
-    // http://www.geopackage.org/spec/#metadata_scopes
     Undefined           ("undefined",             "NA", "Metadata information scope is undefined"),
+
     /**
      * Scope with the following values: "fieldSession", "012",
      * "Information applies to the field session"
      */
     FieldSession        ("fieldSession",         "012", "Information applies to the field session"),
+
     /**
      * Scope with the following values: "collectionSession", "004",
      * "Information applies to the collection session"
      */
     CollectionSession   ("collectionSession",    "004", "Information applies to the collection session"),
+
     /**
      * Scope with the following values: "collectionSession", "004",
      * "Information applies to the collection session"
      */
     Series              ("series",               "006", "Information applies to the (dataset) series"),
+
     /**
      * Scope with the following values: "dataset", "005",
      * "Information applies to the (geographic feature) dataset"
      */
     Dataset             ("dataset",              "005", "Information applies to the (geographic feature) dataset"),
+
     /**
      * Scope with the following values: "featureType", "010",
      * "Information applies to a feature type (class)"
      */
     FeatureType         ("featureType",          "010", "Information applies to a feature type (class)"),
+
     /**
      * Scope with the following values: "feature", "009",
      * "Information applies to a feature (instance)"
      */
     Feature             ("feature",              "009", "Information applies to a feature (instance)"),
+
     /**
      * Scope with the following values: "attributeType", "002",
      * "Information applies to the attribute class"
      */
     AttributeType       ("attributeType",        "002", "Information applies to the attribute class"),
+
     /**
      * Scope with the following values: "attribute", "001",
      * "Information applies to the characteristic of a feature (instance)"
      */
     Attribute           ("attribute",            "001", "Information applies to the characteristic of a feature (instance)"),
+
     /**
      * Scope with the following values: "tile", "016",
      * "Information applies to a tile a spatial subset of geographic data"
      */
     Tile                ("tile",                 "016", "Information applies to a tile a spatial subset of geographic data"),
+
     /**
      * Scope with the following values: "model", "015",
      * "Information applies to a copy or imitation of an existing or hypothetical object"
      */
     Model               ("model",                "015", "Information applies to a copy or imitation of an existing or hypothetical object"),
+
     /**
      *  Scope with the following values:
      *  "catalog", "NA", "Metadata applies to a feature catalog"
      */
     Catalog             ("catalog",               "NA", "Metadata applies to a feature catalog"),
+
     /**
      * Scope with the following values: "schema", "NA",
      * "Metadata applies to an application schema"
      */
     Schema              ("schema",                "NA", "Metadata applies to an application schema"),
+
     /**
      * Scope with the following values: "taxonomy", "NA",
      * "Metadata applies to a taxonomy or knowledge system"
      */
     Taxonomy            ("taxonomy",              "NA", "Metadata applies to a taxonomy or knowledge system"),
+
     /**
      * Scope with the following values: "software", "013",
      * "Information applies to a computer program or routine"
      */
     Software            ("software",             "013", "Information applies to a computer program or routine"),
+
     /**
      * Scope with the following values: ("service", "014",
      * "Information applies to a capability which a service provider entity makes available to a service user entity through a set of interfaces that define a behaviour such as a use case"
      */
     Service             ("service",              "014", "Information applies to a capability which a service provider entity makes available to a service user entity through a set of interfaces that define a behaviour such as a use case"),
+
     /**
      * Scope with the following values: "collectionHardware", "003",
      * "Information applies to the collection hardware class"
      */
     CollectionHardware  ("collectionHardware",   "003", "Information applies to the collection hardware class"),
+
     /**
      * Scope with the following values: "nonGeographicDataset", "007",
      * "Information applies to non-geographic data"
      */
     NonGeographicDataset("nonGeographicDataset", "007", "Information applies to non-geographic data"),
+
     /**
      * Scope with the following values: "dimensionGroup", "008",
      * "Information applies to a dimension group"
@@ -152,10 +169,15 @@ public enum Scope
      */
     public static Scope fromString(final String inName)
     {
-        return Stream.of(Scope.values())
-                     .filter(scope -> scope.toString().equalsIgnoreCase(inName))
-                     .findFirst()
-                     .orElse(null);
+        for(final Scope scope : Scope.values())
+        {
+            if(scope.toString().equalsIgnoreCase(inName))
+            {
+                return scope;
+            }
+        }
+
+        return null;
     }
 
     @Override

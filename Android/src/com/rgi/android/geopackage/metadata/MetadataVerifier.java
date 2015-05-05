@@ -23,7 +23,7 @@
 
 package com.rgi.android.geopackage.metadata;
 
-import static com.rgi.geopackage.verification.Assert.fail;
+import static com.rgi.android.geopackage.verification.Assert.fail;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,28 +33,31 @@ import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import utility.DatabaseUtility;
-
-import com.rgi.android.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.core.GeoPackageCore;
-import com.rgi.geopackage.verification.Assert;
-import com.rgi.geopackage.verification.AssertionError;
-import com.rgi.geopackage.verification.ColumnDefinition;
-import com.rgi.geopackage.verification.ForeignKeyDefinition;
-import com.rgi.geopackage.verification.Requirement;
-import com.rgi.geopackage.verification.Severity;
-import com.rgi.geopackage.verification.TableDefinition;
-import com.rgi.geopackage.verification.VerificationLevel;
-import com.rgi.geopackage.verification.Verifier;
+import com.rgi.android.common.util.StringUtility;
+import com.rgi.android.common.util.functional.FunctionalUtility;
+import com.rgi.android.common.util.functional.Mapper;
+import com.rgi.android.common.util.functional.Predicate;
+import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
+import com.rgi.android.common.util.functional.jdbc.ResultSetMapper;
+import com.rgi.android.common.util.functional.jdbc.ResultSetPredicate;
+import com.rgi.android.geopackage.core.GeoPackageCore;
+import com.rgi.android.geopackage.utility.DatabaseUtility;
+import com.rgi.android.geopackage.verification.Assert;
+import com.rgi.android.geopackage.verification.AssertionError;
+import com.rgi.android.geopackage.verification.ColumnDefinition;
+import com.rgi.android.geopackage.verification.ForeignKeyDefinition;
+import com.rgi.android.geopackage.verification.Requirement;
+import com.rgi.android.geopackage.verification.Severity;
+import com.rgi.android.geopackage.verification.TableDefinition;
+import com.rgi.android.geopackage.verification.VerificationLevel;
+import com.rgi.android.geopackage.verification.Verifier;
 
 /**
  * @author Luke Lambert
@@ -132,17 +135,29 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataTable)
         {
-            final List<Metadata> invalidMetadataValues = this.metadataValues.stream()
-                                                                            .filter(metadata -> !MetadataVerifier.validMdScope(metadata.md_scope))
-                                                                            .collect(Collectors.toList());
+            final Collection<String> invalidScopeValues = FunctionalUtility.mapFilter(this.metadataValues,
+                                                                                      new Mapper<Metadata, String>()
+                                                                                      {
+                                                                                         @Override
+                                                                                         public String apply(final Metadata input)
+                                                                                         {
+                                                                                             return input.md_scope;
+                                                                                         }
+                                                                                      },
+                                                                                      new Predicate<String>()
+                                                                                      {
+                                                                                         @Override
+                                                                                         public boolean apply(final String t)
+                                                                                         {
+                                                                                             return !MetadataVerifier.validMdScope(t);
+                                                                                         }
+                                                                                      });
 
             Assert.assertTrue(String.format("The following md_scope(s) are invalid values in the %s table: %s",
                                             GeoPackageMetadata.MetadataTableName,
-                                            invalidMetadataValues.stream()
-                                                                 .map(value -> value.md_scope)
-                                                                 .collect(Collectors.joining(", "))),
-                             invalidMetadataValues.isEmpty(),
-                             Severity.Warning);
+                                            StringUtility.join(", ", invalidScopeValues)),
+                              invalidScopeValues.isEmpty(),
+                              Severity.Warning);
         }
     }
 
@@ -201,15 +216,28 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            final List<MetadataReference>  invalidMetadataReferenceValues = this.metadataReferenceValues.stream()
-                                                                                                        .filter(value -> !MetadataVerifier.validReferenceScope(value.reference_scope))
-                                                                                                        .collect(Collectors.toList());
+            final List<String> invalidReferenceScopeValues = FunctionalUtility.mapFilter(this.metadataReferenceValues,
+                                                                                         new Mapper<MetadataReference, String>()
+                                                                                         {
+                                                                                            @Override
+                                                                                            public String apply(final MetadataReference input)
+                                                                                            {
+                                                                                                return input.reference_scope;
+                                                                                            }
+                                                                                         },
+                                                                                         new Predicate<String>()
+                                                                                         {
+                                                                                            @Override
+                                                                                            public boolean apply(final String t)
+                                                                                            {
+                                                                                                return !MetadataVerifier.validReferenceScope(t);
+                                                                                            }
+                                                                                         });
+
             Assert.assertTrue(String.format("The following reference_scope value(s) are invalid from the %s table: %s",
                                             GeoPackageMetadata.MetadataReferenceTableName,
-                                            invalidMetadataReferenceValues.stream()
-                                                                           .map(value -> value.reference_scope)
-                                                                           .collect(Collectors.joining(", "))),
-                              invalidMetadataReferenceValues.isEmpty(),
+                                            StringUtility.join(", ", invalidReferenceScopeValues)),
+                              invalidReferenceScopeValues.isEmpty(),
                               Severity.Warning);
         }
     }
@@ -238,55 +266,91 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            // Check reference_scope column that has 'geopackage'
-            final List<MetadataReference> invalidGeoPackageValue = this.metadataReferenceValues.stream()
-                                                                                         .filter(columnValue -> columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()))
-                                                                                         .filter(columnValue -> columnValue.column_name != null)
-                                                                                         .collect(Collectors.toList());
+            final Collection<String> invalidGeoPackageScopeColumns = FunctionalUtility.filterMap(this.metadataReferenceValues,
+                                                                                                 new Predicate<MetadataVerifier.MetadataReference>()
+                                                                                                 {
+                                                                                                    @Override
+                                                                                                    public boolean apply(final MetadataReference t)
+                                                                                                    {
+                                                                                                        return t.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) &&
+                                                                                                               t.column_name != null;
+                                                                                                    }
+                                                                                                 },
+                                                                                                 new Mapper<MetadataVerifier.MetadataReference, String>()
+                                                                                                 {
+                                                                                                    @Override
+                                                                                                    public String apply(final MetadataReference input)
+                                                                                                    {
+                                                                                                        return input.column_name;
+                                                                                                    }
+                                                                                                 });
 
             Assert.assertTrue(String.format("The following column_name value(s) from %s table are invalid. They have a reference_scope = 'geopackage' and a non-null value in column_name: %s.",
                                             GeoPackageMetadata.MetadataReferenceTableName,
-                                            invalidGeoPackageValue.stream()
-                                                                  .map(columnValue -> columnValue.column_name)
-                                                                  .collect(Collectors.joining(", "))),
-                              invalidGeoPackageValue.isEmpty(),
+                                            StringUtility.join(", ", invalidGeoPackageScopeColumns)),
+                              invalidGeoPackageScopeColumns.isEmpty(),
                               Severity.Warning);
 
             // Get table_name values from the gpkg_contents table
             final String query = String.format("SELECT table_name FROM %s;", GeoPackageCore.ContentsTableName);
 
-            try(PreparedStatement stmt                 = this.getSqliteConnection().prepareStatement(query);
-                ResultSet         contentsTableNamesRS = stmt.executeQuery())
+            final PreparedStatement stmt = this.getSqliteConnection().prepareStatement(query);
+
+            try
             {
-                final List<String> contentsTableNames = ResultSetStream.getStream(contentsTableNamesRS)
-                                                                       .map(resultSet ->  { try
-                                                                                            {
-                                                                                                return resultSet.getString("table_name");
-                                                                                            }
-                                                                                            catch(final SQLException ex)
-                                                                                            {
-                                                                                                return null;
-                                                                                            }
-                                                                                          })
-                                                                       .filter(Objects::nonNull)
-                                                                       .collect(Collectors.toList());
+                final ResultSet contentsTableNamesRS = stmt.executeQuery();
 
-                //check other records that does not have 'geopackage' as a value
-                final List<MetadataReference> invalidTableNameValues = this.metadataReferenceValues.stream()
-                                                                                                   .filter(columnValue -> !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()))
-                                                                                                   .filter(columnValue -> contentsTableNames.stream().anyMatch(contentsTableName -> !columnValue.table_name.equals(contentsTableName)))
-                                                                                                   .collect(Collectors.toList());
+                try
+                {
+                    final List<String> contentsTableNames = JdbcUtility.map(contentsTableNamesRS,
+                                                                            new ResultSetMapper<String>()
+                                                                            {
+                                                                                @Override
+                                                                                public String apply(final ResultSet resultSet) throws SQLException
+                                                                                {
+                                                                                    return resultSet.getString("table_name");
+                                                                                }
+                                                                            });
 
-                Assert.assertTrue(String.format("The following table_name value(s) in %s table are invalid. The table_name value(s) must reference the table_name(s) in %s table.\n%s",
-                                                GeoPackageMetadata.MetadataReferenceTableName,
-                                                GeoPackageCore.ContentsTableName,
-                                                invalidTableNameValues.stream()
-                                                                      .map(tableName -> String.format("reference_scope: %s, invalid table_name: %s.",
-                                                                                                      tableName.reference_scope,
-                                                                                                      tableName.table_name))
-                                                                      .collect(Collectors.joining("\n"))),
-                                  invalidTableNameValues.isEmpty(),
-                                  Severity.Warning);
+                    // Check other records that do not have 'geopackage' as a value
+                    final List<MetadataReference> invalidTableNameValues = FunctionalUtility.filter(this.metadataReferenceValues,
+                                                                                                    new Predicate<MetadataReference>()
+                                                                                                    {
+                                                                                                        @Override
+                                                                                                        public boolean apply(final MetadataReference t)
+                                                                                                        {
+                                                                                                            return !t.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) &&
+                                                                                                                   !contentsTableNames.contains(t);
+                                                                                                        }
+                                                                                                    });
+
+                    Assert.assertTrue(String.format("The following table_name value(s) in %s table are invalid. The table_name value(s) must reference the table_name(s) in the %s table.\n%s",
+                                                    GeoPackageMetadata.MetadataReferenceTableName,
+                                                    GeoPackageCore.ContentsTableName,
+                                                    StringUtility.join(", ",
+                                                                       FunctionalUtility.map(invalidTableNameValues,
+                                                                                             new Mapper<MetadataReference, String>()
+                                                                                             {
+                                                                                                @Override
+                                                                                                public String apply(final MetadataReference input)
+                                                                                                {
+                                                                                                    return String.format("reference_scope: %s, invalid table_name: %s.",
+                                                                                                                         input.reference_scope,
+                                                                                                                         input.table_name);
+                                                                                                }
+
+                                                                                             }))),
+                                      invalidTableNameValues.isEmpty(),
+                                      Severity.Warning);
+                }
+                finally
+                {
+                    contentsTableNamesRS.close();
+                }
+            }
+            finally
+            {
+                stmt.close();
             }
         }
     }
@@ -317,55 +381,89 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            final List<MetadataReference> invalidColumnNameValues = this.metadataReferenceValues.stream()
-                                                                                                .filter(columnValue -> columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) ||
-                                                                                                                       columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      ||
-                                                                                                                       columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Row.toString()))
-                                                                                                .filter(columnValue -> columnValue.column_name != null)
-                                                                                                .collect(Collectors.toList());
+            final List<String> invalidColumnNameValues = FunctionalUtility.filterMap(this.metadataReferenceValues,
+                                                                                     new Predicate<MetadataReference>()
+                                                                                     {
+                                                                                        @Override
+                                                                                        public boolean apply(final MetadataReference columnValue)
+                                                                                        {
+                                                                                            return (columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) ||
+                                                                                                    columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      ||
+                                                                                                    columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Row.toString())) &&
+                                                                                                   columnValue.column_name != null;
+                                                                                        }
+                                                                                     },
+                                                                                     new Mapper<MetadataReference, String>()
+                                                                                     {
+                                                                                        @Override
+                                                                                        public String apply(final MetadataReference input)
+                                                                                        {
+                                                                                            return String.format("reference_scope: %s, invalid column_name: %s.",
+                                                                                                                 input.reference_scope,
+                                                                                                                 input.column_name);
+                                                                                        }
+                                                                                     });
+
 
             Assert.assertTrue(String.format("The following column_name values from %s table are invalid. They contain a reference_scope of either 'geopackage', 'table' or 'row' and need to have a column_value of NULL.\n%s",
                                             GeoPackageMetadata.MetadataReferenceTableName,
-                                            invalidColumnNameValues.stream()
-                                                                   .map(value -> String.format("reference_scope: %s, invalid column_name: %s.", value.reference_scope, value.column_name))
-                                                                   .collect(Collectors.joining("\n"))),
+                                            StringUtility.join("\n", invalidColumnNameValues)),
                               invalidColumnNameValues.isEmpty(),
                               Severity.Warning);
 
-            final List<MetadataReference> otherReferenceScopeValues = this.metadataReferenceValues.stream()
-                                                                                                  .filter(columnValue -> !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) &&
-                                                                                                                         !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      &&
-                                                                                                                         !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Row.toString()))
-                                                                                                  .collect(Collectors.toList());
+            final List<MetadataReference> otherReferenceScopeValues = FunctionalUtility.filter(this.metadataReferenceValues,
+                                                                                               new Predicate<MetadataReference>()
+                                                                                               {
+                                                                                                  @Override
+                                                                                                  public boolean apply(final MetadataReference columnValue)
+                                                                                                  {
+                                                                                                      return !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) &&
+                                                                                                             !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      &&
+                                                                                                             !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Row.toString());
+                                                                                                  }
+                                                                                               });
+
             for(final MetadataReference value : otherReferenceScopeValues)
             {
                 if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), value.table_name))
                 {
                     final String query = "PRAGMA table_info('?');";
 
-                    try(PreparedStatement statement = this.getSqliteConnection().prepareStatement(query))
+                    final PreparedStatement statement = this.getSqliteConnection().prepareStatement(query);
+
+                    try
                     {
                         statement.setString(1, value.table_name);
 
-                        try( ResultSet tableInfo = statement.executeQuery(query))
+                        final ResultSet tableInfo = statement.executeQuery(query);
+
+                        try
                         {
-                           final boolean columnExists = ResultSetStream.getStream(tableInfo)
-                                                                       .anyMatch(resultSet -> {  try
-                                                                                                 {
-                                                                                                     return resultSet.getString("name").equals(value.column_name);
-                                                                                                 }
-                                                                                                 catch(final SQLException ex)
-                                                                                                 {
-                                                                                                     return false;
-                                                                                                 }
-                                                                                               });
+                            final boolean columnExists = JdbcUtility.anyMatch(tableInfo,
+                                                                              new ResultSetPredicate()
+                                                                              {
+                                                                                  @Override
+                                                                                  public boolean apply(final ResultSet resultSet) throws SQLException
+                                                                                  {
+                                                                                      return resultSet.getString("name").equals(value.column_name);
+                                                                                  }
+                                                                              });
+
                             Assert.assertTrue(String.format("The column_name %s referenced in the %s table doesn't exist in the table %s.",
                                                             value.column_name,
                                                             GeoPackageMetadata.MetadataReferenceTableName,
                                                             value.table_name),
-                                             columnExists,
-                                             Severity.Warning);
+                                              columnExists,
+                                              Severity.Warning);
                         }
+                        finally
+                        {
+                            tableInfo.close();
+                        }
+                    }
+                    finally
+                    {
+                        statement.close();
                     }
                 }
             }
@@ -398,35 +496,60 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            final List<MetadataReference> invalidColumnValues = this.metadataReferenceValues.stream()
-                                                                                            .filter(columnValue -> columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) ||
-                                                                                                                   columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      ||
-                                                                                                                   columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Column.toString()))
-                                                                                            .filter(columnValue -> columnValue.row_id_value != null)
-                                                                                            .collect(Collectors.toList());
-            Assert.assertTrue(String.format("The following row_id_value(s) has(have) a reference_scope value of 'geopackage', "
-                                                + "'table' or 'column and do not have a value of NULL in row_id_value.\n %s",
-                                            invalidColumnValues.stream()
-                                                               .map(columnValue -> String.format("reference_scope: %s, invalid row_id_value: %d.", columnValue.reference_scope, columnValue.row_id_value))
-                                                               .collect(Collectors.joining("\n"))),
+            final List<String> invalidColumnValues = FunctionalUtility.filterMap(this.metadataReferenceValues,
+                                                                                 new Predicate<MetadataReference>()
+                                                                                 {
+                                                                                    @Override
+                                                                                    public boolean apply(final MetadataReference columnValue)
+                                                                                    {
+                                                                                        return (columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) ||
+                                                                                                columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      ||
+                                                                                                columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Column.toString())) &&
+                                                                                               columnValue.row_id_value != null;
+                                                                                    }
+                                                                                 },
+                                                                                 new Mapper<MetadataReference, String>()
+                                                                                 {
+                                                                                     @Override
+                                                                                     public String apply(final MetadataReference columnValue)
+                                                                                     {
+                                                                                         return String.format("reference_scope: %s, invalid row_id_value: %d.",
+                                                                                                              columnValue.reference_scope,
+                                                                                                              columnValue.row_id_value);
+                                                                                     }
+                                                                                 });
+
+            Assert.assertTrue(String.format("The following row_id_value(s) has(have) a reference_scope value of 'geopackage', 'table' or 'column and do not have a value of NULL in row_id_value.\n %s",
+                                            StringUtility.join("\n", invalidColumnValues)),
                               invalidColumnValues.isEmpty(),
                               Severity.Warning);
 
-            final List<MetadataReference> invalidColumnNameValues = this.metadataReferenceValues.stream()
-                                                                                          .filter(columnValue -> !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) &&
-                                                                                                                 !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      &&
-                                                                                                                 !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Column.toString()))
-                                                                                          .collect(Collectors.toList());
+            final List<MetadataReference> invalidColumnNameValues = FunctionalUtility.filter(this.metadataReferenceValues,
+                                                                                             new Predicate<MetadataReference>()
+                                                                                             {
+                                                                                                @Override
+                                                                                                public boolean apply(final MetadataReference columnValue)
+                                                                                                {
+                                                                                                    return !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.GeoPackage.toString()) &&
+                                                                                                           !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Table.toString())      &&
+                                                                                                           !columnValue.reference_scope.equalsIgnoreCase(ReferenceScope.Column.toString());
+                                                                                                }
+                                                                                             });
+
             for(final MetadataReference value: invalidColumnNameValues)
             {
-                final String query = "SELECT * FROM ? WHERE ROWID = ?;";
+                final String query = String.format("SELECT COUNT(1) FROM %s WHERE ROWID = ?;",  // TODO make sure COUNT(1) works the way I think it does...
+                                                   value.table_name);
 
-                try(PreparedStatement statement = this.getSqliteConnection().prepareStatement(query))
+                final PreparedStatement statement = this.getSqliteConnection().prepareStatement(query);
+
+                try
                 {
-                    statement.setString(1, value.table_name);
-                    statement.setInt   (2, value.row_id_value);
+                    statement.setInt(1, value.row_id_value);
 
-                    try(ResultSet matchingRowIdRS = statement.executeQuery())
+                    final ResultSet matchingRowIdRS = statement.executeQuery();
+
+                    try
                     {
                         Assert.assertTrue(String.format("The row_id_value %d in the %s table does not reference a row id in the table %s.",
                                                         value.row_id_value,
@@ -435,6 +558,14 @@ public class MetadataVerifier extends Verifier
                                           matchingRowIdRS.next(),
                                           Severity.Warning);
                     }
+                    finally
+                    {
+                        matchingRowIdRS.close();
+                    }
+                }
+                finally
+                {
+                    statement.close();
                 }
             }
         }
@@ -507,20 +638,40 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            final List<MetadataReference> invalidIds = this.metadataReferenceValues.stream()
-                                                                                   .filter(metadataReferenceValue -> !(this.metadataValues.stream()
-                                                                                                                                          .anyMatch(metadataValue -> metadataReferenceValue.md_file_id.equals(metadataValue.id))))
-                                                                                   .collect(Collectors.toList());
+            final List<String> invalidIds = FunctionalUtility.filterMap(this.metadataReferenceValues,
+                                                                        new Predicate<MetadataReference>()
+                                                                        {
+                                                                            @Override
+                                                                            public boolean apply(final MetadataReference metadataReference)
+                                                                            {
+                                                                                return FunctionalUtility.anyMatch(MetadataVerifier.this.metadataValues,
+                                                                                                                  new Predicate<Metadata>()
+                                                                                                                  {
+                                                                                                                      @Override
+                                                                                                                      public boolean apply(final Metadata metadata)
+                                                                                                                      {
+                                                                                                                          return metadataReference.md_file_id.equals(metadata.id);
+                                                                                                                      }
+                                                                                                                  });
+                                                                            }
+                                                                        },
+                                                                        new Mapper<MetadataReference, String>()
+                                                                        {
+                                                                            @Override
+                                                                            public String apply(final MetadataReference metadataReference)
+                                                                            {
+                                                                                return String.format("invalid md_file_id: %s, md_parent_id: %d, reference_scope: %s.",
+                                                                                                     metadataReference.md_file_id,
+                                                                                                     metadataReference.md_parent_id,
+                                                                                                     metadataReference.reference_scope);
+                                                                            }
+                                                                        });
+
 
             Assert.assertTrue(String.format("The following md_file_id(s) from %s table do not reference an id column value from the %s table.\n%s",
                                             GeoPackageMetadata.MetadataReferenceTableName,
                                             GeoPackageMetadata.MetadataTableName,
-                                            invalidIds.stream()
-                                                      .map(invalidId -> String.format("invalid md_file_id: %s, md_parent_id: %d, reference_scope: %s.",
-                                                                                      invalidId.md_file_id,
-                                                                                      invalidId.md_parent_id,
-                                                                                      invalidId.reference_scope))
-                                                      .collect(Collectors.joining("\n"))),
+                                            StringUtility.join("\n", invalidIds)),
                               invalidIds.isEmpty(),
                               Severity.Warning);
         }
@@ -689,7 +840,15 @@ public class MetadataVerifier extends Verifier
      */
     private static boolean validReferenceScope(final String referenceScope)
     {
-        return Stream.of(ReferenceScope.values()).anyMatch(scope -> scope.toString().equalsIgnoreCase(referenceScope));
+        return FunctionalUtility.anyMatch(Arrays.asList(ReferenceScope.values()),
+                                          new Predicate<ReferenceScope>()
+                                          {
+                                              @Override
+                                              public boolean apply(final ReferenceScope scope)
+                                              {
+                                                  return scope.toString().equalsIgnoreCase(referenceScope);
+                                              }
+                                          });
     }
 
     /**
@@ -701,7 +860,15 @@ public class MetadataVerifier extends Verifier
      */
     private static boolean validMdScope(final String mdScope)
     {
-        return Stream.of(Scope.values()).anyMatch(scope -> scope.toString().equalsIgnoreCase(mdScope));
+        return FunctionalUtility.anyMatch(Arrays.asList(Scope.values()),
+                                          new Predicate<Scope>()
+                                          {
+                                              @Override
+                                              public boolean apply(final Scope scope)
+                                              {
+                                                  return scope.toString().equalsIgnoreCase(mdScope);
+                                              }
+                                          });
     }
 
     private final boolean                 hasMetadataTable;
@@ -731,7 +898,7 @@ public class MetadataVerifier extends Verifier
 
     static
     {
-        final Map<String, ColumnDefinition> metadataTableColumns = new HashMap<>();
+        final Map<String, ColumnDefinition> metadataTableColumns = new HashMap<String, ColumnDefinition>();
 
         metadataTableColumns.put("id",               new ColumnDefinition("INTEGER", true,  true, false, null));
         metadataTableColumns.put("md_scope",         new ColumnDefinition("TEXT",    true, false, false, "'\\s*dataset\\s*'||\"\\s*dataset\\s*\""));
@@ -742,7 +909,7 @@ public class MetadataVerifier extends Verifier
         MetadataTableDefinition = new TableDefinition(GeoPackageMetadata.MetadataTableName,
                                                       metadataTableColumns);
 
-        final Map<String, ColumnDefinition> metadataReferenceTableColumns = new HashMap<>();
+        final Map<String, ColumnDefinition> metadataReferenceTableColumns = new HashMap<String, ColumnDefinition>();
 
         metadataReferenceTableColumns.put("reference_scope",  new ColumnDefinition("TEXT",     true,  false, false, null));
         metadataReferenceTableColumns.put("table_name",       new ColumnDefinition("TEXT",     false, false, false, null));
@@ -754,8 +921,8 @@ public class MetadataVerifier extends Verifier
 
         MetadataReferenceTableDefinition = new TableDefinition(GeoPackageMetadata.MetadataReferenceTableName,
                                                                metadataReferenceTableColumns,
-                                                               new HashSet<>(Arrays.asList(new ForeignKeyDefinition(GeoPackageMetadata.MetadataTableName, "md_parent_id", "id"),
-                                                                                           new ForeignKeyDefinition(GeoPackageMetadata.MetadataTableName, "md_file_id", "id"))));
+                                                               new HashSet<ForeignKeyDefinition>(Arrays.asList(new ForeignKeyDefinition(GeoPackageMetadata.MetadataTableName, "md_parent_id", "id"),
+                                                                                                               new ForeignKeyDefinition(GeoPackageMetadata.MetadataTableName, "md_file_id", "id"))));
     }
 
 }
