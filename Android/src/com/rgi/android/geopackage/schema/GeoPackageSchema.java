@@ -28,20 +28,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.activation.MimeType;
 
-import utility.DatabaseUtility;
-import utility.SelectBuilder;
-
-import com.rgi.android.common.util.jdbc.ResultSetStream;
+import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
+import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
 import com.rgi.android.geopackage.core.Content;
+import com.rgi.android.geopackage.utility.DatabaseUtility;
+import com.rgi.android.geopackage.utility.SelectBuilder;
 import com.rgi.android.geopackage.verification.VerificationIssue;
 import com.rgi.android.geopackage.verification.VerificationLevel;
 
@@ -144,7 +143,9 @@ public class GeoPackageSchema
                                                              "mime_type",
                                                              "constraint_name");
 
-            try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertDataColumnSql))
+            final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertDataColumnSql);
+
+            try
             {
                 preparedStatement.setString(1, table.getTableName());
                 preparedStatement.setString(2, columnName);
@@ -155,6 +156,10 @@ public class GeoPackageSchema
                 preparedStatement.setObject(7, constraintName);
 
                 preparedStatement.executeUpdate();
+            }
+            finally
+            {
+                preparedStatement.close();
             }
 
             final DataColumn dataColumn = new DataColumn(table.getTableName(),
@@ -168,7 +173,7 @@ public class GeoPackageSchema
 
             return dataColumn;
         }
-        catch(final Exception ex)
+        catch(final SQLException ex)
         {
             this.databaseConnection.rollback();
             throw ex;
@@ -289,7 +294,9 @@ public class GeoPackageSchema
                                                              "maxIsInclusive",
                                                              "description");
 
-            try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertDataColumnSql))
+            final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertDataColumnSql);
+
+            try
             {
                 preparedStatement.setString (1, constraintName);
                 preparedStatement.setString (2, constraintType.toString());
@@ -301,6 +308,10 @@ public class GeoPackageSchema
                 preparedStatement.setObject (8, description);
 
                 preparedStatement.executeUpdate();
+            }
+            finally
+            {
+                preparedStatement.close();
             }
 
             final DataColumnConstraint dataColumnConstraint = new DataColumnConstraint(constraintName,
@@ -315,7 +326,7 @@ public class GeoPackageSchema
 
             return dataColumnConstraint;
         }
-        catch(final Exception ex)
+        catch(final SQLException ex)
         {
             this.databaseConnection.rollback();
             throw ex;
@@ -364,13 +375,16 @@ public class GeoPackageSchema
                                                         "table_name",
                                                         "column_name");
 
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(dataColumnQuerySql);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(dataColumnQuerySql))
+        try
         {
             preparedStatement.setString(1, table.getTableName());
             preparedStatement.setString(2, columnName);
 
-            try(ResultSet result = preparedStatement.executeQuery())
+            final ResultSet result = preparedStatement.executeQuery();
+
+            try
             {
                 if(result.isBeforeFirst())
                 {
@@ -383,8 +397,16 @@ public class GeoPackageSchema
                                           result.getString(5)); // constraint name
                 }
             }
+            finally
+            {
+                result.close();
+            }
 
             return null;
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -425,29 +447,47 @@ public class GeoPackageSchema
             return null;
         }
 
-        try(final SelectBuilder selectStatement = new SelectBuilder(this.databaseConnection,
-                                                                    GeoPackageSchema.DataColumnConstraintsTableName,
-                                                                    Arrays.asList("min",
-                                                                                  "minIsInclusive",
-                                                                                  "max",
-                                                                                  "maxIsInclusive",
-                                                                                  "description"),
-                                                                    Arrays.asList(new AbstractMap.SimpleImmutableEntry<>("constraint_name", constraintName),
-                                                                                  new AbstractMap.SimpleImmutableEntry<>("constraint_type", constraintType),
-                                                                                  new AbstractMap.SimpleImmutableEntry<>("value",           value)));
-            final ResultSet result = selectStatement.executeQuery())
+        final Map<String, Object> wheres = new HashMap<String, Object>();
+
+        wheres.put("constraint_name", constraintName);
+        wheres.put("constraint_type", constraintType);
+        wheres.put("value",           value);
+
+        final SelectBuilder selectStatement = new SelectBuilder(this.databaseConnection,
+                                                                GeoPackageSchema.DataColumnConstraintsTableName,
+                                                                Arrays.asList("min",
+                                                                              "minIsInclusive",
+                                                                              "max",
+                                                                              "maxIsInclusive",
+                                                                              "description"),
+                                                                wheres);
+
+        try
         {
-            if(result.isBeforeFirst())
+            final ResultSet result = selectStatement.executeQuery();
+
+            try
             {
-                return new DataColumnConstraint(constraintName,
-                                                constraintType.toString(),
-                                                value,
-                                                (Number)  result.getObject(1),   // minimum
-                                                          result.getBoolean(2),  // minimum is inclusive
-                                                (Number)  result.getObject(3),   // maximum
-                                                          result.getBoolean(4),  // maximum is inclusive
-                                                          result.getString(5));  // description
+                if(result.isBeforeFirst())
+                {
+                    return new DataColumnConstraint(constraintName,
+                                                    constraintType.toString(),
+                                                    value,
+                                                          (Number)result.getObject (1),  // minimum
+                                                    cast((Integer)result.getObject(2)),  // minimum is inclusive
+                                                          (Number)result.getObject (3),  // maximum
+                                                    cast((Integer)result.getObject(4)),  // maximum is inclusive
+                                                                  result.getString (5)); // description
+                }
             }
+            finally
+            {
+                result.close();
+            }
+        }
+        finally
+        {
+            selectStatement.close();
         }
 
         return null;
@@ -481,28 +521,38 @@ public class GeoPackageSchema
                                                         "constraint_name",
                                                         GeoPackageSchema.DataColumnsTableName);
 
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(dataColumnQuerySql);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(dataColumnQuerySql);
-            ResultSet         results           = preparedStatement.executeQuery())
+        try
         {
-            return ResultSetStream.getStream(results)
-                                  .map(result -> { try
-                                                   {
-                                                       return new DataColumn(result.getString(1),  // table name
-                                                                             result.getString(2),  // column name
-                                                                             result.getString(3),  // name
-                                                                             result.getString(4),  // title
-                                                                             result.getString(5),  // description
-                                                                             result.getString(6),  // mime type
-                                                                             result.getString(7)); // constraint name
-                                                   }
-                                                   catch(final SQLException ex)
-                                                   {
-                                                       return null;
-                                                   }
-                                                 })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toList());
+            final ResultSet results = preparedStatement.executeQuery();
+
+            try
+            {
+                return JdbcUtility.map(results,
+                                       new ResultSetFunction<DataColumn>()
+                                       {
+                                           @Override
+                                           public DataColumn apply(final ResultSet result) throws SQLException
+                                           {
+                                               return new DataColumn(result.getString(1),  // table name
+                                                                     result.getString(2),  // column name
+                                                                     result.getString(3),  // name
+                                                                     result.getString(4),  // title
+                                                                     result.getString(5),  // description
+                                                                     result.getString(6),  // mime type
+                                                                     result.getString(7)); // constraint name
+                                           }
+                                       });
+            }
+            finally
+            {
+                results.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -535,29 +585,39 @@ public class GeoPackageSchema
                                                                    "description",
                                                                    GeoPackageSchema.DataColumnConstraintsTableName);
 
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(dataColumnConstraintsQuerySql);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(dataColumnConstraintsQuerySql);
-            ResultSet         results           = preparedStatement.executeQuery())
+        try
         {
-            return ResultSetStream.getStream(results)
-                                  .map(result -> { try
-                                                   {
-                                                       return new DataColumnConstraint(         result.getString(1),  // constraint name
-                                                                                                result.getString(2),  // constraint type
-                                                                                                result.getString(3),  // value
-                                                                                       (Number) result.getObject(4),  // minimum
-                                                                                  cast((Integer)result.getObject(5)), // minimum is inclusive
-                                                                                       (Number) result.getObject(6),  // maximum
-                                                                                  cast((Integer)result.getObject(7)), // maximum is inclusive
-                                                                                                result.getString(8)); // description
-                                                   }
-                                                   catch(final SQLException ex)
-                                                   {
-                                                       return null;
-                                                   }
-                                                 })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toList());
+            final ResultSet results = preparedStatement.executeQuery();
+
+            try
+            {
+                return JdbcUtility.map(results,
+                                       new ResultSetFunction<DataColumnConstraint>()
+                                       {
+                                           @Override
+                                           public DataColumnConstraint apply(final ResultSet result) throws SQLException
+                                           {
+                                               return new DataColumnConstraint(              result.getString(1),  // constraint name
+                                                                                             result.getString(2),  // constraint type
+                                                                                             result.getString(3),  // value
+                                                                                     (Number)result.getObject(4),  // minimum
+                                                                               cast((Integer)result.getObject(5)), // minimum is inclusive
+                                                                                     (Number)result.getObject(6),  // maximum
+                                                                               cast((Integer)result.getObject(7)), // maximum is inclusive
+                                                                                             result.getString(8)); // description
+                                           }
+                                       });
+            }
+            finally
+            {
+                results.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
         }
     }
 
@@ -573,7 +633,7 @@ public class GeoPackageSchema
      * <br>
      * <b>**WARNING**</b> this does not do a database commit. It is expected
      * that this transaction will always be paired with others that need to be
-     * committed or rollback as a single transaction.
+     * committed or roll back as a single transaction.
      *
      * @throws SQLException
      */
@@ -582,9 +642,15 @@ public class GeoPackageSchema
         // Create the data columns table
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageSchema.DataColumnsTableName))
         {
-            try(Statement statement = this.databaseConnection.createStatement())
+            final Statement statement = this.databaseConnection.createStatement();
+
+            try
             {
                 statement.executeUpdate(this.getDataColumnsTableCreationSql());
+            }
+            finally
+            {
+                statement.close();
             }
         }
     }
@@ -604,9 +670,15 @@ public class GeoPackageSchema
         // Create the data column constraints table
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageSchema.DataColumnConstraintsTableName))
         {
-            try(Statement statement = this.databaseConnection.createStatement())
+            final Statement statement = this.databaseConnection.createStatement();
+
+            try
             {
                 statement.executeUpdate(this.getDataColumnConstraintsTableCreationSql());
+            }
+            finally
+            {
+                statement.close();
             }
         }
     }

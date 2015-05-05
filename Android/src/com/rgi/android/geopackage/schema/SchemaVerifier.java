@@ -67,7 +67,7 @@ public class SchemaVerifier extends Verifier
     {
         String tableName;
         String columnName;
-        String constraintName;
+        String constraintName;  // TODO I believe this was being used before, but hasn't after the changes to backport to java 1.6
     }
 
     private class DataColumnConstraints
