@@ -263,7 +263,7 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsTable && this.hasDataColumnsConstraintsTable)
         {
-            for(final DataColumnConstraints dataColumnConstraints: this.dataColumnConstraintsValues)
+            for(final DataColumnConstraints dataColumnConstraints : this.dataColumnConstraintsValues)
             {
                 if(dataColumnConstraints.constraintName != null)
                 {

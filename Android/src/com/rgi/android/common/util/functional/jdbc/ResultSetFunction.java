@@ -11,11 +11,11 @@ import java.sql.SQLException;
 public interface ResultSetFunction<T>
 {
     /**
-     * The function that performs an operation on the given {@Link ResultSet}
+     * The function that performs an operation on the given {@link ResultSet}
      * and returns the type of the input to the operation after operation is applied
      *
      * @param resultSet
-     *      the {@Link ResultSet} to perform the operations on
+     *      the {@link ResultSet} to perform the operations on
      * @return
      *      the type of the input to the operation after applying the operation
      * @throws SQLException

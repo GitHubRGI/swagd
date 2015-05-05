@@ -29,29 +29,33 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import utility.DatabaseUtility;
+import com.rgi.android.common.util.StringUtility;
+import com.rgi.android.common.util.functional.Function;
+import com.rgi.android.common.util.functional.FunctionalUtility;
+import com.rgi.android.common.util.functional.Predicate;
+import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
+import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
+import com.rgi.android.common.util.functional.jdbc.ResultSetPredicate;
+import com.rgi.android.geopackage.core.GeoPackageCore;
+import com.rgi.android.geopackage.utility.DatabaseUtility;
+import com.rgi.android.geopackage.verification.Assert;
+import com.rgi.android.geopackage.verification.AssertionError;
+import com.rgi.android.geopackage.verification.ColumnDefinition;
+import com.rgi.android.geopackage.verification.ForeignKeyDefinition;
+import com.rgi.android.geopackage.verification.Requirement;
+import com.rgi.android.geopackage.verification.Severity;
+import com.rgi.android.geopackage.verification.TableDefinition;
+import com.rgi.android.geopackage.verification.UniqueDefinition;
+import com.rgi.android.geopackage.verification.VerificationLevel;
+import com.rgi.android.geopackage.verification.Verifier;
 
-import com.rgi.android.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.core.GeoPackageCore;
-import com.rgi.geopackage.verification.Assert;
-import com.rgi.geopackage.verification.AssertionError;
-import com.rgi.geopackage.verification.ColumnDefinition;
-import com.rgi.geopackage.verification.ForeignKeyDefinition;
-import com.rgi.geopackage.verification.Requirement;
-import com.rgi.geopackage.verification.Severity;
-import com.rgi.geopackage.verification.TableDefinition;
-import com.rgi.geopackage.verification.UniqueDefinition;
-import com.rgi.geopackage.verification.VerificationLevel;
-import com.rgi.geopackage.verification.Verifier;
 /**
  *
  * @author Jenifer Cochran
@@ -65,6 +69,7 @@ public class SchemaVerifier extends Verifier
         String columnName;
         String constraintName;
     }
+
     private class DataColumnConstraints
     {
         String  constraintName;
@@ -106,7 +111,6 @@ public class SchemaVerifier extends Verifier
 
         this.dataColumnsValues           = this.getDataColumnValues();
         this.dataColumnConstraintsValues = this.getDataColumnConstraintsValues();
-
     }
 
     /**
@@ -166,29 +170,39 @@ public class SchemaVerifier extends Verifier
                                               GeoPackageSchema.DataColumnsTableName,
                                               GeoPackageCore.ContentsTableName);
 
-            try(Statement statement           = this.getSqliteConnection().createStatement();
-                ResultSet invalidTableNamesRS = statement.executeQuery(query))
+            final Statement statement = this.getSqliteConnection().createStatement();
+
+            try
             {
-                final List<String> invalidTableNames = ResultSetStream.getStream(invalidTableNamesRS)
-                                                                      .map(resultSet -> { try
-                                                                                          {
-                                                                                               return resultSet.getString("table_name");
-                                                                                          }
-                                                                                          catch(final SQLException ex)
-                                                                                          {
-                                                                                               return null;
-                                                                                          }
-                                                                                         })
-                                                                       .filter(Objects::nonNull)
-                                                                       .collect(Collectors.toList());
+                final ResultSet invalidTableNamesRS = statement.executeQuery(query);
+
+                try
+                {
+                    final List<String> invalidTableNames = JdbcUtility.map(invalidTableNamesRS,
+                                                                           new ResultSetFunction<String>()
+                                                                           {
+                                                                               @Override
+                                                                               public String apply(final ResultSet resultSet) throws SQLException
+                                                                               {
+                                                                                   return resultSet.getString("table_name");
+                                                                               }
+                                                                           });
 
                 Assert.assertTrue(String.format("The following table_name(s) is(are) from %s and is(are) not referenced in the %s table_name: %s",
                                                 GeoPackageSchema.DataColumnsTableName,
                                                 GeoPackageCore.ContentsTableName,
-                                                invalidTableNames.stream()
-                                                                 .collect(Collectors.joining(", "))),
+                                                StringUtility.join(", ", invalidTableNames)),
                                   invalidTableNames.isEmpty(),
                                   Severity.Error);
+                }
+                finally
+                {
+                    invalidTableNamesRS.close();
+                }
+            }
+            finally
+            {
+                statement.close();
             }
         }
     }
@@ -219,24 +233,38 @@ public class SchemaVerifier extends Verifier
                 {
                     final String query = String.format("PRAGMA table_info(%s);", dataColumn.tableName);
 
-                    try(PreparedStatement statement   = this.getSqliteConnection().prepareStatement(query);
-                        ResultSet         tableInfoRS = statement.executeQuery())
+                    final PreparedStatement statement = this.getSqliteConnection().prepareStatement(query);
+
+                    try
                     {
-                         final boolean columnExists = ResultSetStream.getStream(tableInfoRS)
-                                                                     .anyMatch(resultSet -> { try
-                                                                                              {
-                                                                                                 return resultSet.getString("name").equals(dataColumn.columnName);
-                                                                                              }
-                                                                                              catch(final SQLException ex)
-                                                                                              {
-                                                                                                  return false;
-                                                                                              }
-                                                                                             });
-                         Assert.assertTrue(String.format("The column %s does not exist in the table %s.",
-                                                         dataColumn.columnName,
-                                                         dataColumn.tableName),
-                                           columnExists,
-                                           Severity.Warning);
+                        final ResultSet tableInfoRS = statement.executeQuery();
+
+                        try
+                        {
+                            final boolean columnExists = JdbcUtility.anyMatch(tableInfoRS,
+                                                                              new ResultSetPredicate()
+                                                                              {
+                                                                                  @Override
+                                                                                  public boolean apply(final ResultSet resultSet) throws SQLException
+                                                                                  {
+                                                                                      return resultSet.getString("name").equals(dataColumn.columnName);
+                                                                                  }
+                                                                              });
+
+                             Assert.assertTrue(String.format("The column %s does not exist in the table %s.",
+                                                             dataColumn.columnName,
+                                                             dataColumn.tableName),
+                                               columnExists,
+                                               Severity.Warning);
+                        }
+                        finally
+                        {
+                            tableInfoRS.close();
+                        }
+                    }
+                    finally
+                    {
+                        statement.close();
                     }
                 }
             }
@@ -263,13 +291,20 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsTable && this.hasDataColumnsConstraintsTable)
         {
-            for(final DataColumnConstraints dataColumnConstraints: this.dataColumnConstraintsValues)
+            for(final DataColumnConstraints dataColumnConstraints : this.dataColumnConstraintsValues)
             {
                 if(dataColumnConstraints.constraintName != null)
                 {
-                    final boolean containsConstraint = this.dataColumnsValues.stream()
-                                                                             .filter(dataColumn -> dataColumn.constraintName != null)
-                                                                             .anyMatch(dataColumn -> dataColumn.constraintName.equals(dataColumnConstraints.constraintName));
+                    final boolean containsConstraint = FunctionalUtility.anyMatch(this.dataColumnConstraintsValues,
+                                                                            new Predicate<DataColumnConstraints>()
+                                                                            {
+                                                                                @Override
+                                                                                public boolean apply(final DataColumnConstraints dataColumn)
+                                                                                {
+                                                                                    return dataColumn.constraintName != null &&
+                                                                                           dataColumn.constraintName.equals(dataColumnConstraints.constraintName);
+                                                                                }
+                                                                            });
 
                    Assert.assertTrue(String.format("The constraint_name %s in %s is not referenced in %s table in the column constraint_name.",
                                                    dataColumnConstraints.constraintName,
@@ -333,15 +368,28 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsConstraintsTable)
         {
-            final boolean validConstraintType = this.dataColumnConstraintsValues.stream()
-                                                                          .allMatch(dataColumnConstraintValue -> SchemaVerifier.validConstraintType(dataColumnConstraintValue.constraintType));
+            final Collection<String> invalidConstraintTypes = FunctionalUtility.mapFilter(this.dataColumnConstraintsValues,
+                                                                                          new Function<DataColumnConstraints, String>()
+                                                                                          {
+                                                                                              @Override
+                                                                                              public String apply(final DataColumnConstraints dataColumnConstraints)
+                                                                                              {
+                                                                                                  return dataColumnConstraints.constraintType;
+                                                                                              }
+                                                                                          },
+                                                                                          new Predicate<String>()
+                                                                                          {
+                                                                                              @Override
+                                                                                              public boolean apply(final String constraintType)
+                                                                                              {
+                                                                                                  return !SchemaVerifier.validConstraintType(constraintType);
+                                                                                              }
+                                                                                          });
 
             Assert.assertTrue(String.format("There is(are) value(s) in %s table constraint_type that does not match \"range\" or \"enum\" or \"glob\". The invalid value(s): %s.",
                                             GeoPackageSchema.DataColumnConstraintsTableName,
-                                            this.dataColumnConstraintsValues.stream()
-                                                                            .filter(dataColumnConstraintValue -> !SchemaVerifier.validConstraintType(dataColumnConstraintValue.constraintType))
-                                                                            .map(value -> value.constraintType).collect(Collectors.joining(", "))),
-                              validConstraintType,
+                                            StringUtility.join(", ", invalidConstraintTypes)),
+                              invalidConstraintTypes.isEmpty(),
                               Severity.Warning);
         }
     }
@@ -369,43 +417,67 @@ public class SchemaVerifier extends Verifier
            final String query = String.format("SELECT DISTINCT constraint_name AS cs FROM %s WHERE constraint_type IN ('range', 'glob');",
                                               GeoPackageSchema.DataColumnConstraintsTableName);
 
-           try(final Statement statement                        = this.getSqliteConnection().createStatement();
-               final ResultSet constraintNamesWithRangeOrGlobRS = statement.executeQuery(query))
+           final Statement statement = this.getSqliteConnection().createStatement();
+
+           try
            {
-               final List<String> constraintNamesWithRangeOrGlob = ResultSetStream.getStream(constraintNamesWithRangeOrGlobRS)
-                                                                                  .map(resultSet -> { try
-                                                                                                      {
-                                                                                                         return resultSet.getString("constraint_name");
-                                                                                                      }
-                                                                                                      catch(final SQLException ex)
-                                                                                                      {
-                                                                                                          return null;
-                                                                                                      }
-                                                                                                    })
-                                                                                 .filter(Objects::nonNull)
-                                                                                 .collect(Collectors.toList());
-               for(final String constraintName : constraintNamesWithRangeOrGlob)
+               final ResultSet constraintNamesWithRangeOrGlobRS = statement.executeQuery(query);
+
+               try
                {
-                   final String query2 = String.format("SELECT count(*) FROM %s WHERE constraint_name = '?'",
-                                                       GeoPackageSchema.DataColumnConstraintsTableName);
+                   final List<String> constraintNamesWithRangeOrGlob = JdbcUtility.map(constraintNamesWithRangeOrGlobRS,
+                                                                                       new ResultSetFunction<String>()
+                                                                                       {
+                                                                                           @Override
+                                                                                           public String apply(final ResultSet resultSet) throws SQLException
+                                                                                           {
+                                                                                               return resultSet.getString("constraint_name");
+                                                                                           }
+                                                                                       });
 
-                   try(final PreparedStatement statement2 = this.getSqliteConnection().prepareStatement(query2))
+                   for(final String constraintName : constraintNamesWithRangeOrGlob)
                    {
-                       statement2.setString(1, constraintName);
+                       final String query2 = String.format("SELECT count(*) FROM %s WHERE constraint_name = '?'",
+                                                           GeoPackageSchema.DataColumnConstraintsTableName);
 
-                       try(final ResultSet countConstraintNameRS = statement2.executeQuery())
+                       final PreparedStatement statement2 = this.getSqliteConnection().prepareStatement(query2);
+
+                       try
                        {
-                           final int count = countConstraintNameRS.getInt("count(*)");
+                           statement2.setString(1, constraintName);
 
-                           Assert.assertTrue(String.format("There are constraint_name values in %s with a constraint_type of 'glob' or 'range' are not unique. "
-                                                             + "Non-unique constraint_name: %s",
-                                                           GeoPackageSchema.DataColumnConstraintsTableName,
-                                                           constraintName),
-                                             count <= 1,
-                                             Severity.Warning);
+                           final ResultSet countConstraintNameRS = statement2.executeQuery();
+
+                           try
+                           {
+                               final int count = countConstraintNameRS.getInt("count(*)");
+
+                               Assert.assertTrue(String.format("There are constraint_name values in %s with a constraint_type of 'glob' or 'range' are not unique. "
+                                                                 + "Non-unique constraint_name: %s",
+                                                               GeoPackageSchema.DataColumnConstraintsTableName,
+                                                               constraintName),
+                                                 count <= 1,
+                                                 Severity.Warning);
+                           }
+                           finally
+                           {
+                               countConstraintNameRS.close();
+                           }
+                       }
+                       finally
+                       {
+                           statement2.close();
                        }
                    }
                }
+               finally
+               {
+                   constraintNamesWithRangeOrGlobRS.close();
+               }
+           }
+           finally
+           {
+               statement.close();
            }
         }
     }
@@ -430,14 +502,28 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsConstraintsTable)
         {
-            final List<DataColumnConstraints> invalidColumnConstraints = this.dataColumnConstraintsValues.stream()
-                                                                                                         .filter(dataColumnConstraint -> Type.Range.equals(dataColumnConstraint.constraintType))
-                                                                                                         .filter(dataColumnConstraint -> dataColumnConstraint.value != null)
-                                                                                                         .collect(Collectors.toList());
+            final List<String> invalidColumnConstraints = FunctionalUtility.filterMap(this.dataColumnConstraintsValues,
+                                                                                      new Predicate<DataColumnConstraints>()
+                                                                                      {
+                                                                                          @Override
+                                                                                          public boolean apply(final DataColumnConstraints dataColumnConstraints)
+                                                                                          {
+                                                                                              return dataColumnConstraints != null &&
+                                                                                                     Type.Range.equals(dataColumnConstraints.constraintType);
+                                                                                          }
+                                                                                      },
+                                                                                      new Function<DataColumnConstraints, String>()
+                                                                                      {
+                                                                                          @Override
+                                                                                          public String apply(final DataColumnConstraints dataColumnConstraints)
+                                                                                          {
+                                                                                              return dataColumnConstraints.value;
+                                                                                          }
+                                                                                      });
 
             Assert.assertTrue(String.format("There are records in %s that have a constraint_type of \"range\" but does not have a corresponding null value for the column value. \nInvalid value(s): %s",
                                             GeoPackageSchema.DataColumnConstraintsTableName,
-                                            invalidColumnConstraints.stream().map(columnValue -> columnValue.value).collect(Collectors.joining(", "))),
+                                            StringUtility.join(", ", invalidColumnConstraints)),
                              invalidColumnConstraints.isEmpty(),
                              Severity.Warning);
         }
@@ -465,18 +551,30 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsConstraintsTable)
         {
-            final List<DataColumnConstraints> invalidConstraintValuesWithRange = this.dataColumnConstraintsValues.stream()
-                                                                                                                 .filter(constraintValue -> Type.Range.equals(constraintValue.constraintType))
-                                                                                                                 .filter(constraintValue -> constraintValue.min == null ||
-                                                                                                                                            constraintValue.max == null ||
-                                                                                                                                            constraintValue.min >= constraintValue.max)
-                                                                                                                 .collect(Collectors.toList());
+            final List<String> invalidConstraintValuesWithRange = FunctionalUtility.filterMap(this.dataColumnConstraintsValues,
+                                                                                              new Predicate<DataColumnConstraints>()
+                                                                                              {
+                                                                                                  @Override
+                                                                                                  public boolean apply(final DataColumnConstraints dataColumnConstraints)
+                                                                                                  {
+                                                                                                      return Type.Range.equals(dataColumnConstraints.constraintType) &&
+                                                                                                             (dataColumnConstraints.min == null ||
+                                                                                                              dataColumnConstraints.max == null ||
+                                                                                                              dataColumnConstraints.min >= dataColumnConstraints.max);
+                                                                                                  }
+                                                                                              },
+                                                                                              new Function<DataColumnConstraints, String>()
+                                                                                              {
+                                                                                                  @Override
+                                                                                                  public String apply(final DataColumnConstraints dataColumnConstraints)
+                                                                                                  {
+                                                                                                      return dataColumnConstraints.invalidMinMaxWithRangeType();
+                                                                                                  }
+                                                                                              });
 
             Assert.assertTrue(String.format("The following records in %s have invalid values for min, or max or both:\n%s",
                                             GeoPackageSchema.DataColumnConstraintsTableName,
-                                            invalidConstraintValuesWithRange.stream()
-                                                                            .map(constraintValue -> constraintValue.invalidMinMaxWithRangeType())
-                                                                            .collect(Collectors.joining("\n"))),
+                                            StringUtility.join("\n", invalidConstraintValuesWithRange)),
                               invalidConstraintValuesWithRange.isEmpty(),
                               Severity.Warning);
 
@@ -504,28 +602,51 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsConstraintsTable)
         {
-            final List<DataColumnConstraints> invalidMinIsInclusives = this.dataColumnConstraintsValues.stream()
-                                                                                                       .filter(columnValue -> Type.Range.equals(columnValue.constraintType))
-                                                                                                       .filter(columnValue -> !Boolean.TRUE.equals(columnValue.minIsInclusive) &&
-                                                                                                                              !Boolean.FALSE.equals(columnValue.minIsInclusive))
-                                                                                                       .collect(Collectors.toList());
+            final Function<DataColumnConstraints, String> toName = new Function<DataColumnConstraints, String>()
+                                                                   {
+                                                                       @Override
+                                                                       public String apply(final DataColumnConstraints dataColumnConstraints)
+                                                                       {
+                                                                           return dataColumnConstraints.constraintName;
+                                                                       }
+                                                                   };
 
-            final List<DataColumnConstraints> invalidMaxIsInclusives = this.dataColumnConstraintsValues.stream()
-                                                                                                       .filter(columnValue -> Type.Range.equals(columnValue.constraintType))
-                                                                                                       .filter(columnValue -> !Boolean.TRUE.equals(columnValue.maxIsInclusive) &&
-                                                                                                                              !Boolean.FALSE.equals(columnValue.maxIsInclusive))
-                                                                                                       .collect(Collectors.toList());
+            final List<String> invalidMinIsInclusives = FunctionalUtility.filterMap(this.dataColumnConstraintsValues,
+                                                                                    new Predicate<DataColumnConstraints>()
+                                                                                    {
+                                                                                        @Override
+                                                                                        public boolean apply(final DataColumnConstraints dataColumnConstraints)
+                                                                                        {
+                                                                                            return Type.Range.equals    (dataColumnConstraints.constraintType) &&
+                                                                                                   !Boolean.TRUE.equals (dataColumnConstraints.minIsInclusive) &&
+                                                                                                   !Boolean.FALSE.equals(dataColumnConstraints.minIsInclusive);
+                                                                                        }
+                                                                                    },
+                                                                                    toName);
 
-            Assert.assertTrue(String.format("The following are violations on either the minIsInclusive or maxIsIclusive columns "
-                                            + "in the %s table for which the values are not 0 or 1. %s. \n%s.",
+            Assert.assertTrue(String.format("The following are violations of the minIsInclusive columns in the %s table for which the values are not 0 or 1. %s. \n%s.",
                                             GeoPackageSchema.DataColumnConstraintsTableName,
-                                            invalidMinIsInclusives.stream()
-                                                                  .map(record -> String.format("Invalid minIsInclusive for constraint_name: %10s.", record.constraintName))
-                                                                  .collect(Collectors.joining(", ")),
-                                            invalidMaxIsInclusives.stream()
-                                                                  .map(record -> String.format("Invalid maxIsInclusive for constraint_name: %10s.", record.constraintName))
-                                                                  .collect(Collectors.joining(", "))),
-                              invalidMinIsInclusives.isEmpty() && invalidMaxIsInclusives.isEmpty(),
+                                            StringUtility.join(", ", invalidMinIsInclusives)),
+                              invalidMinIsInclusives.isEmpty(),
+                              Severity.Warning);
+
+            final List<String> invalidMaxIsInclusives = FunctionalUtility.filterMap(this.dataColumnConstraintsValues,
+                                                                                    new Predicate<DataColumnConstraints>()
+                                                                                    {
+                                                                                        @Override
+                                                                                        public boolean apply(final DataColumnConstraints dataColumnConstraints)
+                                                                                        {
+                                                                                            return Type.Range.equals    (dataColumnConstraints.constraintType) &&
+                                                                                                   !Boolean.TRUE.equals (dataColumnConstraints.maxIsInclusive) &&
+                                                                                                   !Boolean.FALSE.equals(dataColumnConstraints.maxIsInclusive);
+                                                                                        }
+                                                                                    },
+                                                                                    toName);
+
+            Assert.assertTrue(String.format("The following are violations of the maxIsInclusive columns in the %s table for which the values are not 0 or 1. %s. \n%s.",
+                                            GeoPackageSchema.DataColumnConstraintsTableName,
+                                            StringUtility.join(", ", invalidMaxIsInclusives)),
+                              invalidMaxIsInclusives.isEmpty(),
                               Severity.Warning);
         }
     }
@@ -551,21 +672,33 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsConstraintsTable)
         {
-            final List<DataColumnConstraints> invalidConstraintRecords = this.getDataColumnConstraintsValues().stream()
-                                                                                                              .filter(columnValue -> Type.Enum.equals(columnValue.constraintType) ||
-                                                                                                                                     Type.Glob.equals(columnValue.constraintType))
-                                                                                                              .filter(columnValue -> !(columnValue.min == null            &&
-                                                                                                                                       columnValue.max == null            &&
-                                                                                                                                       columnValue.minIsInclusive == null &&
-                                                                                                                                       columnValue.maxIsInclusive == null))
-                                                                                                              .collect(Collectors.toList());
+            final List<String> invalidConstraintRecords = FunctionalUtility.filterMap(this.dataColumnConstraintsValues,
+                                                                                      new Predicate<DataColumnConstraints>()
+                                                                                      {
+                                                                                          @Override
+                                                                                          public boolean apply(final DataColumnConstraints dataColumnConstraints)
+                                                                                          {
+                                                                                              return (Type.Enum.equals(dataColumnConstraints.constraintType) ||
+                                                                                                      Type.Glob.equals(dataColumnConstraints.constraintType)) &&
+                                                                                                     !(dataColumnConstraints.min            == null &&
+                                                                                                       dataColumnConstraints.max            == null &&
+                                                                                                       dataColumnConstraints.minIsInclusive == null &&
+                                                                                                       dataColumnConstraints.maxIsInclusive == null);
+                                                                                          }
+                                                                                      },
+                                                                                      new Function<DataColumnConstraints, String>()
+                                                                                      {
+                                                                                          @Override
+                                                                                          public String apply(final DataColumnConstraints dataColumnConstraints)
+                                                                                          {
+                                                                                              return dataColumnConstraints.constraintName;
+                                                                                          }
+                                                                                      });
 
             Assert.assertTrue(String.format("The following constraint_name(s) have a constraint_type of \"enum\" or \"glob\" "
                                             + "and do NOT have null values for min, max, minIsInclusive, and/or maxIsInclusive. "
                                             + "\nInvalid constraint_name(s): %s.",
-                                            invalidConstraintRecords.stream()
-                                                                    .map(columnValue -> columnValue.constraintName)
-                                                                    .collect(Collectors.joining(", "))),
+                                            StringUtility.join(", ", invalidConstraintRecords)),
                               invalidConstraintRecords.isEmpty(),
                               Severity.Warning);
         }
@@ -590,17 +723,29 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsConstraintsTable)
         {
-            final List<DataColumnConstraints> invalidValues = this.getDataColumnConstraintsValues().stream()
-                                                                                                   .filter(columnValue -> Type.Enum.equals(columnValue.constraintType) ||
-                                                                                                                          Type.Glob.equals(columnValue.constraintType))
-                                                                                                   .filter(columnValue -> columnValue.value == null)
-                                                                                                   .collect(Collectors.toList());
+            final List<String> invalidValues = FunctionalUtility.filterMap(this.dataColumnConstraintsValues,
+                                                                           new Predicate<DataColumnConstraints>()
+                                                                           {
+                                                                               @Override
+                                                                               public boolean apply(final DataColumnConstraints dataColumnConstraints)
+                                                                               {
+                                                                                   return (Type.Enum.equals(dataColumnConstraints.constraintType) ||
+                                                                                           Type.Glob.equals(dataColumnConstraints.constraintType)) &&
+                                                                                          dataColumnConstraints.value == null;
+                                                                               }
+                                                                           },
+                                                                           new Function<DataColumnConstraints, String>()
+                                                                           {
+                                                                               @Override
+                                                                               public String apply(final DataColumnConstraints dataColumnConstraints)
+                                                                               {
+                                                                                   return dataColumnConstraints.constraintName;
+                                                                               }
+                                                                           });
 
             Assert.assertTrue(String.format("The following constraint_name(s) from the %s table have invalid values for the column value. \nInvalid value with constraint_name as: %s.",
                                             GeoPackageSchema.DataColumnConstraintsTableName,
-                                            invalidValues.stream()
-                                                         .map(columnValue -> columnValue.constraintName)
-                                                         .collect(Collectors.joining(", "))),
+                                            StringUtility.join(", ", invalidValues)),
                              invalidValues.isEmpty(),
                              Severity.Warning);
         }
@@ -608,94 +753,124 @@ public class SchemaVerifier extends Verifier
 
     private static boolean validConstraintType(final String constraintType)
     {
-        return Stream.of(Type.values()).anyMatch(scope -> scope.toString().equalsIgnoreCase(constraintType));
+        for(final Type type : Arrays.asList(Type.values()))
+        {
+            if(type.toString().equalsIgnoreCase(constraintType))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    private List<DataColumnConstraints> getDataColumnConstraintsValues()
+    private List<DataColumnConstraints> getDataColumnConstraintsValues() throws SQLException
     {
-        final String query = String.format("SELECT constraint_name, constraint_type, value, min, minIsInclusive, max, maxIsInclusive FROM %s;", GeoPackageSchema.DataColumnConstraintsTableName);
+        final String query = String.format("SELECT constraint_name, constraint_type, value, min, minIsInclusive, max, maxIsInclusive FROM %s;",
+                                           GeoPackageSchema.DataColumnConstraintsTableName);
 
-        try(Statement statement              = this.getSqliteConnection().createStatement();
-            ResultSet tableNamesAndColumnsRS = statement.executeQuery(query))
+        final Statement statement = this.getSqliteConnection().createStatement();
+
+        try
         {
-            return ResultSetStream.getStream(tableNamesAndColumnsRS)
-                                  .map(resultSet -> { try
-                                                      {
-                                                          final DataColumnConstraints dataColumnConstraints    = new DataColumnConstraints();
+            final ResultSet tableNamesAndColumnsRS = statement.executeQuery(query);
 
-                                                          dataColumnConstraints.constraintName = resultSet.getString("constraint_name");
-                                                          dataColumnConstraints.constraintType = resultSet.getString("constraint_type");
-                                                          dataColumnConstraints.value          = resultSet.getString("value");
-                                                          if(resultSet.wasNull())
-                                                          {
-                                                              dataColumnConstraints.value = null;
-                                                          }
-                                                          dataColumnConstraints.min            = resultSet.getDouble("min");
-                                                          if(resultSet.wasNull())
-                                                          {
-                                                              dataColumnConstraints.min = null;
-                                                          }
-                                                          dataColumnConstraints.minIsInclusive = resultSet.getBoolean("minIsInclusive");
-                                                          if(resultSet.wasNull())
-                                                          {
-                                                              dataColumnConstraints.minIsInclusive = null;
-                                                          }
-                                                          dataColumnConstraints.max            = resultSet.getDouble("max");
-                                                          if(resultSet.wasNull())
-                                                          {
-                                                              dataColumnConstraints.max = null;
-                                                          }
-                                                          dataColumnConstraints.maxIsInclusive = resultSet.getBoolean("maxIsInclusive");
-                                                          if(resultSet.wasNull())
-                                                          {
-                                                              dataColumnConstraints.maxIsInclusive = null;
-                                                          }
+            try
+            {
+                return JdbcUtility.map(tableNamesAndColumnsRS,
+                                       new ResultSetFunction<DataColumnConstraints>()
+                                       {
+                                           @Override
+                                           public DataColumnConstraints apply(final ResultSet resultSet) throws SQLException
+                                           {
+                                               final DataColumnConstraints dataColumnConstraints    = new DataColumnConstraints();
 
-                                                          return dataColumnConstraints;
-                                                      }
-                                                      catch(final SQLException ex)
-                                                      {
-                                                          return null;
-                                                      }
-                                                    })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toList());
+                                               dataColumnConstraints.constraintName = resultSet.getString("constraint_name");
+                                               dataColumnConstraints.constraintType = resultSet.getString("constraint_type");
+                                               dataColumnConstraints.value          = resultSet.getString("value");
+
+
+                                               dataColumnConstraints.min = resultSet.getDouble("min");
+
+                                               if(resultSet.wasNull())
+                                               {
+                                                   dataColumnConstraints.min = null;
+                                               }
+
+                                               dataColumnConstraints.minIsInclusive = resultSet.getBoolean("minIsInclusive");
+
+                                               if(resultSet.wasNull())
+                                               {
+                                                   dataColumnConstraints.minIsInclusive = null;
+                                               }
+
+                                               dataColumnConstraints.max = resultSet.getDouble("max");
+
+                                               if(resultSet.wasNull())
+                                               {
+                                                   dataColumnConstraints.max = null;
+                                               }
+
+                                               dataColumnConstraints.maxIsInclusive = resultSet.getBoolean("maxIsInclusive");
+
+                                               if(resultSet.wasNull())
+                                               {
+                                                   dataColumnConstraints.maxIsInclusive = null;
+                                               }
+
+                                               return dataColumnConstraints;
+                                           }
+                                       });
+            }
+            finally
+            {
+                tableNamesAndColumnsRS.close();
+            }
+
+
         }
-        catch(final SQLException ex)
+        finally
         {
-            return Collections.emptyList();
+            statement.close();
         }
     }
 
-    private List<DataColumns> getDataColumnValues()
+    private List<DataColumns> getDataColumnValues() throws SQLException
     {
         final String query = String.format("SELECT table_name, column_name, constraint_name FROM %s;", GeoPackageSchema.DataColumnsTableName);
 
-        try(Statement statement              = this.getSqliteConnection().createStatement();
-            ResultSet tableNamesAndColumnsRS = statement.executeQuery(query))
+        final Statement statement = this.getSqliteConnection().createStatement();
+
+        try
         {
-            return ResultSetStream.getStream(tableNamesAndColumnsRS)
-                                  .map(resultSet -> { try
-                                                      {
-                                                          final DataColumns dataColumn    = new DataColumns();
+            final ResultSet tableNamesAndColumnsRS = statement.executeQuery(query);
 
-                                                          dataColumn.tableName      = resultSet.getString("table_name");
-                                                          dataColumn.columnName     = resultSet.getString("column_name");
-                                                          dataColumn.constraintName = resultSet.getString("constraint_name");
+            try
+            {
+                return JdbcUtility.map(tableNamesAndColumnsRS,
+                                       new ResultSetFunction<DataColumns>()
+                                       {
+                                           @Override
+                                           public DataColumns apply(final ResultSet resultSet) throws SQLException
+                                           {
+                                               final DataColumns dataColumn = new DataColumns();
 
-                                                          return dataColumn;
-                                                      }
-                                                      catch(final SQLException ex)
-                                                      {
-                                                          return null;
-                                                      }
-                                                    })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toList());
+                                               dataColumn.tableName      = resultSet.getString("table_name");
+                                               dataColumn.columnName     = resultSet.getString("column_name");
+                                               dataColumn.constraintName = resultSet.getString("constraint_name");
+
+                                               return dataColumn;
+                                           }
+                                       });
+            }
+            finally
+            {
+                tableNamesAndColumnsRS.close();
+            }
         }
-        catch(final SQLException ex)
+        finally
         {
-            return Collections.emptyList();
+            statement.close();
         }
     }
 
@@ -704,7 +879,7 @@ public class SchemaVerifier extends Verifier
 
     static
     {
-        final Map<String, ColumnDefinition> dataColumnsTableColumns = new HashMap<>();
+        final Map<String, ColumnDefinition> dataColumnsTableColumns = new HashMap<String, ColumnDefinition>();
 
         dataColumnsTableColumns.put("table_name",      new ColumnDefinition("TEXT", true,  true,  true,  null));
         dataColumnsTableColumns.put("column_name",     new ColumnDefinition("TEXT", true,  true,  true,  null));
@@ -716,10 +891,10 @@ public class SchemaVerifier extends Verifier
 
         DataColumnsTableDefinition = new TableDefinition(GeoPackageSchema.DataColumnsTableName,
                                                          dataColumnsTableColumns,
-                                                         new HashSet<>(Arrays.asList(new ForeignKeyDefinition(GeoPackageCore.ContentsTableName, "table_name", "table_name"))));
+                                                         new HashSet<ForeignKeyDefinition>(Arrays.asList(new ForeignKeyDefinition(GeoPackageCore.ContentsTableName, "table_name", "table_name"))));
 
 
-        final Map<String, ColumnDefinition> dataColumnConstraintsColumns = new HashMap<>();
+        final Map<String, ColumnDefinition> dataColumnConstraintsColumns = new HashMap<String, ColumnDefinition>();
 
         dataColumnConstraintsColumns.put("constraint_name", new ColumnDefinition("TEXT",    true,  false, false, null));
         dataColumnConstraintsColumns.put("constraint_type", new ColumnDefinition("TEXT",    true,  false, false, null));
@@ -732,8 +907,8 @@ public class SchemaVerifier extends Verifier
 
         DataColumnConstraintsTableDefinition = new TableDefinition(GeoPackageSchema.DataColumnConstraintsTableName,
                                                                    dataColumnConstraintsColumns,
-                                                                   Collections.emptySet(),
-                                                                   new HashSet<>(Arrays.asList(new UniqueDefinition("constraint_name", "constraint_type", "value"))));
+                                                                   Collections.<ForeignKeyDefinition>emptySet(),
+                                                                   new HashSet<UniqueDefinition>(Arrays.asList(new UniqueDefinition("constraint_name", "constraint_type", "value"))));
 
     }
 }

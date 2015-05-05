@@ -10,12 +10,12 @@ import java.sql.SQLException;
 public interface ResultSetPredicate
 {
     /**
-     * Returns true if the given {@Link ResultSet} satisfies the predicate, false otherwise
+     * Returns true if the given {@link ResultSet} satisfies the predicate, false otherwise
      *
      * @param resultSet
      *      The result set containing the elements
      * @return
-     *      Returns true if the given {@Link ResultSet} satisfies the predicate, false otherwise
+     *      Returns true if the given {@link ResultSet} satisfies the predicate, false otherwise
      *
      * @throws SQLException
      *      Throws if an SQLException occurs

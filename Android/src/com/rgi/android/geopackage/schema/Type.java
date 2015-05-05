@@ -23,7 +23,7 @@
 
 package com.rgi.android.geopackage.schema;
 
-import java.util.stream.Stream;
+import java.util.Arrays;
 
 /**
  * GeoPackage Column Constraint Types
@@ -61,10 +61,15 @@ public enum Type
      */
     public static Type fromString(final String inName)
     {
-        return Stream.of(Type.values())
-                     .filter(scope -> scope.toString().equalsIgnoreCase(inName))
-                     .findFirst()
-                     .orElse(null);
+        for(final Type type : Arrays.asList(Type.values()))
+        {
+            if(type.toString().equalsIgnoreCase(inName))
+            {
+                return type;
+            }
+        }
+
+        return null;
     }
 
     @Override
