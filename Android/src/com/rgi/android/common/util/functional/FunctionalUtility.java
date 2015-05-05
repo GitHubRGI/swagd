@@ -108,10 +108,12 @@ public class FunctionalUtility
      * Returns an {@Link ArrayList} of the output type parameter consisting of the results
      * of applying the Mapper function to the elements in the given {@Link Collection}
      *
-     *
      * @param collection
+     *      The {@Link Collection} of elements that the given mapper will be applied
      * @param mapper
+     *      Contains the apply function that will map each element in the given {@Link Collection} of the input type to an output of a different type
      * @return
+     *      Returns an {@Link ArrayList} of the output type consisting of the elements mapped based on the elements in the given {@Link Collection}
      */
     public static <I, O> ArrayList<O> map(final Collection<I> collection, final Mapper<I, O> mapper)
     {
@@ -163,6 +165,12 @@ public class FunctionalUtility
         return FunctionalUtility.filter(FunctionalUtility.map(collection, mapper), predicate);
     }
 
+    /**
+     * @param collection
+     * @param predicate
+     * @param mapper
+     * @return
+     */
     public static <I, O> ArrayList<O> filterMap(final Collection<I> collection,
                                                 final Predicate<I>  predicate,
                                                 final Mapper<I, O>  mapper)

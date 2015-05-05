@@ -65,6 +65,7 @@ public class GeoPackageExtensions
      *             Controls the level of verification testing performed
      * @return The extension GeoPackage requirements this GeoPackage fails to conform to
      * @throws SQLException
+     *          throws if an SQLException occurs
      */
     public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel) throws SQLException
     {
