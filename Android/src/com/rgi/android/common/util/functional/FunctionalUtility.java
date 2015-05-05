@@ -32,6 +32,19 @@ import java.util.Collection;
  */
 public class FunctionalUtility
 {
+    /**
+     * Returns whether any of the elements of the given {@Link Collection} match the provided {@Link Predicate}
+     * May not evaluate the predicate on all elements if not necessary for determining the result.  If the given
+     * collection is empty the {@code false} is returned and the predicate is not evaluated.
+     * Both the Collection and Predicate must be of the same type parameter.
+     *
+     * @param collection
+     *          The {@Link Collection} of elements to apply the given {@Link Predicate} condition to
+     * @param predicate
+     *          Applies the operation to each element in the given {@Link Collection} to evaluate the given element
+     * @return
+     *         True if finds one element that satisfies the predicate; False if none of the elements in the collection satisfies the predicate
+     */
     public static <T> boolean anyMatch(final Collection<T> collection, final Predicate<T> predicate)
     {
         if(collection == null)
@@ -55,6 +68,17 @@ public class FunctionalUtility
         return false;
     }
 
+    /**
+     * Returns an {@Link ArrayList} of the input type parameter consisting of the elements of this {@Link Collection} that match
+     * the given {@Link Predicate} which has the same type parameter as the given Collection
+     *
+     * @param collection
+     *           The {@Link Collection} of elements that will be filtered by the given {@Link Predicate}
+     * @param predicate
+     *           The {@Link Predicate} that determines if the element is added to the returned {@Link ArrayList} of the input type parameter
+     * @return
+     *           The {@Link ArrayList} of the input type parameter consisting of the elements of this {@Link Collection} that match the given {@Link Predicate}
+     */
     public static <T> ArrayList<T> filter(final Collection<T> collection, final Predicate<T> predicate)
     {
         if(collection == null)
@@ -80,6 +104,15 @@ public class FunctionalUtility
         return newCollection;
     }
 
+    /**
+     * Returns an {@Link ArrayList} of the output type parameter consisting of the results
+     * of applying the Mapper function to the elements in the given {@Link Collection}
+     *
+     *
+     * @param collection
+     * @param mapper
+     * @return
+     */
     public static <I, O> ArrayList<O> map(final Collection<I> collection, final Mapper<I, O> mapper)
     {
         if(collection == null)
@@ -102,6 +135,12 @@ public class FunctionalUtility
         return newCollection;
     }
 
+    /**
+     * @param collection
+     * @param mapper
+     * @param predicate
+     * @return
+     */
     public static <I, O> ArrayList<O> mapFilter(final Collection<I> collection,
                                                 final Mapper<I, O>  mapper,
                                                 final Predicate<O>  predicate)

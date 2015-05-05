@@ -25,9 +25,17 @@ package com.rgi.android.common.util.functional;
 
 /**
  * @author Luke Lambert
+ * @param <T>  the type of the input to the operation
  *
  */
 public interface Predicate<T>
 {
+    /**
+     * Returns true or false if the input type satisfies the apply condition
+     *
+     * @param t
+     *       the type of the input to the operation
+     * @return true if the input satisfies this condition defined, false otherwise
+     */
     public boolean apply(final T t);
 }
