@@ -34,18 +34,17 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 import com.rgi.android.common.util.StringUtility;
+import com.rgi.android.common.util.functional.Function;
 import com.rgi.android.common.util.functional.FunctionalUtility;
-import com.rgi.android.common.util.functional.Mapper;
 import com.rgi.android.common.util.functional.Predicate;
 import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
-import com.rgi.android.common.util.functional.jdbc.ResultSetMapper;
+import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
 import com.rgi.android.common.util.functional.jdbc.ResultSetPredicate;
 import com.rgi.android.geopackage.core.GeoPackageCore;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
@@ -136,7 +135,7 @@ public class MetadataVerifier extends Verifier
         if(this.hasMetadataTable)
         {
             final Collection<String> invalidScopeValues = FunctionalUtility.mapFilter(this.metadataValues,
-                                                                                      new Mapper<Metadata, String>()
+                                                                                      new Function<Metadata, String>()
                                                                                       {
                                                                                          @Override
                                                                                          public String apply(final Metadata input)
@@ -217,7 +216,7 @@ public class MetadataVerifier extends Verifier
         if(this.hasMetadataReferenceTable)
         {
             final List<String> invalidReferenceScopeValues = FunctionalUtility.mapFilter(this.metadataReferenceValues,
-                                                                                         new Mapper<MetadataReference, String>()
+                                                                                         new Function<MetadataReference, String>()
                                                                                          {
                                                                                             @Override
                                                                                             public String apply(final MetadataReference input)
@@ -276,7 +275,7 @@ public class MetadataVerifier extends Verifier
                                                                                                                t.column_name != null;
                                                                                                     }
                                                                                                  },
-                                                                                                 new Mapper<MetadataVerifier.MetadataReference, String>()
+                                                                                                 new Function<MetadataVerifier.MetadataReference, String>()
                                                                                                  {
                                                                                                     @Override
                                                                                                     public String apply(final MetadataReference input)
@@ -303,7 +302,7 @@ public class MetadataVerifier extends Verifier
                 try
                 {
                     final List<String> contentsTableNames = JdbcUtility.map(contentsTableNamesRS,
-                                                                            new ResultSetMapper<String>()
+                                                                            new ResultSetFunction<String>()
                                                                             {
                                                                                 @Override
                                                                                 public String apply(final ResultSet resultSet) throws SQLException
@@ -329,7 +328,7 @@ public class MetadataVerifier extends Verifier
                                                     GeoPackageCore.ContentsTableName,
                                                     StringUtility.join(", ",
                                                                        FunctionalUtility.map(invalidTableNameValues,
-                                                                                             new Mapper<MetadataReference, String>()
+                                                                                             new Function<MetadataReference, String>()
                                                                                              {
                                                                                                 @Override
                                                                                                 public String apply(final MetadataReference input)
@@ -393,7 +392,7 @@ public class MetadataVerifier extends Verifier
                                                                                                    columnValue.column_name != null;
                                                                                         }
                                                                                      },
-                                                                                     new Mapper<MetadataReference, String>()
+                                                                                     new Function<MetadataReference, String>()
                                                                                      {
                                                                                         @Override
                                                                                         public String apply(final MetadataReference input)
@@ -508,7 +507,7 @@ public class MetadataVerifier extends Verifier
                                                                                                columnValue.row_id_value != null;
                                                                                     }
                                                                                  },
-                                                                                 new Mapper<MetadataReference, String>()
+                                                                                 new Function<MetadataReference, String>()
                                                                                  {
                                                                                      @Override
                                                                                      public String apply(final MetadataReference columnValue)
@@ -655,7 +654,7 @@ public class MetadataVerifier extends Verifier
                                                                                                                   });
                                                                             }
                                                                         },
-                                                                        new Mapper<MetadataReference, String>()
+                                                                        new Function<MetadataReference, String>()
                                                                         {
                                                                             @Override
                                                                             public String apply(final MetadataReference metadataReference)
@@ -697,32 +696,59 @@ public class MetadataVerifier extends Verifier
     {
         if(this.hasMetadataReferenceTable)
         {
-            final List<MetadataReference> invalidParentIdsBcFileIds = this.metadataReferenceValues.stream()
-                                                                                                  .filter(metadataReferenceValue -> metadataReferenceValue.md_file_id.equals(metadataReferenceValue.md_parent_id))
-                                                                                                  .collect(Collectors.toList());
+            final Function<MetadataReference, String> metadataReferenceToMessage = new Function<MetadataReference, String>()
+                                                                                   {
+                                                                                       @Override
+                                                                                       public String apply(final MetadataReference metadataReference)
+                                                                                       {
+                                                                                           return String.format("md_parent_id: %d, md_file_id: %d.",
+                                                                                                                metadataReference.md_parent_id,
+                                                                                                                metadataReference.md_file_id);
+                                                                                       }
+                                                                                   };
 
-            Assert.assertTrue(String.format("The following md_parent_id(s) are invalid because they cannot be equivalent to their correspoding md_file_id.\n%s",
-                                            invalidParentIdsBcFileIds.stream()
-                                                                     .map(value -> String.format("Invalid md_parent_id: %d, md_file_id: %d.",
-                                                                                                 value.md_parent_id,
-                                                                                                 value.md_file_id))
-                                                                     .collect(Collectors.joining("\n"))),
+            final List<String> invalidParentIdsBcFileIds = FunctionalUtility.filterMap(this.metadataReferenceValues,
+                                                                                       new Predicate<MetadataReference>()
+                                                                                       {
+                                                                                           @Override
+                                                                                           public boolean apply(final MetadataReference metadataReference)
+                                                                                           {
+                                                                                               return metadataReference.md_file_id != null &&
+                                                                                                      metadataReference.md_file_id.equals(metadataReference.md_parent_id);
+                                                                                           }
+                                                                                       },
+                                                                                       metadataReferenceToMessage);
+
+            Assert.assertTrue(String.format("The following md_parent_id(s) are invalid because they cannot be equivalent to their correspoding md_file_id.\n%s",    // TODO state which table this affects
+                                            StringUtility.join("\n", invalidParentIdsBcFileIds)),
                               invalidParentIdsBcFileIds.isEmpty(),
                               Severity.Warning);
 
-            final List<MetadataReference> invalidParentIds = this.metadataReferenceValues.stream()
-                                                                                         .filter(metadataReferenceValue -> metadataReferenceValue.md_parent_id != null)
-                                                                                         .filter(metadataReferenceValue -> !(this.metadataValues.stream()
-                                                                                                                                                .anyMatch(metadataValue ->  metadataReferenceValue.md_parent_id.equals(metadataValue.id))))
-                                                                                         .collect(Collectors.toList());
+            final Collection<Integer> metadataIds = FunctionalUtility.map(this.metadataValues,
+                                                                          new Function<Metadata, Integer>()
+                                                                          {
+                                                                              @Override
+                                                                              public Integer apply(final Metadata metadata)
+                                                                              {
+                                                                                  return metadata.id;
+                                                                              }
+                                                                          });
+
+            final List<String> invalidParentIds = FunctionalUtility.filterMap(this.metadataReferenceValues,
+                                                                              new Predicate<MetadataReference>()
+                                                                              {
+                                                                                  @Override
+                                                                                  public boolean apply(final MetadataReference metadataReference)
+                                                                                  {
+                                                                                      return metadataReference.md_file_id != null &&
+                                                                                             metadataIds.contains(metadataReference.md_file_id);
+                                                                                  }
+                                                                              },
+                                                                              metadataReferenceToMessage);
 
             Assert.assertTrue(String.format("The following md_parent_id value(s) are invalid because they do not equal id column value from the %s table. \n%s",
                                             GeoPackageMetadata.MetadataTableName,
-                                            invalidParentIds.stream()
-                                                            .map(value -> String.format("Invalid md_parent_id: %d,  md_file_id: %d.",
-                                                                                        value.md_parent_id,
-                                                                                        value.md_file_id))
-                                                            .collect(Collectors.joining("\n"))),
+                                            StringUtility.join("\n", invalidParentIds)),
                               invalidParentIds.isEmpty(),
                               Severity.Warning);
         }
@@ -733,102 +759,105 @@ public class MetadataVerifier extends Verifier
      * GeoPackage from the gpkg_metadata_references table
      *
      * @return a list of MetadataReference's records
+     * @throws SQLException
      */
-    private List<MetadataReference> getMetadataReferenceValues()
+    private List<MetadataReference> getMetadataReferenceValues() throws SQLException
     {
 
-        final String query = String.format("SELECT reference_scope, table_name, column_name, row_id_value, timestamp, md_file_id, md_parent_id FROM %s;", GeoPackageMetadata.MetadataReferenceTableName);
+        final String query = String.format("SELECT reference_scope, table_name, column_name, row_id_value, timestamp, md_file_id, md_parent_id FROM %s;",
+                                           GeoPackageMetadata.MetadataReferenceTableName);
 
-        try(Statement statement       = this.getSqliteConnection().createStatement();
-            ResultSet metadataValueRS = statement.executeQuery(query))
+        final Statement statement = this.getSqliteConnection().createStatement();
+
+        try
+        {
+            final ResultSet metadataReferenceValuesRS = statement.executeQuery(query);
+
+            try
             {
-                return ResultSetStream.getStream(metadataValueRS)
-                                      .map(resultSet -> {  try
-                                                           {
-                                                               final MetadataReference metadataReference = new MetadataReference();
+                return JdbcUtility.map(metadataReferenceValuesRS,
+                                       new ResultSetFunction<MetadataReference>()
+                                       {
+                                           @Override
+                                           public MetadataReference apply(final ResultSet resultSet) throws SQLException
+                                           {
+                                               final MetadataReference metadataReference = new MetadataReference();
 
-                                                               metadataReference.reference_scope   = resultSet.getString("reference_scope");
-                                                               metadataReference.table_name        = resultSet.getString("table_name");
+                                               metadataReference.reference_scope = resultSet.getString("reference_scope");
+                                               metadataReference.table_name      = resultSet.getString("table_name");
+                                               metadataReference.column_name     = resultSet.getString("column_name");
+                                               metadataReference.timestamp       = resultSet.getString("timestamp");
+                                               metadataReference.md_file_id      = resultSet.getInt   ("md_file_id");    // Cannot be null
+                                               metadataReference.row_id_value    = resultSet.getInt   ("row_id_value");  // getInt() returns 0 if the value in the database was null
 
-                                                               if(resultSet.wasNull())
-                                                               {
-                                                                   metadataReference.table_name = null;
-                                                               }
+                                               if(resultSet.wasNull())  // Check for that null
+                                               {
+                                                   metadataReference.row_id_value = null;
+                                               }
 
-                                                               metadataReference.column_name       = resultSet.getString("column_name");
+                                               metadataReference.md_parent_id = resultSet.getInt   ("md_parent_id"); // Can be null
 
-                                                               if(resultSet.wasNull())
-                                                               {
-                                                                   metadataReference.column_name = null;
-                                                               }
+                                               if(resultSet.wasNull())  // Check for that null
+                                               {
+                                                   metadataReference.md_parent_id = null;
+                                               }
 
-                                                               metadataReference.row_id_value      = resultSet.getInt("row_id_value");
-
-                                                               if(resultSet.wasNull())
-                                                               {
-                                                                   metadataReference.row_id_value = null;
-                                                               }
-
-                                                               metadataReference.timestamp         = resultSet.getString("timestamp");
-                                                               metadataReference.md_file_id        = resultSet.getInt("md_file_id");
-                                                               metadataReference.md_parent_id      = resultSet.getInt("md_parent_id");
-
-                                                               if(resultSet.wasNull())
-                                                               {
-                                                                   metadataReference.md_parent_id = null;
-                                                               }
-
-                                                               return metadataReference;
-                                                           }
-                                                           catch(final SQLException ex)
-                                                           {
-                                                               return null;
-                                                           }
-                                                        })
-                                      .filter(Objects::nonNull)
-                                      .collect(Collectors.toList());
-
+                                               return metadataReference;
+                                           }
+                                       });
             }
-            catch(final SQLException ex)
+            finally
             {
-                return Collections.emptyList();
+                metadataReferenceValuesRS.close();
             }
+        }
+        finally
+        {
+            statement.close();
+        }
     }
     /**
      * This will provide a List of Metadata records in the current GeoPackage
      * from the gpkg_metadata table
      *
      * @return a list of Metadata's records
+     * @throws SQLException
      */
-    private List<Metadata> getMetadataValues()
+    private List<Metadata> getMetadataValues() throws SQLException
     {
         final String query = String.format("SELECT md_scope, id FROM %s;", GeoPackageMetadata.MetadataTableName);
 
-        try(Statement statement       = this.getSqliteConnection().createStatement();
-            ResultSet metadataValueRS = statement.executeQuery(query))
-            {
-                return ResultSetStream.getStream(metadataValueRS)
-                                      .map(resultSet -> { try
-                                                          {
-                                                               final Metadata metadata = new Metadata();
-                                                               metadata.id = resultSet.getInt("id");
-                                                               metadata.md_scope = resultSet.getString("md_scope");
+        final Statement statement = this.getSqliteConnection().createStatement();
 
-                                                               return metadata;
-                                                          }
-                                                          catch(final SQLException ex)
-                                                          {
-                                                              return null;
-                                                          }
-                                                        })
-                                      .filter(Objects::nonNull)
-                                      .collect(Collectors.toList());
+        try
+        {
+            final ResultSet metadataValuesRS = statement.executeQuery(query);
 
-            }
-            catch(final SQLException ex)
+            try
             {
-                return Collections.emptyList();
+                 return JdbcUtility.map(metadataValuesRS,
+                                        new ResultSetFunction<Metadata>()
+                                        {
+                                            @Override
+                                            public Metadata apply(final ResultSet resultSet) throws SQLException
+                                            {
+                                                final Metadata metadata = new Metadata();
+                                                metadata.id = resultSet.getInt("id");
+                                                metadata.md_scope = resultSet.getString("md_scope");
+
+                                                return metadata;
+                                            }
+                                        });
             }
+            finally
+            {
+                metadataValuesRS.close();
+            }
+        }
+        finally
+        {
+            statement.close();
+        }
     }
 
     /**

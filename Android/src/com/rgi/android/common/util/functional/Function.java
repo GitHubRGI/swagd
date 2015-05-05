@@ -6,7 +6,7 @@ package com.rgi.android.common.util.functional;
  * @param <I> the type of the input to the operation
  * @param <O> the type of the output to the operation
  */
-public interface Mapper<I, O>
+public interface Function<I, O>
 {
     /**
      * Returns output type that maps from the input type given

@@ -59,7 +59,7 @@ public class JdbcUtility
      * @throws SQLException
      *      throws if an SQLException occurs
      */
-    public static <T> ArrayList<T> map(final ResultSet resultSet, final ResultSetMapper<T> resultSetMapper) throws SQLException
+    public static <T> ArrayList<T> map(final ResultSet resultSet, final ResultSetFunction<T> resultSetMapper) throws SQLException
     {
         if(resultSet == null || resultSet.isClosed())
         {

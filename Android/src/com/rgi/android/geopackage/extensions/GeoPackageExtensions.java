@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
-import com.rgi.android.common.util.functional.jdbc.ResultSetMapper;
+import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
 import com.rgi.android.geopackage.utility.SelectBuilder;
 import com.rgi.android.geopackage.verification.VerificationIssue;
@@ -220,7 +220,7 @@ public class GeoPackageExtensions
             try
             {
                 return JdbcUtility.map(results,
-                                       new ResultSetMapper<Extension>()
+                                       new ResultSetFunction<Extension>()
                                        {
                                            @Override
                                            public Extension apply(final ResultSet resultSet) throws SQLException

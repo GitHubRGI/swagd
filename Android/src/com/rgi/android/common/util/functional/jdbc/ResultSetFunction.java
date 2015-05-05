@@ -8,7 +8,7 @@ import java.sql.SQLException;
  *
  * @param <T> the type of the input to the operation
  */
-public interface ResultSetMapper<T>
+public interface ResultSetFunction<T>
 {
     /**
      * The function that performs an operation on the given {@Link ResultSet}

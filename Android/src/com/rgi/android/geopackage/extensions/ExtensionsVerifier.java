@@ -38,10 +38,10 @@ import java.util.Map;
 
 import com.rgi.android.common.util.StringUtility;
 import com.rgi.android.common.util.functional.FunctionalUtility;
-import com.rgi.android.common.util.functional.Mapper;
+import com.rgi.android.common.util.functional.Function;
 import com.rgi.android.common.util.functional.Predicate;
 import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
-import com.rgi.android.common.util.functional.jdbc.ResultSetMapper;
+import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
 import com.rgi.android.geopackage.verification.Assert;
 import com.rgi.android.geopackage.verification.AssertionError;
@@ -405,7 +405,7 @@ public class ExtensionsVerifier extends Verifier
         {
 
             final Collection<String> invalidExtensionNames = FunctionalUtility.mapFilter(this.gpkgExtensionsDataAndColumnName.keySet(),
-                                                                                         new Mapper<ExtensionData, String>()
+                                                                                         new Function<ExtensionData, String>()
                                                                                          {
                                                                                              @Override
                                                                                              public String apply(final ExtensionData input)
@@ -426,7 +426,7 @@ public class ExtensionsVerifier extends Verifier
             Assert.assertTrue(String.format("The following extension_name(s) are invalid: \n%s",
                                             StringUtility.join(", ",
                                                                FunctionalUtility.map(invalidExtensionNames,
-                                                                                     new Mapper<String, String>()
+                                                                                     new Function<String, String>()
                                                                                      {
                                                                                         @Override
                                                                                         public String apply(final String input)
@@ -483,7 +483,7 @@ public class ExtensionsVerifier extends Verifier
                 try
                 {
                     final Collection<String> invalidDefinitions = JdbcUtility.map(invalidDefinitionValues,
-                                                                                  new ResultSetMapper<String>()
+                                                                                  new ResultSetFunction<String>()
                                                                                   {
                                                                                       @Override
                                                                                       public String apply(final ResultSet resultSet) throws SQLException
@@ -541,7 +541,7 @@ public class ExtensionsVerifier extends Verifier
                 try
                 {
                     final List<String> invalidScopes = JdbcUtility.map(invalidScopeValues,
-                                                                       new ResultSetMapper<String>()
+                                                                       new ResultSetFunction<String>()
                                                                        {
                                                                            @Override
                                                                            public String apply(final ResultSet resultSet) throws SQLException

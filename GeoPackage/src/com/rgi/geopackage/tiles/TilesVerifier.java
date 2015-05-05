@@ -363,8 +363,8 @@ public class TilesVerifier extends Verifier
                                                                                       {
                                                                                           final byte[] tileData = resultSet.getBytes("tile_data");
 
-                                                                                          return TilesVerifier.verifyData(tileData) ? String.format("column id %d", resultSet.getInt("id"))
-                                                                                                                                    : null;
+                                                                                          return TilesVerifier.verifyData(tileData) ? null
+                                                                                                                                    : String.format("%d", resultSet.getInt("id"));
                                                                                       }
                                                                                       catch(final SQLException | IOException ex)
                                                                                       {
@@ -374,9 +374,9 @@ public class TilesVerifier extends Verifier
                                                                   .filter(Objects::nonNull)
                                                                   .collect(Collectors.toList());
 
-                 Assert.assertTrue(String.format("The following columns named \"id\" in table '%s' are not in the correct image format:\n\t\t%s.",
+                 Assert.assertTrue(String.format("The following columns named \"id\" in table '%s' are not in the correct image format:\n%s.",
                                                  tableName,
-                                                 errorMessage.stream().collect(Collectors.joining("\n"))),
+                                                 errorMessage.stream().collect(Collectors.joining(", "))),
                                    errorMessage.isEmpty(),
                                    Severity.Warning);
             }

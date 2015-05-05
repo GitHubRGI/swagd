@@ -115,7 +115,7 @@ public class FunctionalUtility
      * @return
      *      Returns an {@Link ArrayList} of the output type consisting of the elements mapped based on the elements in the given {@Link Collection}
      */
-    public static <I, O> ArrayList<O> map(final Collection<I> collection, final Mapper<I, O> mapper)
+    public static <I, O> ArrayList<O> map(final Collection<I> collection, final Function<I, O> mapper)
     {
         if(collection == null)
         {
@@ -154,7 +154,7 @@ public class FunctionalUtility
      * then filtering the elements that satisfy the given {@Link Predicate} to the output type parameter
      */
     public static <I, O> ArrayList<O> mapFilter(final Collection<I> collection,
-                                                final Mapper<I, O>  mapper,
+                                                final Function<I, O>  mapper,
                                                 final Predicate<O>  predicate)
     {
         if(collection == null)
@@ -193,7 +193,7 @@ public class FunctionalUtility
      */
     public static <I, O> ArrayList<O> filterMap(final Collection<I> collection,
                                                 final Predicate<I>  predicate,
-                                                final Mapper<I, O>  mapper)
+                                                final Function<I, O>  mapper)
     {
         if(collection == null)
         {
