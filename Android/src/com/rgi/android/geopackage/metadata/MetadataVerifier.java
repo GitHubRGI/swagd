@@ -34,6 +34,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -763,6 +764,10 @@ public class MetadataVerifier extends Verifier
      */
     private List<MetadataReference> getMetadataReferenceValues() throws SQLException
     {
+        if(!DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageMetadata.MetadataReferenceTableName))
+        {
+            return Collections.emptyList();
+        }
 
         final String query = String.format("SELECT reference_scope, table_name, column_name, row_id_value, timestamp, md_file_id, md_parent_id FROM %s;",
                                            GeoPackageMetadata.MetadataReferenceTableName);
@@ -825,6 +830,11 @@ public class MetadataVerifier extends Verifier
      */
     private List<Metadata> getMetadataValues() throws SQLException
     {
+        if(!DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageMetadata.MetadataTableName))
+        {
+            return Collections.emptyList();
+        }
+
         final String query = String.format("SELECT md_scope, id FROM %s;", GeoPackageMetadata.MetadataTableName);
 
         final Statement statement = this.getSqliteConnection().createStatement();

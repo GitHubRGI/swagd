@@ -766,6 +766,11 @@ public class SchemaVerifier extends Verifier
 
     private List<DataColumnConstraints> getDataColumnConstraintsValues() throws SQLException
     {
+        if(!DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageSchema.DataColumnConstraintsTableName))
+        {
+            return Collections.emptyList();
+        }
+
         final String query = String.format("SELECT constraint_name, constraint_type, value, min, minIsInclusive, max, maxIsInclusive FROM %s;",
                                            GeoPackageSchema.DataColumnConstraintsTableName);
 
@@ -837,6 +842,11 @@ public class SchemaVerifier extends Verifier
 
     private List<DataColumns> getDataColumnValues() throws SQLException
     {
+        if(!DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageSchema.DataColumnsTableName))
+        {
+            return Collections.emptyList();
+        }
+
         final String query = String.format("SELECT table_name, column_name, constraint_name FROM %s;", GeoPackageSchema.DataColumnsTableName);
 
         final Statement statement = this.getSqliteConnection().createStatement();

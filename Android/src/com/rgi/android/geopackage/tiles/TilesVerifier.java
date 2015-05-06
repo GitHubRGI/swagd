@@ -33,6 +33,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -158,49 +159,56 @@ public class TilesVerifier extends Verifier
             createStmt2.close();
         }
 
-        final String query3 = String.format("SELECT DISTINCT table_name FROM %s;", GeoPackageTiles.MatrixTableName);
-
-        final Statement createStmt3 = this.getSqliteConnection().createStatement();
-
-        try
+        if(!DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageTiles.MatrixTableName))
         {
-            final ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(query3);
+            this.pyramidTablesInTileMatrix = Collections.emptySet();
+        }
+        else
+        {
+            final String query3 = String.format("SELECT DISTINCT table_name FROM %s;", GeoPackageTiles.MatrixTableName);
+
+            final Statement createStmt3 = this.getSqliteConnection().createStatement();
 
             try
             {
-                this.pyramidTablesInTileMatrix = new HashSet<String>(JdbcUtility.mapFilter(tileMatrixPyramidTables,
-                                                                                           new ResultSetFunction<String>()
-                                                                                           {
-                                                                                               @Override
-                                                                                               public String apply(final ResultSet resultSet) throws SQLException
+                final ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(query3);
+
+                try
+                {
+                    this.pyramidTablesInTileMatrix = new HashSet<String>(JdbcUtility.mapFilter(tileMatrixPyramidTables,
+                                                                                               new ResultSetFunction<String>()
                                                                                                {
-                                                                                                   return resultSet.getString("table_name");
-                                                                                               }
-                                                                                           },
-                                                                                           new Predicate<String>()
-                                                                                           {
-                                                                                               @Override
-                                                                                               public boolean apply(final String tableName)
+                                                                                                   @Override
+                                                                                                   public String apply(final ResultSet resultSet) throws SQLException
+                                                                                                   {
+                                                                                                       return resultSet.getString("table_name");
+                                                                                                   }
+                                                                                               },
+                                                                                               new Predicate<String>()
                                                                                                {
-                                                                                                   try
+                                                                                                   @Override
+                                                                                                   public boolean apply(final String tableName)
                                                                                                    {
-                                                                                                       return DatabaseUtility.tableOrViewExists(TilesVerifier.this.getSqliteConnection(), tableName);
+                                                                                                       try
+                                                                                                       {
+                                                                                                           return DatabaseUtility.tableOrViewExists(TilesVerifier.this.getSqliteConnection(), tableName);
+                                                                                                       }
+                                                                                                       catch(final SQLException ex)
+                                                                                                       {
+                                                                                                           throw new RuntimeException(ex);
+                                                                                                       }
                                                                                                    }
-                                                                                                   catch(final SQLException ex)
-                                                                                                   {
-                                                                                                       throw new RuntimeException(ex);
-                                                                                                   }
-                                                                                               }
-                                                                                           }));
+                                                                                               }));
+                }
+                finally
+                {
+                    tileMatrixPyramidTables.close();
+                }
             }
             finally
             {
-                tileMatrixPyramidTables.close();
+                createStmt3.close();
             }
-        }
-        finally
-        {
-            createStmt3.close();
         }
 
         this.hasTileMatrixSetTable = this.tileMatrixSetTableExists();
