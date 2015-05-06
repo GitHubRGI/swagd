@@ -4,6 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import com.rgi.android.common.util.functional.FunctionalUtility;
+import com.rgi.android.common.util.functional.Predicate;
+
 /**
  * @author Luke Lambert
  *
@@ -79,5 +82,27 @@ public class JdbcUtility
         }
 
         return results;
+    }
+
+    public static <T> ArrayList<T> mapFilter(final ResultSet               resultSet,
+                                                final ResultSetFunction<T> function,
+                                                final Predicate<T>         predicate) throws SQLException
+    {
+        if(resultSet == null)
+        {
+            throw new IllegalArgumentException("Result set may not be null");
+        }
+
+        if(function == null)
+        {
+            throw new IllegalArgumentException("function may not be null");
+        }
+
+        if(predicate == null)
+        {
+            throw new IllegalArgumentException("Predicate may not be null");
+        }
+
+        return FunctionalUtility.filter(JdbcUtility.map(resultSet, function), predicate);
     }
 }

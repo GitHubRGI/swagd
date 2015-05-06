@@ -40,6 +40,9 @@ import com.rgi.android.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.android.common.coordinate.CrsCoordinate;
 import com.rgi.android.common.tile.TileOrigin;
 import com.rgi.android.common.util.BoundsUtility;
+import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
+import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
+import com.rgi.android.geopackage.core.ContentFactory;
 import com.rgi.android.geopackage.core.GeoPackageCore;
 import com.rgi.android.geopackage.core.SpatialReferenceSystem;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
@@ -268,9 +271,26 @@ public class GeoPackageTiles
      */
     public Collection<TileSet> getTileSets(final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
     {
-
         return this.core.getContent(TileSet.TileContentType,
-                                    (tableName, dataType, identifier, description, lastChange, boundingBox, spatialReferenceSystem) -> new TileSet(tableName, identifier, description, lastChange, boundingBox, spatialReferenceSystem),
+                                    new ContentFactory<TileSet>()
+                                    {
+                                        @Override
+                                        public TileSet create(final String tableName,
+                                                              final String dataType,
+                                                              final String identifier,
+                                                              final String description,
+                                                              final String lastChange,
+                                                              final BoundingBox boundingBox,
+                                                              final Integer spatialReferenceSystemIdentifier)
+                                        {
+                                            return new TileSet(tableName,
+                                                               identifier,
+                                                               description,
+                                                               lastChange,
+                                                               boundingBox,
+                                                               spatialReferenceSystemIdentifier);
+                                        }
+                                    },
                                     matchingSpatialReferenceSystem);
     }
 
@@ -585,7 +605,7 @@ public class GeoPackageTiles
      *
      * @param tileSet
      *            Handle to the tile set that the requested tiles should belong
-     * @return Returns a {@link Stream} of {@link TileCoordinate}s
+     * @return Returns a {@link Collection} of {@link TileCoordinate}s
      *         representing every tile that the specific tile set contains.
      * @throws SQLException
      *             when SQLException thrown by automatic close() invocation on
@@ -608,20 +628,22 @@ public class GeoPackageTiles
 
         try
         {
-            final List<TileCoordinate> tiles = new ArrayList<TileCoordinate>();
-
             final ResultSet results = preparedStatement.executeQuery();
 
             try
             {
-                while(results.next())
-                {
-                    final int zoomLevel = results.getInt(1);
-                    final int column    = results.getInt(2);
-                    final int row       = results.getInt(3);
+                return JdbcUtility.map(results,
+                                       new ResultSetFunction<TileCoordinate>()
+                                    {
 
-                    tiles.add(new TileCoordinate(column, row, zoomLevel));
-                }
+                                        @Override
+                                        public TileCoordinate apply(final ResultSet resultSet) throws SQLException
+                                        {
+                                            return new TileCoordinate(results.getInt(2),  // column
+                                                                      results.getInt(3),  // row
+                                                                      results.getInt(1)); // zoom level
+                                        }
+                                    });
             }
             finally
             {
@@ -644,7 +666,7 @@ public class GeoPackageTiles
      *            Handle to the tile set that the requested tiles should belong
      * @param zoomLevel
      *            The zoom level of the requested tiles
-     * @return Returns a {@link Stream} of relative tile {@link Coordinate}s
+     * @return Returns a {@link Collection} of relative tile {@link Coordinate}s
      *         representing every tile that the specific tile set contains.
      * @throws SQLException
      *             when SQLException thrown by automatic close() invocation on
@@ -668,20 +690,24 @@ public class GeoPackageTiles
         {
             preparedStatement.setInt(1, zoomLevel);
 
-            final ResultSet resultSet = preparedStatement.executeQuery();
+            final ResultSet results = preparedStatement.executeQuery();
 
             try
             {
-                final List<Coordinate<Integer>> tileCoordinates = new ArrayList<Coordinate<Integer>>();
-
-                while(resultSet.next())
-                {
-                    tileCoordinates.add(new Coordinate<Integer>(resultSet.getInt(1), resultSet.getInt(2)));
-                }
+                return JdbcUtility.map(results,
+                                       new ResultSetFunction<Coordinate<Integer>>()
+                                       {
+                                           @Override
+                                           public Coordinate<Integer> apply(final ResultSet resultSet) throws SQLException
+                                           {
+                                               return new Coordinate<Integer>(resultSet.getInt(1),  // column/x
+                                                                              resultSet.getInt(2)); // row/y
+                                           }
+                                       });
             }
             finally
             {
-                resultSet.close();
+                results.close();
             }
         }
         finally
@@ -866,7 +892,25 @@ public class GeoPackageTiles
     public TileSet getTileSet(final String tileSetTableName) throws SQLException
     {
         return this.core.getContent(tileSetTableName,
-                                    (tableName, dataType, identifier, description, lastChange, boundingBox, spatialReferenceSystem) -> new TileSet(tableName, identifier, description, lastChange, boundingBox, spatialReferenceSystem));
+                                    new ContentFactory<TileSet>()
+                                    {
+                                        @Override
+                                        public TileSet create(final String tableName,
+                                                              final String dataType,
+                                                              final String identifier,
+                                                              final String description,
+                                                              final String lastChange,
+                                                              final BoundingBox boundingBox,
+                                                              final Integer spatialReferenceSystemIdentifier)
+                                        {
+                                            return new TileSet(tableName,
+                                                               identifier,
+                                                               description,
+                                                               lastChange,
+                                                               boundingBox,
+                                                               spatialReferenceSystemIdentifier);
+                                        }
+                                    });
     }
 
     /**
