@@ -228,7 +228,7 @@ public class GeoPackage implements Closeable
             {
                 this.sqliteVersion = DatabaseUtility.getSqliteVersion(this.file);
             }
-            catch(final Exception ex)
+            catch(final IOException ex)
             {
                 throw new IOException("Unable to read SQLite version: " + ex.getMessage());
             }

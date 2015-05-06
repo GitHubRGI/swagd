@@ -66,7 +66,6 @@ import com.rgi.android.geopackage.tiles.TileMatrix;
 import com.rgi.android.geopackage.tiles.TileMatrixSet;
 import com.rgi.android.geopackage.tiles.TileSet;
 import com.rgi.android.geopackage.verification.ConformanceException;
-import com.rgi.android.geopackage.verification.VerificationLevel;
 
 /**
  * @author Jenifer Cochran
@@ -86,7 +85,7 @@ public class GeoPackageTilesAPITest
     public void addTileSet() throws SQLException, Exception
     {
         final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -119,15 +118,15 @@ public class GeoPackageTilesAPITest
 
         final String query = "SELECT table_name FROM gpkg_tile_matrix_set WHERE table_name = 'pyramid';";
 
-        Connection con       = this.getConnection(testFile.getAbsolutePath());
+        final Connection con       = this.getConnection(testFile.getAbsolutePath());
 
         try
         {
-            Statement  stmt      = con.createStatement();
+            final Statement  stmt      = con.createStatement();
 
             try
             {
-                ResultSet  tileName  = stmt.executeQuery(query);
+                final ResultSet  tileName  = stmt.executeQuery(query);
 
                 try
                 {
@@ -161,7 +160,7 @@ public class GeoPackageTilesAPITest
     public void addTileSetWithNullTileSetEntry() throws Exception
     {
         final File testFile = this.getRandomFile(3);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -187,7 +186,7 @@ public class GeoPackageTilesAPITest
     public void addTileSetWithNullBoundingBox() throws Exception
     {
         final File testFile = this.getRandomFile(3);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -217,7 +216,7 @@ public class GeoPackageTilesAPITest
     public void addTileSetWithNullSRS() throws Exception
     {
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -245,7 +244,7 @@ public class GeoPackageTilesAPITest
     public void addTileSetWithNewSpatialReferenceSystem() throws Exception
     {
         final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -267,15 +266,15 @@ public class GeoPackageTilesAPITest
                                    "definition   = 'definition'            AND "+
                                    "description  = 'description';";
 
-        Connection con     = this.getConnection(testFile.getAbsolutePath());
+        final Connection con     = this.getConnection(testFile.getAbsolutePath());
 
         try
         {
-            Statement  stmt    = con.createStatement();
+            final Statement  stmt    = con.createStatement();
 
             try
             {
-                ResultSet  srsInfo = stmt.executeQuery(query);
+                final ResultSet  srsInfo = stmt.executeQuery(query);
 
                 try
                 {
@@ -309,7 +308,7 @@ public class GeoPackageTilesAPITest
     {
         final File testFile = this.getRandomFile(5);
         //create a geopackage with tiles inside
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -336,7 +335,7 @@ public class GeoPackageTilesAPITest
                                        (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
             //open a file with tiles inside and add more tiles
-            GeoPackage gpkgWithTiles = new GeoPackage(testFile, OpenMode.Open);
+            final GeoPackage gpkgWithTiles = new GeoPackage(testFile, OpenMode.Open);
 
             try
             {
@@ -372,15 +371,15 @@ public class GeoPackageTilesAPITest
         final String query = "SELECT cnts.table_name FROM gpkg_contents        AS cnts WHERE cnts.table_name"+
                              " IN(SELECT tms.table_name  FROM gpkg_tile_matrix_set AS tms  WHERE cnts.table_name = tms.table_name);";
 
-        Connection con            = this.getConnection(testFile.getAbsolutePath());
+        final Connection con            = this.getConnection(testFile.getAbsolutePath());
 
         try
         {
-            Statement  stmt           = con.createStatement();
+            final Statement  stmt           = con.createStatement();
 
             try
             {
-                ResultSet  tileTableNames = stmt.executeQuery(query);
+                final ResultSet  tileTableNames = stmt.executeQuery(query);
 
                 try
                 {
@@ -423,7 +422,7 @@ public class GeoPackageTilesAPITest
     public void addTileSetWithRepeatedTileSetName() throws Exception
     {
         final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -463,7 +462,7 @@ public class GeoPackageTilesAPITest
     public void addTileSetToExistingTilesTable() throws Exception
     {
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -550,7 +549,7 @@ public class GeoPackageTilesAPITest
     public void addSameTileSetTwice() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -605,7 +604,7 @@ public class GeoPackageTilesAPITest
     public void addTileSetBadTableName() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -642,7 +641,7 @@ public class GeoPackageTilesAPITest
     public void addTileSetBadSRS() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -678,7 +677,7 @@ public class GeoPackageTilesAPITest
     public void addTileSetBadBoundingBox() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -706,7 +705,7 @@ public class GeoPackageTilesAPITest
      public void addTileSetContentEntryInvalidTableName() throws Exception
      {
          final File testFile = this.getRandomFile(5);
-         GeoPackage gpkg = new GeoPackage(testFile);
+         final GeoPackage gpkg = new GeoPackage(testFile);
 
          try
          {
@@ -743,7 +742,7 @@ public class GeoPackageTilesAPITest
      public void addTileIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException
      {
          final File testFile = this.getRandomFile(18);
-         GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+         final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
          try
          {
@@ -774,7 +773,7 @@ public class GeoPackageTilesAPITest
      public void addTileIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
      {
          final File testFile = this.getRandomFile(18);
-         GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+         final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
          try
          {
@@ -805,7 +804,7 @@ public class GeoPackageTilesAPITest
      public void addTileIllegalArgumentException3() throws SQLException, ClassNotFoundException, ConformanceException, IOException
      {
          final File testFile = this.getRandomFile(18);
-         GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+         final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
          try
          {
@@ -828,7 +827,7 @@ public class GeoPackageTilesAPITest
     public void getTileSetsFromGpkg() throws Exception
     {
         final File testFile = this.getRandomFile(6);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -916,7 +915,7 @@ public class GeoPackageTilesAPITest
     public void getTileSetWithNewSRS() throws Exception
     {
         final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -948,7 +947,7 @@ public class GeoPackageTilesAPITest
     public void getTileSetVerifyReturnNull()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(4);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -979,7 +978,7 @@ public class GeoPackageTilesAPITest
     public void getTileSetVerifyReturnCorrectTileSet()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1013,7 +1012,7 @@ public class GeoPackageTilesAPITest
     public void addTilesIllegalArgumentException() throws Exception
     {
         final File testFile = this.getRandomFile(4);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1048,7 +1047,7 @@ public class GeoPackageTilesAPITest
     public void addTilesIllegalArgumentException2() throws Exception
     {
         final File testFile = this.getRandomFile(4);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1082,7 +1081,7 @@ public class GeoPackageTilesAPITest
     public void addTilesIllegalArgumentException3() throws Exception
     {
         final File      testFile = this.getRandomFile(4);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1116,7 +1115,7 @@ public class GeoPackageTilesAPITest
     public void addTilesIllegalArgumentException4() throws Exception
     {
         final File testFile = this.getRandomFile(4);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1151,7 +1150,7 @@ public class GeoPackageTilesAPITest
     public void addTilesIllegalArgumentException5() throws Exception
     {
         final File testFile = this.getRandomFile(4);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1167,71 +1166,6 @@ public class GeoPackageTilesAPITest
 
             Assert.fail("GeoPackage should throw a IllegalArgumentException when tile_column "
                + "is less than 0.");
-        }
-        finally
-        {
-            gpkg.close();
-            this.deleteFile(testFile);
-        }
-    }
-
-    /**
-     * GeoPackage throws an SQLException when opening a GeoPackage since it does not contain the default tables
-     * inside after bypassing the verifier.
-     *
-     * @throws Exception throws if an exception occurs
-     */
-    @Test(expected = SQLException.class)
-    public void addTilesToGpkgAndAddTilesAndSetVerifyToFalse() throws Exception
-    {
-        final File testFile = this.getRandomFile(37);
-        testFile.createNewFile();
-        GeoPackage gpkg = new GeoPackage(testFile, VerificationLevel.None, OpenMode.Open);
-
-        try
-        {
-            gpkg.tiles()
-                .addTileSet("diff_tile_set",
-                            "tile",
-                            "desc",
-                            new BoundingBox(1.0, 1.0, 1.0, 1.0),
-                            gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
-
-            Assert.fail("The GeoPackage was expected to throw an IOException due to the file being empty.");
-
-        }
-        catch(final Exception ex)
-        {
-            final String query = "SELECT table_name FROM gpkg_contents WHERE table_name = 'diff_tile_set';";
-
-            Connection con           = this.getConnection(testFile.getAbsolutePath());
-
-            try
-            {
-                Statement  stmt          = con.createStatement();
-
-                try
-                {
-                    ResultSet  tileTableName = stmt.executeQuery(query);
-
-                    try
-                    {
-                        Assert.assertTrue("The data should not be in the contents table since it throws an SQLException", tileTableName.getString("table_name") == null);
-                    }
-                    finally
-                    {
-                        tileTableName.close();
-                    }
-                }
-                finally
-                {
-                    stmt.close();
-                }
-            }
-            finally
-            {
-                con.close();
-            }
         }
         finally
         {
@@ -1257,7 +1191,7 @@ public class GeoPackageTilesAPITest
     public void addTileMethodByCrsTileCoordinate() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(18);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1317,7 +1251,7 @@ public class GeoPackageTilesAPITest
     public void addNonEmptyTile() throws Exception
     {
         final File testFile = this.getRandomFile(6);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1353,15 +1287,15 @@ public class GeoPackageTilesAPITest
         //use a query to test if the tile was inserted into database and to correct if the image is the same
         final String query = "SELECT tile_data FROM tileSetName WHERE zoom_level = 2 AND tile_column = 0 AND tile_row =0;";
 
-        Connection con      = this.getConnection(testFile.getAbsolutePath());
+        final Connection con      = this.getConnection(testFile.getAbsolutePath());
 
         try
         {
-            Statement  stmt     = con.createStatement();
+            final Statement  stmt     = con.createStatement();
 
             try
             {
-                ResultSet  tileData = stmt.executeQuery(query);
+                final ResultSet  tileData = stmt.executeQuery(query);
                 try
                 {
                     // assert the image was inputed into the file
@@ -1407,7 +1341,7 @@ public class GeoPackageTilesAPITest
     public void addDuplicateTiles()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1466,7 +1400,7 @@ public class GeoPackageTilesAPITest
     public void addBadTile()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1508,7 +1442,7 @@ public class GeoPackageTilesAPITest
     public void addBadTile2()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1549,7 +1483,7 @@ public class GeoPackageTilesAPITest
     public void addBadTile4()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1584,7 +1518,7 @@ public class GeoPackageTilesAPITest
         final File testFile = this.getRandomFile(6);
         final byte[] originalTile1 = new byte[] {1, 2, 3, 4};
         final byte[] originalTile2 = new byte[] {1, 2, 3, 4};
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1658,7 +1592,7 @@ public class GeoPackageTilesAPITest
     public void getTile2() throws Exception
     {
         final File testFile = this.getRandomFile(6);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1690,7 +1624,7 @@ public class GeoPackageTilesAPITest
     public void getTile3() throws Exception
     {
         final File testFile = this.getRandomFile(6);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1751,7 +1685,7 @@ public class GeoPackageTilesAPITest
     public void getTileThatIsNotInGpkg() throws Exception
     {
         final File testFile = this.getRandomFile(4);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1795,7 +1729,7 @@ public class GeoPackageTilesAPITest
     {
         final File testFile = this.getRandomFile(5);
 
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1826,7 +1760,7 @@ public class GeoPackageTilesAPITest
     public void getTileRelativeTileCoordinateNonExistent() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(18);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1859,7 +1793,7 @@ public class GeoPackageTilesAPITest
     public void getZoomLevels() throws Exception
     {
         final File testFile = this.getRandomFile(6);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1937,7 +1871,7 @@ public class GeoPackageTilesAPITest
     public void getZoomLevelsNullTileSetContentEntry()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1960,7 +1894,7 @@ public class GeoPackageTilesAPITest
     public void getRowCountNullContentEntry() throws  Exception
     {
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1983,7 +1917,7 @@ public class GeoPackageTilesAPITest
     public void getRowCountVerify() throws Exception
     {
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2051,7 +1985,7 @@ public class GeoPackageTilesAPITest
     public void getTileMatrixSetEntryNullTileSetContentEntry()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2083,7 +2017,7 @@ public class GeoPackageTilesAPITest
     public void getTileMatricesVerify() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2169,7 +2103,7 @@ public class GeoPackageTilesAPITest
     public void getTileMatricesNonExistant() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2206,7 +2140,7 @@ public class GeoPackageTilesAPITest
     public void addTileMatricesIllegalArgumentException()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2238,7 +2172,7 @@ public class GeoPackageTilesAPITest
     public void addTileMatricesIllegalArgumentException2()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2276,7 +2210,7 @@ public class GeoPackageTilesAPITest
     public void addTileMatricesIllegalArgumentException3()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2308,7 +2242,7 @@ public class GeoPackageTilesAPITest
     public void addTileMatricesIllegalArgumentException4()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2340,7 +2274,7 @@ public class GeoPackageTilesAPITest
     public void addTileMatricesIllegalArgumentException5()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2373,7 +2307,7 @@ public class GeoPackageTilesAPITest
     public void addTileMatricesIllegalArgumentException6()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2406,7 +2340,7 @@ public class GeoPackageTilesAPITest
     public void addTileMatrixSameZoomDifferentOtherFields()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2440,7 +2374,7 @@ public class GeoPackageTilesAPITest
     public void addTileMatrixTwiceVerify()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2501,7 +2435,7 @@ public class GeoPackageTilesAPITest
     public void addTileMatrixNullTileSet()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2533,7 +2467,7 @@ public class GeoPackageTilesAPITest
     public void addTileMatrixWithNegativeZoomLevel()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2561,7 +2495,7 @@ public class GeoPackageTilesAPITest
     public void addNonEmptyTileMatrix() throws SQLException, Exception
     {
         final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2609,15 +2543,15 @@ public class GeoPackageTilesAPITest
                                            tileHeight,
                                            tileWidth);
 
-        Connection con      = this.getConnection(testFile.getAbsolutePath());
+        final Connection con      = this.getConnection(testFile.getAbsolutePath());
 
         try
         {
-            Statement stmt      = con.createStatement();
+            final Statement stmt      = con.createStatement();
 
             try
             {
-                ResultSet tableName = stmt.executeQuery(query);
+                final ResultSet tableName = stmt.executeQuery(query);
 
                 try
                 {
@@ -2657,7 +2591,7 @@ public class GeoPackageTilesAPITest
     public void addTileMatrixIllegalBounds() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -2702,7 +2636,7 @@ public class GeoPackageTilesAPITest
     public void addTileMatrixIllegalBounds2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -2748,7 +2682,7 @@ public class GeoPackageTilesAPITest
     public void getTileMatricesNullParameter() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2779,7 +2713,7 @@ public class GeoPackageTilesAPITest
     public void getTileMatrixVerify()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(6);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2852,7 +2786,7 @@ public class GeoPackageTilesAPITest
     public void getTileMatrixNonExistant()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2890,7 +2824,7 @@ public class GeoPackageTilesAPITest
     public void getTileMatrixNullParameter()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(10);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2920,7 +2854,7 @@ public class GeoPackageTilesAPITest
     public void getTileMatrixSetVerify()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -2959,7 +2893,7 @@ public class GeoPackageTilesAPITest
     {
         final File testFile = this.getRandomFile(19);
         testFile.createNewFile();
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Open);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Open);
 
         try
         {
@@ -2994,7 +2928,7 @@ public class GeoPackageTilesAPITest
 
         final File testFile = this.getRandomFile(8);
 
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3052,7 +2986,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(-180, 85, geodeticRefSys);//upper left tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3110,7 +3044,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(-90, 41, geodeticRefSys);//lower left tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3168,7 +3102,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(-0.000001, 12, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3229,7 +3163,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3302,7 +3236,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3374,7 +3308,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3445,7 +3379,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate             crsMercatorCoord = new CrsCoordinate(coordInMeters.getX(), coordInMeters.getY(), globalMercator);
 
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3513,7 +3447,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(-27.5, -1.25, geodeticRefSys);
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3597,7 +3531,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(76.4875, 36.45, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3655,7 +3589,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(10, 25, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3712,7 +3646,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(0, 40, geodeticRefSys);//upper Left tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3771,7 +3705,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(29.9, 30, geodeticRefSys);//upper right tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3828,7 +3762,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(20, 50, geodeticRefSys);//upper right tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3885,7 +3819,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(20, 0.01, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3943,7 +3877,7 @@ public class GeoPackageTilesAPITest
                 "epsg",
                 4326);
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -3997,7 +3931,7 @@ public class GeoPackageTilesAPITest
     public void crsToRelativeTileCoordException() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -4035,7 +3969,7 @@ public class GeoPackageTilesAPITest
     public void crsToRelativeTileCoordException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -4075,7 +4009,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(20, 50, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -4130,7 +4064,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(20, 50, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -4184,7 +4118,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(20, -50, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -4237,7 +4171,7 @@ public class GeoPackageTilesAPITest
         final CrsCoordinate crsCoord = new CrsCoordinate(20, 50, geodeticRefSys);//lower right tile
 
         final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -4282,7 +4216,7 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -4319,7 +4253,7 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinate2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -4369,7 +4303,7 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinate3() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -4406,7 +4340,7 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinateIllegalArgumentException() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -4431,7 +4365,7 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinateIllegalArgumentException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -4461,7 +4395,7 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinateIllegalArgumentException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -4491,7 +4425,7 @@ public class GeoPackageTilesAPITest
     public void tileToCrsCoordinateIllegalArgumentException4() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -4585,7 +4519,7 @@ public class GeoPackageTilesAPITest
 
         do
         {
-            String filename = FileSystemView.getFileSystemView().getDefaultDirectory().getAbsolutePath() + "/" +  this.getRanString(length) + ".gpkg";
+            final String filename = FileSystemView.getFileSystemView().getDefaultDirectory().getAbsolutePath() + "/" +  this.getRanString(length) + ".gpkg";
             testFile = new File(filename);
         }
         while (testFile.exists());
