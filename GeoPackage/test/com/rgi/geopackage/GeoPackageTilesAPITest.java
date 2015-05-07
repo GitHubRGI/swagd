@@ -3801,8 +3801,8 @@ public class GeoPackageTilesAPITest
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
             Assert.assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
-                                       + "\nExpected Row: 2, Expected Column: 18. \nActual Row: %d, Actual Column: %d", relativeCoord.getY(), relativeCoord.getX()),
-                       relativeCoord.getY() == 3 && relativeCoord.getX() == 18);
+                                       + "\nExpected Row: 4, Expected Column: 18. \nActual Row: %d, Actual Column: %d", relativeCoord.getY(), relativeCoord.getX()),
+                       relativeCoord.getY() == 4 && relativeCoord.getX() == 18);
         }
         finally
         {
