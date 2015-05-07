@@ -363,8 +363,8 @@ public class TilesVerifier extends Verifier
                                                                                       {
                                                                                           final byte[] tileData = resultSet.getBytes("tile_data");
 
-                                                                                          return TilesVerifier.verifyData(tileData) ? null
-                                                                                                                                    : String.format("column id %d", resultSet.getInt("id"));
+                                                                                          return TilesVerifier.verifyData(tileData) ? String.format("column id %d", resultSet.getInt("id"))
+                                                                                                                                    : null;
                                                                                       }
                                                                                       catch(final SQLException | IOException ex)
                                                                                       {
