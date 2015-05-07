@@ -279,49 +279,7 @@ public class TilesVerifier extends Verifier
                                                   Severity.Warning);
                             }
                         }
-
                         //TODO Test will be moved on later release//This tests if the pixel x values and pixel y values are valid based on their bounding box in the tile matrix set
-                        if(this.hasTileMatrixSetTable)
-                        {
-                            final String query2 = String.format("SELECT min_x, min_y, max_x, max_y FROM %s WHERE table_name = ?",
-                                                                GeoPackageTiles.MatrixSetTableName);
-
-                            try(final PreparedStatement stmt2 = this.getSqliteConnection().prepareStatement(query2))
-                            {
-                                stmt2.setString(1, tableName);
-                                try(ResultSet boundingBoxRS = stmt2.executeQuery())
-                                {
-                                    if(boundingBoxRS.next())
-                                    {
-                                        final double minX = boundingBoxRS.getDouble("min_x");
-                                        final double minY = boundingBoxRS.getDouble("min_y");
-                                        final double maxX = boundingBoxRS.getDouble("max_x");
-                                        final double maxY = boundingBoxRS.getDouble("max_y");
-
-                                        final BoundingBox boundingBox = new BoundingBox(minX, minY, maxX, maxY);
-
-                                        final List<TileData> invalidPixelValues = tileDataSet.stream()
-                                                                                             .filter(tileData -> !validPixelValues(tileData, boundingBox))
-                                                                                             .collect(Collectors.toList());
-
-                                        Assert.assertTrue(String.format("\nNote: This next message is an additional concern that is related to this requirement but not the requirement itself."+
-                                                                        "\nThe pixel_x_size and pixel_y_size should satisfy these two equations:"
-                                                                        + "\n\tpixel_x_size = (bounding box width  / matrix_width)  / tile_width "
-                                                                        + "AND \n\tpixel_y_size = (bounding box height / matrix_height)/ tile_height.  "
-                                                                        + "\nBased on these two equations, the following pixel values are invalid for the table '%s'.:\n%s ",
-                                                                        tableName,
-                                                                        invalidPixelValues.stream()
-                                                                                          .map(tileData -> String.format("\tInvalid pixel_x_size: %f, Invalid pixel_y_size: %f at zoom_level %d",
-                                                                                                                         tileData.pixelXSize,
-                                                                                                                         tileData.pixelYSize,
-                                                                                                                         tileData.zoomLevel))
-                                                                                          .collect(Collectors.joining("\n"))),
-                                                          invalidPixelValues.isEmpty(),
-                                                          Severity.Warning);
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -1429,70 +1387,211 @@ public class TilesVerifier extends Verifier
 
     /**
      * Reference 2.2.6.1.1 Table 8. TileMatrix Set Table or View Definition para. 1
-     *
-     * The gpkg_tile_matrix_set table or updateable view defines the minimum bounding box (min_x, min_y, max_x, max_y)
-     * and spatial reference system (srs_id) for all content in a tile pyramid user data table.
+     * <blockquote>
+     * The gpkg_tile_matrix_set table or updateable view defines the minimum bounding box (<code>min_x, min_y, max_x, max_y</code>)
+     * and spatial reference system (<code>srs_id</code>) for all content in a tile pyramid user data table.
+     * </blockquote>
      *
      * @throws AssertionError throws if the GeoPackage fails to meet the requirement
      * @throws SQLException throws if an SQLException occurs
      */
-    @Requirement (reference = "Requirement 56",
+    @Requirement (reference = "Reference 2.2.6.1.1 Table 8.",
                   text      = "The gpkg_tile_matrix_set table or updateable view defines the minimum bounding box (min_x, min_y, max_x, max_y)"
                                +" and spatial reference system (srs_id) for all content in a tile pyramid user data table. ")
-    public void referenceRequirement1() throws SQLException, AssertionError
+    public void reference22611Table8() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable)
         {
-            // TODO this test will be moved in a later release to its own individual test, this is not necessarily part of this requirement (wording is below requirement 37 but this is closest to what we are checking).
             for(final String pyramidTable: this.allPyramidUserDataTables)
             {
-                 final String query1 = String.format("SELECT MIN(tile_column), MIN(tile_row), MAX(tile_row), MAX(tile_column) FROM %s WHERE zoom_level = (SELECT MIN(zoom_level) FROM %s);", pyramidTable, pyramidTable);
 
-                 try(PreparedStatement stmt1              = this.getSqliteConnection().prepareStatement(query1);
-                     ResultSet         minXMaxXMinYMaxYRS = stmt1.executeQuery())
-                 {
-                      final int minX = minXMaxXMinYMaxYRS.getInt("MIN(tile_column)");//this should always be 0
-                      final int minY = minXMaxXMinYMaxYRS.getInt("MIN(tile_row)");   //this should always be 0
-                      final int maxX = minXMaxXMinYMaxYRS.getInt("MAX(tile_column)");
-                      final int maxY = minXMaxXMinYMaxYRS.getInt("MAX(tile_row)");
+                String tileRowMaxQuery = String.format("SELECT matrix_height as height, " +
+                                                              "zoom_level as zoom, "      +
+                                                              "table_name"                +
+                                                       "FROM gpkg_tile_matrix "           +
+                                                       "WHERE table_name = ? "           +
+                                                       "AND ( "                           +
+                                                               "EXISTS( SELECT NULL FROM %s WHERE tile_row = (height - 1) AND zoom_level = zoom ) " +
+                                                            ");",
+                                                      pyramidTable);
 
-                      final String query2 = String.format("SELECT matrix_width, matrix_height, zoom_level FROM %s WHERE table_name = ? AND zoom_level = (SELECT MIN(zoom_level) FROM %s)", GeoPackageTiles.MatrixTableName, pyramidTable, pyramidTable);
+                String tileColumnMaxQuery = String.format("SELECT matrix_width as width, " +
+                                                                 "zoom_level as zoom, "      +
+                                                                 "table_name"                +
+                                                          "FROM gpkg_tile_matrix "           +
+                                                          "WHERE table_name = ? "           +
+                                                          "AND ( "                           +
+                                                                  "EXISTS( SELECT NULL FROM %s WHERE tile_column = (width - 1) AND zoom_level = zoom ) " +
+                                                               ");",
+                                                          pyramidTable);
 
-                      try(PreparedStatement stmt2 = this.getSqliteConnection().prepareStatement(query2))
-                      {
-                          stmt2.setString(1, pyramidTable);
+                String tileRowMinQuery = String.format("SELECT tile_row FROM %s WHERE tile_row = 0;", pyramidTable);
 
-                          try(ResultSet dimensionsRS = stmt2.executeQuery())
-                          {
-                              while(dimensionsRS.next())
-                              {
-                                  final int matrixWidth  = dimensionsRS.getInt("matrix_width");
-                                  final int matrixHeight = dimensionsRS.getInt("matrix_height");
-                                  final int zoomLevel    = dimensionsRS.getInt("zoom_level");
+                String tileColumnMinQuery = String.format("SELECT tile_column FROM %s WHERE tile_column = 0;", pyramidTable);
 
-                                  Assert.assertTrue(String.format("\nNote: This next message is an additional concern that is related to this requirement but not the requirement itself.  "+
-                                                                      "The BoundingBox in %s does not define the minimum bounding box for all content in the table %s.\n"
-                                                                      + "\tActual Values:\n\t\tMIN(tile_column): %4d,\n\t\tMIN(tile_row):    %4d,\n\t\tMAX(tile_column): %4d,\n\t\tMAX(tile_row):    %4d.\n\n"
-                                                                      + "\tExpected values:\n\t\tMIN(tile_column):    0,\n\t\tMIN(tile_row):       0,\n\t\tMAX(tile_column): %4d (matrix_width -1),\n\t\tMAX(tile_row):    %4d (matrix_height -1)."
-                                                                      + "\n\n\tExpected values based on the Tile Matrix given at the MIN(zoom_level) %d.",
-                                                                  GeoPackageTiles.MatrixSetTableName,
-                                                                  pyramidTable,
-                                                                  minX,
-                                                                  minY,
-                                                                  maxX,
-                                                                  maxY,
-                                                                  matrixWidth  - 1,
-                                                                  matrixHeight - 1,
-                                                                  zoomLevel),
-                                                    minX == 0 &&
-                                                    minY == 0 &&
-                                                    maxX == (matrixWidth - 1) &&
-                                                    maxY == (matrixHeight - 1),
-                                                    Severity.Warning);
-                              }
-                          }
-                      }
-                 }
+
+                try(PreparedStatement maxRowStatement    = this.getSqliteConnection().prepareStatement(tileRowMaxQuery);
+                    PreparedStatement maxColumnStatement =  this.getSqliteConnection().prepareStatement(tileColumnMaxQuery))
+                {
+                    maxRowStatement.setString(1, pyramidTable);
+                    maxColumnStatement.setString(1, pyramidTable);
+
+                    try(Statement minRowStatement = this.getSqliteConnection().createStatement();
+                        Statement minColumnStatement = this.getSqliteConnection().createStatement();
+
+                        ResultSet maxRowResults = maxRowStatement.executeQuery();
+                        ResultSet maxColumnResults = maxColumnStatement.executeQuery();
+                        ResultSet minRowResult    = minRowStatement.executeQuery(tileRowMinQuery);
+                        ResultSet minColumnResult = minColumnStatement.executeQuery(tileColumnMinQuery))
+                    {
+                        StringBuilder errorMessage = new StringBuilder();
+
+                        boolean hasCorrectMinRow    = minRowResult.isBeforeFirst();
+                        boolean hasCorrectMinColumn = minColumnResult.isBeforeFirst();
+                        boolean hasCorrectMaxRow    = maxRowResults.isBeforeFirst();
+                        boolean hasCorrectMaxColumn = maxColumnResults.isBeforeFirst();
+
+                        if(!hasCorrectMinRow)
+                        {
+                            errorMessage.append("\tdoes not contain a tile where its tile_row = 0.\n");
+                        }
+
+                        if(!hasCorrectMinColumn)
+                        {
+                            errorMessage.append("\tdoes not contain a tile where its tile_column = 0.\n");
+                        }
+
+                        if(!hasCorrectMaxRow)
+                        {
+                            errorMessage.append("\tdoes not contain a tile where its tile_row = matrix_height - 1.\n");
+                        }
+
+                        if(!hasCorrectMaxColumn)
+                        {
+                            errorMessage.append("\tdoes not contain a tile where its tile_column = matrix_width - 1.\n");
+                        }
+
+                        Assert.assertTrue(String.format("The table %1$s does not define the minimum bounding box for the data inside the table %1$s. "
+                                                        + "The results are based on the numbering in the tiles table. "
+                                                        + " Because GeoPackage requires the upper left tile to be numbered (0,0) there should exist "
+                                                        + "a tile with a tile_column value of 0 and a tile (not necessarily the same tile) with a tile_row value of 0.  "
+                                                        + "As for the maximal values for tile_row and tile_column, there should exist a tile where the tile_row at a "
+                                                        + "particular zoom_level should equal its matrix_height - 1 at the same zoom_level and a tile (not necessarily the same tile) with a "
+                                                        + "tile_column at a particular zoom_level should equal its matrix_width - 1 at the same zoom_level.\n"
+                                                        + "The following messages defines which are missing:\n %2$s ",
+                                                       pyramidTable,
+                                                       errorMessage.toString()),
+                                          hasCorrectMinRow && hasCorrectMinColumn && hasCorrectMaxRow && hasCorrectMaxColumn,
+                                          Severity.Warning);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Reference 2.2.6.1.2 para. 1
+     * <blockquote>
+     * The minimum bounding box defined in the gpkg_tile_matrix_set table or view for a tile pyramid
+     * user data table SHALL be exact so that the bounding box coordinates for individual tiles in a
+     * tile pyramid MAY be calculated based on the column values for the user data table in the
+     * gpkg_tile_matrix table or view.
+     * </blockquote>
+     *
+     * @throws AssertionError throws if the GeoPackage fails to meet the requirement
+     * @throws SQLException throws if an SQLException occurs
+     */
+    @Requirement (reference = "Reference 2.2.6.1.2 para 1.",
+                  text      = "The minimum bounding box defined in the gpkg_tile_matrix_set table or view for a "
+                            + "tile pyramid user data table SHALL be exact so that the bounding box coordinates "
+                            + "for individual tiles in a tile pyramid MAY be calculated based on the column values "
+                            + "for the user data table in the gpkg_tile_matrix table or view. ")
+    public void reference() throws SQLException, AssertionError
+    {
+        if(this.hasTileMatrixTable && this.hasTileMatrixSetTable)
+        {
+            for(final String tableName : this.allPyramidUserDataTables)
+            {
+                final String query1 = String.format("SELECT table_name, "
+                                                         + "zoom_level, "
+                                                         + "pixel_x_size, "
+                                                         + "pixel_y_size,"
+                                                         + "matrix_width,"
+                                                         + "matrix_height,"
+                                                         + "tile_width,"
+                                                         + "tile_height "
+                                                  + "FROM %s "
+                                                  + "WHERE table_name = ? "
+                                                  + "ORDER BY zoom_level ASC;", GeoPackageTiles.MatrixTableName);
+
+                try(final PreparedStatement stmt = this.getSqliteConnection().prepareStatement(query1))
+                {
+
+                    stmt.setString(1, tableName);
+
+                    try(final ResultSet         pixelInfo = stmt.executeQuery())
+                    {
+                        final List<TileData> tileDataSet = ResultSetStream.getStream(pixelInfo)
+                                                                          .map(resultSet -> { try
+                                                                                              {
+                                                                                                  final TileData tileData = new TileData();
+                                                                                                  tileData.pixelXSize   = resultSet.getDouble("pixel_x_size");
+                                                                                                  tileData.pixelYSize   = resultSet.getDouble("pixel_y_size");
+                                                                                                  tileData.zoomLevel    = resultSet.getInt("zoom_level");
+                                                                                                  tileData.matrixHeight = resultSet.getInt("matrix_height");
+                                                                                                  tileData.matrixWidth  = resultSet.getInt("matrix_width");
+                                                                                                  tileData.tileHeight   = resultSet.getInt("tile_height");
+                                                                                                  tileData.tileWidth    = resultSet.getInt("tile_width");
+
+                                                                                                  return tileData;
+                                                                                              }
+                                                                                              catch(final SQLException ex)
+                                                                                              {
+                                                                                                  return null;
+                                                                                              }
+                                                                                             })
+                                                                          .filter(Objects::nonNull)
+                                                                          .collect(Collectors.toList());
+
+                    final String query2 = String.format("SELECT min_x, min_y, max_x, max_y FROM %s WHERE table_name = ?",
+                                                        GeoPackageTiles.MatrixSetTableName);
+
+                        try(final PreparedStatement stmt2 = this.getSqliteConnection().prepareStatement(query2))
+                        {
+                            stmt2.setString(1, tableName);
+                            try(ResultSet boundingBoxRS = stmt2.executeQuery())
+                            {
+                                if(boundingBoxRS.next())
+                                {
+                                    final double minX = boundingBoxRS.getDouble("min_x");
+                                    final double minY = boundingBoxRS.getDouble("min_y");
+                                    final double maxX = boundingBoxRS.getDouble("max_x");
+                                    final double maxY = boundingBoxRS.getDouble("max_y");
+
+                                    final BoundingBox boundingBox = new BoundingBox(minX, minY, maxX, maxY);
+
+                                    final List<TileData> invalidPixelValues = tileDataSet.stream()
+                                                                                         .filter(tileData -> !validPixelValues(tileData, boundingBox))
+                                                                                         .collect(Collectors.toList());
+
+                                    Assert.assertTrue(String.format("The pixel_x_size and pixel_y_size should satisfy these two equations:"
+                                                                    + "\n\tpixel_x_size = (bounding box width  / matrix_width)  / tile_width "
+                                                                    + "AND \n\tpixel_y_size = (bounding box height / matrix_height)/ tile_height.  "
+                                                                    + "\nBased on these two equations, the following pixel values are invalid for the table '%s'.:\n%s ",
+                                                                    tableName,
+                                                                    invalidPixelValues.stream()
+                                                                                      .map(tileData -> String.format("\tInvalid pixel_x_size: %f, Invalid pixel_y_size: %f at zoom_level %d",
+                                                                                                                     tileData.pixelXSize,
+                                                                                                                     tileData.pixelYSize,
+                                                                                                                     tileData.zoomLevel))
+                                                                                      .collect(Collectors.joining("\n"))),
+                                                      invalidPixelValues.isEmpty(),
+                                                      Severity.Warning);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
