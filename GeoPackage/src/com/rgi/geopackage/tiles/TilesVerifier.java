@@ -1289,8 +1289,8 @@ public class TilesVerifier extends Verifier
                         Assert.assertTrue(String.format("The table '%s' there are tiles with a tile_column values oustide the ranges for a particular zoom_level. \n%s",
                                                         pyramidName,
                                                         incorrectColumnSet.stream()
-                                                                          .map(tileData -> String.format("\tZoom level %d  Expected Range tile_column: [0, %d].",
-                                                                                                         tileData.zoomLevel, tileData.matrixWidth -1))
+                                                                          .map(tileData -> String.format("\tZoom level %d has tile_column values outside of the range: [0, %d].",
+                                                                                                         tileData.zoomLevel, tileData.matrixWidth - 1))
                                                                           .collect(Collectors.joining("\n"))),
                                                                            incorrectColumnSet.isEmpty(),
                                           Severity.Warning);
@@ -1373,7 +1373,7 @@ public class TilesVerifier extends Verifier
                         Assert.assertTrue(String.format("The table '%s' there are tiles with a tile_row values oustide the ranges for a particular zoom_level. \n%s",
                                                          pyramidName,
                                                          incorrectTileRowSet.stream()
-                                                                            .map(tileData -> String.format("\tZoom level %d  Expected Range tile_row: [0, %d].",
+                                                                            .map(tileData -> String.format("\tZoom level %d has tile_row values outside of the range: [0, %d].",
                                                                                                            tileData.zoomLevel,
                                                                                                            tileData.matrixHeight - 1))
                                                                             .collect(Collectors.joining("\n"))),
@@ -1405,7 +1405,7 @@ public class TilesVerifier extends Verifier
             for(final String pyramidTable: this.allPyramidUserDataTables)
             {
 
-                String tileRowMaxQuery = String.format("SELECT matrix_height as height, " +
+                final String tileRowMaxQuery = String.format("SELECT matrix_height as height, " +
                                                               "zoom_level as zoom, "      +
                                                               "table_name "                +
                                                        "FROM gpkg_tile_matrix "           +
@@ -1415,7 +1415,7 @@ public class TilesVerifier extends Verifier
                                                             ");",
                                                       pyramidTable);
 
-                String tileColumnMaxQuery = String.format("SELECT matrix_width as width, " +
+                final String tileColumnMaxQuery = String.format("SELECT matrix_width as width, " +
                                                                  "zoom_level as zoom, "      +
                                                                  "table_name "                +
                                                           "FROM gpkg_tile_matrix "           +
@@ -1425,9 +1425,9 @@ public class TilesVerifier extends Verifier
                                                                ");",
                                                           pyramidTable);
 
-                String tileRowMinQuery = String.format("SELECT tile_row FROM %s WHERE tile_row = 0;", pyramidTable);
+                final String tileRowMinQuery = String.format("SELECT tile_row FROM %s WHERE tile_row = 0;", pyramidTable);
 
-                String tileColumnMinQuery = String.format("SELECT tile_column FROM %s WHERE tile_column = 0;", pyramidTable);
+                final String tileColumnMinQuery = String.format("SELECT tile_column FROM %s WHERE tile_column = 0;", pyramidTable);
 
 
                 try(PreparedStatement maxRowStatement    = this.getSqliteConnection().prepareStatement(tileRowMaxQuery);
@@ -1444,44 +1444,32 @@ public class TilesVerifier extends Verifier
                         ResultSet minRowResult    = minRowStatement.executeQuery(tileRowMinQuery);
                         ResultSet minColumnResult = minColumnStatement.executeQuery(tileColumnMinQuery))
                     {
-                        StringBuilder errorMessage = new StringBuilder();
+                        final ArrayList<String> errors = new ArrayList<>();
 
-                        boolean hasCorrectMinRow    = minRowResult.isBeforeFirst();
-                        boolean hasCorrectMinColumn = minColumnResult.isBeforeFirst();
-                        boolean hasCorrectMaxRow    = maxRowResults.isBeforeFirst();
-                        boolean hasCorrectMaxColumn = maxColumnResults.isBeforeFirst();
-
-                        if(!hasCorrectMinRow)
+                        if(!minColumnResult.isBeforeFirst())
                         {
-                            errorMessage.append("\tdoes not contain a tile where its tile_row = 0.\n");
+                            errors.add("minimum column (0)");
                         }
 
-                        if(!hasCorrectMinColumn)
+                        if(!minRowResult.isBeforeFirst())
                         {
-                            errorMessage.append("\tdoes not contain a tile where its tile_column = 0.\n");
+                            errors.add("minimum row (0)");
                         }
 
-                        if(!hasCorrectMaxRow)
+                        if(!maxColumnResults.isBeforeFirst())
                         {
-                            errorMessage.append("\tdoes not contain a tile where its tile_row = matrix_height - 1.\n");
+                            errors.add("maximum column (matrix_width - 1)");
                         }
 
-                        if(!hasCorrectMaxColumn)
+                        if(!maxRowResults.isBeforeFirst())
                         {
-                            errorMessage.append("\tdoes not contain a tile where its tile_column = matrix_width - 1.\n");
+                            errors.add("maximum row (matrix_height - 1)");
                         }
 
-                        Assert.assertTrue(String.format("The table %1$s does not define the minimum bounding box for the data inside the table %1$s. "
-                                                        + "The results are based on the numbering in the tiles table. "
-                                                        + " Because GeoPackage requires the upper left tile to be numbered (0,0) there should exist "
-                                                        + "a tile with a tile_column value of 0 and a tile (not necessarily the same tile) with a tile_row value of 0.  "
-                                                        + "As for the maximal values for tile_row and tile_column, there should exist a tile where the tile_row at a "
-                                                        + "particular zoom_level should equal its matrix_height - 1 at the same zoom_level and a tile (not necessarily the same tile) with a "
-                                                        + "tile_column at a particular zoom_level should equal its matrix_width - 1 at the same zoom_level.\n"
-                                                        + "The following messages defines which are missing:\n %2$s ",
+                        Assert.assertTrue(String.format("There must be at least one tile in the minimum and maximum row and column in tile pyramid user data table '%s'.  The table has no tile for %s, at any zoom level.  The table's contents do not agree with its associated minimum bounding box defined by gpkg_tile_matrix_set.",
                                                        pyramidTable,
-                                                       errorMessage.toString()),
-                                          hasCorrectMinRow && hasCorrectMinColumn && hasCorrectMaxRow && hasCorrectMaxColumn,
+                                                       String.join(", ", errors)),
+                                          errors.isEmpty(),
                                           Severity.Warning);
                     }
                 }
