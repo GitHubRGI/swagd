@@ -33,11 +33,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
-import com.rgi.common.tile.store.TileStoreWriter;
-import com.rgi.common.tile.store.tms.TmsWriter;
 import com.rgi.common.util.FileUtility;
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
+import com.rgi.store.tiles.TileStoreWriter;
+import com.rgi.store.tiles.tms.TmsWriter;
 import com.rgi.suite.Settings;
 import com.rgi.suite.tilestoreadapter.ImageFormatTileStoreAdapter;
 

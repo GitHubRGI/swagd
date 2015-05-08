@@ -32,9 +32,8 @@ import javax.swing.JTree;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.TileStoreLoader;
 
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
-
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
 
 //This is a work in progress do not rely on this code
 @SuppressWarnings("javadoc")

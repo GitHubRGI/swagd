@@ -58,10 +58,10 @@ import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
-import com.rgi.common.tile.store.TileHandle;
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.common.util.FileUtility;
+import com.rgi.store.tiles.TileHandle;
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
 
 /**
  * TileStoreReader implementation for GDAL-readable image files

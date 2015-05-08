@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.store.tiles.TileStoreReader;
 import com.rgi.suite.tilestoreadapter.AdapterMismatchException;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 import com.rgi.suite.tilestoreadapter.UnknownTileStoreReaderAdapter;
