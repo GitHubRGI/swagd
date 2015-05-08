@@ -419,7 +419,8 @@ public class MetadataVerifier extends Verifier
                                                                                           .collect(Collectors.toList());
             for(final MetadataReference value: invalidColumnNameValues)
             {
-                final String query = "SELECT * FROM ? WHERE ROWID = ?;";
+                final String query = String.format("SELECT COUNT(1) FROM %s WHERE ROWID = ?;",  // TODO make sure COUNT(1) works the way I think it does...
+                                     value.table_name);
 
                 try(PreparedStatement statement = this.getSqliteConnection().prepareStatement(query))
                 {
@@ -547,7 +548,8 @@ public class MetadataVerifier extends Verifier
         if(this.hasMetadataReferenceTable)
         {
             final List<MetadataReference> invalidParentIdsBcFileIds = this.metadataReferenceValues.stream()
-                                                                                                  .filter(metadataReferenceValue -> metadataReferenceValue.md_file_id.equals(metadataReferenceValue.md_parent_id))
+                                                                                                  .filter(metadataReferenceValue -> metadataReferenceValue.md_file_id != null &&
+                                                                                                                                    metadataReferenceValue.md_file_id.equals(metadataReferenceValue.md_parent_id))
                                                                                                   .collect(Collectors.toList());
 
             Assert.assertTrue(String.format("The following md_parent_id(s) are invalid because they cannot be equivalent to their correspoding md_file_id.\n%s",
@@ -596,33 +598,21 @@ public class MetadataVerifier extends Verifier
                                                            {
                                                                final MetadataReference metadataReference = new MetadataReference();
 
-                                                               metadataReference.reference_scope   = resultSet.getString("reference_scope");
-                                                               metadataReference.table_name        = resultSet.getString("table_name");
+                                                               metadataReference.reference_scope = resultSet.getString("reference_scope");
+                                                               metadataReference.table_name      = resultSet.getString("table_name");
+                                                               metadataReference.column_name     = resultSet.getString("column_name");
+                                                               metadataReference.timestamp       = resultSet.getString("timestamp");
+                                                               metadataReference.md_file_id      = resultSet.getInt   ("md_file_id");    // Cannot be null
+                                                               metadataReference.row_id_value    = resultSet.getInt   ("row_id_value");  // getInt() returns 0 if the value in the database was null
 
-                                                               if(resultSet.wasNull())
-                                                               {
-                                                                   metadataReference.table_name = null;
-                                                               }
-
-                                                               metadataReference.column_name       = resultSet.getString("column_name");
-
-                                                               if(resultSet.wasNull())
-                                                               {
-                                                                   metadataReference.column_name = null;
-                                                               }
-
-                                                               metadataReference.row_id_value      = resultSet.getInt("row_id_value");
-
-                                                               if(resultSet.wasNull())
+                                                               if(resultSet.wasNull())  // Check for that null
                                                                {
                                                                    metadataReference.row_id_value = null;
                                                                }
 
-                                                               metadataReference.timestamp         = resultSet.getString("timestamp");
-                                                               metadataReference.md_file_id        = resultSet.getInt("md_file_id");
-                                                               metadataReference.md_parent_id      = resultSet.getInt("md_parent_id");
+                                                               metadataReference.md_parent_id = resultSet.getInt   ("md_parent_id"); // Can be null
 
-                                                               if(resultSet.wasNull())
+                                                               if(resultSet.wasNull())  // Check for that null
                                                                {
                                                                    metadataReference.md_parent_id = null;
                                                                }

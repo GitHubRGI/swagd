@@ -37,8 +37,8 @@ import com.rgi.common.coordinate.referencesystem.profile.GlobalGeodeticCrsProfil
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
 
 /**
  * Connect jmapviewer code with SWAGD code for viewing tile stores in a map viewer.
@@ -66,7 +66,7 @@ public class TileStoreTileSource  implements TileSource
 
         this.minimumZoomLevel = tileStore.getZoomLevels().stream().min(Integer::compare).orElse(-1);
         this.maximumZoomLevel = tileStore.getZoomLevels().stream().max(Integer::compare).orElse(-1);
-        Dimensions<Integer> tileDimensions = this.tileStore.getImageDimensions();
+        final Dimensions<Integer> tileDimensions = this.tileStore.getImageDimensions();
 
         if(tileDimensions == null)
         {

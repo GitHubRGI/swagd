@@ -23,10 +23,10 @@
 package com.rgi.packager;
 
 import com.rgi.common.TaskMonitor;
-import com.rgi.common.tile.store.TileHandle;
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
-import com.rgi.common.tile.store.TileStoreWriter;
+import com.rgi.store.tiles.TileHandle;
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
+import com.rgi.store.tiles.TileStoreWriter;
 
 /**
  * Package tiles from a tile store into a GeoPackage or append to an existing GeoPackage.

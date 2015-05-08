@@ -31,8 +31,11 @@ import org.junit.runners.Suite.SuiteClasses;
  *
  */
 @RunWith(Suite.class)
-@SuiteClasses({GeoPackageTilesAPITest.class,  GeoPackageCoreAPITest.class,       DatabaseUtilityTest.class,
-               GeoPackageTileStoreTest.class, GeoPackageExtensionsAPITest.class, GeoPackageMetadataAPITest.class,
+@SuiteClasses({GeoPackageTilesAPITest.class,
+               GeoPackageCoreAPITest.class,
+               DatabaseUtilityTest.class,
+               GeoPackageExtensionsAPITest.class,
+               GeoPackageMetadataAPITest.class,
                GeoPackageSchemaAPITest.class})
 public class AllTests
 {

@@ -36,8 +36,8 @@ import javax.swing.JPanel;
 
 import utility.SimpleGridBagConstraints;
 
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 
 /**

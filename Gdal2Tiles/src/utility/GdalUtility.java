@@ -63,9 +63,9 @@ import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
-import com.rgi.common.tile.store.TileStoreException;
 import com.rgi.g2t.GeoTransformation;
 import com.rgi.g2t.TilingException;
+import com.rgi.store.tiles.TileStoreException;
 
 /**
  * Common functionality of the GDAL library made into helper functions

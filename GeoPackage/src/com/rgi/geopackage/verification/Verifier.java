@@ -99,7 +99,7 @@ public class Verifier
                                                                                                                                            assertionError.getSeverity());
                                                        }
 
-                                                       return new VerificationIssue(String.format("Unexpected exception thrown when testing requirement %d for GeoPackage verification: %s",
+                                                       return new VerificationIssue(String.format("Unexpected exception thrown when testing requirement %s for GeoPackage verification: %s",
                                                                                                   requirement.reference(),
                                                                                                   ex.getMessage()),
                                                                                     requirement);
