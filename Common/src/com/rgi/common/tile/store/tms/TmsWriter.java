@@ -144,10 +144,10 @@ public class TmsWriter extends TmsTileStore implements TileStoreWriter
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
-        final Coordinate<Integer> tmsCoordiante = this.crsToTileCoordinate(coordinate, zoomLevel);
+        final Coordinate<Integer> tmsCoordinate = this.crsToTileCoordinate(coordinate, zoomLevel);
 
-        this.addTile(tmsCoordiante.getX(),
-                     tmsCoordiante.getY(),
+        this.addTile(tmsCoordinate.getX(),
+                     tmsCoordinate.getY(),
                      zoomLevel,
                      image);
     }

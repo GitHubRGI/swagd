@@ -161,13 +161,13 @@ public class TmsReader extends TmsTileStore implements TileStoreReader
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile store's coordinate reference system");
         }
 
-        final Coordinate<Integer> tmsCoordiante = this.profile.crsToTileCoordinate(coordinate,
+        final Coordinate<Integer> tmsCoordinate = this.profile.crsToTileCoordinate(coordinate,
                                                                                    this.profile.getBounds(),    // TMS uses absolute tiling, which covers the whole globe
                                                                                    this.tileScheme.dimensions(zoomLevel),
                                                                                    TmsTileStore.Origin);
 
-        return this.getTile(tmsCoordiante.getX(),
-                            tmsCoordiante.getY(),
+        return this.getTile(tmsCoordinate.getX(),
+                            tmsCoordinate.getY(),
                             zoomLevel);
     }
 
