@@ -289,11 +289,36 @@ public class RawImageTileReader implements TileStoreReader
         {
         	throw new TileStoreException("Min zoom has more than one tile.");
         }
+        tileHandles.sort(new Comparator<TileHandle>()
+        {
+
+			@Override
+			public int compare(TileHandle o1, TileHandle o2) {
+				return Integer.compare(o2.getZoomLevel(), o1.getZoomLevel());
+			}
+        	
+        });
         return tileHandles.stream();
+    }
+    
+    private boolean tileIntersectsData(RawImageTileHandle tile)
+    {
+    	final int zoom = tile.getZoomLevel();
+    	final int column = tile.getColumn();
+    	final int row = tile.getRow();
+    	final Range<Coordinate<Integer>> zoomRange = this.tileRanges.get(zoom);
+    	return column >= zoomRange.getMinimum().getX() &&
+    		   column <= zoomRange.getMaximum().getX() &&
+    		   row    >= zoomRange.getMaximum().getY() &&
+    		   row    <= zoomRange.getMinimum().getY();
     }
     
     private void makeTiles(List<TileHandle> tileHandles, RawImageTileHandle tile, int maxZoom) throws TileStoreException
     {
+    	if(!this.tileIntersectsData(tile))
+    	{
+    		return;
+    	}
     	if(tile.getZoomLevel() == maxZoom)
     	{
     		// tell the RawImageTileHandle this is a special case: a gdalImage
@@ -321,14 +346,15 @@ public class RawImageTileReader implements TileStoreReader
     											   						 zoomRowBelow + 1);
 
     		makeTiles(tileHandles, tileBelow1, maxZoom);
+    		tile.addChild(tileBelow1);
     		makeTiles(tileHandles, tileBelow2, maxZoom);
+    		tile.addChild(tileBelow2);
     		makeTiles(tileHandles, tileBelow3, maxZoom);
+    		tile.addChild(tileBelow3);
     		makeTiles(tileHandles, tileBelow4, maxZoom);
+    		tile.addChild(tileBelow4);
 
-    		tileHandles.add(tileBelow1);
-    		tileHandles.add(tileBelow2);
-    		tileHandles.add(tileBelow3);
-    		tileHandles.add(tileBelow4);
+    		tileHandles.add(tile);
     	}
     }
 
@@ -423,12 +449,26 @@ public class RawImageTileReader implements TileStoreReader
         private final int column;
         private final int row;
         
+        private final List<TileHandle> children;
+        
         RawImageTileHandle(final int zoom, final int column, final int row)
         {
             this.zoomLevel = zoom;
             this.column    = column;
             this.row       = row;
             this.matrix    = RawImageTileReader.this.tileScheme.dimensions(this.zoomLevel);
+            this.children  = new ArrayList<>();
+        }
+
+        RawImageTileHandle(final int zoom, final int column, final int row, BufferedImage image)
+        {
+            this.zoomLevel = zoom;
+            this.column    = column;
+            this.row       = row;
+            this.matrix    = RawImageTileReader.this.tileScheme.dimensions(this.zoomLevel);
+            this.children  = new ArrayList<>();
+            this.gotImage  = true;
+            this.image     = image;
         }
         
         RawImageTileHandle(final int zoom, final int column, final int row, boolean gdalImage) 
@@ -438,6 +478,7 @@ public class RawImageTileReader implements TileStoreReader
         	this.row       = row;
         	this.matrix	   = RawImageTileReader.this.tileScheme.dimensions(this.zoomLevel);
         	this.gdalImage = gdalImage;
+        	this.children  = new ArrayList<>();
         }
 
         @Override
@@ -488,6 +529,11 @@ public class RawImageTileReader implements TileStoreReader
              return RawImageTileReader.this.getTileBoundingBox(this.column,
                                                                this.row,
                                                                this.matrix);
+        }
+        
+        public void addChild(TileHandle tileHandle)
+        {
+        	this.children.add(tileHandle);
         }
         
         @Override
@@ -553,11 +599,10 @@ public class RawImageTileReader implements TileStoreReader
                 }
             }
             // Make this tile by getting the tiles below it and scaling them to fit
-            final List<TileHandle> childTiles = this.getChildTiles();
-            return this.generateScaledTileFromChildren(childTiles);
+            return this.generateScaledTileFromChildren();
         }
 
-	    private BufferedImage generateScaledTileFromChildren(List<TileHandle> childTiles) throws TileStoreException
+	    private BufferedImage generateScaledTileFromChildren() throws TileStoreException
 	    {
 	    	final int tileWidth = RawImageTileReader.this.tileSize.getWidth();
 	    	final int tileHeight = RawImageTileReader.this.tileSize.getHeight();
@@ -568,14 +613,15 @@ public class RawImageTileReader implements TileStoreReader
 	    	// Create the full-sized graphics object
 	    	final Graphics2D fullCanvasGraphics = fullCanvas.createGraphics();
 	    	
-	    	// Create a list of child tiles that has been transformed to UpperLeft origin
-	    	final List<TileHandle> transformedChildTiles = childTiles.stream().map(tileHandle ->
+	    	final List<TileHandle> transformedChildren = new ArrayList<>();
+	    	for (TileHandle tileHandle : this.children)
 	    	{
-	    		// TODO: Is catching a TileStoreException here necessary because of the matrix?
 	    		final Coordinate<Integer> resultCoordinate = RawImageTileReader.Origin.transform(TileOrigin.UpperLeft, tileHandle.getColumn(), tileHandle.getRow(), this.matrix);
-	    		return new RawImageTileHandle(tileHandle.getZoomLevel(), resultCoordinate.getX(), resultCoordinate.getY());
-	    	}).sorted(new Comparator<TileHandle>() {
-
+	    		transformedChildren.add(new RawImageTileHandle(tileHandle.getZoomLevel(), resultCoordinate.getX(), resultCoordinate.getY(), tileHandle.getImage()));
+	    	}
+	    	
+	    	transformedChildren.sort(new Comparator<TileHandle>()
+   			{
 				@Override
 				public int compare(TileHandle o1, TileHandle o2) {
 					final int columnCompare = Integer.compare(o1.getColumn(), o2.getColumn());
@@ -592,23 +638,22 @@ public class RawImageTileReader implements TileStoreReader
 					// TODO: Duplicate tile case?
 					return 0;
 				}
-
-			}).collect(Collectors.toList());
+	    	});
 
     		// Origin tile
-    		final BufferedImage rowShiftedTile = transformedChildTiles.get(0).getImage();
+    		final BufferedImage rowShiftedTile = transformedChildren.get(0).getImage();
     		fullCanvasGraphics.drawImage(rowShiftedTile, null, 0, 0);
 
     		// Tile that is Y+1 in relation to the origin
-    		final BufferedImage originTile = transformedChildTiles.get(1).getImage();
+    		final BufferedImage originTile = transformedChildren.get(1).getImage();
     		fullCanvasGraphics.drawImage(originTile, null, 0, tileHeight);
 
     		// Tile that is X+1 in relation to the origin
-    		final BufferedImage bothShiftedTile = transformedChildTiles.get(2).getImage();
+    		final BufferedImage bothShiftedTile = transformedChildren.get(2).getImage();
     		fullCanvasGraphics.drawImage(bothShiftedTile, null, tileWidth, 0);
 
     		// Tile that is both X+1 and Y+1 in relation to the origin
-    		final BufferedImage columnShiftedTile = transformedChildTiles.get(3).getImage();
+    		final BufferedImage columnShiftedTile = transformedChildren.get(3).getImage();
     		fullCanvasGraphics.drawImage(columnShiftedTile, null, tileWidth, tileHeight);
 
 	    	final BufferedImage tileCanvas = new BufferedImage(tileWidth,
@@ -626,31 +671,6 @@ public class RawImageTileReader implements TileStoreReader
 	    	return scaledTile;
 	    }
     
-		private List<TileHandle> getChildTiles()
-		{
-			final List<TileHandle> childTiles = new ArrayList<>();
-			
-    		// calculate all the tiles below this current one
-    		final int childZoom = this.getZoomLevel() + 1;
-    		final int childOriginColumn = this.getColumn() * 2;
-    		final int childOriginRow = this.getRow() * 2;
-    		
-    		// Add the individuals
-    		childTiles.add(new RawImageTileHandle(childZoom,
-    											  childOriginColumn,
-    											  childOriginRow));
-    		childTiles.add(new RawImageTileHandle(childZoom,
-    											  childOriginColumn + 1,
-    											  childOriginRow));
-    		childTiles.add(new RawImageTileHandle(childZoom,
-    											  childOriginColumn,
-    											  childOriginRow + 1));
-    		childTiles.add(new RawImageTileHandle(childZoom,
-    											  childOriginColumn + 1,
-    											  childOriginRow + 1));
-    		
-    		return childTiles;
-		}
     }
     
     private CrsCoordinate tileToCrsCoordinate(final int                  column,
