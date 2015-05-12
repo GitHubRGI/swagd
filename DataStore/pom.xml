@@ -2,7 +2,6 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.rgi.DataStore</groupId>
   <artifactId>DataStore</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Data Store Library</name>
 
