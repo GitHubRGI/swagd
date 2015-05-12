@@ -23,11 +23,63 @@
 
 package com.rgi.geopackage.extensions.implementation;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import com.rgi.geopackage.extensions.Extension;
+import com.rgi.geopackage.extensions.GeoPackageExtensions;
+import com.rgi.geopackage.extensions.Scope;
+
 /**
  * @author Luke Lambert
  *
  */
-public interface ExtensionImplementation
+public abstract class ExtensionImplementation
 {
-    // placeholder
+    public ExtensionImplementation(final Connection databaseConnection, final GeoPackageExtensions geoPackageExtensions) throws SQLException
+    {
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException();
+        }
+
+        if(geoPackageExtensions == null)
+        {
+            throw new IllegalArgumentException();
+        }
+
+        this.databaseConnection   = databaseConnection;
+        this.geoPackageExtensions = geoPackageExtensions;
+
+        this.extension = this.geoPackageExtensions.getExtension(this.getTableName(),
+                                                                this.getColumnName(),
+                                                                this.getExtensionName());
+    }
+
+    public abstract String getTableName();
+
+    public abstract String getColumnName();
+
+    public abstract String getExtensionName();
+
+    public abstract String getDefinition();
+
+    public abstract Scope getScope();
+
+    protected void lazyAddExtensionEntry() throws SQLException
+    {
+        if(this.extension == null)
+        {
+            this.extension = this.geoPackageExtensions.addExtension(this.getTableName(),
+                                                                    this.getColumnName(),
+                                                                    this.getExtensionName(),
+                                                                    this.getDefinition(),
+                                                                    this.getScope());
+        }
+    }
+
+    protected final Connection           databaseConnection;
+    protected final GeoPackageExtensions geoPackageExtensions;
+
+    private Extension extension;
 }

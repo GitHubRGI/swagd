@@ -21,16 +21,10 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.extensions.implementation;
+package com.rgi.geopackage.extensions.network;
 
-/**
- * Indicates that no jars on the class path implement a specific extension
- *
- * @author Luke Lambert
- *
- */
-@SuppressWarnings("serial")
-public class NoImplementationException extends Exception
+public enum AttributedType
 {
-    // Used for exception specification
+    Node,
+    Edge;
 }

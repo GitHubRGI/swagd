@@ -23,6 +23,8 @@
 
 package com.rgi.geopackage.extensions;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,21 +35,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
 import utility.DatabaseUtility;
 import utility.SelectBuilder;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.core.GeoPackageCore;
+import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
-import com.rgi.geopackage.extensions.implementation.ImplementsExtension;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
@@ -69,9 +68,10 @@ public class GeoPackageExtensions
      * @param databaseConnection
      *             The open connection to the database that contains a GeoPackage
      */
-    public GeoPackageExtensions(final Connection databaseConnection)
+    public GeoPackageExtensions(final Connection databaseConnection, final GeoPackageCore core)
     {
         this.databaseConnection = databaseConnection;
+        this.core               = core;
     }
 
     /**
@@ -347,35 +347,102 @@ public class GeoPackageExtensions
                              scope.toString());
     }
 
+//    /**
+//     * @param clazz
+//     * @return
+//     * @throws InstantiationException
+//     * @throws IllegalAccessException
+//     * @throws IllegalArgumentException
+//     * @throws InvocationTargetException
+//     * @throws NoSuchMethodException
+//     * @throws SecurityException
+//     * @throws SQLException
+//     */
+//    public <T extends ExtensionImplementation> T addExtensionImplementation(final Class<T> clazz) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, SQLException
+//    {
+//        if(clazz == null)
+//        {
+//            throw new IllegalArgumentException("Class cannot be null");
+//        }
+//
+//        final T implementation = clazz.getDeclaredConstructor(Connection.class)
+//                                      .newInstance(this.databaseConnection);
+//
+//        final Extension extension = this.addExtension(implementation.getTableName(),
+//                                                      implementation.getColumnName(),
+//                                                      implementation.getExtensionName(),
+//                                                      implementation.getDefinition(),
+//                                                      implementation.getScope());
+//
+//        this.implementations.put(extension, implementation);
+//
+//        return implementation;
+//    }
+
     /**
      * Gets a handle to an {@link ExtensionImplementation} which exposes
      * extension specific functionality
      *
-     * @param extension
-     *             An object that uniquely identifies an extension
-     * @return a handle to an {@link ExtensionImplementation}
+     * @return a handle to an implementation of {@link ExtensionImplementation}
+     * @throws BadImplementationException
+     * @throws SecurityException
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
      */
-    public <T extends ExtensionImplementation> T getExtensionImplementation(final Extension extension, final Class<T> type)
+    public <T extends ExtensionImplementation> T getExtensionImplementation(final Class<T> clazz) throws BadImplementationException
     {
-        if(extension == null)
+        if(clazz == null)
         {
-            throw new IllegalArgumentException("Extension may not be null");
+            throw new IllegalArgumentException("Class cannot be null");
         }
 
-        final Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forJavaClassPath())
-                                                                                  .setScanners(new SubTypesScanner(),
-                                                                                               new TypeAnnotationsScanner().filterResultsBy(name -> name.equals(ImplementsExtension.class.getName()))));
+        if(this.implementations.containsKey(clazz))
+        {
+            final ExtensionImplementation implementation = this.implementations.get(clazz);
 
-//        final Set<String> foo = (new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forJavaClassPath())
-//                                                                           .setScanners(new SubTypesScanner(false)))).getAllTypes();
+            return clazz.cast(implementation);
+        }
+
+        try
+        {
+            final Constructor<T> constructor = clazz.getDeclaredConstructor(Connection.class,
+                                                                            GeoPackageCore.class,
+                                                                            GeoPackageExtensions.class);
+
+            final T implementation = constructor.newInstance(this.databaseConnection, this.core, this);
+
+
+//            final Extension extension = this.addExtension(implementation.getTableName(),
+//                                                          implementation.getColumnName(),
+//                                                          implementation.getExtensionName(),
+//                                                          implementation.getDefinition(),
+//                                                          implementation.getScope());
+
+            this.implementations.put(clazz, implementation);
+
+            return implementation;
+        }
+        catch(final NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
+        {
+            throw new BadImplementationException(String.format("There was an error instantiating an instance of the '%s' GeoPackage extention implementation", clazz.getName()), ex);
+        }
+
+
+//        final T implementation =
+//                                      .newInstance(this.databaseConnection);
+
+//            final Extension extension = this.addExtension(implementation.getTableName(),
+//                                                          implementation.getColumnName(),
+//                                                          implementation.getExtensionName(),
+//                                                          implementation.getDefinition(),
+//                                                          implementation.getScope());
+
+//        this.implementations.put(clazz, implementation);
 //
-//
-//        foo.stream()
-//           .sorted()
-//           .forEach(tipe -> System.out.println(tipe));
-
-
-        return null;
+//        return implementation;
     }
 
     @SuppressWarnings("static-method")
@@ -414,5 +481,8 @@ public class GeoPackageExtensions
         }
     }
 
-    private final Connection databaseConnection;
+    private final Connection     databaseConnection;
+    private final GeoPackageCore core;
+
+    private final Map<Class<? extends ExtensionImplementation>, ExtensionImplementation> implementations = new HashMap<>();
 }

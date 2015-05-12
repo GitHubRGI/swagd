@@ -144,7 +144,7 @@ public class GeoPackageTiles
                                       identifier,
                                       description,
                                       boundingBox,
-                                      spatialReferenceSystem.getOrganizationSrsId()))
+                                      spatialReferenceSystem.getIdentifier()))
             {
                 return existingContent;
             }

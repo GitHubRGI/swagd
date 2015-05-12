@@ -211,7 +211,7 @@ public class GeoPackage implements AutoCloseable
             this.tiles      = new GeoPackageTiles     (this.databaseConnection, this.core);
             this.schema     = new GeoPackageSchema    (this.databaseConnection);
             this.metadata   = new GeoPackageMetadata  (this.databaseConnection);
-            this.extensions = new GeoPackageExtensions(this.databaseConnection);
+            this.extensions = new GeoPackageExtensions(this.databaseConnection, this.core);
 
             if(isNewFile)
             {
