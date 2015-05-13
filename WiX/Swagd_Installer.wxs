@@ -1,91 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-<Product Id="D4C7A26B-56AA-47A7-BCA7-DC32C6E86DB7" Name="Swagd - SoftWare that Aggregates Geospatial Data" Language="1033" Version="0.0.0.1" Manufacturer="Reinventing Geospatial, Inc." UpgradeCode="A526C97F-4FD4-4C56-B6BE-F55486576469">
-    <Package Description="SWAGD Installer" Comments="Simple installer for SWAGD" InstallerVersion="200" Compressed="yes" InstallPrivileges="elevated" InstallScope="perMachine"/>
-    <Media Id="1" Cabinet="simple.cab" EmbedCab="yes" />
-    <!-- directory structure -->
-    <Directory Id="TARGETDIR" Name="SourceDir">
-        <Directory Id="ProgramFilesFolder" Name="PFiles">
-            <Directory Name="Swagd" Id="INSTALLDIR">
-                <Directory Name="lib" Id="LIB" />
-            </Directory>
-            <Directory Id="ProgramMenuFolder" Name="Programs">
-                <Directory Id="ProgramMenuDir" Name="Swagd - Geospatial Toolset" />
+    <Product Id="D4C7A26B-56AA-47A7-BCA7-DC32C6E86DB7" Name="Swagd - Software that Aggregates Geospatial Data" Language="1033" Version="0.0.0.1" Manufacturer="Reinventing Geospatial, Inc." UpgradeCode="A526C97F-4FD4-4C56-B6BE-F55486576469">
+        <Package Description="SWAGD Installer" Comments="Simple installer for SWAGD" InstallerVersion="200" Compressed="yes" InstallPrivileges="elevated" InstallScope="perMachine" />
+        <Media Id="1" Cabinet="simple.cab" EmbedCab="yes" />
+        <!-- directory structure -->
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder" Name="PFiles">
+                <Directory Name="Swagd" Id="INSTALLDIR">
+                    <Directory Name="lib" Id="LIB" />
+                </Directory>
+                <Directory Id="ProgramMenuFolder" Name="Programs">
+                    <Directory Id="ProgramMenuDir" Name="Swagd - Geospatial Toolset" />
+                </Directory>
             </Directory>
         </Directory>
-    </Directory>
-    <!-- shortcut directory structure-->
-
-<!-- swagd components -->
-    <DirectoryRef Id="INSTALLDIR" >
-        <Component Id="swagd.exe" DiskId="1" Guid="eed0a7a6-d443-4835-8d4f-42d57875b07a">
-            <File Id="SWAGDEXE" Name="swagd.exe" Source="..\RGISuite\target\swagd.exe" KeyPath="yes">
-                <Shortcut Id="ApplicationStartMenuShortcut"
-                    Name="SWAGD"
-                    Description="SoftWare that Aggregates Geospatial Data"
-                    WorkingDirectory="INSTALLDIR"
-                    Icon="swagd.exe"
-                    Directory="ProgramMenuDir"
-                    IconIndex="0"
-                    Advertise="yes"
-                    />
-            </File>
-        </Component>
-        <Component Id="license" DiskId="1" KeyPath="yes" Guid="fee5774b-08a4-41b9-9e86-8b4fcb372dd5">
-            <File Id="LICENSE.TXT" Name="LICENSE.txt" Source="..\LICENSE.txt" />
-        </Component>
-        <Component Id="swagd_shared.jar" DiskId="1" KeyPath="yes" Guid="c5bc0fb2-fef6-45e0-9343-1ae6da204dc8">
-            <File Id="RGISUITE_0.0.1_SNAPSHOT_SHADED.JAR" Name="RGISuite-0.0.1-SNAPSHOT-shaded.jar" Source="..\RGISuite\target\RGISuite-0.0.1-SNAPSHOT-shaded.jar" />
-        </Component>
-    </DirectoryRef>
-
-    <DirectoryRef Id="LIB" >
-        <Component Id="gdal.jar" DiskId="1" KeyPath="yes" Guid="9e19a102-f7be-46a7-b6f9-4ee6b66b2477">
-            <File Id="GDAL.JAR" Name="gdal.jar" Source="..\RGISuite\lib\gdal.jar" />
-        </Component>
-        <Component Id="gdal111.dll" DiskId="1" KeyPath="yes" Guid="cf4adb64-2d86-4de4-8d3b-9c4f904d5e1c">
-            <File Id="GDAL111.DLL" Name="gdal111.dll" Source="..\RGISuite\lib\gdal111.dll" />
-        </Component>
-        <Component Id="gdalconstjni.dll" DiskId="1" KeyPath="yes" Guid="48dacc48-0e3f-4afa-940a-73222dbc56d1">
-            <File Id="GDALCONSTJNI.DLL" Name="gdalconstjni.dll" Source="..\RGISuite\lib\gdalconstjni.dll" />
-        </Component>
-        <Component Id="gdaljni.dll" DiskId="1" KeyPath="yes" Guid="75ff2194-802d-4c05-bee3-b0f252a242e6">
-            <File Id="GDALJNI.DLL" Name="gdaljni.dll" Source="..\RGISuite\lib\gdaljni.dll" />
-        </Component>
-        <Component Id="ogrjni.dll" DiskId="1" KeyPath="yes" Guid="99df1a8b-6e65-44c3-8367-e71570721552">
-            <File Id="OGRJNI.DLL" Name="ogrjni.dll" Source="..\RGISuite\lib\ogrjni.dll" />
-        </Component>
-        <Component Id="osrjni.dll" DiskId="1" KeyPath="yes" Guid="9646a880-c647-4267-9941-13f30fcad27d">
-            <File Id="OSRJNI.DLL" Name="osrjni.dll" Source="..\RGISuite\lib\osrjni.dll" />
-        </Component>
-    </DirectoryRef>
-
-<!-- start menu shortcut component   -->   
-    <DirectoryRef Id="ProgramMenuDir">
-        <Component Id="ProgramMenuDir" Guid="E476217A-888D-48BC-ADEC-D32EA0F108D3">
-            <RemoveFolder Id="ProgramMenuDir" On="uninstall" />
-            <RegistryValue Root="HKCU" Key="Software\RGI\Swagd" Type="integer" Value="1" Name="Installed" KeyPath="yes" />
-        </Component>
-    </DirectoryRef>
-
-<!-- Feature Info -->
-    <Feature Id="DefaultFeature" Title="Main Feature" Level="1">
-        <ComponentRef Id="gdal.jar" />
-        <ComponentRef Id="gdal111.dll" />
-        <ComponentRef Id="gdalconstjni.dll" />
-        <ComponentRef Id="gdaljni.dll" />
-        <ComponentRef Id="ogrjni.dll" />
-        <ComponentRef Id="osrjni.dll" />
-        <ComponentRef Id="swagd.exe" />
-        <ComponentRef Id="license" />
-        <ComponentRef Id="swagd_shared.jar" />
-        <ComponentRef Id="ProgramMenuDir" />
-    </Feature>
-    <UI>
-        <InstallUISequence>
-            <AppSearch />
-        </InstallUISequence>
-    </UI>
-    <Icon Id="swagd.exe" SourceFile="..\RGISuite\target\swagd.exe" />
-</Product>
+      
+      <!-- GDAL Sanity Check-->
+      <!--Property Id ="FILEEXISTS">
+          <DirectorySearch Id ="CheckFileDir" Path="[GDAL]" Depth = "3">
+            <FileSearch Id = "CheckFile" Name = "zlib1.dll"/>
+          </DirectorySearch>
+        </Property-->
+         <!--Gdal Enviornment Variables-->
+      <!--Environment Id = "GdalDataVar"
+                     Action ="set"
+                     Part = "all"
+                     Name = "GDAL_DATA"
+                     Permanent = "yes"
+                     System = "no"
+                     Value = "[INSTALLDIR]/RGISuite/lib/data" />
+      
+        <Environment Id = "RGiLibPathVar"
+                     Action ="set"
+                     Part = "last"
+                     Name = "PATH"
+                     Permanent = "yes"
+                     System = "no"
+                     Value = "[INSTALLDIR]/RGISuite/lib" />
+      
+       <Environment Id = "GdalVarPath"
+                    Action ="set"
+                    Part = "last"
+                    Name = "PATH"
+                    Permanent = "yes"
+                    System = "no"
+                    Value = "[ProgramFilesFolder]/GDAL" /-->
+                 
+        <!-- shortcut directory structure-->
+        <!-- swagd components -->
+        <DirectoryRef Id="INSTALLDIR">
+            <Component Id="swagd.exe" DiskId="1" Guid="eed0a7a6-d443-4835-8d4f-42d57875b07a">
+                <File Id="SWAGDEXE" Name="swagd.exe" Source="..\RGISuite\target\swagd.exe" KeyPath="yes">
+                    <Shortcut Id="ApplicationStartMenuShortcut" Name="SWAGD" Description="SoftWare that Aggregates Geospatial Data" WorkingDirectory="INSTALLDIR" Icon="swagd.exe" Directory="ProgramMenuDir" IconIndex="0" Advertise="yes" />
+                </File>
+            </Component>
+          <Component Id="CustomAction" DiskId="1" Guid="">
+            <File Id="CustomAction" Name="CustomAction3.CA.dll" Source="..\RGISuite\target\CustomAction3.CA.dll" KeyPath="yes" />
+          </Component>
+            <Component Id="license" DiskId="1" KeyPath="yes" Guid="fee5774b-08a4-41b9-9e86-8b4fcb372dd5">
+                <File Id="LICENSE.TXT" Name="LICENSE.txt" Source="..\LICENSE.txt" />
+            </Component>
+            <Component Id="swagd_shared.jar" DiskId="1" KeyPath="yes" Guid="c5bc0fb2-fef6-45e0-9343-1ae6da204dc8">
+                <File Id="RGISUITE_0.0.1_SNAPSHOT_SHADED.JAR" Name="RGISuite-0.0.1-SNAPSHOT-shaded.jar" Source="..\RGISuite\target\RGISuite-0.0.1-SNAPSHOT-shaded.jar" />
+            </Component>
+        </DirectoryRef>
+        <DirectoryRef Id="LIB">
+            <Component Id="gdal.jar" DiskId="1" KeyPath="yes" Guid="9e19a102-f7be-46a7-b6f9-4ee6b66b2477">
+                <File Id="GDAL.JAR" Name="gdal.jar" Source="..\RGISuite\lib\gdal.jar" />
+            </Component>
+            <Component Id="gdal111.dll" DiskId="1" KeyPath="yes" Guid="cf4adb64-2d86-4de4-8d3b-9c4f904d5e1c">
+                <File Id="GDAL111.DLL" Name="gdal111.dll" Source="..\RGISuite\lib\gdal111.dll" />
+            </Component>
+            <Component Id="gdalconstjni.dll" DiskId="1" KeyPath="yes" Guid="48dacc48-0e3f-4afa-940a-73222dbc56d1">
+                <File Id="GDALCONSTJNI.DLL" Name="gdalconstjni.dll" Source="..\RGISuite\lib\gdalconstjni.dll" />
+            </Component>
+            <Component Id="gdaljni.dll" DiskId="1" KeyPath="yes" Guid="75ff2194-802d-4c05-bee3-b0f252a242e6">
+                <File Id="GDALJNI.DLL" Name="gdaljni.dll" Source="..\RGISuite\lib\gdaljni.dll" />
+            </Component>
+            <Component Id="ogrjni.dll" DiskId="1" KeyPath="yes" Guid="99df1a8b-6e65-44c3-8367-e71570721552">
+                <File Id="OGRJNI.DLL" Name="ogrjni.dll" Source="..\RGISuite\lib\ogrjni.dll" />
+            </Component>
+            <Component Id="osrjni.dll" DiskId="1" KeyPath="yes" Guid="9646a880-c647-4267-9941-13f30fcad27d">
+                <File Id="OSRJNI.DLL" Name="osrjni.dll" Source="..\RGISuite\lib\osrjni.dll" />
+            </Component>
+        </DirectoryRef>
+        <!-- start menu shortcut component   -->
+        <DirectoryRef Id="ProgramMenuDir">
+            <Component Id="ProgramMenuDir" Guid="E476217A-888D-48BC-ADEC-D32EA0F108D3">
+                <RemoveFolder Id="ProgramMenuDir" On="uninstall" />
+                <RegistryValue Root="HKCU" Key="Software\RGI\Swagd" Type="integer" Value="1" Name="Installed" KeyPath="yes" />
+            </Component>
+        </DirectoryRef>
+        <!-- Feature Info -->
+        <Feature Id="DefaultFeature" Title="Main Feature" Level="1">
+            <ComponentRef Id="gdal.jar" />
+            <ComponentRef Id="gdal111.dll" />
+            <ComponentRef Id="gdalconstjni.dll" />
+            <ComponentRef Id="gdaljni.dll" />
+            <ComponentRef Id="ogrjni.dll" />
+            <ComponentRef Id="osrjni.dll" />
+            <ComponentRef Id="swagd.exe" />
+            <ComponentRef Id="license" />
+            <ComponentRef Id="swagd_shared.jar" />
+            <ComponentRef Id="ProgramMenuDir" />
+        </Feature>
+        <UI>
+            <InstallUISequence>
+                <AppSearch />
+            </InstallUISequence>
+        </UI>
+        <Icon Id="swagd.exe" SourceFile="..\RGISuite\target\swagd.exe" />
+      <!-- custom action-->
+      <Binary Id="myAction" SourceFile="$(INSTALLDIR.Swagd)\RGISuite\target\CustomAction3.CA.dll" />
+        <CustomAction Id="myActionId" BinaryKey="myAction" DllEntry="CustomAction1" Execute="deferred" Return="check" />
+        <InstallExecuteSequence>
+            <Custom Action="myActionId" Before="InstallFinalize" />
+        </InstallExecuteSequence>
+    </Product>
 </Wix>
