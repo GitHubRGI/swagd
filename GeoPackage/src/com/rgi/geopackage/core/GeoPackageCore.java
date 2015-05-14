@@ -695,7 +695,7 @@ public class GeoPackageCore
     {
         // http://www.geopackage.org/spec/#_gpkg_spatial_ref_sys
         // http://www.geopackage.org/spec/#spatial_ref_sys
-        return "CREATE TABLE " + GeoPackageCore.SpatialRefSysTableName                                                                                    +
+        return "CREATE TABLE " + GeoPackageCore.SpatialRefSysTableName + "\n" +
                "(srs_name                 TEXT    NOT NULL,             -- Human readable name of this SRS (Spatial Reference System)\n"              +
                " srs_id                   INTEGER NOT NULL PRIMARY KEY, -- Unique identifier for each Spatial Reference System within a GeoPackage\n" +
                " organization             TEXT    NOT NULL,             -- Case-insensitive name of the defining organization e.g. EPSG or epsg\n"    +

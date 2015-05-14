@@ -44,7 +44,6 @@ import utility.DatabaseUtility;
 import utility.SelectBuilder;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
@@ -347,38 +346,6 @@ public class GeoPackageExtensions
                              definition,
                              scope.toString());
     }
-
-//    /**
-//     * @param clazz
-//     * @return
-//     * @throws InstantiationException
-//     * @throws IllegalAccessException
-//     * @throws IllegalArgumentException
-//     * @throws InvocationTargetException
-//     * @throws NoSuchMethodException
-//     * @throws SecurityException
-//     * @throws SQLException
-//     */
-//    public <T extends ExtensionImplementation> T addExtensionImplementation(final Class<T> clazz) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, SQLException
-//    {
-//        if(clazz == null)
-//        {
-//            throw new IllegalArgumentException("Class cannot be null");
-//        }
-//
-//        final T implementation = clazz.getDeclaredConstructor(Connection.class)
-//                                      .newInstance(this.databaseConnection);
-//
-//        final Extension extension = this.addExtension(implementation.getTableName(),
-//                                                      implementation.getColumnName(),
-//                                                      implementation.getExtensionName(),
-//                                                      implementation.getDefinition(),
-//                                                      implementation.getScope());
-//
-//        this.implementations.put(extension, implementation);
-//
-//        return implementation;
-//    }
 
     /**
      * Gets a handle to an {@link ExtensionImplementation} which exposes
