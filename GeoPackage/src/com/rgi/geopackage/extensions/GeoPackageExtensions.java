@@ -409,7 +409,9 @@ public class GeoPackageExtensions
 
         try
         {
-            final Constructor<T> constructor = clazz.getDeclaredConstructor(Connection.class, GeoPackage.class);
+            final Constructor<T> constructor = clazz.getDeclaredConstructor(Connection.class,
+                                                                            GeoPackageCore.class,
+                                                                            GeoPackageExtensions.class);
 
             final T implementation = constructor.newInstance(this.databaseConnection, this.geoPackageCore, this);
 

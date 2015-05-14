@@ -25,10 +25,12 @@ package com.rgi.geopackage.extensions.network;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 
 import utility.DatabaseUtility;
 
@@ -221,6 +223,115 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
     }
 
+    public Edge getEdge(final Network network, final int edgeIdentifier) throws SQLException
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        final String attributeDescriptionQuery = String.format("SELECT %s, %s FROM %s WHERE %s = ? LIMIT 1;",
+                                                               "from",
+                                                               "to",
+                                                               network.getTableName(),
+                                                               "id");
+
+        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(attributeDescriptionQuery))
+        {
+            preparedStatement.setInt(1, edgeIdentifier);
+
+            return JdbcUtility.mapOne(preparedStatement.executeQuery(),
+                                      resultSet -> new Edge(edgeIdentifier,        // identifier
+                                                            resultSet.getInt(1),   // attribute name
+                                                            resultSet.getInt(2))); // attributed type
+        }
+    }
+
+    public Edge getEdge(final Network network, final int from, final int to) throws SQLException
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        final String attributeDescriptionQuery = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1;",
+                                                               "id",
+                                                               network.getTableName(),
+                                                               "from",
+                                                               "to");
+
+        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(attributeDescriptionQuery))
+        {
+            preparedStatement.setInt(1, from);
+            preparedStatement.setInt(1, to);
+
+            return JdbcUtility.mapOne(preparedStatement.executeQuery(),
+                                      resultSet -> new Edge(resultSet.getInt(1), // identifier
+                                                            from,                // attribute name
+                                                            to));                // attributed type
+        }
+    }
+
+    public getNodesFrom
+
+    public getNodesTo
+
+    public void visitEdges(final Network network, final Consumer<ResultSet> consumer) throws SQLException
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s FROM %s WHERE %s = ?;",
+                                                               "id",
+                                                               network.getTableName(),
+                                                               "from",
+                                                               "to");
+
+        try(final Statement statement = this.databaseConnection.createStatement())
+        {
+            try(final ResultSet resultSet = statement.executeQuery(attributeDescriptionQuery))
+            {
+                while(resultSet.next())
+                {
+                    consumer.accept(resultSet);
+                }
+            }
+        }
+    }
+
+    public Edge addEdge(final Network network, final int from, final int to) throws SQLException
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        final String insert = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+                                            network.getTableName(),
+                                            "from",
+                                            "to");
+
+        int identifier = -1;
+
+        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS))
+        {
+            preparedStatement.setInt(1, from);
+            preparedStatement.setInt(2, to);
+
+            preparedStatement.executeUpdate();
+
+            identifier = preparedStatement.getGeneratedKeys().getInt(1);
+        }
+
+        this.databaseConnection.commit();
+
+        return new Edge(identifier, from, to);
+    }
+
+    public addEdges
+
     public List<AttributeDescription> getAttributeDescriptions(final Network network, final AttributedType attributedType) throws SQLException
     {
         if(network == null)
@@ -388,7 +499,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
     }
 
-    public void addAttributes(final int attributedIdentifier, final List<AttributeDescription> attributeDescriptions, final List<Object> values) throws SQLException
+    public void addAttributes(final int                        attributedIdentifier,
+                              final List<AttributeDescription> attributeDescriptions,
+                              final List<Object>               values) throws SQLException
     {
         if(attributeDescriptions == null)
         {
@@ -442,7 +555,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
     }
 
-    public void addAttributes(final List<AttributeDescription> attributeDescriptions, final Iterable<Entry<Integer, List<Object>>> attributedIdentifierValuePairs) throws SQLException
+    public void addAttributes(final List<AttributeDescription>             attributeDescriptions,
+                              final Iterable<Entry<Integer, List<Object>>> attributedIdentifierValuePairs) throws SQLException
     {
         if(attributeDescriptions == null)
         {
