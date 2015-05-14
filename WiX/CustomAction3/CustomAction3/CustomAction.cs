@@ -20,7 +20,8 @@ namespace CustomAction3
                 // TODO: Make changes to config file
                 MessageBox.Show("Running The Custom Action", "Action");
 
-                bool isGdalInstalled = IsApplicationInstalled("gdal");
+                bool isGdalInstalled = IsApplicationInstalled("gdal 111 (MSVC 2010 Win64)");
+                //1.0.0.0
 
                 if (isGdalInstalled)
                 {
@@ -51,24 +52,27 @@ namespace CustomAction3
         /// <returns></returns>
         public static bool IsApplicationInstalled(string name)
         {
-            if(GetInstalledPrograms().Contains(name))
+            foreach(string value in GetInstalledPrograms())
             {
-                return true;
+                if (name.Contains(name))
+                {
+                    MessageBox.Show(name, "display name");
+                    return true;
+                }
             }
             return false;
         }
 
 
         /// <summary>
-        /// returns a list of all 32 and 64 bit installed programs (lowercase names)
+        /// returns a list of all 64 bit installed programs (lowercase names)
         /// </summary>
         /// <returns></returns>
+        ///  if you want 32 bit result.AddRange(GetInstalledProgramsFromRegistry(RegistryView.Registry32));
         private static List<string> GetInstalledPrograms()
         {
             var result = new List<string>();
-            result.AddRange(GetInstalledProgramsFromRegistry(RegistryView.Registry32));
-            result.AddRange(GetInstalledProgramsFromRegistry(RegistryView.Registry64));
-            return result;
+            return GetInstalledProgramsFromRegistry(RegistryView.Registry64);
         }
 
         /// <summary>
@@ -76,7 +80,7 @@ namespace CustomAction3
         /// </summary>
         /// <param name="registryView"></param>
         /// <returns></returns>
-        private static IEnumerable<string> GetInstalledProgramsFromRegistry(RegistryView registryView)
+        private static List<string> GetInstalledProgramsFromRegistry(RegistryView registryView)
         {
             var result = new List<string>();
 
@@ -87,8 +91,13 @@ namespace CustomAction3
                     using (RegistryKey subkey = key.OpenSubKey(subkey_name))
                     {
                         var name = (string)subkey.GetValue("DisplayName");
+                        string appVersion = subkey.GetValue("DisplayVersion") as string;
                         if (!string.IsNullOrEmpty(name))
                         {
+                            if(name.ToLower().Contains("gdal"))
+                            {
+                                MessageBox.Show(String.Format("{0}\nversion: {1}", name, appVersion),"display name");
+                            }
                             result.Add(name.ToLower());
                         }
                     }

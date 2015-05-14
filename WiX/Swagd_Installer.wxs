@@ -115,7 +115,7 @@
       <Binary Id="myAction" SourceFile="..\RGISuite\lib\CustomAction3.CA.dll" />
         <CustomAction Id="myActionId" BinaryKey="myAction" DllEntry="CustomAction1" Execute="deferred" Return="check" />
         <InstallExecuteSequence>
-            <Custom Action="myActionId" Before="InstallFinalize" />
+            <Custom Action="myActionId" Before="InstallFinalize">NOT Installed</Custom>
         </InstallExecuteSequence>
     </Product>
 </Wix>
