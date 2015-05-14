@@ -1,0 +1,8 @@
+c:\users\jenifer.cochran\documents\visual studio 2013\Projects\CustomAction3\CustomAction3\bin\Debug\CustomAction3.dll
+c:\users\jenifer.cochran\documents\visual studio 2013\Projects\CustomAction3\CustomAction3\bin\Debug\CustomAction3.CA.dll
+c:\users\jenifer.cochran\documents\visual studio 2013\Projects\CustomAction3\CustomAction3\bin\Debug\CustomAction3.pdb
+c:\users\jenifer.cochran\documents\visual studio 2013\Projects\CustomAction3\CustomAction3\bin\Debug\WixToolset.Dtf.WindowsInstaller.dll
+c:\users\jenifer.cochran\documents\visual studio 2013\Projects\CustomAction3\CustomAction3\bin\Debug\WixToolset.Dtf.WindowsInstaller.xml
+c:\users\jenifer.cochran\documents\visual studio 2013\Projects\CustomAction3\CustomAction3\obj\x86\Debug\CustomAction3.csprojResolveAssemblyReference.cache
+c:\users\jenifer.cochran\documents\visual studio 2013\Projects\CustomAction3\CustomAction3\obj\x86\Debug\CustomAction3.dll
+c:\users\jenifer.cochran\documents\visual studio 2013\Projects\CustomAction3\CustomAction3\obj\x86\Debug\CustomAction3.pdb
