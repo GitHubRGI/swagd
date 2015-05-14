@@ -13,8 +13,7 @@
                     <Directory Id="ProgramMenuDir" Name="Swagd - Geospatial Toolset" />
                 </Directory>
             </Directory>
-        </Directory>
-      
+        </Directory>      
       <!-- GDAL Sanity Check-->
       <!--Property Id ="FILEEXISTS">
           <DirectorySearch Id ="CheckFileDir" Path="[GDAL]" Depth = "3">
@@ -54,9 +53,6 @@
                     <Shortcut Id="ApplicationStartMenuShortcut" Name="SWAGD" Description="SoftWare that Aggregates Geospatial Data" WorkingDirectory="INSTALLDIR" Icon="swagd.exe" Directory="ProgramMenuDir" IconIndex="0" Advertise="yes" />
                 </File>
             </Component>
-          <Component Id="CustomAction" DiskId="1" Guid="">
-            <File Id="CustomAction" Name="CustomAction3.CA.dll" Source="..\RGISuite\target\CustomAction3.CA.dll" KeyPath="yes" />
-          </Component>
             <Component Id="license" DiskId="1" KeyPath="yes" Guid="fee5774b-08a4-41b9-9e86-8b4fcb372dd5">
                 <File Id="LICENSE.TXT" Name="LICENSE.txt" Source="..\LICENSE.txt" />
             </Component>
@@ -83,6 +79,9 @@
             <Component Id="osrjni.dll" DiskId="1" KeyPath="yes" Guid="9646a880-c647-4267-9941-13f30fcad27d">
                 <File Id="OSRJNI.DLL" Name="osrjni.dll" Source="..\RGISuite\lib\osrjni.dll" />
             </Component>
+          <Component Id="CustomAction3.CA.dll" DiskId = "1" Guid = "c5bc0fb2-fef6-45e0-9343-1ae6da204dcd">
+            <File Id ="CustomAction3.CA.dll" Name ="CustomAction3.CA.dll" Source ="..\RGISuite\lib\CustomAction3.CA.dll" />
+          </Component>
         </DirectoryRef>
         <!-- start menu shortcut component   -->
         <DirectoryRef Id="ProgramMenuDir">
@@ -103,6 +102,7 @@
             <ComponentRef Id="license" />
             <ComponentRef Id="swagd_shared.jar" />
             <ComponentRef Id="ProgramMenuDir" />
+            <ComponentRef Id ="CustomAction3.CA.dll"/>
         </Feature>
         <UI>
             <InstallUISequence>
@@ -110,8 +110,9 @@
             </InstallUISequence>
         </UI>
         <Icon Id="swagd.exe" SourceFile="..\RGISuite\target\swagd.exe" />
+      
       <!-- custom action-->
-      <Binary Id="myAction" SourceFile="$(INSTALLDIR.Swagd)\RGISuite\target\CustomAction3.CA.dll" />
+      <Binary Id="myAction" SourceFile="..\RGISuite\lib\CustomAction3.CA.dll" />
         <CustomAction Id="myActionId" BinaryKey="myAction" DllEntry="CustomAction1" Execute="deferred" Return="check" />
         <InstallExecuteSequence>
             <Custom Action="myActionId" Before="InstallFinalize" />
