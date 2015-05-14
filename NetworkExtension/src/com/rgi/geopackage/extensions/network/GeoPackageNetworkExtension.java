@@ -42,7 +42,6 @@ import com.rgi.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.geopackage.extensions.Scope;
 import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
 import com.rgi.geopackage.extensions.implementation.ImplementsExtension;
-import com.rgi.geopackage.tiles.TileSet;
 
 /**
  * Implementation of the RGI Network GeoPackage extension
@@ -208,9 +207,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                 statement.executeUpdate(this.getNetworkAttributeCreationSql(networkAttributesTableName));
             }
 
-            // Add tile set to the content table
+            // Add the network to the content table
             this.geoPackageCore.addContent(tableName,
-                                           TileSet.TileContentType,
+                                           Network.NetworkContentType,
                                            identifier,
                                            description,
                                            boundingBox,

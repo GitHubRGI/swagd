@@ -62,11 +62,13 @@ public class Main
                                                                                                     AttributedType.Edge);
 
             loadNodeAttributes(networkExtension,
-                               new File("C:/Users/corp/Desktop/sample data/networks/contour.1/contour.1.edge"),
+                               new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node"),
                                myNetwork,
                                Arrays.asList(longitudeAttribute, latitudeAttribute));
 
-            final int a = 2;
+            loadEdges(networkExtension,
+                      new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge"),
+                      myNetwork);
         }
         catch(final ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException ex)
         {
@@ -90,24 +92,52 @@ public class Main
     {
         final Function<String, Pair<Integer, List<Object>>> lineToPair = line -> { final String[] pieces = line.trim().split("\\s+");
 
-                                                                                   return new Pair<>(Integer.valueOf(pieces[0]),                         // vertex # (node id)
-                                                                                                     Arrays.asList((Object)Integer.valueOf(pieces[1]),   // x (longitude)
-                                                                                                                   (Object)Integer.valueOf(pieces[2]))); // y (latitude)
+                                                                                   return new Pair<>(Integer.valueOf(pieces[0]),                        // vertex # (node id)
+                                                                                                     Arrays.asList((Object)Double.valueOf(pieces[1]),   // x (longitude)
+                                                                                                                   (Object)Double.valueOf(pieces[2]))); // y (latitude)
                                                                                  };
 
         try(Stream<Pair<Integer, List<Object>>> pairs = Files.lines(triangleFormatNodes.toPath())
                                                                                        .skip(1) // the first line is a header
+                                                                                       .filter(line -> !line.startsWith("#"))
                                                                                        .map(lineToPair))
         {
             networkExtension.addAttributes(attributeDescriptions, pairs::iterator);
         }
-
-
     }
 
-    private void loadEdges()
+    private static void loadEdges(final GeoPackageNetworkExtension networkExtension, final File triangleFormatEdges, final Network network) throws SQLException, IOException
     {
+        final Function<String, Pair<Integer, Integer>> lineToPair = line -> { final String[] pieces = line.trim().split("\\s+");
 
+                                                                              // Integer.valueOf(pieces[0]),                 // edge # (edge id), unused, we use our own id, but it should be the same in most cases
+
+                                                                              return new Pair<>(Integer.valueOf(pieces[1]),  // from node
+                                                                                                Integer.valueOf(pieces[2])); // to node
+                                                                            };
+
+        try(final Stream<Pair<Integer, Integer>> pairs = Files.lines(triangleFormatEdges.toPath())
+                                                                                        .skip(1) // the first line is a header
+                                                                                        .filter(line -> !line.startsWith("#"))
+                                                                                        .map(lineToPair))
+        {
+            networkExtension.addEdges(network, pairs::iterator);
+        }
+
+        // Now add the links in reverse (i.e., we've added one direction, A->B, now add B->A, since the original data had no directionality
+        final Function<String, Pair<Integer, Integer>> lineToPair2 = line -> { final String[] pieces = line.trim().split("\\s+");
+
+                                                                               return new Pair<>(Integer.valueOf(pieces[2]),  // from node
+                                                                                                 Integer.valueOf(pieces[1])); // to node
+                                                                            };
+
+        try(final Stream<Pair<Integer, Integer>> pairs = Files.lines(triangleFormatEdges.toPath())
+                                                                                        .skip(1) // the first line is a header
+                                                                                        .filter(line -> !line.startsWith("#"))
+                                                                                        .map(lineToPair2))
+        {
+            networkExtension.addEdges(network, pairs::iterator);
+        }
     }
 
     private String firstLine(final File file) throws IOException
