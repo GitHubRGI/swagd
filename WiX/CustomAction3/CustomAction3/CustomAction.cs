@@ -20,8 +20,9 @@ namespace CustomAction3
                 // TODO: Make changes to config file
                 MessageBox.Show("Running The Custom Action", "Action");
 
-                bool isGdalInstalled = IsApplicationInstalled("gdal 111 (MSVC 2010 Win64)");
-                //1.0.0.0
+                bool isGdalInstalled = IsApplicationInstalled("gdal 111 (msvc 2010 win64)");
+                //bool isGdalInstalled = IsApplicationInstalled("gdal 111");//1.0.0.0
+                //gdal 111 (MSVC 2010 Win64)
 
                 if (isGdalInstalled)
                 {
@@ -54,7 +55,11 @@ namespace CustomAction3
         {
             foreach(string value in GetInstalledPrograms())
             {
-                if (name.Contains(name))
+                if (value.Contains("gdal"))
+                {
+                    MessageBox.Show(value, "display name");
+                }
+                if (value.Contains(name.ToLower()))
                 {
                     MessageBox.Show(name, "display name");
                     return true;
@@ -65,13 +70,14 @@ namespace CustomAction3
 
 
         /// <summary>
-        /// returns a list of all 64 bit installed programs (lowercase names)
+        /// returns a list of all 32 and 64 bit installed programs (lowercase names)
         /// </summary>
         /// <returns></returns>
-        ///  if you want 32 bit result.AddRange(GetInstalledProgramsFromRegistry(RegistryView.Registry32));
         private static List<string> GetInstalledPrograms()
         {
             var result = new List<string>();
+            //result.AddRange(GetInstalledProgramsFromRegistry(RegistryView.Registry32));
+           // result.AddRange(GetInstalledProgramsFromRegistry(RegistryView.Registry64));
             return GetInstalledProgramsFromRegistry(RegistryView.Registry64);
         }
 
@@ -94,10 +100,6 @@ namespace CustomAction3
                         string appVersion = subkey.GetValue("DisplayVersion") as string;
                         if (!string.IsNullOrEmpty(name))
                         {
-                            if(name.ToLower().Contains("gdal"))
-                            {
-                                MessageBox.Show(String.Format("{0}\nversion: {1}", name, appVersion),"display name");
-                            }
                             result.Add(name.ToLower());
                         }
                     }
