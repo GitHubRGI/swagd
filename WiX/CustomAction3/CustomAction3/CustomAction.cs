@@ -9,19 +9,20 @@ namespace CustomAction3
 {
     public class CustomActions
     {
+        const string registry_key = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+
         [CustomAction]
         public static ActionResult CustomAction1(Session session)
         {
             try
             {
                 session.Log("Begin Configure EWS Filter Custom Action");
-                                            // TODO: Make changes to config file
+                // TODO: Make changes to config file
                 MessageBox.Show("Running The Custom Action", "Action");
 
-                bool isGdalInstalled = IsApplictionInstalled("OSGEO");
+                bool isGdalInstalled = IsApplicationInstalled("gdal");
 
-
-                if(isGdalInstalled)
+                if (isGdalInstalled)
                 {
                     MessageBox.Show("GDAL is installed", "Action");
                 }
@@ -34,80 +35,66 @@ namespace CustomAction3
             }
             catch (Exception ex)
             {
-                session.Log("ERROR in custom action ConfigureEwsFilter {0}", 
+                session.Log("ERROR in custom action ConfigureEwsFilter {0}",
 
                 ex.ToString());
 
                 return ActionResult.Failure;
             }
-             return ActionResult.Success;
+            return ActionResult.Success;
         }
 
-        public static bool IsApplictionInstalled(string p_name)
+        /// <summary>
+        /// checks if program with the name 'name' is installed
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static bool IsApplicationInstalled(string name)
         {
-            string displayName;
-            StringBuilder displayNames = new StringBuilder();
-            RegistryKey key;
-            MessageBox.Show("In method", "method");
-            // search in: CurrentUser
-            key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
-            foreach (String keyName in key.GetSubKeyNames())
+            if(GetInstalledPrograms().Contains(name))
             {
-                
-                RegistryKey subkey = key.OpenSubKey(keyName);
-                displayName = subkey.GetValue("DisplayName") as string;
-               
-                {
-                    displayNames.Append(displayName);
-                    displayNames.Append(", ");
-                }
-                if (p_name.Equals(displayName, StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    return true;
-                }
+                return true;
             }
-            MessageBox.Show(displayNames.ToString(), "display Names");
-
-            // search in: LocalMachine_32
-            key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
-            foreach (String keyName in key.GetSubKeyNames())
-            {
-                RegistryKey subkey = key.OpenSubKey(keyName);
-                displayName = subkey.GetValue("DisplayName") as string;
-
-                
-                {
-                    displayNames.Append(displayName);
-                    displayNames.Append(", ");
-                }
-                if (p_name.Equals(displayName, StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    return true;
-                }
-            }
-            MessageBox.Show(displayNames.ToString(), "display Names");
-
-            // search in: LocalMachine_64
-            key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall");
-            foreach (String keyName in key.GetSubKeyNames())
-            {
-                RegistryKey subkey = key.OpenSubKey(keyName);
-                displayName = subkey.GetValue("DisplayName") as string;
-                
-                {
-                    displayNames.Append(displayName);
-                    displayNames.Append(", ");
-                }
-                if (p_name.Equals(displayName, StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    return true;
-                }
-            }
-
-            MessageBox.Show(displayNames.ToString(), "display Names" );
-
-            // NOT FOUND
             return false;
+        }
+
+
+        /// <summary>
+        /// returns a list of all 32 and 64 bit installed programs (lowercase names)
+        /// </summary>
+        /// <returns></returns>
+        private static List<string> GetInstalledPrograms()
+        {
+            var result = new List<string>();
+            result.AddRange(GetInstalledProgramsFromRegistry(RegistryView.Registry32));
+            result.AddRange(GetInstalledProgramsFromRegistry(RegistryView.Registry64));
+            return result;
+        }
+
+        /// <summary>
+        /// Gets list of all programs in the registry, returns them in all lowercase as a string enumberable
+        /// </summary>
+        /// <param name="registryView"></param>
+        /// <returns></returns>
+        private static IEnumerable<string> GetInstalledProgramsFromRegistry(RegistryView registryView)
+        {
+            var result = new List<string>();
+
+            using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, registryView).OpenSubKey(registry_key))
+            {
+                foreach (string subkey_name in key.GetSubKeyNames())
+                {
+                    using (RegistryKey subkey = key.OpenSubKey(subkey_name))
+                    {
+                        var name = (string)subkey.GetValue("DisplayName");
+                        if (!string.IsNullOrEmpty(name))
+                        {
+                            result.Add(name.ToLower());
+                        }
+                    }
+                }
+            }
+            return result;
         }
     }
 }
