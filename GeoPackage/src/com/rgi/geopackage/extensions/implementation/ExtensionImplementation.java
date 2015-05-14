@@ -26,6 +26,7 @@ package com.rgi.geopackage.extensions.implementation;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.extensions.Extension;
 import com.rgi.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.geopackage.extensions.Scope;
@@ -36,7 +37,9 @@ import com.rgi.geopackage.extensions.Scope;
  */
 public abstract class ExtensionImplementation
 {
-    public ExtensionImplementation(final Connection databaseConnection, final GeoPackageExtensions geoPackageExtensions) throws SQLException
+    public ExtensionImplementation(final Connection           databaseConnection,
+                                   final GeoPackageCore       geoPackageCore,
+                                   final GeoPackageExtensions geoPackageExtensions) throws SQLException
     {
         if(databaseConnection == null)
         {
@@ -49,6 +52,7 @@ public abstract class ExtensionImplementation
         }
 
         this.databaseConnection   = databaseConnection;
+        this.geoPackageCore       = geoPackageCore;
         this.geoPackageExtensions = geoPackageExtensions;
 
         this.extension = this.geoPackageExtensions.getExtension(this.getTableName(),
@@ -79,6 +83,7 @@ public abstract class ExtensionImplementation
     }
 
     protected final Connection           databaseConnection;
+    protected final GeoPackageCore       geoPackageCore;
     protected final GeoPackageExtensions geoPackageExtensions;
 
     private Extension extension;

@@ -44,6 +44,7 @@ import utility.DatabaseUtility;
 import utility.SelectBuilder;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
@@ -68,10 +69,10 @@ public class GeoPackageExtensions
      * @param databaseConnection
      *             The open connection to the database that contains a GeoPackage
      */
-    public GeoPackageExtensions(final Connection databaseConnection, final GeoPackageCore core)
+    public GeoPackageExtensions(final Connection databaseConnection, final GeoPackageCore geoPackageCore)
     {
         this.databaseConnection = databaseConnection;
-        this.core               = core;
+        this.geoPackageCore     = geoPackageCore;
     }
 
     /**
@@ -408,18 +409,9 @@ public class GeoPackageExtensions
 
         try
         {
-            final Constructor<T> constructor = clazz.getDeclaredConstructor(Connection.class,
-                                                                            GeoPackageCore.class,
-                                                                            GeoPackageExtensions.class);
+            final Constructor<T> constructor = clazz.getDeclaredConstructor(Connection.class, GeoPackage.class);
 
-            final T implementation = constructor.newInstance(this.databaseConnection, this.core, this);
-
-
-//            final Extension extension = this.addExtension(implementation.getTableName(),
-//                                                          implementation.getColumnName(),
-//                                                          implementation.getExtensionName(),
-//                                                          implementation.getDefinition(),
-//                                                          implementation.getScope());
+            final T implementation = constructor.newInstance(this.databaseConnection, this.geoPackageCore, this);
 
             this.implementations.put(clazz, implementation);
 
@@ -429,20 +421,6 @@ public class GeoPackageExtensions
         {
             throw new BadImplementationException(String.format("There was an error instantiating an instance of the '%s' GeoPackage extention implementation", clazz.getName()), ex);
         }
-
-
-//        final T implementation =
-//                                      .newInstance(this.databaseConnection);
-
-//            final Extension extension = this.addExtension(implementation.getTableName(),
-//                                                          implementation.getColumnName(),
-//                                                          implementation.getExtensionName(),
-//                                                          implementation.getDefinition(),
-//                                                          implementation.getScope());
-
-//        this.implementations.put(clazz, implementation);
-//
-//        return implementation;
     }
 
     @SuppressWarnings("static-method")
@@ -482,7 +460,7 @@ public class GeoPackageExtensions
     }
 
     private final Connection     databaseConnection;
-    private final GeoPackageCore core;
+    private final GeoPackageCore geoPackageCore;
 
     private final Map<Class<? extends ExtensionImplementation>, ExtensionImplementation> implementations = new HashMap<>();
 }

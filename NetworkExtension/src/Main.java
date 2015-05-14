@@ -25,7 +25,7 @@ public class Main
 
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
-            networkExtension.addNetworkSet();
+            //networkExtension.addNetwork();
 
             final int a = 2;
         }

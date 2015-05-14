@@ -45,11 +45,11 @@ public class Network extends Content
      *             Spatial Reference System (SRS) identifier
      */
     protected Network(final String      tableName,
-                         final String      identifier,
-                         final String      description,
-                         final String      lastChange,
-                         final BoundingBox boundingBox,
-                         final int         spatialReferenceSystemIdentifier)
+                      final String      identifier,
+                      final String      description,
+                      final String      lastChange,
+                      final BoundingBox boundingBox,
+                      final int         spatialReferenceSystemIdentifier)
     {
         super(tableName,
               Network.NetworkContentType,
