@@ -4,6 +4,7 @@ using System.Text;
 using WixToolset.Dtf.WindowsInstaller;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using System.IO;
 
 namespace CustomAction3
 {
@@ -17,16 +18,16 @@ namespace CustomAction3
         const string swagd = "Swagd";
         const string lib = "lib";
         const string data = "data";
-        const string mrSidLink = "http://download.gisinternals.com/sdk/downloads/release-1800-x64-gdal-1-11-1-mapserver-6-4-1/gdal-111-1800-x64-mrsid.msi";
-        const string gdalLink = "http://download.gisinternals.com/sdk/downloads/release-1800-x64-gdal-1-11-1-mapserver-6-4-1/gdal-111-1800-x64-core.msi";
+        const string mrSidLink = "http://download.gisinternals.com/sdk/downloads/release-1800-gdal-1-11-1-mapserver-6-4-1/gdal-111-1800-mrsid.msi";
+        const string gdalLink = "http://download.gisinternals.com/sdk/downloads/release-1800-gdal-1-11-1-mapserver-6-4-1/gdal-111-1800-core.msi";
 
         const string installMessageMrSid = "GDAL MrSID Extension 111(MSVC 2010 Win64) is not installed." +
-                                           "This is necessary to use SWAGD's applications. Would you like to install this application?";
+                                           "This is necessary to use SWAGD's application. Would you like to install this application?";
         const string installMessageGDAL = "GDAL 111(MSVC 2010 Win64) is not installed." +
-                                          "This is necessary to use SWAGD's applications. Would you like to install this application?";
+                                          "This is necessary to use SWAGD's application. Would you like to install this application?";
 
 
-        [CustomAction]
+        [CustomAction]//session session
         public static ActionResult CustomAction1(Session session)
         {
             try
@@ -34,8 +35,10 @@ namespace CustomAction3
                 session.Log("Begin Configure EWS Filter Custom Action");
                 MessageBox.Show("Running The Custom Action", "Action");
 
-                bool isGdalInstalled      = IsApplicationInstalled("GDAL 111 (MSVC 2010 Win64)",                    "1.0.0.0");
-                bool isGdalMrSidInstalled = IsApplicationInstalled("GDAL MrSIDeee Extension 111 (MSVC 2010 Win64)", "1.0.0.0");
+                
+                bool isGdalInstalled      = IsApplicationInstalled("GDAL 111 (MSVC 2010 Win64)",                 "1.0.0.0");
+                bool isGdalMrSidInstalled = IsApplicationInstalled("GDAL MrSID Extension 111 (MSVC 2010 Win64)", "1.0.0.0");
+                
 
                 if (isGdalInstalled && isGdalMrSidInstalled)
                 {
@@ -45,20 +48,19 @@ namespace CustomAction3
                 {
                     askToInstallApplication(installMessageGDAL, gdalLink);
                 }
-                else if (isGdalMrSidInstalled)
+                else if (isGdalMrSidInstalled == false)
                 {
                     askToInstallApplication(installMessageMrSid, mrSidLink);
                 }
-
+                MessageBox.Show("Before environment vars", "Action");
                 setEnvironmentVariables();
 
                 session.Log("End Configure EWS Filter Custom Action");
             }
             catch (Exception ex)
             {
-                session.Log("ERROR in custom action ConfigureEwsFilter {0}",
-
-                ex.ToString());
+                MessageBox.Show(ex.Message, "error");
+                ex.ToString();
 
                 return ActionResult.Failure;
             }
@@ -147,13 +149,15 @@ namespace CustomAction3
         public static bool IsApplicationInstalled(string name, string version)
         {
             Dictionary<string, string> programs = GetInstalledPrograms();
-            MessageBox.Show(name, "display name");
+
             foreach (KeyValuePair<string, string> program in programs)
             {
                 if (program.Key.Contains(name.ToLower()))
                 {
                     if (version.Equals(program.Value))
+                    {
                         return true;
+                    }
                 }
             }
             return false;
@@ -161,7 +165,7 @@ namespace CustomAction3
 
 
         /// <summary>
-        /// returns a list of all64 bit installed programs (lowercase names)
+        /// returns a list of all 32 bit installed programs (lowercase names)
         /// </summary>
         /// <returns></returns>
         private static Dictionary<string, string> GetInstalledPrograms()
@@ -176,7 +180,6 @@ namespace CustomAction3
         /// <returns></returns>
         private static Dictionary<string, string> GetInstalledProgramsFromRegistry(RegistryView registryView)
         {
-            MessageBox.Show("in method", "method");
             var result = new Dictionary<string, string>();
             try
             {
@@ -195,7 +198,6 @@ namespace CustomAction3
                         }
                     }
                 }
-                MessageBox.Show("end of method", "method");
                 return result;
             }
             catch(Exception ex)
