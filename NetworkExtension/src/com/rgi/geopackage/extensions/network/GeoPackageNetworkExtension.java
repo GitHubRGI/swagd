@@ -319,18 +319,18 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
     }
 
-    public void visitEdges(final Network network, final Consumer<ResultSet> consumer) throws SQLException
+    public void visitEdges(final Network network, final Consumer<Edge> consumer) throws SQLException
     {
         if(network == null)
         {
             throw new IllegalArgumentException("Network may not be null");
         }
 
-        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s FROM %s WHERE %s = ?;",
+        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s FROM %s;",
                                                                "id",
-                                                               network.getTableName(),
                                                                "fromNode",
-                                                               "toNode");
+                                                               "toNode",
+                                                               network.getTableName());
 
         try(final Statement statement = this.databaseConnection.createStatement())
         {
@@ -338,7 +338,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             {
                 while(resultSet.next())
                 {
-                    consumer.accept(resultSet);
+                    consumer.accept(new Edge(resultSet.getInt(1),
+                                             resultSet.getInt(2),
+                                             resultSet.getInt(3)));
                 }
             }
         }

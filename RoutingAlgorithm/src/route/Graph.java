@@ -26,7 +26,7 @@ public class Graph
 		//Creates an adjacency list based on the vertices and edges
 		this.graph = vertices.stream()
 						     .map(vertex -> {   //create a list of vertices connected to this current vertex
-						     	 				List<Vertex> connectedVertices = edges.stream()
+						     	 				final List<Vertex> connectedVertices = edges.stream()
 						     	 													   .filter(edge -> edge.getStart().equals(vertex))
 						     	 													   .map(edge-> edge.getEnd())
 						     	 													   .collect(Collectors.toList());
@@ -53,8 +53,8 @@ public class Graph
              return;
          }
 
-		 PriorityQueue<Vertex> openList   = new PriorityQueue<>(this.astarComparator);
-		 PriorityQueue<Vertex> closedList = new PriorityQueue<>(this.astarComparator);
+		 final PriorityQueue<Vertex> openList   = new PriorityQueue<>(this.astarComparator);
+		 final PriorityQueue<Vertex> closedList = new PriorityQueue<>(this.astarComparator);
 		 //initialize starting Vertex
 		 start.distanceFromStart = 0;
 		 start.previous = start;
@@ -62,7 +62,7 @@ public class Graph
 
 		 while(!openList.isEmpty())
 		 {
-			 Vertex currentVertex = openList.poll();//get the Vertex with lowest cost
+			 final Vertex currentVertex = openList.poll();//get the Vertex with lowest cost
 			 closedList.add(currentVertex); //put it in "done" pile
 			 //if current vertex is the target then we are done
 			 if(currentVertex.equals(end))
@@ -71,7 +71,7 @@ public class Graph
 				 return;
 			 }
 			 //for each reachable Vertex
-			 for(Vertex successor: this.graph.get(currentVertex))
+			 for(final Vertex successor: this.graph.get(currentVertex))
 			 {
 				 //if the closed list already searched this vertex, skip it
 				 if(closedList.contains(successor))
@@ -79,8 +79,8 @@ public class Graph
 					 continue;
 				 }
 				 //calculate a tentative distance (see if this is better than what you already may have)
-				 double distanceFromStart = currentVertex.distanceFromStart + currentVertex.getDistance(successor);
-				 double distanceFromEnd   = successor.getDistance(end);
+				 final double distanceFromStart = currentVertex.distanceFromStart + currentVertex.getDistance(successor);
+				 final double distanceFromEnd   = successor.getDistance(end);
 
 				 if(!openList.contains(successor))//if we dont have it, add it
 				 {
@@ -115,13 +115,13 @@ public class Graph
 	          return;
 	      }
 
-	      PriorityQueue<Vertex> vertexQueue = new PriorityQueue<>(this.dijkstrasComparator);
+	      final PriorityQueue<Vertex> vertexQueue = new PriorityQueue<>(this.dijkstrasComparator);
 	      vertexQueue.add(start);
 	      start.previous = start;
 
 	      while(!vertexQueue.isEmpty())
 	      {
-	    	  Vertex currentVertex = vertexQueue.poll();//gets the vertex with min cost/distance
+	    	  final Vertex currentVertex = vertexQueue.poll();//gets the vertex with min cost/distance
 
 	    	  //visit every edge exiting current Vertex and update costs
 	    	  this.visitReachableVertices(currentVertex, vertexQueue);
@@ -143,13 +143,13 @@ public class Graph
 		     return;
 		 }
 
-	      PriorityQueue<Vertex> vertexQueue = new PriorityQueue<>(this.dijkstrasComparator);
+	      final PriorityQueue<Vertex> vertexQueue = new PriorityQueue<>((o1, o2) -> Double.compare(o1.minDistance, o2.minDistance));
 	      vertexQueue.add(start);
 	      start.previous = start;
 
 	      while(!vertexQueue.isEmpty())
 	      {
-	    	  Vertex currentVertex = vertexQueue.poll();//gets the vertex with min cost/distance
+	    	  final Vertex currentVertex = vertexQueue.poll();//gets the vertex with min cost/distance
 
 	    	  if(currentVertex.equals(end))//if this is the target node stop the search
 	    	  {
@@ -169,9 +169,9 @@ public class Graph
 	  */
 	 public void visitReachableVertices(final Vertex currentVertex, final PriorityQueue<Vertex> queue)
 	 {
-		 for(Vertex reachableVertex: this.graph.get(currentVertex))
+		 for(final Vertex reachableVertex: this.graph.get(currentVertex))
    	     {
-   		      double weight = reachableVertex.getDistance(currentVertex);//get the distance between nodes
+   		      final double weight = reachableVertex.getDistance(currentVertex);//get the distance between nodes
 
    		      if(weight < reachableVertex.minDistance) //if the cost is less, change the weight
    		      {
