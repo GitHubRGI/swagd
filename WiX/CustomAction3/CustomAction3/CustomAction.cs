@@ -10,6 +10,21 @@ namespace CustomAction3
     public class CustomActions
     {
         const string registry_key = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+        const string pathName = "PATH";
+        const string gdalData = "GDAL_DATA";
+        const string rgisuite = "RGISuite";
+        const string gdal = "GDAL";
+        const string swagd = "Swagd";
+        const string lib = "lib";
+        const string data = "data";
+        const string mrSidLink = "http://download.gisinternals.com/sdk/downloads/release-1800-x64-gdal-1-11-1-mapserver-6-4-1/gdal-111-1800-x64-mrsid.msi";
+        const string gdalLink = "http://download.gisinternals.com/sdk/downloads/release-1800-x64-gdal-1-11-1-mapserver-6-4-1/gdal-111-1800-x64-core.msi";
+
+        const string installMessageMrSid = "GDAL MrSID Extension 111(MSVC 2010 Win64) is not installed." +
+                                           "This is necessary to use SWAGD's applications. Would you like to install this application?";
+        const string installMessageGDAL = "GDAL 111(MSVC 2010 Win64) is not installed." +
+                                          "This is necessary to use SWAGD's applications. Would you like to install this application?";
+
 
         [CustomAction]
         public static ActionResult CustomAction1(Session session)
@@ -17,21 +32,25 @@ namespace CustomAction3
             try
             {
                 session.Log("Begin Configure EWS Filter Custom Action");
-                // TODO: Make changes to config file
                 MessageBox.Show("Running The Custom Action", "Action");
 
-                bool isGdalInstalled = IsApplicationInstalled("gdal 111 (msvc 2010 win64)");
-                //bool isGdalInstalled = IsApplicationInstalled("gdal 111");//1.0.0.0
-                //gdal 111 (MSVC 2010 Win64)
+                bool isGdalInstalled      = IsApplicationInstalled("GDAL 111 (MSVC 2010 Win64)",                    "1.0.0.0");
+                bool isGdalMrSidInstalled = IsApplicationInstalled("GDAL MrSIDeee Extension 111 (MSVC 2010 Win64)", "1.0.0.0");
 
-                if (isGdalInstalled)
+                if (isGdalInstalled && isGdalMrSidInstalled)
                 {
-                    MessageBox.Show("GDAL is installed", "Action");
+                    MessageBox.Show("GDAL and MR SID is installed", "Action");
                 }
-                else
+                else if (isGdalInstalled == false)
                 {
-                    MessageBox.Show("GDAL is not installed", "Action");
+                    askToInstallApplication(installMessageGDAL, gdalLink);
                 }
+                else if (isGdalMrSidInstalled)
+                {
+                    askToInstallApplication(installMessageMrSid, mrSidLink);
+                }
+
+                setEnvironmentVariables();
 
                 session.Log("End Configure EWS Filter Custom Action");
             }
@@ -45,24 +64,96 @@ namespace CustomAction3
             }
             return ActionResult.Success;
         }
+        /// <summary>
+        /// Asks user to install application
+        /// if they click yes, it will process the link in the parameter
+        /// </summary>
+        /// <param name="message"></param> message to ask user if they would like to install the application
+        /// <param name="link"></param>  link to the msi file to install
+        public static void askToInstallApplication(string message, string link)
+        {
+            //if chooses to install
+            DialogResult dialogResult = MessageBox.Show(message, "Missing Application", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                System.Diagnostics.Process.Start(link);
+            }
+            else if (dialogResult == DialogResult.No)
+            {
+                //do something else
+            }
+        }
+
+        /// <summary>
+        /// Sets the necessary environment Variables.  Will not write if the 
+        /// environment variable exists
+        /// </summary>
+        public static void setEnvironmentVariables()
+        {
+            string programFilesFolder = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            var target = EnvironmentVariableTarget.Machine;
+
+            string gdalDataVar = System.Environment.GetEnvironmentVariable(gdalData);
+            //check if gdal data variable is set
+            if (gdalDataVar == null)
+            {
+                string gdalDataPath = Path.Combine(swagd, rgisuite, lib, data);
+                System.Environment.SetEnvironmentVariable(gdalData, Path.Combine(programFilesFolder, gdalDataPath), target);
+            }
+
+            var swagDLibPath = Path.Combine(programFilesFolder, swagd, lib);
+            //checks if swagd lib path is set
+            if (pathVarContains(swagDLibPath) == false)
+            {
+                var pathVars = Environment.GetEnvironmentVariable(pathName, target);
+                var value = pathVars + ";" + swagDLibPath;
+                System.Environment.SetEnvironmentVariable(pathName, value, target);
+            }
+
+            var gdalPath = Path.Combine(programFilesFolder, gdal);
+            //checks if gdal ("program files") is set
+            if (pathVarContains(gdalPath) == false)
+            {
+                var pathVars = Environment.GetEnvironmentVariable(pathName, target);
+                var value = pathVars + Path.Combine(";", programFilesFolder, gdal);
+                System.Environment.SetEnvironmentVariable(pathName, value, target);
+            }
+        }
+        /// <summary>
+        /// Returns true if the "PATH" variable contains the path provided
+        /// </summary>
+        /// <param name="enviornmentPath"></param> the path that you wish to check is in the PATH environment variable
+        /// <returns></returns>Returns true if the "PATH" variable contains the path provided
+        public static bool pathVarContains(string enviornmentPath)
+        {
+            var pathVars = Environment.GetEnvironmentVariable(pathName, EnvironmentVariableTarget.Machine);
+            var paths = pathVars.Split(';');
+
+            foreach (string path in paths)
+            {
+                if (path.ToLower().Equals(enviornmentPath.ToLower()))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         /// <summary>
         /// checks if program with the name 'name' is installed
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static bool IsApplicationInstalled(string name)
+        public static bool IsApplicationInstalled(string name, string version)
         {
-            foreach(string value in GetInstalledPrograms())
+            Dictionary<string, string> programs = GetInstalledPrograms();
+            MessageBox.Show(name, "display name");
+            foreach (KeyValuePair<string, string> program in programs)
             {
-                if (value.Contains("gdal"))
+                if (program.Key.Contains(name.ToLower()))
                 {
-                    MessageBox.Show(value, "display name");
-                }
-                if (value.Contains(name.ToLower()))
-                {
-                    MessageBox.Show(name, "display name");
-                    return true;
+                    if (version.Equals(program.Value))
+                        return true;
                 }
             }
             return false;
@@ -70,14 +161,11 @@ namespace CustomAction3
 
 
         /// <summary>
-        /// returns a list of all 32 and 64 bit installed programs (lowercase names)
+        /// returns a list of all64 bit installed programs (lowercase names)
         /// </summary>
         /// <returns></returns>
-        private static List<string> GetInstalledPrograms()
+        private static Dictionary<string, string> GetInstalledPrograms()
         {
-            var result = new List<string>();
-            //result.AddRange(GetInstalledProgramsFromRegistry(RegistryView.Registry32));
-           // result.AddRange(GetInstalledProgramsFromRegistry(RegistryView.Registry64));
             return GetInstalledProgramsFromRegistry(RegistryView.Registry64);
         }
 
@@ -86,26 +174,35 @@ namespace CustomAction3
         /// </summary>
         /// <param name="registryView"></param>
         /// <returns></returns>
-        private static List<string> GetInstalledProgramsFromRegistry(RegistryView registryView)
+        private static Dictionary<string, string> GetInstalledProgramsFromRegistry(RegistryView registryView)
         {
-            var result = new List<string>();
-
-            using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, registryView).OpenSubKey(registry_key))
+            MessageBox.Show("in method", "method");
+            var result = new Dictionary<string, string>();
+            try
             {
-                foreach (string subkey_name in key.GetSubKeyNames())
+                using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, registryView).OpenSubKey(registry_key))
                 {
-                    using (RegistryKey subkey = key.OpenSubKey(subkey_name))
+                    foreach (string subkey_name in key.GetSubKeyNames())
                     {
-                        var name = (string)subkey.GetValue("DisplayName");
-                        string appVersion = subkey.GetValue("DisplayVersion") as string;
-                        if (!string.IsNullOrEmpty(name))
+                        using (RegistryKey subkey = key.OpenSubKey(subkey_name))
                         {
-                            result.Add(name.ToLower());
+                            var    name       = subkey.GetValue("DisplayName")    as string;
+                            string appVersion = subkey.GetValue("DisplayVersion") as string;
+                            if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(appVersion) && !result.ContainsKey(name.ToLower()))
+                            {
+                                result.Add(name.ToLower(), appVersion);
+                            }
                         }
                     }
                 }
+                MessageBox.Show("end of method", "method");
+                return result;
             }
-            return result;
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message, "error");
+                return new Dictionary<string, string>();
+            }
         }
     }
 }
