@@ -36,7 +36,7 @@ namespace CustomAction3
 
                 bool isGdalInstalled      = IsApplicationInstalled("GDAL 111 (MSVC 2010 Win64)",                   "1", RegistryView.Registry64);
                 bool isGdalMrSidInstalled = IsApplicationInstalled("GDAL MrSID Extension 111 (MSVC 2010 Win64)",   "1", RegistryView.Registry64);
-                bool isJdkInstalled       = IsApplicationInstalled("Java SE Development Kit 8 Update 25 (64-bit)", "8", RegistryView.Registry64);//64 bit or 32 bit? does it matter?? version: 8.0.250.18
+                bool isJdkInstalled       = IsApplicationInstalled("Java 8 Update 25 (64-bit)", "8", RegistryView.Registry64);//64 bit or 32 bit? does it matter?? version: 8.0.250.18
                 bool install = false;
 
                 if (isGdalInstalled && isGdalMrSidInstalled)
