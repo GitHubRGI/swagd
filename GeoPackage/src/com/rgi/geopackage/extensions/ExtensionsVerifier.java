@@ -116,48 +116,37 @@ public class ExtensionsVerifier extends Verifier
      * @param verificationLevel
      *             Controls the level of verification testing performed
      * @param sqliteConnection A connection handle to the database
+     * @throws SQLException
      */
-    public ExtensionsVerifier(final Connection sqliteConnection, final VerificationLevel verificationLevel)
+    public ExtensionsVerifier(final Connection sqliteConnection, final VerificationLevel verificationLevel) throws SQLException
     {
         super(sqliteConnection, verificationLevel);
 
-        try
-        {
-            this.hasGpkgExtensionsTable = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageExtensions.ExtensionsTableName);
-        }
-        catch(final SQLException ex)
-        {
-            this.hasGpkgExtensionsTable = false;
-        }
+        this.hasGpkgExtensionsTable = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageExtensions.ExtensionsTableName);
 
         if(this.hasGpkgExtensionsTable)
         {
-
             final String query = String.format("SELECT table_name, column_name, extension_name FROM %s;", GeoPackageExtensions.ExtensionsTableName);
 
             try(Statement statement             = this.getSqliteConnection().createStatement();
-                 ResultSet tableNameColumnNameRS = statement.executeQuery(query))
+                ResultSet tableNameColumnNameRS = statement.executeQuery(query))
             {
                 this.gpkgExtensionsDataAndColumnName = ResultSetStream.getStream(tableNameColumnNameRS)
-                                                                      .map(resultSet ->
-                                                                                        {   try
-                                                                                            {
-                                                                                                 final ExtensionData extensionData = new ExtensionData(tableNameColumnNameRS.getString("table_name"),
-                                                                                                                                                       tableNameColumnNameRS.getString("column_name"),
-                                                                                                                                                       tableNameColumnNameRS.getString("extension_name"));
-                                                                                                return new AbstractMap.SimpleImmutableEntry<>(extensionData, extensionData.columnName);
-                                                                                            }
-                                                                                            catch(final SQLException ex)
-                                                                                            {
-                                                                                                return null;
-                                                                                            }
+                                                                      .map(resultSet -> { try
+                                                                                          {
+                                                                                               final ExtensionData extensionData = new ExtensionData(tableNameColumnNameRS.getString("table_name"),
+                                                                                                                                                     tableNameColumnNameRS.getString("column_name"),
+                                                                                                                                                     tableNameColumnNameRS.getString("extension_name"));
+                                                                                              return new AbstractMap.SimpleImmutableEntry<>(extensionData, extensionData.columnName);
+                                                                                          }
+                                                                                          catch(final SQLException ex)
+                                                                                          {
+                                                                                              return null;
+                                                                                          }
                                                                                         })
-                                                                         .filter(Objects::nonNull)
-                                                                         .collect(Collectors.toMap(entry -> entry.getKey(),
-                                                                                                   entry -> entry.getValue()));
-            } catch(final SQLException ex)
-            {
-                this.gpkgExtensionsDataAndColumnName = Collections.emptyMap();
+                                                                      .filter(Objects::nonNull)
+                                                                      .collect(Collectors.toMap(entry -> entry.getKey(),
+                                                                                                entry -> entry.getValue()));
             }
         }
     }
