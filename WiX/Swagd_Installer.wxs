@@ -13,38 +13,7 @@
                     <Directory Id="ProgramMenuDir" Name="Swagd - Geospatial Toolset" />
                 </Directory>
             </Directory>
-        </Directory>     
-      <!-- GDAL Sanity Check-->
-      <!--Property Id ="FILEEXISTS">
-          <DirectorySearch Id ="CheckFileDir" Path="[GDAL]" Depth = "3">
-            <FileSearch Id = "CheckFile" Name = "zlib1.dll"/>
-          </DirectorySearch>
-        </Property-->
-         <!--Gdal Enviornment Variables-->
-      <!--Environment Id = "GdalDataVar"
-                     Action ="set"
-                     Part = "all"
-                     Name = "GDAL_DATA"
-                     Permanent = "yes"
-                     System = "no"
-                     Value = "[INSTALLDIR]/RGISuite/lib/data" />
-      
-        <Environment Id = "RGiLibPathVar"
-                     Action ="set"
-                     Part = "last"
-                     Name = "PATH"
-                     Permanent = "yes"
-                     System = "no"
-                     Value = "[INSTALLDIR]/RGISuite/lib" />
-      
-       <Environment Id = "GdalVarPath"
-                    Action ="set"
-                    Part = "last"
-                    Name = "PATH"
-                    Permanent = "yes"
-                    System = "no"
-                    Value = "[ProgramFilesFolder]/GDAL" /-->
-                 
+        </Directory>             
         <!-- shortcut directory structure-->
         <!-- swagd components -->
        <DirectoryRef Id="INSTALLDIR64">
@@ -79,8 +48,8 @@
             <Component Id="osrjni.dll" DiskId="1" KeyPath="yes" Guid="9646a880-c647-4267-9941-13f30fcad27d" Win64='yes'>
                 <File Id="OSRJNI.DLL" Name="osrjni.dll" Source="..\RGISuite\lib\osrjni.dll" ProcessorArchitecture ="x64"/>
             </Component>
-            <Component Id="CustomAction3.CA.dll" DiskId = "1" Guid = "C21A6FE0-2656-4787-8882-1EB523447BBE" Win64='yes'>
-                <File Id ="CustomAction3.CA.dll" Name ="CustomAction3.CA.dll" Source ="..\RGISuite\lib\CustomAction3.CA.dll" />
+            <Component Id="CustomAction3.CA.dll" DiskId = "1" Guid = "c21a6fe0-2656-4787-8882-1eb523447bbe" Win64='yes'>
+                <File Id ="CustomAction3.CA.dll" Name ="CustomAction3.CA.dll" Source ="..\RGISuite\lib\CustomAction3.CA.dll" ProcessorArchitecture ="x64"/>
             </Component>
         </DirectoryRef>
         <!-- start menu shortcut component   -->
@@ -112,10 +81,10 @@
         <Icon Id="swagd.exe" SourceFile="..\RGISuite\target\swagd.exe" />
       
       <!-- custom action-->
-      <Binary Id="myAction" SourceFile="..\RGISuite\lib\CustomAction3.CA.dll" />
-        <CustomAction Id="myActionId" BinaryKey="myAction" DllEntry="CustomAction1" Execute="deferred" Return="check" />
+      <Binary Id="CustomAction3.CA.dll" SourceFile="..\RGISuite\lib\CustomAction3.CA.dll" />
+        <CustomAction Id="CustomAction1" BinaryKey="CustomAction3.CA.dll" DllEntry="CustomAction1" Execute="deferred" Return="check" />
         <InstallExecuteSequence>
-            <Custom Action="myActionId" Before="InstallFinalize">NOT Installed</Custom>
+            <Custom Action="CustomAction1" Before="InstallFinalize">NOT Installed</Custom>
         </InstallExecuteSequence>
     </Product>
 </Wix>

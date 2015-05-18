@@ -24,6 +24,7 @@ namespace CustomAction3
                                                    "This is necessary to use SWAGD's application. Would you like to install this application?";
                 const string installMessageGDAL = "GDAL 111(MSVC 2010 Win64) is not installed." +
                                                   "This is necessary to use SWAGD's application. Would you like to install this application?";
+
                 session.Log("Begin Configure EWS Filter Custom Action");
                 MessageBox.Show("Running The Custom Action", "Action");
 
