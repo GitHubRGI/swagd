@@ -34,23 +34,28 @@ namespace CustomAction3
             {
                 session.Log("Begin Configure EWS Filter Custom Action");
 
-                bool isGdalInstalled      = IsApplicationInstalled("GDAL 111 (MSVC 2010 Win64)",                 "1.0.0.0");
-                bool isGdalMrSidInstalled = IsApplicationInstalled("GDAL MrSID Extension 111 (MSVC 2010 Win64)", "1.0.0.0");
-                
+                bool isGdalInstalled      = IsApplicationInstalled("GDAL 111 (MSVC 2010 Win64)",                 "1");
+                bool isGdalMrSidInstalled = IsApplicationInstalled("GDAL MrSID Extension 111 (MSVC 2010 Win64)", "1");
+                bool install = false;
 
                 if (isGdalInstalled && isGdalMrSidInstalled)
                 {
-                    //
+                    install = true;
                 }
                 else if (isGdalInstalled == false)
                 {
-                    askToInstallApplication(installMessageGDAL, gdalLink);
+                    install = askToInstallApplication(installMessageGDAL, gdalLink);
                 }
                 else if (isGdalMrSidInstalled == false)
                 {
-                    askToInstallApplication(installMessageMrSid, mrSidLink);
+                    install = askToInstallApplication(installMessageMrSid, mrSidLink);
                 }
-            
+                
+                if(install == false)
+                {
+                    return ActionResult.Failure;
+                }
+
                 setEnvironmentVariables();
 
                 session.Log("End Configure EWS Filter Custom Action");
@@ -71,18 +76,21 @@ namespace CustomAction3
         /// </summary>
         /// <param name="message"></param> message to ask user if they would like to install the application
         /// <param name="link"></param>  link to the msi file to install
-        public static void askToInstallApplication(string message, string link)
+        public static bool askToInstallApplication(string message, string link)
         {
             //if chooses to install
             DialogResult dialogResult = MessageBox.Show(message, "Missing Application", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.Yes)
             {
                 System.Diagnostics.Process.Start(link);
+                return true;
             }
             else if (dialogResult == DialogResult.No)
             {
-                //do something else
+                return false;
             }
+
+            return false;
         }
 
         /// <summary>
@@ -144,6 +152,7 @@ namespace CustomAction3
         /// checks if program with the name 'name' is installed
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="version"></param> only the main version number (i.e. 2.5.4 would be just '2')
         /// <returns></returns>
         public static bool IsApplicationInstalled(string name, string version)
         {
@@ -153,6 +162,7 @@ namespace CustomAction3
             {
                 if (program.Key.Contains(name.ToLower()))
                 {
+                    string mainVersion = program.Value.Split('.')[0];
                     if (version.Equals(program.Value))
                     {
                         return true;
