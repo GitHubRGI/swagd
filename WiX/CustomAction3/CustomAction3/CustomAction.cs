@@ -11,27 +11,19 @@ namespace CustomAction3
     public class CustomActions
     {
         const string registry_key = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
-        const string pathName = "PATH";
-        const string gdalData = "GDAL_DATA";
-        const string rgisuite = "RGISuite";
-        const string gdal = "GDAL";
-        const string swagd = "Swagd";
-        const string lib = "lib";
-        const string data = "data";
-        const string mrSidLink = "http://download.gisinternals.com/sdk/downloads/release-1800-gdal-1-11-1-mapserver-6-4-1/gdal-111-1800-mrsid.msi";
-        const string gdalLink = "http://download.gisinternals.com/sdk/downloads/release-1800-gdal-1-11-1-mapserver-6-4-1/gdal-111-1800-core.msi";
 
-        const string installMessageMrSid = "GDAL MrSID Extension 111(MSVC 2010 Win64) is not installed." +
-                                           "This is necessary to use SWAGD's application. Would you like to install this application?";
-        const string installMessageGDAL = "GDAL 111(MSVC 2010 Win64) is not installed." +
-                                          "This is necessary to use SWAGD's application. Would you like to install this application?";
-
-
-        [CustomAction]//session session
+        [CustomAction]
         public static ActionResult CustomAction1(Session session)
         {
             try
             {
+                const string mrSidLink = "http://download.gisinternals.com/sdk/downloads/release-1800-gdal-1-11-1-mapserver-6-4-1/gdal-111-1800-mrsid.msi";
+                const string gdalLink = "http://download.gisinternals.com/sdk/downloads/release-1800-gdal-1-11-1-mapserver-6-4-1/gdal-111-1800-core.msi";
+
+                const string installMessageMrSid = "GDAL MrSID Extension 111(MSVC 2010 Win64) is not installed." +
+                                                   "This is necessary to use SWAGD's application. Would you like to install this application?";
+                const string installMessageGDAL = "GDAL 111(MSVC 2010 Win64) is not installed." +
+                                                  "This is necessary to use SWAGD's application. Would you like to install this application?";
                 session.Log("Begin Configure EWS Filter Custom Action");
                 MessageBox.Show("Running The Custom Action", "Action");
 
@@ -60,7 +52,8 @@ namespace CustomAction3
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "error");
-                ex.ToString();
+                session.Log("ERROR in custom action ConfigureEwsFilter {0}",
+                            ex.ToString());
 
                 return ActionResult.Failure;
             }
@@ -92,6 +85,13 @@ namespace CustomAction3
         /// </summary>
         public static void setEnvironmentVariables()
         {
+            const string pathName = "PATH";
+            const string gdalData = "GDAL_DATA";
+            const string rgisuite = "RGISuite";
+            const string gdal = "GDAL";
+            const string swagd = "Swagd";
+            const string lib = "lib";
+            const string data = "data";
             string programFilesFolder = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
             var target = EnvironmentVariableTarget.Machine;
 
@@ -128,6 +128,7 @@ namespace CustomAction3
         /// <returns></returns>Returns true if the "PATH" variable contains the path provided
         public static bool pathVarContains(string enviornmentPath)
         {
+            const string pathName = "PATH";
             var pathVars = Environment.GetEnvironmentVariable(pathName, EnvironmentVariableTarget.Machine);
             var paths = pathVars.Split(';');
 
