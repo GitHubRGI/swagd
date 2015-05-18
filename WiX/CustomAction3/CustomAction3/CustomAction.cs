@@ -34,8 +34,9 @@ namespace CustomAction3
             {
                 session.Log("Begin Configure EWS Filter Custom Action");
 
-                bool isGdalInstalled      = IsApplicationInstalled("GDAL 111 (MSVC 2010 Win64)",                 "1");
-                bool isGdalMrSidInstalled = IsApplicationInstalled("GDAL MrSID Extension 111 (MSVC 2010 Win64)", "1");
+                bool isGdalInstalled      = IsApplicationInstalled("GDAL 111 (MSVC 2010 Win64)",                   "1", RegistryView.Registry64);
+                bool isGdalMrSidInstalled = IsApplicationInstalled("GDAL MrSID Extension 111 (MSVC 2010 Win64)",   "1", RegistryView.Registry64);
+                bool isJdkInstalled       = IsApplicationInstalled("Java SE Development Kit 8 Update 25 (64-bit)", "8", RegistryView.Registry64);//64 bit or 32 bit? does it matter?? version: 8.0.250.18
                 bool install = false;
 
                 if (isGdalInstalled && isGdalMrSidInstalled)
@@ -154,9 +155,9 @@ namespace CustomAction3
         /// <param name="name"></param>
         /// <param name="version"></param> only the main version number (i.e. 2.5.4 would be just '2')
         /// <returns></returns>
-        public static bool IsApplicationInstalled(string name, string version)
+        public static bool IsApplicationInstalled(string name, string version, RegistryView registry)
         {
-            Dictionary<string, string> programs = GetInstalledPrograms();
+            Dictionary<string, string> programs = GetInstalledProgramsFromRegistry(registry);
 
             foreach (KeyValuePair<string, string> program in programs)
             {
@@ -172,15 +173,6 @@ namespace CustomAction3
             return false;
         }
 
-
-        /// <summary>
-        /// returns a list of all 32 bit installed programs (lowercase names)
-        /// </summary>
-        /// <returns></returns>
-        private static Dictionary<string, string> GetInstalledPrograms()
-        {
-            return GetInstalledProgramsFromRegistry(RegistryView.Registry64);
-        }
 
         /// <summary>
         /// Gets list of all programs in the registry, returns them in all lowercase as a string enumberable
