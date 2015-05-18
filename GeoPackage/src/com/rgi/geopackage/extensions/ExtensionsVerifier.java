@@ -27,7 +27,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -108,7 +107,7 @@ public class ExtensionsVerifier extends Verifier
     private boolean hasGpkgExtensionsTable;
 
     // TODO reconsider this mapping.  it should at least be String, ExtensionData, but the column name is repeated as the key...
-    private Map<ExtensionData, String> gpkgExtensionsDataAndColumnName;
+    private List<ExtensionData> gpkgExtensionsDataAndColumnName;
 
     /**
      * Constructor
@@ -137,7 +136,7 @@ public class ExtensionsVerifier extends Verifier
                                                                                                final ExtensionData extensionData = new ExtensionData(tableNameColumnNameRS.getString("table_name"),
                                                                                                                                                      tableNameColumnNameRS.getString("column_name"),
                                                                                                                                                      tableNameColumnNameRS.getString("extension_name"));
-                                                                                              return new AbstractMap.SimpleImmutableEntry<>(extensionData, extensionData.columnName);
+                                                                                              return extensionData;
                                                                                           }
                                                                                           catch(final SQLException ex)
                                                                                           {
@@ -145,8 +144,7 @@ public class ExtensionsVerifier extends Verifier
                                                                                           }
                                                                                         })
                                                                       .filter(Objects::nonNull)
-                                                                      .collect(Collectors.toMap(entry -> entry.getKey(),
-                                                                                                entry -> entry.getValue()));
+                                                                      .collect(Collectors.toList());
             }
         }
     }
@@ -235,9 +233,9 @@ public class ExtensionsVerifier extends Verifier
     {
         if(this.hasGpkgExtensionsTable)
         {
-            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName.keySet())
+            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName)
             {
-                final String columnName = this.gpkgExtensionsDataAndColumnName.get(extensionData);
+                final String columnName = extensionData.columnName;
 
                 final boolean validEntry = extensionData.tableName == null ? columnName == null : true; // If table name is null then so must column name
 
@@ -301,7 +299,7 @@ public class ExtensionsVerifier extends Verifier
     {
         if(this.hasGpkgExtensionsTable && !this.gpkgExtensionsDataAndColumnName.isEmpty())
         {
-            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName.keySet())
+            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName)
             {
                 final String columnName = extensionData.columnName;
 
@@ -363,8 +361,7 @@ public class ExtensionsVerifier extends Verifier
         if(this.hasGpkgExtensionsTable)
         {
 
-            final Set<String> invalidExtensionNames = this.gpkgExtensionsDataAndColumnName.keySet()
-                                                                                          .stream()
+            final Set<String> invalidExtensionNames = this.gpkgExtensionsDataAndColumnName.stream()
                                                                                           .map(extensionData -> ExtensionsVerifier.verifyExtensionName(extensionData.extensionName))
                                                                                           .filter(Objects::nonNull)
                                                                                           .collect(Collectors.toSet());
