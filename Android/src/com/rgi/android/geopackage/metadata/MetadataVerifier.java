@@ -85,7 +85,8 @@ public class MetadataVerifier extends Verifier
         this.metadataReferenceValues   = this.getMetadataReferenceValues();
 
     }
-
+    
+    // Requirements are updated
     /**
      * Requirement 69
      *
