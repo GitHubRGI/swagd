@@ -6,18 +6,31 @@ using System.Windows.Forms;
 using Microsoft.Win32;
 using System.IO;
 
-namespace CustomAction3
+namespace SwagdInstallAction
 {
     public class CustomActions
     {
         const string registry_key = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
         const string mrSidLink = "http://download.gisinternals.com/sdk/downloads/release-1800-gdal-1-11-1-mapserver-6-4-1/gdal-111-1800-mrsid.msi";
         const string gdalLink = "http://download.gisinternals.com/sdk/downloads/release-1800-gdal-1-11-1-mapserver-6-4-1/gdal-111-1800-core.msi";
+        const string javaLink = "";
+
 
         const string installMessageMrSid = "GDAL MrSID Extension 111(MSVC 2010 Win64) is not installed." +
                                            "This is necessary to use SWAGD's application. Would you like to install this application?";
+        const string installMessage32GDAL= "GDAL 111(MSVC 2010 Win64) is not installed. However GDAL 111 32 bit has been detected." +
+                                          "GDAL 111(MSVC 2010 Win64) is necessary to use SWAGD's application. Would you like to install this application?";
         const string installMessageGDAL = "GDAL 111(MSVC 2010 Win64) is not installed." +
                                           "This is necessary to use SWAGD's application. Would you like to install this application?";
+        const string installMessageJava = "Java 8 is not installed. This is necessary to use SWAGD's application. Would you like to install this application?";
+
+        const string gdalRegexPattern = "gdal";
+        const string javaRegexPattern = "java 8";
+        const string mrsidRegexPattern = "gdal.*mrsid";
+
+        const uint gdalVersion = 16777216;
+        const uint mrsidVersion = 16777216;
+        const uint javaVersion = 134218178;
 
         const string pathName = "PATH";
         const string gdalData = "GDAL_DATA";
@@ -34,32 +47,48 @@ namespace CustomAction3
             {
                 session.Log("Begin Configure EWS Filter Custom Action");
 
-                bool isGdalInstalled      = IsApplicationInstalled("GDAL 111 (MSVC 2010 Win64)",                   "1", RegistryView.Registry64);
-                bool isGdalMrSidInstalled = IsApplicationInstalled("GDAL MrSID Extension 111 (MSVC 2010 Win64)",   "1", RegistryView.Registry64);
-                bool isJdkInstalled       = IsApplicationInstalled("Java 8 Update 25 (64-bit)", "8", RegistryView.Registry64);//64 bit or 32 bit? does it matter?? version: 8.0.250.18
+                bool isGdalInstalled      = IsApplicationInstalledRegex(gdalRegexPattern, gdalVersion, RegistryView.Registry64);
+                bool isGdalMrSidInstalled = IsApplicationInstalledRegex(mrsidRegexPattern,mrsidVersion, RegistryView.Registry64);
+                bool isJdkInstalled       = IsApplicationInstalledRegex(javaRegexPattern, javaVersion, RegistryView.Registry64);//64 bit or 32 bit? does it matter?? version: 8.0.250.18
                 bool install = false;
-
-                if (isGdalInstalled && isGdalMrSidInstalled)
+                //check for gdal 64 bit install
+                //TODO: this is ugly, fix it
+                if (!isGdalInstalled)
                 {
-                    install = true;
+                    //detect for 32 bit gdal install
+                    bool gdal32 = IsApplicationInstalledRegex(gdalRegexPattern, gdalVersion, RegistryView.Registry32);
+                    if(gdal32)
+                    {
+                        askToInstallApplication(installMessageGDAL, gdalLink);
+                    }
+                    else
+                    {
+                        askToInstallApplication(installMessageGDAL, gdalLink);
+                    }
+                    //if any install needs to happen, this install should fail, as running simultaneous msi's doesnt work. 
+                    //TODO: check to see if we can bootstrap the msi's under our own process
+                    install = false; 
                 }
-                else if (isGdalInstalled == false)
+                else if (!isGdalMrSidInstalled)
                 {
-                    install = askToInstallApplication(installMessageGDAL, gdalLink);
+                    askToInstallApplication(installMessageMrSid, mrSidLink);
+                    install = false; //if any install needs to happen, this is a failure.
                 }
-                else if (isGdalMrSidInstalled == false)
+                else if (!isJdkInstalled)
                 {
-                    install = askToInstallApplication(installMessageMrSid, mrSidLink);
+                    askToInstallApplication(installMessageJava,javaLink)
                 }
-                
-                if(install == false)
+                //
+                if(!install)
                 {
                     return ActionResult.Failure;
                 }
+                else
+                {
+                    setEnvironmentVariables();
+                }
 
-                setEnvironmentVariables();
-
-                session.Log("End Configure EWS Filter Custom Action");
+                session.Log("End Swagd Custom Action");
             }
             catch (Exception ex)
             {
@@ -71,6 +100,8 @@ namespace CustomAction3
             }
             return ActionResult.Success;
         }
+
+
         /// <summary>
         /// Asks user to install application
         /// if they click yes, it will process the link in the parameter
@@ -155,33 +186,51 @@ namespace CustomAction3
         /// <param name="name"></param>
         /// <param name="version"></param> only the main version number (i.e. 2.5.4 would be just '2')
         /// <returns></returns>
-        public static bool IsApplicationInstalled(string name, string version, RegistryView registry)
+        public static bool IsApplicationInstalled(string name, uint version, RegistryView registry)
         {
-            Dictionary<string, string> programs = GetInstalledProgramsFromRegistry(registry);
+            Dictionary<string, uint> programs = GetInstalledProgramsFromRegistry(registry);
 
-            foreach (KeyValuePair<string, string> program in programs)
+            foreach (KeyValuePair<string, uint> program in programs)
             {
-                if (program.Key.Contains(name.ToLower()))
+                if (program.Key.Contains(name.ToLower()) && version <= program.Value)
                 {
-                    string mainVersion = program.Value.Split('.')[0];
-                    if (version.Equals(program.Value))
-                    {
                         return true;
-                    }
                 }
             }
             return false;
         }
 
+        /// <summary>
+        /// Searches for installed programs in the given registry using the system regex library (exact name matches not required!
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <param name="version"></param>
+        /// <param name="registryView"></param>
+        /// <returns></returns>
+        public static bool IsApplicationInstalledRegex(string pattern, uint version, RegistryView registry)
+        {
+            Dictionary<string, uint> programs = GetInstalledProgramsFromRegistry(registry);
+
+            foreach (KeyValuePair<string, uint> program in programs)
+            {
+                
+                if (System.Text.RegularExpressions.Regex.IsMatch(program.Key,pattern,System.Text.RegularExpressions.RegexOptions.IgnoreCase) 
+                    && version <= program.Value)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         /// <summary>
         /// Gets list of all programs in the registry, returns them in all lowercase as a string enumberable
         /// </summary>
         /// <param name="registryView"></param>
         /// <returns></returns>
-        private static Dictionary<string, string> GetInstalledProgramsFromRegistry(RegistryView registryView)
+        private static Dictionary<string, uint> GetInstalledProgramsFromRegistry(RegistryView registryView)
         {
-            var result = new Dictionary<string, string>();
+            var result = new Dictionary<string, uint>();
             try
             {
                 using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, registryView).OpenSubKey(registry_key))
@@ -190,11 +239,12 @@ namespace CustomAction3
                     {
                         using (RegistryKey subkey = key.OpenSubKey(subkey_name))
                         {
-                            var    name       = subkey.GetValue("DisplayName")    as string;
-                            string appVersion = subkey.GetValue("DisplayVersion") as string;
-                            if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(appVersion) && !result.ContainsKey(name.ToLower()))
+                            var name = subkey.GetValue("DisplayName") as string;
+                            var appVersion = subkey.GetValue("Version");
+
+                            if (!string.IsNullOrEmpty(name) && appVersion != null && !result.ContainsKey(name.ToLower()))
                             {
-                                result.Add(name.ToLower(), appVersion);
+                                result.Add(name.ToLower(), Convert.ToUInt32(appVersion));
                             }
                         }
                     }
@@ -204,7 +254,7 @@ namespace CustomAction3
             catch(Exception ex)
             {
                 MessageBox.Show(ex.Message, "error");
-                return new Dictionary<string, string>();
+                return new Dictionary<string, uint>();
             }
         }
     }
