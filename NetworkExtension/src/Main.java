@@ -2,7 +2,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -94,11 +93,11 @@ public class Main
                       endNode,
                       (startIdentifier, endIdentifier) -> { try
                                                             {
-                                                                Coordinate<Double> startCoordinate = new Coordinate<>(networkExtension.getAttribute(startNode, nodeLongitudeAttibute),
-                                                                                                                      networkExtension.getAttribute(startNode, nodeLatitudeAttibute));
+                                                                Coordinate<Double> startCoordinate = new Coordinate<>(networkExtension.getAttribute(startIdentifier, nodeLongitudeAttibute),
+                                                                                                                      networkExtension.getAttribute(startIdentifier, nodeLatitudeAttibute));
 
-                                                                Coordinate<Double> endCoordinate   = new Coordinate<>(networkExtension.getAttribute(endNode,   nodeLongitudeAttibute),
-                                                                                                                      networkExtension.getAttribute(endNode,   nodeLatitudeAttibute));
+                                                                Coordinate<Double> endCoordinate   = new Coordinate<>(networkExtension.getAttribute(endIdentifier,   nodeLongitudeAttibute),
+                                                                                                                      networkExtension.getAttribute(endIdentifier,   nodeLatitudeAttibute));
                                                                 return getDistance(startCoordinate, endCoordinate);
                                                             }
                                                             catch(final Exception ex)
@@ -235,6 +234,13 @@ public class Main
                                  this.distanceFromEnd,
                                  this.previous.nodeIdentifier);
         }
+
+        @Override
+        public int hashCode()
+        {
+
+            return this.nodeIdentifier;
+        }
     }
 
     private static class Vertex
@@ -306,20 +312,19 @@ public class Main
 
         //initialize starting Vertex
         VertexAstar startVertex = new VertexAstar(start);
-        startVertex.previous = startVertex;
         openList.add(startVertex);
         nodeMap.put(start, startVertex);
 
         while(!openList.isEmpty())
         {
             VertexAstar currentVertex = openList.poll();//get the Vertex with lowest cost
-           
+
             //if current vertex is the target then we are done
             if(currentVertex.nodeIdentifier == end)
             {
                 return getAstarPath(start, end, nodeMap);
             }
-            
+
             closedList.add(currentVertex); //put it in "done" pile
 
             //for each reachable Vertex
@@ -369,19 +374,13 @@ public class Main
                                               final Integer end,
                                               final  Map<Integer, VertexAstar> nodeMap)
     {
-        List<Integer> path = new ArrayList<>();
-        int currentIdentifier = end;
+        final LinkedList<Integer> path = new LinkedList<>();
 
-        while(currentIdentifier != start)
+        for(VertexAstar backTrackVertex = nodeMap.get(end); backTrackVertex != null; backTrackVertex = backTrackVertex.previous)
         {
-            path.add(currentIdentifier);
-            VertexAstar nextVertex = nodeMap.get(currentIdentifier);
-            if(nextVertex == null)
-            {
-                throw new RuntimeException("Node cannot be reached");
-            }
-            currentIdentifier = nextVertex.previous.nodeIdentifier;
+            path.addLast(backTrackVertex.nodeIdentifier);
         }
+
         return path;
     }
 
