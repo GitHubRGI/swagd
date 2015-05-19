@@ -2,17 +2,21 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
+import com.rgi.common.coordinate.Coordinate;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.extensions.implementation.BadImplementationException;
@@ -48,6 +52,14 @@ public class Main
                                                                                                     "distance",
                                                                                                     AttributedType.Edge);
 
+            final AttributeDescription nodeLatitudeAttibute = networkExtension.getAttributeDescription(network,
+                                                                                                       "latitude",
+                                                                                                       AttributedType.Node);
+
+            final AttributeDescription nodeLongitudeAttibute = networkExtension.getAttributeDescription(network,
+                                                                                                        "longitude",
+                                                                                                        AttributedType.Node);
+
             final int startNode = 9036;
             final int endNode   = 37236;
 
@@ -72,6 +84,32 @@ public class Main
                 System.out.println(String.format("\nDijkstra took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
             }
 
+            if(networkExtension.getEntries(network, endNode).size() > 0)
+            {
+                final long startTime = System.nanoTime();
+
+                astar(networkExtension,
+                      network,
+                      startNode,
+                      endNode,
+                      (startIdentifier, endIdentifier) -> { try
+                                                            {
+                                                                Coordinate<Double> startCoordinate = new Coordinate<>(networkExtension.getAttribute(startNode, nodeLongitudeAttibute),
+                                                                                                                      networkExtension.getAttribute(startNode, nodeLatitudeAttibute));
+
+                                                                Coordinate<Double> endCoordinate   = new Coordinate<>(networkExtension.getAttribute(endNode,   nodeLongitudeAttibute),
+                                                                                                                      networkExtension.getAttribute(endNode,   nodeLatitudeAttibute));
+                                                                return getDistance(startCoordinate, endCoordinate);
+                                                            }
+                                                            catch(final Exception ex)
+                                                            {
+                                                                throw new RuntimeException(ex);
+                                                            }
+                                                          }).forEach(node -> System.out.print(node + ", "));
+
+                System.out.println(String.format("\nAstar took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
+            }
+
             final int a = 2;
         }
         catch(final ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException ex)
@@ -79,6 +117,13 @@ public class Main
             // TODO Auto-generated catch block
             ex.printStackTrace();
         }
+    }
+
+    private static Double getDistance(final Coordinate<Double>  startCoordinate,
+                                      final Coordinate<Double>  endCoordinate)
+    {
+        //distance formula
+        return Math.sqrt(Math.pow(startCoordinate.getY() - endCoordinate.getY(), 2) + Math.pow(startCoordinate.getX() - endCoordinate.getX(), 2));
     }
 
     private static void createGpkg()
@@ -121,12 +166,12 @@ public class Main
                                                                                                     AttributedType.Edge);
 
             loadNodeAttributes(networkExtension,
-                               new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node"),
+                               new File("D:/contour.1/contour.1.node"),
                                myNetwork,
                                Arrays.asList(longitudeAttribute, latitudeAttribute));
 
             loadEdges(networkExtension,
-                      new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge"),
+                      new File("D:/contour.1/contour.1.edge"),
                       myNetwork);
 
             calculateDistanceCost(networkExtension,
@@ -139,6 +184,56 @@ public class Main
         {
             // TODO Auto-generated catch block
             ex.printStackTrace();
+        }
+    }
+
+    private static class VertexAstar
+    {
+        public VertexAstar previous;     // Parent node
+
+        public final int nodeIdentifier;
+
+        public double distanceFromStart = Double.MAX_VALUE;
+        public double distanceFromEnd   = Double.MAX_VALUE;
+
+        public VertexAstar(final int nodeIdentifier)
+        {
+            this.nodeIdentifier    = nodeIdentifier;
+            this.previous          = null;
+            this.distanceFromStart = 0.0;
+            this.distanceFromEnd   = 0.0;
+        }
+
+        public VertexAstar(final int nodeIdentifier, final VertexAstar previous)
+        {
+            this.nodeIdentifier = nodeIdentifier;
+            this.previous       = previous;
+        }
+
+        @Override
+        public boolean equals(final Object obj)
+        {
+            if(obj == this)
+            {
+                return true;
+            }
+
+            if(obj == null || this.getClass() != obj.getClass())
+            {
+                return false;
+            }
+
+            return this.nodeIdentifier == ((VertexAstar)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format("%d (%f, %f, %d)",
+                                 this.nodeIdentifier,
+                                 this.distanceFromStart,
+                                 this.distanceFromEnd,
+                                 this.previous.nodeIdentifier);
         }
     }
 
@@ -187,6 +282,107 @@ public class Main
                                  this.minimumCost,
                                  this.previous.nodeIdentifier);
         }
+    }
+
+    /**
+     * @param networkExtension e
+     * @param network e
+     * @param start e
+     * @param end e
+     * @param heuristics e
+     * @return e
+     * @throws SQLException e
+     */
+    public static List<Integer> astar(final GeoPackageNetworkExtension           networkExtension,
+                                      final Network                              network,
+                                      final Integer                              start,
+                                      final Integer                              end,
+                                      final BiFunction<Integer, Integer, Double> heuristics) throws SQLException
+    {
+        PriorityQueue<VertexAstar> openList   = new PriorityQueue<>((o1, o2) -> Double.compare(o1.distanceFromEnd, o2.distanceFromEnd));
+        HashSet<VertexAstar>       closedList = new HashSet<>();
+
+        final Map<Integer, VertexAstar> nodeMap = new HashMap<>();
+
+        //initialize starting Vertex
+        VertexAstar startVertex = new VertexAstar(start);
+        startVertex.previous = startVertex;
+        openList.add(startVertex);
+        nodeMap.put(start, startVertex);
+
+        while(!openList.isEmpty())
+        {
+            VertexAstar currentVertex = openList.poll();//get the Vertex with lowest cost
+           
+            //if current vertex is the target then we are done
+            if(currentVertex.nodeIdentifier == end)
+            {
+                return getAstarPath(start, end, nodeMap);
+            }
+            
+            closedList.add(currentVertex); //put it in "done" pile
+
+            //for each reachable Vertex
+            for(Edge edge: networkExtension.getExits(network, currentVertex.nodeIdentifier))
+            {
+                final int adjacentNode = edge.getTo();
+
+                VertexAstar reachableVertex = nodeMap.get(adjacentNode);
+
+                if(reachableVertex == null)
+                {
+                    reachableVertex = new VertexAstar(adjacentNode);
+                    reachableVertex.distanceFromEnd = Double.MAX_VALUE;
+                    reachableVertex.distanceFromStart = Double.MAX_VALUE;
+                    nodeMap.put(adjacentNode, reachableVertex);
+                }
+                //if the closed list already searched this vertex, skip it
+                if(closedList.contains(reachableVertex))
+                {
+                    continue;
+                }
+                //calculate a tentative distance (see if this is better than what you already may have)
+                double distanceFromStart = currentVertex.distanceFromStart + heuristics.apply(currentVertex.nodeIdentifier, reachableVertex.nodeIdentifier);
+                double distanceFromEnd   =  heuristics.apply(reachableVertex.nodeIdentifier, end);
+
+                if(!openList.contains(reachableVertex))//if we dont have it, add it
+                {
+                    reachableVertex.distanceFromStart = distanceFromStart;
+                    reachableVertex.distanceFromEnd   = distanceFromEnd;
+                    reachableVertex.previous = currentVertex;
+                    openList.add(reachableVertex);
+                }
+                //if this is better then update the values and parent Vertex (previous)
+                else if(distanceFromStart < currentVertex.distanceFromStart)
+                {
+                    reachableVertex.distanceFromStart = distanceFromStart;
+                    reachableVertex.distanceFromEnd   = distanceFromEnd;
+                    reachableVertex.previous          = currentVertex;
+                }
+            }
+        }
+
+       return getAstarPath(start, end, nodeMap);
+    }
+
+    private static List<Integer> getAstarPath(final Integer start,
+                                              final Integer end,
+                                              final  Map<Integer, VertexAstar> nodeMap)
+    {
+        List<Integer> path = new ArrayList<>();
+        int currentIdentifier = end;
+
+        while(currentIdentifier != start)
+        {
+            path.add(currentIdentifier);
+            VertexAstar nextVertex = nodeMap.get(currentIdentifier);
+            if(nextVertex == null)
+            {
+                throw new RuntimeException("Node cannot be reached");
+            }
+            currentIdentifier = nextVertex.previous.nodeIdentifier;
+        }
+        return path;
     }
 
     /**
