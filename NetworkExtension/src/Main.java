@@ -3,15 +3,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.rgi.common.BoundingBox;
@@ -41,7 +38,7 @@ public class Main
 
     private static void runRoute()
     {
-        try(final GeoPackage gpkg = new GeoPackage(file, VerificationLevel.None, OpenMode.Open))
+        try(final GeoPackage gpkg = new GeoPackage(file, OpenMode.Open))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
@@ -51,20 +48,31 @@ public class Main
                                                                                                     "distance",
                                                                                                     AttributedType.Edge);
 
-            dijkstra(networkExtension,
-                     network,
-                     9036,
-                     37236,
-                     (from, to) -> { try
+            final int startNode = 9036;
+            final int endNode   = 37236;
+
+            if(networkExtension.getEntries(network, endNode).size() > 0)
+            {
+                final long startTime = System.nanoTime();
+
+                dijkstra(networkExtension,
+                         network,
+                         startNode,
+                         endNode,
+                         (edge) -> { try
                                      {
-                                         final Edge edge = networkExtension.getEdge(network, from, to);
                                          return networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute);
                                      }
                                      catch(final Exception ex)
                                      {
                                          throw new RuntimeException(ex);
                                      }
-                                   }).forEach(node -> System.out.println(node + ","));
+                                   }).forEach(node -> System.out.print(node + ", "));
+
+                System.out.println(String.format("\nDijkstra took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
+            }
+
+            final int a = 2;
         }
         catch(final ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException ex)
         {
@@ -80,7 +88,7 @@ public class Main
             file.delete();
         }
 
-        try(final GeoPackage gpkg = new GeoPackage(file, VerificationLevel.None, OpenMode.OpenOrCreate))
+        try(final GeoPackage gpkg = new GeoPackage(file, VerificationLevel.None, OpenMode.Create))
         {
 
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -93,18 +101,21 @@ public class Main
 
             final AttributeDescription longitudeAttribute = networkExtension.addAttributeDescription(myNetwork,
                                                                                                      "longitude",
+                                                                                                     "degrees",
                                                                                                      DataType.Real,
                                                                                                      "longitude",
                                                                                                      AttributedType.Node);
 
             final AttributeDescription latitudeAttribute = networkExtension.addAttributeDescription(myNetwork,
                                                                                                     "latitude",
+                                                                                                    "degrees",
                                                                                                     DataType.Real,
                                                                                                     "latitude",
                                                                                                     AttributedType.Node);
 
             final AttributeDescription distanceAttribute = networkExtension.addAttributeDescription(myNetwork,
                                                                                                     "distance",
+                                                                                                    "degrees",
                                                                                                     DataType.Real,
                                                                                                     "distance",
                                                                                                     AttributedType.Edge);
@@ -123,10 +134,6 @@ public class Main
                                   distanceAttribute,
                                   longitudeAttribute,
                                   latitudeAttribute);
-
-
-
-
         }
         catch(final ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException ex)
         {
@@ -141,12 +148,12 @@ public class Main
 
         public final int nodeIdentifier;
 
-        public Double minimumCost = null;
+        public double minimumCost = Double.MAX_VALUE;
 
         public Vertex(final int nodeIdentifier)
         {
             this.nodeIdentifier = nodeIdentifier;
-            this.previous       = this;
+            this.previous       = null;
             this.minimumCost    = 0.0;
         }
 
@@ -191,20 +198,16 @@ public class Main
      * @param edgeCostEvaluator
      * @throws SQLException
      */
-    public static List<Integer> dijkstra(final GeoPackageNetworkExtension           networkExtension,
-                                         final Network                              network,
-                                         final Integer                              start,
-                                         final Integer                              end,
-                                         final BiFunction<Integer, Integer, Double> edgeEvaluator) throws SQLException
+    public static List<Integer> dijkstra(final GeoPackageNetworkExtension networkExtension,
+                                         final Network                    network,
+                                         final Integer                    start,
+                                         final Integer                    end,
+                                         final Function<Edge, Double>     edgeEvaluator) throws SQLException
     {
         final Map<Integer, Vertex> nodeMap = new HashMap<>();
 
-//        if(!networkExtension.isNodeReachable(end))
-//        {
-//              return Collections.emptyList();
-//        }
-
         final PriorityQueue<Vertex> vertexQueue = new PriorityQueue<>((o1, o2) -> Double.compare(o1.minimumCost, o2.minimumCost));
+
         final Vertex startVertex = new Vertex(start);
 
         vertexQueue.add(startVertex);
@@ -213,58 +216,37 @@ public class Main
         {
             final Vertex currentVertex = vertexQueue.poll(); // Gets the vertex with min cost/distance
 
-            System.out.format("*** Processing node: %s ***\n", currentVertex);
-            System.out.println("    queue count: " + vertexQueue.size());
+            networkExtension.getExits(network, currentVertex.nodeIdentifier)
+                            .forEach(edge -> { final int adjacentNode = edge.getTo();
 
-            if(currentVertex.nodeIdentifier == end) // if this is the target node stop the search
-            {
-                final LinkedList<Integer> path = new LinkedList<>();
-                int backTrackNode = end;
+                                               Vertex reachableVertex = nodeMap.get(adjacentNode);
 
-                while(backTrackNode != start)
-                {
-                    path.addLast(backTrackNode);
-                    backTrackNode = nodeMap.get(backTrackNode).previous.nodeIdentifier;
-                }
+                                               if(reachableVertex == null)
+                                               {
+                                                   reachableVertex = new Vertex(adjacentNode, currentVertex);
+                                                   nodeMap.put(adjacentNode, reachableVertex);
+                                               }
 
-                return path;
-            }
+                                               final double cost = currentVertex.minimumCost + edgeEvaluator.apply(edge); // Get the distance between nodes
 
-
-
-            final List<Integer> adjacent = networkExtension.getExits(network, currentVertex.nodeIdentifier);
-
-            System.out.println("    adjacent nodes: " + String.join(", ",
-                                           adjacent.stream()
-                                                   .map(id -> id.toString())
-                                                   .collect(Collectors.toList())));
-
-            adjacent.forEach(nodeIdentifier -> { final Vertex reachableVertex = nodeMap.containsKey(nodeIdentifier) ? nodeMap.get(nodeIdentifier) : new Vertex(nodeIdentifier, currentVertex);
-
-                                                 final double edgeCost = edgeEvaluator.apply(currentVertex.nodeIdentifier, reachableVertex.nodeIdentifier);
-
-                                                 final double cost = currentVertex.minimumCost + edgeEvaluator.apply(currentVertex.nodeIdentifier, reachableVertex.nodeIdentifier); // Get the distance between nodes
-
-                                                 System.out.println("    " + reachableVertex);
-
-                                                 if(reachableVertex.minimumCost == null || cost < reachableVertex.minimumCost) // If the cost is unset or less, change the cost
-                                                 {
-                                                     System.out.format("    adjusting: %s to (%f, %d)\n",
-                                                                       reachableVertex,
-                                                                       cost,
-                                                                       currentVertex.nodeIdentifier);
-
-                                                     vertexQueue.remove(reachableVertex);         // Remove it from the queue if it is there
-                                                     reachableVertex.minimumCost = cost;          // Adjust to new values
-                                                     reachableVertex.previous    = currentVertex; // Adjust the path
-                                                     vertexQueue.add(reachableVertex);            // Add it to the queue in the correct order
-                                                 }
-                                               });
-
-            System.out.println("    queue count: " + vertexQueue.size());
+                                               if(cost < reachableVertex.minimumCost) // If the cost is unset or less, change the cost
+                                               {
+                                                   vertexQueue.remove(reachableVertex);         // Remove it from the queue if it is there
+                                                   reachableVertex.minimumCost = cost;          // Adjust to new values
+                                                   reachableVertex.previous    = currentVertex; // Adjust the path
+                                                   vertexQueue.add(reachableVertex);            // Add it to the queue in the correct order
+                                               }
+                                             });
         }
 
-        return Collections.emptyList();
+        final LinkedList<Integer> path = new LinkedList<>();
+
+        for(Vertex backTrackVertex = nodeMap.get(end); backTrackVertex != null; backTrackVertex = backTrackVertex.previous)
+        {
+            path.addLast(backTrackVertex.nodeIdentifier);
+        }
+
+        return path;
     }
 
     private static void calculateDistanceCost(final GeoPackageNetworkExtension networkExtension,

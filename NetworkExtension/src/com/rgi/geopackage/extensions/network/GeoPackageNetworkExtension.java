@@ -91,6 +91,26 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         return Scope.ReadWrite;
     }
 
+    public static String getNetworkAttributesTableName(final Network network)
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        return network.getTableName() + NetworkAttributeTableSuffix;
+    }
+
+    public static String getNetworkAttributesTableName(final String networkTableName)
+    {
+        if(networkTableName == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        return networkTableName + NetworkAttributeTableSuffix;
+    }
+
     /**
      * Gets a network object based on its table name
      *
@@ -178,7 +198,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("A table already exists with this network's table name");
         }
 
-        final String networkAttributesTableName = tableName + NetworkAttributeTableSuffix;
+        final String networkAttributesTableName = getNetworkAttributesTableName(tableName);
 
         if(DatabaseUtility.tableOrViewExists(this.databaseConnection, networkAttributesTableName))
         {
@@ -299,14 +319,15 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
     }
 
-    public List<Integer> getExits(final Network network, final int node) throws SQLException
+    public List<Edge> getExits(final Network network, final int node) throws SQLException
     {
         if(network == null)
         {
             throw new IllegalArgumentException("Network may not be null");
         }
 
-        final String edgeQuery = String.format("SELECT %s FROM %s WHERE %s = ?;",
+        final String edgeQuery = String.format("SELECT %s, %s FROM %s WHERE %s = ?;",
+                                               "id",
                                                "toNode",
                                                network.getTableName(),
                                                "fromNode");
@@ -315,7 +336,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         {
             preparedStatement.setInt(1, node);
 
-            return JdbcUtility.map(preparedStatement.executeQuery(), resultSet -> resultSet.getInt(1));
+            return JdbcUtility.map(preparedStatement.executeQuery(),
+                                   resultSet -> new Edge(resultSet.getInt(1),
+                                                         node,
+                                                         resultSet.getInt(2)));
         }
     }
 
@@ -448,9 +472,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Attributed type may not be null");
         }
 
-        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s, %s FROM %s WHERE %s = ? AND %s = ?;",
+        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s, %s, %s FROM %s WHERE %s = ? AND %s = ?;",
                                                                "id",
                                                                "name",
+                                                               "units",
                                                                "data_type",
                                                                "description",
                                                                AttributeDescriptionTableName,
@@ -466,8 +491,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                    resultSet -> new AttributeDescription(resultSet.getInt(1),                      // identifier
                                                                          network.getTableName(),                   // network table name
                                                                          resultSet.getString(2),                   // attribute name
-                                                                         DataType.valueOf(resultSet.getString(3)), // attribute data type
-                                                                         resultSet.getString(4),                   // attribute description
+                                                                         resultSet.getString(3),                   // attribute units
+                                                                         DataType.valueOf(resultSet.getString(4)), // attribute data type
+                                                                         resultSet.getString(5),                   // attribute description
                                                                          attributedType));                         // attributed type
         }
     }
@@ -491,8 +517,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Attribute name may not be null");
         }
 
-        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s FROM %s WHERE %s = ? AND %s = ? AND %s = ? LIMIT 1;",
+        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s, %s FROM %s WHERE %s = ? AND %s = ? AND %s = ? LIMIT 1;",
                                                                "id",
+                                                               "units",
                                                                "data_type",
                                                                "description",
                                                                AttributeDescriptionTableName,
@@ -510,14 +537,16 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                       resultSet -> new AttributeDescription(resultSet.getInt(1),                      // identifier
                                                                             network.getTableName(),                   // network table name
                                                                             name,                                     // attribute name
-                                                                            DataType.valueOf(resultSet.getString(2)), // attribute data type
-                                                                            resultSet.getString(3),                   // attribute description
+                                                                            resultSet.getString(2),                   // attribute units
+                                                                            DataType.valueOf(resultSet.getString(3)), // attribute data type
+                                                                            resultSet.getString(4),                   // attribute description
                                                                             attributedType));                         // attributed type
         }
     }
 
     public AttributeDescription addAttributeDescription(final Network        network,
                                                         final String         name,
+                                                        final String         units,
                                                         final DataType       dataType,
                                                         final String         description,
                                                         final AttributedType attributedType) throws SQLException
@@ -530,6 +559,11 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         if(name == null || name.isEmpty())
         {
             throw new IllegalArgumentException("Name may not be null or empty");
+        }
+
+        if(units == null || units.isEmpty())
+        {
+            throw new IllegalArgumentException("Units may not be null or empty");
         }
 
         if(dataType == null)
@@ -547,10 +581,11 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Attributed type may not be null");
         }
 
-        final String insert = String.format("INSERT INTO %s (%s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?)",
+        final String insert = String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?)",
                                             AttributeDescriptionTableName,
                                             "table_name",
                                             "name",
+                                            "units",
                                             "data_type",
                                             "description",
                                             "attributed_type");
@@ -561,9 +596,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         {
             preparedStatement.setString(1, network.getTableName());
             preparedStatement.setString(2, name);
-            preparedStatement.setString(3, dataType.toString());
-            preparedStatement.setString(4, description);
-            preparedStatement.setString(5, attributedType.toString());
+            preparedStatement.setString(3, units);
+            preparedStatement.setString(4, dataType.toString());
+            preparedStatement.setString(5, description);
+            preparedStatement.setString(6, attributedType.toString());
 
             preparedStatement.executeUpdate();
 
@@ -575,6 +611,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         return new AttributeDescription(identifier,
                                         network.getTableName(),
                                         name,
+                                        units,
                                         dataType,
                                         description,
                                         attributedType);
@@ -587,10 +624,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Attribute description may not be null");
         }
 
-        final String attributeQuery = String.format("SELECT %s FROM %s%s WHERE %s = ? AND %s = ? LIMIT 1;",
+        final String attributeQuery = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ? LIMIT 1;",
                                                     "value",
-                                                    attributeDescription.getNetworkTableName(),
-                                                    NetworkAttributeTableSuffix,
+                                                    getNetworkAttributesTableName(attributeDescription.getNetworkTableName()),
                                                     "attribute_description_id",
                                                     "attributed_id");
 
@@ -661,9 +697,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         final String networkTableName = attributeDescriptions.get(0).getNetworkTableName();
 
-        final String insert = String.format("INSERT INTO %s%s (%s, %s, %s) VALUES (?, ?, ?)",
-                                            networkTableName,
-                                            NetworkAttributeTableSuffix,
+        final String insert = String.format("INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
+                                            getNetworkAttributesTableName(networkTableName),
                                             "attribute_description_id",
                                             "attributed_id",
                                             "value");
@@ -708,9 +743,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         {
             final String networkTableName = attributeDescriptions.get(0).getNetworkTableName();
 
-            final String insert = String.format("INSERT INTO %s%s (%s, %s, %s) VALUES (?, ?, ?)",
-                                                networkTableName,
-                                                NetworkAttributeTableSuffix,
+            final String insert = String.format("INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
+                                                getNetworkAttributesTableName(networkTableName),
                                                 "attribute_description_id",
                                                 "attributed_id",
                                                 "value");
@@ -769,8 +803,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                "(id              INTEGER PRIMARY KEY AUTOINCREMENT, -- Autoincrement primary key\n"            +
                " table_name      TEXT NOT NULL,                     -- Name of network table\n"                +
                " name            TEXT NOT NULL,                     -- Name of attribute\n"                    +
+               " units           TEXT NOT NULL,                     -- Attribute value's units\n"              +
                " data_type       TEXT NOT NULL,                     -- Data type of attribute\n"               +
-               " description     TEXT NOT NULL,                     -- Attribute description\n"               +
+               " description     TEXT NOT NULL,                     -- Attribute description\n"                +
                " attributed_type TEXT NOT NULL,                     -- Target attribute type (edge or node)\n" +
                " UNIQUE (table_name, name, attributed_type),"                                        +
                " CONSTRAINT fk_natd_table_name FOREIGN KEY (table_name) REFERENCES gpkg_contents(table_name));";
@@ -784,7 +819,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                " attributed_id            INTEGER NOT NULL, -- Target (edge or node) identifier\n"        +
                " value                    BLOB,             -- Value of the attribute\n"                  +
                " UNIQUE (attribute_description_id, attributed_id),"                                       +
-               " CONSTRAINT fk_na_table_name FOREIGN KEY (attribute_description_id) REFERENCES " + AttributeDescriptionTableName + "(id));";
+               " CONSTRAINT fk_na_table_name FOREIGN KEY (attribute_description_id) REFERENCES " + AttributeDescriptionTableName + "(id));";/* +
+               "CREATE INDEX " + networkAttributeTableName + "_index ON " + networkAttributeTableName + "(attributed_id, attribute_description_id);";*/
     }
 
     private static final String ExtensionName               = "rgi_network";

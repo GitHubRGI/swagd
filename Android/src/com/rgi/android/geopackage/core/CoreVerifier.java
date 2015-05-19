@@ -332,6 +332,10 @@ public class CoreVerifier extends Verifier
                  text      = "The SQLite PRAGMA integrity_check SQL command SHALL return \"ok\" for a GeoPackage file.")
     public void Requirement6() throws SQLException, AssertionError
     {
+        assertTrue("Test skipped when verification level is not set to " + VerificationLevel.Full,
+                   this.verificationLevel == VerificationLevel.Full,
+                   Severity.Skipped);
+
         final String query = "PRAGMA integrity_check;";
 
         final Statement stmt = this.getSqliteConnection().createStatement();

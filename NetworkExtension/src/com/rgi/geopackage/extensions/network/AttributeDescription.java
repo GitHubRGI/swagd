@@ -36,6 +36,7 @@ public class AttributeDescription
     public AttributeDescription(final int            identifier,
                                 final String         networkTableName,
                                 final String         name,
+                                final String         units,
                                 final DataType       dataType,
                                 final String         description,
                                 final AttributedType attributedType)
@@ -43,6 +44,7 @@ public class AttributeDescription
         this.identifier       = identifier;
         this.networkTableName = networkTableName;
         this.name             = name;
+        this.units            = units;
         this.dataType         = dataType;
         this.description      = description;
         this.attributedType   = attributedType;
@@ -70,6 +72,14 @@ public class AttributeDescription
     public String getName()
     {
         return this.name;
+    }
+
+    /**
+     * @return the name
+     */
+    public String getUnits()
+    {
+        return this.units;
     }
 
     /**
@@ -118,6 +128,7 @@ public class AttributeDescription
     private final int            identifier;
     private final String         networkTableName;
     private final String         name;
+    private final String         units;
     private final DataType       dataType;
     private final String         description;
     private final AttributedType attributedType;

@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 
 import utility.DatabaseUtility;
 
+import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.verification.Assert;
 import com.rgi.geopackage.verification.AssertionError;
@@ -104,7 +105,7 @@ public class ExtensionsVerifier extends Verifier
         private final String extensionName;
     }
 
-    private boolean hasGpkgExtensionsTable;
+    private final boolean hasGpkgExtensionsTable;
 
     // TODO reconsider this mapping.  it should at least be String, ExtensionData, but the column name is repeated as the key...
     private List<ExtensionData> gpkgExtensionsDataAndColumnName;
@@ -130,21 +131,10 @@ public class ExtensionsVerifier extends Verifier
             try(Statement statement             = this.getSqliteConnection().createStatement();
                 ResultSet tableNameColumnNameRS = statement.executeQuery(query))
             {
-                this.gpkgExtensionsDataAndColumnName = ResultSetStream.getStream(tableNameColumnNameRS)
-                                                                      .map(resultSet -> { try
-                                                                                          {
-                                                                                               final ExtensionData extensionData = new ExtensionData(tableNameColumnNameRS.getString("table_name"),
-                                                                                                                                                     tableNameColumnNameRS.getString("column_name"),
-                                                                                                                                                     tableNameColumnNameRS.getString("extension_name"));
-                                                                                              return extensionData;
-                                                                                          }
-                                                                                          catch(final SQLException ex)
-                                                                                          {
-                                                                                              return null;
-                                                                                          }
-                                                                                        })
-                                                                      .filter(Objects::nonNull)
-                                                                      .collect(Collectors.toList());
+                this.gpkgExtensionsDataAndColumnName = JdbcUtility.map(tableNameColumnNameRS,
+                                                                       resultSet -> new ExtensionData(tableNameColumnNameRS.getString("table_name"),
+                                                                                                      tableNameColumnNameRS.getString("column_name"),
+                                                                                                      tableNameColumnNameRS.getString("extension_name")));
             }
         }
     }
