@@ -886,7 +886,7 @@ public class GeoPackageTiles
      *         name
      * @throws SQLException
      *             throws if the method
-     *             {@link GeoPackageCore#getContent(String, com.rgi.geopackage.core.ContentFactory, SpatialReferenceSystem)}
+     *             {@link GeoPackageCore#getContent}
      *             throws an SQLException
      */
     public TileSet getTileSet(final String tileSetTableName) throws SQLException

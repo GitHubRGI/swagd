@@ -65,6 +65,7 @@ public class SchemaVerifier extends Verifier
         String columnName;
         String constraintName;
     }
+
     private class DataColumnConstraints
     {
         String  constraintName;

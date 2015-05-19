@@ -60,44 +60,13 @@ public class ExtensionsVerifier extends Verifier
 {
     private class ExtensionData
     {
-        /**
-         * Constructor
-         *
-         * @param tableName
-         * @param columnName
-         * @param extensionName
-         */
-        public ExtensionData(final String tableName,
-                             final String columnName,
-                             final String extensionName)
+        private ExtensionData(final String tableName,
+                              final String columnName,
+                              final String extensionName)
         {
-            this.tableName = tableName;
-            this.columnName = columnName;
+            this.tableName     = tableName;
+            this.columnName    = columnName;
             this.extensionName = extensionName;
-        }
-
-        /**
-         * @return the tableName
-         */
-        public String getTableName()
-        {
-            return this.tableName;
-        }
-
-        /**
-         * @return the columnName
-         */
-        public String getColumnName()
-        {
-            return this.columnName;
-        }
-
-        /**
-         * @return the extensionName
-         */
-        public String getExtensionName()
-        {
-            return this.extensionName;
         }
 
         private final String tableName;
@@ -115,8 +84,11 @@ public class ExtensionsVerifier extends Verifier
      *
      * @param verificationLevel
      *             Controls the level of verification testing performed
-     * @param sqliteConnection A connection handle to the database
+     * @param sqliteConnection
+     *             A connection handle to the database
      * @throws SQLException
+     *             if test initialization fails to get information from the
+     *             database
      */
     public ExtensionsVerifier(final Connection sqliteConnection, final VerificationLevel verificationLevel) throws SQLException
     {
@@ -352,19 +324,30 @@ public class ExtensionsVerifier extends Verifier
         {
 
             final Set<String> invalidExtensionNames = this.gpkgExtensionsDataAndColumnName.stream()
-                                                                                          .map(extensionData -> ExtensionsVerifier.verifyExtensionName(extensionData.extensionName))
-                                                                                          .filter(Objects::nonNull)
+                                                                                          .map(extensionData -> extensionData.extensionName)
+                                                                                          .filter(name -> { if(name == null)
+                                                                                                            {
+                                                                                                                return true;
+                                                                                                            }
+
+                                                                                                            final String author[] = name.split("_", 2);
+
+                                                                                                            return author.length != 2 ||
+                                                                                                                   (author[0].matches("gpkg") && !isRegisteredExtension(name)) ||
+                                                                                                                   !author[0].matches("[a-zA-Z0-9]+") ||
+                                                                                                                   !author[1].matches("[a-zA-Z0-9_]+");
+                                                                                                          })
                                                                                           .collect(Collectors.toSet());
 
             Assert.assertTrue(String.format("The following extension_name(s) are invalid: \n%s",
                                             invalidExtensionNames.stream()
-                                                                 .map(extensionName ->{
-                                                                                           if(extensionName.isEmpty())
-                                                                                           {
-                                                                                               return "\t<empty string>";
-                                                                                           }
-                                                                                            return String.format("\t%s", extensionName);
-                                                                                      })
+                                                                 .map(extensionName -> { if(extensionName.isEmpty())
+                                                                                         {
+                                                                                             return "\t<empty string>";
+                                                                                         }
+
+                                                                                         return String.format("\t%s", extensionName);
+                                                                                       })
                                                                  .filter(Objects::nonNull)
                                                                  .collect(Collectors.joining(", "))),
                                invalidExtensionNames.isEmpty(),
@@ -477,29 +460,6 @@ public class ExtensionsVerifier extends Verifier
                                   Severity.Warning);
             }
         }
-    }
-
-    private static String verifyExtensionName(final String extensionName)
-    {
-        final String author[] = extensionName.split("_", 2);
-
-        if(author.length != 2)
-        {
-            return extensionName;
-        }
-
-        if(author[0].matches("gpkg") && !isRegisteredExtension(extensionName))
-        {
-            return extensionName;
-        }
-
-        if(!author[0].matches("[a-zA-Z0-9]+") ||
-            !author[1].matches("[a-zA-Z0-9_]+"))
-        {
-            return extensionName;
-        }
-
-        return null;
     }
 
     private static boolean isRegisteredExtension(final String extensionName)

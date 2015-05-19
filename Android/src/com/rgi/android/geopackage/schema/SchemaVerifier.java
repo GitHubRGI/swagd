@@ -65,9 +65,9 @@ public class SchemaVerifier extends Verifier
 {
     private class DataColumns
     {
-        String tableName;
-        String columnName;
-        String constraintName;  // TODO I believe this was being used before, but hasn't after the changes to backport to java 1.6
+        private String tableName;
+        private String columnName;
+        private String constraintName;  // TODO I believe this was being used before, but hasn't after the changes to backport to java 1.6
     }
 
     private class DataColumnConstraints
@@ -227,7 +227,7 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsTable)
         {
-            for(final DataColumns dataColumn: this.dataColumnsValues)
+            for(final DataColumns dataColumn : this.dataColumnsValues)
             {
                 if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), dataColumn.tableName))
                 {
@@ -295,16 +295,16 @@ public class SchemaVerifier extends Verifier
             {
                 if(dataColumnConstraints.constraintName != null)
                 {
-                    final boolean containsConstraint = FunctionalUtility.anyMatch(this.dataColumnConstraintsValues,
-                                                                            new Predicate<DataColumnConstraints>()
-                                                                            {
-                                                                                @Override
-                                                                                public boolean apply(final DataColumnConstraints dataColumn)
-                                                                                {
-                                                                                    return dataColumn.constraintName != null &&
-                                                                                           dataColumn.constraintName.equals(dataColumnConstraints.constraintName);
-                                                                                }
-                                                                            });
+                    final boolean containsConstraint = FunctionalUtility.anyMatch(this.dataColumnsValues,
+                                                                                  new Predicate<DataColumns>()
+                                                                                  {
+                                                                                      @Override
+                                                                                      public boolean apply(final DataColumns dataColumn)
+                                                                                      {
+                                                                                          return dataColumn.constraintName != null &&
+                                                                                                 dataColumn.constraintName.equals(dataColumnConstraints.constraintName);
+                                                                                      }
+                                                                                  });
 
                    Assert.assertTrue(String.format("The constraint_name %s in %s is not referenced in %s table in the column constraint_name.",
                                                    dataColumnConstraints.constraintName,
