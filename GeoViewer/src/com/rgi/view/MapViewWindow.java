@@ -58,10 +58,8 @@ import org.openstreetmap.gui.jmapviewer.interfaces.JMapViewerEventListener;
 import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
-
-
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
 
 /**
  * View a supported tile store within a map viewer.

@@ -71,9 +71,9 @@ public abstract class ImageFormatTileStoreAdapter extends TileStoreWriterAdapter
 
         this.selectImageFormat(this.getInitialImageFormat());
 
-        this.compressionQuality  .setEnabled(false);
-        this.imageCompressionType.setEnabled(false);
-        this.imageFormat         .setEnabled(false);
+//        this.compressionQuality  .setEnabled(false);
+//        this.imageCompressionType.setEnabled(false);
+//        this.imageFormat         .setEnabled(false);
     }
 
     protected abstract Collection<MimeType> getSupportedImageFormats();
