@@ -1725,19 +1725,19 @@ public class TilesVerifier extends Verifier
 
                 String tileRowMaxQuery = String.format("SELECT matrix_height as height, " +
                                                               "zoom_level as zoom, "      +
-                                                              "table_name"                +
+                                                              "table_name "               +
                                                        "FROM gpkg_tile_matrix "           +
-                                                       "WHERE table_name = ? "           +
+                                                       "WHERE table_name = ? "            +
                                                        "AND ( "                           +
                                                                "EXISTS( SELECT NULL FROM %s WHERE tile_row = (height - 1) AND zoom_level = zoom ) " +
                                                             ");",
                                                       pyramidTable);
 
-                String tileColumnMaxQuery = String.format("SELECT matrix_width as width, " +
+                String tileColumnMaxQuery = String.format("SELECT matrix_width as width, "   +
                                                                  "zoom_level as zoom, "      +
-                                                                 "table_name"                +
+                                                                 "table_name "               +
                                                           "FROM gpkg_tile_matrix "           +
-                                                          "WHERE table_name = ? "           +
+                                                          "WHERE table_name = ? "            +
                                                           "AND ( "                           +
                                                                   "EXISTS( SELECT NULL FROM %s WHERE tile_column = (width - 1) AND zoom_level = zoom ) " +
                                                                ");",
@@ -1747,14 +1747,14 @@ public class TilesVerifier extends Verifier
 
                 String tileColumnMinQuery = String.format("SELECT tile_column FROM %s WHERE tile_column = 0;", pyramidTable);
 
-                PreparedStatement maxRowStatement    = this.getSqliteConnection().prepareStatement(tileRowMaxQuery);
+                PreparedStatement maxRowStatement = this.getSqliteConnection().prepareStatement(tileRowMaxQuery);
                 try
                 {
                     maxRowStatement.setString(1, pyramidTable);
                     ResultSet maxRowResults = maxRowStatement.executeQuery();
                     try
                     {
-                        PreparedStatement maxColumnStatement =  this.getSqliteConnection().prepareStatement(tileColumnMaxQuery);
+                        PreparedStatement maxColumnStatement = this.getSqliteConnection().prepareStatement(tileColumnMaxQuery);
                         try
                         {
                             maxColumnStatement.setString(1, pyramidTable);
@@ -1764,7 +1764,7 @@ public class TilesVerifier extends Verifier
                                 Statement minRowStatement = this.getSqliteConnection().createStatement();
                                 try
                                 {
-                                    ResultSet minRowResult    = minRowStatement.executeQuery(tileRowMinQuery);
+                                    ResultSet minRowResult = minRowStatement.executeQuery(tileRowMinQuery);
                                     try
                                     {
                                         Statement minColumnStatement = this.getSqliteConnection().createStatement();
