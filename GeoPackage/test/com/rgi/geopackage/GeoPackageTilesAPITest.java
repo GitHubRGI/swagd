@@ -54,6 +54,9 @@ import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.GlobalGeodeticCrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
+import com.rgi.common.tile.scheme.TileScheme;
+import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
@@ -71,6 +74,84 @@ import com.rgi.geopackage.verification.VerificationLevel;
 public class GeoPackageTilesAPITest
 {
     private final Random randomGenerator = new Random();
+
+    /**
+     * Tests if a GeoPackage will maintain the conversions
+     * from tile coordinate to crs coordinate back to tile coordinate
+     *
+     * this test originated from tiling a GeoPackage that had
+     * a tile matrix set that lied on the grid exactly
+     *
+     * @throws ClassNotFoundException
+     *             if the connection to the database cannot be made
+     * @throws SQLException
+     *             if an SQLException occurs
+     * @throws ConformanceException
+     *             throws if it does not meet all the requirements
+     * @throws IOException
+     *             if an error occurs from reading or writing a Tile
+     */
+    @Test
+    public void tileCoordinateToCrsBackToTileCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException
+    {
+        BoundingBox bBox = new BoundingBox(10018754.1713946, -10018754.1713946, 20037508.3427892, 0.0);//data from a GeoPackage where the bounding box lied on the grid
+        SphericalMercatorCrsProfile spherMerc = new SphericalMercatorCrsProfile();
+
+        final File testFile = this.getRandomFile(5);
+
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            SpatialReferenceSystem srs = gpkg.core()
+                                             .addSpatialReferenceSystem(spherMerc.getName(),
+                                                                        spherMerc.getCoordinateReferenceSystem().getAuthority(),
+                                                                        spherMerc.getCoordinateReferenceSystem().getIdentifier(),
+                                                                        "definition", spherMerc.getDescription());
+
+
+            final TileSet tileSet = gpkg.tiles()
+                                        .addTileSet("pyramid",
+                                                    "title",
+                                                    "tiles",
+                                                    bBox,
+                                                    srs);
+
+            TileScheme scheme = new ZoomTimesTwo(2, 9, 1, 1);
+            //populate the TileMatrices
+            for(int zoom: scheme.getZoomLevels())
+            {
+                TileMatrixDimensions dimensions = scheme.dimensions(zoom);
+                int matrixWidth = dimensions.getWidth();
+                int matrixHeight = dimensions.getHeight();
+                int tileWidth = 256;
+                int tileHeight = 256;
+
+
+                gpkg.tiles().addTileMatrix(tileSet,
+                                           zoom,
+                                           matrixWidth,
+                                           matrixHeight,
+                                           tileWidth,
+                                           tileHeight,
+                                           (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                           (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+            }
+            //Test that the conversion from tileCoordinate-> CrsCoordinate -> tileCoordinate is as expected(original tileCoordinate)
+            for(int zoomLevel: scheme.getZoomLevels())
+            {
+                for(int row = 0; row < scheme.dimensions(zoomLevel).getHeight(); row++)
+                {
+                    for(int column = 0;  column < scheme.dimensions(zoomLevel).getWidth(); column++)
+                    {
+                        CrsCoordinate crsCoordinate = gpkg.tiles().tileToCrsCoordinate(tileSet, column, row, zoomLevel);
+                        Coordinate<Integer> tileCoordinate = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoordinate, spherMerc.getPrecision(), zoomLevel);
+                        Coordinate<Integer> expectedTileCoordinate = new Coordinate<>(column, row);
+                        assertEquals(expectedTileCoordinate, tileCoordinate);
+
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * This tests if a GeoPackage can add a tile set successfully without throwing errors.
@@ -3720,8 +3801,8 @@ public class GeoPackageTilesAPITest
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
             Assert.assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
-                                       + "\nExpected Row: 2, Expected Column: 18. \nActual Row: %d, Actual Column: %d", relativeCoord.getY(), relativeCoord.getX()),
-                       relativeCoord.getY() == 3 && relativeCoord.getX() == 18);
+                                       + "\nExpected Row: 4, Expected Column: 18. \nActual Row: %d, Actual Column: %d", relativeCoord.getY(), relativeCoord.getX()),
+                       relativeCoord.getY() == 4 && relativeCoord.getX() == 18);
         }
         finally
         {

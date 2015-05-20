@@ -17,6 +17,7 @@
         <coveralls.version>3.0.1</coveralls.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jacoco.report.common>Common/target/site/jacoco/jacoco.xml</jacoco.report.common>
+        <jacoco.report.datastore>DataStore/target/site/jacoco/jacoco.xml</jacoco.report.datastore>
         <jacoco.report.gdal2tiles>Gdal2Tiles/target/site/jacoco/jacoco.xml</jacoco.report.gdal2tiles>
         <jacoco.report.geoviewer>GeoViewer/target/site/jacoco/jacoco.xml</jacoco.report.geoviewer>
         <jacoco.report.integrationtest>IntegrationTest/target/site/jacoco/jacoco.xml</jacoco.report.integrationtest>
@@ -28,6 +29,7 @@
 
     <modules>
         <module>Common</module>
+        <module>DataStore</module>
         <module>Gdal2Tiles</module>
         <module>GeoViewer</module>
         <module>IntegrationTest</module>
@@ -68,6 +70,7 @@
                 <configuration>
                     <jacocoReports>
                         <jacocoReport>${jacoco.report.common}</jacocoReport>
+                        <jacocoReport>${jacoco.report.datastore}</jacocoReport>
                         <jacocoReport>${jacoco.report.gdal2tiles}</jacocoReport>
                         <jacocoReport>${jacoco.report.geoviewer}</jacocoReport>
                         <jacocoReport>${jacoco.report.integrationtest}</jacocoReport>

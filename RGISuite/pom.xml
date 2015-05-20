@@ -46,6 +46,11 @@
           <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
+        <groupId>com.rgi.DataStore</groupId>
+        <artifactId>DataStore</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
           <groupId>Packager</groupId>
           <artifactId>Packager</artifactId>
           <version>0.0.1-SNAPSHOT</version>
