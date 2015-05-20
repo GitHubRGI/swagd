@@ -96,7 +96,7 @@ public class Verifier
                 {
                     final AssertionError assertionError = (AssertionError)cause;
 
-                    if(assertionError.getSeverity() != Severity.Skipped)
+                    if(assertionError.getSeverity() != Severity.Skipped) //if it is skipped then it turns into unexpected exception
                     {
                         verificationsIssues.add(new VerificationIssue(assertionError.getMessage(),
                                                                       requirement,
@@ -179,7 +179,7 @@ public class Verifier
                            table.getColumns(),
                            uniques);
 
-        this.verifyForeignKeys(table.getName(), table.getForeignKeys());
+        this.verifyForeignKeys(table.getName(), table.getForeignKeys());//maybe check if table.getForeignKeys is empty b4 doing test otherwise Requirement 10 is an unknown error
 
         Verifier.verifyGroupUniques(table.getName(),
                                     table.getGroupUniques(),
