@@ -66,7 +66,7 @@ public class Main
             {
                 final long startTime = System.nanoTime();
 
-                dijkstra(networkExtension,
+                List<Integer> path = dijkstra(networkExtension,
                          network,
                          startNode,
                          endNode,
@@ -78,8 +78,26 @@ public class Main
                                      {
                                          throw new RuntimeException(ex);
                                      }
-                                   }).forEach(node -> System.out.print(node + ", "));
+                                   });
+                path.forEach(node -> System.out.print(node + ", "));
 
+                int firstNode = path.get(0);
+                int secondNode = path.get(1);
+                double totalWeight = 0.0;
+                System.out.printf("\n(%d) -", firstNode);
+                for(int i = 2; i < path.size(); i++)
+                {
+                    Edge edge1 = networkExtension.getEdge(network, firstNode, secondNode);
+                    double cost = networkExtension.getAttribute(edge1.getIdentifier(), distanceAttribute);
+                    System.out.printf("%f->(%d)-", cost, secondNode);
+                    totalWeight = totalWeight + (double)networkExtension.getAttribute(edge1.getIdentifier(), distanceAttribute);
+                    if(i < path.size())
+                    {
+                        firstNode = secondNode;
+                        secondNode = path.get(i);
+                    }
+                }
+                System.out.println(String.format("\nDijkstra total distance = %f", totalWeight));
                 System.out.println(String.format("\nDijkstra took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
             }
 
@@ -87,7 +105,7 @@ public class Main
             {
                 final long startTime = System.nanoTime();
 
-                astar(networkExtension,
+                List<Integer> path = astar(networkExtension,
                       network,
                       startNode,
                       endNode,
@@ -104,7 +122,27 @@ public class Main
                                                             {
                                                                 throw new RuntimeException(ex);
                                                             }
-                                                          }).forEach(node -> System.out.print(node + ", "));
+                                                          });
+
+                path.forEach(node -> System.out.print(node + ", "));
+
+                int firstNode = path.get(0);
+                int secondNode = path.get(1);
+                double totalWeight = 0.0;
+                System.out.printf("\n(%d) -", firstNode);
+                for(int i = 2; i < path.size(); i++)
+                {
+                    Edge edge1 = networkExtension.getEdge(network, firstNode, secondNode);
+                    double cost = networkExtension.getAttribute(edge1.getIdentifier(), distanceAttribute);
+                    System.out.printf("%f->(%d)-", cost, secondNode);
+                    totalWeight = totalWeight + (double)networkExtension.getAttribute(edge1.getIdentifier(), distanceAttribute);
+                    if(i < path.size())
+                    {
+                        firstNode = secondNode;
+                        secondNode = path.get(i);
+                    }
+                }
+                System.out.println(String.format("\nAstar total distance = %f", totalWeight));
 
                 System.out.println(String.format("\nAstar took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
             }
@@ -121,8 +159,10 @@ public class Main
     private static Double getDistance(final Coordinate<Double>  startCoordinate,
                                       final Coordinate<Double>  endCoordinate)
     {
-        //distance formula
-        return Math.sqrt(Math.pow(startCoordinate.getY() - endCoordinate.getY(), 2) + Math.pow(startCoordinate.getX() - endCoordinate.getX(), 2));
+        double latitude  = startCoordinate.getY() - endCoordinate.getY();
+        double longitude = startCoordinate.getX() - endCoordinate.getX();
+
+        return Math.sqrt(latitude*latitude + longitude*longitude);
     }
 
     private static void createGpkg()
@@ -305,24 +345,28 @@ public class Main
                                       final Integer                              end,
                                       final BiFunction<Integer, Integer, Double> heuristics) throws SQLException
     {
-        PriorityQueue<VertexAstar> openList   = new PriorityQueue<>((o1, o2) -> Double.compare(o1.distanceFromEnd, o2.distanceFromEnd));
+        //changed comparator -> change back to distance from end
+        PriorityQueue<VertexAstar> openList   = new PriorityQueue<>((o1, o2) ->{
+                                                                                    return Double.compare((o1.distanceFromEnd + o1.distanceFromStart), (o2.distanceFromEnd + o2.distanceFromStart));
+                                                                               });
         HashSet<VertexAstar>       closedList = new HashSet<>();
 
         final Map<Integer, VertexAstar> nodeMap = new HashMap<>();
 
         //initialize starting Vertex
         VertexAstar startVertex = new VertexAstar(start);
+        startVertex.distanceFromEnd = heuristics.apply(start, end);
         openList.add(startVertex);
         nodeMap.put(start, startVertex);
 
         while(!openList.isEmpty())
         {
-            VertexAstar currentVertex = openList.poll();//get the Vertex with lowest cost
+            VertexAstar currentVertex = openList.poll();//get the Vertex closest to the end
 
             //if current vertex is the target then we are done
             if(currentVertex.nodeIdentifier == end)
             {
-                return getAstarPath(start, end, nodeMap);
+                return getAstarPath( end, nodeMap);
             }
 
             closedList.add(currentVertex); //put it in "done" pile
@@ -341,37 +385,39 @@ public class Main
                     reachableVertex.distanceFromStart = Double.MAX_VALUE;
                     nodeMap.put(adjacentNode, reachableVertex);
                 }
+
+                //calculate a tentative distance (see if this is better than what you already may have)
+                double distanceFromStart = currentVertex.distanceFromStart + heuristics.apply(currentVertex.nodeIdentifier, reachableVertex.nodeIdentifier);
+                double distanceFromEnd   = heuristics.apply(reachableVertex.nodeIdentifier, end);
                 //if the closed list already searched this vertex, skip it
                 if(closedList.contains(reachableVertex))
                 {
                     continue;
                 }
-                //calculate a tentative distance (see if this is better than what you already may have)
-                double distanceFromStart = currentVertex.distanceFromStart + heuristics.apply(currentVertex.nodeIdentifier, reachableVertex.nodeIdentifier);
-                double distanceFromEnd   =  heuristics.apply(reachableVertex.nodeIdentifier, end);
-
                 if(!openList.contains(reachableVertex))//if we dont have it, add it
                 {
                     reachableVertex.distanceFromStart = distanceFromStart;
                     reachableVertex.distanceFromEnd   = distanceFromEnd;
                     reachableVertex.previous = currentVertex;
                     openList.add(reachableVertex);
+
                 }
                 //if this is better then update the values and parent Vertex (previous)
-                else if(distanceFromStart < currentVertex.distanceFromStart)
+                else if(distanceFromStart < reachableVertex.distanceFromStart)
                 {
                     reachableVertex.distanceFromStart = distanceFromStart;
                     reachableVertex.distanceFromEnd   = distanceFromEnd;
                     reachableVertex.previous          = currentVertex;
+                    openList.remove(reachableVertex);
+                    openList.add(reachableVertex);
                 }
             }
         }
-
-       return getAstarPath(start, end, nodeMap);
+        throw new RuntimeException("Didnt find correct path");
+       //return getAstarPath(end, nodeMap);//it shouldnt reach here...throw exception?
     }
 
-    private static List<Integer> getAstarPath(final Integer start,
-                                              final Integer end,
+    private static List<Integer> getAstarPath(final Integer end,
                                               final  Map<Integer, VertexAstar> nodeMap)
     {
         final LinkedList<Integer> path = new LinkedList<>();
