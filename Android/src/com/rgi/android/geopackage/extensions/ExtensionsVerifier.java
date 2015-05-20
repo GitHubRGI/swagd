@@ -37,8 +37,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.rgi.android.common.util.StringUtility;
-import com.rgi.android.common.util.functional.FunctionalUtility;
 import com.rgi.android.common.util.functional.Function;
+import com.rgi.android.common.util.functional.FunctionalUtility;
 import com.rgi.android.common.util.functional.Predicate;
 import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
 import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
@@ -251,10 +251,9 @@ public class ExtensionsVerifier extends Verifier
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
     @Requirement(reference = "Requirement 81",
-                 text    = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
-                            + "in the gpkg_extensions table. The absence of a gpkg_extensions table or "
-                            + "the absence of rows in gpkg_extnsions table SHALL both indicate the absence "
-                            + "of extensions to a GeoPackage.")
+                 text      = "Values of the gpkg_extensions table_name column SHALL reference values in the "
+                               + "gpkg_contents table_name column or be NULL. They SHALL NOT be NULL for rows"
+                               + " where the column_name value is not NULL. ")
     public void Requirement81() throws SQLException, AssertionError
     {
         if(this.hasGpkgExtensionsTable)
