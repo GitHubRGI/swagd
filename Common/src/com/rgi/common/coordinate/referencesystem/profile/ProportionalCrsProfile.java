@@ -167,15 +167,10 @@ public abstract class ProportionalCrsProfile implements CrsProfile
             throw new IllegalArgumentException("The row and column must be within the tile matrix dimensions");
         }
         
-        if(column < 0)
-        {
-            throw new IllegalArgumentException("Column must be 0 or greater;");
-        }
-
-        if(row < 0)
-        {
-            throw new IllegalArgumentException("Row must be 0 or greater;");
-        }
+        /*
+         * NOTE: Deleted checks for row > 0 and column > 0 because dimensions.contains(row, column) 
+         * will return false if either row or column are less than 0
+         */
 
         if(tileOrigin == null)
         {
