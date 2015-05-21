@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+    xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+  <Bundle UpgradeCode="0D4FFC9D-E4BE-452C-ACFA-FC46C1566EE5" Version="0.0.0.1">
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
+      <bal:WixStandardBootstrapperApplication
+          LicenseFile=".\packages\LICENSE.rtf"
+      />
+    </BootstrapperApplicationRef>
+    <Chain>
+      <PackageGroupRef Id="InstallGDAL" />
+    </Chain>
+  </Bundle>
+
+  <!-- Install Conditions to check for. 
+         User needs admin rights, as we install this for the local Machine -->
+  <Fragment>
+    <!--Check for Admin Rights-->
+    <bal:Condition Message="You cannot elevate to admin rights. Admin rights are required to install this application.">
+      <![CDATA[Privileged <> 0]]>
+    </bal:Condition>
+    <bal:Condition Message="You're ndo not have administrative rights.">
+      WixBundleElevated=1
+    </bal:Condition>
+    <!-- check if gdal core is installed base on msi guid (constant) -->
+    <util:RegistrySearch Root="HKLM"
+                         Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\2273360F-7ADB-4D06-B238-6B76765C9E80"
+                         Variable="gdalCoreInstalled"
+                         Result="exists"
+                         Win64="yes"
+                         />
+    <!--check which version of gdal core is installed based on msi guid (constant) -->
+    <util:RegistrySearch Root="HKLM"
+                         Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\2273360F-7ADB-4D06-B238-6B76765C9E80"
+                         Value="Version"
+                         Variable="gdalCoreVersion"
+                         Result="value"
+                         Format="raw"
+                         Win64="yes"
+                         />
+    <!-- check if gdal mr sid is installed based on msi guid (constant) -->
+    <util:RegistrySearch Root="HKLM"
+                         Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\C0B7DCCE-F188-48F9-AE5C-EE9944DBCDAD"
+                         Variable="gdalMrSidInstalled"
+                         Result="exists"
+                         Win64="yes"
+                         />
+    <!-- check which version of gdal mrsid is installed based on msi guide (constant) -->
+    <util:RegistrySearch Root="HKLM"
+                         Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\C0B7DCCE-F188-48F9-AE5C-EE9944DBCDAD"
+                         Value="Version"
+                         Variable="gdalMrSidVersion"
+                         Result="value"
+                         Format="raw"
+                         Win64="yes"
+                         />
+    <!-- check if java is installed -->
+    <util:RegistrySearch Root="HKLM"
+                         Key="SOFTWARE\JavaSoft\Java Runtime Environment"
+                         Variable="javaInstalled"
+                         Result="exists"
+                         Win64="yes"
+                         />
+    <!-- check if java is installed -->
+    <util:RegistrySearch Root="HKLM"
+                         Key="SOFTWARE\JavaSoft\Java Runtime Environment"
+                         Value="CurrentVersion"
+                         Variable="javaVersion"
+                         Result="value"
+                         Format="raw"
+                         Win64="yes"
+                         />
+   
+
+    <!-- Check for Java 8 install-->
+  </Fragment>
+  <!-- MSI install chain -->
+  <Fragment>
+    <PackageGroup Id="InstallGDAL">
+      <MsiPackage SourceFile=".\packages\gdal-111-1600-x64-core.msi"
+                  Visible="yes"
+                  Description="Gdal Core Libraries"
+                  DisplayName="GDAL 111 x64 Core Libraries"
+                  InstallCondition="NOT gdalCoreInstalled"
+                  ForcePerMachine="yes"
+                  DisplayInternalUI="yes"
+                  />
+      <MsiPackage SourceFile=".\packages\gdal-111-1600-x64-mrsid.msi"
+                  Visible="yes"
+                  Description="GDAL Mr.SID library extensions"
+                  DisplayName="GDAL 111 x64 Mr.SID Extensions"
+                  InstallCondition="NOT gdalMrSidInstalled"
+                  ForcePerMachine="yes"
+                  DisplayInternalUI="yes"
+                  />
+      <ExePackage Id="InstallJava"
+                  DetectCondition="Installed"
+                  SourceFile=".\packages\jre-8u45-windows-x64.exe"
+                  Compressed="no"
+                  Permanent="yes"
+                  />    
+      <MsiPackage SourceFile=".\packages\Swagd_Installer.msi"
+                  Description="SWAGD Application"
+                  Visible="yes"
+                  />
+    </PackageGroup>
+  </Fragment>
+</Wix>

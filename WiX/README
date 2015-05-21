@@ -1,0 +1,7 @@
+commands :
+candle Swagd_Installer.wxs
+light Swagd_Installer.wixobj
+
+
+candle -ext WixBalExtension -ext WixUtilExtension SWAGD.wxs
+light -ext WixBalExtension -ext WixUtilExtension SWAGD.wixobj
