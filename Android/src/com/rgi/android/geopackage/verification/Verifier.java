@@ -45,6 +45,8 @@ import java.util.TreeMap;
 import com.rgi.android.common.util.StringUtility;
 import com.rgi.android.common.util.functional.FunctionalUtility;
 import com.rgi.android.common.util.functional.Predicate;
+import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
+import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
 
 /**
  * @author Luke Lambert
@@ -305,50 +307,72 @@ public class Verifier
 
             try
             {
-                final Set<ForeignKeyDefinition> foreignKeys = new HashSet<ForeignKeyDefinition>();
+                final List<ForeignKeyDefinition> foundForeignKeys = JdbcUtility.map(fkInfo,
+                                                                                    new ResultSetFunction<ForeignKeyDefinition>()
+                                                                                    {
+                                                                                        @Override
+                                                                                        public ForeignKeyDefinition apply(final ResultSet resultSet) throws SQLException
+                                                                                        {
+                                                                                            return new ForeignKeyDefinition(resultSet.getString("table"),
+                                                                                                                           resultSet.getString("from"),
+                                                                                                                           resultSet.getString("to"));
+                                                                                        }
+                                                                                    });
 
-                while(fkInfo.next())
+                final Collection<ForeignKeyDefinition> missingKeys = new HashSet<ForeignKeyDefinition>(requiredForeignKeys);
+                missingKeys.removeAll(foundForeignKeys);
+
+                final Collection<ForeignKeyDefinition> extraneousKeys = new HashSet<ForeignKeyDefinition>(foundForeignKeys);
+                extraneousKeys.removeAll(requiredForeignKeys);
+
+                final StringBuilder error = new StringBuilder();
+
+                if(!missingKeys.isEmpty())
                 {
-                    try
+                    error.append(String.format("The table %s is missing the foreign key constraint(s): \n", tableName));
+                    for(final ForeignKeyDefinition key : missingKeys)
                     {
-                        foreignKeys.add(new ForeignKeyDefinition(fkInfo.getString("table"),
-                                                                 fkInfo.getString("from"),
-                                                                 fkInfo.getString("to")));
-                    }
-                    catch(final SQLException ex)
-                    {
-                        ex.printStackTrace();
+                        error.append(String.format("%s.%s -> %s.%s\n",
+                                                   tableName,
+                                                   key.getFromColumnName(),
+                                                   key.getReferenceTableName(),
+                                                   key.getToColumnName()));
                     }
                 }
 
-                // check to see if the correct foreign key constraints are placed
-                for(final ForeignKeyDefinition foreignKey : requiredForeignKeys)
+                if(!extraneousKeys.isEmpty())
                 {
-                    Assert.assertTrue(String.format("The table %s is missing the foreign key constraint: %1$s.%s => %s.%s",
-                                                     tableName,
-                                                     foreignKey.getFromColumnName(),
-                                                     foreignKey.getReferenceTableName(),
-                                                     foreignKey.getToColumnName()),
-                                      foreignKeys.contains(foreignKey),
-                                      Severity.Error);
+                    error.append(String.format("The table %s has extraneous foreign key constraint(s): \n", tableName));
+                    for(final ForeignKeyDefinition key : extraneousKeys)
+                    {
+                        error.append(String.format("%s.%s -> %s.%s\n",
+                                                   tableName,
+                                                   key.getFromColumnName(),
+                                                   key.getReferenceTableName(),
+                                                   key.getToColumnName()));
+                    }
                 }
-            }
-            catch(final SQLException ex)
-            {
-                // If a table has no foreign keys, executing the query
-                // PRAGMA foreign_key_list(<table_name>) will throw an
-                // exception complaining that result set is empty.
-                // The issue has been posted about it here:
-                // https://bitbucket.org/xerial/sqlite-jdbc/issue/162/
-                // If the result set is empty (no foreign keys), there's no
-                // work to be done.  Unfortunately .executeQuery() may throw an
-                // SQLException for other reasons that may require some
-                // attention.
+
+                Assert.assertTrue(error.toString(),
+                                  error.length() == 0,
+                                  Severity.Error);
             }
             finally
             {
                 fkInfo.close();
             }
+        }
+        catch(final SQLException ex)
+        {
+            // If a table has no foreign keys, executing the query
+            // PRAGMA foreign_key_list(<table_name>) will throw an
+            // exception complaining that result set is empty.
+            // The issue has been posted about it here:
+            // https://bitbucket.org/xerial/sqlite-jdbc/issue/162/
+            // If the result set is empty (no foreign keys), there's no
+            // work to be done.  Unfortunately .executeQuery() may throw an
+            // SQLException for other reasons that may require some
+            // attention.
         }
         finally
         {
