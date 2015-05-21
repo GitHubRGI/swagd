@@ -183,7 +183,7 @@ public class CoreVerifier extends Verifier
         try
         {
             randomAccessFile.seek(applicationIdByteOffset);
-            assertTrue("The file does not have enough bytes to contain a GeoPackage.",
+            assertTrue("The file does not have enough bytes to contain the header information.",
                        randomAccessFile.read(data, 0, sizeOfInt) == sizeOfInt,
                        Severity.Warning);
         }
