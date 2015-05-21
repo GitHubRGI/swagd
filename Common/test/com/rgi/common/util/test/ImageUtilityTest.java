@@ -25,6 +25,10 @@ package com.rgi.common.util.test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -113,7 +117,45 @@ public class ImageUtilityTest
         ImageUtility.bytesToBufferedImage(new byte[]{1,2,3,4,5});
         fail("Expected ImageUtility method bytesToBufferedImage(byte[]) to throw an IOException when passing a bad image data.");
     }
+    
+    /**
+     * Tests that graffiti appropriately modifies the 
+     * given Buffered Image
+     */
+    @Test
+    public void graffitiVerify()
+    {
+     	final BufferedImage imageExpected = new BufferedImage(256, 512, BufferedImage.TYPE_BYTE_GRAY);
+     	final BufferedImage oldImage = new BufferedImage(256, 512, BufferedImage.TYPE_BYTE_GRAY);
+     	
+        final int width  = imageExpected.getWidth();
+        final int height = imageExpected.getHeight();
+        final String text = "Testing!";
+    	final BufferedImage imageReturned = ImageUtility.graffiti(imageExpected, text);
+    	
+    	final Graphics2D brush = imageExpected.createGraphics();
+    	brush.drawImage(oldImage, 0, 0, null);
+        brush.setColor(Color.red);
+        brush.drawLine(      0,        0,  width-1,        0);
+        brush.drawLine(width-1,        0,  width-1, height-1);
+        brush.drawLine(width-1, height-1,        0, height-1);
+        brush.drawLine(      0, height-1,        0,        0);
 
+        brush.setPaint(Color.blue);
+        brush.setFont(new Font("Serif", Font.BOLD, 20));
+        
+        final FontMetrics fm = brush.getFontMetrics();
+
+        final String[] parts = text.split("\n");
+        for(int part = 0; part < parts.length; ++part)
+        {
+            final int x = 2;
+            final int y = fm.getHeight();
+            brush.drawString(parts[part], x, y*(part+1));
+        }
+        brush.dispose();
+    	assertTrue("The buffered image created from graffiti does not have the expected values.", bufferedImagesEqual(imageExpected, imageReturned));
+    }
     private static boolean bufferedImagesEqual(final BufferedImage img1, final BufferedImage img2)
     {
         if(img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight())

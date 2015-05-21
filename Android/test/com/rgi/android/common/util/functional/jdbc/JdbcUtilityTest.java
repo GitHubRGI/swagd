@@ -55,16 +55,17 @@ public class JdbcUtilityTest {
 	private final Random randomGenerator = new Random();
 
 	/**
-	 * Tests that anyMatch correctly return True or False
-	 * depending on the ResultSetPredicate it is given
+	 * Tests that anyMatch correctly return True or False depending on the
+	 * ResultSetPredicate it is given
 	 * 
 	 * @throws ClassNotFoundException
 	 * @throws ConformanceException
 	 * @throws IOException
 	 * @throws SQLException
 	 */
-	@Test 
-	public void anyMatchTest() throws ClassNotFoundException, ConformanceException, IOException, SQLException{
+	@Test
+	public void anyMatchTest() throws ClassNotFoundException,
+			ConformanceException, IOException, SQLException {
 		File testFile = this.getRandomFile(10);
 		GeoPackage gpkg = new GeoPackage(testFile);
 		try {
@@ -86,35 +87,51 @@ public class JdbcUtilityTest {
 			String definition3 = "bar";
 			String definition4 = "still testing";
 			String description = "foo";
-			
-			gpkg.core().addSpatialReferenceSystem(name1, organization1, organizationSrsId1, definition1, description);
-			gpkg.core().addSpatialReferenceSystem(name2, organization2, organizationSrsId2, definition2, description);
-			gpkg.core().addSpatialReferenceSystem(name3, organization3, organizationSrsId3, definition3, description);
-			gpkg.core().addSpatialReferenceSystem(name4, organization4, organizationSrsId4, definition4, description);
+
+			gpkg.core().addSpatialReferenceSystem(name1, organization1,
+					organizationSrsId1, definition1, description);
+			gpkg.core().addSpatialReferenceSystem(name2, organization2,
+					organizationSrsId2, definition2, description);
+			gpkg.core().addSpatialReferenceSystem(name3, organization3,
+					organizationSrsId3, definition3, description);
+			gpkg.core().addSpatialReferenceSystem(name4, organization4,
+					organizationSrsId4, definition4, description);
 			gpkg.close();
 			Connection con = this.getConnection(testFile.getAbsolutePath());
 			try {
-				String query = String.format("Select srs_name FROM %s WHERE description = '%s'", GeoPackageCore.SpatialRefSysTableName, description);
+				String query = String.format(
+						"Select srs_name FROM %s WHERE description = '%s'",
+						GeoPackageCore.SpatialRefSysTableName, description);
 				Statement stmt = con.createStatement();
 				try {
 					ResultSet rs = stmt.executeQuery(query);
 					try {
-						boolean results1 = JdbcUtility.anyMatch(rs, new ResultSetPredicate(){
+						boolean results1 = JdbcUtility.anyMatch(rs,
+								new ResultSetPredicate() {
 
-							@Override
-							public boolean apply(ResultSet resultSet)
-									throws SQLException {
-								return resultSet.getString("srs_name").equals(name4);
-							}});
-						boolean results2 = JdbcUtility.anyMatch(rs, new ResultSetPredicate(){
+									@Override
+									public boolean apply(ResultSet resultSet)
+											throws SQLException {
+										return resultSet.getString("srs_name")
+												.equals(name4);
+									}
+								});
+						boolean results2 = JdbcUtility.anyMatch(rs,
+								new ResultSetPredicate() {
 
-							@Override
-							public boolean apply(ResultSet resultSet)
-									throws SQLException {
-								return resultSet.getString("srs_name").equals(name5);
-							}});
-						assertTrue(results1);
-						assertFalse(results2);
+									@Override
+									public boolean apply(ResultSet resultSet)
+											throws SQLException {
+										return resultSet.getString("srs_name")
+												.equals(name5);
+									}
+								});
+						assertTrue(
+								"Expected JdbcUtility method anyMatch(ResultSet, ResultSetPredicate) to return true.",
+								results1);
+						assertFalse(
+								"Exoected JdbcUtility method anyMatch(ResultSet, ResultSetPredicate) to return false.",
+								results2);
 					} finally {
 						rs.close();
 					}
@@ -154,6 +171,7 @@ public class JdbcUtilityTest {
 					ResultSet rs = stmt.executeQuery(query);
 					try {
 						JdbcUtility.anyMatch(rs, null);
+						fail("Expected JdbcUtility method anyMatch(ResultSet, ResultSetPredicate) to throw an IllegalArgumentException when passed a null ResultSetPredicate.");
 					} finally {
 						rs.close();
 					}
@@ -194,6 +212,7 @@ public class JdbcUtilityTest {
 					try {
 						rs.close();
 						JdbcUtility.anyMatch(rs, null);
+						fail("Expected JdbcUtility method anyMatch(ResultSet, ResultSetPredicate) to throw an IllegalArgumentException when given a closed ResultSet.");
 					} finally {
 						rs.close();
 					}
@@ -223,21 +242,23 @@ public class JdbcUtilityTest {
 					return false;
 				}
 			});
+			fail("Expected JdbcUtility method anyMatch(ResultSet, ResultSetPredicate) to throw an IllegalArgumentException when given a null ResultSet");
 		} finally {
 		}
 	}
 
 	/**
-	 * Tests that map correctly returns a List<T> containing
-	 * the correct elements based on the ResultSetFunction it is given
+	 * Tests that map correctly returns a List<T> containing the correct
+	 * elements based on the ResultSetFunction it is given
 	 * 
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 * @throws ConformanceException
 	 * @throws SQLException
 	 */
-	@Test 
-	public void mapTest() throws IOException, ClassNotFoundException, ConformanceException, SQLException{
+	@Test
+	public void mapTest() throws IOException, ClassNotFoundException,
+			ConformanceException, SQLException {
 		File testFile = this.getRandomFile(10);
 		GeoPackage gpkg = new GeoPackage(testFile);
 		try {
@@ -258,32 +279,45 @@ public class JdbcUtilityTest {
 			String definition3 = "bar";
 			String definition4 = "still testing";
 			String description = "foo";
-			
-			gpkg.core().addSpatialReferenceSystem(name1, organization1, organizationSrsId1, definition1, description);
-			gpkg.core().addSpatialReferenceSystem(name2, organization2, organizationSrsId2, definition2, description);
-			gpkg.core().addSpatialReferenceSystem(name3, organization3, organizationSrsId3, definition3, description);
-			gpkg.core().addSpatialReferenceSystem(name4, organization4, organizationSrsId4, definition4, description);
+
+			gpkg.core().addSpatialReferenceSystem(name1, organization1,
+					organizationSrsId1, definition1, description);
+			gpkg.core().addSpatialReferenceSystem(name2, organization2,
+					organizationSrsId2, definition2, description);
+			gpkg.core().addSpatialReferenceSystem(name3, organization3,
+					organizationSrsId3, definition3, description);
+			gpkg.core().addSpatialReferenceSystem(name4, organization4,
+					organizationSrsId4, definition4, description);
 			gpkg.close();
 			Connection con = this.getConnection(testFile.getAbsolutePath());
 			try {
-				String query = String.format("Select srs_name FROM %s WHERE description = '%s'", GeoPackageCore.SpatialRefSysTableName, description);
+				String query = String.format(
+						"Select srs_name FROM %s WHERE description = '%s'",
+						GeoPackageCore.SpatialRefSysTableName, description);
 				Statement stmt = con.createStatement();
 				try {
 					ResultSet rs = stmt.executeQuery(query);
 					try {
-						List<String> results = JdbcUtility.map(rs, new ResultSetFunction<String>() {
+						List<String> results = JdbcUtility.map(rs,
+								new ResultSetFunction<String>() {
 
-							@Override
-							public String apply(ResultSet resultSet)
-									throws SQLException {
-								return resultSet.getString("srs_name");
-							}
-						});
-						assertTrue(results.size() == 4);
-						assertTrue(results.get(0).equals(name1));
-						assertTrue(results.get(1).equals(name2));
-						assertTrue(results.get(2).equals(name3));
-						assertTrue(results.get(3).equals(name4));
+									@Override
+									public String apply(ResultSet resultSet)
+											throws SQLException {
+										return resultSet.getString("srs_name");
+									}
+								});
+						assertTrue(
+								"Expected JdbcUtility method map(ResultSet, ResultSetFunction<T>) to return a List of size 4.",
+								results.size() == 4);
+						assertTrue(
+								String.format(
+										"Expected JDBC utlity to method map(ResultSet, ResultSetFunction<T>) to return a list containing: %s, %s, %s, and %s",
+										name1, name2, name3, name4), results
+										.get(0).equals(name1)
+										&& results.get(1).equals(name2)
+										&& results.get(2).equals(name3)
+										&& results.get(3).equals(name4));
 					} finally {
 						rs.close();
 					}
@@ -297,9 +331,10 @@ public class JdbcUtilityTest {
 			this.deleteFile(testFile);
 		}
 	}
+
 	/**
 	 * Tests that map throws an IllegalArgumentException when given null instead
-	 * of a valid ResultSet
+	 * of a valid ResultSetFunction<T>
 	 * 
 	 * @throws ClassNotFoundException
 	 * @throws ConformanceException
@@ -322,6 +357,7 @@ public class JdbcUtilityTest {
 					ResultSet rs = stmt.executeQuery(query);
 					try {
 						JdbcUtility.map(rs, null);
+						fail("Expected JdbcUtility method map(ResultSet, ResultSetFunction<T>) to throw an IllegalArgumentException when given a null ResultSetFUnction<T>");
 					} finally {
 						rs.close();
 					}
@@ -349,10 +385,10 @@ public class JdbcUtilityTest {
 
 				@Override
 				public String apply(ResultSet resultSet) throws SQLException {
-					// TODO Auto-generated method stub
 					return "test";
 				}
 			});
+			fail("Expected JdbcUtility method map(ResultSet, ResultSetFunction<T>) to throw an IllegalArgumentException when given a null ResultSet.");
 		} finally {
 		}
 	}
@@ -383,6 +419,7 @@ public class JdbcUtilityTest {
 					try {
 						rs.close();
 						JdbcUtility.map(rs, null);
+						fail("Expected JdbcUtility method map(ResultSet, ResultSetFunction<T>) to throw an IllegalArgumentException when given a closed ResultSet.");
 					} finally {
 						rs.close();
 					}
@@ -396,16 +433,18 @@ public class JdbcUtilityTest {
 			this.deleteFile(testFile);
 		}
 	}
-	
+
 	/**
-	 * Tests mapFilter correctly returns a list 
+	 * Tests mapFilter correctly returns a list
+	 * 
 	 * @throws ClassNotFoundException
 	 * @throws ConformanceException
 	 * @throws IOException
 	 * @throws SQLException
 	 */
 	@Test
-	public void testMapFilter() throws ClassNotFoundException, ConformanceException, IOException, SQLException{
+	public void testMapFilter() throws ClassNotFoundException,
+			ConformanceException, IOException, SQLException {
 		File testFile = this.getRandomFile(10);
 		GeoPackage gpkg = new GeoPackage(testFile);
 		try {
@@ -426,35 +465,50 @@ public class JdbcUtilityTest {
 			String definition3 = "bar";
 			String definition4 = "still testing";
 			String description = "foo";
-			
-			gpkg.core().addSpatialReferenceSystem(name1, organization1, organizationSrsId1, definition1, description);
-			gpkg.core().addSpatialReferenceSystem(name2, organization2, organizationSrsId2, definition2, description);
-			gpkg.core().addSpatialReferenceSystem(name3, organization3, organizationSrsId3, definition3, description);
-			gpkg.core().addSpatialReferenceSystem(name4, organization4, organizationSrsId4, definition4, description);
+
+			gpkg.core().addSpatialReferenceSystem(name1, organization1,
+					organizationSrsId1, definition1, description);
+			gpkg.core().addSpatialReferenceSystem(name2, organization2,
+					organizationSrsId2, definition2, description);
+			gpkg.core().addSpatialReferenceSystem(name3, organization3,
+					organizationSrsId3, definition3, description);
+			gpkg.core().addSpatialReferenceSystem(name4, organization4,
+					organizationSrsId4, definition4, description);
 			gpkg.close();
 			Connection con = this.getConnection(testFile.getAbsolutePath());
 			try {
-				String query = String.format("Select srs_name FROM %s WHERE description = '%s'", GeoPackageCore.SpatialRefSysTableName, description);
+				String query = String.format(
+						"Select srs_name FROM %s WHERE description = '%s'",
+						GeoPackageCore.SpatialRefSysTableName, description);
 				Statement stmt = con.createStatement();
 				try {
 					ResultSet rs = stmt.executeQuery(query);
 					try {
-						List<String> results = JdbcUtility.mapFilter(rs, new ResultSetFunction<String>() {
+						List<String> results = JdbcUtility.mapFilter(rs,
+								new ResultSetFunction<String>() {
 
-							@Override
-							public String apply(ResultSet resultSet)
-									throws SQLException {
-								return resultSet.getString("srs_name");
-							}
-						}, new Predicate<String>(){
+									@Override
+									public String apply(ResultSet resultSet)
+											throws SQLException {
+										return resultSet.getString("srs_name");
+									}
+								}, new Predicate<String>() {
 
-							@Override
-							public boolean apply(String t) {
-								return t.equals(name1) || t.equals(name2);
-							}});
-						assertTrue(results.size() == 2);
-						assertTrue(results.get(0).equals(name1));
-						assertTrue(results.get(1).equals(name2));
+									@Override
+									public boolean apply(String t) {
+										return t.equals(name1)
+												|| t.equals(name2);
+									}
+								});
+						assertTrue(
+								"Expected JdbcUtility method mapFilter(ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to return a list of size 2",
+								results.size() == 2);
+						assertTrue(
+								String.format(
+										"Expected JdbcUtility method mapFilter(ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to return a list containing: %s and %s",
+										name1, name2),
+								results.get(0).equals(name1)
+										&& results.get(1).equals(name2));
 					} finally {
 						rs.close();
 					}
@@ -468,7 +522,7 @@ public class JdbcUtilityTest {
 			this.deleteFile(testFile);
 		}
 	}
-	
+
 	/**
 	 * Tests mapFilter throws an exception when given null instead of a valid
 	 * ResultSet
@@ -482,42 +536,22 @@ public class JdbcUtilityTest {
 	public void illegalArgumentExceptionMapFilterRS()
 			throws ClassNotFoundException, ConformanceException, IOException,
 			SQLException {
-		File testFile = this.getRandomFile(10);
-		GeoPackage gpkg = new GeoPackage(testFile);
 		try {
-			gpkg.close();
-			Connection con = this.getConnection(testFile.getAbsolutePath());
-			try {
-				String query = "Select * from gpkg_contents;";
-				Statement stmt = con.createStatement();
-				try {
-					ResultSet rs = stmt.executeQuery(query);
-					try {
-						JdbcUtility.mapFilter(null,
-								new ResultSetFunction<String>() {
+			JdbcUtility.mapFilter(null, new ResultSetFunction<String>() {
 
-									@Override
-									public String apply(ResultSet resultSet)
-											throws SQLException {
-										return "test";
-									}
-								}, new Predicate<String>() {
-									@Override
-									public boolean apply(final String tableName) {
-										return true;
-									}
-								});
-					} finally {
-						rs.close();
-					}
-				} finally {
-					stmt.close();
+				@Override
+				public String apply(ResultSet resultSet) throws SQLException {
+					return "test";
 				}
-			} finally {
-				con.close();
-			}
+			}, new Predicate<String>() {
+				@Override
+				public boolean apply(final String tableName) {
+					return true;
+				}
+			});
+			fail("Expected JdbcUtility method mapFilter (ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to throw an IllegalArgumentException when given a null ResultSet.");
 		} finally {
-			this.deleteFile(testFile);
+
 		}
 	}
 
@@ -551,6 +585,7 @@ public class JdbcUtilityTest {
 										return true;
 									}
 								});
+						fail("Expected JdbcUtility method mapFilter (ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to throw an IllegalArgumentException when given a null ResultSetFunction.");
 					} finally {
 						rs.close();
 					}
@@ -595,10 +630,10 @@ public class JdbcUtilityTest {
 									@Override
 									public String apply(ResultSet resultSet)
 											throws SQLException {
-										// TODO Auto-generated method stub
 										return "test";
 									}
 								}, null);
+						fail("Expected JdbcUtility method mapFilter (ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to throw an IllegalArgumentException when given a null ResultSetPredicate.");
 					} finally {
 						rs.close();
 					}
