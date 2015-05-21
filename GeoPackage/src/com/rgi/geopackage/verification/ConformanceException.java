@@ -57,7 +57,7 @@ public class ConformanceException extends Exception
                                                                                       .compareTo(issue2.getRequirement()
                                                                                                        .reference()))
                                                     .map(verificationIssue -> String.format("* (%s) %s: \"%s\"\n%s",
-                                                                                            verificationIssue.getSeverity(),
+                                                                                            verificationIssue.getSeverity().name(),
                                                                                             verificationIssue.getRequirement().reference(),
                                                                                             verificationIssue.getRequirement().text(),
                                                                                             verificationIssue.getReason()))
