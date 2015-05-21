@@ -41,10 +41,13 @@ import utility.DatabaseUtility;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
+ * 'Core' subsystem of the {@link GeoPackage} implementation
+ *
  * @author Luke Lambert
  *
  */

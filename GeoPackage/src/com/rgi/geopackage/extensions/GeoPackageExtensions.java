@@ -44,6 +44,7 @@ import utility.DatabaseUtility;
 import utility.SelectBuilder;
 
 import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
@@ -51,6 +52,8 @@ import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
+ * 'Extensions' subsystem of the {@link GeoPackage} implementation
+ *
  * @author Luke Lambert
  *
  */
@@ -67,8 +70,12 @@ public class GeoPackageExtensions
      *
      * @param databaseConnection
      *             The open connection to the database that contains a GeoPackage
+     * @param geoPackageCore
+     *             'Core' subsystem of the {@link GeoPackage} implementation
+     *
      */
-    public GeoPackageExtensions(final Connection databaseConnection, final GeoPackageCore geoPackageCore)
+    public GeoPackageExtensions(final Connection     databaseConnection,
+                                final GeoPackageCore geoPackageCore)
     {
         this.databaseConnection = databaseConnection;
         this.geoPackageCore     = geoPackageCore;
@@ -81,6 +88,7 @@ public class GeoPackageExtensions
      *             Controls the level of verification testing performed
      * @return The extension GeoPackage requirements this GeoPackage fails to conform to
      * @throws SQLException
+     *             if there is a database error
      */
     public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel) throws SQLException
     {
@@ -352,14 +360,13 @@ public class GeoPackageExtensions
      * Gets a handle to an {@link ExtensionImplementation} which exposes
      * extension specific functionality
      *
+     * @param clazz
+     *             {@link Class} representing
      * @return a handle to an implementation of {@link ExtensionImplementation}
      * @throws BadImplementationException
-     * @throws SecurityException
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalArgumentException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
+     *             if the Class type parameter doesn't match the requirements
+     *             needed to create the requested extension.  See {@link
+     *             BadImplementationException#getCause()} for more details
      */
     public <T extends ExtensionImplementation> T getExtensionImplementation(final Class<T> clazz) throws BadImplementationException
     {

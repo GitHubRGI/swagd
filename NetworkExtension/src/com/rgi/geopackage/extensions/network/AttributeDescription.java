@@ -23,6 +23,10 @@
 
 package com.rgi.geopackage.extensions.network;
 
+/**
+ * @author Luke.Lambert
+ *
+ */
 public class AttributeDescription
 {
     /**

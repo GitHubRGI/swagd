@@ -240,7 +240,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
             final Network network = this.getNetwork(tableName);
 
-            this.lazyAddExtensionEntry();
+            this.addExtensionEntry();
 
             return network;
         }

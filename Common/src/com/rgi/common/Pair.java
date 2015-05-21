@@ -23,17 +23,38 @@
 
 package com.rgi.common;
 
+/**
+ * @author Luke.Lambert
+ *
+ * @param <L> "Left" member of the pair
+ * @param <R> "Right" member of the pair
+ */
 public class Pair<L, R>
 {
+    /**
+     * Constructor
+     *
+     * @param left
+     *             "Left" member of the pair
+     * @param right
+     *             "Right" member of the pair
+     */
     public Pair(final L left, final R right)
     {
         this.left  = left;
         this.right = right;
     }
 
-    public static <L, R> Pair of(final L left, final R right)
+    /**
+     * @param left
+     *             "Left" member of the pair
+     * @param right
+     *             "Right" member of the pair
+     * @return a {@link Pair} constructed with the left and right parameters
+     */
+    public static <L, R> Pair<L, R> of(final L left, final R right)
     {
-        return new Pair(left, right);
+        return new Pair<>(left, right);
     }
 
     /**
