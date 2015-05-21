@@ -28,6 +28,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -646,6 +647,45 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
                                                      return value;
                                                    });
+        }
+    }
+
+    public List<Object> getAttributes(final Network network, final int attributedIdentifier, final AttributeDescription... attributeDescriptions) throws SQLException
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        if(attributeDescriptions == null || attributeDescriptions.length == 0)
+        {
+            throw new IllegalArgumentException("Attribute descriptions may not be null or empty");
+        }
+
+        final String attributeQuery = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ? LIMIT 1;",
+                                                    "value",
+                                                    getNetworkAttributesTableName(network.getTableName()),
+                                                    "attributed_id",
+                                                    "attribute_description_id");
+
+        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(attributeQuery))
+        {
+            final ArrayList<Object> values = new ArrayList<>();
+
+            for(final AttributeDescription attributeDescription : attributeDescriptions)
+            {
+                if(attributeDescription.getNetworkTableName() != network.getTableName())
+                {
+                    throw new IllegalArgumentException("All attribute descriptions must belong to the same new table");
+                }
+
+                preparedStatement.setInt(1, attributedIdentifier);
+                preparedStatement.setInt(2, attributeDescription.getIdentifier());
+
+                values.add(JdbcUtility.mapOne(preparedStatement.executeQuery(), resultSet -> resultSet.getObject(1)));
+            }
+
+            return values;
         }
     }
 

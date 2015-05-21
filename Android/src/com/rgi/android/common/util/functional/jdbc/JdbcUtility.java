@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import com.rgi.android.common.util.functional.FunctionalUtility;
 import com.rgi.android.common.util.functional.Predicate;
 
 /**
@@ -123,6 +122,18 @@ public class JdbcUtility
             throw new IllegalArgumentException("Predicate may not be null");
         }
 
-        return FunctionalUtility.filter(JdbcUtility.map(resultSet, function), predicate);
+        final ArrayList<T> results = new ArrayList<T>();
+
+        while(resultSet.next())
+        {
+            final T mappedValue = function.apply(resultSet);
+
+            if(predicate.apply(mappedValue))
+            {
+                results.add(mappedValue);
+            }
+        }
+
+        return results;
     }
 }

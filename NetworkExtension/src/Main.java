@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
-import com.rgi.common.coordinate.Coordinate;
+import com.rgi.common.util.functional.ThrowingFunction;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.extensions.implementation.BadImplementationException;
@@ -66,59 +66,36 @@ public class Main
             {
                 final long startTime = System.nanoTime();
 
-                List<Integer> path = dijkstra(networkExtension,
-                         network,
-                         startNode,
-                         endNode,
-                         (edge) -> { try
-                                     {
-                                         return networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute);
-                                     }
-                                     catch(final Exception ex)
-                                     {
-                                         throw new RuntimeException(ex);
-                                     }
-                                   });
-                path.forEach(node -> System.out.print(node + ", "));
+//                List<Integer> path = dijkstra(networkExtension,
+//                         network,
+//                         startNode,
+//                         endNode,
+//                         (edge) -> { try
+//                                     {
+//                                         return networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute);
+//                                     }
+//                                     catch(final Exception ex)
+//                                     {
+//                                         throw new RuntimeException(ex);
+//                                     }
+//                                   });
 
-                int firstNode = path.get(0);
-                int secondNode = path.get(1);
-                double totalWeight = 0.0;
-                System.out.printf("\n(%d) -", firstNode);
-                for(int i = 2; i < path.size(); i++)
-                {
-                    Edge edge1 = networkExtension.getEdge(network, firstNode, secondNode);
-                    double cost = networkExtension.getAttribute(edge1.getIdentifier(), distanceAttribute);
-                    System.out.printf("%f->(%d)-", cost, secondNode);
-                    totalWeight = totalWeight + (double)networkExtension.getAttribute(edge1.getIdentifier(), distanceAttribute);
-                    if(i < path.size())
-                    {
-                        firstNode = secondNode;
-                        secondNode = path.get(i);
-                    }
-                }
-                System.out.println(String.format("\nDijkstra total distance = %f", totalWeight));
-                System.out.println(String.format("\nDijkstra took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
-            }
-
-            if(networkExtension.getEntries(network, endNode).size() > 0)
-            {
-                final long startTime = System.nanoTime();
-
-                List<Integer> path = astar(networkExtension,
+                final List<Integer> path = astar(networkExtension,
                       network,
                       startNode,
                       endNode,
+                      (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute),
                       (startIdentifier, endIdentifier) -> { try
                                                             {
-                                                                Coordinate<Double> startCoordinate = new Coordinate<>(networkExtension.getAttribute(startIdentifier, nodeLongitudeAttibute),
-                                                                                                                      networkExtension.getAttribute(startIdentifier, nodeLatitudeAttibute));
+                                                                final List<Object> startCoordinate = networkExtension.getAttributes(network, startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
+                                                                final List<Object> endCoordinate   = networkExtension.getAttributes(network, endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
 
-                                                                Coordinate<Double> endCoordinate   = new Coordinate<>(networkExtension.getAttribute(endIdentifier,   nodeLongitudeAttibute),
-                                                                                                                      networkExtension.getAttribute(endIdentifier,   nodeLatitudeAttibute));
-                                                                return getDistance(startCoordinate, endCoordinate);
+                                                                final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
+                                                                final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
+
+                                                                return Math.sqrt(latitude*latitude + longitude*longitude);
                                                             }
-                                                            catch(final Exception ex)
+                                                            catch(final SQLException ex)
                                                             {
                                                                 throw new RuntimeException(ex);
                                                             }
@@ -126,23 +103,7 @@ public class Main
 
                 path.forEach(node -> System.out.print(node + ", "));
 
-                int firstNode = path.get(0);
-                int secondNode = path.get(1);
-                double totalWeight = 0.0;
-                System.out.printf("\n(%d) -", firstNode);
-                for(int i = 2; i < path.size(); i++)
-                {
-                    Edge edge1 = networkExtension.getEdge(network, firstNode, secondNode);
-                    double cost = networkExtension.getAttribute(edge1.getIdentifier(), distanceAttribute);
-                    System.out.printf("%f->(%d)-", cost, secondNode);
-                    totalWeight = totalWeight + (double)networkExtension.getAttribute(edge1.getIdentifier(), distanceAttribute);
-                    if(i < path.size())
-                    {
-                        firstNode = secondNode;
-                        secondNode = path.get(i);
-                    }
-                }
-                System.out.println(String.format("\nAstar total distance = %f", totalWeight));
+                printPath(networkExtension, network, path, distanceAttribute);
 
                 System.out.println(String.format("\nAstar took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
             }
@@ -156,13 +117,32 @@ public class Main
         }
     }
 
-    private static Double getDistance(final Coordinate<Double>  startCoordinate,
-                                      final Coordinate<Double>  endCoordinate)
+    private static void printPath(final GeoPackageNetworkExtension networkExtension,
+                                  final Network                    network,
+                                  final List<Integer>              path,
+                                  final AttributeDescription       distanceAttribute) throws SQLException
     {
-        double latitude  = startCoordinate.getY() - endCoordinate.getY();
-        double longitude = startCoordinate.getX() - endCoordinate.getX();
+        int firstNode = path.get(0);
+        int secondNode = path.get(1);
 
-        return Math.sqrt(latitude*latitude + longitude*longitude);
+        double totalWeight = 0.0;
+
+        System.out.printf("\n(%d) -", firstNode);
+
+        for(int i = 2; i < path.size(); i++)
+        {
+            final Edge edge1 = networkExtension.getEdge(network, firstNode, secondNode);
+            final double cost = networkExtension.getAttribute(edge1.getIdentifier(), distanceAttribute);
+            System.out.printf("%f->(%d)-", cost, secondNode);
+            totalWeight = totalWeight + (double)networkExtension.getAttribute(edge1.getIdentifier(), distanceAttribute);
+            if(i < path.size())
+            {
+                firstNode = secondNode;
+                secondNode = path.get(i);
+            }
+        }
+
+        System.out.println(String.format("\nAstar total distance = %f", totalWeight));
     }
 
     private static void createGpkg()
@@ -343,25 +323,24 @@ public class Main
                                       final Network                              network,
                                       final Integer                              start,
                                       final Integer                              end,
+                                      final Function<Edge, Double>               cost,
                                       final BiFunction<Integer, Integer, Double> heuristics) throws SQLException
     {
         //changed comparator -> change back to distance from end
-        PriorityQueue<VertexAstar> openList   = new PriorityQueue<>((o1, o2) ->{
-                                                                                    return Double.compare((o1.distanceFromEnd + o1.distanceFromStart), (o2.distanceFromEnd + o2.distanceFromStart));
-                                                                               });
-        HashSet<VertexAstar>       closedList = new HashSet<>();
+        final PriorityQueue<VertexAstar> openList   = new PriorityQueue<>((o1, o2) -> Double.compare((o1.distanceFromEnd + o1.distanceFromStart), (o2.distanceFromEnd + o2.distanceFromStart)));
+        final HashSet<VertexAstar>       closedList = new HashSet<>();
 
         final Map<Integer, VertexAstar> nodeMap = new HashMap<>();
 
         //initialize starting Vertex
-        VertexAstar startVertex = new VertexAstar(start);
+        final VertexAstar startVertex = new VertexAstar(start);
         startVertex.distanceFromEnd = heuristics.apply(start, end);
         openList.add(startVertex);
         nodeMap.put(start, startVertex);
 
         while(!openList.isEmpty())
         {
-            VertexAstar currentVertex = openList.poll();//get the Vertex closest to the end
+            final VertexAstar currentVertex = openList.poll();//get the Vertex closest to the end
 
             //if current vertex is the target then we are done
             if(currentVertex.nodeIdentifier == end)
@@ -372,7 +351,7 @@ public class Main
             closedList.add(currentVertex); //put it in "done" pile
 
             //for each reachable Vertex
-            for(Edge edge: networkExtension.getExits(network, currentVertex.nodeIdentifier))
+            for(final Edge edge: networkExtension.getExits(network, currentVertex.nodeIdentifier))
             {
                 final int adjacentNode = edge.getTo();
 
@@ -387,8 +366,8 @@ public class Main
                 }
 
                 //calculate a tentative distance (see if this is better than what you already may have)
-                double distanceFromStart = currentVertex.distanceFromStart + heuristics.apply(currentVertex.nodeIdentifier, reachableVertex.nodeIdentifier);
-                double distanceFromEnd   = heuristics.apply(reachableVertex.nodeIdentifier, end);
+                final double distanceFromStart = currentVertex.distanceFromStart + cost.apply(edge);
+                final double distanceFromEnd   = heuristics.apply(reachableVertex.nodeIdentifier, end);
                 //if the closed list already searched this vertex, skip it
                 if(closedList.contains(reachableVertex))
                 {
