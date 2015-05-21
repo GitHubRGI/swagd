@@ -1181,8 +1181,10 @@ public class GeoPackageTiles
         final double normalizedSrsTileCoordinateX = Math.abs(crsCoordinate.getX() - boundsCorner.getX());
         final double normalizedSrsTileCoordinateY = Math.abs(crsCoordinate.getY() - boundsCorner.getY());
 
-        final int tileX = (int)Math.floor(normalizedSrsTileCoordinateX / tileWidthInSrs);
-        final int tileY = (int)Math.floor(normalizedSrsTileCoordinateY / tileHeightInSrs);
+        final int divisor = 1000000000; // Round to integer extent
+
+        final int tileX = (int)Math.floor(Math.round((normalizedSrsTileCoordinateX / tileWidthInSrs)  * divisor) / divisor);
+        final int tileY = (int)Math.floor(Math.round((normalizedSrsTileCoordinateY / tileHeightInSrs) * divisor) / divisor);
 
         return new Coordinate<Integer>(tileX, tileY);
     }
@@ -1255,6 +1257,7 @@ public class GeoPackageTiles
                                  boundsCorner.getY() - (row    * tileHeightInSrs),
                                  new CoordinateReferenceSystem(srs.getOrganization(), srs.getOrganizationSrsId()));
     }
+
 
     /**
      * Creates the tables required for storing tiles

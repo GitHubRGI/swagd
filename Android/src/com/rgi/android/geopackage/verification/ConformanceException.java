@@ -52,12 +52,12 @@ public class ConformanceException extends Exception
     @Override
     public String toString()
     {
-        final StringBuilder message = new StringBuilder("GeoPackage failed to meet the following requirements:\n%s");
+        final StringBuilder message = new StringBuilder("GeoPackage failed to meet the following requirements:\n");
 
         for(final VerificationIssue verificationIssue : this.verificationIssues)
         {
             message.append(String.format("* (%s) %s: \"%s\"\n%s\n\n",
-                                         verificationIssue.getSeverity(),
+                                         verificationIssue.getSeverity().name(),
                                          verificationIssue.getRequirement().reference(),
                                          verificationIssue.getRequirement().text(),
                                          verificationIssue.getReason()));

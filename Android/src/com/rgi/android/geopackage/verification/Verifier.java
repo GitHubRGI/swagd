@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import com.rgi.android.common.util.StringUtility;
+import com.rgi.android.common.util.functional.Function;
 import com.rgi.android.common.util.functional.FunctionalUtility;
 import com.rgi.android.common.util.functional.Predicate;
 import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
@@ -80,45 +81,50 @@ public class Verifier
      */
     public Collection<VerificationIssue> getVerificationIssues()
     {
-        final List<VerificationIssue> verificationsIssues = new ArrayList<VerificationIssue>();
+        return FunctionalUtility.mapFilter(this.getRequirements(),
+                                           new Function<Method, VerificationIssue>(){  @Override
+                                                                                       public VerificationIssue apply(final Method requirementTestMethod)
+                                                                                       {
+                                                                                           try
+                                                                                           {
+                                                                                               requirementTestMethod.invoke(Verifier.this);
+                                                                                               return null;
+                                                                                           }
+                                                                                           catch(final InvocationTargetException ex)
+                                                                                           {
+                                                                                               final Requirement requirement = requirementTestMethod.getAnnotation(Requirement.class);
 
-        for(final Method requirementTestMethod : this.getRequirements())
-        {
-            try
-            {
-                requirementTestMethod.invoke(this);
-            }
-            catch(final InvocationTargetException ex)
-            {
-                final Requirement requirement = requirementTestMethod.getAnnotation(Requirement.class);
+                                                                                               final Throwable cause = ex.getCause();
 
-                final Throwable cause = ex.getCause();
+                                                                                               if(cause != null && cause instanceof AssertionError)
+                                                                                               {
+                                                                                                   final AssertionError assertionError = (AssertionError)cause;
 
-                if(cause != null && cause instanceof AssertionError)
-                {
-                    final AssertionError assertionError = (AssertionError)cause;
+                                                                                                   return assertionError.getSeverity() == Severity.Skipped ? null
+                                                                                                                                                           : new VerificationIssue(assertionError.getMessage(),
+                                                                                                                                                                                   requirement,
+                                                                                                                                                                                   assertionError.getSeverity());
+                                                                                               }
 
-                    if(assertionError.getSeverity() != Severity.Skipped)
-                    {
-                        verificationsIssues.add(new VerificationIssue(assertionError.getMessage(),
-                                                                      requirement,
-                                                                      assertionError.getSeverity()));
-                    }
-                }
-
-                verificationsIssues.add(new VerificationIssue(String.format("Unexpected exception thrown when testing requirement %s for GeoPackage verification: %s",
-                                                                            requirement.reference(),
-                                                                            ex.getMessage()),
-                                                              requirement));
-            }
-            catch(final IllegalAccessException ex)
-            {
-                // TODO
-                ex.printStackTrace();
-            }
-        }
-
-        return verificationsIssues;
+                                                                                               return new VerificationIssue(String.format("Unexpected exception thrown when testing requirement %s for GeoPackage verification: %s",
+                                                                                                                                          requirement.reference(),
+                                                                                                                                          ex.getMessage()),
+                                                                                                                            requirement);
+                                                                                           }
+                                                                                           catch(final IllegalAccessException ex)
+                                                                                           {
+                                                                                               // TODO
+                                                                                               ex.printStackTrace();
+                                                                                               return null;
+                                                                                           }
+                                                                                       }
+                                                                                    },
+                                           new Predicate<VerificationIssue>(){  @Override
+                                                                                public boolean apply(final VerificationIssue verification)
+                                                                                {
+                                                                                    return verification != null;
+                                                                                }
+                                                                             });
     }
 
     /**
@@ -303,7 +309,25 @@ public class Verifier
 
         try
         {
-            final ResultSet fkInfo = statement.executeQuery(String.format("PRAGMA foreign_key_list(%s);", tableName));
+            final ResultSet fkInfo;
+
+            try
+            {
+                fkInfo = statement.executeQuery(String.format("PRAGMA foreign_key_list(%s);", tableName));
+            }
+            catch(final SQLException ex)
+            {
+                // If a table has no foreign keys, executing the query
+                // PRAGMA foreign_key_list(<table_name>) will throw an
+                // exception complaining that result set is empty.
+                // The issue has been posted about it here:
+                // https://bitbucket.org/xerial/sqlite-jdbc/issue/162/
+                // If the result set is empty (no foreign keys), there's no
+                // work to be done.  Unfortunately .executeQuery() may throw an
+                // SQLException for other reasons that may require some
+                // attention.
+                return;
+            }
 
             try
             {
