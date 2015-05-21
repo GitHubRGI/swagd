@@ -111,7 +111,7 @@ public class ExtensionsVerifier extends Verifier
     private boolean hasGpkgExtensionsTable;
 
     // TODO reconsider this mapping.  it should at least be String, ExtensionData, but the column name is repeated as the key...
-    private Map<ExtensionData, String> gpkgExtensionsDataAndColumnName;
+    private List<ExtensionData> gpkgExtensionsDataAndColumnName;
 
     /**
      * Constructor
@@ -147,7 +147,7 @@ public class ExtensionsVerifier extends Verifier
 
                 try
                 {
-                    this.gpkgExtensionsDataAndColumnName = new HashMap<ExtensionData, String>();
+                    this.gpkgExtensionsDataAndColumnName = new ArrayList<ExtensionData>();
 
                     while(tableNameColumnNameRS.next())
                     {
@@ -155,7 +155,7 @@ public class ExtensionsVerifier extends Verifier
                                                                               tableNameColumnNameRS.getString("column_name"),
                                                                               tableNameColumnNameRS.getString("extension_name"));
 
-                        this.gpkgExtensionsDataAndColumnName.put(extensionData, extensionData.columnName);
+                        this.gpkgExtensionsDataAndColumnName.add(extensionData);
                     }
                 }
                 finally
@@ -165,7 +165,7 @@ public class ExtensionsVerifier extends Verifier
             }
             catch(final SQLException ex)
             {
-                this.gpkgExtensionsDataAndColumnName = Collections.emptyMap();
+                this.gpkgExtensionsDataAndColumnName = Collections.emptyList();
             }
             finally
             {
@@ -258,11 +258,9 @@ public class ExtensionsVerifier extends Verifier
     {
         if(this.hasGpkgExtensionsTable)
         {
-            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName.keySet())
+            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName)
             {
-                final String columnName = this.gpkgExtensionsDataAndColumnName.get(extensionData);
-
-                final boolean validEntry = extensionData.tableName == null ? columnName == null : true; // If table name is null then so must column name
+                final boolean validEntry = extensionData.tableName == null ? extensionData.columnName == null : true; // If table name is null then so must column name
 
                 Assert.assertTrue("The value in table_name can only be null if column_name is also null.",
                                   validEntry,
@@ -328,7 +326,7 @@ public class ExtensionsVerifier extends Verifier
     {
         if(this.hasGpkgExtensionsTable && !this.gpkgExtensionsDataAndColumnName.isEmpty())
         {
-            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName.keySet())
+            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName)
             {
                 final String columnName = extensionData.columnName;
 
@@ -403,7 +401,7 @@ public class ExtensionsVerifier extends Verifier
         if(this.hasGpkgExtensionsTable)
         {
 
-            final Collection<String> invalidExtensionNames = FunctionalUtility.mapFilter(this.gpkgExtensionsDataAndColumnName.keySet(),
+            final Collection<String> invalidExtensionNames = FunctionalUtility.mapFilter(this.gpkgExtensionsDataAndColumnName,
                                                                                          new Function<ExtensionData, String>()
                                                                                          {
                                                                                              @Override
