@@ -185,7 +185,7 @@ public class Verifier
                            table.getColumns(),
                            uniques);
 
-        this.verifyForeignKeys(table.getName(), table.getForeignKeys());//maybe check if table.getForeignKeys is empty b4 doing test otherwise Requirement 10 is an unknown error
+        this.verifyForeignKeys(table.getName(), table.getForeignKeys());
 
         Verifier.verifyGroupUniques(table.getName(),
                                     table.getGroupUniques(),
