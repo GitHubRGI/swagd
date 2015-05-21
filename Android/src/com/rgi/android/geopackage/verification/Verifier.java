@@ -314,8 +314,8 @@ public class Verifier
                                                                                         public ForeignKeyDefinition apply(final ResultSet resultSet) throws SQLException
                                                                                         {
                                                                                             return new ForeignKeyDefinition(resultSet.getString("table"),
-                                                                                                                           resultSet.getString("from"),
-                                                                                                                           resultSet.getString("to"));
+                                                                                                                            resultSet.getString("from"),
+                                                                                                                            resultSet.getString("to"));
                                                                                         }
                                                                                     });
 
