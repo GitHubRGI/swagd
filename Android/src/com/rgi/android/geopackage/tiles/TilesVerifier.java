@@ -1778,22 +1778,22 @@ public class TilesVerifier extends Verifier
 
                                                 if(!minColumnResult.isBeforeFirst())
                                                 {
-                                                    errorMessage.add(" minimum column (0) ");
+                                                    errorMessage.add(" minimum column (0)");
                                                 }
 
                                                 if(!minRowResult.isBeforeFirst())
                                                 {
-                                                    errorMessage.add(" minimum row (0) ");
+                                                    errorMessage.add(" minimum row (0)");
                                                 }
 
                                                 if(!maxColumnResults.isBeforeFirst())
                                                 {
-                                                    errorMessage.add(" maximum column (matrix_width - 1) ");
+                                                    errorMessage.add(" maximum column (matrix_width - 1)");
                                                 }
 
                                                 if(!maxRowResults.isBeforeFirst())
                                                 {
-                                                    errorMessage.add(" maximum row (matrix_height - 1) ");
+                                                    errorMessage.add(" maximum row (matrix_height - 1)");
                                                 }
 
                                                 StringBuilder errors = new StringBuilder();
