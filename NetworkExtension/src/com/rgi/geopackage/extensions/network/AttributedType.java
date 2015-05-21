@@ -23,8 +23,22 @@
 
 package com.rgi.geopackage.extensions.network;
 
+/**
+ * Enum describing whether an attribute refers to a network node, or a network
+ * edge
+ *
+ * @author Luke Lambert
+ *
+ */
 public enum AttributedType
 {
+    /**
+     * Network node
+     */
     Node,
+
+    /**
+     * Network edge
+     */
     Edge;
 }

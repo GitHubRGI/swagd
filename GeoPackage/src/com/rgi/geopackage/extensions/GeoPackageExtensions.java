@@ -396,7 +396,7 @@ public class GeoPackageExtensions
         }
         catch(final NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
         {
-            throw new BadImplementationException(String.format("There was an error instantiating an instance of the '%s' GeoPackage extention implementation", clazz.getName()), ex);
+            throw new BadImplementationException(String.format("There was an error instantiating an instance of the '%s' GeoPackage extension implementation", clazz.getName()), ex);
         }
     }
 

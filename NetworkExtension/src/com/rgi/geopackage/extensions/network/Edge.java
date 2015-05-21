@@ -23,12 +23,26 @@
 
 package com.rgi.geopackage.extensions.network;
 
+import com.rgi.geopackage.GeoPackage;
+
+/**
+ * Representation of an <b>directional</b> edge in "rgi_network" network edge
+ * in a {@link GeoPackage}
+ *
+ * @author Luke Lambert
+ *
+ */
 public class Edge
 {
     /**
+     * Constructor
+     *
      * @param identifier
+     *             Unique identifier
      * @param from
+     *             The origin node of an edge
      * @param to
+     *             The destination node of an edge
      */
     protected Edge(final int identifier, final int from, final int to)
     {

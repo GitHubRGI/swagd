@@ -23,10 +23,31 @@
 
 package com.rgi.geopackage.extensions.network;
 
+/**
+ * Enum describing what type an attribute should be stored in the database as
+ *
+ * @author Luke Lambert
+ *
+ */
 public enum DataType
 {
+    /**
+     * Equivalent to {@link byte[]}
+     */
+    Blob,
+
+    /**
+     * Equivalent to {@link int}
+     */
     Integer,
+
+    /**
+     * Equivalent to {@link float} or {@link double}
+     */
     Real,
-    Text,
-    Blob;
+
+    /**
+     * Equivalent to {@link String}
+     */
+    Text;
 }

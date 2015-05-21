@@ -30,12 +30,23 @@ package com.rgi.geopackage.extensions.network;
 public class AttributeDescription
 {
     /**
+     * Constructor
+     *
      * @param identifier
+     *             Unique identifier
      * @param networkTableName
+     *             Name of the network table that the attribute corresponds to
      * @param name
+     *             Human readable name of the attribute
+     * @param units
+     *             Unit of the described attribute
      * @param dataType
+     *             Data type of the described attribute
      * @param description
+     *             Human readable description of the attribute
      * @param attributedType
+     *             Indicator of what's being described
+     *
      */
     public AttributeDescription(final int            identifier,
                                 final String         networkTableName,
@@ -52,6 +63,19 @@ public class AttributeDescription
         this.dataType         = dataType;
         this.description      = description;
         this.attributedType   = attributedType;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("%d (%s, %s, %s, %s, %s, %s)",
+                             this.identifier,
+                             this.networkTableName,
+                             this.name,
+                             this.units,
+                             this.dataType.toString(),
+                             this.description,
+                             this.attributedType.toString());
     }
 
     /**
@@ -110,11 +134,27 @@ public class AttributeDescription
         return this.attributedType;
     }
 
+    /**
+     * Check that a value agrees with this description's data type
+     *
+     * @param value
+     *             Any value
+     * @return <tt>true</tt> if {@link Object#getClass()} agrees with the data
+     *             type, otherwise <tt>false</tt>
+     */
     public <T> boolean dataTypeAgrees(final T value)
     {
         return this.dataTypeAgrees(value.getClass());
     }
 
+    /**
+     * Check that a {@link Class} agrees with this description's data type
+     *
+     * @param clazz
+     *             Type class
+     * @return <tt>true</tt> if this description's equivalent type class with
+     *             the input type class
+     */
     public boolean dataTypeAgrees(final Class<?> clazz)
     {
         switch(this.dataType)
