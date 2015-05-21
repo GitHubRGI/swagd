@@ -1678,7 +1678,7 @@ public class TilesVerifier extends Verifier
                                                                                      @Override
                                                                                      public String apply(final ResultSet resultSet) throws SQLException
                                                                                      {
-                                                                                         return String.format("\tZoom level %d  has tile_row_values outside of the range: [0, %d].",
+                                                                                         return String.format("\tZoom level %d  has tile_row values outside of the range: [0, %d].",
                                                                                                               resultSet.getInt("zl"),
                                                                                                               resultSet.getInt("height") - 1);
                                                                                      }
