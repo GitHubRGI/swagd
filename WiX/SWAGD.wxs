@@ -30,29 +30,11 @@
                          Result="exists"
                          Win64="yes"
                          />
-    <!--check which version of gdal core is installed based on msi guid (constant) -->
-    <util:RegistrySearch Root="HKLM"
-                         Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\2273360F-7ADB-4D06-B238-6B76765C9E80"
-                         Value="Version"
-                         Variable="gdalCoreVersion"
-                         Result="value"
-                         Format="raw"
-                         Win64="yes"
-                         />
     <!-- check if gdal mr sid is installed based on msi guid (constant) -->
     <util:RegistrySearch Root="HKLM"
                          Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\C0B7DCCE-F188-48F9-AE5C-EE9944DBCDAD"
                          Variable="gdalMrSidInstalled"
                          Result="exists"
-                         Win64="yes"
-                         />
-    <!-- check which version of gdal mrsid is installed based on msi guide (constant) -->
-    <util:RegistrySearch Root="HKLM"
-                         Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\C0B7DCCE-F188-48F9-AE5C-EE9944DBCDAD"
-                         Value="Version"
-                         Variable="gdalMrSidVersion"
-                         Result="value"
-                         Format="raw"
                          Win64="yes"
                          />
     <!-- check if java is installed -->
@@ -62,18 +44,10 @@
                          Result="exists"
                          Win64="yes"
                          />
-    <!-- check if java is installed -->
-    <util:RegistrySearch Root="HKLM"
-                         Key="SOFTWARE\JavaSoft\Java Runtime Environment"
-                         Value="CurrentVersion"
-                         Variable="javaVersion"
-                         Result="value"
-                         Format="raw"
-                         Win64="yes"
-                         />
-   
+  <!-- setting variables (install location)-->
+    <Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]" />
 
-    <!-- Check for Java 8 install-->
+
   </Fragment>
   <!-- MSI install chain -->
   <Fragment>
@@ -85,7 +59,9 @@
                   InstallCondition="NOT gdalCoreInstalled"
                   ForcePerMachine="yes"
                   DisplayInternalUI="yes"
-                  />
+                  >
+        <MsiProperty Name="INSTALLLOCATION" Value="[InstallFolder]" />
+      </MsiPackage>
       <MsiPackage SourceFile=".\packages\gdal-111-1600-x64-mrsid.msi"
                   Visible="yes"
                   Description="GDAL Mr.SID library extensions"
@@ -93,17 +69,22 @@
                   InstallCondition="NOT gdalMrSidInstalled"
                   ForcePerMachine="yes"
                   DisplayInternalUI="yes"
-                  />
+                  >
+        <MsiProperty Name="INSTALLLOCATION" Value="[InstallFolder]" />
+      </MsiPackage>
       <ExePackage Id="InstallJava"
                   DetectCondition="Installed"
                   SourceFile=".\packages\jre-8u45-windows-x64.exe"
                   Compressed="no"
                   Permanent="yes"
-                  />    
+                  />
+
       <MsiPackage SourceFile=".\packages\Swagd_Installer.msi"
                   Description="SWAGD Application"
                   Visible="yes"
-                  />
+                  >
+        <MsiProperty Name="INSTALLLOCATION" Value="[InstallFolder]" />
+      </MsiPackage>
     </PackageGroup>
   </Fragment>
 </Wix>

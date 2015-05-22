@@ -17,9 +17,16 @@
         </Directory>
       </Directory>
       
-      
       <!-- swagd components -->
       <DirectoryRef Id="INSTALLDIR64">
+        <Component Id="GdalDataPath" Guid="EF67942F-D3D9-492B-824D-CCE63B10B805" Win64="yes">
+          <CreateFolder />
+          <Environment Id="gdaldatapath" Name="GDAL_DATA" Value="[INSTALLDIR64]\GDAL\gdal-data" Permanent="no" Part="all" Action="set" System="no" />
+        </Component>
+        <Component Id="SwagdPath" Guid="9031B5C3-E038-4FF6-8DA5-FAB0C49B4FCF" Win64="yes">
+          <CreateFolder />
+          <Environment Id="Swagdpath" Name="PATH" Value="[INSTALLDIR64]" Permanent="no" Part="last" Action="set" System="no" />
+        </Component>
         <Component Id="swagd.exe" DiskId="1" Guid="eed0a7a6-d443-4835-8d4f-42d57875b07a" Win64='yes'>
           <File Id="SWAGDEXE" Name="swagd.exe" Source="..\RGISuite\target\swagd.exe" KeyPath="yes" ProcessorArchitecture ="x64">
             <Shortcut Id="ApplicationStartMenuShortcut" Name="SWAGD" Description="SoftWare that Aggregates Geospatial Data" WorkingDirectory="INSTALLDIR64" Icon="swagd.exe" Directory="ProgramMenuDir" IconIndex="0" Advertise="yes" />
@@ -56,6 +63,12 @@
         <Component Id="osrjni.dll" DiskId="1" KeyPath="yes" Guid="9646a880-c647-4267-9941-13f30fcad27d" Win64='yes'>
           <File Id="OSRJNI.DLL" Name="osrjni.dll" Source="..\RGISuite\lib\osrjni.dll" ProcessorArchitecture ="x64"/>
         </Component>
+        <!-- Set PATH Variables-->
+        <Component Id="SwagdLibPath" Guid="2CC73C95-0D75-417E-A271-F94CE1C25B41" Win64="yes">
+          <CreateFolder />
+          <Environment Id="swagdlibpath" Name="PATH" Value="[LIB64]" Permanent="no" Part="last" Action="set" System="no"/>
+        </Component>
+
       </DirectoryRef>
       
       <!-- start menu shortcut component   -->
@@ -78,7 +91,10 @@
         <ComponentRef Id="license" />
         <ComponentRef Id="swagd_shared.jar" />
         <ComponentRef Id="ProgramMenuDir" />
-        <ComponentRef Id="settings"/>
+        <ComponentRef Id="SwagdPath"/>
+        <ComponentRef Id="SwagdLibPath"/>
+        <ComponentRef Id="settings" />
+        <ComponentRef Id="GdalDataPath"/>
       </Feature>
       <Icon Id="swagd.exe" SourceFile="..\RGISuite\target\swagd.exe" />
     </Product>
