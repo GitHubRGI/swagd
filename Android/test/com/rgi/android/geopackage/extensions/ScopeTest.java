@@ -23,30 +23,67 @@
 
 package com.rgi.android.geopackage.extensions;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 public class ScopeTest {
-	
+
 	/**
-	 * Tests that fromText throws an IllegalArgumentException 
-	 * when passed null instead of a string
+	 * Tests that fromText throws an IllegalArgumentException when passed null
+	 * instead of a string
 	 */
-	@Test (expected = IllegalArgumentException.class)
-	public void fromTextIllegalArgumentException1(){
+	@Test(expected = IllegalArgumentException.class)
+	public void fromTextIllegalArgumentException1() {
 		String name = null;
 		Scope.fromText(name);
 		fail("Expected Scope method fromText to throw an IllegalArgumentException when passed null instead of a valid String.");
 	}
-	
+ 
 	/**
-	 * Tests that fromText throws an IllegalArgumentException 
-	 * when passed an invalid string
+	 * Tests that fromText throws an IllegalArgumentException when passed an
+	 * invalid string
 	 */
-	@Test (expected = IllegalArgumentException.class)
-	public void fromTextIllegalArgumentException2(){
-		String name = "not a valis String";
+	@Test(expected = IllegalArgumentException.class)
+	public void fromTextIllegalArgumentException2() {
+		String name = "not a valid String";
 		Scope.fromText(name);
 		fail("Expected Scope method fromText to throw an IllegalArgumentException when passed an nonvalid string.");
+	}
+
+	/**
+	 * Tests that fromText returns correct values when passed valid strings
+	 */
+	@Test
+	public void fromtText() {
+		String read = "read-write";
+		String write = "write-only";
+
+		assertTrue(
+				String.format(
+						"Expected Scope method fromText to return %s, but %s was returned",
+						Scope.ReadWrite, Scope.fromText(read)),
+				Scope.fromText(read) == Scope.ReadWrite);
+		assertTrue(
+				String.format(
+						"Expected Scope method fromText to return %s, but %s was returned",
+						Scope.WriteOnly, Scope.fromText(write)),
+				Scope.fromText(write) == Scope.WriteOnly);
+	}
+
+	/**
+	 * Tests the toString method
+	 */
+	@Test
+	public void testToString() {
+		final Scope read = Scope.ReadWrite;
+		final Scope write = Scope.WriteOnly;
+		assertTrue(String.format(
+				"Expected toString to return ''read-write' but returned '%s'",
+				read.toString()), read.toString().equals("read-write"));
+		assertTrue(String.format(
+				"Expected toString to return ''write-onlu' but returned '%s'",
+				write.toString()), write.toString().equals("write-only"));
 	}
 }
