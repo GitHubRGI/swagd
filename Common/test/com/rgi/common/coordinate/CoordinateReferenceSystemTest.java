@@ -81,6 +81,7 @@ public class CoordinateReferenceSystemTest
     	CoordinateReferenceSystem crs = new CoordinateReferenceSystem(name, authority, id);
     	assertTrue("CoordinateReferenceSysemt method toString() did not return expected string",crs.toString().equals(String.format("%s:%d - %s", authority, id, name)));
     }
+    
     /**
      * Tests if the .equals method returns the expected values
      */

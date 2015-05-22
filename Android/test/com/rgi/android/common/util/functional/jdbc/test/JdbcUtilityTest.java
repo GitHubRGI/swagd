@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.rgi.android.common.util.functional.jdbc;
+package com.rgi.android.common.util.functional.jdbc.test;
 
 import static org.junit.Assert.*;
 
@@ -39,6 +39,9 @@ import javax.swing.filechooser.FileSystemView;
 import org.junit.Test;
 
 import com.rgi.android.common.util.functional.Predicate;
+import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
+import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
+import com.rgi.android.common.util.functional.jdbc.ResultSetPredicate;
 import com.rgi.android.geopackage.GeoPackage;
 import com.rgi.android.geopackage.core.GeoPackageCore;
 import com.rgi.android.geopackage.core.SpatialReferenceSystem;

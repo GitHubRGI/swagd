@@ -156,6 +156,14 @@ public class ImageUtilityTest
         brush.dispose();
     	assertTrue("The buffered image created from graffiti does not have the expected values.", bufferedImagesEqual(imageExpected, imageReturned));
     }
+    
+    /**
+     * Compares two BufferedImages and determines if they are equal
+     * 
+     * @param img1 the first buffered image
+     * @param img2 the second buffered image
+     * @return true if the two BufferedImages are equal
+     */
     private static boolean bufferedImagesEqual(final BufferedImage img1, final BufferedImage img2)
     {
         if(img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight())

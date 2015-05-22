@@ -21,56 +21,37 @@
  * SOFTWARE.
  */
 
-package com.rgi.common.util.functional;
+package com.rgi.android.common.tile;
 
 import static org.junit.Assert.fail;
-
-import java.util.Arrays;
-import java.util.List;
-
 import org.junit.Test;
+import com.rgi.android.common.tile.scheme.TileMatrixDimensions;
 
-public class ThrowingConsumerTest {
-
+public class TileOriginTest {
 	/**
-	 * Tests that accept throws a RuntimeException  
+	 * Tests that transform throws an IllegalArgumentException when given a null
+	 * value for TileOrigin
 	 */
-	@Test (expected = RuntimeException.class)
-	public void testAcceptThrowsException(){
-		ThrowingConsumer<String> tc = new ThrowingConsumer<String>() {
-			
-			@Override
-			public void acceptThrows(String t) throws Throwable {
-				if(t != null){
-					throw new NullPointerException();	
-				}
-			}
-		};
-		tc.accept("test");
-		fail("Expected ThrowingConsumer method accept to throw a RuntimeException.");
+	@Test(expected = IllegalArgumentException.class)
+	public void transformIllegalArgumentException1() {
+		final int x = 10;
+		final int y = 12;
+		final TileOrigin origin = TileOrigin.LowerLeft;
+		TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 12);
+		origin.transform(null, x, y, dimensions);
+		fail("Expected TileOrigin method transform(TileOrigin, int, int TileMatrixDimensions) to throw an IllegalArgumentException when given a null value");
 	}
-	
+
 	/**
-	 * Tests that accept does not always
-	 * throw a RuntimeException 
+	 * Tests that transform throws an IllegalArgumentException when given a null
+	 * value for TileOrigin
 	 */
-	public void testAccept(){
-		ThrowingConsumer<String> tc = new ThrowingConsumer<String>() {
-			
-			@Override
-			public void acceptThrows(String t) throws Throwable {
-				if(t.length() < 0){
-					throw new IllegalArgumentException();
-				}else{
-					// FINISH
-				}
-			}
-		};
-		try{
-			tc.accept("test"); 
-		}
-		catch(RuntimeException e){
-			fail("ThrowingConsumerTest threw an unexpected RuntimeException");
-		}
+	@Test(expected = IllegalArgumentException.class)
+	public void transformIllegalArgumentException() {
+		final int x = 12;
+		final int y = 10;
+		final TileOrigin origin = TileOrigin.LowerLeft;
+		origin.transform(origin, x, y, null);
+		fail("Expected TileOrigin method transform(TileOrigin, int, int TileMatrixDimensions) to throw an IllegalArgumentException when given a null value");
 	}
 }

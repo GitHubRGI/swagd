@@ -21,56 +21,40 @@
  * SOFTWARE.
  */
 
-package com.rgi.common.util.functional;
+package common;
 
-import static org.junit.Assert.fail;
-
-import java.util.Arrays;
-import java.util.List;
-
+import static org.junit.Assert.*;
 import org.junit.Test;
+import com.rgi.android.common.util.ThrowableUtility;
 
-public class ThrowingConsumerTest {
-
+public class ThrowableUtilityTest {
 	/**
-	 * Tests that accept throws a RuntimeException  
+	 * Tests that getRoot returns null when
+	 * given a null Throwable object
 	 */
-	@Test (expected = RuntimeException.class)
-	public void testAcceptThrowsException(){
-		ThrowingConsumer<String> tc = new ThrowingConsumer<String>() {
-			
-			@Override
-			public void acceptThrows(String t) throws Throwable {
-				if(t != null){
-					throw new NullPointerException();	
-				}
-			}
-		};
-		tc.accept("test");
-		fail("Expected ThrowingConsumer method accept to throw a RuntimeException.");
+	@Test
+	public void testGetRootNull(){
+		assertNull(ThrowableUtility.getRoot(null));
 	}
 	
 	/**
-	 * Tests that accept does not always
-	 * throw a RuntimeException 
+	 * Tests that getRoot returns throwable when 
+	 * given a Throwable object with a null cause
 	 */
-	public void testAccept(){
-		ThrowingConsumer<String> tc = new ThrowingConsumer<String>() {
-			
-			@Override
-			public void acceptThrows(String t) throws Throwable {
-				if(t.length() < 0){
-					throw new IllegalArgumentException();
-				}else{
-					// FINISH
-				}
-			}
-		};
-		try{
-			tc.accept("test"); 
-		}
-		catch(RuntimeException e){
-			fail("ThrowingConsumerTest threw an unexpected RuntimeException");
-		}
+	@Test
+	public void testGetRootCause(){
+		Throwable test = new Throwable("Tests error", null);
+		assertTrue(ThrowableUtility.getRoot(test).equals(test));
+	}
+	
+	/**
+	 * Tests that getRoot correctly returns the
+	 * cause of the Throwable object when it is not null
+	 */
+	@Test
+	public void testGetRoot(){
+		Throwable cause = new IllegalArgumentException();
+		Throwable test = new Throwable("Tests error", cause);
+		assertEquals(ThrowableUtility.getRoot(test), cause);
 	}
 }
