@@ -28,20 +28,22 @@ import com.rgi.geopackage.extensions.network.Network;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.VerificationLevel;
 
-
+@SuppressWarnings({ "javadoc", "unused" })
 public class Main
 {
-    private static final File file = new File("test.gpkg");
+    private static final File geoPackageFile = new File("test.gpkg");
+    private static final File nodeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
+    private static final File edgeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
 
     public static void main(final String[] args)
     {
-        //createGpkg();
-        runRoute();
+        createGpkg();
+        //runRoute();
     }
 
     private static void runRoute()
     {
-        try(final GeoPackage gpkg = new GeoPackage(file, OpenMode.Open))
+        try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, OpenMode.Open))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
@@ -66,40 +68,44 @@ public class Main
             {
                 final long startTime = System.nanoTime();
 
-//                List<Integer> path = dijkstra(networkExtension,
-//                         network,
-//                         startNode,
-//                         endNode,
-//                         (edge) -> { try
-//                                     {
-//                                         return networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute);
-//                                     }
-//                                     catch(final Exception ex)
-//                                     {
-//                                         throw new RuntimeException(ex);
-//                                     }
-//                                   });
+                final Map<Integer, Double> costCache = new HashMap<>();
 
-                final List<Integer> path = astar(networkExtension,
-                      network,
-                      startNode,
-                      endNode,
-                      (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute),
-                      (startIdentifier, endIdentifier) -> { try
-                                                            {
-                                                                final List<Object> startCoordinate = networkExtension.getAttributes(network, startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
-                                                                final List<Object> endCoordinate   = networkExtension.getAttributes(network, endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
+                final List<Integer> path = dijkstra(networkExtension,
+                                                    network,
+                                                    startNode,
+                                                    endNode,
+                                                    (ThrowingFunction<Edge, Double>)(edge) -> { if(costCache.containsKey(edge.getIdentifier()))
+                                                                                                {
+                                                                                                    return costCache.get(edge.getIdentifier());
+                                                                                                }
 
-                                                                final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
-                                                                final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
+                                                                                                final double cost = networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute);
 
-                                                                return Math.sqrt(latitude*latitude + longitude*longitude);
-                                                            }
-                                                            catch(final SQLException ex)
-                                                            {
-                                                                throw new RuntimeException(ex);
-                                                            }
-                                                          });
+                                                                                                costCache.put(edge.getIdentifier(), cost);
+
+                                                                                                return cost;
+                                                                                              });
+
+//                final List<Integer> path = astar(networkExtension,
+//                                                 network,
+//                                                 startNode,
+//                                                 endNode,
+//                                                 (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute),
+//                                                 (startIdentifier, endIdentifier) -> { try
+//                                                                                       {
+//                                                                                           final List<Object> startCoordinate = networkExtension.getAttributes(network, startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
+//                                                                                           final List<Object> endCoordinate   = networkExtension.getAttributes(network, endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
+//
+//                                                                                           final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
+//                                                                                           final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
+//
+//                                                                                           return Math.sqrt(latitude*latitude + longitude*longitude);
+//                                                                                       }
+//                                                                                       catch(final SQLException ex)
+//                                                                                       {
+//                                                                                           throw new RuntimeException(ex);
+//                                                                                       }
+//                                                                                     });
 
                 path.forEach(node -> System.out.print(node + ", "));
 
@@ -107,8 +113,6 @@ public class Main
 
                 System.out.println(String.format("\nAstar took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
             }
-
-            final int a = 2;
         }
         catch(final ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException ex)
         {
@@ -147,12 +151,12 @@ public class Main
 
     private static void createGpkg()
     {
-        if(file.exists())
+        if(geoPackageFile.exists())
         {
-            file.delete();
+            geoPackageFile.delete();
         }
 
-        try(final GeoPackage gpkg = new GeoPackage(file, VerificationLevel.None, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Create))
         {
 
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -185,12 +189,12 @@ public class Main
                                                                                                     AttributedType.Edge);
 
             loadNodeAttributes(networkExtension,
-                               new File("D:/contour.1/contour.1.node"),
+                               nodeFile,
                                myNetwork,
                                Arrays.asList(longitudeAttribute, latitudeAttribute));
 
             loadEdges(networkExtension,
-                      new File("D:/contour.1/contour.1.edge"),
+                      edgeFile,
                       myNetwork);
 
             calculateDistanceCost(networkExtension,
@@ -246,6 +250,12 @@ public class Main
         }
 
         @Override
+        public int hashCode()
+        {
+            return this.nodeIdentifier;
+        }
+
+        @Override
         public String toString()
         {
             return String.format("%d (%f, %f, %d)",
@@ -253,13 +263,6 @@ public class Main
                                  this.distanceFromStart,
                                  this.distanceFromEnd,
                                  this.previous.nodeIdentifier);
-        }
-
-        @Override
-        public int hashCode()
-        {
-
-            return this.nodeIdentifier;
         }
     }
 
@@ -301,6 +304,12 @@ public class Main
         }
 
         @Override
+        public int hashCode()
+        {
+            return this.nodeIdentifier;
+        }
+
+        @Override
         public String toString()
         {
             return String.format("%d (%f, %d)",
@@ -310,15 +319,6 @@ public class Main
         }
     }
 
-    /**
-     * @param networkExtension e
-     * @param network e
-     * @param start e
-     * @param end e
-     * @param heuristics e
-     * @return e
-     * @throws SQLException e
-     */
     public static List<Integer> astar(final GeoPackageNetworkExtension           networkExtension,
                                       final Network                              network,
                                       final Integer                              start,
@@ -470,12 +470,12 @@ public class Main
     }
 
     private static void calculateDistanceCost(final GeoPackageNetworkExtension networkExtension,
-                                              final Network                    myNetwork,
+                                              final Network                    network,
                                               final AttributeDescription       distanceDescription,
                                               final AttributeDescription       longitudeDescription,
                                               final AttributeDescription       latitudeDescription) throws SQLException
     {
-        networkExtension.visitEdges(myNetwork,
+        networkExtension.visitEdges(network,
                                     edge -> { try
                                               {
                                                   final double fromLongitude = networkExtension.getAttribute(edge.getFrom(), longitudeDescription);
@@ -489,7 +489,8 @@ public class Main
 
                                                   final double distance = Math.sqrt((longitude*longitude) + (latitude*latitude));
 
-                                                  networkExtension.addAttributes(edge.getIdentifier(),
+                                                  networkExtension.addAttributes(network,
+                                                                                 edge.getIdentifier(),
                                                                                  Arrays.asList(distanceDescription),
                                                                                  Arrays.asList(distance));
                                               }
@@ -523,7 +524,9 @@ public class Main
                                                                                        .filter(line -> !line.startsWith("#"))
                                                                                        .map(lineToPair))
         {
-            networkExtension.addAttributes(attributeDescriptions, pairs::iterator);
+            networkExtension.addAttributes(network,
+                                           attributeDescriptions,
+                                           pairs::iterator);
         }
     }
 

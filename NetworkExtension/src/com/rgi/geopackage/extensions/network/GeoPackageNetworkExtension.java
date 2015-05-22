@@ -294,8 +294,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
 
         final String edgeQuery = String.format("SELECT %s, %s FROM %s WHERE %s = ? LIMIT 1;",
-                                               "fromNode",
-                                               "toNode",
+                                               "from_node",
+                                               "to_node",
                                                network.getTableName(),
                                                "id");
 
@@ -334,8 +334,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         final String edgeQuery = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1;",
                                                "id",
                                                network.getTableName(),
-                                               "fromNode",
-                                               "toNode");
+                                               "from_node",
+                                               "to_node");
 
         try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(edgeQuery))
         {
@@ -368,9 +368,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
 
         final String edgeQuery = String.format("SELECT %s FROM %s WHERE %s = ?;",
-                                               "fromNode",
+                                               "from_node",
                                                network.getTableName(),
-                                               "toNode");
+                                               "to_node");
 
         try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(edgeQuery))
         {
@@ -400,9 +400,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         final String edgeQuery = String.format("SELECT %s, %s FROM %s WHERE %s = ?;",
                                                "id",
-                                               "toNode",
+                                               "to_node",
                                                network.getTableName(),
-                                               "fromNode");
+                                               "from_node");
 
         try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(edgeQuery))
         {
@@ -435,8 +435,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s FROM %s;",
                                                                "id",
-                                                               "fromNode",
-                                                               "toNode",
+                                                               "from_node",
+                                                               "to_node",
                                                                network.getTableName());
 
         try(final Statement statement = this.databaseConnection.createStatement())
@@ -475,8 +475,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         final String insert = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
                                             network.getTableName(),
-                                            "fromNode",
-                                            "toNode");
+                                            "from_node",
+                                            "to_node");
 
         int identifier = -1;
 
@@ -514,8 +514,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         final String insert = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
                                             network.getTableName(),
-                                            "fromNode",
-                                            "toNode");
+                                            "from_node",
+                                            "to_node");
 
         try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert))
         {
@@ -554,8 +554,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         final String insert = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
                                             network.getTableName(),
-                                            "fromNode",
-                                            "toNode");
+                                            "from_node",
+                                            "to_node");
 
         try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS))
         {
@@ -790,7 +790,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * Gets an attribute value
      *
      * @param attributedIdentifier
-     *             Unique identifier to either the node or edge
+     *             Unique identifier to either a node or edge
      * @param attributeDescription
      *             Handle to which attribute should be retrieved
      * @return the attribute's value stored for the node or edge
@@ -829,7 +829,22 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
     }
 
-    public List<Object> getAttributes(final Network network, final int attributedIdentifier, final AttributeDescription... attributeDescriptions) throws SQLException
+    /**
+     * Get multiple attribute values
+     *
+     * @param network
+     *             Network table reference
+     * @param attributedIdentifier
+     *             Unique identifier to either a node or edge
+     * @param attributeDescriptions
+     *             Collection of which attributes should be retrieved
+     * @return the attributes' respective values stored for the node or edge
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public List<Object> getAttributes(final Network                 network,
+                                      final int                     attributedIdentifier,
+                                      final AttributeDescription... attributeDescriptions) throws SQLException
     {
         if(network == null)
         {
@@ -868,7 +883,23 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
     }
 
-    public void addAttributes(final int                        attributedIdentifier,
+    /**
+     * Adds attributes for a given node or edge
+     *
+     * @param network
+     *             Network table reference
+     * @param attributedIdentifier
+     *             Unique identifier to either a node or edge
+     * @param attributeDescriptions
+     *             Collection of which attributes should be retrieved
+     * @param values
+     *             Values of the attributes in corresponding order to the given
+     *             attribute descriptions
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public void addAttributes(final Network                    network,
+                              final int                        attributedIdentifier,
                               final List<AttributeDescription> attributeDescriptions,
                               final List<Object>               values) throws SQLException
     {
@@ -889,7 +920,80 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         if(!attributeDescriptions.isEmpty())
         {
-            this.addAttributesNoCommit(attributedIdentifier, attributeDescriptions, values);
+            this.addAttributesNoCommit(network,
+                                       attributedIdentifier,
+                                       attributeDescriptions,
+                                       values);
+
+            this.databaseConnection.commit();
+        }
+    }
+
+    /**
+     *
+     *
+     * @param network
+     * @param attributeDescriptions
+     * @param attributedIdentifierValuePairs
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public void addAttributes(final Network                               network,
+                              final List<AttributeDescription>            attributeDescriptions,
+                              final Iterable<Pair<Integer, List<Object>>> attributedIdentifierValuePairs) throws SQLException
+    {
+        if(attributeDescriptions == null)
+        {
+            throw new IllegalArgumentException("Attribute descriptions list may not be null");
+        }
+
+        if(attributedIdentifierValuePairs == null)
+        {
+            throw new IllegalArgumentException("Attributed identifer value pairs iterator may not be null");
+        }
+
+        if(!attributeDescriptions.isEmpty())
+        {
+            final String networkTableName = attributeDescriptions.get(0).getNetworkTableName();
+
+            final String insert = String.format("INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
+                                                getNetworkAttributesTableName(networkTableName),
+                                                "attribute_description_id",
+                                                "attributed_id",
+                                                "value");
+
+            try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert))
+            {
+                for(final Pair<Integer, List<Object>> attributedIdentifierValuePair : attributedIdentifierValuePairs)
+                {
+                    final int          attributedIdentifier = attributedIdentifierValuePair.getLeft();
+                    final List<Object> values               = attributedIdentifierValuePair.getRight();
+
+                    if(values.size() != attributeDescriptions.size())
+                    {
+                        throw new IllegalArgumentException("The size of the attribute description list must match the size of the values list");
+                    }
+
+                    final int size = attributeDescriptions.size(); // Same as attributeDescriptions.size()
+
+                    for(int valueIndex = 0; valueIndex < size; ++valueIndex)
+                    {
+                        final AttributeDescription attributeDescription = attributeDescriptions.get(valueIndex);
+                        final Object               value                = values               .get(valueIndex);
+
+                        if(!attributeDescription.dataTypeAgrees(value))
+                        {
+                            throw new IllegalArgumentException("Value does not match the data type specified by the attribute description");
+                        }
+
+                        preparedStatement.setInt   (1, attributeDescription.getIdentifier());
+                        preparedStatement.setInt   (2, attributedIdentifier);
+                        preparedStatement.setObject(3, value);
+
+                        preparedStatement.executeUpdate();
+                    }
+                }
+            }
 
             this.databaseConnection.commit();
         }
@@ -952,74 +1056,14 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
     }
 
-    public void addAttributes(final List<AttributeDescription>            attributeDescriptions,
-                              final Iterable<Pair<Integer, List<Object>>> attributedIdentifierValuePairs) throws SQLException
-    {
-        if(attributeDescriptions == null)
-        {
-            throw new IllegalArgumentException("Attribute descriptions list may not be null");
-        }
-
-        if(attributedIdentifierValuePairs == null)
-        {
-            throw new IllegalArgumentException("Attributed identifer value pairs iterator may not be null");
-        }
-
-        if(!attributeDescriptions.isEmpty())
-        {
-            final String networkTableName = attributeDescriptions.get(0).getNetworkTableName();
-
-            final String insert = String.format("INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
-                                                getNetworkAttributesTableName(networkTableName),
-                                                "attribute_description_id",
-                                                "attributed_id",
-                                                "value");
-
-            try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert))
-            {
-                for(final Pair<Integer, List<Object>> attributedIdentifierValuePair : attributedIdentifierValuePairs)
-                {
-                    final int          attributedIdentifier = attributedIdentifierValuePair.getLeft();
-                    final List<Object> values               = attributedIdentifierValuePair.getRight();
-
-                    if(values.size() != attributeDescriptions.size())
-                    {
-                        throw new IllegalArgumentException("The size of the attribute description list must match the size of the values list");
-                    }
-
-                    final int size = attributeDescriptions.size(); // Same as attributeDescriptions.size()
-
-                    for(int valueIndex = 0; valueIndex < size; ++valueIndex)
-                    {
-                        final AttributeDescription attributeDescription = attributeDescriptions.get(valueIndex);
-                        final Object               value                = values               .get(valueIndex);
-
-                        if(!attributeDescription.dataTypeAgrees(value))
-                        {
-                            throw new IllegalArgumentException("Value does not match the data type specified by the attribute description");
-                        }
-
-                        preparedStatement.setInt   (1, attributeDescription.getIdentifier());
-                        preparedStatement.setInt   (2, attributedIdentifier);
-                        preparedStatement.setObject(3, value);
-
-                        preparedStatement.executeUpdate();
-                    }
-                }
-            }
-
-            this.databaseConnection.commit();
-        }
-    }
-
     @SuppressWarnings("static-method")
     protected String getNetworkCreationSql(final String networkTableName)
     {
         return "CREATE TABLE " + networkTableName + "\n" +
-               "(id       INTEGER PRIMARY KEY AUTOINCREMENT, -- Autoincrement primary key\n" +
-               " fromNode INTEGER NOT NULL,                  -- Starting point of an edge\n" +
-               " toNode   INTEGER NOT NULL,                  -- End of an edge\n"            +
-               " UNIQUE (fromNode, toNode));";
+               "(id        INTEGER PRIMARY KEY AUTOINCREMENT, -- Autoincrement primary key\n" +
+               " from_node INTEGER NOT NULL,                  -- Starting point of an edge\n" +
+               " to_node   INTEGER NOT NULL,                  -- End of an edge\n"            +
+               " UNIQUE (from_node, to_node));";
     }
 
     @SuppressWarnings("static-method")
@@ -1053,5 +1097,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     private static final String Definition                  = "definition"; // TODO
     private static final String NetworkAttributeTableSuffix = "_attributes";
 
+    /**
+     * Name of the singular table describing attributes for network tables
+     */
     public static final String AttributeDescriptionTableName = "network_attribute_description";
 }
