@@ -3,6 +3,11 @@
   <groupId>com.rgi.NetworkExtension</groupId>
   <artifactId>NetworkExtension</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  
- 
+     <dependencies>
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.8.7</version>
+        </dependency>
+    </dependencies>
 </project>

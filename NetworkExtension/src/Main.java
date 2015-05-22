@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,6 +36,7 @@ public class Main
     private static final File geoPackageFile = new File("test.gpkg");
     private static final File nodeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
     private static final File edgeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
+    private static final File dataFile = new File("F:/usma_pandolf.sqlite");
 
     public static void main(final String[] args)
     {
@@ -149,6 +152,14 @@ public class Main
         System.out.println(String.format("\nAstar total distance = %f", totalWeight));
     }
 
+    private static void createGpkg2() throws SQLException, ClassNotFoundException
+
+    {
+
+        Class.forName("org.sqlite.JDBC");   // Register the driver
+
+        final Connection db = DriverManager.getConnection("jdbc:sqlite:" + dataFile.getPath()); // Initialize the database connection
+    }
     private static void createGpkg()
     {
         if(geoPackageFile.exists())
@@ -222,9 +233,9 @@ public class Main
         public VertexAstar(final int nodeIdentifier)
         {
             this.nodeIdentifier    = nodeIdentifier;
-            this.previous          = null;
-            this.distanceFromStart = 0.0;
-            this.distanceFromEnd   = 0.0;
+            previous          = null;
+            distanceFromStart = 0.0;
+            distanceFromEnd   = 0.0;
         }
 
         public VertexAstar(final int nodeIdentifier, final VertexAstar previous)
@@ -246,23 +257,23 @@ public class Main
                 return false;
             }
 
-            return this.nodeIdentifier == ((VertexAstar)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
+            return nodeIdentifier == ((VertexAstar)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
         }
 
         @Override
         public int hashCode()
         {
-            return this.nodeIdentifier;
+            return nodeIdentifier;
         }
 
         @Override
         public String toString()
         {
             return String.format("%d (%f, %f, %d)",
-                                 this.nodeIdentifier,
-                                 this.distanceFromStart,
-                                 this.distanceFromEnd,
-                                 this.previous.nodeIdentifier);
+                                 nodeIdentifier,
+                                 distanceFromStart,
+                                 distanceFromEnd,
+                                 previous.nodeIdentifier);
         }
     }
 
@@ -277,8 +288,8 @@ public class Main
         public Vertex(final int nodeIdentifier)
         {
             this.nodeIdentifier = nodeIdentifier;
-            this.previous       = null;
-            this.minimumCost    = 0.0;
+            previous       = null;
+            minimumCost    = 0.0;
         }
 
         public Vertex(final int nodeIdentifier, final Vertex previous)
@@ -300,22 +311,22 @@ public class Main
                 return false;
             }
 
-            return this.nodeIdentifier == ((Vertex)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
+            return nodeIdentifier == ((Vertex)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
         }
 
         @Override
         public int hashCode()
         {
-            return this.nodeIdentifier;
+            return nodeIdentifier;
         }
 
         @Override
         public String toString()
         {
             return String.format("%d (%f, %d)",
-                                 this.nodeIdentifier,
-                                 this.minimumCost,
-                                 this.previous.nodeIdentifier);
+                                 nodeIdentifier,
+                                 minimumCost,
+                                 previous.nodeIdentifier);
         }
     }
 
