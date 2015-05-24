@@ -53,3 +53,11 @@ cov-int
 
 RGISuite/settings.txt
 VerifierTool/.project
+
+# Ignore some android files
+
+# this file is auto-generated
+project.properties
+
+# we don't use proguard for anything
+proguard-project.txt
