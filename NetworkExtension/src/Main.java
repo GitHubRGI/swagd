@@ -3,7 +3,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,10 +40,20 @@ public class Main
     private static final File nodeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
     private static final File edgeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
     private static final File dataFile = new File("F:/usma_pandolf.sqlite");
+    private static final File geoPackageFile2 = new File("test2.gpkg");
 
     public static void main(final String[] args)
     {
-        createGpkg();
+        //createGpkg();
+    	try {
+			createGpkg2();
+		} catch (final ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (final SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         //runRoute();
     }
 
@@ -153,13 +166,82 @@ public class Main
     }
 
     private static void createGpkg2() throws SQLException, ClassNotFoundException
-
     {
 
         Class.forName("org.sqlite.JDBC");   // Register the driver
 
         final Connection db = DriverManager.getConnection("jdbc:sqlite:" + dataFile.getPath()); // Initialize the database connection
+
+        if(geoPackageFile2.exists())
+        {
+            geoPackageFile2.delete();
+        }
+
+        try (final GeoPackage gpkg = new GeoPackage(geoPackageFile2, VerificationLevel.None, OpenMode.Create))
+        {
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network myNetwork = networkExtension.addNetwork("mynetwork",
+                                                                  "Super Important Routing Stuff",
+                                                                  "routing stuff. super important",
+                                                                  new BoundingBox(0, 0, 0, 0),
+                                                                  gpkg.core().getSpatialReferenceSystem(-1));
+
+            final AttributeDescription slopeAttribute = networkExtension.addAttributeDescription(myNetwork,
+            																			"slope",
+            																			"meters(?)",
+            																			DataType.Real,
+            																			"slope",
+            																			AttributedType.Edge);
+
+            final AttributeDescription lengthAttribute = networkExtension.addAttributeDescription(myNetwork,
+																								  "length",
+																								  "meters(?)",
+																								  DataType.Real,
+																								  "length",
+																								  AttributedType.Edge);
+
+            final AttributeDescription pandolfCostAttribute = networkExtension.addAttributeDescription(myNetwork,
+            																					"cost_pandolf",
+            																					"unknown",
+            																					DataType.Real,
+            																					"caloric cost walking?",
+            																					 AttributedType.Edge);
+
+            final AttributeDescription elevationAttribute = networkExtension.addAttributeDescription(myNetwork,
+            																							"elev",
+            																							"meters(?)",
+            																							DataType.Real,
+            																							"elevation",
+            																							AttributedType.Node);
+
+            final String query = String.format("Select %s, %s, %s, %s, %s FROM %s", "from_node", "to_node", "slope", "length", "cost_pandolf", "edges");
+            try(final PreparedStatement stmt =  db.prepareStatement(query))
+            {
+            	try(ResultSet results = stmt.executeQuery())
+            	{
+            		loadAttributedEdges(networkExtension, results, myNetwork, Arrays.asList(slopeAttribute, lengthAttribute, pandolfCostAttribute));
+            	}
+            }
+
+            final String query2 = String.format("Select %s, %s FROM %s", "node", "elev", "nodes");
+            try(final PreparedStatement stmt =  db.prepareStatement(query2))
+            {
+            	try(ResultSet results = stmt.executeQuery())
+            	{
+            		loadNodeAttributes2(networkExtension, results, myNetwork, Arrays.asList(elevationAttribute));
+            	}
+            }
+        }
+        catch(final ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException ex)
+        {
+            ex.printStackTrace();
+        }
+        finally{
+        	db.close();
+        }
     }
+
     private static void createGpkg()
     {
         if(geoPackageFile.exists())
@@ -541,6 +623,21 @@ public class Main
         }
     }
 
+    private static void loadNodeAttributes2(final GeoPackageNetworkExtension networkExtension,
+    										final ResultSet rs,
+    										final Network network,
+    										final List<AttributeDescription> attributeDescriptions) throws SQLException
+    {
+    	final List<Pair<Integer, List<Object>>> pairs = new ArrayList<Pair<Integer, List<Object>>>();
+    	while (rs.next())
+    	{
+    		pairs.add(new Pair<>(rs.getInt(1), Arrays.asList((Object)rs.getDouble(2))));
+    	}
+    	networkExtension.addAttributes(network,
+    								   attributeDescriptions,
+    								   pairs::iterator);
+    }
+
     private static void loadEdges(final GeoPackageNetworkExtension networkExtension, final File triangleFormatEdges, final Network network) throws SQLException, IOException
     {
         final Function<String, Pair<Integer, Integer>> lineToPair = line -> { final String[] pieces = line.trim().split("\\s+");
@@ -575,6 +672,21 @@ public class Main
         }
     }
 
+    private static void loadAttributedEdges(final GeoPackageNetworkExtension networkExtension,
+    		                                final ResultSet rs,
+    		                                final Network network,
+    		                                final List<AttributeDescription> attributeDescriptions) throws SQLException{
+    	final List<Pair<Pair<Integer, Integer>, List<Object>>> edges = new ArrayList<Pair<Pair<Integer, Integer>, List<Object>>>();
+
+    	Pair<Integer, Integer> pair;
+    	while(rs.next()){
+    		pair = new Pair<Integer, Integer>(rs.getInt(1), rs.getInt(2));	//from node, and to node
+    		edges.add(new Pair<>(pair, Arrays.asList((Object)rs.getDouble(3),	//slope
+    												 (Object)rs.getDouble(4),	//length
+    												 (Object)rs.getDouble(5))));//pandolf cost
+    	}
+    	networkExtension.addAttributedEdges(network, attributeDescriptions, edges::iterator);
+    }
 //    private String firstLine(final File file) throws IOException
 //    {
 //        try(Stream<String> lines = Files.lines(file.toPath(), StandardCharsets.US_ASCII))

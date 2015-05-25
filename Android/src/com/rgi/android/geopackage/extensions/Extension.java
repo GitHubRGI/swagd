@@ -63,7 +63,7 @@ public class Extension
                         final String columnName,
                         final String extensionName,
                         final String definition,
-                        final String scope)
+                        final String scope) 
     {
         if(columnName != null && tableName == null)
         {
