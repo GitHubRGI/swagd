@@ -31,12 +31,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Locale;
 import java.util.Random;
-
-import javax.swing.filechooser.FileSystemView;
 
 import org.junit.Test;
 
@@ -64,206 +62,207 @@ public class GeoPackageCoreAPITest
     * @throws Exception
     */
 
-@Test
-   public void createMethodSettingFile() throws SQLException, Exception
-   {
-       final File testFile = this.getRandomFile(3);
+    @Test
+    public void createMethodSettingFile() throws SQLException, Exception
+    {
+        final File testFile = TestUtility.getRandomFile(3);
 
-       GeoPackage gpkg = new GeoPackage(testFile);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
-       try
-       {
-           assertTrue("The file given to the GeoPackage using the method create(File file) does not return the same file",
-                      gpkg.getFile().equals(testFile));
-       }
-       finally
-       {
+        try
+        {
+            assertTrue("The file given to the GeoPackage using the method create(File file) does not return the same file",
+                       gpkg.getFile().equals(testFile));
+        }
+        finally
+        {
+            gpkg.close();
+            TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**Tests if the GeoPackage.create(File file) will throw a FileAlreadyExists exception
+     * when given a file that has already been created.
+     * @throws FileAlreadyExistsException
+     * @throws Exception
+     */
+    @Test(expected = IOException.class) //TODO if this test fails it could be due to the fact that this use to be a FileAlreadyExistsException
+    public void createMethod2FileExistsExceptionThrown() throws Exception
+    {
+        final File testFile = TestUtility.getRandomFile(10);
+        testFile.createNewFile();
+
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+
+        try
+        {
+            fail("This test should throw a FileAlreadyExistsException when trying to create a file that already exists.");
+        }
+        finally
+        {
+            gpkg.close();
+            TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**Opens a GeoPackage that has not been created, should throw a FileNotFoundException.
+     *
+     * @throws FileNotFoundException
+     * @throws Exception
+     */
+    @Test(expected = FileNotFoundException.class)
+    public void OpenAGeoPackageFileNotFoundExceptionThrown() throws FileNotFoundException, Exception
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Open);
+
+        try
+        {
+            fail("The GeoPackage should throw a FileNotFoundException when trying to open a GeoPackage with a file that hasn't been created.");
+        }
+        finally
+        {
            gpkg.close();
-           deleteAndCloseGeoPackage(testFile);
-       }
-   }
+           TestUtility.deleteFile(testFile);
+        }
+    }
 
-   /**Tests if the GeoPackage.create(File file) will throw a FileAlreadyExists exception
-    * when given a file that has already been created.
-    * @throws FileAlreadyExistsException
-    * @throws Exception
-    */
-   @Test(expected = IOException.class) //TODO if this test fails it could be due to the fact that this use to be a FileAlreadyExistsException
-   public void createMethod2FileExistsExceptionThrown() throws Exception
-   {
-       final File testFile = this.getRandomFile(10);
-       testFile.createNewFile();
+    /** Gives a GeoPackage a null file to ensure it throws an IllegalArgumentException.
+     *
+     * @throws IllegalArgumentException
+     * @throws Exception
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void CreateAGeoPackageIllegalArgumentExceptionForFiles() throws IllegalArgumentException, Exception
+    {
+        final GeoPackage gpkg = new GeoPackage(null);
 
-       GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        try
+        {
+            fail("The GeoPackage should throw an IllegalArgumentException for trying to create a file that is null.");
+        }
+        finally
+        {
+            gpkg.close();
+        }
+    }
 
-       try
-       {
-           fail("This test should throw a FileAlreadyExistsException when trying to create a file that already exists.");
-       }
-       finally
-       {
+
+    /**
+     * Creates a GeoPackage with a file and checks to make sure that the Application Id is set correctly.
+     *
+     *  The Application Id of GeoPackage SHALL contain 0x47503130 ("GP10" in ASCII) in the
+     * application id field of the SQLite database header to indicate a
+     * GeoPackage version 1.0 file.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void verifyApplicationId() throws Exception
+    {
+        final File testFile = TestUtility.getRandomFile(12);
+        final GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
+        {
+            assertTrue(String.format(Locale.getDefault(),
+                                     "The GeoPackage Application Id is incorrect. Application Id Expected (in int):  %d  Application Id recieved: %d",
+                                            geoPackageApplicationId, gpkg.getApplicationId()),
+                                     gpkg.getApplicationId() == geoPackageApplicationId);
+        }
+        finally
+        {
            gpkg.close();
-           deleteAndCloseGeoPackage(testFile);
-       }
-   }
+           TestUtility.deleteFile(testFile);
+        }
+    }
 
-   /**Opens a GeoPackage that has not been created, should throw a FileNotFoundException.
-    *
-    * @throws FileNotFoundException
-    * @throws Exception
-    */
-   @Test(expected = FileNotFoundException.class)
-   public void OpenAGeoPackageFileNotFoundExceptionThrown() throws FileNotFoundException, Exception
-   {
-       final File testFile = this.getRandomFile(5);
+    /**
+     * Creates a GeoPackage with the method create(File file) and verifies that the sqlite version is correct.
+     *
+     * The Sqlite version required for a GeoPackage shall contain SQLite 3 format.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void verifySqliteVersion() throws Exception
+    {
+        final File testFile = TestUtility.getRandomFile(12);
 
-       GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Open);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
-       try
-       {
-           fail("The GeoPackage should throw a FileNotFoundException when trying to open a GeoPackage with a file that hasn't been created.");
-       }
-       finally
-       {
-          gpkg.close();
-          deleteAndCloseGeoPackage(testFile);
-       }
-   }
+        try
+        {
+            // get the first number in the sqlite version and make sure it is a
+            // version 3
+            String sqliteVersion = gpkg.getSqliteVersion();
+                   sqliteVersion = sqliteVersion.substring(0, sqliteVersion.indexOf('.'));
 
-   /** Gives a GeoPackage a null file to ensure it throws an IllegalArgumentException.
-    *
-    * @throws IllegalArgumentException
-    * @throws Exception
-    */
-   @Test(expected = IllegalArgumentException.class)
-   public void CreateAGeoPackageIllegalArgumentExceptionForFiles() throws IllegalArgumentException, Exception
-   {
-       GeoPackage gpkg = new GeoPackage(null);
+            assertTrue(String.format("The GeoPackage Sqlite Version is incorrect."
+                                   + " Sqlite Version Id Expected:  %s"
+                                   + " SqliteVersion recieved: %s", geopackageSqliteVersion, sqliteVersion),
+                                            geopackageSqliteVersion.equals(sqliteVersion));
+        }
+        finally
+        {
+            gpkg.close();
+            TestUtility.deleteFile(testFile);
+        }
+    }
 
-       try
-       {
-           fail("The GeoPackage should throw an IllegalArgumentException for trying to create a file that is null.");
-       }
-       finally
-       {
+    /**
+     * Test if the SQLiteVerison is the same even when it is called twice.
+     *
+     * @throws SQLException
+     * @throws Exception
+     */
+    @Test
+    public void getSqliteVersionFromFileWithSQLiteVersion() throws SQLException, Exception
+    {
+        final File testFile      = TestUtility.getRandomFile(6);
+        final int  randomInteger = this.randomGenerator.nextInt();
+
+        final GeoPackage gpkg = new GeoPackage(testFile);
+
+        try
+        {
+            final RandomAccessFile randomAccessFile = new RandomAccessFile(testFile, "rw");
+            try
+            {
+                // https://www.sqlite.org/fileformat2.html
+                // Bytes 96 -> 100 are an int representing the sqlite version
+                // used random integer
+                randomAccessFile.seek(96);
+                randomAccessFile.writeInt(randomInteger);
+                randomAccessFile.close();
+
+                final GeoPackage gpkg2 = new GeoPackage(testFile, OpenMode.Open);
+
+                try
+                {
+                    gpkg2.getSqliteVersion();
+                    final String sqliteVersionChanged = gpkg2.getSqliteVersion();
+
+                    assertTrue(String.format("The method getSqliteVersion() did not detect the same Version expected. Expected: %s   Actual: %s", this.sqliteVersionToString(randomInteger), sqliteVersionChanged),
+                                              sqliteVersionChanged.equals(this.sqliteVersionToString(randomInteger)));
+                }
+                finally
+                {
+                    gpkg2.close();
+                }
+            }
+            finally
+            {
+                randomAccessFile.close();
+            }
+        }
+        finally
+        {
            gpkg.close();
-       }
-   }
-
-
-   /**
-    * Creates a GeoPackage with a file and checks to make sure that the Application Id is set correctly.
-    *
-    *  The Application Id of GeoPackage SHALL contain 0x47503130 ("GP10" in ASCII) in the
-    * application id field of the SQLite database header to indicate a
-    * GeoPackage version 1.0 file.
-    *
-    * @throws Exception
-    */
-   @Test
-   public void verifyApplicationId() throws Exception
-   {
-       final File testFile = this.getRandomFile(12);
-       GeoPackage gpkg = new GeoPackage(testFile);
-
-       try
-       {
-           assertTrue(String.format("The GeoPackage Application Id is incorrect. Application Id Expected (in int):  %d  Application Id recieved: %d",
-                                           geoPackageApplicationId, gpkg.getApplicationId()),
-                                    gpkg.getApplicationId() == geoPackageApplicationId);
-       }
-       finally
-       {
-          gpkg.close();
-          deleteAndCloseGeoPackage(testFile);
-       }
-   }
-
-   /**
-    * Creates a GeoPackage with the method create(File file) and verifies that the sqlite version is correct.
-    *
-    * The Sqlite version required for a GeoPackage shall contain SQLite 3 format.
-    *
-    * @throws Exception
-    */
-   @Test
-   public void verifySqliteVersion() throws Exception
-   {
-       final File testFile = this.getRandomFile(12);
-
-       GeoPackage gpkg = new GeoPackage(testFile);
-
-       try
-       {
-           // get the first number in the sqlite version and make sure it is a
-           // version 3
-           String sqliteVersion = gpkg.getSqliteVersion();
-                  sqliteVersion = sqliteVersion.substring(0, sqliteVersion.indexOf('.'));
-
-           assertTrue(String.format("The GeoPackage Sqlite Version is incorrect."
-                                  + " Sqlite Version Id Expected:  %s"
-                                  + " SqliteVersion recieved: %s", geopackageSqliteVersion, sqliteVersion),
-                                           geopackageSqliteVersion.equals(sqliteVersion));
-       }
-       finally
-       {
-           gpkg.close();
-           deleteAndCloseGeoPackage(testFile);
-       }
-   }
-
-   /**
-    * Test if the SQLiteVerison is the same even when it is called twice.
-    *
-    * @throws SQLException
-    * @throws Exception
-    */
-   @Test
-   public void getSqliteVersionFromFileWithSQLiteVersion() throws SQLException, Exception
-   {
-       final File testFile      = this.getRandomFile(6);
-       final int  randomInteger = this.randomGenerator.nextInt();
-
-       GeoPackage gpkg = new GeoPackage(testFile);
-
-       try
-       {
-           RandomAccessFile randomAccessFile = new RandomAccessFile(testFile, "rw");
-           try
-           {
-               // https://www.sqlite.org/fileformat2.html
-               // Bytes 96 -> 100 are an int representing the sqlite version
-               // used random integer
-               randomAccessFile.seek(96);
-               randomAccessFile.writeInt(randomInteger);
-               randomAccessFile.close();
-
-               GeoPackage gpkg2 = new GeoPackage(testFile, OpenMode.Open);
-
-               try
-               {
-                   gpkg2.getSqliteVersion();
-                   final String sqliteVersionChanged = gpkg2.getSqliteVersion();
-
-                   assertTrue(String.format("The method getSqliteVersion() did not detect the same Version expected. Expected: %s   Actual: %s", this.sqliteVersionToString(randomInteger), sqliteVersionChanged),
-                                             sqliteVersionChanged.equals(this.sqliteVersionToString(randomInteger)));
-               }
-               finally
-               {
-                   gpkg2.close();
-               }
-           }
-           finally
-           {
-               randomAccessFile.close();
-           }
-       }
-       finally
-       {
-          gpkg.close();
-          deleteAndCloseGeoPackage(testFile);
-       }
-   }
+           TestUtility.deleteFile(testFile);
+        }
+    }
 
     /**
      * Tests if the GeoPackage will throw an IllegalArgumentException when trying to add
@@ -273,9 +272,9 @@ public class GeoPackageCoreAPITest
     @Test
     public void addExistingContentVerify() throws Exception
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile(12);
 
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -305,7 +304,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -317,8 +316,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addExistingContentWithSameTableNameAndDifferentOtherValues() throws Exception
     {
-        final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(12);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -336,7 +335,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -353,8 +352,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void createSpatialReferenceSystemBadName() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(7);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -364,7 +363,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -380,8 +379,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void createSpatialReferenceSystemBadName2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(7);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -391,7 +390,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -407,8 +406,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void createSpatialReferenceSystemBadOrganization() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(7);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -418,7 +417,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -434,8 +433,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void createSpatialReferenceSystemBadOrganization2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(7);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -445,7 +444,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -461,8 +460,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void createSpatialReferenceSystemBadDefinition() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(7);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -472,7 +471,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -488,8 +487,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void createSpatialReferenceSystemBadDefinition2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(7);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -499,7 +498,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -515,8 +514,8 @@ public class GeoPackageCoreAPITest
     @Test
     public void createSpatialReferenceSystemSameSRS() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(7);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -534,7 +533,7 @@ public class GeoPackageCoreAPITest
         finally
         {
            gpkg.close();
-           deleteAndCloseGeoPackage(testFile);
+           TestUtility.deleteFile(testFile);
         }
     }
 
@@ -546,8 +545,8 @@ public class GeoPackageCoreAPITest
     @Test
     public void addSpatialReferenceSystemNullDescription() throws SQLException, Exception
     {
-        final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(8);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -568,7 +567,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -582,8 +581,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addExistingSrsWithSameSrsIdAndDifferingOtherFields() throws RuntimeException, SQLException, Exception
     {
-        final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(5);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -604,7 +603,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -617,8 +616,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addExistingSrsWithSameSrsIdAndDifferingOtherFields2() throws RuntimeException, SQLException, Exception
     {
-        final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(5);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -641,7 +640,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -654,8 +653,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addExistingSrsWithSameSrsIdAndDifferingOtherFields3() throws RuntimeException, SQLException, Exception
     {
-        final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(5);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -679,7 +678,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -695,8 +694,8 @@ public class GeoPackageCoreAPITest
     @Test
     public void addSRSVerify() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(5);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -723,7 +722,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -740,8 +739,8 @@ public class GeoPackageCoreAPITest
     @Test
     public void addExistingSRSTwiceVerifyHashCodeAndEquals() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(8);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -761,7 +760,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -773,8 +772,8 @@ public class GeoPackageCoreAPITest
     @Test
     public void getSpatialReferenceSystem() throws SQLException, Exception
     {
-        final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(5);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -788,7 +787,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -800,8 +799,8 @@ public class GeoPackageCoreAPITest
     @Test
     public void getSpatialReferenceSystem2() throws SQLException, Exception
     {
-        final File testFile = this.getRandomFile(5);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(5);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -813,7 +812,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -831,8 +830,8 @@ public class GeoPackageCoreAPITest
     @Test
     public void getSpatialReferenceSystem3() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(7);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -845,7 +844,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -864,8 +863,8 @@ public class GeoPackageCoreAPITest
     @Test
     public void getSpatialReferenceSystem4() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(9);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -891,7 +890,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -909,8 +908,8 @@ public class GeoPackageCoreAPITest
     @Test
     public void getSpatialReferenceSystem5() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(9);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(9);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -927,7 +926,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -942,8 +941,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addContentBadTableName() throws Exception
     {
-        final File testFile = this.getRandomFile(10);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(10);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -953,7 +952,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -966,8 +965,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addContentBadTableName2() throws Exception
     {
-        final File testFile = this.getRandomFile(10);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(10);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -977,7 +976,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -990,8 +989,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addContentBadTableName3() throws Exception
     {
-        final File testFile = this.getRandomFile(10);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(10);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1001,7 +1000,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1014,8 +1013,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addContentBadTableName4() throws Exception
     {
-        final File testFile = this.getRandomFile(10);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(10);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1025,7 +1024,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
     /**
@@ -1041,8 +1040,8 @@ public class GeoPackageCoreAPITest
     @Test(expected= IllegalArgumentException.class)
     public void addContentBadBoundingBox() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(8);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1052,7 +1051,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
 
     }
@@ -1066,8 +1065,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void getContentBadTableName() throws Exception
     {
-        final File testFile = this.getRandomFile(10);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(10);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1077,7 +1076,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1090,8 +1089,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void getContentBadTableName2() throws Exception
     {
-        final File testFile = this.getRandomFile(10);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(10);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1101,7 +1100,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1114,8 +1113,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void getContentBadContentFactory() throws Exception
     {
-        final File testFile = this.getRandomFile(10);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(10);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1125,7 +1124,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1137,8 +1136,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addContentBadDataType() throws Exception
     {
-        final File testFile = this.getRandomFile(10);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(10);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1148,7 +1147,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1160,8 +1159,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addContentBadDataType2() throws Exception
     {
-        final File testFile = this.getRandomFile(10);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(10);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1171,7 +1170,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1183,8 +1182,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void getContentBadDataType() throws Exception
     {
-        final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(12);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1194,7 +1193,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1206,8 +1205,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void getContentBadDataType2() throws Exception
     {
-        final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(12);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1217,7 +1216,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1234,8 +1233,8 @@ public class GeoPackageCoreAPITest
     @Test(expected = IllegalArgumentException.class)
     public void getContentNullParameter() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile);
+        final File testFile = TestUtility.getRandomFile(12);
+        final GeoPackage gpkg = new GeoPackage(testFile);
 
         try
         {
@@ -1245,7 +1244,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1264,9 +1263,9 @@ public class GeoPackageCoreAPITest
     @Test
     public void equalsContent() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(18);
+        final File testFile = TestUtility.getRandomFile(18);
         final String tableName = "tableName";
-        GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile);
+        final GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile);
 
         try
         {
@@ -1289,7 +1288,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
 
     }
@@ -1308,9 +1307,9 @@ public class GeoPackageCoreAPITest
     @Test
     public void equalsContent2() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(18);
+        final File testFile = TestUtility.getRandomFile(18);
         final String tableName = "tableName";
-        GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile);
+        final GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile);
 
 
         try
@@ -1336,7 +1335,7 @@ public class GeoPackageCoreAPITest
         finally
         {
            gpkg.close();
-           deleteAndCloseGeoPackage(testFile);
+           TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1354,9 +1353,9 @@ public class GeoPackageCoreAPITest
     @Test
     public void equalsContent3() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(18);
+        final File testFile = TestUtility.getRandomFile(18);
         final String tableName = "tableName";
-        GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile);
+        final GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile);
 
         try
         {
@@ -1379,7 +1378,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1397,9 +1396,9 @@ public class GeoPackageCoreAPITest
     @Test
     public void equalsContent4() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(18);
+        final File testFile = TestUtility.getRandomFile(18);
         final String tableName = "tableName";
-        GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile);
+        final GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile);
 
         try
         {
@@ -1424,7 +1423,7 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1442,9 +1441,9 @@ public class GeoPackageCoreAPITest
     @Test
     public void equalsContent5() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(18);
+        final File testFile = TestUtility.getRandomFile(18);
         final String tableName = "tableName";
-        GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile);
+        final GeoPackage gpkg = this.createGeoPackage(tableName, "columnName", testFile);
 
         try
         {
@@ -1467,13 +1466,13 @@ public class GeoPackageCoreAPITest
         finally
         {
             gpkg.close();
-            deleteAndCloseGeoPackage(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
     private GeoPackage createGeoPackage(final String tableName, final String columnName, final File testFile) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -1497,11 +1496,11 @@ public class GeoPackageCoreAPITest
                                             tableName,
                                             columnName);
 
-        Connection con = getConnection(testFile);
+        final Connection con = TestUtility.getConnection(testFile);
 
         try
         {
-            Statement stmt = con.createStatement();
+            final Statement stmt = con.createStatement();
 
             try
             {
@@ -1519,49 +1518,6 @@ public class GeoPackageCoreAPITest
         }
     }
 
-    private static void deleteAndCloseGeoPackage(final File testFile)
-    {
-        if(testFile.exists())
-        {
-            if(!testFile.delete())
-            {
-                throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-            }
-        }
-    }
-
-    private static Connection getConnection(final File testFile) throws ClassNotFoundException, SQLException
-    {
-        Class.forName("org.sqlite.JDBC");   // Register the driver
-
-        return DriverManager.getConnection("jdbc:sqlite:" + testFile.getPath()); // Initialize the database connection
-    }
-
-    private String getRanString(final int length)
-    {
-        final String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        final char[] text = new char[length];
-        for (int i = 0; i < length; i++)
-        {
-            text[i] = characters.charAt(this.randomGenerator.nextInt(characters.length()));
-        }
-        return new String(text);
-    }
-
-    private File getRandomFile(final int length)
-    {
-        File testFile;
-
-        do
-        {
-            String filename = FileSystemView.getFileSystemView().getDefaultDirectory().getAbsolutePath() + "/" +  this.getRanString(length) + ".gpkg";
-            testFile = new File(filename);
-        }
-        while (testFile.exists());
-
-        return testFile;
-    }
-
     private String sqliteVersionToString(final int randomInt)
     {
         // Major/minor/revision, https://www.sqlite.org/fileformat2.html
@@ -1569,7 +1525,7 @@ public class GeoPackageCoreAPITest
         final int minor = (randomInt - (major * 1000000)) / 1000;
         final int revision = randomInt - ((major * 1000000) + (minor * 1000));
 
-        return String.format("%d.%d.%d", major, minor, revision);
+        return String.format(Locale.getDefault(), "%d.%d.%d", major, minor, revision);
     }
     /**
      * The Sqlite version required for a GeoPackage shall contain SQLite 3

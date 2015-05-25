@@ -25,6 +25,7 @@ package com.rgi.android.geopackage.tiles;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,19 +33,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
+import android.graphics.BitmapFactory;
 
 import com.rgi.android.common.BoundingBox;
 import com.rgi.android.common.util.StringUtility;
@@ -1743,35 +1739,35 @@ public class TilesVerifier extends Verifier
                                                                      ");",
                                                                 pyramidTable);
 
-                String tileRowMinQuery = String.format("SELECT tile_row FROM %s WHERE tile_row = 0;", pyramidTable);
+                final String tileRowMinQuery = String.format("SELECT tile_row FROM %s WHERE tile_row = 0;", pyramidTable);
 
-                String tileColumnMinQuery = String.format("SELECT tile_column FROM %s WHERE tile_column = 0;", pyramidTable);
+                final String tileColumnMinQuery = String.format("SELECT tile_column FROM %s WHERE tile_column = 0;", pyramidTable);
 
-                PreparedStatement maxRowStatement = this.getSqliteConnection().prepareStatement(tileRowMaxQuery);
+                final PreparedStatement maxRowStatement = this.getSqliteConnection().prepareStatement(tileRowMaxQuery);
                 try
                 {
                     maxRowStatement.setString(1, pyramidTable);
-                    ResultSet maxRowResults = maxRowStatement.executeQuery();
+                    final ResultSet maxRowResults = maxRowStatement.executeQuery();
                     try
                     {
-                        PreparedStatement maxColumnStatement = this.getSqliteConnection().prepareStatement(tileColumnMaxQuery);
+                        final PreparedStatement maxColumnStatement = this.getSqliteConnection().prepareStatement(tileColumnMaxQuery);
                         try
                         {
                             maxColumnStatement.setString(1, pyramidTable);
-                            ResultSet maxColumnResults = maxColumnStatement.executeQuery();
+                            final ResultSet maxColumnResults = maxColumnStatement.executeQuery();
                             try
                             {
-                                Statement minRowStatement = this.getSqliteConnection().createStatement();
+                                final Statement minRowStatement = this.getSqliteConnection().createStatement();
                                 try
                                 {
-                                    ResultSet minRowResult = minRowStatement.executeQuery(tileRowMinQuery);
+                                    final ResultSet minRowResult = minRowStatement.executeQuery(tileRowMinQuery);
                                     try
                                     {
-                                        Statement minColumnStatement = this.getSqliteConnection().createStatement();
+                                        final Statement minColumnStatement = this.getSqliteConnection().createStatement();
 
                                         try
                                         {
-                                            ResultSet minColumnResult = minColumnStatement.executeQuery(tileColumnMinQuery);
+                                            final ResultSet minColumnResult = minColumnStatement.executeQuery(tileColumnMinQuery);
                                             try
                                             {
                                                 final ArrayList<String> errorMessage = new ArrayList<String>();
@@ -1796,11 +1792,11 @@ public class TilesVerifier extends Verifier
                                                     errorMessage.add(" maximum row (matrix_height - 1)");
                                                 }
 
-                                                StringBuilder errors = new StringBuilder();
+                                                final StringBuilder errors = new StringBuilder();
 
                                                 if(!errorMessage.isEmpty())
                                                 {
-                                                    for(String error: errorMessage)
+                                                    for(final String error: errorMessage)
                                                     {
                                                         errors.append(error);
                                                         errors.append(",");
@@ -1925,7 +1921,7 @@ public class TilesVerifier extends Verifier
                         try
                         {
                             stmt2.setString(1, tableName);
-                            ResultSet boundingBoxRS = stmt2.executeQuery();
+                            final ResultSet boundingBoxRS = stmt2.executeQuery();
                             try
                             {
                                 if(boundingBoxRS.next())
@@ -1937,9 +1933,9 @@ public class TilesVerifier extends Verifier
 
                                     final BoundingBox boundingBox = new BoundingBox(minX, minY, maxX, maxY);
 
-                                    StringBuilder invalidPixelValues = new StringBuilder();
+                                    final StringBuilder invalidPixelValues = new StringBuilder();
 
-                                    for(TileData data: tileDataSet)
+                                    for(final TileData data: tileDataSet)
                                     {
                                         if(!validPixelValues(data, boundingBox))
                                         {
@@ -1990,24 +1986,21 @@ public class TilesVerifier extends Verifier
             return false;
         }
 
-        final ByteArrayInputStream byteArray  = new ByteArrayInputStream(tileData);
+        final BitmapFactory.Options opt = new BitmapFactory.Options();
+
+        opt.inJustDecodeBounds = true; // if inJustDecodeBounds set to true, the decoder will return null (no bitmap), but 'out' will still be set
+
+        final InputStream istream = new ByteArrayInputStream(tileData);
 
         try
         {
-            final MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(byteArray);
+            BitmapFactory.decodeStream(istream, null, opt);
 
-            try
-            {
-                return TilesVerifier.canReadImage(pngImageReaders, cacheImage) || TilesVerifier.canReadImage(jpegImageReaders, cacheImage);
-            }
-            finally
-            {
-                cacheImage.close();
-            }
+            return opt.outMimeType.equals("image/jpeg") || opt.outMimeType.equals("image/png");
         }
         finally
         {
-            byteArray.close();
+            istream.close();
         }
     }
 
@@ -2021,18 +2014,6 @@ public class TilesVerifier extends Verifier
     private static boolean isEqual(final double first, final double second)
     {
         return Math.abs(first - second) < TilesVerifier.EPSILON;
-    }
-
-    private static <T> List<T> iteratorToList(final Iterator<T> iterator)
-    {
-        final List<T> list = new ArrayList<T>();
-
-        while(iterator.hasNext())
-        {
-            list.add(iterator.next());
-        }
-
-        return list;
     }
 
     /**
@@ -2051,40 +2032,6 @@ public class TilesVerifier extends Verifier
     private boolean tileMatrixSetTableExists() throws SQLException
     {
        return DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageTiles.MatrixSetTableName);
-    }
-
-    private static boolean canReadImage(final Collection<ImageReader> imageReaders, final ImageInputStream image)
-    {
-        for(final ImageReader imageReader : imageReaders)
-        {
-            image.mark();
-
-            try
-            {
-                image.mark();
-                if(imageReader.getOriginatingProvider().canDecodeInput(image))
-                {
-                    return true;
-                }
-            }
-            catch(final Exception ex)
-            {
-                ex.printStackTrace();
-            }
-            finally
-            {
-                try
-                {
-                    image.reset();
-                }
-                catch(final Exception ex)
-                {
-                    ex.printStackTrace();
-                }
-            }
-        }
-
-        return false;
     }
 
     private class TileData implements Comparable<TileData>
@@ -2114,14 +2061,8 @@ public class TilesVerifier extends Verifier
     private static final TableDefinition TileMatrixSetTableDefinition;
     private static final TableDefinition TileMatrixTableDefinition;
 
-    private static final Collection<ImageReader> jpegImageReaders;
-    private static final Collection<ImageReader> pngImageReaders;
-
     static
     {
-        jpegImageReaders = TilesVerifier.iteratorToList(ImageIO.getImageReadersByMIMEType("image/jpeg"));
-        pngImageReaders  = TilesVerifier.iteratorToList(ImageIO.getImageReadersByMIMEType("image/png"));
-
         final Map<String, ColumnDefinition> tileMatrixSetColumns = new HashMap<String, ColumnDefinition>();
 
         tileMatrixSetColumns.put("table_name",  new ColumnDefinition("TEXT",     true, true,  true,  null));
