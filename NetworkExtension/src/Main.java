@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Random;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -45,18 +46,67 @@ public class Main
     public static void main(final String[] args)
     {
         //createGpkg();
-    	try {
-			createGpkg2();
-		} catch (final ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (final SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        //runRoute();
+        runRoute2();
     }
 
+    private static void runRoute2()
+    {
+        try(final GeoPackage gpkg = new GeoPackage(geoPackageFile2, OpenMode.Open))
+        {
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.getNetwork("mynetwork");
+
+            final AttributeDescription lengthAttribute = networkExtension.getAttributeDescription(network,
+                                                                                                  "length",
+                                                                                                  AttributedType.Edge);
+            final Random rand = new Random(123456);
+            final int[] start = rand.ints(100, 0, 105247).toArray();
+
+            final int[] end = rand.ints(100, 0, 105247).toArray();
+
+            for (int i = 0; i < 100; i++)
+            {
+                final int startNode = start[i];
+                final int endNode   = end[i];
+
+                if(networkExtension.getEntries(network, endNode).size() > 0)
+                {
+                    final long startTime = System.nanoTime();
+
+                    final Map<Integer, Double> costCache = new HashMap<>();
+
+                    final List<Integer> path = astar(networkExtension,
+                                                     network,
+                                                     startNode,
+                                                     endNode,
+                                                     (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge.getIdentifier(), lengthAttribute),
+                                                     (startIdentifier, endIdentifier) -> { try
+                                                                                           {
+                                                                                               final double distance = networkExtension.getAttribute(startIdentifier, lengthAttribute);
+                                                                                               return distance;
+                                                                                           }
+                                                                                           catch(final SQLException ex)
+                                                                                           {
+                                                                                               throw new RuntimeException(ex);
+                                                                                           }
+                                                                                         });
+
+                    path.forEach(node -> System.out.print(node + ", "));
+
+                    printPath(networkExtension, network, path, lengthAttribute);
+
+                    System.out.println(String.format("\nAstar took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
+                }
+
+            }
+        }
+        catch(final ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException ex)
+        {
+            ex.printStackTrace();
+        }
+
+    }
     private static void runRoute()
     {
         try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, OpenMode.Open))
@@ -86,42 +136,42 @@ public class Main
 
                 final Map<Integer, Double> costCache = new HashMap<>();
 
-                final List<Integer> path = dijkstra(networkExtension,
-                                                    network,
-                                                    startNode,
-                                                    endNode,
-                                                    (ThrowingFunction<Edge, Double>)(edge) -> { if(costCache.containsKey(edge.getIdentifier()))
-                                                                                                {
-                                                                                                    return costCache.get(edge.getIdentifier());
-                                                                                                }
-
-                                                                                                final double cost = networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute);
-
-                                                                                                costCache.put(edge.getIdentifier(), cost);
-
-                                                                                                return cost;
-                                                                                              });
-
-//                final List<Integer> path = astar(networkExtension,
-//                                                 network,
-//                                                 startNode,
-//                                                 endNode,
-//                                                 (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute),
-//                                                 (startIdentifier, endIdentifier) -> { try
-//                                                                                       {
-//                                                                                           final List<Object> startCoordinate = networkExtension.getAttributes(network, startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
-//                                                                                           final List<Object> endCoordinate   = networkExtension.getAttributes(network, endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
+//                final List<Integer> path = dijkstra(networkExtension,
+//                                                    network,
+//                                                    startNode,
+//                                                    endNode,
+//                                                    (ThrowingFunction<Edge, Double>)(edge) -> { if(costCache.containsKey(edge.getIdentifier()))
+//                                                                                                {
+//                                                                                                    return costCache.get(edge.getIdentifier());
+//                                                                                                }
 //
-//                                                                                           final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
-//                                                                                           final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
+//                                                                                                final double cost = networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute);
 //
-//                                                                                           return Math.sqrt(latitude*latitude + longitude*longitude);
-//                                                                                       }
-//                                                                                       catch(final SQLException ex)
-//                                                                                       {
-//                                                                                           throw new RuntimeException(ex);
-//                                                                                       }
-//                                                                                     });
+//                                                                                                costCache.put(edge.getIdentifier(), cost);
+//
+//                                                                                                return cost;
+//                                                                                              });
+
+                final List<Integer> path = astar(networkExtension,
+                                                 network,
+                                                 startNode,
+                                                 endNode,
+                                                 (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute),
+                                                 (startIdentifier, endIdentifier) -> { try
+                                                                                       {
+                                                                                           final List<Object> startCoordinate = networkExtension.getAttributes(network, startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
+                                                                                           final List<Object> endCoordinate   = networkExtension.getAttributes(network, endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
+
+                                                                                           final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
+                                                                                           final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
+
+                                                                                           return Math.sqrt(latitude*latitude + longitude*longitude);
+                                                                                       }
+                                                                                       catch(final SQLException ex)
+                                                                                       {
+                                                                                           throw new RuntimeException(ex);
+                                                                                       }
+                                                                                     });
 
                 path.forEach(node -> System.out.print(node + ", "));
 
@@ -315,9 +365,9 @@ public class Main
         public VertexAstar(final int nodeIdentifier)
         {
             this.nodeIdentifier    = nodeIdentifier;
-            this.previous          = null;
-            this.distanceFromStart = 0.0;
-            this.distanceFromEnd   = 0.0;
+            previous          = null;
+            distanceFromStart = 0.0;
+            distanceFromEnd   = 0.0;
         }
 
         public VertexAstar(final int nodeIdentifier, final VertexAstar previous)
@@ -339,23 +389,23 @@ public class Main
                 return false;
             }
 
-            return this.nodeIdentifier == ((VertexAstar)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
+            return nodeIdentifier == ((VertexAstar)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
         }
 
         @Override
         public int hashCode()
         {
-            return this.nodeIdentifier;
+            return nodeIdentifier;
         }
 
         @Override
         public String toString()
         {
             return String.format("%d (%f, %f, %d)",
-                                 this.nodeIdentifier,
-                                 this.distanceFromStart,
-                                 this.distanceFromEnd,
-                                 this.previous.nodeIdentifier);
+                                 nodeIdentifier,
+                                 distanceFromStart,
+                                 distanceFromEnd,
+                                 previous.nodeIdentifier);
         }
     }
 
@@ -370,8 +420,8 @@ public class Main
         public Vertex(final int nodeIdentifier)
         {
             this.nodeIdentifier = nodeIdentifier;
-            this.previous       = null;
-            this.minimumCost    = 0.0;
+            previous       = null;
+            minimumCost    = 0.0;
         }
 
         public Vertex(final int nodeIdentifier, final Vertex previous)
@@ -393,22 +443,22 @@ public class Main
                 return false;
             }
 
-            return this.nodeIdentifier == ((Vertex)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
+            return nodeIdentifier == ((Vertex)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
         }
 
         @Override
         public int hashCode()
         {
-            return this.nodeIdentifier;
+            return nodeIdentifier;
         }
 
         @Override
         public String toString()
         {
             return String.format("%d (%f, %d)",
-                                 this.nodeIdentifier,
-                                 this.minimumCost,
-                                 this.previous.nodeIdentifier);
+                                 nodeIdentifier,
+                                 minimumCost,
+                                 previous.nodeIdentifier);
         }
     }
 
@@ -675,17 +725,35 @@ public class Main
     private static void loadAttributedEdges(final GeoPackageNetworkExtension networkExtension,
     		                                final ResultSet rs,
     		                                final Network network,
-    		                                final List<AttributeDescription> attributeDescriptions) throws SQLException{
+    		                                final List<AttributeDescription> attributeDescriptions) throws SQLException
+    {
     	final List<Pair<Pair<Integer, Integer>, List<Object>>> edges = new ArrayList<Pair<Pair<Integer, Integer>, List<Object>>>();
 
+    	final List<Pair<Integer, Integer>> edgeCheck = new ArrayList<Pair<Integer, Integer>>();
     	Pair<Integer, Integer> pair;
-    	while(rs.next()){
+    	while(rs.next())
+    	{
     		pair = new Pair<Integer, Integer>(rs.getInt(1), rs.getInt(2));	//from node, and to node
     		edges.add(new Pair<>(pair, Arrays.asList((Object)rs.getDouble(3),	//slope
     												 (Object)rs.getDouble(4),	//length
     												 (Object)rs.getDouble(5))));//pandolf cost
+    		edgeCheck.add(pair);
     	}
     	networkExtension.addAttributedEdges(network, attributeDescriptions, edges::iterator);
+    	System.out.println("Added all edges... checking reverses now");
+
+    	/*
+    	 * Check for all reverse edges
+    	 */
+//    	Edge check;
+//    	for (final Pair<Integer, Integer> edge: edgeCheck)
+//    	{
+//    		check = networkExtension.getEdge(network, edge.getRight(), edge.getLeft());
+//    		if(check == null)
+//    		{
+//    			System.out.println(String.format("Network does not contain: (%s, %s)", edge.getRight(), edge.getLeft()));
+//    		}
+//    	}
     }
 //    private String firstLine(final File file) throws IOException
 //    {
