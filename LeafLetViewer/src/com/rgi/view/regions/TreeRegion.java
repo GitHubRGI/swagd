@@ -3,6 +3,8 @@ package com.rgi.view.regions;
 import java.util.Collection;
 
 import javafx.beans.value.ChangeListener;
+import javafx.geometry.HPos;
+import javafx.geometry.VPos;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.CheckBoxTreeCell;
@@ -86,5 +88,26 @@ public class TreeRegion extends Region
     {
         TreeItem<TileLoaderBridge> item = new TreeItem<>(new TileLoaderBridge(tileStoreReader));
         rootItem.getChildren().add(item);
+    }
+    /*
+     * The following methods resize the window properly
+     * (non-Javadoc)
+     * @see javafx.scene.Parent#layoutChildren()
+     */
+    @Override protected void layoutChildren()
+    {
+        double width  = this.getWidth();
+        double height = this.getHeight();
+        this.layoutInArea(this.tree, 0, 0, width, height, 0, HPos.CENTER, VPos.CENTER);
+    }
+
+    @Override protected double computePrefWidth(final double height)
+    {
+        return 250;
+    }
+
+    @Override protected double computePrefHeight(final double width)
+    {
+        return 500;
     }
 }

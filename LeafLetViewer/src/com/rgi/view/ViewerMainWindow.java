@@ -33,7 +33,7 @@ public class ViewerMainWindow extends Application
     public void start(final Stage primaryStage) throws Exception
     {
         primaryStage.setTitle("Map Viewer");
-        this.scene = new Scene(layout,750,500, Color.web("#666970"));
+        this.scene = new Scene(layout, 750, 500, Color.web("#666970"));
 
         try(TileStoreReader baseReader = this.createTestTileStoreReader())
         {
@@ -45,8 +45,10 @@ public class ViewerMainWindow extends Application
             layout.setCenter(new BrowserRegion());
             layout.setTop(new ViewerMenuBar(primaryStage, tree));
 
+            primaryStage.setMinWidth(600);
+            primaryStage.setMinHeight(500);
             primaryStage.setScene(this.scene);
-            primaryStage.show();
+            primaryStage.show();;
         }
     }
 
@@ -66,6 +68,7 @@ public class ViewerMainWindow extends Application
         testFile.deleteOnExit();
         try(GeoPackage gpkg = createAGeoPackage(testFile, tileSetName))
         {
+            gpkg.close();
             return new GeoPackageReader(testFile, tileSetName);
         }
         catch(Exception ex)
