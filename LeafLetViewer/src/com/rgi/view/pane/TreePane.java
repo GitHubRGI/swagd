@@ -40,7 +40,7 @@ public class TreePane extends Pane
     }
 
 
-    private TreeView<TileLoaderBridge> createTree(final TreeItem<TileLoaderBridge> rootItem)
+    private TreeView<TileLoaderBridge> createTree(final TreeItem<TileLoaderBridge> rootItem) throws TileStoreException
     {
         TreeView<TileLoaderBridge> createTree = new TreeView<>(rootItem);
         createTree.setEditable(false);
@@ -63,20 +63,11 @@ public class TreePane extends Pane
         /*
          * Add the readers to the list
          */
-        this.tileStoreReaders.forEach(reader -> {
-                                                   TreeItem<TileLoaderBridge> item = null;
-
-                                                   try
-                                                   {
-                                                       item = new TreeItem<>(new TileLoaderBridge(reader));
-                                                   }
-                                                   catch (Exception e)
-                                                   {
-                                                       throw new RuntimeException(String.format("Unable to create Tile Loader Bridge.\n%s", e.getMessage()));
-                                                   }
-
-                                                   rootItem.getChildren().add(item);
-                                                });
+        for(TileStoreReader reader: this.tileStoreReaders)
+        {
+            TreeItem<TileLoaderBridge> item = new TreeItem<>(new TileLoaderBridge(reader));
+            rootItem.getChildren().add(item);
+        }
 
         createTree.setRoot(rootItem);
         createTree.setShowRoot(false);
