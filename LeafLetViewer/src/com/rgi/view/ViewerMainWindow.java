@@ -9,7 +9,6 @@ import java.util.Random;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.TreeItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -37,9 +36,7 @@ public class ViewerMainWindow extends Application
 
         try(TileStoreReader baseReader = this.createTestTileStoreReader())
         {
-            final TreeItem<TileLoaderBridge> rootItem = new TreeItem<>(new TileLoaderBridge(this.createTestTileStoreReader()));
-
-            TreePane tree = new TreePane(Arrays.asList(baseReader), rootItem);
+            TreePane tree = new TreePane(Arrays.asList(baseReader));
 
             layout.setLeft(tree);
             layout.setCenter(new BrowserPane());

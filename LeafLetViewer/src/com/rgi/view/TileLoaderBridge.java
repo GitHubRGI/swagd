@@ -41,11 +41,20 @@ public class TileLoaderBridge
 
         this.crsProfile = CrsProfileFactory.create(this.selectedReader.getCoordinateReferenceSystem());
 
-        this.zoomRange = new Range<>(this.selectedReader.getZoomLevels(), Integer::compare);
+        if(!this.selectedReader.getZoomLevels().isEmpty())
+        {
+            this.zoomRange = new Range<>(this.selectedReader.getZoomLevels(), Integer::compare);
 
-        this.minimumZoomLevel = (Integer) this.zoomRange.getMinimum();
-        this.maximumZoomLevel = (Integer) this.zoomRange.getMaximum();
-
+            this.minimumZoomLevel = (Integer) this.zoomRange.getMinimum();
+            this.maximumZoomLevel = (Integer) this.zoomRange.getMaximum();
+        }
+        else
+        {
+            //TODO:: when base maps are given throw error here instead
+            this.zoomRange        = new Range<>(-1, -1);
+            this.maximumZoomLevel = -1;
+            this.minimumZoomLevel = -1;
+        }
     }
 
     /**
