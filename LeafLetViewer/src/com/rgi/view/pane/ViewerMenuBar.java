@@ -24,7 +24,7 @@ public class ViewerMenuBar extends MenuBar
         super();
         this.setFileChooser();
         Menu file = new Menu("File");
-        MenuItem addGeoPackage = new MenuItem("Add GeoPackage");
+        MenuItem addGeoPackage = new MenuItem("Add GeoPackages");
         addGeoPackage.setOnAction(actionEvent -> {
                                                     List<File> files = this.fileChooser.showOpenMultipleDialog(mainStage);
                                                     if(files != null && files.size() > 0)
@@ -56,7 +56,7 @@ public class ViewerMenuBar extends MenuBar
 //                                                        }
                                                     }
                                                 });
-        MenuItem addTMS = new MenuItem("Add TMS");
+        MenuItem addTMS = new MenuItem("Add TMSs");
         addTMS.setOnAction(actionEvent -> {
             File folder = this.directoryChooser.showDialog(mainStage);
             if(folder != null)

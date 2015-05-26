@@ -42,47 +42,46 @@ public class TreePane extends Pane
 
     private TreeView<TileLoaderBridge> createTree(final TreeItem<TileLoaderBridge> rootItem)
     {
-        TreeView<TileLoaderBridge> tree = new TreeView<>(rootItem);
-        tree.setEditable(false);
+        TreeView<TileLoaderBridge> createTree = new TreeView<>(rootItem);
+        createTree.setEditable(false);
         /*
          * Create listener for nodes
          * set the bridge to the selected Item
          */
-        tree.getSelectionModel().selectedItemProperty().addListener((ChangeListener<Object>) (observable, oldValue, newValue) ->
+        createTree.getSelectionModel().selectedItemProperty().addListener((ChangeListener<TreeItem<TileLoaderBridge>>) (observable, oldValue, newValue) ->
         {
-            if(newValue.getClass() == Boolean.class)
+            if(newValue != null)
             {
-                Boolean selectedItem = (Boolean) newValue;
-                if(selectedItem.equals(Boolean.TRUE))
-                {
-                    //show
-                }
-                else
-                {
-                    //hide
-                }
+                //show
+            }
+            else
+            {
+                //hide
             }
         });
-        tree.setCellFactory(CheckBoxTreeCell.<TileLoaderBridge>forTreeView());
+        createTree.setCellFactory(CheckBoxTreeCell.<TileLoaderBridge>forTreeView());
         /*
          * Add the readers to the list
          */
-        this.tileStoreReaders.stream().forEach(reader -> {
-                                                            TreeItem<TileLoaderBridge> item = null;
-                                                            try
-                                                            {
-                                                                item = new TreeItem<>(new TileLoaderBridge(reader));
-                                                            } catch (Exception e)
-                                                            {
-                                                                throw new RuntimeException(String.format("Unable to create Tile Loader Bridge.\n%s", e.getMessage()));
-                                                            }
-                                                             rootItem.getChildren().add(item);
-                                                         });
+        this.tileStoreReaders.forEach(reader -> {
+                                                   TreeItem<TileLoaderBridge> item = null;
 
-        tree.setRoot(rootItem);
-        tree.setShowRoot(false);
+                                                   try
+                                                   {
+                                                       item = new TreeItem<>(new TileLoaderBridge(reader));
+                                                   }
+                                                   catch (Exception e)
+                                                   {
+                                                       throw new RuntimeException(String.format("Unable to create Tile Loader Bridge.\n%s", e.getMessage()));
+                                                   }
 
-        return tree;
+                                                   rootItem.getChildren().add(item);
+                                                });
+
+        createTree.setRoot(rootItem);
+        createTree.setShowRoot(false);
+
+        return createTree;
     }
 
     public TreeView<TileLoaderBridge> getTree()
