@@ -19,9 +19,9 @@ import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.store.tiles.TileStoreReader;
 import com.rgi.store.tiles.geopackage.GeoPackageReader;
-import com.rgi.view.regions.BrowserRegion;
-import com.rgi.view.regions.TreeRegion;
-import com.rgi.view.regions.ViewerMenuBar;
+import com.rgi.view.pane.BrowserPane;
+import com.rgi.view.pane.TreePane;
+import com.rgi.view.pane.ViewerMenuBar;
 
 public class ViewerMainWindow extends Application
 {
@@ -39,10 +39,10 @@ public class ViewerMainWindow extends Application
         {
             final TreeItem<TileLoaderBridge> rootItem = new TreeItem<>(new TileLoaderBridge(this.createTestTileStoreReader()));
 
-            TreeRegion tree = new TreeRegion(Arrays.asList(baseReader), rootItem);
+            TreePane tree = new TreePane(Arrays.asList(baseReader), rootItem);
 
             layout.setLeft(tree);
-            layout.setCenter(new BrowserRegion());
+            layout.setCenter(new BrowserPane());
             layout.setTop(new ViewerMenuBar(primaryStage, tree));
 
             primaryStage.setMinWidth(600);
@@ -60,7 +60,7 @@ public class ViewerMainWindow extends Application
     /*
      *  Delete these methods (testing purposes only)
      */
-
+    @Deprecated
     private TileStoreReader createTestTileStoreReader()
     {
         String tileSetName = "tileSet";
@@ -79,6 +79,7 @@ public class ViewerMainWindow extends Application
 
     }
 
+    @Deprecated
     private static String getRanString(final int length)
     {
         Random randomGenerator = new Random();
@@ -92,6 +93,7 @@ public class ViewerMainWindow extends Application
         return new String(text);
     }
 
+    @Deprecated
     private static File getRandomFile(final int length)
     {
         File testFile;
@@ -105,6 +107,7 @@ public class ViewerMainWindow extends Application
         return testFile;
     }
 
+    @Deprecated
     private static GeoPackage createAGeoPackage(final File testFile, final String tileSetName) throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
         try(GeoPackage gpkg = new GeoPackage(testFile))
