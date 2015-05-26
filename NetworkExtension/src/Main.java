@@ -51,25 +51,25 @@ public class Main
 
     private static void runRoute2()
     {
-        try(final GeoPackage gpkg = new GeoPackage(geoPackageFile2, OpenMode.Open))
+    	final Random rand = new Random(123456789);
+        try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, OpenMode.Open))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             final Network network = networkExtension.getNetwork("mynetwork");
 
-            final AttributeDescription lengthAttribute = networkExtension.getAttributeDescription(network,
-                                                                                                  "length",
-                                                                                                  AttributedType.Edge);
-            final Random rand = new Random(123456);
+            final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network,
+                                                                                                    "distance",
+                                                                                                    AttributedType.Edge);
+
+
             final int[] start = rand.ints(100, 0, 105247).toArray();
-
             final int[] end = rand.ints(100, 0, 105247).toArray();
-
-            for (int i = 0; i < 100; i++)
+            int startNode, endNode;
+            for (final int i = 0; i < 100; i++)
             {
-                final int startNode = start[i];
-                final int endNode   = end[i];
-
+            	startNode = start[i];
+            	endNode = end[i];
                 if(networkExtension.getEntries(network, endNode).size() > 0)
                 {
                     final long startTime = System.nanoTime();
@@ -80,33 +80,26 @@ public class Main
                                                      network,
                                                      startNode,
                                                      endNode,
-                                                     (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge.getIdentifier(), lengthAttribute),
-                                                     (startIdentifier, endIdentifier) -> { try
-                                                                                           {
-                                                                                               final double distance = networkExtension.getAttribute(startIdentifier, lengthAttribute);
-                                                                                               return distance;
-                                                                                           }
-                                                                                           catch(final SQLException ex)
-                                                                                           {
-                                                                                               throw new RuntimeException(ex);
-                                                                                           }
+                                                     (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute),
+                                                     (startIdentifier, endIdentifier) -> {
+                                                    	                                     return 0.0	//TODO implement heuristic here
                                                                                          });
 
                     path.forEach(node -> System.out.print(node + ", "));
 
-                    printPath(networkExtension, network, path, lengthAttribute);
+                    printPath(networkExtension, network, path, distanceAttribute);
 
                     System.out.println(String.format("\nAstar took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
                 }
-
             }
         }
         catch(final ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException ex)
         {
+            // TODO Auto-generated catch block
             ex.printStackTrace();
         }
-
     }
+
     private static void runRoute()
     {
         try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, OpenMode.Open))
