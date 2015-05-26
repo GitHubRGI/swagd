@@ -66,7 +66,7 @@ public class Main
             final int[] start = rand.ints(100, 0, 105247).toArray();
             final int[] end = rand.ints(100, 0, 105247).toArray();
             int startNode, endNode;
-            for (final int i = 0; i < 100; i++)
+            for (int i = 0; i < 100; i++)
             {
             	startNode = start[i];
             	endNode = end[i];
@@ -82,7 +82,7 @@ public class Main
                                                      endNode,
                                                      (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute),
                                                      (startIdentifier, endIdentifier) -> {
-                                                    	                                     return 0.0	//TODO implement heuristic here
+                                                    	                                     return 0.0;//TODO implement heuristic here
                                                                                          });
 
                     path.forEach(node -> System.out.print(node + ", "));
