@@ -28,35 +28,30 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 public class ThrowingFunctionTest {
-	
-	@Test(expected = RuntimeException.class)
-	public void testApplyThrowsException(){
-		ThrowingFunction<String, Integer> tf = new ThrowingFunction<String, Integer>(){
-			@Override
-			public Integer applyThrows(String t) throws Throwable {
-				if(t == null || t.length() == 0){
-					throw new IllegalArgumentException();
-				}
-				return t.length();
-			}
-			
-		};
-		tf.apply("");
-		fail("Expexted ThrowingFunction method apply to throw a RuntimeException error.");
-	}
-	
-	@Test
-	public void testApply(){
-		ThrowingFunction<String, Integer> tf = new ThrowingFunction<String, Integer>(){
-			@Override
-			public Integer applyThrows(String t) throws Throwable {
-				if(t == null || t.length() == 0){
-					throw new IllegalArgumentException();
-				}
-				return t.length();
-			}
-		};
-		String test = "foo";
-		assertTrue(tf.apply(test) == test.length());
-	}
+
+    @Test(expected = RuntimeException.class)
+    public void testApplyThrowsException(){
+        final ThrowingFunction<String, Integer> tf = t ->
+        {
+            if(t == null || t.length() == 0){
+                throw new IllegalArgumentException();
+            }
+            return t.length();
+        };
+        tf.apply("");
+        fail("Expexted ThrowingFunction method apply to throw a RuntimeException error.");
+    }
+
+    @Test
+    public void testApply(){
+        final ThrowingFunction<String, Integer> tf = t ->
+        {
+            if(t == null || t.length() == 0){
+                throw new IllegalArgumentException();
+            }
+            return t.length();
+        };
+        final String test = "foo";
+        assertTrue(tf.apply(test) == test.length());
+    }
 }

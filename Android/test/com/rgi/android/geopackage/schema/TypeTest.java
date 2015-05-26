@@ -24,47 +24,48 @@
 package com.rgi.android.geopackage.schema;
 
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 public class TypeTest {
-	/**
-	 * Tests that fromString returns null
-	 * when passed a string that is not one of
-	 * the Type values
-	 */
-	@Test
-	public void fromStringNull(){
-		String name = "not in list";
-		assertTrue("Expected Type method fromString to return null.", Type.fromString(name) == null);
-	}
-	
-	/**
-	 * Tests that fromString returns
-	 * Range when passed the String "Range"
-	 */
-	@Test
-	public void fromStringRange(){
-		String name = "Range";
-		assertTrue("Expected Type method fromString to return Range", Type.fromString(name) == Type.Range);
-	}
-	
-	/**
-	 * Tests that fromString returns
-	 * Enum when passed the String "Enum"
-	 */
-	@Test
-	public void fromStringEnum(){
-		String name = "Enum";
-		assertTrue("Expected Type method fromString to return Range", Type.fromString(name) == Type.Enum);
-	}
-	
-	/**
-	 * Tests that fromString returns
-	 * Glob when passed the String "Glob"
-	 */
-	@Test
-	public void fromStringGlob(){
-		String name = "Glob";
-		assertTrue("Expected Type method fromString to return Range", Type.fromString(name) == Type.Glob);
-	}
+    /**
+     * Tests that fromString returns null
+     * when passed a string that is not one of
+     * the Type values
+     */
+    @Test
+    public void fromStringNull(){
+        final String name = "not in list";
+        assertTrue("Expected Type method fromString to return null.", Type.fromString(name) == null);
+    }
+
+    /**
+     * Tests that fromString returns
+     * Range when passed the String "Range"
+     */
+    @Test
+    public void fromStringRange(){
+        final String name = "Range";
+        assertTrue("Expected Type method fromString to return Range", Type.fromString(name) == Type.Range);
+    }
+
+    /**
+     * Tests that fromString returns
+     * Enum when passed the String "Enum"
+     */
+    @Test
+    public void fromStringEnum(){
+        final String name = "Enum";
+        assertTrue("Expected Type method fromString to return Range", Type.fromString(name) == Type.Enum);
+    }
+
+    /**
+     * Tests that fromString returns
+     * Glob when passed the String "Glob"
+     */
+    @Test
+    public void fromStringGlob(){
+        final String name = "Glob";
+        assertTrue("Expected Type method fromString to return Range", Type.fromString(name) == Type.Glob);
+    }
 }

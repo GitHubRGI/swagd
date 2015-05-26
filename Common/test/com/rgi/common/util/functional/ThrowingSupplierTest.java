@@ -23,32 +23,27 @@
 
 package com.rgi.common.util.functional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 public class ThrowingSupplierTest {
 
-	@Test(expected = RuntimeException.class)
-	public void testGetThrowsException(){
-		ThrowingSupplier<String> ts = new ThrowingSupplier<String>() {
-			@Override
-			public String getThrows() throws Throwable {
-				throw new NullPointerException();
-			}
-		};
-		ts.get();
-		fail("Expected ThrowingSupplier method throws to throw at RuntimeException");		
-	}
-	
-	@Test
-	public void testGet(){
-		ThrowingSupplier<String> ts = new ThrowingSupplier<String>() {
-			@Override
-			public String getThrows() throws Throwable {
-				return "Hello, world!";
-			}
-		};
-		String result = "Hello, world!";
-		assertTrue("Expected ThrowingSupplier method throws to return the string 'Hello, world.'", result.equals(ts.get()));
-	}
+    @Test(expected = RuntimeException.class)
+    public void testGetThrowsException(){
+        final ThrowingSupplier<String> ts = () ->
+        {
+            throw new NullPointerException();
+        };
+        ts.get();
+        fail("Expected ThrowingSupplier method throws to throw at RuntimeException");
+    }
+
+    @Test
+    public void testGet(){
+        final ThrowingSupplier<String> ts = () -> "Hello, world!";
+        final String result = "Hello, world!";
+        assertTrue("Expected ThrowingSupplier method throws to return the string 'Hello, world.'", result.equals(ts.get()));
+    }
 }

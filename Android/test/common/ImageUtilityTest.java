@@ -42,6 +42,7 @@ import com.rgi.android.common.util.ImageUtility;
 
 /**
  * @author Jenifer Cochran
+ * @author Mary Carome
  *
  */
 @SuppressWarnings({"javadoc", "static-method"})
@@ -119,22 +120,22 @@ public class ImageUtilityTest
     }
 
     /**
-     * Tests that graffiti appropriately modifies the 
+     * Tests that graffiti appropriately modifies the
      * given Buffered Image
      */
     @Test
     public void graffitiVerify()
     {
-     	final BufferedImage imageExpected = new BufferedImage(256, 512, BufferedImage.TYPE_BYTE_GRAY);
-     	final BufferedImage oldImage = new BufferedImage(256, 512, BufferedImage.TYPE_BYTE_GRAY);
-     	
+         final BufferedImage imageExpected = new BufferedImage(256, 512, BufferedImage.TYPE_BYTE_GRAY);
+         final BufferedImage oldImage = new BufferedImage(256, 512, BufferedImage.TYPE_BYTE_GRAY);
+
         final int width  = imageExpected.getWidth();
         final int height = imageExpected.getHeight();
         final String text = "Testing!";
-    	final BufferedImage imageReturned = ImageUtility.graffiti(imageExpected, text);
-    	
-    	final Graphics2D brush = imageExpected.createGraphics();
-    	brush.drawImage(oldImage, 0, 0, null);
+        final BufferedImage imageReturned = ImageUtility.graffiti(imageExpected, text);
+
+        final Graphics2D brush = imageExpected.createGraphics();
+        brush.drawImage(oldImage, 0, 0, null);
         brush.setColor(Color.red);
         brush.drawLine(      0,        0,  width-1,        0);
         brush.drawLine(width-1,        0,  width-1, height-1);
@@ -143,7 +144,7 @@ public class ImageUtilityTest
 
         brush.setPaint(Color.blue);
         brush.setFont(new Font("Serif", Font.BOLD, 20));
-        
+
         final FontMetrics fm = brush.getFontMetrics();
 
         final String[] parts = text.split("\n");
@@ -154,7 +155,7 @@ public class ImageUtilityTest
             brush.drawString(parts[part], x, y*(part+1));
         }
         brush.dispose();
-    	assertTrue("The buffered image created from graffiti does not have the expected values.", bufferedImagesEqual(imageExpected, imageReturned));
+        assertTrue("The buffered image created from graffiti does not have the expected values.", bufferedImagesEqual(imageExpected, imageReturned));
     }
 
     private static boolean bufferedImagesEqual(final BufferedImage img1, final BufferedImage img2)

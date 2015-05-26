@@ -25,52 +25,43 @@ package com.rgi.common.util.functional;
 
 import static org.junit.Assert.fail;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.junit.Test;
 
 public class ThrowingConsumerTest {
 
-	/**
-	 * Tests that accept throws a RuntimeException  
-	 */
-	@Test (expected = RuntimeException.class)
-	public void testAcceptThrowsException(){
-		ThrowingConsumer<String> tc = new ThrowingConsumer<String>() {
-			
-			@Override
-			public void acceptThrows(String t) throws Throwable {
-				if(t != null){
-					throw new NullPointerException();	
-				}
-			}
-		};
-		tc.accept("test");
-		fail("Expected ThrowingConsumer method accept to throw a RuntimeException.");
-	}
-	
-	/**
-	 * Tests that accept does not always
-	 * throw a RuntimeException 
-	 */
-	public void testAccept(){
-		ThrowingConsumer<String> tc = new ThrowingConsumer<String>() {
-			
-			@Override
-			public void acceptThrows(String t) throws Throwable {
-				if(t.length() < 0){
-					throw new IllegalArgumentException();
-				}else{
-					// FINISH
-				}
-			}
-		};
-		try{
-			tc.accept("test"); 
-		}
-		catch(RuntimeException e){
-			fail("ThrowingConsumerTest threw an unexpected RuntimeException");
-		}
-	}
+    /**
+     * Tests that accept throws a RuntimeException
+     */
+    @Test (expected = RuntimeException.class)
+    public void testAcceptThrowsException(){
+        final ThrowingConsumer<String> tc = t ->
+        {
+            if(t != null){
+                throw new NullPointerException();
+            }
+        };
+        tc.accept("test");
+        fail("Expected ThrowingConsumer method accept to throw a RuntimeException.");
+    }
+
+    /**
+     * Tests that accept does not always
+     * throw a RuntimeException
+     */
+    public void testAccept(){
+        final ThrowingConsumer<String> tc = t ->
+        {
+            if(t.length() < 0){
+                throw new IllegalArgumentException();
+            }else{
+                // FINISH
+            }
+        };
+        try{
+            tc.accept("test");
+        }
+        catch(final RuntimeException e){
+            fail("ThrowingConsumerTest threw an unexpected RuntimeException");
+        }
+    }
 }

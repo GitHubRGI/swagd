@@ -28,179 +28,179 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.omg.CORBA.CODESET_INCOMPATIBLE;
 
 public class ColumnDefinitionTest {
-	
-	/**
-	 * Tests that the ColumnDefintion constructor throws an 
-	 * IllegalArgumentException when passed a null SQL type
-	 */
-	@Test (expected = IllegalArgumentException.class)
-	public void columnDefinitionIllegalArgumentException(){
-		@SuppressWarnings("unused")
-		ColumnDefinition colDef = new ColumnDefinition(null, true, true, true, "default");
-		fail("Expected ColumnDefintion to throw an IllegalArgumentException when passed a null SQL type.");
-	}
-	
-	/**
-	 * Tests that equals returns false when
-	 * passed null instead of a valid object
-	 */
-	@Test
-	public void testEquals1(){
-		ColumnDefinition def1 = new ColumnDefinition("Test", true, true, true, "default");
-		assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed null instead of an Object.",def1.equals(null));
-	}
-	
-	/**
-	 * Tests that equals returns false when
-	 * passed an Object that is not type ColumnDefinition
-	 */
-	@Test
-	public void testEquals2(){
-		ColumnDefinition def1 = new ColumnDefinition("Test", true, true, true, "default");
-		Object test = new String();
-		assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed an Object not of type ColumnDefintion.",def1.equals(test));
-	}
-	
-	/**
-	 * Tests that equals returns true when passed itself
-	 * (Tests that equals is reflexive)
-	 */
-	@Test
-	public void testEquals3(){
-		ColumnDefinition def1 = new ColumnDefinition("test", true, true, true, "default");
-		Object def2 = def1;
-		assertTrue("Expected ColumnDefintion method equals(Object) to return true when passed itself.", def1.equals(def2));
-	}
-	
-	/**
-	 * Verifies equals and hashCode return true
-	 * and identical hash codes for two identical ColumnDefinition objects
-	 */
-	@Test
-	public void testEqualsAndHash1(){
-		final String sqlType = "test";
-		final boolean notNull = true;
-		final boolean primaryKey = false;
-		final boolean unique = true;
-		final String defaultValue = "default";
-		
-		ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
-		ColumnDefinition def2 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
-		
-		assertTrue("Expected ColumnDefinition method equals(Object) to return true when given two identical ColumnDefinitions", def1.equals(def2));
-		assertTrue("Expected ColumnDefition method hashCode to return the same HashCode for identical ColumnDefinitions.", def1.hashCode() == def2.hashCode());
-	}
-	
-	/**
-	 * Verifies equals and hashCode return false
-	 * and different hash codes for different 
-	 * ColumnDefinition objects
-	 */
-	@Test
-	public void testEqualsAndHash2(){
-		final String sqlType = "test";
-		final boolean notNull = true;
-		final boolean primaryKey = false;
-		final boolean unique = true;
-		final String defaultValue = "default";
-		
-		final String sqlType2 = "different type";
-		
-		ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
-		ColumnDefinition def2 = new ColumnDefinition(sqlType2, notNull, primaryKey, unique, defaultValue);
-		
-		assertFalse("Expected ColumnDefinition method equals(Object) to return false when given two different ColumnDefinitions", def1.equals(def2));
-		assertTrue("Expected ColumnDefition method hashCode to return the differnt hash codes for two differnt ColumnDefinitions.", def1.hashCode() != def2.hashCode());
-	}
-	
-	/**
-	 * Verifies equals and hashCode return false
-	 * and different hash codes for different 
-	 * ColumnDefinition objects
-	 */
-	@Test
-	public void testEqualsAndHash3(){
-		final String sqlType = "test";
-		final boolean notNull = true;
-		final boolean primaryKey = false;
-		final boolean unique = true;
-		final String defaultValue = "default";
-		
-		final boolean notNull2 = false;
-		
-		ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
-		ColumnDefinition def2 = new ColumnDefinition(sqlType, notNull2, primaryKey, unique, defaultValue);
-		
-		assertFalse("Expected ColumnDefinition method equals(Object) to return false when given two different ColumnDefinitions", def1.equals(def2));
-		assertTrue("Expected ColumnDefition method hashCode to return the differnt hash codes for two differnt ColumnDefinitions.", def1.hashCode() != def2.hashCode());
-	}
-	
-	/**
-	 * Verifies equals and hashCode return false
-	 * and different hash codes for different 
-	 * ColumnDefinition objects
-	 */
-	@Test
-	public void testEqualsAndHash4(){
-		final String sqlType = "test";
-		final boolean notNull = true;
-		final boolean primaryKey = false;
-		final boolean unique = true;
-		final String defaultValue = "default";
-		
-		final boolean primaryKey2 = true;
-		
-		ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
-		ColumnDefinition def2 = new ColumnDefinition(sqlType, notNull, primaryKey2, unique, defaultValue);
-		
-		assertFalse("Expected ColumnDefinition method equals(Object) to return false when given two different ColumnDefinitions", def1.equals(def2));
-		assertTrue("Expected ColumnDefition method hashCode to return the differnt hash codes for two differnt ColumnDefinitions.", def1.hashCode() != def2.hashCode());
-	}
-	
-	/**
-	 * Verifies equals and hashCode return false
-	 * and different hash codes for different 
-	 * ColumnDefinition objects
-	 */
-	@Test
-	public void testEqualsAndHash5(){
-		final String sqlType = "test";
-		final boolean notNull = true;
-		final boolean primaryKey = false;
-		final boolean unique = true;
-		final String defaultValue = "default";
-		
-		final boolean unique2 = false;
-		
-		ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
-		ColumnDefinition def2 = new ColumnDefinition(sqlType, notNull, primaryKey, unique2, defaultValue);
-		
-		assertFalse("Expected ColumnDefinition method equals(Object) to return false when given two different ColumnDefinitions", def1.equals(def2));
-		assertTrue("Expected ColumnDefition method hashCode to return the differnt hash codes for two differnt ColumnDefinitions.", def1.hashCode() != def2.hashCode());
-	}
-	
-	/**
-	 * Verifies equals and hashCode return false
-	 * and different hash codes for different 
-	 * ColumnDefinition objects
-	 */
-	@Test
-	public void testEqualsAndHash6(){
-		final String sqlType = "test";
-		final boolean notNull = true;
-		final boolean primaryKey = false;
-		final boolean unique = true;
-		final String defaultValue = "default";
-		
-		final String defaultValue2 = "different default";
-		
-		ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
-		ColumnDefinition def2 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue2);
-		
-		//assertFalse("Expected ColumnDefinition method equals(Object) to return false when given two different ColumnDefinitions", def1.equals(def2));
-		assertTrue("Expected ColumnDefition method hashCode to return the differnt hash codes for two differnt ColumnDefinitions.", def1.hashCode() != def2.hashCode());
-	}
+
+    /**
+     * Tests that the ColumnDefintion constructor throws an
+     * IllegalArgumentException when passed a null SQL type
+     */
+    @Test (expected = IllegalArgumentException.class)
+    public void columnDefinitionIllegalArgumentException(){
+        @SuppressWarnings("unused")
+        final
+        ColumnDefinition colDef = new ColumnDefinition(null, true, true, true, "default");
+        fail("Expected ColumnDefintion to throw an IllegalArgumentException when passed a null SQL type.");
+    }
+
+    /**
+     * Tests that equals returns false when
+     * passed null instead of a valid object
+     */
+    @Test
+    public void testEquals1(){
+        final ColumnDefinition def1 = new ColumnDefinition("Test", true, true, true, "default");
+        assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed null instead of an Object.",def1.equals(null));
+    }
+
+    /**
+     * Tests that equals returns false when
+     * passed an Object that is not type ColumnDefinition
+     */
+    @Test
+    public void testEquals2(){
+        final ColumnDefinition def1 = new ColumnDefinition("Test", true, true, true, "default");
+        final Object test = new String();
+        assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed an Object not of type ColumnDefintion.",def1.equals(test));
+    }
+
+    /**
+     * Tests that equals returns true when passed itself
+     * (Tests that equals is reflexive)
+     */
+    @Test
+    public void testEquals3(){
+        final ColumnDefinition def1 = new ColumnDefinition("test", true, true, true, "default");
+        final Object def2 = def1;
+        assertTrue("Expected ColumnDefintion method equals(Object) to return true when passed itself.", def1.equals(def2));
+    }
+
+    /**
+     * Verifies equals and hashCode return true
+     * and identical hash codes for two identical ColumnDefinition objects
+     */
+    @Test
+    public void testEqualsAndHash1(){
+        final String sqlType = "test";
+        final boolean notNull = true;
+        final boolean primaryKey = false;
+        final boolean unique = true;
+        final String defaultValue = "default";
+
+        final ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
+        final ColumnDefinition def2 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
+
+        assertTrue("Expected ColumnDefinition method equals(Object) to return true when given two identical ColumnDefinitions", def1.equals(def2));
+        assertTrue("Expected ColumnDefition method hashCode to return the same HashCode for identical ColumnDefinitions.", def1.hashCode() == def2.hashCode());
+    }
+
+    /**
+     * Verifies equals and hashCode return false
+     * and different hash codes for different
+     * ColumnDefinition objects
+     */
+    @Test
+    public void testEqualsAndHash2(){
+        final String sqlType = "test";
+        final boolean notNull = true;
+        final boolean primaryKey = false;
+        final boolean unique = true;
+        final String defaultValue = "default";
+
+        final String sqlType2 = "different type";
+
+        final ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
+        final ColumnDefinition def2 = new ColumnDefinition(sqlType2, notNull, primaryKey, unique, defaultValue);
+
+        assertFalse("Expected ColumnDefinition method equals(Object) to return false when given two different ColumnDefinitions", def1.equals(def2));
+        assertTrue("Expected ColumnDefition method hashCode to return the differnt hash codes for two differnt ColumnDefinitions.", def1.hashCode() != def2.hashCode());
+    }
+
+    /**
+     * Verifies equals and hashCode return false
+     * and different hash codes for different
+     * ColumnDefinition objects
+     */
+    @Test
+    public void testEqualsAndHash3(){
+        final String sqlType = "test";
+        final boolean notNull = true;
+        final boolean primaryKey = false;
+        final boolean unique = true;
+        final String defaultValue = "default";
+
+        final boolean notNull2 = false;
+
+        final ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
+        final ColumnDefinition def2 = new ColumnDefinition(sqlType, notNull2, primaryKey, unique, defaultValue);
+
+        assertFalse("Expected ColumnDefinition method equals(Object) to return false when given two different ColumnDefinitions", def1.equals(def2));
+        assertTrue("Expected ColumnDefition method hashCode to return the differnt hash codes for two differnt ColumnDefinitions.", def1.hashCode() != def2.hashCode());
+    }
+
+    /**
+     * Verifies equals and hashCode return false
+     * and different hash codes for different
+     * ColumnDefinition objects
+     */
+    @Test
+    public void testEqualsAndHash4(){
+        final String sqlType = "test";
+        final boolean notNull = true;
+        final boolean primaryKey = false;
+        final boolean unique = true;
+        final String defaultValue = "default";
+
+        final boolean primaryKey2 = true;
+
+        final ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
+        final ColumnDefinition def2 = new ColumnDefinition(sqlType, notNull, primaryKey2, unique, defaultValue);
+
+        assertFalse("Expected ColumnDefinition method equals(Object) to return false when given two different ColumnDefinitions", def1.equals(def2));
+        assertTrue("Expected ColumnDefition method hashCode to return the differnt hash codes for two differnt ColumnDefinitions.", def1.hashCode() != def2.hashCode());
+    }
+
+    /**
+     * Verifies equals and hashCode return false
+     * and different hash codes for different
+     * ColumnDefinition objects
+     */
+    @Test
+    public void testEqualsAndHash5(){
+        final String sqlType = "test";
+        final boolean notNull = true;
+        final boolean primaryKey = false;
+        final boolean unique = true;
+        final String defaultValue = "default";
+
+        final boolean unique2 = false;
+
+        final ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
+        final ColumnDefinition def2 = new ColumnDefinition(sqlType, notNull, primaryKey, unique2, defaultValue);
+
+        assertFalse("Expected ColumnDefinition method equals(Object) to return false when given two different ColumnDefinitions", def1.equals(def2));
+        assertTrue("Expected ColumnDefition method hashCode to return the differnt hash codes for two differnt ColumnDefinitions.", def1.hashCode() != def2.hashCode());
+    }
+
+    /**
+     * Verifies equals and hashCode return false
+     * and different hash codes for different
+     * ColumnDefinition objects
+     */
+    @Test
+    public void testEqualsAndHash6(){
+        final String sqlType = "test";
+        final boolean notNull = true;
+        final boolean primaryKey = false;
+        final boolean unique = true;
+        final String defaultValue = "default";
+
+        final String defaultValue2 = "different default";
+
+        final ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
+        final ColumnDefinition def2 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue2);
+
+        //assertFalse("Expected ColumnDefinition method equals(Object) to return false when given two different ColumnDefinitions", def1.equals(def2));
+        assertTrue("Expected ColumnDefition method hashCode to return the differnt hash codes for two differnt ColumnDefinitions.", def1.hashCode() != def2.hashCode());
+    }
 }
