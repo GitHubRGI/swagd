@@ -40,7 +40,6 @@ public class CoordinateReferenceSystemTest
      * Tests if CoordinateReferenceSystem throws an IllegalArgumentException
      * when a parameter is null or empty
      */
-    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException()
     {
@@ -52,7 +51,6 @@ public class CoordinateReferenceSystemTest
      * Tests if CoordinateReferenceSystem throws an IllegalArgumentException
      * when a parameter is null or empty
      */
-    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException2()
     {
@@ -65,7 +63,8 @@ public class CoordinateReferenceSystemTest
      * when a parameter is null or empty
      */
     @Test (expected = IllegalArgumentException.class)
-    public void illegalArgumentException3(){
+    public void illegalArgumentException3()
+    {
         new CoordinateReferenceSystem("", "test", 123);
         fail("Expected CoordinateReferenceSystem to throw an IllegalArgumentException when given a null or empty paramter");
     }
@@ -74,7 +73,8 @@ public class CoordinateReferenceSystemTest
      * Tests that toString returns the correct string
      */
     @Test
-    public void testToString(){
+    public void testToString()
+    {
         final String name = "bob";
         final String authority = "RGI";
         final int id = 123;
@@ -174,7 +174,8 @@ public class CoordinateReferenceSystemTest
      * given an null parameter
      */
     @Test (expected = NullPointerException.class)
-    public void testCompareTo1(){
+    public void testCompareTo1()
+    {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = null;
         crs1.compareTo(crs2);
@@ -185,7 +186,8 @@ public class CoordinateReferenceSystemTest
      * Tests compareTo when the authorities are different
      */
     @Test
-    public void testCompareTo2(){
+    public void testCompareTo2()
+    {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem("Different authority", 123);
         assertTrue("Expected CoordinateReferenceSystem method compareTo to return a nonzero integer.", crs1.compareTo(crs2) != 0);
@@ -195,7 +197,8 @@ public class CoordinateReferenceSystemTest
      * Tests compareTo when the identifiers are different
      */
     @Test
-    public void testCompareTo3(){
+    public void testCompareTo3()
+    {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem("Authority", 123);
         assertTrue("Expected CoordinateReferenceSystem method compareTo to return a nonzero integer.", crs1.compareTo(crs2) != 0);
@@ -205,7 +208,8 @@ public class CoordinateReferenceSystemTest
      * Tests compareTo when the CoordinateReferenceSystems are the same
      */
     @Test
-    public void testCompareTo4(){
+    public void testCompareTo4()
+    {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem("Authority", 555);
         assertTrue("Expected CoordinateReferenceSystem method comparTo to return a nonzero integer.", crs1.compareTo(crs2) == 0);

@@ -177,7 +177,8 @@ public class CoordinateReferenceSystemTest
      * given an null parameter
      */
     @Test (expected = NullPointerException.class)
-    public void testCompareTo1(){
+    public void testCompareTo1()
+    {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = null;
         crs1.compareTo(crs2);
@@ -188,7 +189,8 @@ public class CoordinateReferenceSystemTest
      * Tests compareTo when the authorities are different
      */
     @Test
-    public void testCompareTo2(){
+    public void testCompareTo2()
+    {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem("Different authority", 123);
         assertTrue("Expected CoordinateReferenceSystem method compareTo to return a nonzero integer.", crs1.compareTo(crs2) != 0);
@@ -198,7 +200,8 @@ public class CoordinateReferenceSystemTest
      * Tests compareTo when the identifiers are different
      */
     @Test
-    public void testCompareTo3(){
+    public void testCompareTo3()
+    {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem("Authority", 123);
         assertTrue("Expected CoordinateReferenceSystem method compareTo to return a nonzero integer.", crs1.compareTo(crs2) != 0);
@@ -208,7 +211,8 @@ public class CoordinateReferenceSystemTest
      * Tests compareTo when the CoordinateReferenceSystems are the same
      */
     @Test
-    public void testCompareTo4(){
+    public void testCompareTo4()
+    {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem("Authority", 555);
         assertTrue("Expected CoordinateReferenceSystem method comparTo to return a nonzero integer.", crs1.compareTo(crs2) == 0);

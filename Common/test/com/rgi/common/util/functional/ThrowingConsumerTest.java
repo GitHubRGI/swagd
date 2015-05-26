@@ -33,10 +33,12 @@ public class ThrowingConsumerTest {
      * Tests that accept throws a RuntimeException
      */
     @Test (expected = RuntimeException.class)
-    public void testAcceptThrowsException(){
+    public void testAcceptThrowsException()
+    {
         final ThrowingConsumer<String> tc = t ->
         {
-            if(t != null){
+            if(t != null)
+            {
                 throw new NullPointerException();
             }
         };
@@ -51,16 +53,17 @@ public class ThrowingConsumerTest {
     public void testAccept(){
         final ThrowingConsumer<String> tc = t ->
         {
-            if(t.length() < 0){
+            if(t.length() < 0)
+            {
                 throw new IllegalArgumentException();
-            }else{
-                // FINISH
             }
         };
-        try{
+        try
+        {
             tc.accept("test");
         }
-        catch(final RuntimeException e){
+        catch(final RuntimeException e)
+        {
             fail("ThrowingConsumerTest threw an unexpected RuntimeException");
         }
     }

@@ -28,15 +28,21 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.rgi.android.common.Dimensions;
-
-public class DimensionsTest {
+/**
+ *
+ * @author Mary Carome
+ *
+ */
+public class DimensionsTest
+{
 
     /**
      * Tests the Dimensions constructor creates a Dimensions object with the
      * given width and height
      */
     @Test
-    public void dimensionsConstructorTest() {
+    public void dimensionsConstructorTest()
+    {
         final Dimensions<Integer> dim = new Dimensions<Integer>(10, 5);
         assertTrue(dim.getClass().equals(Dimensions.class));
         assertTrue(dim.getWidth() == 10);
@@ -47,7 +53,8 @@ public class DimensionsTest {
      * Tests that getWidth returns the correct width for the Dimensions object
      */
     @Test
-    public void getWidthTest() {
+    public void getWidthTest()
+    {
         final Dimensions<Integer> dim = new Dimensions<Integer>(20, 5);
         assertTrue(dim.getWidth() == 20);
     }
@@ -56,7 +63,8 @@ public class DimensionsTest {
      * Tests that getHeight returns the correct height for the Dimensions object
      */
     @Test
-    public void getHeightTest() {
+    public void getHeightTest()
+    {
         final Dimensions<Integer> dim = new Dimensions<Integer>(20, 55);
         assertTrue(dim.getHeight() == 55);
     }

@@ -27,14 +27,20 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-public class TypeTest {
+/**
+ * @author Mary Carome
+ *
+ */
+public class TypeTest
+{
     /**
      * Tests that fromString returns null
      * when passed a string that is not one of
      * the Type values
      */
     @Test
-    public void fromStringNull(){
+    public void fromStringNull()
+    {
         final String name = "not in list";
         assertTrue("Expected Type method fromString to return null.", Type.fromString(name) == null);
     }
@@ -44,7 +50,8 @@ public class TypeTest {
      * Range when passed the String "Range"
      */
     @Test
-    public void fromStringRange(){
+    public void fromStringRange()
+    {
         final String name = "Range";
         assertTrue("Expected Type method fromString to return Range", Type.fromString(name) == Type.Range);
     }
@@ -54,7 +61,8 @@ public class TypeTest {
      * Enum when passed the String "Enum"
      */
     @Test
-    public void fromStringEnum(){
+    public void fromStringEnum()
+    {
         final String name = "Enum";
         assertTrue("Expected Type method fromString to return Range", Type.fromString(name) == Type.Enum);
     }
@@ -64,7 +72,8 @@ public class TypeTest {
      * Glob when passed the String "Glob"
      */
     @Test
-    public void fromStringGlob(){
+    public void fromStringGlob()
+    {
         final String name = "Glob";
         assertTrue("Expected Type method fromString to return Range", Type.fromString(name) == Type.Glob);
     }

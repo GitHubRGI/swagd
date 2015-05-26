@@ -29,14 +29,20 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-public class ColumnDefinitionTest {
+/**
+ * @author Mary Carome
+ *
+ */
+public class ColumnDefinitionTest
+{
 
     /**
      * Tests that the ColumnDefintion constructor throws an
      * IllegalArgumentException when passed a null SQL type
      */
     @Test (expected = IllegalArgumentException.class)
-    public void columnDefinitionIllegalArgumentException(){
+    public void columnDefinitionIllegalArgumentException()
+    {
         @SuppressWarnings("unused")
         final
         ColumnDefinition colDef = new ColumnDefinition(null, true, true, true, "default");
@@ -48,7 +54,8 @@ public class ColumnDefinitionTest {
      * passed null instead of a valid object
      */
     @Test
-    public void testEquals1(){
+    public void testEquals1()
+    {
         final ColumnDefinition def1 = new ColumnDefinition("Test", true, true, true, "default");
         assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed null instead of an Object.",def1.equals(null));
     }
@@ -58,7 +65,8 @@ public class ColumnDefinitionTest {
      * passed an Object that is not type ColumnDefinition
      */
     @Test
-    public void testEquals2(){
+    public void testEquals2()
+    {
         final ColumnDefinition def1 = new ColumnDefinition("Test", true, true, true, "default");
         final Object test = new String();
         assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed an Object not of type ColumnDefintion.",def1.equals(test));
@@ -69,7 +77,8 @@ public class ColumnDefinitionTest {
      * (Tests that equals is reflexive)
      */
     @Test
-    public void testEquals3(){
+    public void testEquals3()
+    {
         final ColumnDefinition def1 = new ColumnDefinition("test", true, true, true, "default");
         final Object def2 = def1;
         assertTrue("Expected ColumnDefintion method equals(Object) to return true when passed itself.", def1.equals(def2));
@@ -80,7 +89,8 @@ public class ColumnDefinitionTest {
      * and identical hash codes for two identical ColumnDefinition objects
      */
     @Test
-    public void testEqualsAndHash1(){
+    public void testEqualsAndHash1()
+    {
         final String sqlType = "test";
         final boolean notNull = true;
         final boolean primaryKey = false;
@@ -100,7 +110,8 @@ public class ColumnDefinitionTest {
      * ColumnDefinition objects
      */
     @Test
-    public void testEqualsAndHash2(){
+    public void testEqualsAndHash2()
+    {
         final String sqlType = "test";
         final boolean notNull = true;
         final boolean primaryKey = false;
@@ -122,7 +133,8 @@ public class ColumnDefinitionTest {
      * ColumnDefinition objects
      */
     @Test
-    public void testEqualsAndHash3(){
+    public void testEqualsAndHash3()
+    {
         final String sqlType = "test";
         final boolean notNull = true;
         final boolean primaryKey = false;
@@ -144,7 +156,8 @@ public class ColumnDefinitionTest {
      * ColumnDefinition objects
      */
     @Test
-    public void testEqualsAndHash4(){
+    public void testEqualsAndHash4()
+    {
         final String sqlType = "test";
         final boolean notNull = true;
         final boolean primaryKey = false;
@@ -166,7 +179,8 @@ public class ColumnDefinitionTest {
      * ColumnDefinition objects
      */
     @Test
-    public void testEqualsAndHash5(){
+    public void testEqualsAndHash5()
+    {
         final String sqlType = "test";
         final boolean notNull = true;
         final boolean primaryKey = false;
@@ -188,7 +202,8 @@ public class ColumnDefinitionTest {
      * ColumnDefinition objects
      */
     @Test
-    public void testEqualsAndHash6(){
+    public void testEqualsAndHash6()
+    {
         final String sqlType = "test";
         final boolean notNull = true;
         final boolean primaryKey = false;
@@ -200,7 +215,7 @@ public class ColumnDefinitionTest {
         final ColumnDefinition def1 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue);
         final ColumnDefinition def2 = new ColumnDefinition(sqlType, notNull, primaryKey, unique, defaultValue2);
 
-        //assertFalse("Expected ColumnDefinition method equals(Object) to return false when given two different ColumnDefinitions", def1.equals(def2));
+        assertFalse("Expected ColumnDefinition method equals(Object) to return false when given two different ColumnDefinitions", def1.equals(def2));
         assertTrue("Expected ColumnDefition method hashCode to return the differnt hash codes for two differnt ColumnDefinitions.", def1.hashCode() != def2.hashCode());
     }
 }

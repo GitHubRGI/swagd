@@ -34,13 +34,15 @@ import com.rgi.android.common.tile.scheme.TileMatrixDimensions;
  * @author Mary Carome
  *
  */
-public class TileOriginTest {
+public class TileOriginTest
+{
     /**
      * Tests that transform throws an IllegalArgumentException when given a null
      * value for TileOrigin
      */
     @Test(expected = IllegalArgumentException.class)
-    public void transformIllegalArgumentException1() {
+    public void transformIllegalArgumentException1()
+    {
         final int x = 10;
         final int y = 12;
         final TileOrigin origin = TileOrigin.LowerLeft;
@@ -54,7 +56,8 @@ public class TileOriginTest {
      * value for TileOrigin
      */
     @Test(expected = IllegalArgumentException.class)
-    public void transformIllegalArgumentException() {
+    public void transformIllegalArgumentException()
+    {
         final int x = 12;
         final int y = 10;
         final TileOrigin origin = TileOrigin.LowerLeft;

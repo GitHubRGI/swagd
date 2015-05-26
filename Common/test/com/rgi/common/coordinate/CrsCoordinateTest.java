@@ -39,7 +39,6 @@ public class CrsCoordinateTest
      * Tests if CrsCoordinate will throw an illegal argument exception when the parameters are null
      * or empty
      */
-    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException1()
     {

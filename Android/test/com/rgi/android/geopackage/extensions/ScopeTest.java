@@ -28,14 +28,20 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-public class ScopeTest {
+/**
+ * @author Mary Carome
+ *
+ */
+public class ScopeTest
+{
 
     /**
      * Tests that fromText throws an IllegalArgumentException when passed null
      * instead of a string
      */
     @Test(expected = IllegalArgumentException.class)
-    public void fromTextIllegalArgumentException1() {
+    public void fromTextIllegalArgumentException1()
+    {
         final String name = null;
         Scope.fromText(name);
         fail("Expected Scope method fromText to throw an IllegalArgumentException when passed null instead of a valid String.");
@@ -46,7 +52,8 @@ public class ScopeTest {
      * invalid string
      */
     @Test(expected = IllegalArgumentException.class)
-    public void fromTextIllegalArgumentException2() {
+    public void fromTextIllegalArgumentException2()
+    {
         final String name = "not a valid String";
         Scope.fromText(name);
         fail("Expected Scope method fromText to throw an IllegalArgumentException when passed an nonvalid string.");
@@ -56,7 +63,8 @@ public class ScopeTest {
      * Tests that fromText returns correct values when passed valid strings
      */
     @Test
-    public void fromtText() {
+    public void fromtText()
+    {
         final String read = "read-write";
         final String write = "write-only";
 
@@ -76,7 +84,8 @@ public class ScopeTest {
      * Tests the toString method
      */
     @Test
-    public void testToString() {
+    public void testToString()
+    {
         final Scope read = Scope.ReadWrite;
         final Scope write = Scope.WriteOnly;
         assertTrue(String.format(

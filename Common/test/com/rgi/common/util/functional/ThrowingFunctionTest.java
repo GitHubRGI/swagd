@@ -27,13 +27,15 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-public class ThrowingFunctionTest {
+public class ThrowingFunctionTest
+{
 
     @Test(expected = RuntimeException.class)
     public void testApplyThrowsException(){
         final ThrowingFunction<String, Integer> tf = t ->
         {
-            if(t == null || t.length() == 0){
+            if(t == null || t.length() == 0)
+            {
                 throw new IllegalArgumentException();
             }
             return t.length();
@@ -46,7 +48,8 @@ public class ThrowingFunctionTest {
     public void testApply(){
         final ThrowingFunction<String, Integer> tf = t ->
         {
-            if(t == null || t.length() == 0){
+            if(t == null || t.length() == 0)
+            {
                 throw new IllegalArgumentException();
             }
             return t.length();

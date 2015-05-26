@@ -28,10 +28,12 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-public class ThrowingSupplierTest {
+public class ThrowingSupplierTest
+{
 
     @Test(expected = RuntimeException.class)
-    public void testGetThrowsException(){
+    public void testGetThrowsException()
+    {
         final ThrowingSupplier<String> ts = () ->
         {
             throw new NullPointerException();
@@ -41,7 +43,8 @@ public class ThrowingSupplierTest {
     }
 
     @Test
-    public void testGet(){
+    public void testGet()
+    {
         final ThrowingSupplier<String> ts = () -> "Hello, world!";
         final String result = "Hello, world!";
         assertTrue("Expected ThrowingSupplier method throws to return the string 'Hello, world.'", result.equals(ts.get()));

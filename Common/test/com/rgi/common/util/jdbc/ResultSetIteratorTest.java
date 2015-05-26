@@ -24,7 +24,6 @@ package com.rgi.common.util.jdbc;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -35,7 +34,7 @@ import org.junit.Test;
 import com.mockrunner.mock.jdbc.MockResultSet;
 
 @SuppressWarnings({ "static-method", "javadoc" })
-public class ResultSetIteratorTest<T> 
+public class ResultSetIteratorTest<T>
 {
 
     @Test(expected = IllegalArgumentException.class)
@@ -102,7 +101,7 @@ public class ResultSetIteratorTest<T>
         }
     }
 
-    @Test 
+    @Test
     public void ResultSetDoesNotHaveNextLastItem() throws SQLException
     {
         try(MockResultSet resultSet = new MockResultSet("myMock"))
