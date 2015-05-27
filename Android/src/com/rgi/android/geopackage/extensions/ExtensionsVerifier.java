@@ -79,7 +79,6 @@ public class ExtensionsVerifier extends Verifier
 
     private boolean hasGpkgExtensionsTable;
 
-    // TODO reconsider this mapping.  it should at least be String, ExtensionData, but the column name is repeated as the key...
     private List<ExtensionData> gpkgExtensionsDataAndColumnName;
 
     /**

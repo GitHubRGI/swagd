@@ -76,7 +76,6 @@ public class ExtensionsVerifier extends Verifier
 
     private final boolean hasGpkgExtensionsTable;
 
-    // TODO reconsider this mapping.  it should at least be String, ExtensionData, but the column name is repeated as the key...
     private List<ExtensionData> gpkgExtensionsDataAndColumnName;
 
     /**
@@ -254,9 +253,7 @@ public class ExtensionsVerifier extends Verifier
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
     @Requirement(reference = "Requirement 82",
-                 text    = "The column_name column value in a gpkg_extensions row SHALL"
-                           + " be the name of a column in the table specified by the "
-                           + "table_name column value for that row, or be NULL.")
+                 text      = "The column_name column value in a gpkg_extensions row SHALL be the name of a column in the table specified by the table_name column value for that row, or be NULL.")
     public void Requirement82() throws SQLException, AssertionError
     {
         if(this.hasGpkgExtensionsTable && !this.gpkgExtensionsDataAndColumnName.isEmpty())
