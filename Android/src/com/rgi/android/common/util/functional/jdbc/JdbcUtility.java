@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import com.rgi.android.common.util.functional.Predicate;
+import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
+import com.rgi.android.common.util.functional.jdbc.ResultSetPredicate;
 
 /**
  * @author Luke Lambert
