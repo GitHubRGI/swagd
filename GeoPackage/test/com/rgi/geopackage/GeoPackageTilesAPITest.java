@@ -94,14 +94,14 @@ public class GeoPackageTilesAPITest
     @Test
     public void tileCoordinateToCrsBackToTileCoordinate() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
-        BoundingBox bBox = new BoundingBox(10018754.1713946, -10018754.1713946, 20037508.3427892, 0.0);//data from a GeoPackage where the bounding box lied on the grid
-        SphericalMercatorCrsProfile spherMerc = new SphericalMercatorCrsProfile();
+        final BoundingBox bBox = new BoundingBox(10018754.1713946, -10018754.1713946, 20037508.3427892, 0.0);//data from a GeoPackage where the bounding box lied on the grid
+        final SphericalMercatorCrsProfile spherMerc = new SphericalMercatorCrsProfile();
 
         final File testFile = this.getRandomFile(5);
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            SpatialReferenceSystem srs = gpkg.core()
+            final SpatialReferenceSystem srs = gpkg.core()
                                              .addSpatialReferenceSystem(spherMerc.getName(),
                                                                         spherMerc.getCoordinateReferenceSystem().getAuthority(),
                                                                         spherMerc.getCoordinateReferenceSystem().getIdentifier(),
@@ -115,15 +115,15 @@ public class GeoPackageTilesAPITest
                                                     bBox,
                                                     srs);
 
-            TileScheme scheme = new ZoomTimesTwo(2, 9, 1, 1);
+            final TileScheme scheme = new ZoomTimesTwo(2, 9, 1, 1);
             //populate the TileMatrices
-            for(int zoom: scheme.getZoomLevels())
+            for(final int zoom: scheme.getZoomLevels())
             {
-                TileMatrixDimensions dimensions = scheme.dimensions(zoom);
-                int matrixWidth = dimensions.getWidth();
-                int matrixHeight = dimensions.getHeight();
-                int tileWidth = 256;
-                int tileHeight = 256;
+                final TileMatrixDimensions dimensions = scheme.dimensions(zoom);
+                final int matrixWidth = dimensions.getWidth();
+                final int matrixHeight = dimensions.getHeight();
+                final int tileWidth = 256;
+                final int tileHeight = 256;
 
 
                 gpkg.tiles().addTileMatrix(tileSet,
@@ -136,15 +136,15 @@ public class GeoPackageTilesAPITest
                                            (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
             }
             //Test that the conversion from tileCoordinate-> CrsCoordinate -> tileCoordinate is as expected(original tileCoordinate)
-            for(int zoomLevel: scheme.getZoomLevels())
+            for(final int zoomLevel: scheme.getZoomLevels())
             {
                 for(int row = 0; row < scheme.dimensions(zoomLevel).getHeight(); row++)
                 {
                     for(int column = 0;  column < scheme.dimensions(zoomLevel).getWidth(); column++)
                     {
-                        CrsCoordinate crsCoordinate = gpkg.tiles().tileToCrsCoordinate(tileSet, column, row, zoomLevel);
-                        Coordinate<Integer> tileCoordinate = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoordinate, spherMerc.getPrecision(), zoomLevel);
-                        Coordinate<Integer> expectedTileCoordinate = new Coordinate<>(column, row);
+                        final CrsCoordinate crsCoordinate = gpkg.tiles().tileToCrsCoordinate(tileSet, column, row, zoomLevel);
+                        final Coordinate<Integer> tileCoordinate = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoordinate, spherMerc.getPrecision(), zoomLevel);
+                        final Coordinate<Integer> expectedTileCoordinate = new Coordinate<>(column, row);
                         assertEquals(expectedTileCoordinate, tileCoordinate);
 
                     }
@@ -4515,7 +4515,7 @@ public class GeoPackageTilesAPITest
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            final BoundingBox bBox         =  new BoundingBox(0, 0.0, 180.0,90.0);
+            final BoundingBox bBox         = new BoundingBox(0, 0.0, 180.0, 90.0);
             final int         row          = 3;
             final int         column       = 5;
             final int         zoomLevel    = 4;
