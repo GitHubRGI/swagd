@@ -33,6 +33,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -161,6 +162,10 @@ public class TilesVerifier extends Verifier
                                                                  .filter(Objects::nonNull)
                                                                  .collect(Collectors.toSet());
             }
+        }
+        else
+        {
+            this.pyramidTablesInTileMatrix = Collections.emptySet();
         }
 
     }
