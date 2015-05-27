@@ -26,11 +26,16 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-
+/**
+ *
+ * @author Mary Carome
+ *
+ */
 public class ThrowingFunctionTest
 {
 
-    @Test(expected = RuntimeException.class)
+    @SuppressWarnings("static-method")
+	@Test(expected = RuntimeException.class)
     public void testApplyThrowsException(){
         final ThrowingFunction<String, Integer> tf = t ->
         {
@@ -44,7 +49,8 @@ public class ThrowingFunctionTest
         fail("Expexted ThrowingFunction method apply to throw a RuntimeException error.");
     }
 
-    @Test
+    @SuppressWarnings("static-method")
+	@Test
     public void testApply(){
         final ThrowingFunction<String, Integer> tf = t ->
         {

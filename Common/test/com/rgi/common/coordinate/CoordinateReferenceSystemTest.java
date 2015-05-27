@@ -40,7 +40,8 @@ public class CoordinateReferenceSystemTest
      * Tests if CoordinateReferenceSystem throws an IllegalArgumentException
      * when a parameter is null or empty
      */
-    @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("unused")
+	@Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException()
     {
         new CoordinateReferenceSystem(null, 123);
@@ -51,7 +52,8 @@ public class CoordinateReferenceSystemTest
      * Tests if CoordinateReferenceSystem throws an IllegalArgumentException
      * when a parameter is null or empty
      */
-    @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("unused")
+	@Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException2()
     {
         new CoordinateReferenceSystem("", 123);
@@ -62,7 +64,8 @@ public class CoordinateReferenceSystemTest
      * Tests if CoordinateReferenceSystem throws an IllegalArgumentException
      * when a parameter is null or empty
      */
-    @Test (expected = IllegalArgumentException.class)
+    @SuppressWarnings("unused")
+	@Test (expected = IllegalArgumentException.class)
     public void illegalArgumentException3()
     {
         new CoordinateReferenceSystem("", "test", 123);

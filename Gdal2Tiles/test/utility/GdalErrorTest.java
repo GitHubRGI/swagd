@@ -11,7 +11,8 @@ import org.junit.Test;
 
 public class GdalErrorTest
 {
-    @Test
+    @SuppressWarnings("static-method")
+	@Test
     public void GdalErrorMessage()
     {
             final File testFile = new File(ClassLoader.getSystemResource("test.tif").getFile());

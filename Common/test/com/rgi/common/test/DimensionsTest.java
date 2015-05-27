@@ -36,6 +36,7 @@ public class DimensionsTest {
      * given width and height
      */
     @Test
+    @SuppressWarnings({ "unused", "static-method" })
     public void dimensionsConstructorTest()
     {
         final Dimensions<Integer> dim = new Dimensions<Integer>(10, 5);
@@ -48,6 +49,7 @@ public class DimensionsTest {
      * Tests that getWidth returns the correct width for the Dimensions object
      */
     @Test
+    @SuppressWarnings({ "unused", "static-method" })
     public void getWidthTest()
     {
         final Dimensions<Integer> dim = new Dimensions<Integer>(20, 5);
@@ -58,6 +60,7 @@ public class DimensionsTest {
      * Tests that getHeight returns the correct height for the Dimensions object
      */
     @Test
+    @SuppressWarnings({ "unused", "static-method" })
     public void getHeightTest()
     {
         final Dimensions<Integer> dim = new Dimensions<Integer>(20, 55);

@@ -32,7 +32,8 @@ public class ThrowingConsumerTest {
     /**
      * Tests that accept throws a RuntimeException
      */
-    @Test (expected = RuntimeException.class)
+    @SuppressWarnings("static-method")
+	@Test (expected = RuntimeException.class)
     public void testAcceptThrowsException()
     {
         final ThrowingConsumer<String> tc = t ->
@@ -50,7 +51,8 @@ public class ThrowingConsumerTest {
      * Tests that accept does not always
      * throw a RuntimeException
      */
-    public void testAccept(){
+    @SuppressWarnings("static-method")
+	public void testAccept(){
         final ThrowingConsumer<String> tc = t ->
         {
             if(t.length() < 0)

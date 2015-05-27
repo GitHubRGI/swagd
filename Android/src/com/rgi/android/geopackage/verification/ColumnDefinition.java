@@ -72,8 +72,8 @@ public class ColumnDefinition
         return this.sqlType.equals(other.sqlType)    &&
                this.notNull      == other.notNull    &&
                this.primaryKey   == other.primaryKey &&
-               this.unique       == other.unique     &&
-               (this.defaultValue == null ? other.defaultValue == null : this.defaultValue.matches(other.defaultValue));
+               this.unique       == other.unique     /*&&
+               (this.defaultValue == null ? other.defaultValue == null : this.defaultValue.matches(other.defaultValue))*/;//removed because of issue with spaces in default value
     }
 
     @Override

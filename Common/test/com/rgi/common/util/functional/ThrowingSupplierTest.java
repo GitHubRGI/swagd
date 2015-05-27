@@ -31,7 +31,8 @@ import org.junit.Test;
 public class ThrowingSupplierTest
 {
 
-    @Test(expected = RuntimeException.class)
+    @SuppressWarnings("static-method")
+	@Test(expected = RuntimeException.class)
     public void testGetThrowsException()
     {
         final ThrowingSupplier<String> ts = () ->
@@ -42,7 +43,8 @@ public class ThrowingSupplierTest
         fail("Expected ThrowingSupplier method throws to throw at RuntimeException");
     }
 
-    @Test
+    @SuppressWarnings("static-method")
+	@Test
     public void testGet()
     {
         final ThrowingSupplier<String> ts = () -> "Hello, world!";
