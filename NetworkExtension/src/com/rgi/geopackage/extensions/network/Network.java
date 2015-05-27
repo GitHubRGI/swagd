@@ -26,19 +26,34 @@ package com.rgi.geopackage.extensions.network;
 import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.core.Content;
 
+/**
+ * An object representation of an "rgi_network" GeoPackage extension network
+ * table
+ *
+ * @author Luke Lambert
+ *
+ */
+/**
+ * @author Luke.Lambert
+ *
+ */
 public class Network extends Content
 {
     /**
      * Constructor
      *
      * @param tableName
-     *             The name of the tiles, feature, or extension specific content table
+     *             The name of the tiles, feature, or extension specific
+     *             content table
      * @param identifier
-     *             A human-readable identifier (e.g. short name) for the tableName content
+     *             A human-readable identifier (e.g. short name) for the
+     *             tableName content
      * @param description
      *             A human-readable description for the tableName content
      * @param lastChange
-     *             Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
+     *             Date value in ISO 8601 format as defined by the strftime
+     *             function %Y-%m-%dT%H:%M:%fZ format string applied to the
+     *             current time
      * @param boundingBox
      *             Bounding box for all content in tableName
      * @param spatialReferenceSystem
@@ -60,5 +75,9 @@ public class Network extends Content
               spatialReferenceSystemIdentifier);
     }
 
+    /**
+     * The "rgi_network" GeoPackage extension network data type for all
+     * network tables
+     */
     public static final String NetworkContentType = "network";
 }

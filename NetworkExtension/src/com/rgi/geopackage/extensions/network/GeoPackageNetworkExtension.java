@@ -891,7 +891,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * @param attributedIdentifier
      *             Unique identifier to either a node or edge
      * @param attributeDescriptions
-     *             Collection of which attributes should be retrieved
+     *             Collection of which attributes should be set
      * @param values
      *             Values of the attributes in corresponding order to the given
      *             attribute descriptions
@@ -930,11 +930,14 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     }
 
     /**
-     *
+     * Adds attributes to a collection of either edges or nodes
      *
      * @param network
+     *             Network table reference
      * @param attributeDescriptions
+     *             Collection of which attributes should be set
      * @param attributedIdentifierValuePairs
+     *             Collection of pairs, attributed object (node or edge identifier) and an attribute collection
      * @throws SQLException
      *             if there is a database error
      */
@@ -954,10 +957,20 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         if(!attributeDescriptions.isEmpty())
         {
-            final String networkTableName = attributeDescriptions.get(0).getNetworkTableName();
+            final AttributedType attributedType = attributeDescriptions.get(0).getAttributedType();
+
+            if(!attributeDescriptions.stream().allMatch(description -> description.getNetworkTableName().equals(network.getTableName())))
+            {
+                throw new IllegalArgumentException("Attribute descriptions must all refer to the network parameter");
+            }
+
+            if(!attributeDescriptions.stream().allMatch(description -> description.getAttributedType().equals(attributedType)))
+            {
+                throw new IllegalArgumentException("Attribute descriptions must all refer to either nodes or edges");
+            }
 
             final String insert = String.format("INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
-                                                getNetworkAttributesTableName(networkTableName),
+                                                getNetworkAttributesTableName(network.getTableName()),
                                                 "attribute_description_id",
                                                 "attributed_id",
                                                 "value");

@@ -280,8 +280,9 @@ public class Main
         {
             ex.printStackTrace();
         }
-        finally{
-        	db.close();
+        finally
+        {
+            db.close();
         }
     }
 
@@ -358,9 +359,9 @@ public class Main
         public VertexAstar(final int nodeIdentifier)
         {
             this.nodeIdentifier    = nodeIdentifier;
-            previous          = null;
-            distanceFromStart = 0.0;
-            distanceFromEnd   = 0.0;
+            this.previous          = null;
+            this.distanceFromStart = 0.0;
+            this.distanceFromEnd   = 0.0;
         }
 
         public VertexAstar(final int nodeIdentifier, final VertexAstar previous)
@@ -382,23 +383,23 @@ public class Main
                 return false;
             }
 
-            return nodeIdentifier == ((VertexAstar)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
+            return this.nodeIdentifier == ((VertexAstar)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
         }
 
         @Override
         public int hashCode()
         {
-            return nodeIdentifier;
+            return this.nodeIdentifier;
         }
 
         @Override
         public String toString()
         {
             return String.format("%d (%f, %f, %d)",
-                                 nodeIdentifier,
-                                 distanceFromStart,
-                                 distanceFromEnd,
-                                 previous.nodeIdentifier);
+                                 this.nodeIdentifier,
+                                 this.distanceFromStart,
+                                 this.distanceFromEnd,
+                                 this.previous.nodeIdentifier);
         }
     }
 
@@ -413,8 +414,8 @@ public class Main
         public Vertex(final int nodeIdentifier)
         {
             this.nodeIdentifier = nodeIdentifier;
-            previous       = null;
-            minimumCost    = 0.0;
+            this.previous       = null;
+            this.minimumCost    = 0.0;
         }
 
         public Vertex(final int nodeIdentifier, final Vertex previous)
@@ -436,22 +437,22 @@ public class Main
                 return false;
             }
 
-            return nodeIdentifier == ((Vertex)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
+            return this.nodeIdentifier == ((Vertex)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
         }
 
         @Override
         public int hashCode()
         {
-            return nodeIdentifier;
+            return this.nodeIdentifier;
         }
 
         @Override
         public String toString()
         {
             return String.format("%d (%f, %d)",
-                                 nodeIdentifier,
-                                 minimumCost,
-                                 previous.nodeIdentifier);
+                                 this.nodeIdentifier,
+                                 this.minimumCost,
+                                 this.previous.nodeIdentifier);
         }
     }
 

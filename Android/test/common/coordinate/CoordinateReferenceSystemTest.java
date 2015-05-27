@@ -26,6 +26,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Locale;
+
 import org.junit.Test;
 
 import com.rgi.android.common.coordinate.CoordinateReferenceSystem;
@@ -119,7 +121,7 @@ public class CoordinateReferenceSystemTest
     public void equalsTest5()
     {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
-        final Double differentObject = new Double(291.2);
+        final Double differentObject = Double.valueOf(291.2);
         assertTrue("The equals method returned true when it should have returned false.",
                    !crs1.equals(differentObject));
     }
@@ -131,7 +133,8 @@ public class CoordinateReferenceSystemTest
     {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem(crs1.getAuthority(), crs1.getIdentifier());
-        assertEquals(String.format("The hashcode method returned different values when it should have returned the same hashCode. Crs's hashCodes Compared: %d, %d.",
+        assertEquals(String.format(Locale.getDefault(),
+                                   "The hashcode method returned different values when it should have returned the same hashCode. Crs's hashCodes Compared: %d, %d.",
                                    crs1.hashCode(), crs2.hashCode()),
                      crs1.hashCode(), crs2.hashCode());
     }
@@ -144,8 +147,9 @@ public class CoordinateReferenceSystemTest
     {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem("different authority", crs1.getIdentifier());
-        assertTrue(String.format("The hashcode method returned same value when it should have returned different hashCodes. Crs's hashCodes Compared: %d, %d.",
-                                   crs1.hashCode(), crs2.hashCode()),
+        assertTrue(String.format(Locale.getDefault(),
+                                 "The hashcode method returned same value when it should have returned different hashCodes. Crs's hashCodes Compared: %d, %d.",
+                                 crs1.hashCode(), crs2.hashCode()),
                      crs1.hashCode() != crs2.hashCode());
     }
 }
