@@ -8,7 +8,7 @@
       <!-- directory structure -->
       <Directory Id="TARGETDIR" Name="SourceDir">
         <Directory Id="ProgramFiles64Folder" Name="PFiles">
-          <Directory Name="Swagd" Id="INSTALLDIR64">
+          <Directory Name="Swagd" Id="INSTALLDIR">
             <Directory Name="lib" Id="LIB64" />
           </Directory>
           <Directory Id="ProgramMenuFolder" Name="Programs">
@@ -16,20 +16,12 @@
           </Directory>
         </Directory>
       </Directory>
-      
+      <Property Id="INSTALLDIR"  />
       <!-- swagd components -->
-      <DirectoryRef Id="INSTALLDIR64">
-        <Component Id="GdalDataPath" Guid="EF67942F-D3D9-492B-824D-CCE63B10B805" Win64="yes">
-          <CreateFolder />
-          <Environment Id="gdaldatapath" Name="GDAL_DATA" Value="[INSTALLDIR64]\GDAL\gdal-data" Permanent="no" Part="all" Action="set" System="no" />
-        </Component>
-        <Component Id="SwagdPath" Guid="9031B5C3-E038-4FF6-8DA5-FAB0C49B4FCF" Win64="yes">
-          <CreateFolder />
-          <Environment Id="Swagdpath" Name="PATH" Value="[INSTALLDIR64]" Permanent="no" Part="last" Action="set" System="no" />
-        </Component>
+      <DirectoryRef Id="INSTALLDIR">
         <Component Id="swagd.exe" DiskId="1" Guid="eed0a7a6-d443-4835-8d4f-42d57875b07a" Win64='yes'>
           <File Id="SWAGDEXE" Name="swagd.exe" Source="..\RGISuite\target\swagd.exe" KeyPath="yes" ProcessorArchitecture ="x64">
-            <Shortcut Id="ApplicationStartMenuShortcut" Name="SWAGD" Description="SoftWare that Aggregates Geospatial Data" WorkingDirectory="INSTALLDIR64" Icon="swagd.exe" Directory="ProgramMenuDir" IconIndex="0" Advertise="yes" />
+            <Shortcut Id="ApplicationStartMenuShortcut" Name="SWAGD" Description="SoftWare that Aggregates Geospatial Data" WorkingDirectory="INSTALLDIR" Icon="swagd.exe" Directory="ProgramMenuDir" IconIndex="0" Advertise="yes" />
           </File>
         </Component>
         <Component Id="license" DiskId="1" KeyPath="yes" Guid="fee5774b-08a4-41b9-9e86-8b4fcb372dd5" Win64='yes'>
@@ -40,6 +32,15 @@
         </Component>
         <Component Id="settings" DiskId="1" KeyPath="yes" Guid="E7C4DB1B-E7AC-4006-9733-81C677D2D521" Win64='yes'>
           <File Id="settings" Name="settings" Source=".\packages\settings.txt" ProcessorArchitecture ="x64"/>
+        </Component>
+        <!-- set path variables-->
+        <Component Id="GdalDataPath" Guid="EF67942F-D3D9-492B-824D-CCE63B10B805" Win64="yes">
+          <CreateFolder />
+          <Environment Id="gdaldatapath" Name="GDAL_DATA" Value="[ProgramFiles64Folder]GDAL\gdal-data" Permanent="no" Part="all" Action="set" System="yes" />
+        </Component>
+        <Component Id="SwagdPath" Guid="9031B5C3-E038-4FF6-8DA5-FAB0C49B4FCF" Win64="yes">
+          <CreateFolder />
+          <Environment Id="Swagdpath" Name="Path" Value="[INSTALLDIR]" Permanent="no" Part="last" Action="set" System="yes" />
         </Component>
       </DirectoryRef>
       
@@ -66,7 +67,7 @@
         <!-- Set PATH Variables-->
         <Component Id="SwagdLibPath" Guid="2CC73C95-0D75-417E-A271-F94CE1C25B41" Win64="yes">
           <CreateFolder />
-          <Environment Id="swagdlibpath" Name="PATH" Value="[LIB64]" Permanent="no" Part="last" Action="set" System="no"/>
+          <Environment Id="swagdlibpath" Name="Path" Value="[LIB64]" Permanent="no" Part="last" Action="set" System="yes"/>
         </Component>
 
       </DirectoryRef>

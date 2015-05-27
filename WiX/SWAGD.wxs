@@ -45,7 +45,7 @@
                          Win64="yes"
                          />
   <!-- setting variables (install location)-->
-    <Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]" />
+    <Variable Name="InstallFolder" Type="string" Value="C:\Users\Matthew.Moran\swagd" />
 
 
   </Fragment>
@@ -60,7 +60,7 @@
                   ForcePerMachine="yes"
                   DisplayInternalUI="yes"
                   >
-        <MsiProperty Name="INSTALLLOCATION" Value="[InstallFolder]" />
+        <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]GDAL" />
       </MsiPackage>
       <MsiPackage SourceFile=".\packages\gdal-111-1600-x64-mrsid.msi"
                   Visible="yes"
@@ -70,10 +70,10 @@
                   ForcePerMachine="yes"
                   DisplayInternalUI="yes"
                   >
-        <MsiProperty Name="INSTALLLOCATION" Value="[InstallFolder]" />
+        <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]GDAL" />
       </MsiPackage>
       <ExePackage Id="InstallJava"
-                  DetectCondition="Installed"
+                  DetectCondition="NOT Installed"
                   SourceFile=".\packages\jre-8u45-windows-x64.exe"
                   Compressed="no"
                   Permanent="yes"
@@ -83,7 +83,7 @@
                   Description="SWAGD Application"
                   Visible="yes"
                   >
-        <MsiProperty Name="INSTALLLOCATION" Value="[InstallFolder]" />
+        <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]" />
       </MsiPackage>
     </PackageGroup>
   </Fragment>
