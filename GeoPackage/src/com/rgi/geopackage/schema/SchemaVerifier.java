@@ -79,10 +79,10 @@ public class SchemaVerifier extends Verifier
         public String invalidMinMaxWithRangeType()
         {
            return String.format("constraint_name: %10s, constraint_type: %5s, invalid min: %.3f, invalid max: %.3f.",
-                                 this.constraintName,
-                                 this.constraintType,
-                                 this.min,
-                                 this.max);
+                                this.constraintName,
+                                this.constraintType,
+                                this.min,
+                                this.max);
         }
     }
 
@@ -214,7 +214,7 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsTable)
         {
-            for(final DataColumns dataColumn: this.dataColumnsValues)
+            for(final DataColumns dataColumn : this.dataColumnsValues)
             {
                 if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), dataColumn.tableName))
                 {

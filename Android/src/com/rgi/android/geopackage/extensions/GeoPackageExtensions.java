@@ -23,6 +23,7 @@
 
 package com.rgi.android.geopackage.extensions;
 
+import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -36,26 +37,43 @@ import java.util.Map;
 
 import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
 import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
+import com.rgi.android.geopackage.GeoPackage;
+import com.rgi.android.geopackage.core.GeoPackageCore;
+import com.rgi.android.geopackage.extensions.implementation.BadImplementationException;
+import com.rgi.android.geopackage.extensions.implementation.ExtensionImplementation;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
 import com.rgi.android.geopackage.utility.SelectBuilder;
 import com.rgi.android.geopackage.verification.VerificationIssue;
 import com.rgi.android.geopackage.verification.VerificationLevel;
 
 /**
+ * 'Extensions' subsystem of the {@link GeoPackage} implementation
+ *
  * @author Luke Lambert
  *
  */
 public class GeoPackageExtensions
 {
     /**
+     * The String name "gpkg_extensions" of the database Extensions table
+     * containing the extensions of the GeoPackage (http://www.geopackage.org/spec/#_extensions)
+     */
+    public final static String ExtensionsTableName = "gpkg_extensions";
+
+    /**
      * Constructor
      *
      * @param databaseConnection
      *             The open connection to the database that contains a GeoPackage
+     * @param geoPackageCore
+     *             'Core' subsystem of the {@link GeoPackage} implementation
+     *
      */
-    public GeoPackageExtensions(final Connection databaseConnection)
+    public GeoPackageExtensions(final Connection databaseConnection,
+                                final GeoPackageCore geoPackageCore)
     {
         this.databaseConnection = databaseConnection;
+        this.geoPackageCore     = geoPackageCore;
     }
 
     /**
@@ -65,7 +83,7 @@ public class GeoPackageExtensions
      *             Controls the level of verification testing performed
      * @return The extension GeoPackage requirements this GeoPackage fails to conform to
      * @throws SQLException
-     *          throws if an SQLException occurs
+     *             if there is a database error
      */
     public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel) throws SQLException
     {
@@ -129,11 +147,9 @@ public class GeoPackageExtensions
      * @return Returns an instance of {@link Extension} that represents an entry
      *         in the GeoPackage extensions table
      * @throws SQLException
-     *             throws if the methods
-     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
-     *             or
-     *             {@link SelectBuilder#SelectBuilder(Connection, String, Collection, Map)}
-     *             throws or other various SQLExceptions occur
+     *             throws if the methods {@link DatabaseUtility#
+     *             tableOrViewExists(Connection, String)} or {@link
+     *             SelectBuilder#SelectBuilder} throws or other various SQLExceptions occur
      */
     public Extension getExtension(final String tableName, final String columnName, final String extensionName) throws SQLException
     {
@@ -192,9 +208,9 @@ public class GeoPackageExtensions
      * @return Returns a collection of {@link Extension} objects that represent
      *         all of the entries in the GeoPackage extensions table
      * @throws SQLException
-     *             throws if the method
-     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
-     *             throws or other various SQLExceptions occur
+     *             throws if the method {@link DatabaseUtility
+     *             #tableOrViewExists(Connection, String)} throws or other
+     *             various SQLExceptions occur
      */
     public Collection<Extension> getExtensions() throws SQLException
     {
@@ -370,6 +386,50 @@ public class GeoPackageExtensions
                              scope.toString());
     }
 
+    /**
+     * Gets a handle to an {@link ExtensionImplementation} which exposes
+     * extension specific functionality
+     *
+     * @param clazz
+     *             {@link Class} representing
+     * @return a handle to an implementation of {@link ExtensionImplementation}
+     * @throws BadImplementationException
+     *             if the Class type parameter doesn't match the requirements
+     *             needed to create the requested extension.  See {@link
+     *             BadImplementationException#getCause()} for more details
+     */
+    public <T extends ExtensionImplementation> T getExtensionImplementation(final Class<T> clazz) throws BadImplementationException
+    {
+        if(clazz == null)
+        {
+            throw new IllegalArgumentException("Class cannot be null");
+        }
+
+        if(this.implementations.containsKey(clazz))
+        {
+            final ExtensionImplementation implementation = this.implementations.get(clazz);
+
+            return clazz.cast(implementation);
+        }
+
+        try
+        {
+            final Constructor<T> constructor = clazz.getDeclaredConstructor(Connection.class,
+                                                                            GeoPackageCore.class,
+                                                                            GeoPackageExtensions.class);
+
+            final T implementation = constructor.newInstance(this.databaseConnection, this.geoPackageCore, this);
+
+            this.implementations.put(clazz, implementation);
+
+            return implementation;
+        }
+        catch(final Exception ex)
+        {
+            throw new BadImplementationException(String.format("There was an error instantiating an instance of the '%s' GeoPackage extension implementation", clazz.getName()), ex);
+        }
+    }
+
     @SuppressWarnings("static-method")
     protected String getExtensionsTableCreationSql()
     {
@@ -412,11 +472,8 @@ public class GeoPackageExtensions
         }
     }
 
-    private final Connection databaseConnection;
+    private final Connection     databaseConnection;
+    private final GeoPackageCore geoPackageCore;
 
-    /**
-     * The String name "gpkg_extensions" of the database Extensions table
-     * containing the extensions of the GeoPackage (http://www.geopackage.org/spec/#_extensions)
-     */
-    public final static String ExtensionsTableName = "gpkg_extensions";
+    private final Map<Class<? extends ExtensionImplementation>, ExtensionImplementation> implementations = new HashMap<Class<? extends ExtensionImplementation>, ExtensionImplementation>();
 }

@@ -77,7 +77,7 @@ public class ExtensionsVerifier extends Verifier
         private final String extensionName;
     }
 
-    private boolean hasGpkgExtensionsTable;
+    private final boolean hasGpkgExtensionsTable;
 
     private List<ExtensionData> gpkgExtensionsDataAndColumnName;
 
@@ -96,18 +96,10 @@ public class ExtensionsVerifier extends Verifier
     {
         super(sqliteConnection, verificationLevel);
 
-        try
-        {
-            this.hasGpkgExtensionsTable = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageExtensions.ExtensionsTableName);
-        }
-        catch(final SQLException ex)
-        {
-            this.hasGpkgExtensionsTable = false;
-        }
+        this.hasGpkgExtensionsTable = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageExtensions.ExtensionsTableName);
 
         if(this.hasGpkgExtensionsTable)
         {
-
             final String query = String.format("SELECT table_name, column_name, extension_name FROM %s;", GeoPackageExtensions.ExtensionsTableName);
 
             final Statement statement = this.getSqliteConnection().createStatement();
@@ -118,16 +110,17 @@ public class ExtensionsVerifier extends Verifier
 
                 try
                 {
-                    this.gpkgExtensionsDataAndColumnName = new ArrayList<ExtensionData>();
-
-                    while(tableNameColumnNameRS.next())
-                    {
-                        final ExtensionData extensionData = new ExtensionData(tableNameColumnNameRS.getString("table_name"),
-                                                                              tableNameColumnNameRS.getString("column_name"),
-                                                                              tableNameColumnNameRS.getString("extension_name"));
-
-                        this.gpkgExtensionsDataAndColumnName.add(extensionData);
-                    }
+                    this.gpkgExtensionsDataAndColumnName = JdbcUtility.map(tableNameColumnNameRS,
+                                                                           new ResultSetFunction<ExtensionData>()
+                                                                           {
+                                                                               @Override
+                                                                               public ExtensionData apply(final ResultSet resultSet) throws SQLException
+                                                                               {
+                                                                                   return new ExtensionData(tableNameColumnNameRS.getString("table_name"),
+                                                                                                            tableNameColumnNameRS.getString("column_name"),
+                                                                                                            tableNameColumnNameRS.getString("extension_name"));
+                                                                               }
+                                                                           });
                 }
                 finally
                 {

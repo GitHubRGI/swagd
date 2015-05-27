@@ -82,49 +82,53 @@ public class Verifier
     public Collection<VerificationIssue> getVerificationIssues()
     {
         return FunctionalUtility.mapFilter(this.getRequirements(),
-                                           new Function<Method, VerificationIssue>(){  @Override
-                                                                                       public VerificationIssue apply(final Method requirementTestMethod)
-                                                                                       {
-                                                                                           try
-                                                                                           {
-                                                                                               requirementTestMethod.invoke(Verifier.this);
-                                                                                               return null;
-                                                                                           }
-                                                                                           catch(final InvocationTargetException ex)
-                                                                                           {
-                                                                                               final Requirement requirement = requirementTestMethod.getAnnotation(Requirement.class);
+                                           new Function<Method, VerificationIssue>()
+                                           {
+                                               @Override
+                                              public VerificationIssue apply(final Method requirementTestMethod)
+                                              {
+                                                  try
+                                                  {
+                                                      requirementTestMethod.invoke(Verifier.this);
+                                                      return null;
+                                                  }
+                                                  catch(final InvocationTargetException ex)
+                                                  {
+                                                      final Requirement requirement = requirementTestMethod.getAnnotation(Requirement.class);
 
-                                                                                               final Throwable cause = ex.getCause();
+                                                      final Throwable cause = ex.getCause();
 
-                                                                                               if(cause != null && cause instanceof AssertionError)
-                                                                                               {
-                                                                                                   final AssertionError assertionError = (AssertionError)cause;
+                                                      if(cause != null && cause instanceof AssertionError)
+                                                      {
+                                                          final AssertionError assertionError = (AssertionError)cause;
 
-                                                                                                   return assertionError.getSeverity() == Severity.Skipped ? null
-                                                                                                                                                           : new VerificationIssue(assertionError.getMessage(),
-                                                                                                                                                                                   requirement,
-                                                                                                                                                                                   assertionError.getSeverity());
-                                                                                               }
+                                                          return assertionError.getSeverity() == Severity.Skipped ? null
+                                                                                                                  : new VerificationIssue(assertionError.getMessage(),
+                                                                                                                                          requirement,
+                                                                                                                                          assertionError.getSeverity());
+                                                      }
 
-                                                                                               return new VerificationIssue(String.format("Unexpected exception thrown when testing requirement %s for GeoPackage verification: %s",
-                                                                                                                                          requirement.reference(),
-                                                                                                                                          ex.getMessage()),
-                                                                                                                            requirement);
-                                                                                           }
-                                                                                           catch(final IllegalAccessException ex)
-                                                                                           {
-                                                                                               // TODO
-                                                                                               ex.printStackTrace();
-                                                                                               return null;
-                                                                                           }
-                                                                                       }
-                                                                                    },
-                                           new Predicate<VerificationIssue>(){  @Override
-                                                                                public boolean apply(final VerificationIssue verification)
-                                                                                {
-                                                                                    return verification != null;
-                                                                                }
-                                                                             });
+                                                      return new VerificationIssue(String.format("Unexpected exception thrown when testing requirement %s for GeoPackage verification: %s",
+                                                                                                 requirement.reference(),
+                                                                                                 ex.getMessage()),
+                                                                                   requirement);
+                                                  }
+                                                  catch(final IllegalAccessException ex)
+                                                  {
+                                                      // TODO
+                                                      ex.printStackTrace();
+                                                      return null;
+                                                  }
+                                              }
+                                           },
+                                           new Predicate<VerificationIssue>()
+                                           {
+                                               @Override
+                                               public boolean apply(final VerificationIssue verification)
+                                               {
+                                                   return verification != null;
+                                               }
+                                           });
     }
 
     /**

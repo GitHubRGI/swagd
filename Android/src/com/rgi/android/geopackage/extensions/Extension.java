@@ -23,11 +23,11 @@
 
 package com.rgi.android.geopackage.extensions;
 
-
 /**
  * GeoPackage Extension
  *
- * <blockquote cite="http://www.geopackage.org/spec/#extensions_table_definition" type="cite">
+ * <blockquote cite=
+ * "http://www.geopackage.org/spec/#extensions_table_definition" type="cite">
  * The gpkg_extensions table or updateable view in a GeoPackage is used to
  * indicate that a particular extension applies to a GeoPackage, a table in a
  * GeoPackage or a column of a table in a GeoPackage. An application that
@@ -37,8 +37,13 @@ package com.rgi.android.geopackage.extensions;
  * and return an error message if it does not.
  * </blockquote>
  *
- * @see <a href="http://www.geopackage.org/spec/#extensions_table_definition">OGC® GeoPackage Encoding Standard - 2.5.2.1.1. Table Definition</a>
- * @see <a href="http://www.geopackage.org/spec/#gpkg_extensions_cols">OGC® GeoPackage Encoding Standard - Table 17. GeoPackage Extensions Table or View Definition (Table or View Name: gpkg_extensions)</a>
+ * @see <a href="http://www.geopackage.org/spec/#extensions_table_definition">
+ *                 OGC® GeoPackage Encoding Standard - 2.5.2.1.1. Table
+ *                 Definition</a>
+ * @see <a href="http://www.geopackage.org/spec/#gpkg_extensions_cols">OGC®
+ *                 GeoPackage Encoding Standard - Table 17. GeoPackage
+ *                 Extensions Table or View Definition (Table or View Name:
+ *                 gpkg_extensions)</a>
  *
  * @author Luke Lambert
  *
@@ -49,21 +54,34 @@ public class Extension
      * An object representation of an entry in the GeoPackage extensions table
      *
      * @param tableName
-     *             Name of the table that requires the extension. When NULL, the extension is required for the entire GeoPackage. SHALL NOT be NULL when the column_name is not NULL
+     *             Name of the table that requires the extension. When NULL,
+     *             the extension is required for the entire GeoPackage. SHALL
+     *             NOT be NULL when the column_name is not NULL
      * @param columnName
-     *             Name of the column that requires the extension. When NULL, the extension is required for the entire table
+     *             Name of the column that requires the extension. When NULL,
+     *             the extension is required for the entire table
      * @param extensionName
-     *             The case sensitive name of the extension that is required, in the form <author>_<extension_name> where <author> indicates the person or organization that developed and maintains the extension. The valid character set for <author> is [a-zA-Z0-9]. The valid character set for <extension_name> is [a-zA-Z0-9_]
+     *             The case sensitive name of the extension that is required,
+     *             in the form <author>_<extension_name> where <author>
+     *             indicates the person or organization that developed and
+     *             maintains the extension. The valid character set for
+     *             <author> is [a-zA-Z0-9]. The valid character set for
+     *             <extension_name> is [a-zA-Z0-9_]
      * @param definition
-     *             Definition of the extension in the form specfied by the template in <a href="http://www.geopackage.org/spec/#extension_template">GeoPackage Extension Template (Normative)</a> or reference thereto.
+     *             Definition of the extension in the form specified by the
+     *             template in <a href=
+     *             "http://www.geopackage.org/spec/#extension_template">
+     *             GeoPackage Extension Template (Normative)</a> or reference
+     *             thereto.
      * @param scope
-     *             Indicates scope of extension effects on readers / writers: "read-write" or "write-only" in lowercase.
+     *             Indicates scope of extension effects on readers / writers:
+     *             "read-write" or "write-only" in lowercase.
      */
     protected Extension(final String tableName,
                         final String columnName,
                         final String extensionName,
                         final String definition,
-                        final String scope) 
+                        final String scope)
     {
         if(columnName != null && tableName == null)
         {
@@ -108,11 +126,16 @@ public class Extension
     }
 
     /**
-     * @param inTableName the tableName corresponding to other Extension
-     * @param inColumnName the columnName corresponding to other Extension
-     * @param inExtensionName the extension Name corresponding to other Extension
-     * @param inDefinition the definition corresponding to other Extension
-     * @param inScope the Scope corresponding to other Extension
+     * @param inTableName
+     *             the tableName corresponding to other Extension
+     * @param inColumnName
+     *             the columnName corresponding to other Extension
+     * @param inExtensionName
+     *             the extension Name corresponding to other Extension
+     * @param inDefinition
+     *             the definition corresponding to other Extension
+     * @param inScope
+     *             the Scope corresponding to other Extension
      * @return true if this.Extension equals the parameters
      */
     public boolean equals(final String inTableName,

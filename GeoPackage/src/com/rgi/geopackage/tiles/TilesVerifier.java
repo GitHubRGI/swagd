@@ -33,7 +33,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -114,10 +113,6 @@ public class TilesVerifier extends Verifier
                                                           .filter(Objects::nonNull)
                                                           .collect(Collectors.toSet());
         }
-        catch(final SQLException ex)
-        {
-            this.allPyramidUserDataTables = Collections.emptySet();
-        }
 
         final String query2 = String.format("SELECT table_name FROM %s WHERE data_type = 'tiles';",
                                             GeoPackageCore.ContentsTableName);
@@ -137,10 +132,6 @@ public class TilesVerifier extends Verifier
                                                                             })
                                                           .filter(Objects::nonNull)
                                                           .collect(Collectors.toSet());
-        }
-        catch(final SQLException ex)
-        {
-            this.pyramidTablesInContents = Collections.emptySet();
         }
 
         final String query3 = String.format("SELECT DISTINCT table_name FROM %s;", GeoPackageTiles.MatrixTableName);
@@ -163,10 +154,6 @@ public class TilesVerifier extends Verifier
                                                                               })
                                                              .filter(Objects::nonNull)
                                                              .collect(Collectors.toSet());
-        }
-        catch(final SQLException ex)
-        {
-            this.pyramidTablesInTileMatrix = Collections.emptySet();
         }
 
         this.hasTileMatrixSetTable = this.tileMatrixSetTableExists();
@@ -280,7 +267,6 @@ public class TilesVerifier extends Verifier
                                                   Severity.Warning);
                             }
                         }
-                        //TODO Test will be moved on later release//This tests if the pixel x values and pixel y values are valid based on their bounding box in the tile matrix set
                     }
                 }
             }

@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import com.rgi.android.common.util.StringUtility;
@@ -67,7 +68,7 @@ public class SchemaVerifier extends Verifier
     {
         private String tableName;
         private String columnName;
-        private String constraintName;  // TODO I believe this was being used before, but hasn't after the changes to backport to java 1.6
+        private String constraintName;
     }
 
     private class DataColumnConstraints
@@ -82,11 +83,12 @@ public class SchemaVerifier extends Verifier
 
         public String invalidMinMaxWithRangeType()
         {
-           return String.format("constraint_name: %10s, constraint_type: %5s, invalid min: %.3f, invalid max: %.3f.",
-                                 this.constraintName,
-                                 this.constraintType,
-                                 this.min,
-                                 this.max);
+           return String.format(Locale.getDefault(),
+                                "constraint_name: %10s, constraint_type: %5s, invalid min: %.3f, invalid max: %.3f.",
+                                this.constraintName,
+                                this.constraintType,
+                                this.min,
+                                this.max);
         }
     }
 

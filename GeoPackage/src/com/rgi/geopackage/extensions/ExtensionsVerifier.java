@@ -423,9 +423,7 @@ public class ExtensionsVerifier extends Verifier
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
     @Requirement(reference = "Requirement 85",
-                 text    = "The scope column value in a gpkg_extensions row SHALL be lowercase "
-                           + "\"read-write\" for an extension that affects both readers and writers, "
-                           + "or \"write-only\" for an extension that affects only writers. ")
+                 text      = "The scope column value in a gpkg_extensions row SHALL be lowercase \"read-write\" for an extension that affects both readers and writers, or \"write-only\" for an extension that affects only writers.")
     public void Requirement85() throws SQLException, AssertionError
     {
         if(this.hasGpkgExtensionsTable)

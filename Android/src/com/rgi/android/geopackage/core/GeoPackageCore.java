@@ -34,6 +34,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import com.rgi.android.common.BoundingBox;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
@@ -49,7 +50,7 @@ public class GeoPackageCore
     /**
      * The Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
      */
-    public final SimpleDateFormat DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    public final SimpleDateFormat DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
 
     /**
      * The name of the GeoPackage Spatial Reference System Table "gpkg_spatial_ref_sys"
@@ -773,7 +774,7 @@ public class GeoPackageCore
     {
         // http://www.geopackage.org/spec/#_gpkg_spatial_ref_sys
         // http://www.geopackage.org/spec/#spatial_ref_sys
-        return "CREATE TABLE " + GeoPackageCore.SpatialRefSysTableName                                                                                    +
+        return "CREATE TABLE " + GeoPackageCore.SpatialRefSysTableName + "\n" +
                "(srs_name                 TEXT    NOT NULL,             -- Human readable name of this SRS (Spatial Reference System)\n"              +
                " srs_id                   INTEGER NOT NULL PRIMARY KEY, -- Unique identifier for each Spatial Reference System within a GeoPackage\n" +
                " organization             TEXT    NOT NULL,             -- Case-insensitive name of the defining organization e.g. EPSG or epsg\n"    +
