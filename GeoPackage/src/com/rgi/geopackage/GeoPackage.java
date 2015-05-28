@@ -222,7 +222,7 @@ public class GeoPackage implements AutoCloseable
                 this.databaseConnection.commit();
             }
 
-            if(!isNewFile && verificationLevel != VerificationLevel.None)
+            if(verificationLevel != VerificationLevel.None)
             {
                 this.verify();
             }
