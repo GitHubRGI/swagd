@@ -521,5 +521,4 @@ public class DatabaseUtilityTest
     }
 
     private final static String sqliteVersion = "3.8.7";
-
 }
