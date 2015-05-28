@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -308,8 +309,8 @@ public class TilesVerifier extends Verifier
 
                             if(current.zoomLevel == next.zoomLevel - 1)
                             {
-                                Assert.assertTrue(String.format("Pixel sizes for tile matrix user data tables do not vary by factors of 2"
-                                                                + " between adjacent zoom levels in the tile matrix metadata table: %f, %f",
+                                Assert.assertTrue(String.format(Locale.getDefault(),
+                                                                "Pixel sizes for tile matrix user data tables do not vary by factors of 2 between adjacent zoom levels in the tile matrix metadata table: %f, %f",
                                                                 next.pixelXSize,
                                                                 next.pixelYSize),
                                                   TilesVerifier.isEqual((current.pixelXSize / 2.0), next.pixelXSize) &&
@@ -380,7 +381,7 @@ public class TilesVerifier extends Verifier
                                                                                   final byte[] tileData = resultSet.getBytes("tile_data");
 
                                                                                   return TilesVerifier.verifyData(tileData) ? null
-                                                                                                                            : String.format("column id %d", resultSet.getInt("id"));
+                                                                                                                            : String.format(Locale.getDefault(), "column id %d", resultSet.getInt("id"));
                                                                               }
                                                                               catch(final SQLException ex)
                                                                               {
@@ -845,7 +846,8 @@ public class TilesVerifier extends Verifier
 
                                 for(final Integer zoom : tilePyramidZooms)
                                 {
-                                    Assert.assertTrue(String.format("The %s does not contain a row record for zoom level %d in the Pyramid User Data Table %s.",
+                                    Assert.assertTrue(String.format(Locale.getDefault(),
+                                                                    "The %s does not contain a row record for zoom level %d in the Pyramid User Data Table %s.",
                                                                     GeoPackageTiles.MatrixTableName,
                                                                     zoom,
                                                                     tableName),
@@ -914,7 +916,10 @@ public class TilesVerifier extends Verifier
 
                     if(!minZoom.wasNull())
                     {
-                        Assert.assertTrue(String.format("The zoom_level in %s must be greater than 0. Invalid zoom_level: %d", GeoPackageTiles.MatrixTableName, minZoomLevel),
+                        Assert.assertTrue(String.format(Locale.getDefault(),
+                                                        "The zoom_level in %s must be greater than 0. Invalid zoom_level: %d",
+                                                        GeoPackageTiles.MatrixTableName,
+                                                        minZoomLevel),
                                           minZoomLevel >= 0,
                                           Severity.Error);
                     }
@@ -969,7 +974,8 @@ public class TilesVerifier extends Verifier
 
                     if(!minMatrixWidthRS.wasNull())
                     {
-                        Assert.assertTrue(String.format("The matrix_width in %s must be greater than 0. Invalid matrix_width: %d",
+                        Assert.assertTrue(String.format(Locale.getDefault(),
+                                                        "The matrix_width in %s must be greater than 0. Invalid matrix_width: %d",
                                                         GeoPackageTiles.MatrixTableName,
                                                         minMatrixWidth),
                                           minMatrixWidth > 0,
@@ -1026,7 +1032,8 @@ public class TilesVerifier extends Verifier
 
                     if(!minMatrixHeightRS.wasNull())
                     {
-                      Assert.assertTrue(String.format("The matrix_height in %s must be greater than 0. Invalid matrix_height: %d",
+                      Assert.assertTrue(String.format(Locale.getDefault(),
+                                                      "The matrix_height in %s must be greater than 0. Invalid matrix_height: %d",
                                                       GeoPackageTiles.MatrixTableName,
                                                       minMatrixHeight),
                                         minMatrixHeight > 0,
@@ -1083,7 +1090,8 @@ public class TilesVerifier extends Verifier
 
                     if(!minTileWidthRS.wasNull())
                     {
-                        Assert.assertTrue(String.format("The tile_width in %s must be greater than 0. Invalid tile_width: %d",
+                        Assert.assertTrue(String.format(Locale.getDefault(),
+                                                        "The tile_width in %s must be greater than 0. Invalid tile_width: %d",
                                                         GeoPackageTiles.MatrixTableName,
                                                         minTileWidth),
                                           minTileWidth > 0,
@@ -1140,7 +1148,8 @@ public class TilesVerifier extends Verifier
 
                     if(!minTileHeightRS.wasNull())
                     {
-                        Assert.assertTrue(String.format("The tile_height in %s must be greater than 0. Invalid tile_height: %d",
+                        Assert.assertTrue(String.format(Locale.getDefault(),
+                                                        "The tile_height in %s must be greater than 0. Invalid tile_height: %d",
                                                         GeoPackageTiles.MatrixTableName,
                                                         testMinTileHeight),
                                           testMinTileHeight > 0,
@@ -1197,7 +1206,8 @@ public class TilesVerifier extends Verifier
 
                     if(!minPixelXSizeRS.wasNull())
                     {
-                        Assert.assertTrue(String.format("The pixel_x_size in %s must be greater than 0. Invalid pixel_x_size: %f",
+                        Assert.assertTrue(String.format(Locale.getDefault(),
+                                                        "The pixel_x_size in %s must be greater than 0. Invalid pixel_x_size: %f",
                                                         GeoPackageTiles.MatrixTableName,
                                                         minPixelXSize),
                                           minPixelXSize > 0,
@@ -1254,9 +1264,10 @@ public class TilesVerifier extends Verifier
 
                    if(!minPixelYSizeRS.wasNull())
                    {
-                       Assert.assertTrue(String.format("The pixel_y_size in %s must be greater than 0. Invalid pixel_y_size: %f",
+                       Assert.assertTrue(String.format(Locale.getDefault(),
+                                                       "The pixel_y_size in %s must be greater than 0. Invalid pixel_y_size: %f",
                                                        GeoPackageTiles.MatrixTableName,
-                                                        minPixelYSize),
+                                                       minPixelYSize),
                                          minPixelYSize > 0,
                                          Severity.Error);
                    }
@@ -1515,9 +1526,8 @@ public class TilesVerifier extends Verifier
                                 {
                                     if(invalidZooms.next())
                                     {
-                                        Assert.fail(String.format("There are zoom_levels in the Pyramid User Data Table: %1$s  such that the zoom level "
-                                                                    + "is bigger than the maximum zoom level: %2$d or smaller than the minimum zoom_level: %3$d"
-                                                                    + " that was determined by the %4$s Table.  Invalid tile with an id of %5$d from table %6$s",
+                                        Assert.fail(String.format(Locale.getDefault(),
+                                                                  "There are zoom_levels in the Pyramid User Data Table: %1$s  such that the zoom level is bigger than the maximum zoom level: %2$d or smaller than the minimum zoom_level: %3$d that was determined by the %4$s Table.  Invalid tile with an id of %5$d from table %6$s",
                                                                   pyramidName,
                                                                   maxZoom,
                                                                   minZoom,
@@ -1613,7 +1623,8 @@ public class TilesVerifier extends Verifier
                                                                                     @Override
                                                                                     public String apply(final ResultSet resultSet) throws SQLException
                                                                                     {
-                                                                                        return String.format("\tZoom level %d  has tile_column values outside of the range: [0, %d].",
+                                                                                        return String.format(Locale.getDefault(),
+                                                                                                             "\tZoom level %d  has tile_column values outside of the range: [0, %d].",
                                                                                                              resultSet.getInt("zl"),
                                                                                                              resultSet.getInt("width") - 1);
                                                                                     }
@@ -1699,7 +1710,8 @@ public class TilesVerifier extends Verifier
                                                                                      @Override
                                                                                      public String apply(final ResultSet resultSet) throws SQLException
                                                                                      {
-                                                                                         return String.format("\tZoom level %d  has tile_row values outside of the range: [0, %d].",
+                                                                                         return String.format(Locale.getDefault(),
+                                                                                                              "\tZoom level %d  has tile_row values outside of the range: [0, %d].",
                                                                                                               resultSet.getInt("zl"),
                                                                                                               resultSet.getInt("height") - 1);
                                                                                      }
@@ -1960,24 +1972,24 @@ public class TilesVerifier extends Verifier
 
                                     final StringBuilder invalidPixelValues = new StringBuilder();
 
-                                    for(final TileData data: tileDataSet)
+                                    for(final TileData data : tileDataSet)
                                     {
                                         if(!validPixelValues(data, boundingBox))
                                         {
                                             invalidPixelValues.append(String.format("\tInvalid pixel_x_size: %f, Invalid pixel_y_size: %f at zoom_level %d\n",
-                                                                                                                     data.pixelXSize,
-                                                                                                                     data.pixelYSize,
-                                                                                                                     data.zoomLevel));
+                                                                                    data.pixelXSize,
+                                                                                    data.pixelYSize,
+                                                                                    data.zoomLevel));
                                         }
                                     }
 
                                     Assert.assertTrue(String.format("The pixel_x_size and pixel_y_size should satisfy these two equations:"
-                                                                    + "\n\tpixel_x_size = (bounding box width  / matrix_width)  / tile_width "
-                                                                    + "AND \n\tpixel_y_size = (bounding box height / matrix_height)/ tile_height.  "
-                                                                    + "\nBased on these two equations, the following pixel values are invalid for the table '%s'.:\n%s ",
+                                                                    + "\n\tpixel_x_size = (bounding box width  / matrix_width) / tile_width "
+                                                                    + "AND \n\tpixel_y_size = (bounding box height / matrix_height) / tile_height.  "
+                                                                    + "\nBased on these two equations, the following pixel values are invalid for the table '%s':\n%s ",
                                                                     tableName,
                                                                     invalidPixelValues.toString()),
-                                                      invalidPixelValues.length() != 0,
+                                                      invalidPixelValues.length() == 0,
                                                       Severity.Warning);
                                 }
                             }
