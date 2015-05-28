@@ -118,21 +118,12 @@ public class TilesVerifier extends Verifier
         final String query2 = String.format("SELECT table_name FROM %s WHERE data_type = 'tiles';",
                                             GeoPackageCore.ContentsTableName);
 
-        try(Statement createStmt2           = this.getSqliteConnection().createStatement();
-            ResultSet contentsPyramidTables = createStmt2.executeQuery(query2))
+        try(final Statement createStmt2           = this.getSqliteConnection().createStatement();
+            final ResultSet contentsPyramidTables = createStmt2.executeQuery(query2))
         {
-            this.pyramidTablesInContents = ResultSetStream.getStream(contentsPyramidTables)
-                                                          .map(resultSet -> { try
-                                                                              {
-                                                                                 return resultSet.getString("table_name");
-                                                                              }
-                                                                              catch(final SQLException ex)
-                                                                              {
-                                                                                  return null;
-                                                                              }
-                                                                            })
-                                                          .filter(Objects::nonNull)
-                                                          .collect(Collectors.toSet());
+            this.pyramidTablesInContents = JdbcUtility.map(contentsPyramidTables,
+                                                           resultSet -> resultSet.getString("table_name"),
+                                                           HashSet<String>::new);
         }
 
 
@@ -141,26 +132,15 @@ public class TilesVerifier extends Verifier
 
         if(this.hasTileMatrixTable)
         {
-            final String query3 = String.format("SELECT DISTINCT table_name FROM %s;", GeoPackageTiles.MatrixTableName);
+            final String query = String.format("SELECT DISTINCT table_name FROM %s;", GeoPackageTiles.MatrixTableName);
 
             try(Statement createStmt3             = this.getSqliteConnection().createStatement();
-                ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(query3))
+                ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(query))
             {
-                this.pyramidTablesInTileMatrix = ResultSetStream.getStream(tileMatrixPyramidTables)
-                                                                .map(resultSet -> { try
-                                                                                    {
-                                                                                        final String pyramidName = resultSet.getString("table_name");
-                                                                                        return DatabaseUtility.tableOrViewExists(this.getSqliteConnection(),
-                                                                                                                                 pyramidName) ? pyramidName
-                                                                                                                                              : null;
-                                                                                    }
-                                                                                    catch(final SQLException ex)
-                                                                                    {
-                                                                                        return null;
-                                                                                    }
-                                                                                  })
-                                                                 .filter(Objects::nonNull)
-                                                                 .collect(Collectors.toSet());
+                this.pyramidTablesInTileMatrix = JdbcUtility.mapFilter(tileMatrixPyramidTables,
+                                                                       resultSet -> resultSet.getString("table_name"),
+                                                                       pyramidName -> DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), pyramidName),
+                                                                       HashSet<String>::new);
             }
         }
         else

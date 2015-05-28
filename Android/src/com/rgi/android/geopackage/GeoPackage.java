@@ -219,7 +219,7 @@ public class GeoPackage implements Closeable
                 this.databaseConnection.commit();
             }
 
-            if(verificationLevel != VerificationLevel.None)
+            if(!isNewFile && verificationLevel != VerificationLevel.None)
             {
                 this.verify();
             }
