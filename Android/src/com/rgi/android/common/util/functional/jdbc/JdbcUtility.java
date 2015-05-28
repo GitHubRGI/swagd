@@ -5,8 +5,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import com.rgi.android.common.util.functional.Predicate;
-import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
-import com.rgi.android.common.util.functional.jdbc.ResultSetPredicate;
 
 /**
  * @author Luke Lambert
@@ -31,7 +29,7 @@ public class JdbcUtility
     {
         if(resultSet == null || resultSet.isClosed())
         {
-            throw new IllegalArgumentException("Result set may not be null or close");
+            throw new IllegalArgumentException("Result set may not be null or closed");
         }
 
         if(resultSetPredicate == null)
@@ -69,7 +67,7 @@ public class JdbcUtility
     {
         if(resultSet == null || resultSet.isClosed())
         {
-            throw new IllegalArgumentException("Result set may not be null or close");
+            throw new IllegalArgumentException("Result set may not be null or closed");
         }
 
         if(resultSetFunction == null)

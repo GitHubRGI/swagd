@@ -438,10 +438,11 @@ public class DatabaseUtilityTest
         try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
         {
             this.addTable(con, "foo");
-            final String sqliteVersion =  DatabaseUtility.getSqliteVersion(testFile);
+            final String foundSqliteVersion = DatabaseUtility.getSqliteVersion(testFile);
             assertTrue(String.format("The SQLite Version was different from expected. Expected: %s, Actual: %s",
-                                     geopackageSqliteVersion, sqliteVersion),
-                       geopackageSqliteVersion.equals(sqliteVersion));
+                                     sqliteVersion,
+                                     foundSqliteVersion),
+                       sqliteVersion.equals(foundSqliteVersion));
         }
         finally
         {
@@ -519,10 +520,6 @@ public class DatabaseUtilityTest
         }
     }
 
-    /**
-     * The Sqlite version required for a GeoPackage shall contain SQLite 3
-     * format
-     */
-    private final static String geopackageSqliteVersion = "3.8.7";
+    private final static String sqliteVersion = "3.8.7";
 
 }

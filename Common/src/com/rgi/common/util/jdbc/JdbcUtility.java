@@ -60,7 +60,7 @@ public class JdbcUtility
     {
         if(resultSet == null || resultSet.isClosed())
         {
-            throw new IllegalArgumentException("Result set may not be null or close");
+            throw new IllegalArgumentException("Result set may not be null or closed");
         }
 
         if(resultSetFunction == null)
@@ -156,7 +156,7 @@ public class JdbcUtility
     {
         if(resultSet == null || resultSet.isClosed())
         {
-            throw new IllegalArgumentException("Result set may not be null or close");
+            throw new IllegalArgumentException("Result set may not be null or closed");
         }
 
         if(resultSetFunction == null)

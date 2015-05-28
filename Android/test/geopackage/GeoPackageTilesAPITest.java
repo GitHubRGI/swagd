@@ -2022,26 +2022,26 @@ public class GeoPackageTilesAPITest
 
         try
         {
-            final TileSet    tileSet     = gpkg.tiles().addTileSet("tables", "identifier", "description", new BoundingBox(0.0,0.0,80.0,80.0), gpkg.core().getSpatialReferenceSystem(-1));
+            final TileSet tileSet = gpkg.tiles().addTileSet("tables", "identifier", "description", new BoundingBox(0.0,0.0,80.0,80.0), gpkg.core().getSpatialReferenceSystem(-1));
 
             final int matrixHeight = 2;
-            final int matrixWidth = 4;
-            final int tileHeight = 512;
-            final int tileWidth = 256;
+            final int matrixWidth  = 4;
+            final int tileHeight   = 512;
+            final int tileWidth    = 256;
 
             final TileMatrix tileMatrix  = gpkg.tiles().addTileMatrix(tileSet,
-                                                                     0,
-                                                                     matrixWidth,
-                                                                     matrixHeight,
-                                                                     tileWidth,
-                                                                     tileHeight,
-                                                                     (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                                                     (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                                                      0,
+                                                                      matrixWidth,
+                                                                      matrixHeight,
+                                                                      tileWidth,
+                                                                      tileHeight,
+                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
+                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
 
             final int matrixHeight2 = 4;
-            final int matrixWidth2 = 8;
-            final int tileHeight2 = 512;
-            final int tileWidth2 = 256;
+            final int matrixWidth2  = 8;
+            final int tileHeight2   = 512;
+            final int tileWidth2    = 256;
 
             final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet,
                                                                       3,
@@ -2066,18 +2066,19 @@ public class GeoPackageTilesAPITest
             {
                 Assert.assertTrue("The tile entry's information in the GeoPackage does not match what was originally given to a GeoPackage",
                                   FunctionalUtility.anyMatch(expectedTileMatrix,
-                                                             new Predicate<TileMatrix>(){
-                                                                                           @Override
-                                                                                        public boolean apply(final TileMatrix expectedTM)
-                                                                                           {
-                                                                                               return expectedTM.getTableName()    .equals(gpkgTileMatrix.getTableName())   &&
-                                                                                                       expectedTM.getMatrixHeight() ==      gpkgTileMatrix.getMatrixHeight() &&
-                                                                                                       expectedTM.getMatrixWidth()  ==      gpkgTileMatrix.getMatrixWidth()  &&
-                                                                                                       expectedTM.getPixelXSize()   ==      gpkgTileMatrix.getPixelXSize()   &&
-                                                                                                       expectedTM.getPixelYSize()   ==      gpkgTileMatrix.getPixelYSize()   &&
-                                                                                                       expectedTM.getZoomLevel()    ==      gpkgTileMatrix.getZoomLevel();
-                                                                                           }
-                                                                                          }));
+                                                             new Predicate<TileMatrix>()
+                                                             {
+                                                                 @Override
+                                                                 public boolean apply(final TileMatrix expectedTM)
+                                                                 {
+                                                                     return expectedTM.getTableName()    .equals(gpkgTileMatrix.getTableName())   &&
+                                                                            expectedTM.getMatrixHeight() ==      gpkgTileMatrix.getMatrixHeight() &&
+                                                                            expectedTM.getMatrixWidth()  ==      gpkgTileMatrix.getMatrixWidth()  &&
+                                                                            expectedTM.getPixelXSize()   ==      gpkgTileMatrix.getPixelXSize()   &&
+                                                                            expectedTM.getPixelYSize()   ==      gpkgTileMatrix.getPixelYSize()   &&
+                                                                            expectedTM.getZoomLevel()    ==      gpkgTileMatrix.getZoomLevel();
+                                                                 }
+                                                             }));
             }
         }
         finally
