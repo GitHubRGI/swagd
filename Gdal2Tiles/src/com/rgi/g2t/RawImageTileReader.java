@@ -286,6 +286,7 @@ public class RawImageTileReader implements TileStoreReader
         final int zoomMinYTile = bottomRightCoordinate.getY();
         final int zoomMaxYTile =     topLeftCoordinate.getY();
 
+        // Ensure one tile was calculated for the lowest integer zoom level
         if (zoomMaxYTile == zoomMinYTile && zoomMinXTile == zoomMaxXTile)
         {
         	this.makeTiles(tileHandles, new RawImageTileHandle(zoomRange.getMinimum(), zoomMinXTile, zoomMinYTile), zoomRange.getMaximum());
@@ -294,6 +295,9 @@ public class RawImageTileReader implements TileStoreReader
         {
         	throw new TileStoreException("Min zoom has more than one tile.");
         }
+
+        // Sort the tile handles so that they decrement.  This ensures all base level tiles
+        // are generated before the overview tiles
         tileHandles.sort((o1, o2) -> Integer.compare(o2.getZoomLevel(), o1.getZoomLevel()));
         return tileHandles.stream();
     }
@@ -303,6 +307,7 @@ public class RawImageTileReader implements TileStoreReader
     	final int zoom = tile.getZoomLevel();
     	final int column = tile.getColumn();
     	final int row = tile.getRow();
+
     	final Range<Coordinate<Integer>> zoomRange = this.tileRanges.get(zoom);
     	return column >= zoomRange.getMinimum().getX() &&
     		   column <= zoomRange.getMaximum().getX() &&
@@ -314,6 +319,7 @@ public class RawImageTileReader implements TileStoreReader
     {
     	if(!this.tileIntersectsData(tile))
     	{
+    		// Do nothing if the tile does not intersect with the data bounding box
     		return;
     	}
     	if(tile.getZoomLevel() == maxZoom)
@@ -328,25 +334,27 @@ public class RawImageTileReader implements TileStoreReader
     		final int zoomColumnBelow = tile.getColumn() * 2;
     		final int zoomRowBelow = tile.getRow() * 2;
 
-    		// recurse
+    		// create handles for below tiles
     		final RawImageTileHandle tileBelow1 = new RawImageTileHandle(zoomBelow,
-    											   						 zoomColumnBelow,
-    											   						 zoomRowBelow);
+    																	 zoomColumnBelow,
+    																	 zoomRowBelow);
     		final RawImageTileHandle tileBelow2 = new RawImageTileHandle(zoomBelow,
-    											   						 zoomColumnBelow + 1,
-    											   						 zoomRowBelow);
+    																	 zoomColumnBelow + 1,
+    																	 zoomRowBelow);
     		final RawImageTileHandle tileBelow3 = new RawImageTileHandle(zoomBelow,
-    											   						 zoomColumnBelow,
-    											   						 zoomRowBelow + 1);
+    																	 zoomColumnBelow,
+    																	 zoomRowBelow + 1);
     		final RawImageTileHandle tileBelow4 = new RawImageTileHandle(zoomBelow,
-    											   						 zoomColumnBelow + 1,
-    											   						 zoomRowBelow + 1);
+    																	 zoomColumnBelow + 1,
+    																	 zoomRowBelow + 1);
 
+    		// recurse
     		this.makeTiles(tileHandles, tileBelow1, maxZoom);
     		this.makeTiles(tileHandles, tileBelow2, maxZoom);
     		this.makeTiles(tileHandles, tileBelow3, maxZoom);
     		this.makeTiles(tileHandles, tileBelow4, maxZoom);
 
+    		// finally, add this current tile
     		tileHandles.add(tile);
     	}
     }
@@ -541,15 +549,19 @@ public class RawImageTileReader implements TileStoreReader
                 try
                 {
                     // Read image data directly from the raster
-                    final byte[] imageData = GdalUtility.readRaster(params, RawImageTileReader.this.dataset);
+                    final byte[] imageData = GdalUtility.readRaster(params,
+                    												RawImageTileReader.this.dataset);
 
                     // TODO: logic goes here in the case that the querysize == tile size (gdalconstConstants.GRA_NearestNeighbour) (write directly)
-                    final Dataset querySizeImageCanvas = GdalUtility.writeRaster(params, imageData, RawImageTileReader.this.dataset.GetRasterCount());
+                    final Dataset querySizeImageCanvas = GdalUtility.writeRaster(params,
+                    															 imageData,
+                    															 RawImageTileReader.this.dataset.GetRasterCount());
 
                     try
                     {
                         // Scale each band of tileDataInMemory down to the tile size (down from the query size)
-                        final Dataset tileDataInMemory = GdalUtility.scaleQueryToTileSize(querySizeImageCanvas, RawImageTileReader.this.tileSize);
+                        final Dataset tileDataInMemory = GdalUtility.scaleQueryToTileSize(querySizeImageCanvas,
+                        																  RawImageTileReader.this.tileSize);
 
                         this.image = GdalUtility.convert(tileDataInMemory);
 
@@ -557,7 +569,10 @@ public class RawImageTileReader implements TileStoreReader
 						final Path baseTilePath = this.writeTempTile(this.image);
 
 						// Add the image path to the reader map
-						RawImageTileReader.this.cachedTiles.put(this.tileKey(this.zoomLevel, this.column, this.row), baseTilePath);
+						RawImageTileReader.this.cachedTiles.put(this.tileKey(this.zoomLevel,
+																			 this.column,
+																			 this.row),
+																baseTilePath);
 
 						// Clean up dataset
                         tileDataInMemory.delete();
@@ -592,9 +607,9 @@ public class RawImageTileReader implements TileStoreReader
 
         private Path writeTempTile(final BufferedImage tileImage) throws IOException
         {
-			final Path baseTilePath = File.createTempFile("baseTile" + String.valueOf(this.getZoomLevel()) +
-														  			   String.valueOf(this.getColumn()) +
-														  			   String.valueOf(this.getRow()),
+			final Path baseTilePath = File.createTempFile("baseTile" + String.valueOf(this.getZoomLevel())
+																	 + String.valueOf(this.getColumn())
+																	 + String.valueOf(this.getRow()),
 														  ".png")
 										  .toPath();
 			try(final ImageOutputStream fileOutputStream = ImageIO.createImageOutputStream(baseTilePath.toFile()))
@@ -609,7 +624,9 @@ public class RawImageTileReader implements TileStoreReader
 	    	final int tileWidth = RawImageTileReader.this.tileSize.getWidth();
 	    	final int tileHeight = RawImageTileReader.this.tileSize.getHeight();
 
-	    	final BufferedImage transparentImage = new BufferedImage(tileWidth, tileHeight, BufferedImage.TYPE_INT_ARGB);
+	    	final BufferedImage transparentImage = new BufferedImage(tileWidth,
+	    															 tileHeight,
+	    															 BufferedImage.TYPE_INT_ARGB);
 	    	final Graphics2D graphics = transparentImage.createGraphics();
 	    	graphics.setComposite(AlphaComposite.Clear);
 	    	graphics.fillRect(0, 0, tileWidth, tileHeight);
@@ -627,6 +644,7 @@ public class RawImageTileReader implements TileStoreReader
 	    	final BufferedImage fullCanvas = new BufferedImage(tileWidth * 2,
 	    													   tileHeight * 2,
 	    													   BufferedImage.TYPE_INT_ARGB);
+
 	    	// Create the full-sized graphics object
 	    	final Graphics2D fullCanvasGraphics = fullCanvas.createGraphics();
 
@@ -641,22 +659,10 @@ public class RawImageTileReader implements TileStoreReader
 			final Path rowShifted = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn, childRow + 1));
 			final Path bothShifted = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn + 1, childRow + 1));
 
-	    	children.add(new RawImageTileHandle(childZoom,
-	    										childColumn,
-	    										childRow,
-	    										origin));
-	    	children.add(new RawImageTileHandle(childZoom,
-	    										childColumn + 1,
-	    										childRow,
-	    										columnShifted));
-	    	children.add(new RawImageTileHandle(childZoom,
-	    										childColumn,
-	    										childRow + 1,
-	    										rowShifted));
-	    	children.add(new RawImageTileHandle(childZoom,
-	    										childColumn + 1,
-	    										childRow + 1,
-	    										bothShifted));
+	    	children.add(new RawImageTileHandle(childZoom, childColumn, 	childRow, 	  origin));
+	    	children.add(new RawImageTileHandle(childZoom, childColumn + 1, childRow, 	  columnShifted));
+	    	children.add(new RawImageTileHandle(childZoom, childColumn, 	childRow + 1, rowShifted));
+	    	children.add(new RawImageTileHandle(childZoom, childColumn + 1, childRow + 1, bothShifted));
 
 	    	// Get the cached children of this tile
 	    	final List<RawImageTileHandle> transformedChildren = new ArrayList<>();
@@ -667,29 +673,28 @@ public class RawImageTileReader implements TileStoreReader
 	    		transformedChildren.add(new RawImageTileHandle(tileHandle.getZoomLevel(), resultCoordinate.getX(), resultCoordinate.getY(), tileHandle.getCachedImagePath()));
 	    	}
 
-	    	transformedChildren.sort((o1, o2) -> {
-				final int columnCompare = Integer.compare(o1.getColumn(), o2.getColumn());
-				final int rowCompare = Integer.compare(o1.getRow(), o2.getRow());
-				// column values are the same
-				if (columnCompare == 0)
-				{
-					return rowCompare;
-				}
-				if (rowCompare == 0)
-				{
-					return columnCompare;
-				}
-				// TODO: Duplicate tile case?
-				return 0;
-			});
+	    	transformedChildren.sort((o1, o2) -> { final int columnCompare = Integer.compare(o1.getColumn(), o2.getColumn());
+												   final int rowCompare = Integer.compare(o1.getRow(), o2.getRow());
+												   // column values are the same
+												   if (columnCompare == 0)
+												   {
+													   return rowCompare;
+												   }
+												   if (rowCompare == 0)
+												   {
+													   return columnCompare;
+												   }
+												   // TODO: Duplicate tile case?
+												   return 0;
+												 });
 
 	    	try
 	    	{
 	    		// Origin tile
 	    		if(transformedChildren.get(2).getCachedImagePath() != null)
 	    		{
-					final BufferedImage originImage = ImageIO.read(transformedChildren.get(2).getCachedImagePath().toFile());
-					fullCanvasGraphics.drawImage(originImage, null, 0, 0);
+	    			final BufferedImage originImage = ImageIO.read(transformedChildren.get(2).getCachedImagePath().toFile());
+	    			fullCanvasGraphics.drawImage(originImage, null, 0, 0);
 	    		}
 
 	    		// Tile that is Y+1 in relation to the origin
@@ -720,7 +725,7 @@ public class RawImageTileReader implements TileStoreReader
 
 	    	final BufferedImage tileCanvas = new BufferedImage(tileWidth,
 	    													   tileHeight,
-	    													   BufferedImage.TYPE_INT_ARGB);
+	    													   	BufferedImage.TYPE_INT_ARGB);
 	    	final AffineTransform affineTransform = new AffineTransform();
 	    	affineTransform.scale(0.5, 0.5);
 	    	final AffineTransformOp scaleOp = new AffineTransformOp(affineTransform, AffineTransformOp.TYPE_BILINEAR);
@@ -732,7 +737,7 @@ public class RawImageTileReader implements TileStoreReader
 			if(origin != null) {
 				origin.toFile().delete();
 			}
-	    	RawImageTileReader.this.cachedTiles.remove(this.tileKey(childZoom, childColumn, childRow));
+			RawImageTileReader.this.cachedTiles.remove(this.tileKey(childZoom, childColumn, childRow));
 			if(columnShifted != null) {
 				columnShifted.toFile().delete();
 			}
@@ -812,8 +817,7 @@ public class RawImageTileReader implements TileStoreReader
     private final CrsProfile                               profile;
     private final int                                      tileCount;
     private final Map<Integer, Range<Coordinate<Integer>>> tileRanges;
-    private final Map<String, Path>					   	   cachedTiles;
+    private final Map<String, Path>						   cachedTiles;
 
     private static final TileOrigin Origin = TileOrigin.LowerLeft;
-    private static final String tmpDir = System.getProperty("java.io.tmpdir");
 }
