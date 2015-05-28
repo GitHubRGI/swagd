@@ -33,7 +33,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,9 +45,7 @@ import java.util.zip.DataFormatException;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import javax.naming.OperationNotSupportedException;
 
@@ -221,7 +218,7 @@ public class RawImageTileReader implements TileStoreReader
             throw new TileStoreException(dfe);
         }
 
-        this.baseTiles = new HashMap<TileHandle, Path>();
+        this.cachedTiles = new HashMap<String, Path>();
     }
 
     @Override
@@ -354,14 +351,6 @@ public class RawImageTileReader implements TileStoreReader
     	}
     }
 
-    private Path createTempTile(final TileHandle tile)
-    {
-    	return Paths.get(this.tmpDir,
-    					 String.valueOf(tile.getZoomLevel()),
-    					 String.valueOf(tile.getColumn()),
-    					 String.valueOf(tile.getRow()));
-    }
-
     @Override
     public Stream<TileHandle> stream(final int zoomLevel)
     {
@@ -447,6 +436,7 @@ public class RawImageTileReader implements TileStoreReader
 
         private boolean gotImage = false;
         private boolean gdalImage = false;
+        private Path cachedImageLocation = null;
         private BufferedImage image;
 
         private final int zoomLevel;
@@ -459,18 +449,15 @@ public class RawImageTileReader implements TileStoreReader
             this.column    = column;
             this.row       = row;
             this.matrix    = RawImageTileReader.this.tileScheme.dimensions(this.zoomLevel);
-            this.children  = new ArrayList<>();
         }
 
-        RawImageTileHandle(final int zoom, final int column, final int row, final BufferedImage image)
+        RawImageTileHandle(final int zoom, final int column, final int row, final Path cachedImageLocation)
         {
             this.zoomLevel = zoom;
             this.column    = column;
             this.row       = row;
             this.matrix    = RawImageTileReader.this.tileScheme.dimensions(this.zoomLevel);
-            this.children  = new ArrayList<>();
-            this.gotImage  = true;
-            this.image     = image;
+            this.cachedImageLocation = cachedImageLocation;
         }
 
         RawImageTileHandle(final int zoom, final int column, final int row, final boolean gdalImage)
@@ -480,7 +467,6 @@ public class RawImageTileReader implements TileStoreReader
         	this.row       = row;
         	this.matrix	   = RawImageTileReader.this.tileScheme.dimensions(this.zoomLevel);
         	this.gdalImage = gdalImage;
-        	this.children  = new ArrayList<>();
         }
 
         @Override
@@ -499,6 +485,11 @@ public class RawImageTileReader implements TileStoreReader
         public int getRow()
         {
             return this.row;
+        }
+
+        public Path getCachedImagePath()
+        {
+        	return this.cachedImageLocation;
         }
 
         @Override
@@ -565,8 +556,8 @@ public class RawImageTileReader implements TileStoreReader
                         // Write this image to disk for later overview generation
 						final Path baseTilePath = this.writeTempTile(this.image);
 
-						// Add the image path to the reader map for later
-						RawImageTileReader.this.baseTiles.put(this, baseTilePath);
+						// Add the image path to the reader map
+						RawImageTileReader.this.cachedTiles.put(this.tileKey(this.zoomLevel, this.column, this.row), baseTilePath);
 
 						// Clean up dataset
                         tileDataInMemory.delete();
@@ -608,8 +599,7 @@ public class RawImageTileReader implements TileStoreReader
 										  .toPath();
 			try(final ImageOutputStream fileOutputStream = ImageIO.createImageOutputStream(baseTilePath.toFile()))
 			{
-				final ImageWriter imageWriter = ImageIO.getImageWritersBySuffix("png").next();
-				imageWriter.write(null, new IIOImage(tileImage, null, null), null);
+				ImageIO.write(tileImage, "png", baseTilePath.toFile());
 			}
 			return baseTilePath;
         }
@@ -640,11 +630,41 @@ public class RawImageTileReader implements TileStoreReader
 	    	// Create the full-sized graphics object
 	    	final Graphics2D fullCanvasGraphics = fullCanvas.createGraphics();
 
-	    	final List<TileHandle> transformedChildren = new ArrayList<>();
-	    	for (final TileHandle tileHandle : this.children)
+	    	// Get child handles
+	    	final List<RawImageTileHandle> children = new ArrayList<>();
+	    	final int childZoom = this.getZoomLevel() + 1;
+	    	final int childColumn = this.getColumn() * 2;
+	    	final int childRow = this.getRow() * 2;
+
+	    	final Path origin = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn, childRow));
+			final Path columnShifted = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn + 1, childRow));
+			final Path rowShifted = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn, childRow + 1));
+			final Path bothShifted = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn + 1, childRow + 1));
+
+	    	children.add(new RawImageTileHandle(childZoom,
+	    										childColumn,
+	    										childRow,
+	    										origin));
+	    	children.add(new RawImageTileHandle(childZoom,
+	    										childColumn + 1,
+	    										childRow,
+	    										columnShifted));
+	    	children.add(new RawImageTileHandle(childZoom,
+	    										childColumn,
+	    										childRow + 1,
+	    										rowShifted));
+	    	children.add(new RawImageTileHandle(childZoom,
+	    										childColumn + 1,
+	    										childRow + 1,
+	    										bothShifted));
+
+	    	// Get the cached children of this tile
+	    	final List<RawImageTileHandle> transformedChildren = new ArrayList<>();
+
+	    	for (final RawImageTileHandle tileHandle : children)
 	    	{
 	    		final Coordinate<Integer> resultCoordinate = RawImageTileReader.Origin.transform(TileOrigin.UpperLeft, tileHandle.getColumn(), tileHandle.getRow(), this.matrix);
-	    		transformedChildren.add(new RawImageTileHandle(tileHandle.getZoomLevel(), resultCoordinate.getX(), resultCoordinate.getY(), tileHandle.getImage()));
+	    		transformedChildren.add(new RawImageTileHandle(tileHandle.getZoomLevel(), resultCoordinate.getX(), resultCoordinate.getY(), tileHandle.getCachedImagePath()));
 	    	}
 
 	    	transformedChildren.sort((o1, o2) -> {
@@ -663,21 +683,40 @@ public class RawImageTileReader implements TileStoreReader
 				return 0;
 			});
 
-    		// Origin tile
-    		final BufferedImage rowShiftedTile = transformedChildren.get(0).getImage();
-    		fullCanvasGraphics.drawImage(rowShiftedTile, null, 0, 0);
+	    	try
+	    	{
+	    		// Origin tile
+	    		if(transformedChildren.get(2).getCachedImagePath() != null)
+	    		{
+					final BufferedImage originImage = ImageIO.read(transformedChildren.get(2).getCachedImagePath().toFile());
+					fullCanvasGraphics.drawImage(originImage, null, 0, 0);
+	    		}
 
-    		// Tile that is Y+1 in relation to the origin
-    		final BufferedImage originTile = transformedChildren.get(1).getImage();
-    		fullCanvasGraphics.drawImage(originTile, null, 0, tileHeight);
+	    		// Tile that is Y+1 in relation to the origin
+	    		if(transformedChildren.get(0).getCachedImagePath() != null)
+	    		{
+		    		final BufferedImage rowShiftedImage = ImageIO.read(transformedChildren.get(0).getCachedImagePath().toFile());
+		    		fullCanvasGraphics.drawImage(rowShiftedImage, null, 0, tileHeight);
+	    		}
 
-    		// Tile that is X+1 in relation to the origin
-    		final BufferedImage bothShiftedTile = transformedChildren.get(2).getImage();
-    		fullCanvasGraphics.drawImage(bothShiftedTile, null, tileWidth, 0);
+	    		// Tile that is X+1 in relation to the origin
+	    		if(transformedChildren.get(3).getCachedImagePath() != null)
+	    		{
+		    		final BufferedImage columnShiftedImage = ImageIO.read(transformedChildren.get(3).getCachedImagePath().toFile());
+		    		fullCanvasGraphics.drawImage(columnShiftedImage, null, tileWidth, 0);
+	    		}
 
-    		// Tile that is both X+1 and Y+1 in relation to the origin
-    		final BufferedImage columnShiftedTile = transformedChildren.get(3).getImage();
-    		fullCanvasGraphics.drawImage(columnShiftedTile, null, tileWidth, tileHeight);
+	    		// Tile that is both X+1 and Y+1 in relation to the origin
+	    		if(transformedChildren.get(1).getCachedImagePath() != null)
+	    		{
+		    		final BufferedImage bothShiftedImage = ImageIO.read(transformedChildren.get(1).getCachedImagePath().toFile());
+		    		fullCanvasGraphics.drawImage(bothShiftedImage, null, tileWidth, tileHeight);
+	    		}
+	    	}
+	    	catch(final IOException ex)
+	    	{
+	    		throw new TileStoreException(ex);
+	    	}
 
 	    	final BufferedImage tileCanvas = new BufferedImage(tileWidth,
 	    													   tileHeight,
@@ -690,16 +729,45 @@ public class RawImageTileReader implements TileStoreReader
 
 	    	// Clean-up step
 	    	fullCanvasGraphics.dispose();
+			if(origin != null) {
+				origin.toFile().delete();
+			}
+	    	RawImageTileReader.this.cachedTiles.remove(this.tileKey(childZoom, childColumn, childRow));
+			if(columnShifted != null) {
+				columnShifted.toFile().delete();
+			}
+			RawImageTileReader.this.cachedTiles.remove(this.tileKey(childZoom, childColumn + 1, childRow));
+			if(rowShifted != null) {
+				rowShifted.toFile().delete();
+			}
+			RawImageTileReader.this.cachedTiles.remove(this.tileKey(childZoom, childColumn, childRow + 1));
+			if(bothShifted != null) {
+				bothShifted.toFile().delete();
+			}
+			RawImageTileReader.this.cachedTiles.remove(this.tileKey(childZoom, childColumn + 1, childRow + 1));
+
+			// Write cached tile
+			try
+			{
+				RawImageTileReader.this.cachedTiles.put(this.tileKey(this.zoomLevel, this.column, this.row), this.writeTempTile(scaledTile));
+			}
+			catch(final IOException ex)
+			{
+				throw new TileStoreException(ex);
+			}
 
 	    	return scaledTile;
+	    }
+
+	    private String tileKey(final int zoom, final int column, final int row)
+	    {
+	    	return String.format("%d/%d/%d", zoom, column, row);
 	    }
 
 	    @Override
 	    public String toString()
 	    {
-	    	return String.valueOf(this.zoomLevel + "/" +
-	    						  this.column + "/" +
-	    						  this.row);
+	    	return this.tileKey(this.getZoomLevel(), this.getColumn(), this.getRow());
 	    }
     }
 
@@ -744,7 +812,7 @@ public class RawImageTileReader implements TileStoreReader
     private final CrsProfile                               profile;
     private final int                                      tileCount;
     private final Map<Integer, Range<Coordinate<Integer>>> tileRanges;
-    private final Map<TileHandle, Path>					   baseTiles;
+    private final Map<String, Path>					   	   cachedTiles;
 
     private static final TileOrigin Origin = TileOrigin.LowerLeft;
     private static final String tmpDir = System.getProperty("java.io.tmpdir");
