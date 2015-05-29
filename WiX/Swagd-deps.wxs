@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+    xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+  <Bundle UpgradeCode="0D4FFC9D-E4BE-452C-ACFA-FC46C1566EE5" Version="0.0.0.1">
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
+      <bal:WixStandardBootstrapperApplication
+          ThemeFile=".\Resources\BundleTheme.xml"
+          LicenseFile=".\Resources\LICENSE.rtf"
+      />
+    </BootstrapperApplicationRef>
+
+    <!-- Install Conditions to check for. 
+         User needs admin rights, as we install this for the local Machine -->
+      <!--Check for Admin Rights-->
+      <bal:Condition Message="You cannot elevate to admin rights. Admin rights are required to install this application.">
+        <![CDATA[Privileged <> 0]]>
+      </bal:Condition>
+
+      <!-- check if gdal core is installed base on msi guid (constant) -->
+      <util:RegistrySearch Root="HKLM"
+                           Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\2273360F-7ADB-4D06-B238-6B76765C9E80"
+                           Variable="gdalCoreInstalled"
+                           Result="exists"
+                           Win64="yes"
+                         />
+      <!-- check if gdal mr sid is installed based on msi guid (constant) -->
+      <util:RegistrySearch Root="HKLM"
+                           Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\C0B7DCCE-F188-48F9-AE5C-EE9944DBCDAD"
+                           Variable="gdalMrSidInstalled"
+                           Result="exists"
+                           Win64="yes"
+                         />
+    <!-- setting variables (install location)-->
+    <Variable Name="InstallFolder" Type="string" Value="C:\Program Files\swagd\" />
+    
+    <!--- chain element is used to house the -->
+    <Chain>
+      <PackageGroupRef Id="InstallGDAL" />
+    </Chain>
+  </Bundle>
+  
+  <!-- Bundle Installer Chain. Components in the packageGroup will be installed in the order they are listed.-->
+  <Fragment>
+    <PackageGroup Id="InstallGDAL">
+      <MsiPackage SourceFile=".\Resources\gdal-111-1600-x64-core.msi"
+                  Visible="yes"
+                  Description="Gdal Core Libraries"
+                  InstallCondition="NOT gdalCoreInstalled"
+                  ForcePerMachine="yes"
+                  DisplayInternalUI="yes"
+                  >
+        <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]GDAL\" />
+      </MsiPackage>
+      <MsiPackage SourceFile=".\Resources\gdal-111-1600-x64-mrsid.msi"
+                  Visible="yes"
+                  Description="GDAL Mr.SID library extensions"
+                  InstallCondition="NOT gdalMrSidInstalled"
+                  ForcePerMachine="yes"
+                  DisplayInternalUI="yes"
+                  >
+        <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]GDAL\" />
+      </MsiPackage>
+      <!-- java is installed with an exe, therefore the condition "installed" is a built in wix variable. 
+      Its also set to permanant, so uninstalling swagd will not remove the java install. -->
+      <ExePackage Id="InstallJava"
+                  DetectCondition="Installed"
+                  SourceFile=".\Resources\jre-8u45-windows-x64.exe"
+                  Compressed="no"
+                  Permanent="yes"
+                  />
+      <!--SwagD base installer-->
+      <MsiPackage SourceFile=".\Resources\Swagd.msi"
+                  Description="SWAGD Application"
+                  Visible="yes"
+                  >
+        <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]" />
+      </MsiPackage>
+    </PackageGroup>
+  </Fragment>
+</Wix>
