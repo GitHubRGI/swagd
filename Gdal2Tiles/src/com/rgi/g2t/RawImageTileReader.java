@@ -640,10 +640,11 @@ public class RawImageTileReader implements TileStoreReader
 
         private BufferedImage generateScaledTileFromChildren() throws TileStoreException
         {
-            final int tileWidth = RawImageTileReader.this.tileSize.getWidth();
+            final int tileWidth  = RawImageTileReader.this.tileSize.getWidth();
             final int tileHeight = RawImageTileReader.this.tileSize.getHeight();
+
             // Create the full-sized buffered image from the child tiles
-            final BufferedImage fullCanvas = new BufferedImage(tileWidth * 2,
+            final BufferedImage fullCanvas = new BufferedImage(tileWidth  * 2,
                                                                tileHeight * 2,
                                                                BufferedImage.TYPE_INT_ARGB);
 
@@ -652,40 +653,43 @@ public class RawImageTileReader implements TileStoreReader
 
             // Get child handles
             final List<RawImageTileHandle> children = new ArrayList<>();
-            final int childZoom = this.getZoomLevel() + 1;
+
+            final int childZoom   = this.getZoomLevel() + 1;
             final int childColumn = this.getColumn() * 2;
-            final int childRow = this.getRow() * 2;
+            final int childRow    = this.getRow()    * 2;
 
-            final Path origin = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn, childRow));
+            final Path origin        = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn,     childRow));
             final Path columnShifted = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn + 1, childRow));
-            final Path rowShifted = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn, childRow + 1));
-            final Path bothShifted = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn + 1, childRow + 1));
+            final Path rowShifted    = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn,     childRow + 1));
+            final Path bothShifted   = RawImageTileReader.this.cachedTiles.get(this.tileKey(childZoom, childColumn + 1, childRow + 1));
 
-            children.add(new RawImageTileHandle(childZoom, childColumn,     childRow,       origin));
-            children.add(new RawImageTileHandle(childZoom, childColumn + 1, childRow,       columnShifted));
+            children.add(new RawImageTileHandle(childZoom, childColumn,     childRow,     origin));
+            children.add(new RawImageTileHandle(childZoom, childColumn + 1, childRow,     columnShifted));
             children.add(new RawImageTileHandle(childZoom, childColumn,     childRow + 1, rowShifted));
             children.add(new RawImageTileHandle(childZoom, childColumn + 1, childRow + 1, bothShifted));
 
             // Get the cached children of this tile
             final List<RawImageTileHandle> transformedChildren = new ArrayList<>();
 
-            for (final RawImageTileHandle tileHandle : children)
+            for(final RawImageTileHandle tileHandle : children)
             {
                 final Coordinate<Integer> resultCoordinate = RawImageTileReader.Origin.transform(TileOrigin.UpperLeft, tileHandle.getColumn(), tileHandle.getRow(), this.matrix);
                 transformedChildren.add(new RawImageTileHandle(tileHandle.getZoomLevel(), resultCoordinate.getX(), resultCoordinate.getY(), tileHandle.getCachedImagePath()));
             }
 
             transformedChildren.sort((o1, o2) -> { final int columnCompare = Integer.compare(o1.getColumn(), o2.getColumn());
-                                                   final int rowCompare = Integer.compare(o1.getRow(), o2.getRow());
+                                                   final int rowCompare    = Integer.compare(o1.getRow(),    o2.getRow());
+
                                                    // column values are the same
-                                                   if (columnCompare == 0)
+                                                   if(columnCompare == 0)
                                                    {
                                                        return rowCompare;
                                                    }
-                                                   if (rowCompare == 0)
+                                                   if(rowCompare == 0)
                                                    {
                                                        return columnCompare;
                                                    }
+
                                                    // TODO: Duplicate tile case?
                                                    return 0;
                                                  });
