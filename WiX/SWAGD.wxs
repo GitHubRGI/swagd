@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
-    <Product Id="D4C7A26B-56AA-47A7-BCA7-DC32C6E86DB7" Name="Swagd - Software to Aggregate Geospatial Data" Language="1033" Version="0.0.0.1" Manufacturer="Reinventing Geospatial, Inc." UpgradeCode="A526C97F-4FD4-4C56-B6BE-F55486576469">
+    <Product Id="D4C7A26B-56AA-47A7-BCA7-DC32C6E86DB7" Name="Swagd - Software to Aggregate Geospatial Data" Language="1033" Version="1.0.0.1" Manufacturer="Reinventing Geospatial, Inc." UpgradeCode="A526C97F-4FD4-4C56-B6BE-F55486576469">
       <Package Description="SWAGD Installer" Comments="Simple installer for SWAGD" Platform="x64" InstallerVersion="200" Compressed="yes" InstallPrivileges="elevated" InstallScope="perMachine" />
       <Media Id="1" Cabinet="simple.cab" EmbedCab="yes" />
 

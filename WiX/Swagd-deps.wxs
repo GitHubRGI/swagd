@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
-  <Bundle UpgradeCode="0D4FFC9D-E4BE-452C-ACFA-FC46C1566EE5" Version="0.0.0.1">
+  <Bundle UpgradeCode="0D4FFC9D-E4BE-452C-ACFA-FC46C1566EE5" Version="1.0.0.1">
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
       <bal:WixStandardBootstrapperApplication
           ThemeFile=".\Resources\BundleTheme.xml"
@@ -69,6 +69,7 @@
                   Compressed="no"
                   Permanent="yes"
                   />
+      
       <!--SwagD base installer-->
       <MsiPackage SourceFile=".\Resources\Swagd.msi"
                   Description="SWAGD Application"
