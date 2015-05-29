@@ -218,7 +218,7 @@ public class RawImageTileReader implements TileStoreReader
             throw new TileStoreException(dfe);
         }
 
-        this.cachedTiles = new HashMap<String, Path>();
+        this.cachedTiles = new HashMap<>();
     }
 
     @Override
@@ -590,7 +590,6 @@ public class RawImageTileReader implements TileStoreReader
                     {
                         querySizeImageCanvas.delete();
                     }
-
                 }
                 catch(final TilingException ex)
                 {
