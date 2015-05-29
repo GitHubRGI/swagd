@@ -731,7 +731,8 @@ public class RawImageTileReader implements TileStoreReader
 
             final BufferedImage tileCanvas = new BufferedImage(tileWidth,
                                                                tileHeight,
-                                                                   BufferedImage.TYPE_INT_ARGB);
+                                                               BufferedImage.TYPE_INT_ARGB);
+
             final AffineTransform affineTransform = new AffineTransform();
             affineTransform.scale(0.5, 0.5);
             final AffineTransformOp scaleOp = new AffineTransformOp(affineTransform, AffineTransformOp.TYPE_BILINEAR);
@@ -740,19 +741,27 @@ public class RawImageTileReader implements TileStoreReader
 
             // Clean-up step
             fullCanvasGraphics.dispose();
-            if(origin != null) {
+
+            if(origin != null)
+            {
                 origin.toFile().delete();
             }
             RawImageTileReader.this.cachedTiles.remove(this.tileKey(childZoom, childColumn, childRow));
-            if(columnShifted != null) {
+
+            if(columnShifted != null)
+            {
                 columnShifted.toFile().delete();
             }
             RawImageTileReader.this.cachedTiles.remove(this.tileKey(childZoom, childColumn + 1, childRow));
-            if(rowShifted != null) {
+
+            if(rowShifted != null)
+            {
                 rowShifted.toFile().delete();
             }
             RawImageTileReader.this.cachedTiles.remove(this.tileKey(childZoom, childColumn, childRow + 1));
-            if(bothShifted != null) {
+
+            if(bothShifted != null)
+            {
                 bothShifted.toFile().delete();
             }
             RawImageTileReader.this.cachedTiles.remove(this.tileKey(childZoom, childColumn + 1, childRow + 1));
