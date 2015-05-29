@@ -40,91 +40,37 @@ public class Main
     private static final File geoPackageFile = new File("test.gpkg");
     private static final File nodeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
     private static final File edgeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
-    private static final File dataFile = new File("F:/usma_pandolf.sqlite");
+    private static final File dataFile       = new File("F:/usma_pandolf.sqlite");
+    private static final File nodes          = new File("F:/contour.1/contour.1/Nodes.txt");
     private static final File geoPackageFile2 = new File("test2.gpkg");
 
     public static void main(final String[] args)
     {
-        //createGpkg();
-        //runRoute2();
-        try
-        {
-            testGeometries();
-        } catch (final ClassNotFoundException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (final SQLException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        runRoute2(100);
     }
 
 
-    private static void testGeometries() throws ClassNotFoundException, SQLException
-    {
-        Class.forName("org.sqlite.JDBC");   // Register the driver
-        try (final Connection db = DriverManager.getConnection("jdbc:sqlite:" + dataFile.getPath())) // Initialize the database connection
-        {
-            final String query = String.format("Select quote(geometry) as Binary FROM nodes");
-            try(final PreparedStatement stmt =  db.prepareStatement(query))
-            {
-                try(ResultSet results = stmt.executeQuery())
-                {
-// Try reading geometry as bytes
-//                	final byte[] wkb = results.getBytes(1);
-//            		final WKBReader reader = new WKBReader();
-//            		reader.read(wkb);
-
-// Try reading geometry as InputStream
-//                	  results.next();
-//                    try(final InputStream strm1 = results.getBinaryStream("Binary"))
-//                    {
-//                	  	final InputStreamInStream inStream = new InputStreamInStream(strm1);
-//                		final WKBReader reader = new WKBReader();
-//                		reader.read(inStream);
-//                    }
-//                    catch (final Exception e)
-//                    {
-//                       e.printStackTrace();
-//                    }
-
-// Try reading in string as hex and converting to bytes
-//                	results.next();
-//                	final String test3 = results.getString("Binary");
-//                	System.out.println("String: " + test3);
-//                	final String hex = test3.substring(2, test3.length()-1);
-//                	System.out.println("String: " + hex);
-//                	final WKBReader reader = new WKBReader();
-//                	final byte[] b = WKBReader.hexToBytes(hex);
-//                	reader.read(b);
-                }
-            }
-        }
-        catch(final Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    private static void runRoute2()
+    private static void runRoute2(final int routes)
     {
         final Random rand = new Random(123456789);
-        try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, OpenMode.Open))
+        try(final GeoPackage gpkg = new GeoPackage(geoPackageFile2, OpenMode.Open))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             final Network network = networkExtension.getNetwork("mynetwork");
 
-            final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network,
-                                                                                                    "distance",
-                                                                                                    AttributedType.Edge);
+            final AttributeDescription nodeLatitudeAttibute = networkExtension.getAttributeDescription(network, "latitude", AttributedType.Node);
 
-            final int[] start = rand.ints(100, 0, 105247).toArray();
-            final int[] end = rand.ints(100, 0, 105247).toArray();
+            final AttributeDescription nodeLongitudeAttibute = networkExtension.getAttributeDescription(network,"longitude", AttributedType.Node);
+
+            final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network, "length", AttributedType.Edge);
+
+            final int[] start = rand.ints(routes, 0, 105247).toArray();
+            final int[] end = rand.ints(routes, 0, 105247).toArray();
             int startNode, endNode;
-            for (int i = 0; i < 100; i++)
+            double sum = 0;
+
+            for (int i = 0; i < routes; i++)
             {
                 startNode = start[i];
                 endNode = end[i];
@@ -135,21 +81,35 @@ public class Main
                     final Map<Integer, Double> costCache = new HashMap<>();
 
                     final List<Integer> path = astar(networkExtension,
-                                                     network,
-                                                     startNode,
-                                                     endNode,
-                                                     (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute),
-                                                     (startIdentifier, endIdentifier) -> {
-                                                                                             return 0.0;//TODO implement heuristic here
-                                                                                         });
+                            network,
+                            startNode,
+                            endNode,
+                            (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute),
+                            (startIdentifier, endIdentifier) -> { try
+                                                                  {
+                                                                      final List<Object> startCoordinate = networkExtension.getAttributes(network, startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
+                                                                      final List<Object> endCoordinate   = networkExtension.getAttributes(network, endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
+
+                                                                      final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
+                                                                      final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
+
+                                                                      return Math.sqrt(latitude*latitude + longitude*longitude);
+                                                                  }
+                                                                  catch(final SQLException ex)
+                                                                  {
+                                                                      throw new RuntimeException(ex);
+                                                                  }
+                                                                });
 
                     path.forEach(node -> System.out.print(node + ", "));
 
-                    printPath(networkExtension, network, path, distanceAttribute);
-
                     System.out.println(String.format("\nAstar took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
+                    sum += (System.nanoTime() - startTime)/1.0e9;
                 }
             }
+
+            System.out.println(String.format("TO calculat %s routes, astar took %.2f seconds to calculate", routes, sum));
+            System.out.println(String.format("Astar took an average of %.2f seconds to calculate", sum/routes));
         }
         catch(final ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException ex)
         {
@@ -337,14 +297,8 @@ public class Main
                     }
                 }
 
-                final String query2 = String.format("Select %s, %s, %S FROM %s", "node", "elev", "geometry", "nodes");
-                try(final PreparedStatement stmt =  db.prepareStatement(query2))
-                {
-                    try(ResultSet results = stmt.executeQuery())
-                    {
-                        loadNodeAttributes2(networkExtension, results, myNetwork, Arrays.asList(elevationAttribute));
-                    }
-                }
+                loadNodeAttributes2(networkExtension, nodes, myNetwork, Arrays.asList(elevationAttribute, longitudeAttribute, latitudeAttribute));
+
             }
             catch(final ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException ex)
             {
@@ -735,20 +689,31 @@ public class Main
         }
     }
 
+    /**
+     * Takes nodes in text file and adds them to
+     */
     private static void loadNodeAttributes2(final GeoPackageNetworkExtension networkExtension,
-                                            final ResultSet rs,
+    		                                final File nodes,
                                             final Network network,
-                                            final List<AttributeDescription> attributeDescriptions) throws SQLException
+                                            final List<AttributeDescription> attributeDescriptions) throws SQLException, IOException
     {
+        final Function<String, Pair<Integer, List<Object>>> lineToPair = line -> { final String[] pieces = line.trim().split("\\s+");
 
-        final List<Pair<Integer, List<Object>>> pairs = new ArrayList<Pair<Integer, List<Object>>>();
-        while (rs.next())
+                                                                                      return new Pair<>(Integer.valueOf(pieces[0]), // vertex # (node id)
+                                                                                                        Arrays.asList((Object)Double.valueOf(pieces[1]),   // elevation
+                                                                                                                      (Object)Double.valueOf(pieces[2]),  // X (longitude)
+                                                                                                                      (Object)Double.valueOf(pieces[3]))); // y (latitude)
+       };
+
+        try(Stream<Pair<Integer, List<Object>>> pairs = Files.lines(nodes.toPath())
+                                                                         .skip(1) // the first line is a header
+                                                                         .filter(line -> !line.startsWith("#"))
+                                                                         .map(lineToPair))
         {
-            pairs.add(new Pair<>(rs.getInt(1), Arrays.asList((Object)rs.getDouble(2))));
+            networkExtension.addAttributes(network,
+                                           attributeDescriptions,
+                                           pairs::iterator);
         }
-        networkExtension.addAttributes(network,
-                                       attributeDescriptions,
-                                       pairs::iterator);
     }
 
     private static void loadEdges(final GeoPackageNetworkExtension networkExtension, final File triangleFormatEdges, final Network network) throws SQLException, IOException
