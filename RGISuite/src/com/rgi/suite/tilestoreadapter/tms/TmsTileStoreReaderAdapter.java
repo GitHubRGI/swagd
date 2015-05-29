@@ -33,9 +33,9 @@ import javax.swing.JLabel;
 
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
-import com.rgi.common.tile.store.tms.TmsReader;
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
+import com.rgi.store.tiles.tms.TmsReader;
 import com.rgi.suite.tilestoreadapter.AdapterMismatchException;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 

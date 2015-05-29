@@ -24,7 +24,7 @@ package com.rgi.view;
 
 import javax.swing.JRadioButton;
 
-import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.store.tiles.TileStoreReader;
 
 /**
  * @author Jenifer Cochran

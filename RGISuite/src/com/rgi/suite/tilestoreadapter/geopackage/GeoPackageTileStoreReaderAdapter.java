@@ -38,15 +38,14 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
-import store.GeoPackageReader;
-
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.VerificationLevel;
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
+import com.rgi.store.tiles.geopackage.GeoPackageReader;
 import com.rgi.suite.tilestoreadapter.AdapterMismatchException;
 import com.rgi.suite.tilestoreadapter.TileStoreReaderAdapter;
 

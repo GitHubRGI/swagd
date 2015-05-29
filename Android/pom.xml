@@ -1,0 +1,85 @@
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>Android</groupId>
+    <artifactId>Android</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <jacoco.version>0.7.2.201409121644</jacoco.version>
+        <junit.version>4.11</junit.version>
+        <compiler.version>3.1</compiler.version>
+        <jdk.version>1.6</jdk.version>
+        <mockrunner.version>1.0.5</mockrunner.version>
+        <findbugs.version>3.0.0</findbugs.version>
+    </properties>
+
+    <parent>
+        <groupId>com.rgi.TilingApp</groupId>
+        <artifactId>SWAGD</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+  
+    <dependencies>
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.8.7</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+        </dependency>
+    </dependencies>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>${findbugs.version}</version>
+                <configuration>
+                    <xmlOutput>true</xmlOutput>
+                    <xmlOutputDirectory>target/site</xmlOutputDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <build>
+      <sourceDirectory>src</sourceDirectory>
+      <testSourceDirectory>test</testSourceDirectory>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${compiler.version}</version>
+          <configuration>
+            <source>${jdk.version}</source>
+            <target>${jdk.version}</target>
+          </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco.version}</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>prepare-agent</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>report</id>
+                    <phase>prepare-package</phase>
+                    <goals>
+                        <goal>report</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+      </plugins>
+    </build>
+</project>

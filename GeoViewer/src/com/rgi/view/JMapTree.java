@@ -33,7 +33,7 @@ import javax.swing.event.TreeModelListener;
 
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
 
-import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.store.tiles.TileStoreReader;
 //This is a work in progress do not rely on this code
 @SuppressWarnings("javadoc")
 public class JMapTree extends JPanel

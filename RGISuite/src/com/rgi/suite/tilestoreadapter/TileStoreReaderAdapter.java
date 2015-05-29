@@ -28,8 +28,8 @@ import java.util.Collection;
 
 import javax.swing.JComponent;
 
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
 
 /**
  * Abstract base class for UI adapters for tile store readers

@@ -35,8 +35,8 @@ import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
 
 /**
  * Class responsible for loading TMS tiles to a JMapViewer.
@@ -146,7 +146,7 @@ public class TileStoreLoader implements TileLoader
 
     private CrsCoordinate toCrsCoordinate(final Tile tile)
     {
-        com.rgi.common.coordinate.Coordinate<Integer> transformedCoordinate = Origin.transform(this.tileStore.getTileOrigin(), tile.getXtile(), tile.getYtile(), TileScheme.dimensions(tile.getZoom()));
+        final com.rgi.common.coordinate.Coordinate<Integer> transformedCoordinate = Origin.transform(this.tileStore.getTileOrigin(), tile.getXtile(), tile.getYtile(), TileScheme.dimensions(tile.getZoom()));
         return this.crsProfile
                    .tileToCrsCoordinate(transformedCoordinate.getX(),
                                         transformedCoordinate.getY(),

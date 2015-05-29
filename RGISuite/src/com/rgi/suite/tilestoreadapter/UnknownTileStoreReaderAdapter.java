@@ -31,8 +31,8 @@ import java.util.Collections;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
-import com.rgi.common.tile.store.TileStoreException;
-import com.rgi.common.tile.store.TileStoreReader;
+import com.rgi.store.tiles.TileStoreException;
+import com.rgi.store.tiles.TileStoreReader;
 
 /**
  * Returned from TileStoreUtility when no other TileStoreReaderAdapter can be

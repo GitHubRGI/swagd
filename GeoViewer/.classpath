@@ -25,5 +25,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/JMapViewer-1.05.jar" sourcepath="lib/JMapViewer_src-1.05.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/GeoPackage"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/DataStore"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
