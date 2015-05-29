@@ -37,8 +37,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.rgi.android.common.util.StringUtility;
-import com.rgi.android.common.util.functional.FunctionalUtility;
 import com.rgi.android.common.util.functional.Function;
+import com.rgi.android.common.util.functional.FunctionalUtility;
 import com.rgi.android.common.util.functional.Predicate;
 import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
 import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
@@ -111,7 +111,7 @@ public class ExtensionsVerifier extends Verifier
     private boolean hasGpkgExtensionsTable;
 
     // TODO reconsider this mapping.  it should at least be String, ExtensionData, but the column name is repeated as the key...
-    private Map<ExtensionData, String> gpkgExtensionsDataAndColumnName;
+    private List<ExtensionData> gpkgExtensionsDataAndColumnName;
 
     /**
      * Constructor
@@ -147,7 +147,7 @@ public class ExtensionsVerifier extends Verifier
 
                 try
                 {
-                    this.gpkgExtensionsDataAndColumnName = new HashMap<ExtensionData, String>();
+                    this.gpkgExtensionsDataAndColumnName = new ArrayList<ExtensionData>();
 
                     while(tableNameColumnNameRS.next())
                     {
@@ -155,7 +155,7 @@ public class ExtensionsVerifier extends Verifier
                                                                               tableNameColumnNameRS.getString("column_name"),
                                                                               tableNameColumnNameRS.getString("extension_name"));
 
-                        this.gpkgExtensionsDataAndColumnName.put(extensionData, extensionData.columnName);
+                        this.gpkgExtensionsDataAndColumnName.add(extensionData);
                     }
                 }
                 finally
@@ -165,7 +165,7 @@ public class ExtensionsVerifier extends Verifier
             }
             catch(final SQLException ex)
             {
-                this.gpkgExtensionsDataAndColumnName = Collections.emptyMap();
+                this.gpkgExtensionsDataAndColumnName = Collections.emptyList();
             }
             finally
             {
@@ -175,7 +175,7 @@ public class ExtensionsVerifier extends Verifier
     }
 
     /**
-     * Requirement 78
+     * Requirement 79
      *
      * <blockquote> A GeoPackage MAY contain a table or update table view named
      * gpkg_extensions. If present this table SHALL be defined per clause
@@ -192,12 +192,12 @@ public class ExtensionsVerifier extends Verifier
      * @throws SQLException  throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(reference = "Requirement 78",
+    @Requirement(reference = "Requirement 79",
                  text      = "A GeoPackage MAY contain a table or updateable view named gpkg_extensions."
                              + " If present this table SHALL be defined per clause 2.5.2.1.1 Table Definition, "
                              + "GeoPackage Extensions Table or View Definition (Table or View Name: gpkg_extensions) "
                              + "and gpkg_extensions Table Definition SQL. ")
-    public void Requirement78() throws AssertionError, SQLException
+    public void Requirement79() throws AssertionError, SQLException
     {
         if(this.hasGpkgExtensionsTable)
         {
@@ -207,7 +207,7 @@ public class ExtensionsVerifier extends Verifier
 
 
     /**
-     * Requirement 79
+     * Requirement 80
      *
      * <blockquote>
      * Every extension of a GeoPackage SHALL be registered in a corresponding
@@ -216,12 +216,12 @@ public class ExtensionsVerifier extends Verifier
      * absence of extensions to a GeoPackage.
      * </blockquote>
      */
-    @Requirement(reference = "Requirement 79",
+    @Requirement(reference = "Requirement 80",
                  text      = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
                               + "in the gpkg_extensions table. The absence of a gpkg_extensions table or "
                               + "the absence of rows in gpkg_extnsions table SHALL both indicate the absence "
                               + "of extensions to a GeoPackage.")
-    public void Requirement79()
+    public void Requirement80()
     {
         // TODO implement this requirement
         // Check if it has geometry_columns table
@@ -239,7 +239,7 @@ public class ExtensionsVerifier extends Verifier
     }
 
     /**
-     * Requirement 80
+     * Requirement 81
      *
      * <blockquote> Values of the <code>gpkg_extensions</code> <code>table_name
      * </code> column SHALL reference values in the <code>gpkg_contents</code>
@@ -250,20 +250,17 @@ public class ExtensionsVerifier extends Verifier
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(reference = "Requirement 80",
-                 text    = "Every extension of a GeoPackage SHALL be registered in a corresponding row "
-                            + "in the gpkg_extensions table. The absence of a gpkg_extensions table or "
-                            + "the absence of rows in gpkg_extnsions table SHALL both indicate the absence "
-                            + "of extensions to a GeoPackage.")
-    public void Requirement80() throws SQLException, AssertionError
+    @Requirement(reference = "Requirement 81",
+                 text      = "Values of the gpkg_extensions table_name column SHALL reference values in the "
+                               + "gpkg_contents table_name column or be NULL. They SHALL NOT be NULL for rows"
+                               + " where the column_name value is not NULL. ")
+    public void Requirement81() throws SQLException, AssertionError
     {
         if(this.hasGpkgExtensionsTable)
         {
-            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName.keySet())
+            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName)
             {
-                final String columnName = this.gpkgExtensionsDataAndColumnName.get(extensionData);
-
-                final boolean validEntry = extensionData.tableName == null ? columnName == null : true; // If table name is null then so must column name
+                final boolean validEntry = extensionData.tableName == null ? extensionData.columnName == null : true; // If table name is null then so must column name
 
                 Assert.assertTrue("The value in table_name can only be null if column_name is also null.",
                                   validEntry,
@@ -312,7 +309,7 @@ public class ExtensionsVerifier extends Verifier
     }
 
     /**
-     * Requirement 81 <blockquote> The
+     * Requirement 82 <blockquote> The
      * <code>column_name</code> column value in a <code>gpkg_extensions</code>
      * row SHALL be the name of a column in the table specified by the
      * <code>table_name</code> column value for that row, or be NULL.
@@ -321,15 +318,15 @@ public class ExtensionsVerifier extends Verifier
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(reference = "Requirement 81",
+    @Requirement(reference = "Requirement 82",
                  text    = "The column_name column value in a gpkg_extensions row SHALL"
                            + " be the name of a column in the table specified by the "
                            + "table_name column value for that row, or be NULL.")
-    public void Requirement81() throws SQLException, AssertionError
+    public void Requirement82() throws SQLException, AssertionError
     {
         if(this.hasGpkgExtensionsTable && !this.gpkgExtensionsDataAndColumnName.isEmpty())
         {
-            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName.keySet())
+            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName)
             {
                 final String columnName = extensionData.columnName;
 
@@ -377,7 +374,7 @@ public class ExtensionsVerifier extends Verifier
     }
 
     /**
-     * Requirement 82 <blockquote> Each
+     * Requirement 83 <blockquote> Each
      * <code>extension_name</code> column value in a
      * <code>gpkg_extensions</code> row SHALL be a unique case sensitive value
      * of the form &lt;author&gt;_&lt;extension_name&gt; where &lt;author&gt;
@@ -390,7 +387,7 @@ public class ExtensionsVerifier extends Verifier
      *
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(reference = "Requirement 82",
+    @Requirement(reference = "Requirement 83",
                  text    = "Each extension_name column value in a gpkg_extensions row SHALL be a "
                            + "unique case sensitive value of the form <author>_<extension_name> "
                            + "where <author> indicates the person or organization that developed "
@@ -399,12 +396,12 @@ public class ExtensionsVerifier extends Verifier
                            + "SHALL be [a-zA-Z0-9_]. An extension_name for the gpkg author name "
                            + "SHALL be one of those defined in this encoding standard or in an OGC "
                            + "Best Practices Document that extends it.")
-    public void Requirement82() throws AssertionError
+    public void Requirement83() throws AssertionError
     {
         if(this.hasGpkgExtensionsTable)
         {
 
-            final Collection<String> invalidExtensionNames = FunctionalUtility.mapFilter(this.gpkgExtensionsDataAndColumnName.keySet(),
+            final Collection<String> invalidExtensionNames = FunctionalUtility.mapFilter(this.gpkgExtensionsDataAndColumnName,
                                                                                          new Function<ExtensionData, String>()
                                                                                          {
                                                                                              @Override
@@ -440,7 +437,7 @@ public class ExtensionsVerifier extends Verifier
     }
 
     /**
-     * Requirement 83
+     * Requirement 84
      *
      * <blockquote>
      * The definition column value in a <code>gpkg_extensions</code> row SHALL contain or
@@ -453,12 +450,12 @@ public class ExtensionsVerifier extends Verifier
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(reference = "Requirement 83",
+    @Requirement(reference = "Requirement 84",
                  text    = "The definition column value in a gpkg_extensions row SHALL "
                            + "contain or reference the text that results from documenting "
                            + "an extension by filling out the GeoPackage Extension Template "
                            + "in GeoPackage Extension Template (Normative).")
-    public void Requirement83() throws SQLException, AssertionError
+    public void Requirement84() throws SQLException, AssertionError
     {
         if(this.hasGpkgExtensionsTable)
         {
@@ -511,7 +508,7 @@ public class ExtensionsVerifier extends Verifier
     }
 
     /**
-     * Requirement 84
+     * Requirement 85
      *
      * <blockquote>
      * The scope column value in a <code>gpkg_extensions</code> row SHALL be
@@ -521,11 +518,11 @@ public class ExtensionsVerifier extends Verifier
      * @throws SQLException throws when various SQLExceptions occur
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
-    @Requirement(reference = "Requirement 84",
+    @Requirement(reference = "Requirement 85",
                  text    = "The scope column value in a gpkg_extensions row SHALL be lowercase "
                            + "\"read-write\" for an extension that affects both readers and writers, "
                            + "or \"write-only\" for an extension that affects only writers. ")
-    public void Requirement84() throws SQLException, AssertionError
+    public void Requirement85() throws SQLException, AssertionError
     {
         if(this.hasGpkgExtensionsTable)
         {

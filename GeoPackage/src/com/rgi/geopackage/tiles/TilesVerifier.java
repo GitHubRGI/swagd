@@ -305,7 +305,7 @@ public class TilesVerifier extends Verifier
                  text      = "In a GeoPackage that contains a tile pyramid user data table that contains tile data SHALL store that tile data in MIME type image/jpeg or image/png")
     public void Requirement36() throws AssertionError
     {
-        Assert.assertTrue("Test skipped when verification level is not set to " + VerificationLevel.Full,
+        Assert.assertTrue("Test skipped when verification level is not set to " + VerificationLevel.Full.name(),
                           this.verificationLevel == VerificationLevel.Full,
                           Severity.Skipped);
 

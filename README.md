@@ -3,7 +3,7 @@ SWAGD : Software to Aggregate Geospatial Data
 
 A Java-based application for converting geospatial images into tiles, packaging those tiles, and viewing them on a map.
 
-[![Build Status](https://travis-ci.org/GitHubRGI/swagd.svg?branch=master)](https://travis-ci.org/GitHubRGI/swagd)
+[![Build Status](https://magnum.travis-ci.com/GitHubRGI/swagd.svg?token=sMDZhk629WtJNL1nWEEK)](https://magnum.travis-ci.com/GitHubRGI/swagd)
 [![Coverage Status](https://coveralls.io/repos/GitHubRGI/swagd/badge.svg?branch=master)](https://coveralls.io/r/GitHubRGI/swagd?branch=master)
 [![Stories in Ready](https://badge.waffle.io/GitHubRGI/swagd.png?label=ready&title=Ready)](https://waffle.io/GitHubRGI/swagd)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/3993/badge.svg)](https://scan.coverity.com/projects/3993)
@@ -19,8 +19,12 @@ A Java-based application for converting geospatial images into tiles, packaging 
 * Windows executable download link will be available soon.
 
 ## Projects
+* __Android__: Android-specific implementations of the GeoPackage and Common projects
+  * _Dependency_: Nothing
 * __Common__: Contains functionality for coordinates, tiles, tile stores, and tasks
   * _Dependency_: Nothing
+* __DataStore__: Functionality responsible for manipulating Tile Stores
+  * _Dependency_: Common, GeoPackage
 * __Gdal2Tiles__: Functionality necessary for converting raster imagery into tiles
   * _Dependencies_: Common, GDAL (refer to build environment wiki)
 * __Geopackage__: Functions and validators for creating or reading GeoPackages
@@ -29,6 +33,8 @@ A Java-based application for converting geospatial images into tiles, packaging 
   * _Dependencies_: Common, GeoPackage, JMapViewer (refer to build environment wiki)
 * __IntegrationTest__: Test code for integration environments
   * _Dependencies_: Common, Gdal2Tiles, GeoPackage, GeoViewer
+* __NetworkExtension__: Networking and routing capability as a GeoPackage extension
+  * _Dependency_: Nothing
 * __Packager__: Workflow code that will use the Geopackage library to create Geopackage data products
   * _Dependencies_: Common, GeoPackage
 * __RGISuite__: Main project and workflow aggregation

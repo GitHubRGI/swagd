@@ -84,9 +84,9 @@ public class JdbcUtility
         return results;
     }
 
-    public static <T> ArrayList<T> mapFilter(final ResultSet               resultSet,
-                                                final ResultSetFunction<T> function,
-                                                final Predicate<T>         predicate) throws SQLException
+    public static <T> ArrayList<T> mapFilter(final ResultSet            resultSet,
+                                             final ResultSetFunction<T> function,
+                                             final Predicate<T>         predicate) throws SQLException
     {
         if(resultSet == null)
         {
