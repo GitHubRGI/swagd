@@ -452,7 +452,7 @@ public class RawImageTileReader implements TileStoreReader
         private final int column;
         private final int row;
 
-        RawImageTileHandle(final int zoom, final int column, final int row)
+        public RawImageTileHandle(final int zoom, final int column, final int row)
         {
             this.zoomLevel = zoom;
             this.column    = column;
@@ -460,21 +460,21 @@ public class RawImageTileReader implements TileStoreReader
             this.matrix    = RawImageTileReader.this.tileScheme.dimensions(this.zoomLevel);
         }
 
-        RawImageTileHandle(final int zoom, final int column, final int row, final Path cachedImageLocation)
+        public RawImageTileHandle(final int zoom, final int column, final int row, final Path cachedImageLocation)
         {
-            this.zoomLevel = zoom;
-            this.column    = column;
-            this.row       = row;
-            this.matrix    = RawImageTileReader.this.tileScheme.dimensions(this.zoomLevel);
+            this.zoomLevel           = zoom;
+            this.column              = column;
+            this.row                 = row;
+            this.matrix              = RawImageTileReader.this.tileScheme.dimensions(this.zoomLevel);
             this.cachedImageLocation = cachedImageLocation;
         }
 
-        RawImageTileHandle(final int zoom, final int column, final int row, final boolean gdalImage)
+        public RawImageTileHandle(final int zoom, final int column, final int row, final boolean gdalImage)
         {
             this.zoomLevel = zoom;
             this.column    = column;
             this.row       = row;
-            this.matrix       = RawImageTileReader.this.tileScheme.dimensions(this.zoomLevel);
+            this.matrix    = RawImageTileReader.this.tileScheme.dimensions(this.zoomLevel);
             this.gdalImage = gdalImage;
         }
 
@@ -540,6 +540,7 @@ public class RawImageTileReader implements TileStoreReader
             {
                 return this.image;
             }
+
             if(this.gdalImage == true)
             {
                 // Build the parameters for GDAL read raster call
@@ -602,8 +603,9 @@ public class RawImageTileReader implements TileStoreReader
                     return this.createTransparentImage();
                 }
             }
+
             // Make this tile by getting the tiles below it and scaling them to fit
-               return this.generateScaledTileFromChildren();
+            return this.generateScaledTileFromChildren();
         }
 
         private Path writeTempTile(final BufferedImage tileImage) throws IOException
