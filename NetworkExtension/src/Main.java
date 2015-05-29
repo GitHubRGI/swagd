@@ -46,14 +46,14 @@ public class Main
 
     public static void main(final String[] args)
     {
-        runRoute2(100);
+        runRoute2(1000);
     }
 
 
     private static void runRoute2(final int routes)
     {
         final Random rand = new Random(123456789);
-        try(final GeoPackage gpkg = new GeoPackage(geoPackageFile2, OpenMode.Open))
+        try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, OpenMode.Open))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
@@ -63,10 +63,10 @@ public class Main
 
             final AttributeDescription nodeLongitudeAttibute = networkExtension.getAttributeDescription(network,"longitude", AttributedType.Node);
 
-            final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network, "length", AttributedType.Edge);
+            final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network, "distance", AttributedType.Edge);
 
-            final int[] start = rand.ints(routes, 0, 105247).toArray();
-            final int[] end = rand.ints(routes, 0, 105247).toArray();
+            final int[] start = rand.ints(routes, 0, 47182).toArray();
+            final int[] end = rand.ints(routes, 0, 47182).toArray();
             int startNode, endNode;
             double sum = 0;
 
