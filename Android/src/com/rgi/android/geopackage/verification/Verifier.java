@@ -313,25 +313,7 @@ public class Verifier
 
         try
         {
-            final ResultSet fkInfo;
-
-            try
-            {
-                fkInfo = statement.executeQuery(String.format("PRAGMA foreign_key_list(%s);", tableName));
-            }
-            catch(final SQLException ex)
-            {
-                // If a table has no foreign keys, executing the query
-                // PRAGMA foreign_key_list(<table_name>) will throw an
-                // exception complaining that result set is empty.
-                // The issue has been posted about it here:
-                // https://bitbucket.org/xerial/sqlite-jdbc/issue/162/
-                // If the result set is empty (no foreign keys), there's no
-                // work to be done.  Unfortunately .executeQuery() may throw an
-                // SQLException for other reasons that may require some
-                // attention.
-                return;
-            }
+            final ResultSet fkInfo = statement.executeQuery(String.format("PRAGMA foreign_key_list(%s);", tableName));
 
             try
             {

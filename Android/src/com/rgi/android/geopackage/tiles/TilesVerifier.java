@@ -146,7 +146,7 @@ public class TilesVerifier extends Verifier
             }
             finally
             {
-                createStmt2.close();
+                contentsPyramidTables.close();
             }
         }
         finally
