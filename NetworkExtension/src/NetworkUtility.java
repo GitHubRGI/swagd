@@ -1,16 +1,11 @@
 //import java.io.File;
 //import java.io.IOException;
-//import java.sql.Connection;
-//import java.sql.DriverManager;
-//import java.sql.PreparedStatement;
-//import java.sql.ResultSet;
 //import java.sql.SQLException;
 //import java.util.HashMap;
 //
 //import com.rgi.geopackage.GeoPackage;
-//import com.rgi.geopackage.GeoPackage.OpenMode;
 //import com.rgi.geopackage.extensions.implementation.BadImplementationException;
-//import com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension;
+//import com.rgi.geopackage.extensions.network.Edge;
 //import com.rgi.geopackage.extensions.network.Network;
 //import com.rgi.geopackage.verification.ConformanceException;
 //
@@ -21,21 +16,23 @@
 // */
 //public class NetworkUtility
 //{
-//    private static final File geoPackageFile = new File("test.gpkg");
+//    private static final File geoPackageFile = new File("test3.gpkg");
+//
 //    public static void main(final String[] args)
 //    {
-//        try
+//        try (GeoPackage gpkg = new GeoPackage(geoPackageFile))
 //        {
-//            System.out.println("edges: " + edges(geoPackageFile));
-//            System.out.println("nodes: " + nodes(geoPackageFile));
-//        } catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+//            System.out.println("Edges: " + edges(gpkg, "mynetwork"));
+//            System.out.println("Nodes: " + nodes(gpkg, "mynetwork"));
+//        }
+//        catch (ClassNotFoundException | ConformanceException | IOException | SQLException | BadImplementationException e)
 //        {
 //            e.printStackTrace();
 //        }
 //    }
 //
 //    /**
-//     * Gets the number of edges in a GeoPackage
+//     * Gets the number of edges in the Network
 //     *
 //     * @param gpkg the GeoPackage
 //     * @return the number of edges in gpkg
@@ -45,43 +42,51 @@
 //     * @throws ClassNotFoundException
 //     * @throws BadImplementationException
 //     */
-//    public static int edges(final File packageFile) throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
+//    public static int edges(final GeoPackage gpkg, final String networkTable) throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
 //    {
-//        int edges = 0;
-//        try (final Connection db = DriverManager.getConnection("jdbc:sqlite:" + packageFile.getPath())) // Initialize the database connection
-//        {
-//            final String query = "Select COUNT(id) FROM mynetwork";
-//            try(final PreparedStatement stmt = db.prepareStatement(query))
-//            {
-//                try (ResultSet rs = stmt.executeQuery())
-//                {
-//                    edges = rs.getInt(1);
-//                }
-//            }
-//        }
-//        return edges;
+//        final HashMap<Integer, Edge> edges = new HashMap<>();
+//        final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+//        final Network network = networkExtension.getNetwork(networkTable);
+//
+//        networkExtension.visitEdges(network, t->
+//                                                 {
+//                                                     if(!edges.containsKey(t.getIdentifier()))
+//                                                     {
+//                                                         edges.put(t.getIdentifier(), t);
+//                                                     }
+//                                                 });
+//        return edges.size();
 //    }
 //
-//    public static int nodes(final File packageFile) throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
+//    /**
+//     * Determines the number of nodes in the Network
+//     *
+//     * @param packageFile
+//     * @return number of nodes in the Network
+//     * @throws ClassNotFoundException
+//     * @throws SQLException
+//     * @throws ConformanceException
+//     * @throws IOException
+//     * @throws BadImplementationException
+//     */
+//    public static int nodes(final GeoPackage gpkg, final String networkTable) throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
 //    {
 //        final HashMap<Integer, Integer> nodeValues = new HashMap<>();
-//        try(final GeoPackage gpkg = new GeoPackage(packageFile, OpenMode.Open))
-//        {
-//            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+//        final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+//        final Network network = networkExtension.getNetwork(networkTable);
 //
-//            final Network network = networkExtension.getNetwork("mynetwork");
-//            networkExtension.visitEdges(network, t ->
-//			                                         {
-//				                                         if(!nodeValues.containsKey(t.getFrom()))
-//				                                         {
-//				                                        	 nodeValues.put(t.getFrom(), 0);
-//				                                         }
-//				                                         if(!nodeValues.containsKey(t.getFrom()))
-//				                                         {
-//				                                        	 nodeValues.put(t.getFrom(), 0);
-//				                                         }
-//			                                         });
-//        }
+//        networkExtension.visitEdges(network, t ->
+//                                                 {
+//                                                     if(!nodeValues.containsKey(t.getFrom()))
+//                                                     {
+//                                                         nodeValues.put(t.getFrom(), 0);
+//                                                     }
+//                                                     if(!nodeValues.containsKey(t.getFrom()))
+//                                                     {
+//                                                         nodeValues.put(t.getFrom(), 0);
+//                                                     }
+//                                                  });
 //        return nodeValues.size();
 //    }
 //}
+//
