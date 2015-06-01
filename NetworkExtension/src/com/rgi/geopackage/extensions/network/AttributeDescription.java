@@ -64,7 +64,7 @@ public class AttributeDescription
     @Override
     public String toString()
     {
-        return String.format("%d (%s, %s, %s, %s, %s, %s)",
+        return String.format("(%s, %s, %s, %s, %s, %s)",
                              this.networkTableName,
                              this.name,
                              this.units,
