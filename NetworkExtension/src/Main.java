@@ -1,7 +1,12 @@
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,15 +41,15 @@ public class Main
     private static final File nodeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
     private static final File edgeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
     private static final File dataFile       = new File("F:/Routing Test Data/mwtc_pandolf.sqlite");
-    //private static final File nodes          = new File("F:/contour.1/contour.1/Nodes.txt"); // nodes file for usma_pandolf.gpkg
-    private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt");
+    private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt"); // nodes file for usma_pandolf.gpkg
+    //private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt");
     private static final File geoPackageFile2 = new File("test2.gpkg");
     private static final File geoPackageFile3 = new File("test3.gpkg");
 
     public static void main(final String[] args)
     {
         //runRoute2(1000);
-        createGpkg();
+        runRoute2(geoPackageFile2, 100);
     }
 
 
@@ -63,48 +68,49 @@ public class Main
 
             final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network, "length", AttributedType.Edge);
 
-            final int[] start = rand.ints(routes, 0, 47182).toArray();
-            final int[] end = rand.ints(routes, 0, 47182).toArray();
-            final int startNode, endNode;
-            final double sum = 0;
+            final int[] start = rand.ints(routes, 0, 105248).toArray();
+            final int[] end = rand.ints(routes, 0, 105248).toArray();
+            int startNode;
+			int endNode;
+            double sum = 0;
 
-//            for (final int i = 0; i < routes; i++)
-//            {
-//                startNode = start[i];
-//                endNode = end[i];
-//                if(networkExtension.getEntries(network, endNode).size() > 0)
-//                {
-//                    final long startTime = System.nanoTime();
-//
-//                    final Map<Integer, Double> costCache = new HashMap<>();
-//
-//                    final List<Integer> path = astar(networkExtension,
-//                            network,
-//                            startNode,
-//                            endNode,
-//                            (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute),
-//                            (startIdentifier, endIdentifier) -> { try
-//                                                                  {
-//                                                                      final List<Object> startCoordinate = networkExtension.getAttributes(network, startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
-//                                                                      final List<Object> endCoordinate   = networkExtension.getAttributes(network, endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
-//
-//                                                                      final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
-//                                                                      final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
-//
-//                                                                      return Math.sqrt(latitude*latitude + longitude*longitude);
-//                                                                  }
-//                                                                  catch(final SQLException ex)
-//                                                                  {
-//                                                                      throw new RuntimeException(ex);
-//                                                                  }
-//                                                                });
-//
-//                    path.forEach(node -> System.out.print(node + ", "));
-//
-//                    System.out.println(String.format("\nAstar took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
-//                    sum += (System.nanoTime() - startTime)/1.0e9;
-//                }
-//            }
+            for (int i = 0; i < routes; i++)
+            {
+                startNode = start[i];
+                endNode = end[i];
+                if(networkExtension.getEntries(network, endNode).size() > 0)
+                {
+                    final long startTime = System.nanoTime();
+
+                    final Map<Integer, Double> costCache = new HashMap<>();
+
+                    final List<Integer> path = astar(networkExtension,
+                            network,
+                            startNode,
+                            endNode,
+                            (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge, distanceAttribute),
+                            (startIdentifier, endIdentifier) -> { try
+                                                                  {
+                                                                      final List<Object> startCoordinate = networkExtension.getAttributes(startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
+                                                                      final List<Object> endCoordinate   = networkExtension.getAttributes(endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
+
+                                                                      final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
+                                                                      final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
+
+                                                                      return Math.sqrt(latitude*latitude + longitude*longitude);
+                                                                  }
+                                                                  catch(final SQLException ex)
+                                                                  {
+                                                                      throw new RuntimeException(ex);
+                                                                  }
+                                                                });
+
+                    path.forEach(node -> System.out.print(node + ", "));
+
+                    System.out.println(String.format("\nAstar took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
+                    sum += (System.nanoTime() - startTime)/1.0e9;
+                }
+            }
 
             System.out.println(String.format("TO calculat %s routes, astar took %.2f seconds to calculate", routes, sum));
             System.out.println(String.format("Astar took an average of %.2f seconds to calculate", sum/routes));
@@ -227,70 +233,83 @@ public class Main
     @SuppressWarnings("hiding")
 	private static void createGpkg2(final File geoPackageFile, final File dataFile, final File nodes) throws SQLException, ClassNotFoundException
     {
-        if(geoPackageFile.exists())
+        Class.forName("org.sqlite.JDBC");   // Register the driver
+
+        try(final Connection db = DriverManager.getConnection("jdbc:sqlite:" + dataFile.getPath()))// Initialize the database connection
         {
-            geoPackageFile.delete();
-        }
+            if(geoPackageFile.exists())
+            {
+                geoPackageFile.delete();
+            }
+            try (final GeoPackage gpkg = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Create))
+            {
+            	final GeoPackageNetworkExtension2 networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension2.class);
 
-        try (final GeoPackage gpkg = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Create))
-        {
-        	final GeoPackageNetworkExtension2 networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension2.class);
+                final Network myNetwork = networkExtension.addNetwork("mynetwork",
+                                                                      "Super Important Routing Stuff",
+                                                                      "routing stuff. super important",
+                                                                      new BoundingBox(0, 0, 0, 0),
+                                                                      gpkg.core().getSpatialReferenceSystem(-1));
 
-            final Network myNetwork = networkExtension.addNetwork("mynetwork",
-                                                                  "Super Important Routing Stuff",
-                                                                  "routing stuff. super important",
-                                                                  new BoundingBox(0, 0, 0, 0),
-                                                                  gpkg.core().getSpatialReferenceSystem(-1));
-
-            final AttributeDescription slopeAttribute = networkExtension.addAttributeDescription(myNetwork,
-                                                                                                 "slope",
-                                                                                                 "meters(?)",
-                                                                                                 DataType.Real,
-                                                                                                 "slope",
-                                                                                                 AttributedType.Edge);
-
-            final AttributeDescription lengthAttribute = networkExtension.addAttributeDescription(myNetwork,
-                                                                                                  "length",
-                                                                                                  "meters(?)",
-                                                                                                  DataType.Real,
-                                                                                                  "length",
-                                                                                                  AttributedType.Edge);
-
-            final AttributeDescription pandolfCostAttribute = networkExtension.addAttributeDescription(myNetwork,
-                                                                                                       "cost_pandolf",
-                                                                                                       "unknown",
-                                                                                                       DataType.Real,
-                                                                                                       "caloric cost walking?",
-                                                                                                       AttributedType.Edge);
-
-            final AttributeDescription elevationAttribute = networkExtension.addAttributeDescription(myNetwork,
-                                                                                                     "elev",
+                final AttributeDescription slopeAttribute = networkExtension.addAttributeDescription(myNetwork,
+                                                                                                     "slope",
                                                                                                      "meters(?)",
                                                                                                      DataType.Real,
-                                                                                                     "elevation",
-                                                                                                     AttributedType.Node);
+                                                                                                     "slope",
+                                                                                                     AttributedType.Edge);
 
-            final AttributeDescription longitudeAttribute = networkExtension.addAttributeDescription(myNetwork,
-                                                                                                   "longitude",
-                                                                                                   "degrees",
-                                                                                                    DataType.Real,
-                                                                                                    "longitude",
-                                                                                                    AttributedType.Node);
+                final AttributeDescription lengthAttribute = networkExtension.addAttributeDescription(myNetwork,
+                                                                                                      "length",
+                                                                                                      "meters(?)",
+                                                                                                      DataType.Real,
+                                                                                                      "length",
+                                                                                                      AttributedType.Edge);
 
-            final AttributeDescription latitudeAttribute = networkExtension.addAttributeDescription(myNetwork,
-                                                                                                    "latitude",
-                                                                                                    "degrees",
-                                                                                                    DataType.Real,
-                                                                                                    "latitude",
-                                                                                                    AttributedType.Node);
+                final AttributeDescription pandolfCostAttribute = networkExtension.addAttributeDescription(myNetwork,
+                                                                                                           "cost_pandolf",
+                                                                                                           "unknown",
+                                                                                                           DataType.Real,
+                                                                                                           "caloric cost walking?",
+                                                                                                           AttributedType.Edge);
 
+                final AttributeDescription elevationAttribute = networkExtension.addAttributeDescription(myNetwork,
+                                                                                                         "elev",
+                                                                                                         "meters(?)",
+                                                                                                         DataType.Real,
+                                                                                                         "elevation",
+                                                                                                         AttributedType.Node);
 
+                final AttributeDescription longitudeAttribute = networkExtension.addAttributeDescription(myNetwork,
+                                                                                                       "longitude",
+                                                                                                       "degrees",
+                                                                                                        DataType.Real,
+                                                                                                        "longitude",
+                                                                                                        AttributedType.Node);
 
+                final AttributeDescription latitudeAttribute = networkExtension.addAttributeDescription(myNetwork,
+                                                                                                        "latitude",
+                                                                                                        "degrees",
+                                                                                                        DataType.Real,
+                                                                                                        "latitude",
+                                                                                                        AttributedType.Node);
+                // Add the attributed edges
+                final String query = String.format("Select %s, %s, %s, %s, %s FROM %s", "from_node", "to_node", "slope", "length", "cost_pandolf", "edges");
+                try(final PreparedStatement stmt =  db.prepareStatement(query))
+                {
+                	try(ResultSet results = stmt.executeQuery())
+                	{
+                		loadAttributedEdges(networkExtension, results, myNetwork, Arrays.asList(slopeAttribute, lengthAttribute, pandolfCostAttribute));
+                	}
+                }
+                //Add attributed nodes
+                loadNodeAttributes2(networkExtension, nodes, myNetwork, elevationAttribute, longitudeAttribute, latitudeAttribute);
+
+            }
+            catch (ConformanceException | IOException | BadImplementationException e)
+    		{
+    			e.printStackTrace();
+    		}
         }
-        catch (ConformanceException | IOException | BadImplementationException e)
-		{
-			e.printStackTrace();
-		}
     }
 
     private static void createGpkg()
@@ -677,29 +696,28 @@ public class Main
     /**
      * Takes nodes in text file and adds them to
      */
-//    private static void loadNodeAttributes2(final GeoPackageNetworkExtension2 networkExtension,
-//    		                                final File nodes,
-//                                            final Network network,
-//                                            final List<AttributeDescription> attributeDescriptions) throws SQLException, IOException
-//    {
-//        final Function<String, Pair<Integer, List<Object>>> lineToPair = line -> { final String[] pieces = line.trim().split("\\s+");
-//
-//                                                                                      return new Pair<>(Integer.valueOf(pieces[0]), // vertex # (node id)
-//                                                                                                        Arrays.asList((Object)Double.valueOf(pieces[1]),   // elevation
-//                                                                                                                      (Object)Double.valueOf(pieces[2]),  // X (longitude)
-//                                                                                                                      (Object)Double.valueOf(pieces[3]))); // y (latitude)
-//       };
-//
-//        try(Stream<Pair<Integer, List<Object>>> pairs = Files.lines(nodes.toPath())
-//                                                                         .skip(1) // the first line is a header
-//                                                                         .filter(line -> !line.startsWith("#"))
-//                                                                         .map(lineToPair))
-//        {
-//            networkExtension.addAttributes(network,
-//                                           attributeDescriptions,
-//                                           pairs::iterator);
-//        }
-//    }
+    private static void loadNodeAttributes2(final GeoPackageNetworkExtension2 networkExtension,
+    		                                final File nodes,
+                                            final Network network,
+                                            final AttributeDescription... attributeDescriptions) throws SQLException, IOException
+    {
+        final Function<String, Pair<Integer, List<Object>>> lineToPair = line -> { final String[] pieces = line.trim().split("\\s+");
+
+                                                                                      return new Pair<>(Integer.valueOf(pieces[0]), // vertex # (node id)
+                                                                                                        Arrays.asList((Object)Double.valueOf(pieces[1]),   // elevation
+                                                                                                                      (Object)Double.valueOf(pieces[2]),  // X (longitude)
+                                                                                                                      (Object)Double.valueOf(pieces[3]))); // y (latitude)
+       };
+
+        try(Stream<Pair<Integer, List<Object>>> pairs = Files.lines(nodes.toPath())
+                                                                         .skip(1) // the first line is a header
+                                                                         .filter(line -> !line.startsWith("#"))
+                                                                         .map(lineToPair))
+        {
+            networkExtension.addNodes(pairs::iterator,
+            		                  attributeDescriptions);
+        }
+    }
 
     private static void loadEdges(final GeoPackageNetworkExtension2 networkExtension, final File triangleFormatEdges, final Network network) throws SQLException, IOException
     {
@@ -735,26 +753,24 @@ public class Main
         }
     }
 
-//    private static void loadAttributedEdges(final GeoPackageNetworkExtension2 networkExtension,
-//                                            final ResultSet rs,
-//                                            final Network network,
-//                                            final List<AttributeDescription> attributeDescriptions) throws SQLException
-//    {
-//        final List<Pair<Pair<Integer, Integer>, List<Object>>> edges = new ArrayList<Pair<Pair<Integer, Integer>, List<Object>>>();
-//
-//        final List<Pair<Integer, Integer>> edgeCheck = new ArrayList<Pair<Integer, Integer>>();
-//        Pair<Integer, Integer> pair;
-//        while(rs.next())
-//        {
-//            pair = new Pair<Integer, Integer>(rs.getInt(1), rs.getInt(2));       // from node, and to node
-//            edges.add(new Pair<>(pair, Arrays.asList((Object)rs.getDouble(3),    // slope
-//                                                     (Object)rs.getDouble(4),    // length
-//                                                     (Object)rs.getDouble(5)))); // pandolf cost
-//            edgeCheck.add(pair);
-//        }
-//
-//        networkExtension.addAttributedEdges(network, attributeDescriptions, edges::iterator);
-//    }
+    private static void loadAttributedEdges(final GeoPackageNetworkExtension2 networkExtension,
+                                            final ResultSet rs,
+                                            final Network network,
+                                            final List<AttributeDescription> attributeDescriptions) throws SQLException
+    {
+        final List<Pair<Pair<Integer, Integer>, List<Object>>> edges = new ArrayList<Pair<Pair<Integer, Integer>, List<Object>>>();
+
+        Pair<Integer, Integer> pair;
+        while(rs.next())
+        {
+            pair = new Pair<Integer, Integer>(rs.getInt(1), rs.getInt(2));       // from node, and to node
+            edges.add(new Pair<>(pair, Arrays.asList((Object)rs.getDouble(3),    // slope
+                                                     (Object)rs.getDouble(4),    // length
+                                                     (Object)rs.getDouble(5)))); // pandolf cost
+        }
+
+        networkExtension.addAttributedEdges(attributeDescriptions, edges);
+    }
 
 //    private String firstLine(final File file) throws IOException
 //    {
