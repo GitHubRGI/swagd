@@ -571,12 +571,20 @@ public class GeoPackageNetworkExtension2 extends ExtensionImplementation
         final String       networkTableName = schema.getLeft();
         final List<String> columnNames      = schema.getRight();
 
+// This insert statement adds the other attributes before from_node and to_node, but the code below adds in
+// the other attributes after the from_node and to_node
+//        final String insert = String.format("INSERT INTO %s (%s, %s, %s) VALUES (?, ?, %s)",
+//                                            networkTableName,
+//                                            String.join(", ", columnNames),
+//                                            "from_node",
+//                                            "to_node",
+//                                            String.join(", ", Collections.nCopies(attributeDescriptions.size(), "?")));
         final String insert = String.format("INSERT INTO %s (%s, %s, %s) VALUES (?, ?, %s)",
-                                            networkTableName,
-                                            String.join(", ", columnNames),
-                                            "from_node",
-                                            "to_node",
-                                            String.join(", ", Collections.nCopies(attributeDescriptions.size(), "?")));
+                networkTableName,
+                "from_node",
+                "to_node",
+                String.join(", ", columnNames),
+                String.join(", ", Collections.nCopies(attributeDescriptions.size(), "?")));
 
         try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert))
         {
