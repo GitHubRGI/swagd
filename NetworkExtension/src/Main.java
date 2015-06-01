@@ -1,9 +1,6 @@
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -40,20 +37,22 @@ public class Main
     private static final File geoPackageFile = new File("test.gpkg");
     private static final File nodeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
     private static final File edgeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
-    private static final File dataFile       = new File("F:/usma_pandolf.sqlite");
-    private static final File nodes          = new File("F:/contour.1/contour.1/Nodes.txt");
+    private static final File dataFile       = new File("F:/Routing Test Data/mwtc_pandolf.sqlite");
+    //private static final File nodes          = new File("F:/contour.1/contour.1/Nodes.txt"); // nodes file for usma_pandolf.gpkg
+    private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt");
     private static final File geoPackageFile2 = new File("test2.gpkg");
+    private static final File geoPackageFile3 = new File("test3.gpkg");
 
     public static void main(final String[] args)
     {
-        runRoute2(1000);
+    	runRoute2(geoPackageFile3, 1000);
     }
 
 
-    private static void runRoute2(final int routes)
+    private static void runRoute2(final File geoPackage, final int routes)
     {
         final Random rand = new Random(123456789);
-        try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, OpenMode.Open))
+        try(final GeoPackage gpkg = new GeoPackage(geoPackage, OpenMode.Open))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
@@ -63,7 +62,7 @@ public class Main
 
             final AttributeDescription nodeLongitudeAttibute = networkExtension.getAttributeDescription(network,"longitude", AttributedType.Node);
 
-            final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network, "distance", AttributedType.Edge);
+            final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network, "length", AttributedType.Edge);
 
             final int[] start = rand.ints(routes, 0, 47182).toArray();
             final int[] end = rand.ints(routes, 0, 47182).toArray();
@@ -226,86 +225,73 @@ public class Main
         System.out.println(String.format("\nAstar total distance = %f", totalWeight));
     }
 
-    private static void createGpkg2() throws SQLException, ClassNotFoundException
+    @SuppressWarnings("hiding")
+	private static void createGpkg2(final File geoPackageFile, final File dataFile, final File nodes) throws SQLException, ClassNotFoundException
     {
-        Class.forName("org.sqlite.JDBC");   // Register the driver
-        try (final Connection db = DriverManager.getConnection("jdbc:sqlite:" + dataFile.getPath())) // Initialize the database connection
+        if(geoPackageFile.exists())
         {
-            if(geoPackageFile2.exists())
-            {
-                geoPackageFile2.delete();
-            }
+            geoPackageFile.delete();
+        }
 
-            try (final GeoPackage gpkg = new GeoPackage(geoPackageFile2, VerificationLevel.None, OpenMode.Create))
-            {
-                final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+        try (final GeoPackage gpkg = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Create))
+        {
+        	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
-                final Network myNetwork = networkExtension.addNetwork("mynetwork",
-                                                                      "Super Important Routing Stuff",
-                                                                      "routing stuff. super important",
-                                                                      new BoundingBox(0, 0, 0, 0),
-                                                                      gpkg.core().getSpatialReferenceSystem(-1));
+            final Network myNetwork = networkExtension.addNetwork("mynetwork",
+                                                                  "Super Important Routing Stuff",
+                                                                  "routing stuff. super important",
+                                                                  new BoundingBox(0, 0, 0, 0),
+                                                                  gpkg.core().getSpatialReferenceSystem(-1));
 
-                final AttributeDescription slopeAttribute = networkExtension.addAttributeDescription(myNetwork,
-                                                                                                     "slope",
+            final AttributeDescription slopeAttribute = networkExtension.addAttributeDescription(myNetwork,
+                                                                                                 "slope",
+                                                                                                 "meters(?)",
+                                                                                                 DataType.Real,
+                                                                                                 "slope",
+                                                                                                 AttributedType.Edge);
+
+            final AttributeDescription lengthAttribute = networkExtension.addAttributeDescription(myNetwork,
+                                                                                                  "length",
+                                                                                                  "meters(?)",
+                                                                                                  DataType.Real,
+                                                                                                  "length",
+                                                                                                  AttributedType.Edge);
+
+            final AttributeDescription pandolfCostAttribute = networkExtension.addAttributeDescription(myNetwork,
+                                                                                                       "cost_pandolf",
+                                                                                                       "unknown",
+                                                                                                       DataType.Real,
+                                                                                                       "caloric cost walking?",
+                                                                                                       AttributedType.Edge);
+
+            final AttributeDescription elevationAttribute = networkExtension.addAttributeDescription(myNetwork,
+                                                                                                     "elev",
                                                                                                      "meters(?)",
                                                                                                      DataType.Real,
-                                                                                                     "slope",
-                                                                                                     AttributedType.Edge);
+                                                                                                     "elevation",
+                                                                                                     AttributedType.Node);
 
-                final AttributeDescription lengthAttribute = networkExtension.addAttributeDescription(myNetwork,
-                                                                                                      "length",
-                                                                                                      "meters(?)",
-                                                                                                      DataType.Real,
-                                                                                                      "length",
-                                                                                                      AttributedType.Edge);
+            final AttributeDescription longitudeAttribute = networkExtension.addAttributeDescription(myNetwork,
+                                                                                                   "longitude",
+                                                                                                   "degrees",
+                                                                                                    DataType.Real,
+                                                                                                    "longitude",
+                                                                                                    AttributedType.Node);
 
-                final AttributeDescription pandolfCostAttribute = networkExtension.addAttributeDescription(myNetwork,
-                                                                                                           "cost_pandolf",
-                                                                                                           "unknown",
-                                                                                                           DataType.Real,
-                                                                                                           "caloric cost walking?",
-                                                                                                           AttributedType.Edge);
+            final AttributeDescription latitudeAttribute = networkExtension.addAttributeDescription(myNetwork,
+                                                                                                    "latitude",
+                                                                                                    "degrees",
+                                                                                                    DataType.Real,
+                                                                                                    "latitude",
+                                                                                                    AttributedType.Node);
 
-                final AttributeDescription elevationAttribute = networkExtension.addAttributeDescription(myNetwork,
-                                                                                                         "elev",
-                                                                                                         "meters(?)",
-                                                                                                         DataType.Real,
-                                                                                                         "elevation",
-                                                                                                         AttributedType.Node);
 
-                final AttributeDescription longitudeAttribute = networkExtension.addAttributeDescription(myNetwork,
-                                                                                                        "longitude",
-                                                                                                        "degrees",
-                                                                                                        DataType.Real,
-                                                                                                        "longitude",
-                                                                                                        AttributedType.Node);
-
-                final AttributeDescription latitudeAttribute = networkExtension.addAttributeDescription(myNetwork,
-                                                                                                        "latitude",
-                                                                                                        "degrees",
-                                                                                                        DataType.Real,
-                                                                                                        "latitude",
-                                                                                                        AttributedType.Node);
-
-                final String query = String.format("Select %s, %s, %s, %s, %s FROM %s", "from_node", "to_node", "slope", "length", "cost_pandolf", "edges");
-                try(final PreparedStatement stmt =  db.prepareStatement(query))
-                {
-                    try(ResultSet results = stmt.executeQuery())
-                    {
-                        loadAttributedEdges(networkExtension, results, myNetwork, Arrays.asList(slopeAttribute, lengthAttribute, pandolfCostAttribute));
-                    }
-                }
-
-                loadNodeAttributes2(networkExtension, nodes, myNetwork, Arrays.asList(elevationAttribute, longitudeAttribute, latitudeAttribute));
-
-            }
-            catch(final ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException ex)
-            {
-                ex.printStackTrace();
-            }
 
         }
+        catch (ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
     }
 
     private static void createGpkg()
