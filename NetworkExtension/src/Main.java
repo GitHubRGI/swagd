@@ -38,23 +38,21 @@ import com.rgi.geopackage.verification.VerificationLevel;
 public class Main
 {
     private static final File geoPackageFile = new File("test.gpkg");
-//    private static final File nodeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
-//    private static final File edgeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
-    private static final File nodeFile       = new File("F:/contour.1/contour.1/contour.1.node");
-    private static final File edgeFile       = new File("F:/contour.1/contour.1/contour.1.edge");
+    private static final File nodeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
+    private static final File edgeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
     private static final File dataFile       = new File("F:/Routing Test Data/mwtc_pandolf.sqlite");
-    private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt"); // nodes file for usma_pandolf.gpkg
-    //private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt");
+    private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt"); // nodes file for usma_pandolf.sqlite
+    //private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt"); // nodes file for mwtc_pandolf.sqlite
     private static final File geoPackageFile2 = new File("test2.gpkg");
     private static final File geoPackageFile3 = new File("test3.gpkg");
 
     public static void main(final String[] args)
     {
-        createGpkg();
+        runRoute2(geoPackageFile3, 100, 169028);
     }
 
 
-    private static void runRoute2(final File geoPackage, final int routes)
+    private static void runRoute2(final File geoPackage, final int routes, final int numNodes)
     {
         final Random rand = new Random(123456789);
         try(final GeoPackage gpkg = new GeoPackage(geoPackage, OpenMode.Open))
@@ -67,12 +65,12 @@ public class Main
 
             final AttributeDescription nodeLongitudeAttibute = networkExtension.getAttributeDescription(network,"longitude", AttributedType.Node);
 
-            final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network, "distance", AttributedType.Edge);
+            final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network, "length", AttributedType.Edge);
 
-            final int[] start = rand.ints(routes, 0, 47181).toArray();
-            final int[] end = rand.ints(routes, 0, 47181).toArray();
+            final int[] start = rand.ints(routes, 0, numNodes).toArray();
+            final int[] end = rand.ints(routes, 0, numNodes).toArray();
             int startNode;
-			int endNode;
+            int endNode;
             double sum = 0;
 
             for (int i = 0; i < routes; i++)
@@ -89,7 +87,17 @@ public class Main
                             network,
                             startNode,
                             endNode,
-                            (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge, distanceAttribute),
+                            (ThrowingFunction<Edge, Double>)(edge) -> { if(costCache.containsKey(edge.getIdentifier()))
+                                                                        {
+                                                                            return costCache.get(edge.getIdentifier());
+                                                                        }
+
+                                                                        final double cost = networkExtension.getAttribute(edge, distanceAttribute);
+
+                                                                        costCache.put(edge.getIdentifier(), cost);
+
+                                                                        return cost;
+                                                                      },
                             (startIdentifier, endIdentifier) -> { try
                                                                   {
                                                                       final List<Object> startCoordinate = networkExtension.getAttributes(startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
@@ -232,7 +240,7 @@ public class Main
     }
 
     @SuppressWarnings("hiding")
-	private static void createGpkg2(final File geoPackageFile, final File dataFile, final File nodes) throws SQLException, ClassNotFoundException
+    private static void createGpkg2(final File geoPackageFile, final File dataFile, final File nodes) throws SQLException, ClassNotFoundException
     {
         Class.forName("org.sqlite.JDBC");   // Register the driver
 
@@ -244,7 +252,7 @@ public class Main
             }
             try (final GeoPackage gpkg = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Create))
             {
-            	final GeoPackageNetworkExtension2 networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension2.class);
+                final GeoPackageNetworkExtension2 networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension2.class);
 
                 final Network myNetwork = networkExtension.addNetwork("mynetwork",
                                                                       "Super Important Routing Stuff",
@@ -297,19 +305,19 @@ public class Main
                 final String query = String.format("Select %s, %s, %s, %s, %s FROM %s", "from_node", "to_node", "slope", "length", "cost_pandolf", "edges");
                 try(final PreparedStatement stmt =  db.prepareStatement(query))
                 {
-                	try(ResultSet results = stmt.executeQuery())
-                	{
-                		loadAttributedEdges(networkExtension, results, myNetwork, Arrays.asList(slopeAttribute, lengthAttribute, pandolfCostAttribute));
-                	}
+                    try(ResultSet results = stmt.executeQuery())
+                    {
+                        loadAttributedEdges(networkExtension, results, myNetwork, Arrays.asList(slopeAttribute, lengthAttribute, pandolfCostAttribute));
+                    }
                 }
                 //Add attributed nodes
                 loadNodeAttributes2(networkExtension, nodes, myNetwork, elevationAttribute, longitudeAttribute, latitudeAttribute);
 
             }
             catch (ConformanceException | IOException | BadImplementationException e)
-    		{
-    			e.printStackTrace();
-    		}
+            {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -698,7 +706,7 @@ public class Main
      * Takes nodes in text file and adds them to
      */
     private static void loadNodeAttributes2(final GeoPackageNetworkExtension2 networkExtension,
-    		                                final File nodes,
+                                            final File nodes,
                                             final Network network,
                                             final AttributeDescription... attributeDescriptions) throws SQLException, IOException
     {
@@ -716,7 +724,7 @@ public class Main
                                                                          .map(lineToPair))
         {
             networkExtension.addNodes(pairs::iterator,
-            		                  attributeDescriptions);
+                                      attributeDescriptions);
         }
     }
 
