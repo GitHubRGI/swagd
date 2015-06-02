@@ -29,7 +29,7 @@ import com.rgi.geopackage.extensions.network.AttributeDescription;
 import com.rgi.geopackage.extensions.network.AttributedType;
 import com.rgi.geopackage.extensions.network.DataType;
 import com.rgi.geopackage.extensions.network.Edge;
-import com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension2;
+import com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension;
 import com.rgi.geopackage.extensions.network.Network;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.VerificationLevel;
@@ -49,11 +49,11 @@ public class Main
     public static void main(final String[] args)
     {
         //runRoute2(1000);
-        //runRoute2(geoPackageFile2, 100);
+        runRoute2(geoPackageFile2, 100);
 
         //createGpkg();
 
-        runRoute();
+        //runRoute();
     }
 
 
@@ -62,7 +62,7 @@ public class Main
         final Random rand = new Random(123456789);
         try(final GeoPackage gpkg = new GeoPackage(geoPackage, OpenMode.Open))
         {
-            final GeoPackageNetworkExtension2 networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension2.class);
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             final Network network = networkExtension.getNetwork("mynetwork");
 
@@ -92,11 +92,11 @@ public class Main
                             network,
                             startNode,
                             endNode,
-                            (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge, distanceAttribute),
+                            (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getEdgeAttribute(edge, distanceAttribute),
                             (startIdentifier, endIdentifier) -> { try
                                                                   {
-                                                                      final List<Object> startCoordinate = networkExtension.getAttributes(startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
-                                                                      final List<Object> endCoordinate   = networkExtension.getAttributes(endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
+                                                                      final List<Object> startCoordinate = networkExtension.getNodeAttributes(startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
+                                                                      final List<Object> endCoordinate   = networkExtension.getNodeAttributes(endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
 
                                                                       final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
                                                                       final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
@@ -130,7 +130,7 @@ public class Main
     {
         try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, OpenMode.Open))
         {
-            final GeoPackageNetworkExtension2 networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension2.class);
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             final Network network = networkExtension.getNetwork("mynetwork");
 
@@ -175,12 +175,12 @@ public class Main
                                                  network,
                                                  startNode,
                                                  endNode,
-                                                 (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getAttribute(edge, distanceAttribute),
+                                                 (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getEdgeAttribute(edge, distanceAttribute),
                                                  (startIdentifier, endIdentifier) -> { try
                                                                                        {
-                                                                                           final List<List<Object>> values = networkExtension.getAttributes(Arrays.asList(startIdentifier, endIdentifier),
-                                                                                                                                                            nodeLongitudeAttibute,
-                                                                                                                                                            nodeLatitudeAttibute);
+                                                                                           final List<List<Object>> values = networkExtension.getNodeAttributes(Arrays.asList(startIdentifier, endIdentifier),
+                                                                                                                                                                nodeLongitudeAttibute,
+                                                                                                                                                                nodeLatitudeAttibute);
 
                                                                                            final List<Object> startCoordinate = values.get(0);
                                                                                            final List<Object> endCoordinate   = values.get(1);
@@ -210,7 +210,7 @@ public class Main
         }
     }
 
-    private static void printPath(final GeoPackageNetworkExtension2 networkExtension,
+    private static void printPath(final GeoPackageNetworkExtension networkExtension,
                                   final Network                    network,
                                   final List<Integer>              path,
                                   final AttributeDescription       distanceAttribute) throws SQLException
@@ -224,7 +224,7 @@ public class Main
 
             final Edge edge = networkExtension.getEdge(network, firstNode, secondNode);
 
-            final double cost = networkExtension.getAttribute(edge, distanceAttribute);
+            final double cost = networkExtension.getEdgeAttribute(edge, distanceAttribute);
 
             System.out.printf("%f->(%d)-", cost, secondNode);
 
@@ -247,7 +247,7 @@ public class Main
             }
             try (final GeoPackage gpkg = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Create))
             {
-            	final GeoPackageNetworkExtension2 networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension2.class);
+            	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
                 final Network myNetwork = networkExtension.addNetwork("mynetwork",
                                                                       "Super Important Routing Stuff",
@@ -302,11 +302,22 @@ public class Main
                 {
                 	try(ResultSet results = stmt.executeQuery())
                 	{
-                		loadAttributedEdges(networkExtension, results, myNetwork, Arrays.asList(slopeAttribute, lengthAttribute, pandolfCostAttribute));
+                		loadAttributedEdges(networkExtension,
+                		                    results,
+                		                    myNetwork,
+                		                    slopeAttribute,
+                		                    lengthAttribute,
+                		                    pandolfCostAttribute);
                 	}
                 }
+
                 //Add attributed nodes
-                loadNodeAttributes2(networkExtension, nodes, myNetwork, elevationAttribute, longitudeAttribute, latitudeAttribute);
+                loadNodeAttributes2(networkExtension,
+                                    nodes,
+                                    myNetwork,
+                                    elevationAttribute,
+                                    longitudeAttribute,
+                                    latitudeAttribute);
 
             }
             catch (ConformanceException | IOException | BadImplementationException e)
@@ -326,7 +337,7 @@ public class Main
         try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Create))
         {
 
-            final GeoPackageNetworkExtension2 networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension2.class);
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             final Network myNetwork = networkExtension.addNetwork("mynetwork",
                                                                   "Super Important Routing Stuff",
@@ -487,7 +498,7 @@ public class Main
         }
     }
 
-    public static List<Integer> astar(final GeoPackageNetworkExtension2           networkExtension,
+    public static List<Integer> astar(final GeoPackageNetworkExtension           networkExtension,
                                       final Network                              network,
                                       final Integer                              start,
                                       final Integer                              end,
@@ -586,7 +597,7 @@ public class Main
      * @param edgeCostEvaluator
      * @throws SQLException
      */
-    public static List<Integer> dijkstra(final GeoPackageNetworkExtension2 networkExtension,
+    public static List<Integer> dijkstra(final GeoPackageNetworkExtension networkExtension,
                                          final Network                    network,
                                          final Integer                    start,
                                          final Integer                    end,
@@ -637,7 +648,7 @@ public class Main
         return path;
     }
 
-    private static void calculateDistanceCost(final GeoPackageNetworkExtension2 networkExtension,
+    private static void calculateDistanceCost(final GeoPackageNetworkExtension networkExtension,
                                               final Network                    network,
                                               final AttributeDescription       distanceDescription,
                                               final AttributeDescription       longitudeDescription,
@@ -646,7 +657,7 @@ public class Main
         networkExtension.visitEdges(network,
                                     edge -> { try
                                               {
-                                                  final List<List<Object>> values = networkExtension.getAttributes(Arrays.asList(edge.getFrom(), edge.getTo()),
+                                                  final List<List<Object>> values = networkExtension.getNodeAttributes(Arrays.asList(edge.getFrom(), edge.getTo()),
                                                                                                                    longitudeDescription,
                                                                                                                    latitudeDescription);
 
@@ -658,7 +669,7 @@ public class Main
 
                                                   final double distance = Math.sqrt(latitude*latitude + longitude*longitude);
 
-                                                  networkExtension.updateAttributes(edge,
+                                                  networkExtension.updateEdgeAttributes(edge,
                                                                                     Arrays.asList(distance),
                                                                                     distanceDescription);
                                               }
@@ -670,12 +681,11 @@ public class Main
                                             });
     }
 
-
     /**
      * Puts a file in the Triangle utility node format
      * (https://www.cs.cmu.edu/~quake/triangle.node.html) into a network
      */
-    private static void loadNodeAttributes(final GeoPackageNetworkExtension2 networkExtension,
+    private static void loadNodeAttributes(final GeoPackageNetworkExtension networkExtension,
                                            final File                        triangleFormatNodes,
                                            final Network                     network,
                                            final AttributeDescription...     attributeDescriptions) throws SQLException, IOException
@@ -700,7 +710,7 @@ public class Main
     /**
      * Takes nodes in text file and adds them to
      */
-    private static void loadNodeAttributes2(final GeoPackageNetworkExtension2 networkExtension,
+    private static void loadNodeAttributes2(final GeoPackageNetworkExtension networkExtension,
     		                                final File nodes,
                                             final Network network,
                                             final AttributeDescription... attributeDescriptions) throws SQLException, IOException
@@ -723,7 +733,7 @@ public class Main
         }
     }
 
-    private static void loadEdges(final GeoPackageNetworkExtension2 networkExtension, final File triangleFormatEdges, final Network network) throws SQLException, IOException
+    private static void loadEdges(final GeoPackageNetworkExtension networkExtension, final File triangleFormatEdges, final Network network) throws SQLException, IOException
     {
         final Function<String, Pair<Integer, Integer>> lineToPair = line -> { final String[] pieces = line.trim().split("\\s+");
 
@@ -757,10 +767,10 @@ public class Main
         }
     }
 
-    private static void loadAttributedEdges(final GeoPackageNetworkExtension2 networkExtension,
-                                            final ResultSet rs,
-                                            final Network network,
-                                            final List<AttributeDescription> attributeDescriptions) throws SQLException
+    private static void loadAttributedEdges(final GeoPackageNetworkExtension networkExtension,
+                                            final ResultSet                  rs,
+                                            final Network                    network,
+                                            final AttributeDescription...    attributeDescriptions) throws SQLException
     {
         final List<Pair<Pair<Integer, Integer>, List<Object>>> edges = new ArrayList<Pair<Pair<Integer, Integer>, List<Object>>>();
 
@@ -773,7 +783,7 @@ public class Main
                                                      (Object)rs.getDouble(5)))); // pandolf cost
         }
 
-        networkExtension.addAttributedEdges(attributeDescriptions, edges);
+        networkExtension.addAttributedEdges(edges, attributeDescriptions);
     }
 
 //    private String firstLine(final File file) throws IOException
