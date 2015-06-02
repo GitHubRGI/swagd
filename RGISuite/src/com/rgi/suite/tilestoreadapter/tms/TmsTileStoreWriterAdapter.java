@@ -165,11 +165,34 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
     public void removeStore() throws TileStoreException
     {
         final File newDirectory = new File(this.directory.getText());
-
-        if(newDirectory.delete() == false)
+        if(deleteDirectory(newDirectory) == false)
         {
             throw new TileStoreException(String.format("Unable to remove directory '%s'",
                                                        newDirectory.getAbsolutePath()));
         }
+    }
+
+    /**
+     * Recursive method that deletes a non-empty directory
+     *
+     * @param directory the directory to be deleted
+     * @return true if the directory (including its files and sub-directories) is successfully deleted
+     */
+    private static boolean deleteDirectory(final File directory)
+    {
+    	final File[] files = directory.listFiles();
+    	boolean delete = true;
+    	for(final File file : files)
+    	{
+    		if(file.isDirectory())
+    		{
+    			delete = delete && deleteDirectory(file);
+    		}
+    		else
+    		{
+    			delete = delete && file.delete();
+    		}
+    	}
+    	return delete && directory.delete();
     }
 }
