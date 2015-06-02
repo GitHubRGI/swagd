@@ -41,23 +41,24 @@ public class Main
     private static final File nodeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
     private static final File edgeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
     private static final File dataFile       = new File("F:/Routing Test Data/mwtc_pandolf.sqlite");
-    private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt"); // nodes file for usma_pandolf.gpkg
-    //private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt");
+    private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt"); // nodes file for usma_pandolf.sqlite
+    //private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt"); // nodes file for mwtc_pandolf.sqlite
     private static final File geoPackageFile2 = new File("test2.gpkg");
     private static final File geoPackageFile3 = new File("test3.gpkg");
 
     public static void main(final String[] args)
     {
         //runRoute2(1000);
-        runRoute2(geoPackageFile2, 100);
+        //runRoute2(geoPackageFile2, 100);
 
         //createGpkg();
 
         //runRoute();
+        //runRoute2(geoPackageFile3, 100, 169028);
     }
 
 
-    private static void runRoute2(final File geoPackage, final int routes)
+    private static void runRoute2(final File geoPackage, final int routes, final int numNodes)
     {
         final Random rand = new Random(123456789);
         try(final GeoPackage gpkg = new GeoPackage(geoPackage, OpenMode.Open))
@@ -72,13 +73,13 @@ public class Main
 
             final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network, "length", AttributedType.Edge);
 
-            final int[] start = rand.ints(routes, 0, 105248).toArray();
-            final int[] end = rand.ints(routes, 0, 105248).toArray();
+            final int[] start = rand.ints(routes, 0, numNodes).toArray();
+            final int[] end = rand.ints(routes, 0, numNodes).toArray();
             int startNode;
-			int endNode;
+            int endNode;
             double sum = 0;
 
-            for (int i = 0; i < routes; i++)
+            for(int i = 0; i < routes; i++)
             {
                 startNode = start[i];
                 endNode = end[i];
@@ -235,7 +236,7 @@ public class Main
     }
 
     @SuppressWarnings("hiding")
-	private static void createGpkg2(final File geoPackageFile, final File dataFile, final File nodes) throws SQLException, ClassNotFoundException
+    private static void createGpkg2(final File geoPackageFile, final File dataFile, final File nodes) throws SQLException, ClassNotFoundException
     {
         Class.forName("org.sqlite.JDBC");   // Register the driver
 
@@ -245,6 +246,7 @@ public class Main
             {
                 geoPackageFile.delete();
             }
+
             try (final GeoPackage gpkg = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Create))
             {
             	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -321,9 +323,9 @@ public class Main
 
             }
             catch (ConformanceException | IOException | BadImplementationException e)
-    		{
-    			e.printStackTrace();
-    		}
+            {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -729,7 +731,7 @@ public class Main
                                                                          .map(lineToPair))
         {
             networkExtension.addNodes(pairs::iterator,
-            		                  attributeDescriptions);
+                                      attributeDescriptions);
         }
     }
 
