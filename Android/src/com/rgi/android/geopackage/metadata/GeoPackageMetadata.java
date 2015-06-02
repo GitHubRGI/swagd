@@ -36,8 +36,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.activation.MimeType;
-
 import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
 import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
@@ -93,10 +91,10 @@ public class GeoPackageMetadata
      *             object is in auto-commit mode, or if the method getMetadata()
      *             throws or other various SQLExceptions occur
      */
-    public Metadata addMetadata(final Scope    scope,
-                                final URI      standardUri,
-                                final MimeType mimeType,
-                                final String   metadata) throws SQLException
+    public Metadata addMetadata(final Scope  scope,
+                                final URI    standardUri,
+                                final String mimeType,
+                                final String metadata) throws SQLException
     {
         if(scope == null)
         {
@@ -145,7 +143,7 @@ public class GeoPackageMetadata
             {
                 preparedStatement.setString(1, scope.toString());
                 preparedStatement.setString(2, standardUri.toString());
-                preparedStatement.setString(3, mimeType.toString());
+                preparedStatement.setString(3, mimeType);
                 preparedStatement.setString(4, metadata);
 
                 preparedStatement.executeUpdate();

@@ -34,8 +34,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.activation.MimeType;
-
 import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
 import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
 import com.rgi.android.geopackage.core.Content;
@@ -102,13 +100,13 @@ public class GeoPackageSchema
      *             to insert values into the Data Columns Table along with other
      *             various SQLExceptions
      */
-    public DataColumn addDataColumn(final Content  table,
-                                    final String   columnName,
-                                    final String   name,
-                                    final String   title,
-                                    final String   description,
-                                    final MimeType mimeType,
-                                    final String   constraintName) throws SQLException
+    public DataColumn addDataColumn(final Content table,
+                                    final String  columnName,
+                                    final String  name,
+                                    final String  title,
+                                    final String  description,
+                                    final String  mimeType,
+                                    final String  constraintName) throws SQLException
     {
         if(table == null)
         {
@@ -152,7 +150,7 @@ public class GeoPackageSchema
                 preparedStatement.setString(3, name);
                 preparedStatement.setString(4, title);
                 preparedStatement.setString(5, description);
-                preparedStatement.setObject(6, mimeType.toString());
+                preparedStatement.setObject(6, mimeType);
                 preparedStatement.setObject(7, constraintName);
 
                 preparedStatement.executeUpdate();
@@ -167,7 +165,7 @@ public class GeoPackageSchema
                                                          name,
                                                          title,
                                                          description,
-                                                         mimeType.toString(),
+                                                         mimeType,
                                                          constraintName);
             this.databaseConnection.commit();
 

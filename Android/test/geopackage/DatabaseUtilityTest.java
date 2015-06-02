@@ -30,13 +30,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Random;
-
-import javax.swing.filechooser.FileSystemView;
 
 import org.junit.Test;
 
@@ -49,8 +45,6 @@ import com.rgi.android.geopackage.utility.DatabaseUtility;
 @SuppressWarnings("static-method")
 public class DatabaseUtilityTest
 {
-    private final Random randomGenerator = new Random();
-
     /**
      * Tests if the DatabaseUtility will return the expected application Id.
      *
@@ -63,9 +57,9 @@ public class DatabaseUtilityTest
     @Test
     public void getApplicationID() throws SQLException, Exception
     {
-        final File testFile = this.getRandomFile(4);
+        final File testFile = TestUtility.getRandomFile(4);
         testFile.createNewFile();
-        Connection con = this.getConnection(testFile.getAbsolutePath());
+        final Connection con = TestUtility.getConnection(testFile);
         try
         {
             final int appId = DatabaseUtility.getApplicationId(con);
@@ -74,7 +68,7 @@ public class DatabaseUtilityTest
         finally
         {
             con.close();
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -92,9 +86,9 @@ public class DatabaseUtilityTest
     @Test
     public void setApplicationID() throws SQLException, Exception
     {
-        final File testFile = this.getRandomFile(4);
+        final File testFile = TestUtility.getRandomFile(4);
         testFile.createNewFile();
-        Connection con = this.getConnection(testFile.getAbsolutePath());
+        final Connection con = TestUtility.getConnection(testFile);
         try
         {
             DatabaseUtility.setApplicationId(con, 12345);
@@ -102,7 +96,8 @@ public class DatabaseUtilityTest
         }
         finally
         {
-            this.deleteFile(testFile);
+            con.close();
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -114,9 +109,9 @@ public class DatabaseUtilityTest
     @Test
     public void databaseUtilitySetPragmaForiegnKeys() throws Exception
     {
-        final File testFile = this.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile(5);
         testFile.createNewFile();
-        Connection con = this.getConnection(testFile.getAbsolutePath());
+        final Connection con = TestUtility.getConnection(testFile);
 
         try
         {
@@ -124,11 +119,11 @@ public class DatabaseUtilityTest
             DatabaseUtility.setPragmaForeignKeys(con, false);
             //pragma the database
             final String query = "PRAGMA foreign_keys;";
-            Statement stmt     = con.createStatement();
+            final Statement stmt     = con.createStatement();
 
             try
             {
-                ResultSet fkPragma = stmt.executeQuery(query);
+                final ResultSet fkPragma = stmt.executeQuery(query);
 
                 try
                 {
@@ -150,7 +145,7 @@ public class DatabaseUtilityTest
         finally
         {
             con.close();
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -163,9 +158,9 @@ public class DatabaseUtilityTest
     @Test
     public void databaseUtilitySetPragmaForiegnKeys2() throws Exception
     {
-        final File testFile = this.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile(5);
         testFile.createNewFile();
-        Connection con = this.getConnection(testFile.getAbsolutePath());
+        final Connection con = TestUtility.getConnection(testFile);
 
         try
         {
@@ -173,11 +168,11 @@ public class DatabaseUtilityTest
             DatabaseUtility.setPragmaForeignKeys(con, true);
             //pragma the database
             final String query = "PRAGMA foreign_keys;";
-            Statement stmt     = con.createStatement();
+            final Statement stmt     = con.createStatement();
 
             try
             {
-                ResultSet fkPragma = stmt.executeQuery(query);
+                final ResultSet fkPragma = stmt.executeQuery(query);
 
                 try
                 {
@@ -197,7 +192,7 @@ public class DatabaseUtilityTest
         finally
         {
             con.close();
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -211,9 +206,9 @@ public class DatabaseUtilityTest
     @Test
     public void databaseUtilityTableorViewExists() throws Exception
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile(12);
         testFile.createNewFile();
-        Connection con  = this.getConnection(testFile.getAbsolutePath());
+        final Connection con  = TestUtility.getConnection(testFile);
 
         try
         {
@@ -223,7 +218,7 @@ public class DatabaseUtilityTest
         finally
         {
             con.close();
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -237,11 +232,11 @@ public class DatabaseUtilityTest
     @Test
     public void databaseUtilityTableorViewExists2() throws Exception
     {
-        final File testFile = this.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile(3);
         testFile.createNewFile();
 
         final String tableName = "gpkg_tile_matrix";
-        Connection con  = this.getConnection(testFile.getAbsolutePath());
+        final Connection con  = TestUtility.getConnection(testFile);
 
         try
         {
@@ -251,7 +246,7 @@ public class DatabaseUtilityTest
         finally
         {
             con.close();
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -265,9 +260,9 @@ public class DatabaseUtilityTest
     @Test
     public void databaseUtilityTableorViewExists3() throws Exception
     {
-        final File testFile = this.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile(3);
         testFile.createNewFile();
-        Connection con  = this.getConnection(testFile.getAbsolutePath());
+        final Connection con  = TestUtility.getConnection(testFile);
 
         try
         {
@@ -277,7 +272,7 @@ public class DatabaseUtilityTest
         finally
         {
             con.close();
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -305,10 +300,10 @@ public class DatabaseUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void databaseUtilityTableorViewExists5() throws Exception
     {
-        final File testFile = this.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile(3);
         testFile.createNewFile();
 
-        Connection con  = this.getConnection(testFile.getAbsolutePath());
+        final Connection con  = TestUtility.getConnection(testFile);
 
         try
         {
@@ -318,7 +313,7 @@ public class DatabaseUtilityTest
         }
         finally
         {
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -332,9 +327,9 @@ public class DatabaseUtilityTest
     @Test
     public void databaseUtilityTablesorViewsExists() throws Exception
     {
-        final File testFile = this.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile(3);
         testFile.createNewFile();
-        Connection con  = this.getConnection(testFile.getAbsolutePath());
+        final Connection con  = TestUtility.getConnection(testFile);
 
         try
         {
@@ -347,7 +342,7 @@ public class DatabaseUtilityTest
         finally
         {
             con.close();
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -361,9 +356,9 @@ public class DatabaseUtilityTest
     @Test
     public void databaseUtilityTablesorViewsExists2() throws Exception
     {
-        final File testFile = this.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile(3);
         testFile.createNewFile();
-        Connection con  = this.getConnection(testFile.getAbsolutePath());
+        final Connection con  = TestUtility.getConnection(testFile);
 
         try
         {
@@ -375,7 +370,7 @@ public class DatabaseUtilityTest
         finally
         {
             con.close();
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -389,9 +384,9 @@ public class DatabaseUtilityTest
     @Test
     public void databaseUtilityTablesorViewsExists3() throws Exception
     {
-        final File testFile = this.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile(3);
         testFile.createNewFile();
-        Connection con  = this.getConnection(testFile.getAbsolutePath());
+        final Connection con  = TestUtility.getConnection(testFile);
 
         try
         {
@@ -407,7 +402,7 @@ public class DatabaseUtilityTest
         finally
         {
             con.close();
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -421,9 +416,9 @@ public class DatabaseUtilityTest
     @Test(expected= IllegalArgumentException.class)
     public void getSqliteVersion() throws Exception
     {
-        final File testFile = this.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile(3);
         testFile.createNewFile();
-        Connection con  = this.getConnection(testFile.getAbsolutePath());
+        final Connection con  = TestUtility.getConnection(testFile);
 
         try
         {
@@ -433,7 +428,7 @@ public class DatabaseUtilityTest
         finally
         {
             con.close();
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -447,9 +442,9 @@ public class DatabaseUtilityTest
     @Test
     public void getSqliteVersion2() throws Exception
     {
-        final File testFile = this.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile(3);
         testFile.createNewFile();
-        Connection con  = this.getConnection(testFile.getAbsolutePath());
+        final Connection con  = TestUtility.getConnection(testFile);
 
         try
         {
@@ -462,7 +457,7 @@ public class DatabaseUtilityTest
         finally
         {
             con.close();
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -492,51 +487,13 @@ public class DatabaseUtilityTest
     @Test(expected= FileNotFoundException.class)
     public void getSqliteVersion4() throws IOException
     {
-        DatabaseUtility.getSqliteVersion(this.getRandomFile(4));
+        DatabaseUtility.getSqliteVersion(TestUtility.getRandomFile(4));
         fail("Expected an IllegalArgumentException from DatabaseUtility when gave file that does not exist to getSqliteVersion");
-    }
-
-    private Connection getConnection(final String filePath) throws Exception
-    {
-        Class.forName("org.sqlite.JDBC"); // Register the driver
-
-        return DriverManager.getConnection("jdbc:sqlite:" + filePath);
-    }
-    private File getRandomFile(final int length)
-    {
-        File testFile;
-
-        do
-        {
-            String filename = FileSystemView.getFileSystemView().getDefaultDirectory().getAbsolutePath() + "/" +  this.getRandomString(length) + ".gpkg";
-            testFile = new File(filename);
-        }
-        while (testFile.exists());
-
-        return testFile;
-    }
-    private String getRandomString(final int length)
-    {
-        final String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        final char[] text = new char[length];
-        for (int i = 0; i < length; i++)
-        {
-            text[i] = characters.charAt(this.randomGenerator.nextInt(characters.length()));
-        }
-        return new String(text);
-    }
-
-    private void deleteFile(final File testFile)
-    {
-        if(testFile.exists())
-        {
-            testFile.delete();
-        }
     }
 
     private void addTable(final Connection con, final String tableName) throws Exception
     {
-        Statement statement = con.createStatement();
+        final Statement statement = con.createStatement();
         try
         {
             statement.executeUpdate("CREATE TABLE " + tableName + " (foo INTEGER);");

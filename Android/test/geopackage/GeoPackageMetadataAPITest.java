@@ -34,11 +34,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
-
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
-import javax.swing.filechooser.FileSystemView;
 
 import org.junit.Test;
 
@@ -59,9 +54,6 @@ import com.rgi.android.geopackage.verification.ConformanceException;
 @SuppressWarnings({"static-method", "javadoc"})
 public class GeoPackageMetadataAPITest
 {
-
-    private final Random randomGenerator = new Random();
-
     /**
      * Tests if GeoPackageMetadata can add metadata
      * and verify it returns the expected values
@@ -74,17 +66,17 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void addMetadataVerify() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void addMetadataVerify() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(8);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
-            final Scope    scope       = Scope.Dataset;
-            final URI      standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType mimeType    = new MimeType("text/xml");
-            final String   metadata     = "";
+            final Scope  scope       = Scope.Dataset;
+            final URI    standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
+            final String mimeType    = "text/xml";
+            final String metadata    = "";
 
             final Metadata metadataReturned =gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
             gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
@@ -99,7 +91,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -115,16 +107,16 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataIllegalArgumentException() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void addMetadataIllegalArgumentException() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(8);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
-            final URI      standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType mimeType    = new MimeType("text/xml");
-            final String   metadata     = "";
+            final URI    standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
+            final String mimeType    = "text/xml";
+            final String metadata    = "";
 
             gpkg.metadata().addMetadata(null, standardUri, mimeType, metadata);
 
@@ -133,7 +125,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
     /**
@@ -148,16 +140,16 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataIllegalArgumentException2() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
+    public void addMetadataIllegalArgumentException2() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(18);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(18);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
-            final Scope    scope       = Scope.Dataset;
-            final MimeType mimeType    = new MimeType("text/xml");
-            final String   metadata     = "";
+            final Scope  scope    = Scope.Dataset;
+            final String mimeType = "text/xml";
+            final String metadata = "";
 
             gpkg.metadata().addMetadata(scope, null, mimeType, metadata);
 
@@ -166,7 +158,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
     /**
@@ -183,8 +175,8 @@ public class GeoPackageMetadataAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataIllegalArgumentException3() throws ClassNotFoundException, IOException, SQLException, ConformanceException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(18);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(18);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -199,7 +191,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -215,16 +207,16 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataIllegalArgumentException4() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void addMetadataIllegalArgumentException4() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(18);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(18);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
-            final Scope    scope       = Scope.Dataset;
-            final URI      standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType mimeType    = new MimeType("text/xml");
+            final Scope  scope       = Scope.Dataset;
+            final URI    standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
+            final String mimeType    = "text/xml";
 
             gpkg.metadata().addMetadata(scope, standardUri, mimeType, null);
 
@@ -233,7 +225,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -250,10 +242,10 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void addMetadataReference() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReference() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(12);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -263,7 +255,7 @@ public class GeoPackageMetadataAPITest
             final Integer        rowIdentifier    = null;
             final Scope          scope            = Scope.Attribute;
             final URI            standardUri      = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType       mimeType         = new MimeType("text/xml");
+            final String         mimeType         = "text/xml";
             final String         metadata         = "";
             final Metadata       fileIdentifier   = gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
             final Metadata       parentIdentifier = gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
@@ -284,7 +276,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -301,10 +293,10 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReferenceIllegalArgumentException() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(8);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -314,7 +306,7 @@ public class GeoPackageMetadataAPITest
             final Integer        rowIdentifier    = null;
             final Scope          scope            = Scope.Attribute;
             final URI            standardUri      = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType       mimeType         = new MimeType("text/xml");
+            final String         mimeType         = "text/xml";
             final String         metadata         = "";
             final Metadata       fileIdentifier   = gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
             final Metadata       parentIdentifier = null;
@@ -325,7 +317,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -344,10 +336,10 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException2() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReferenceIllegalArgumentException2() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(8);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -357,7 +349,7 @@ public class GeoPackageMetadataAPITest
             final Integer        rowIdentifier    = null;
             final Scope          scope            = Scope.Attribute;
             final URI            standardUri      = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType       mimeType         = new MimeType("text/xml");
+            final String         mimeType         = "text/xml";
             final String         metadata         = "";
             final Metadata       fileIdentifier   = gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
             final Metadata       parentIdentifier = null;
@@ -369,7 +361,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -387,10 +379,10 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException3() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReferenceIllegalArgumentException3() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(8);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -400,7 +392,7 @@ public class GeoPackageMetadataAPITest
             final Integer        rowIdentifier    = null;
             final Scope          scope            = Scope.Attribute;
             final URI            standardUri      = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType       mimeType         = new MimeType("text/xml");
+            final String         mimeType         = "text/xml";
             final String         metadata         = "";
             final Metadata       fileIdentifier   = gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
             final Metadata       parentIdentifier = null;
@@ -412,7 +404,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -430,10 +422,10 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException4() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReferenceIllegalArgumentException4() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(8);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -443,7 +435,7 @@ public class GeoPackageMetadataAPITest
             final Integer        rowIdentifier    = null;
             final Scope          scope            = Scope.Attribute;
             final URI            standardUri      = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType       mimeType         = new MimeType("text/xml");
+            final String         mimeType         = "text/xml";
             final String         metadata         = "";
             final Metadata       fileIdentifier   = gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
             final Metadata       parentIdentifier = null;
@@ -455,7 +447,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -473,10 +465,10 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException5() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReferenceIllegalArgumentException5() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(8);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -486,7 +478,7 @@ public class GeoPackageMetadataAPITest
             final Integer        rowIdentifier    = 1;
             final Scope          scope            = Scope.Attribute;
             final URI            standardUri      = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType       mimeType         = new MimeType("text/xml");
+            final String         mimeType         = "text/xml";
             final String         metadata         = "";
             final Metadata       fileIdentifier   = gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
             final Metadata       parentIdentifier = null;
@@ -498,7 +490,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -516,10 +508,10 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void addMetadataReferenceIllegalArgumentException6() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void addMetadataReferenceIllegalArgumentException6() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(8);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -529,7 +521,7 @@ public class GeoPackageMetadataAPITest
             final Integer        rowIdentifier    = null;
             final Scope          scope            = Scope.Attribute;
             final URI            standardUri      = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType       mimeType         = new MimeType("text/xml");
+            final String         mimeType         = "text/xml";
             final String         metadata         = "";
             final Metadata       fileIdentifier   = gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
             final Metadata       parentIdentifier = null;
@@ -541,7 +533,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -561,8 +553,8 @@ public class GeoPackageMetadataAPITest
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataReferenceIllegalArgumentException7() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(8);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(8);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -580,7 +572,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -597,10 +589,10 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void getMetadata() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void getMetadata() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(12);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -611,14 +603,14 @@ public class GeoPackageMetadataAPITest
 
             final Scope    scope       = Scope.Attribute;
             final URI      standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType mimeType    = new MimeType("text/xml");
+            final String   mimeType    = "text/xml";
             final String   metadata    = "";
 
             final Metadata metadata1   = gpkg.metadata().addMetadata(scope,standardUri, mimeType, metadata);
 
             final Scope    scope2          = Scope.Catalog;
             final URI      standardUri2    = new URI("http://www.geopackage.org/spec");
-            final MimeType mimeType2       = new MimeType("image/png");
+            final String   mimeType2       = "image/png";
             final String   strMetadata2    = "secondOne";
 
             final Metadata metadata2   = gpkg.metadata().addMetadata(scope2, standardUri2, mimeType2, strMetadata2);
@@ -629,7 +621,7 @@ public class GeoPackageMetadataAPITest
 
             for(final Metadata returned : metadataReturned)
             {
-                boolean metadataMatches = FunctionalUtility.anyMatch(metadataExpected,
+                final boolean metadataMatches = FunctionalUtility.anyMatch(metadataExpected,
                                                                      new Predicate<Metadata>(){
                                                                                                @Override
                                                                                             public boolean apply(final Metadata expected)
@@ -645,7 +637,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -662,10 +654,10 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void getMetadataWithIdentifier() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void getMetadataWithIdentifier() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(6);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(6);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -674,14 +666,14 @@ public class GeoPackageMetadataAPITest
 
             final Scope    scope       = Scope.Attribute;
             final URI      standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType mimeType    = new MimeType("text/xml");
+            final String   mimeType    = "text/xml";
             final String   metadata    = "";
 
             final Metadata metadataExpected = gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
 
             final Scope    scope2          = Scope.Catalog;
             final URI      standardUri2    = new URI("http://www.geopackage.org/spec");
-            final MimeType mimeType2       = new MimeType("image/png");
+            final String   mimeType2       = "image/png";
             final String   strMetadata2    = "secondOne";
 
             gpkg.metadata().addMetadata(scope2, standardUri2, mimeType2, strMetadata2); //another metadata not expected
@@ -695,7 +687,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -713,17 +705,17 @@ public class GeoPackageMetadataAPITest
      * @throws URISyntaxException
      */
     @Test
-    public void getMetadataWithIdentifier2() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException, URISyntaxException
+    public void getMetadataWithIdentifier2() throws ClassNotFoundException, IOException, SQLException, ConformanceException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(7);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(7);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
 
             final Scope    scope       = Scope.Attribute;
             final URI      standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType mimeType    = new MimeType("text/xml");
+            final String   mimeType    = "text/xml";
             final String   metadata    = "";
 
             gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);//this will create metadata tables
@@ -734,7 +726,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
 
     }
@@ -752,10 +744,10 @@ public class GeoPackageMetadataAPITest
      * @throws MimeTypeParseException
      */
     @Test
-    public void getMetadatReferences() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
+    public void getMetadatReferences() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(12);
-        GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
+        final File testFile = TestUtility.getRandomFile(12);
+        final GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create);
 
         try
         {
@@ -769,7 +761,7 @@ public class GeoPackageMetadataAPITest
             final Integer        rowIdentifier    = null;
             final Scope          scope            = Scope.Attribute;
             final URI            standardUri      = new URI("http://www.geopackage.org/spec/#metadata_scopes");
-            final MimeType       mimeType         = new MimeType("text/xml");
+            final String         mimeType         = "text/xml";
             final String         metadata         = "";
             final Metadata       fileIdentifier   = gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
             final Metadata       parentIdentifier =  null;
@@ -782,7 +774,7 @@ public class GeoPackageMetadataAPITest
             final Integer        rowIdentifier2    =  null;
             final Scope          scope2            = Scope.Catalog;
             final URI            standardUri2      = new URI("http://www.geopackage.org/spec");
-            final MimeType       mimeType2         = new MimeType("image/png");
+            final String         mimeType2         = "image/png";
             final String         metadata2         ="SecondMetadata";
             final Metadata       fileIdentifier2   = gpkg.metadata().addMetadata(scope2, standardUri2, mimeType2, metadata2);
             final Metadata       parentIdentifier2 = null;
@@ -795,7 +787,7 @@ public class GeoPackageMetadataAPITest
 
             for(final MetadataReference returned: returnedReferences)
             {
-                boolean metadataMatches = FunctionalUtility.anyMatch(expectedReferences,
+                final boolean metadataMatches = FunctionalUtility.anyMatch(expectedReferences,
                                                                      new Predicate<MetadataReference>(){
                                                                                                            @Override
                                                                                                         public boolean apply(final MetadataReference expected)
@@ -812,7 +804,7 @@ public class GeoPackageMetadataAPITest
         finally
         {
             gpkg.close();
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -898,41 +890,4 @@ public class GeoPackageMetadataAPITest
                expected.getMetadata()   .equalsIgnoreCase(returned.getMetadata())      &&
                expected.getMimeType()   .equalsIgnoreCase(returned.getMimeType());
     }
-
-    private static void deleteFile(final File testFile)
-    {
-        if (testFile.exists())
-        {
-            if (!testFile.delete())
-            {
-                throw new RuntimeException(String.format(
-                        "Unable to delete testFile. testFile: %s", testFile));
-            }
-        }
-    }
-    private String getRanString(final int length)
-    {
-        final String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        final char[] text = new char[length];
-        for (int i = 0; i < length; i++)
-        {
-            text[i] = characters.charAt(this.randomGenerator.nextInt(characters.length()));
-        }
-        return new String(text);
-    }
-
-    private File getRandomFile(final int length)
-    {
-        File testFile;
-
-        do
-        {
-            String filename = FileSystemView.getFileSystemView().getDefaultDirectory().getAbsolutePath() + "/" +  this.getRanString(length) + ".gpkg";
-            testFile = new File(filename);
-        }
-        while (testFile.exists());
-
-        return testFile;
-    }
-
 }
