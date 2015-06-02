@@ -38,8 +38,10 @@ import com.rgi.geopackage.verification.VerificationLevel;
 public class Main
 {
     private static final File geoPackageFile = new File("test.gpkg");
-    private static final File nodeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
-    private static final File edgeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
+//    private static final File nodeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
+//    private static final File edgeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
+    private static final File nodeFile       = new File("F:/contour.1/contour.1/contour.1.node");
+    private static final File edgeFile       = new File("F:/contour.1/contour.1/contour.1.edge");
     private static final File dataFile       = new File("F:/Routing Test Data/mwtc_pandolf.sqlite");
     private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt"); // nodes file for usma_pandolf.gpkg
     //private static final File nodes          = new File("F:/Routing Test Data/MWTC_Nodes.txt");
@@ -48,8 +50,7 @@ public class Main
 
     public static void main(final String[] args)
     {
-        //runRoute2(1000);
-        //runRoute2(geoPackageFile2, 100);
+        createGpkg();
     }
 
 
@@ -66,10 +67,10 @@ public class Main
 
             final AttributeDescription nodeLongitudeAttibute = networkExtension.getAttributeDescription(network,"longitude", AttributedType.Node);
 
-            final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network, "length", AttributedType.Edge);
+            final AttributeDescription distanceAttribute = networkExtension.getAttributeDescription(network, "distance", AttributedType.Edge);
 
-            final int[] start = rand.ints(routes, 0, 105248).toArray();
-            final int[] end = rand.ints(routes, 0, 105248).toArray();
+            final int[] start = rand.ints(routes, 0, 47181).toArray();
+            final int[] end = rand.ints(routes, 0, 47181).toArray();
             int startNode;
 			int endNode;
             double sum = 0;
