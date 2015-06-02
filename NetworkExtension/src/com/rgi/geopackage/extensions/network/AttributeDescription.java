@@ -32,6 +32,8 @@ public class AttributeDescription
     /**
      * Constructor
      *
+     * @param identifier
+     *             Unique identifier
      * @param networkTableName
      *             Name of the network table that the attribute corresponds to
      * @param name
@@ -46,13 +48,15 @@ public class AttributeDescription
      *             Indicator of what's being described
      *
      */
-    public AttributeDescription(final String         networkTableName,
+    public AttributeDescription(final int            identifier,
+                                final String         networkTableName,
                                 final String         name,
                                 final String         units,
                                 final DataType       dataType,
                                 final String         description,
                                 final AttributedType attributedType)
     {
+        this.identifier       = identifier;
         this.networkTableName = networkTableName;
         this.name             = name;
         this.units            = units;
@@ -64,13 +68,22 @@ public class AttributeDescription
     @Override
     public String toString()
     {
-        return String.format("(%s, %s, %s, %s, %s, %s)",
+        return String.format("%d (%s, %s, %s, %s, %s, %s)",
+                             this.identifier,
                              this.networkTableName,
                              this.name,
                              this.units,
                              this.dataType.toString(),
                              this.description,
                              this.attributedType.toString());
+    }
+
+    /**
+     * @return the identifier
+     */
+    public int getIdentifier()
+    {
+        return this.identifier;
     }
 
     /**
@@ -156,6 +169,7 @@ public class AttributeDescription
         }
     }
 
+    private final int            identifier;
     private final String         networkTableName;
     private final String         name;
     private final String         units;

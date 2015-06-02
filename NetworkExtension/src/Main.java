@@ -156,14 +156,14 @@ public class Main
 //                                                    network,
 //                                                    startNode,
 //                                                    endNode,
-//                                                    (ThrowingFunction<Edge, Double>)(edge) -> { if(costCache.containsKey(edge.getIdentifier()))
-//                                                                                                {
-//                                                                                                    return costCache.get(edge.getIdentifier());
-//                                                                                                }
+//                                                    (ThrowingFunction<Edge, Double>)(edge) -> { //if(costCache.containsKey(edge.getIdentifier()))
+//                                                                                                //{
+//                                                                                                //    return costCache.get(edge.getIdentifier());
+//                                                                                                //}
 //
-//                                                                                                final double cost = networkExtension.getAttribute(edge.getIdentifier(), distanceAttribute);
+//                                                                                                final double cost = networkExtension.getAttribute(edge, distanceAttribute);
 //
-//                                                                                                costCache.put(edge.getIdentifier(), cost);
+//                                                                                                //costCache.put(edge.getIdentifier(), cost);
 //
 //                                                                                                return cost;
 //                                                                                              });

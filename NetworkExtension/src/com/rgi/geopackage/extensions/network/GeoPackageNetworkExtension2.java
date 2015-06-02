@@ -678,7 +678,8 @@ public class GeoPackageNetworkExtension2 extends ExtensionImplementation
             throw new IllegalArgumentException("Attributed type may not be null");
         }
 
-        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s, %s FROM %s WHERE %s = ? AND %s = ?;",
+        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s, %s, %s FROM %s WHERE %s = ? AND %s = ?;",
+                                                               "id",
                                                                "name",
                                                                "units",
                                                                "data_type",
@@ -695,11 +696,12 @@ public class GeoPackageNetworkExtension2 extends ExtensionImplementation
             try(final ResultSet resultSet = preparedStatement.executeQuery())
             {
                 return JdbcUtility.map(preparedStatement.executeQuery(),
-                                       results -> new AttributeDescription(network.getTableName(),                 // network table name
-                                                                           results.getString(1),                   // attribute name
-                                                                           results.getString(2),                   // attribute units
-                                                                           DataType.valueOf(results.getString(3)), // attribute data type
-                                                                           results.getString(4),                   // attribute description
+                                       results -> new AttributeDescription(results.getInt(1),                      // attribute unique identifier
+                                                                           network.getTableName(),                 // network table name
+                                                                           results.getString(2),                   // attribute name
+                                                                           results.getString(3),                   // attribute units
+                                                                           DataType.valueOf(results.getString(4)), // attribute data type
+                                                                           results.getString(5),                   // attribute description
                                                                            attributedType));                       // attributed type
             }
 
@@ -740,7 +742,8 @@ public class GeoPackageNetworkExtension2 extends ExtensionImplementation
             throw new IllegalArgumentException("Attribute name may not be null");
         }
 
-        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s FROM %s WHERE %s = ? AND %s = ? AND %s = ? LIMIT 1;",
+        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s, %s FROM %s WHERE %s = ? AND %s = ? AND %s = ? LIMIT 1;",
+                                                               "id",
                                                                "units",
                                                                "data_type",
                                                                "description",
@@ -758,11 +761,12 @@ public class GeoPackageNetworkExtension2 extends ExtensionImplementation
             try(final ResultSet resultSet = preparedStatement.executeQuery())
             {
                 return JdbcUtility.mapOne(resultSet,
-                                          results -> new AttributeDescription(network.getTableName(),                 // network table name
+                                          results -> new AttributeDescription(results.getInt(1),                      // attribute unique identifier
+                                                                              network.getTableName(),                 // network table name
                                                                               name,                                   // attribute name
-                                                                              results.getString(1),                   // attribute units
-                                                                              DataType.valueOf(results.getString(2)), // attribute data type
-                                                                              results.getString(3),                   // attribute description
+                                                                              results.getString(2),                   // attribute units
+                                                                              DataType.valueOf(results.getString(3)), // attribute data type
+                                                                              results.getString(4),                   // attribute description
                                                                               attributedType));                       // attributed type
             }
 
@@ -837,19 +841,53 @@ public class GeoPackageNetworkExtension2 extends ExtensionImplementation
                                            name,
                                            dataType.toString().toUpperCase());
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(alter))
+        final String insert = String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?)",
+                                            AttributeDescriptionTableName,
+                                            "table_name",
+                                            "name",
+                                            "units",
+                                            "data_type",
+                                            "description",
+                                            "attributed_type");
+
+        try
         {
-            preparedStatement.executeUpdate();
+            int attributeDescriptionIdentifier = -1;
+
+            try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS))
+            {
+                preparedStatement.setString(1, network.getTableName());
+                preparedStatement.setString(2, name);
+                preparedStatement.setString(3, units);
+                preparedStatement.setString(4, dataType.toString());
+                preparedStatement.setString(5, description);
+                preparedStatement.setString(6, attributedType.toString());
+
+                preparedStatement.executeUpdate();
+
+                attributeDescriptionIdentifier = preparedStatement.getGeneratedKeys().getInt(1);
+            }
+
+            try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(alter))
+            {
+                preparedStatement.executeUpdate();
+            }
+
+            this.databaseConnection.commit();
+
+            return new AttributeDescription(attributeDescriptionIdentifier,
+                                            network.getTableName(),
+                                            name,
+                                            units,
+                                            dataType,
+                                            description,
+                                            attributedType);
         }
-
-        this.databaseConnection.commit();
-
-        return new AttributeDescription(network.getTableName(),
-                                        name,
-                                        units,
-                                        dataType,
-                                        description,
-                                        attributedType);
+        catch(final Exception ex)
+        {
+            this.databaseConnection.rollback();
+            throw ex;
+        }
     }
 
     /**
