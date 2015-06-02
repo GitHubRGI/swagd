@@ -41,7 +41,7 @@ public class CoordinateReferenceSystemTest
      * when a parameter is null or empty
      */
     @SuppressWarnings("unused")
-    @Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException()
     {
         new CoordinateReferenceSystem(null, 123);
@@ -53,11 +53,36 @@ public class CoordinateReferenceSystemTest
      * when a parameter is null or empty
      */
     @SuppressWarnings("unused")
-    @Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException2()
     {
         new CoordinateReferenceSystem("", 123);
         fail("Expected CoordinateReferenceSystem to throw an IllegalArgumentException when given a null or empty paramter");
+    }
+
+    /**
+     * Tests if CoordinateReferenceSystem throws an IllegalArgumentException
+     * when a parameter is null or empty
+     */
+    @SuppressWarnings("unused")
+	@Test (expected = IllegalArgumentException.class)
+    public void illegalArgumentException3()
+    {
+        new CoordinateReferenceSystem("", "test", 123);
+        fail("Expected CoordinateReferenceSystem to throw an IllegalArgumentException when given a null or empty paramter");
+    }
+
+    /**
+     * Tests that toString returns the correct string
+     */
+    @Test
+    public void testToString()
+    {
+        final String name = "bob";
+        final String authority = "RGI";
+        final int id = 123;
+        final CoordinateReferenceSystem crs = new CoordinateReferenceSystem(name, authority, id);
+        assertTrue("CoordinateReferenceSysemt method toString() did not return expected string",crs.toString().equals(String.format("%s:%d - %s", authority, id, name)));
     }
 
     /**
@@ -145,5 +170,51 @@ public class CoordinateReferenceSystemTest
         assertTrue(String.format("The hashcode method returned same value when it should have returned different hashCodes. Crs's hashCodes Compared: %d, %d.",
                                    crs1.hashCode(), crs2.hashCode()),
                      crs1.hashCode() != crs2.hashCode());
+    }
+
+    /**
+     * Tests compareTo throws a NullPointerException when
+     * given an null parameter
+     */
+    @Test (expected = NullPointerException.class)
+    public void testCompareTo1()
+    {
+        final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
+        final CoordinateReferenceSystem crs2 = null;
+        crs1.compareTo(crs2);
+        fail("Expected CoordinateReferenceSystem method compareTo to throw a NullPointerException when given a null parameter");
+    }
+
+    /**
+     * Tests compareTo when the authorities are different
+     */
+    @Test
+    public void testCompareTo2()
+    {
+        final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
+        final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem("Different authority", 123);
+        assertTrue("Expected CoordinateReferenceSystem method compareTo to return a nonzero integer.", crs1.compareTo(crs2) != 0);
+    }
+
+    /**
+     * Tests compareTo when the identifiers are different
+     */
+    @Test
+    public void testCompareTo3()
+    {
+        final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
+        final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem("Authority", 123);
+        assertTrue("Expected CoordinateReferenceSystem method compareTo to return a nonzero integer.", crs1.compareTo(crs2) != 0);
+    }
+
+    /**
+     * Tests compareTo when the CoordinateReferenceSystems are the same
+     */
+    @Test
+    public void testCompareTo4()
+    {
+        final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
+        final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem("Authority", 555);
+        assertTrue("Expected CoordinateReferenceSystem method comparTo to return a nonzero integer.", crs1.compareTo(crs2) == 0);
     }
 }

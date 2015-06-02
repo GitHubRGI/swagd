@@ -247,24 +247,24 @@ public class DatabaseUtility
 
     /**
      * @param connection
-     * 			  connection to the database
+     *               connection to the database
      * @throws SQLException
-     * 		  	  throws if various SQLExceptions occur
+     *                 throws if various SQLExceptions occur
      */
     public static void setPragmaJournalModeMemory(final Connection connection) throws SQLException
     {
-    	DatabaseUtility.verify(connection);
+        DatabaseUtility.verify(connection);
 
-    	final Statement statement = connection.createStatement();
+        final Statement statement = connection.createStatement();
 
-    	try
-    	{
-    		statement.execute(String.format("PRAGMA journal_mode = MEMORY;"));
-    	}
-    	finally
-    	{
-    	    statement.close();
-    	}
+        try
+        {
+            statement.execute(String.format("PRAGMA journal_mode = MEMORY;"));
+        }
+        finally
+        {
+            statement.close();
+        }
     }
 
     /**

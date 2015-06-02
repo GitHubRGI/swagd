@@ -46,6 +46,7 @@ import com.rgi.android.common.tile.scheme.TileMatrixDimensions;
 
 /**
  * @author Jenifer Cochran
+ * @author Mary Carome
  *
  */
 @SuppressWarnings({"javadoc"})
@@ -171,6 +172,7 @@ public class EllipsoidalMercatorCrsProfileTest
         this.ellipsoidalCrs.crsToTileCoordinate(new CrsCoordinate(0.0,0.0, this.ellipsoidalCrs.getCoordinateReferenceSystem()), null, new TileMatrixDimensions(10,10), TileOrigin.UpperLeft);
         fail("Expected an IllegalArgumentException when passing a null value for the Bounds");
     }
+
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException3()
     {
@@ -191,6 +193,7 @@ public class EllipsoidalMercatorCrsProfileTest
         this.ellipsoidalCrs.tileToCrsCoordinate(0, 0, null,  new TileMatrixDimensions(10,10), TileOrigin.LowerLeft);
         fail("Expected an IllegalArgumentException when passing a null value for the Bounds");
     }
+
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException6()
     {
@@ -231,7 +234,7 @@ public class EllipsoidalMercatorCrsProfileTest
     public void toGlobalGeodetic() throws FileNotFoundException
     {
         final File coordinatePointsFile = new File("EllipsoidalMercatorCoordinatePoints.csv");
-        Scanner scanner = new Scanner(coordinatePointsFile);
+        final Scanner scanner = new Scanner(coordinatePointsFile);
         try
         {
             scanner.useDelimiter("\n");
@@ -240,7 +243,7 @@ public class EllipsoidalMercatorCrsProfileTest
 
             final List<LatLongMetersYMetersX> incorrectCoordinates = new ArrayList<LatLongMetersYMetersX>();
 
-            for(LatLongMetersYMetersX coordinate: coordinatesList)
+            for(final LatLongMetersYMetersX coordinate: coordinatesList)
             {
                 if(!verifyCoordinateConversion(coordinate))
                 {
@@ -248,11 +251,11 @@ public class EllipsoidalMercatorCrsProfileTest
                 }
             }
 
-            StringBuilder incorrectCoordinate = new StringBuilder();
+            final StringBuilder incorrectCoordinate = new StringBuilder();
 
             if(!incorrectCoordinates.isEmpty())
             {
-               for(LatLongMetersYMetersX coordinate: incorrectCoordinates)
+               for(final LatLongMetersYMetersX coordinate: incorrectCoordinates)
                {
                    incorrectCoordinate.append(coordinate.toString());
                    incorrectCoordinate.append("\n");
@@ -268,6 +271,141 @@ public class EllipsoidalMercatorCrsProfileTest
         {
             scanner.close();
         }
+    }
+
+    /**
+     * Tests getTileBounds throws an IllegalArgumentException when one of the
+     * parameters is null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getTileBoundsIllegalArgumentException1()
+    {
+        final EllipsoidalMercatorCrsProfile profile = new EllipsoidalMercatorCrsProfile();
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 10);
+        final TileOrigin origin = TileOrigin.UpperRight;
+
+        profile.getTileBounds(10, 12, null, dimensions, origin);
+        fail("Expected EllipsoidalMercatorCrsProfile method getTileBounds to throw an IllegalArgumentException when passed a null parameter.");
+    }
+
+    /**
+     * Tests getTileBounds throws an IllegalArgumentException when one of the
+     * parameters is null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getTileBoundsIllegalArgumentException2()
+    {
+        final EllipsoidalMercatorCrsProfile profile = new EllipsoidalMercatorCrsProfile();
+        final BoundingBox box = new BoundingBox(0, 10, 12, 24);
+        final TileOrigin origin = TileOrigin.UpperRight;
+
+        profile.getTileBounds(10, 12, box, null, origin);
+        fail("Expected EllipsoidalMercatorCrsProfile method getTileBounds to throw an IllegalArgumentException when passed a null parameter.");
+    }
+
+    /**
+     * Tests getTileBounds throws an IllegalArgumentException when the row and
+     * column are not in the BoundingBox
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getTileBoundsIllegalArgumentException3()
+    {
+        final EllipsoidalMercatorCrsProfile profile = new EllipsoidalMercatorCrsProfile();
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 10);
+        final BoundingBox box = new BoundingBox(0, 10, 12, 24);
+        final TileOrigin origin = TileOrigin.UpperRight;
+
+        profile.getTileBounds(10, 12, box, dimensions, origin);
+        fail("Expected EllisoidalMercatorCrsProfile method getTileBounds to throw an IllegalArgumentException when row and column are not in the BoundingBox.");
+    }
+
+    /**
+     * Tests getTileBounds throws an IllegalArgumentException when the column is
+     * a negative number
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getTileBoundsIllegalArgumentException4()
+    {
+        final EllipsoidalMercatorCrsProfile profile = new EllipsoidalMercatorCrsProfile();
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 10);
+        final BoundingBox box = new BoundingBox(-20, 10, -13, 24);
+        final TileOrigin origin = TileOrigin.UpperRight;
+        final int row = 12;
+        final int col = -10;
+
+        profile.getTileBounds(col, row, box, dimensions, origin);
+        fail("Expected EllipsoidalMercatorCrsProfile method getTileBounds to throw an IllegalArgumentException when the column value is negative.");
+    }
+
+    /**
+     * Tests getTileBounds throws an IllegalArgumentException when the row is a
+     * negative number
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getTileBoundsIllegalArgumentException5()
+    {
+        final EllipsoidalMercatorCrsProfile profile = new EllipsoidalMercatorCrsProfile();
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 10);
+        final BoundingBox box = new BoundingBox(-20, 10, -13, 24);
+        final TileOrigin origin = TileOrigin.UpperRight;
+        final int row = -12;
+        final int col = 10;
+
+        profile.getTileBounds(col, row, box, dimensions, origin);
+        fail("Expected EllipsoidalMercatorCrsProfile method getTileBounds to throw an IllegalArgumentException when the row value is negative.");
+    }
+
+    /**
+     * Tests getTileBounds throws an IllegalArgumentException when the row is a
+     * negative number
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getTileBoundsIllegalArgumentException6()
+    {
+        final EllipsoidalMercatorCrsProfile profile = new EllipsoidalMercatorCrsProfile();
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 10);
+        final BoundingBox box = new BoundingBox(0, 10, 0, 10);
+
+        profile.getTileBounds(5, 5, box, dimensions, null);
+        fail("Expected EllipsoidalMercatorCrsProfile method getTileBounds to throw an IllegalArgumentException when passed a null parameter.");
+    }
+
+    /**
+     * Tests that getName returns the correct String name for the
+     * GlobalGeodeticCrsProfile
+     */
+    @Test
+    public void testGetName()
+    {
+        final EllipsoidalMercatorCrsProfile profile = new EllipsoidalMercatorCrsProfile();
+        final String name = "World Mercator";
+        assertTrue(String.format("Expected the EllipsoidalMercatorCrsProfile method getName() to return %s, but %s was returned", name, profile.getName()), profile.getName().equals(name));
+    }
+
+    /**
+     * Tests that getWellKnownText returns the correct String name for the
+     * GlobalGeodeticCrsProfile
+     */
+    @Test
+    public void testGetWellKnownText()
+    {
+        final EllipsoidalMercatorCrsProfile profile = new EllipsoidalMercatorCrsProfile();
+        final String text = "PROJCS[\"WGS 84 / World Mercator\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],PROJECTION[\"Mercator_1SP\"],PARAMETER[\"central_meridian\",0],PARAMETER[\"scale_factor\",1],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],AUTHORITY[\"EPSG\",\"3395\"],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]";
+        assertTrue(String.format("Expected the EllipsoidalMercatorCrsProfile method getWellKnownTest() to return %s, but %s was returned", text, profile.getWellKnownText()),
+                   profile.getWellKnownText().equals(text));
+    }
+
+    /**
+     * Tests that getDescription returns the correct String name for the
+     * GlobalGeodeticCrsProfile
+     */
+    @Test
+    public void testGetDescription()
+    {
+        final EllipsoidalMercatorCrsProfile profile = new EllipsoidalMercatorCrsProfile();
+        final String description = "World (Ellipsoidal) Mercator";
+        assertTrue(String.format("Expected the EllipsoidalMercatorCrsProfile method getDescription() to return %s, but %s was returned.", description, profile.getDescription()),
+                   profile.getDescription().equals(description));
     }
 
     private static boolean verifyCoordinateConversion(final LatLongMetersYMetersX coordinate)
