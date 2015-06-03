@@ -26,30 +26,40 @@ import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 @SuppressWarnings({ "javadoc", "unused" })
-public class Main
+public class GenerateGeoPackages
 {
-//    private static final File nodeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
-//    private static final File edgeFile       = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
+	//Files for geoPackage1
+    private static final File geoPackageFile  = new File("test.gpkg");
     private static final File nodeFile        = new File("F:/contour.1/contour.1/contour.1.node");
     private static final File edgeFile        = new File("F:/contour.1/contour.1/contour.1.edge");
-    private static final File dataFile2       = new File("F:/Routing Test Data/usma_pandolf.sqlite");
-    private static final File dataFile3       = new File ("F:/Routing Test Data/usma_pandolf.sqlite");
-    private static final File nodes2          = new File("F:/Routing Test Data/Nodes.txt");     // nodes file for usma_pandolf.sqlite
-    private static final File nodes3          = new File("F:/Routing Test Data/MWTC_Nodes.txt");// nodes file for mwct_pandolf.sqlite
-    private static final File geoPackageFile  = new File("test.gpkg");
+    //Files for geoPackage2
     private static final File geoPackageFile2 = new File("test2.gpkg");
+    private static final File dataFile2       = new File("F:/Routing Test Data/usma_pandolf.sqlite");
+    private static final File nodes2          = new File("F:/Routing Test Data/Nodes.txt");
+    //Files for geoPackage3
     private static final File geoPackageFile3 = new File("test3.gpkg");
+    private static final File dataFile3       = new File ("F:/Routing Test Data/usma_pandolf.sqlite");
+    private static final File nodes3          = new File("F:/Routing Test Data/MWTC_Nodes.txt");
 
     public static void main(final String[] args)
     {
-    	//TODO create geopackages here
+    	createGpkg();
+    	createGpkg2(geoPackageFile2, dataFile2, nodes2);
+    	createGpkg2(geoPackageFile3, dataFile3, nodes3);
     }
 
 
     @SuppressWarnings("hiding")
-    private static void createGpkg2(final File geoPackageFile, final File dataFile, final File nodes) throws SQLException, ClassNotFoundException
+    private static void createGpkg2(final File geoPackageFile, final File dataFile, final File nodes)
     {
-        Class.forName("org.sqlite.JDBC");   // Register the driver
+        try
+		{
+			Class.forName("org.sqlite.JDBC"); //Register the driver
+		}
+        catch (final ClassNotFoundException e2)
+		{
+			e2.printStackTrace();
+		}
 
         try(final Connection db = DriverManager.getConnection("jdbc:sqlite:" + dataFile.getPath()))// Initialize the database connection
         {
@@ -133,11 +143,15 @@ public class Main
                                     latitudeAttribute);
 
             }
-            catch (ConformanceException | IOException | BadImplementationException e)
+            catch (ConformanceException | IOException | BadImplementationException | ClassNotFoundException e)
             {
                 e.printStackTrace();
             }
         }
+        catch (final SQLException e1)
+		{
+			e1.printStackTrace();
+		}
     }
 
     private static void createGpkg()
