@@ -29,6 +29,7 @@ import java.awt.Frame;
 import java.awt.Window;
 import java.util.concurrent.ExecutionException;
 
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
@@ -71,14 +72,12 @@ public class ProgressDialog
         progressDialog.setLayout(new FlowLayout(FlowLayout.CENTER));
 
         final JProgressBar progressBar = new JProgressBar();
+        final JButton cancel = new JButton("Cancel");
+
 
         progressBar.setSize(200, 15);
         progressBar.setStringPainted(true);
         progressBar.setMinimum(0);
-
-        progressDialog.add(progressBar);
-        progressDialog.pack();
-        progressDialog.setLocationRelativeTo(owner);
 
         final SwingWorker<R, Void> task = new SwingWorker<R, Void>()
                                           {
@@ -110,7 +109,11 @@ public class ProgressDialog
                                                   progressDialog.dispose();
                                               }
                                           };
-
+        cancel.addActionListener(e->{task.cancel(true);});
+        progressDialog.add(cancel);
+        progressDialog.add(progressBar);
+        progressDialog.pack();
+        progressDialog.setLocationRelativeTo(owner);
         task.execute();
         progressDialog.setVisible(true);
         return task.get();
