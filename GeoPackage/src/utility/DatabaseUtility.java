@@ -199,7 +199,7 @@ public class DatabaseUtility
                                             (state ? 1 : 0)));
         }
     }
-    
+
     /**
      * @param connection
      * 			  connection to the database
@@ -209,12 +209,13 @@ public class DatabaseUtility
     public static void setPragmaJournalModeMemory(final Connection connection) throws SQLException
     {
     	DatabaseUtility.verify(connection);
-    	
+
     	try(Statement statement = connection.createStatement())
     	{
     		statement.execute(String.format("PRAGMA journal_mode = MEMORY;"));
     	}
     }
+
 
     /**
      * Get the smallest value for a table and column <i>that does not yet exist
