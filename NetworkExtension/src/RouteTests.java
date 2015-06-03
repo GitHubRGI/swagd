@@ -34,8 +34,7 @@ public class RouteTests
     	runRoute2(geoPackageFile3, 100, 169027);
     }
 
-    @SuppressWarnings("unused")
-	private static void runRoute()
+  	private static void runRoute()
     {
         try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, OpenMode.Open))
         {
