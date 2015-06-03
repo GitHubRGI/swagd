@@ -288,6 +288,7 @@ public class DatabaseUtility
             statement.close();
         }
     }
+
     /**
      * Get the smallest value for a table and column <i>that does not yet exist
      * </i>
