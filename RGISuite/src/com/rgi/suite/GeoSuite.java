@@ -48,6 +48,9 @@ import javax.swing.WindowConstants;
 import utility.PropertiesAction;
 import utility.TileStoreUtility;
 
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.CmdLineException;
+
 import com.rgi.suite.uielements.windows.PackagerWindow;
 import com.rgi.suite.uielements.windows.TileReadersOptionWindow;
 import com.rgi.suite.uielements.windows.TilerWindow;
@@ -230,8 +233,34 @@ public class GeoSuite
         suiteWindow.setVisible(true);
     }
 
+    /**
+     * Parses command line arguments and launches the appropriate functionality
+     * @param args - cmd line argument string from main method.
+     */
     private static void runHeadless(@SuppressWarnings("unused") final String[] args)
     {
+    	HeadlessOptions opts = new HeadlessOptions();
+    	CmdLineParser parser = new CmdLineParser(opts);
+    	try{
+    		parser.parseArgument(args);
+    		
+    		if(opts.isValid()){
+    			if(opts.isTiling()){
+    				//TODO:
+    			}
+    			else if (opts.isPackaging())
+    			{
+    				//TODO
+    			}
+    		}
+    		
+    	} 
+    	catch (CmdLineException e){
+    		System.err.println(e.getMessage());
+    		parser.printUsage(System.err);
+    	} catch (Exception e){
+    		
+    	}
         // TODO
         System.out.println("Running headless is not yet supported.");
     }
