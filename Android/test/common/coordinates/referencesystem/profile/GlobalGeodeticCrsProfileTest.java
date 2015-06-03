@@ -108,6 +108,19 @@ public class GlobalGeodeticCrsProfileTest
     }
 
     /**
+     * Tests if it will throw an illegalArgumentException when a user tries to
+     * pass in a crs with a null BoundingBox
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void crsToTileCoordinateIllegalArgumentException5() {
+        final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
+        globalCrs.crsToTileCoordinate(
+                new CrsCoordinate(4.0, 2.0, "epsg", 4326), null, null,
+                TileOrigin.LowerLeft);
+        fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException when BoundingBox is null for crsToTileCoordinate.");
+    }
+
+    /**
     * Tests if GlobalGeodetic tileToCrsCoordinate will throw
     * an illegal argument exception when the column value is negative
     */
@@ -143,6 +156,17 @@ public class GlobalGeodeticCrsProfileTest
         fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException when the tile Origin is null in tileToCrsCoordinate.");
     }
 
+    /**
+     * Tests if GlobalGeodetic tileToCrsCoordinate will throw an illegal
+     * argument exception when the BoundingBox is null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void tileToCrsCoordinateIllegalArgumentException5() {
+        final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
+        globalCrs.tileToCrsCoordinate(8, 5, null, new TileMatrixDimensions(100,
+                100), null);
+        fail("Expected GlobalGeodeticCrsProfile to throw an IllegalArgumentException when the BoundingBox is null in tileToCrsCoordinate.");
+    }
 
     /**
      * Tests if the values is returned when using the method to global geodetic
@@ -1189,4 +1213,191 @@ public class GlobalGeodeticCrsProfileTest
                     originalTileCoordinate,
                     returnedTileCoordinate);
     }
+
+    /**
+     * Tests getTileBounds throws an IllegalArgumentException when one of the
+     * parameters is null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getTileBoundsIllegalArgumentException1() {
+        final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 10);
+        final TileOrigin origin = TileOrigin.UpperRight;
+
+        globalCrs.getTileBounds(10, 12, null, dimensions, origin);
+        fail("Expected GlobalGeodeticCrsProfile method getTileBounds to throw an IllegalArgumentException when passed a null parameter.");
+    }
+
+    /**
+     * Tests getTileBounds throws an IllegalArgumentException when one of the
+     * parameters is null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getTileBoundsIllegalArgumentException2() {
+        final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
+        final BoundingBox box = new BoundingBox(0, 10, 12, 24);
+        final TileOrigin origin = TileOrigin.UpperRight;
+
+        globalCrs.getTileBounds(10, 12, box, null, origin);
+        fail("Expected GlobalGeodeticCrsProfile method getTileBounds to throw an IllegalArgumentException when passed a null parameter.");
+    }
+
+    /**
+     * Tests getTileBounds throws an IllegalArgumentException when the row and
+     * column are not in the BoundingBox
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getTileBoundsIllegalArgumentException3() {
+        final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 10);
+        final BoundingBox box = new BoundingBox(0, 10, 12, 24);
+        final TileOrigin origin = TileOrigin.UpperRight;
+
+        globalCrs.getTileBounds(10, 12, box, dimensions, origin);
+        fail("Expected GlobalGeodeticCrsProfile method getTileBounds to throw an IllegalArgumentException when row and column are not in the BoundingBox.");
+    }
+
+    /**
+     * Tests getTileBounds throws an IllegalArgumentException when the column is
+     * a negative number
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getTileBoundsIllegalArgumentException4() {
+        final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 10);
+        final BoundingBox box = new BoundingBox(-20, 10, -13, 24);
+        final TileOrigin origin = TileOrigin.UpperRight;
+        final int row = 12;
+        final int col = -10;
+
+        globalCrs.getTileBounds(col, row, box, dimensions, origin);
+        fail("Expected GlobalGeodeticCrsProfile method getTileBounds to throw an IllegalArgumentException when the column value is negative.");
+    }
+
+    /**
+     * Tests getTileBounds throws an IllegalArgumentException when the row is a
+     * negative number
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void getTileBoundsIllegalArgumentException5() {
+        final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 10);
+        final BoundingBox box = new BoundingBox(-20, 10, -13, 24);
+        final TileOrigin origin = TileOrigin.UpperRight;
+        final int row = -12;
+        final int col = 10;
+
+        globalCrs.getTileBounds(col, row, box, dimensions, origin);
+        fail("Expected GlobalGeodeticCrsProfile method getTileBounds to throw an IllegalArgumentException when the row value is negative.");
+    }
+
+    /**
+     * Tests getTileBounds throws an IllegalArgumentException when the row is a
+     * negative number
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void illegalArgumentException6() {
+        final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 10);
+        final BoundingBox box = new BoundingBox(0, 10, 0, 10);
+
+        globalCrs.getTileBounds(5, 5, box, dimensions, null);
+        fail("Expected GlobalGeodeticCrsProfile method getTileBounds to throw an IllegalArgumentException when passed a null parameter.");
+    }
+
+    /**
+     * Tests getTileBounds returns the correct
+     * BoundingBox when all parameters are valid
+     */
+    @Test
+    public void testGetTileBounds() {
+        final int column = 3;
+        final int row = 7;
+        final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 10);
+        final BoundingBox box = new BoundingBox(0, 10, 0, 10);
+        final TileOrigin origin = TileOrigin.LowerLeft;
+
+        final BoundingBox returnedBox = globalCrs.getTileBounds(column, row, box,
+                dimensions, origin);
+
+        /*
+         * Create the BoundingBox getTileBounds should return
+         */
+        final double tileCrsWidth = box.getWidth() / dimensions.getWidth();
+        final double tileCrsHeight = box.getHeight() / dimensions.getHeight();
+        final Coordinate<Integer> tileCoordinate = origin.transform(
+                TileOrigin.LowerLeft, column, row, dimensions);
+
+        final Coordinate<Double> boundsCorner = box.getBottomLeft();
+        final BoundingBox expected = new BoundingBox(boundsCorner.getX()
+                + (tileCoordinate.getX() + origin.getHorizontal())
+                * (tileCrsWidth), boundsCorner.getY()
+                + (tileCoordinate.getY() + origin.getVertical())
+                * (tileCrsHeight), boundsCorner.getX()
+                + (tileCoordinate.getX() + 1 + origin.getHorizontal())
+                * (tileCrsWidth), boundsCorner.getY()
+                + (tileCoordinate.getY() + 1 + origin.getVertical())
+                * (tileCrsHeight));
+
+        assertTrue("GlobalGeodeticCrsProfile method getTileBounds did not return the expected BoundingBox", expected.equals(returnedBox));
+    }
+
+    /**
+     * Tests that getName returns the correct String name for the
+     * GlobalGeodeticCrsProfile
+     */
+    @Test
+    public void testGetName() {
+        final GlobalGeodeticCrsProfile profile = new GlobalGeodeticCrsProfile();
+        final String name = "World Geodetic System (WGS) 1984";
+        assertTrue(
+                String.format(
+                        "Expected the GLobalGeodeticCrsProfile method getName() to return %s",
+                        name), profile.getName().equals(name));
+    }
+
+    /**
+     * Tests that getWellKnownText returns the correct String name for the
+     * GlobalGeodeticCrsProfile
+     */
+    @Test
+    public void testGetWellKnownText() {
+        final GlobalGeodeticCrsProfile profile = new GlobalGeodeticCrsProfile();
+        final String text = "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]";
+        assertTrue(
+                String.format(
+                        "Expected the GLobalGeodeticCrsProfile method getWellKnownTest() to return %s",
+                        text), profile.getWellKnownText().equals(text));
+    }
+
+    /**
+     * Tests that getDescription returns the correct String name for the
+     * GlobalGeodeticCrsProfile
+     */
+    @Test
+    public void testGetDescription() {
+        final GlobalGeodeticCrsProfile profile = new GlobalGeodeticCrsProfile();
+        final String description = "World Geodetic System 1984";
+        assertTrue(
+                String.format(
+                        "Expected the GLobalGeodeticCrsProfile method getDescription() to return %s",
+                        description),
+                profile.getDescription().equals(description));
+    }
+
+    /**
+     * Tests that getPrecision returns the correct String name for the
+     * GlobalGeodeticCrsProfile
+     */
+    @Test
+    public void testGetPrecision() {
+        final GlobalGeodeticCrsProfile profile = new GlobalGeodeticCrsProfile();
+        final int precision = 7;
+        assertTrue(
+                String.format(
+                        "Expected the GLobalGeodeticCrsProfile method getPrecision() to return %d",
+                        precision), profile.getPrecision() == precision);
+    }
+
 }

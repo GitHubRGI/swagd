@@ -47,6 +47,7 @@ import com.rgi.common.tile.scheme.TileMatrixDimensions;
 
 /**
  * @author Jenifer Cochran
+ * @author Mary Carome
  *
  */
 @SuppressWarnings({"javadoc"})

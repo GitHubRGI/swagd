@@ -62,7 +62,7 @@ public abstract class ProportionalCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Origin may not be null");
         }
 
-        if(!coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
+        if(!coordinate.getCoordinateReferenceSystem().equals(getCoordinateReferenceSystem()))
         {
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
         }
@@ -142,7 +142,7 @@ public abstract class ProportionalCrsProfile implements CrsProfile
 
         return new CrsCoordinate(boundsCorner.getX() + (tileCoordinate.getX() + tileOrigin.getHorizontal()) * (tileCrsWidth),
                                  boundsCorner.getY() + (tileCoordinate.getY() + tileOrigin.getVertical())   * (tileCrsHeight),
-                                 this.getCoordinateReferenceSystem());
+                                 getCoordinateReferenceSystem());
     }
 
     @Override
@@ -162,19 +162,9 @@ public abstract class ProportionalCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Tile matrix dimensions may not be null");
         }
 
-        if(!dimensions.contains(row, column))
+        if(!dimensions.contains(row, column))// contains checks for negative row, column values
         {
             throw new IllegalArgumentException("The row and column must be within the tile matrix dimensions");
-        }
-
-        if(column < 0)
-        {
-            throw new IllegalArgumentException("Column must be 0 or greater;");
-        }
-
-        if(row < 0)
-        {
-            throw new IllegalArgumentException("Row must be 0 or greater;");
         }
 
         if(tileOrigin == null)

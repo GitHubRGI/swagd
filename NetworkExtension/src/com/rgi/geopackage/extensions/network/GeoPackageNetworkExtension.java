@@ -1035,6 +1035,52 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     public List<List<Object>> getNodeAttributes(final List<Integer>           nodeIdentifiers,
                                                 final AttributeDescription... attributeDescriptions) throws SQLException
     {
+//        if(attributeDescriptions == null || attributeDescriptions.length == 0)
+//        {
+//            throw new IllegalArgumentException("Attribute descriptions may not be null or empty");
+//        }
+//
+//        final Pair<String, List<String>> schema = getSchema(Arrays.asList(attributeDescriptions), AttributedType.Node); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
+//
+//        final String       networkTableName = schema.getLeft();
+//        final List<String> columnNames      = schema.getRight();
+//
+//        final String attributeQuery = String.format("SELECT %s, %s FROM %s WHERE %s IN (%s) LIMIT %d;",
+//                                                    "node_id",
+//                                                    String.join(", ", columnNames),
+//                                                    getNodeAttributesTableName(networkTableName),
+//                                                    "node_id",
+//                                                    String.join(", ", nodeIdentifiers.stream()
+//                                                                                     .map(nodeIdentifier -> String.valueOf(nodeIdentifier))
+//                                                                                     .collect(Collectors.toList())),
+//                                                    nodeIdentifiers.size());
+//
+//        final List<List<Object>> valueCollections = new ArrayList<>(nodeIdentifiers.size());
+//
+//        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(attributeQuery))
+//        {
+//            try(final ResultSet resultSet = preparedStatement.executeQuery())
+//            {
+//                final Map<Integer, Integer> nodeIdentifierIndexMap = IntStream.range(0, nodeIdentifiers.size())
+//                                                                              .boxed()
+//                                                                              .collect(Collectors.toMap(index -> nodeIdentifiers.get(index),
+//                                                                                                        index -> index));
+//
+//                return JdbcUtility.map(resultSet,
+//                                       results -> Pair.of(nodeIdentifierIndexMap.get(results.getInt(1)),            // Index of the node identifier used to sort the results so they can be returned in the same order as the node ids were requested
+//                                                          JdbcUtility.getObjects(results, 2, columnNames.size()+1)))
+//                                  .stream()
+//                                  .sorted((pair1, pair2) -> Integer.compare(pair1.getLeft(), pair2.getLeft()))
+//                                  .map(pair -> pair.getRight())
+//                                  .collect(Collectors.toList());
+//
+//            }
+//            catch(final IllegalStateException th)
+//            {
+//                th.printStackTrace();
+//                throw th;
+//            }
+//        }
         if(attributeDescriptions == null || attributeDescriptions.length == 0)
         {
             throw new IllegalArgumentException("Attribute descriptions may not be null or empty");

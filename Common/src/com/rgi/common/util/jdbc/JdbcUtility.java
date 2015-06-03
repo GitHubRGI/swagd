@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -211,5 +212,27 @@ public class JdbcUtility
         {
             resultSetConsumer.accept(resultSet);
         }
+    }
+
+    public static List<Object> getObjects(final ResultSet result, final int startColumnIndex, final int endColumnIndex) throws SQLException
+    {
+        if(result == null || result.isClosed())
+        {
+            throw new IllegalArgumentException("Result may not be null or closed");
+        }
+
+        if(endColumnIndex < startColumnIndex)
+        {
+            throw new IllegalArgumentException("End column index must be greater than start column index");
+        }
+
+        final List<Object> objects = new ArrayList<>(endColumnIndex - startColumnIndex + 1);
+
+        for(int columnIndex = startColumnIndex; columnIndex <= endColumnIndex; ++columnIndex)
+        {
+            objects.add(result.getObject(columnIndex));
+        }
+
+        return objects;
     }
 }
