@@ -1,0 +1,26 @@
+Steps to build the installers:
+
+Prereq: Wix toolset v3.9.x is installed and in your system path.
+
+
+1. Build the swagd software using maven. (mvn install)
+2. Download the msi's for gdal-core and gdal-mrsid, from the urls below, into the {swagd}/WiX/Resources folder.
+	-http://download.gisinternals.com/sdk/downloads/release-1600-x64-gdal-1-11-1-mapserver-6-4-1/gdal-111-1600-x64-core.msi
+	-http://download.gisinternals.com/sdk/downloads/release-1600-x64-gdal-1-11-1-mapserver-6-4-1/gdal-111-1600-x64-mrsid.msi
+3. Download the exe installer for java 8 update 45 (url below) into the {swagd}/WiX/Resources folder.
+	-http://javadl.sun.com/webapps/download/AutoDL?BundleId=107100
+4. open a command prompt into the {swagd}/WiX/ directory, and enter the commands listed below.The first two will build the installer for the actual
+	Swagd software, the second will build the bundled installer with the dependencies. you can then use these installers anywhere. 
+
+commands:
+
+candle Swagd.wxs
+light Swagd.wixobj -out packages/Swagd.msi
+
+
+candle -ext WixBalExtension -ext WixUtilExtension Swagd-deps.wxs
+light -ext WixBalExtension -ext WixUtilExtension Swagd-deps.wixobj
+
+
+5. To Install swagd, and dependencies: simply run the Swagd-deps.msi file located in {swagd}/WiX on any windows machine.
+6. To Install Swagd without dependencies: simply run the Swagd.msi file located at {swagd}/WiX/Resources on any windows machine. 
