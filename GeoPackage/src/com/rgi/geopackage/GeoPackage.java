@@ -205,7 +205,6 @@ public class GeoPackage implements AutoCloseable
 
             DatabaseUtility.setPragmaForeignKeys(this.databaseConnection, true);
             DatabaseUtility.setPragmaJournalModeMemory(this.databaseConnection);
-            DatabaseUtility.setPragmaSynchronousOff(this.databaseConnection);
 
             this.core       = new GeoPackageCore      (this.databaseConnection, isNewFile);
             this.features   = new GeoPackageFeatures  (this.databaseConnection, this.core);

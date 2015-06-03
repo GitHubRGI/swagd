@@ -268,29 +268,6 @@ public class DatabaseUtility
     }
 
     /**
-     *
-     * @param connection
-     *               connection to the database
-     * @throws SQLException
-     *               thows is various SQLExceptions occur
-     */
-    public static void setPragmaSynchronousOff(final Connection connection) throws SQLException
-    {
-    	DatabaseUtility.verify(connection);
-
-    	final Statement statement = connection.createStatement();
-
-    	try
-    	{
-    		statement.execute(String.format("PRAGMA synchronous = OFF;"));
-    	}
-    	finally
-    	{
-    		statement.close();
-    	}
-    }
-
-    /**
      * Get the smallest value for a table and column <i>that does not yet exist
      * </i>
      *
