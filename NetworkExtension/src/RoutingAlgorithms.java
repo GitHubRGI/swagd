@@ -170,15 +170,7 @@ public class RoutingAlgorithms
                 return false;
             }
 
-            return this.nodeIdentifier == ((VertexAstar) obj).nodeIdentifier; // Is
-                                                                                // this
-                                                                                // enough?
-                                                                                // Node
-                                                                                // identifiers
-                                                                                // should
-                                                                                // be
-                                                                                // unique,
-                                                                                // right?
+            return this.nodeIdentifier == ((VertexAstar) obj).nodeIdentifier; // Is this enough? Node identifiers should be unique right?
         }
 
         @Override
@@ -291,8 +283,7 @@ public class RoutingAlgorithms
                 return false;
             }
 
-            return this.nodeIdentifier == ((Vertex) obj).nodeIdentifier; // Is
-                                                                            // this
+            return this.nodeIdentifier == ((Vertex) obj).nodeIdentifier; // Is this
                                                                             // enough?
                                                                             // Node
                                                                             // identifiers

@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -29,10 +30,11 @@ public class RouteTests
 
     public static void main(final String[] args)
     {
-    	//TODO run test routes here
+    	runRoute2(geoPackageFile3, 100, 169027);
     }
 
-    private static void runRoute()
+    @SuppressWarnings("unused")
+	private static void runRoute()
     {
         try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, OpenMode.Open))
         {
@@ -151,6 +153,7 @@ public class RouteTests
                 {
                     final long startTime = System.nanoTime();
 
+                    final HashMap<Long, Double> heuristicCache = new HashMap<>();
 
                     final List<Integer> path = RoutingAlgorithms.astar(networkExtension,
                                                                        network,
@@ -159,13 +162,20 @@ public class RouteTests
                                                                        (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getEdgeAttribute(edge, distanceAttribute),
                                                                        (startIdentifier, endIdentifier) -> { try
                                                                                            					 {
+                                                                    	                                         final long key = ((startIdentifier + endIdentifier)*(startIdentifier + endIdentifier + 1)/2) + endIdentifier;
+                                                                    	                                         if(heuristicCache.containsKey(key))
+                                                                    	                                         {
+                                                                    	                                        	 return heuristicCache.get(key);
+                                                                    	                                         }
                                                                                                                  final List<Object> startCoordinate = networkExtension.getNodeAttributes(startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
                                                                                                                  final List<Object> endCoordinate   = networkExtension.getNodeAttributes(endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
 
                                                                                                                  final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
                                                                                                                  final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
 
-                                                                                                                 return Math.sqrt(latitude*latitude + longitude*longitude);
+                                                                                                                 final double distance = Math.sqrt(latitude*latitude + longitude*longitude);
+                                                                                                                 heuristicCache.put(key, distance);
+                                                                                                                 return distance;
                                                                                            					 }
                                                                                            	                 catch(final SQLException ex)
                                                                                            					 {

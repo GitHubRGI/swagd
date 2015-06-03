@@ -38,7 +38,7 @@ public class GenerateGeoPackages
     private static final File nodes2          = new File("F:/Routing Test Data/Nodes.txt");
     //Files for geoPackage3
     private static final File geoPackageFile3 = new File("test3.gpkg");
-    private static final File dataFile3       = new File ("F:/Routing Test Data/usma_pandolf.sqlite");
+    private static final File dataFile3       = new File ("F:/Routing Test Data/mwtc_pandolf.sqlite");
     private static final File nodes3          = new File("F:/Routing Test Data/MWTC_Nodes.txt");
 
     public static void main(final String[] args)
