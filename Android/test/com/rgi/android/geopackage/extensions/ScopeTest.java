@@ -32,6 +32,7 @@ import org.junit.Test;
  * @author Mary Carome
  *
  */
+@SuppressWarnings({ "static-method" })
 public class ScopeTest
 {
 
@@ -68,16 +69,8 @@ public class ScopeTest
         final String read = "read-write";
         final String write = "write-only";
 
-        assertTrue(
-                String.format(
-                        "Expected Scope method fromText to return %s, but %s was returned",
-                        Scope.ReadWrite, Scope.fromText(read)),
-                Scope.fromText(read) == Scope.ReadWrite);
-        assertTrue(
-                String.format(
-                        "Expected Scope method fromText to return %s, but %s was returned",
-                        Scope.WriteOnly, Scope.fromText(write)),
-                Scope.fromText(write) == Scope.WriteOnly);
+        assertTrue(String.format("Expected Scope method fromText to return %s, but %s was returned", Scope.ReadWrite, Scope.fromText(read)), Scope.fromText(read) == Scope.ReadWrite);
+        assertTrue(String.format("Expected Scope method fromText to return %s, but %s was returned", Scope.WriteOnly, Scope.fromText(write)), Scope.fromText(write) == Scope.WriteOnly);
     }
 
     /**
@@ -88,11 +81,7 @@ public class ScopeTest
     {
         final Scope read = Scope.ReadWrite;
         final Scope write = Scope.WriteOnly;
-        assertTrue(String.format(
-                "Expected toString to return ''read-write' but returned '%s'",
-                read.toString()), read.toString().equals("read-write"));
-        assertTrue(String.format(
-                "Expected toString to return ''write-onlu' but returned '%s'",
-                write.toString()), write.toString().equals("write-only"));
+        assertTrue(String.format("Expected toString to return ''read-write' but returned '%s'", read.toString()), read.toString().equals("read-write"));
+        assertTrue(String.format("Expected toString to return ''write-onlu' but returned '%s'", write.toString()), write.toString().equals("write-only"));
     }
 }

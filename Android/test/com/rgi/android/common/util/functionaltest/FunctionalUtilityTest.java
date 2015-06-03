@@ -39,6 +39,7 @@ import com.rgi.android.common.util.functional.Predicate;
  * @author Mary Carome
  *
  */
+@SuppressWarnings({ "static-method" })
 public class FunctionalUtilityTest
 {
 

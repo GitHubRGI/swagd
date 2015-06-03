@@ -35,6 +35,7 @@ import com.rgi.android.common.util.ThrowableUtility;
  * @author Mary Carome
  *
  */
+@SuppressWarnings({ "static-method" })
 public class ThrowableUtilityTest
 {
     /**

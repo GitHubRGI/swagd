@@ -8,13 +8,13 @@ import org.junit.Test;
 
 import com.rgi.common.util.ThrowableUtility;
 
+@SuppressWarnings({"javadoc", "static-method"})
 public class ThrowableUtilityTest
 {
     /**
      * Tests that getRoot returns null when
      * given a null Throwable object
      */
-    @SuppressWarnings("static-method")
 	@Test
     public void testGetRootNull()
     {
@@ -25,7 +25,6 @@ public class ThrowableUtilityTest
      * Tests that getRoot returns throwable when
      * given a Throwable object with a null cause
      */
-    @SuppressWarnings("static-method")
 	@Test
     public void testGetRootCause()
     {
@@ -37,7 +36,6 @@ public class ThrowableUtilityTest
      * Tests that getRoot correctly returns the
      * cause of the Throwable object when it is not null
      */
-    @SuppressWarnings("static-method")
 	@Test
     public void testGetRoot()
     {

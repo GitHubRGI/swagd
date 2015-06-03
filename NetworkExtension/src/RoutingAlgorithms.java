@@ -29,16 +29,18 @@ public class RoutingAlgorithms
 	 * @param networkExtension
 	 *            GeoPackageNetworkExtension containing the network
 	 * @param network
-	 *            network contain the start and end vertices
+	 *            network contain the start and end node
 	 * @param start
-	 *            starting vertex
+	 *            starting node
 	 * @param end
-	 *            ending vertex
+	 *            ending node
 	 * @param cost
 	 *            cost function for each edge in the path
 	 * @param heuristics
 	 *            heuristic function for two nodes in the network
+	 * @return Optimal path from the start node to the end node
 	 * @throws SQLException
+	 *             if there is a database error
 	 */
     public static List<Integer> astar(final GeoPackageNetworkExtension networkExtension, final Network network, final Integer start, final Integer end, final Function<Edge, Double> cost, final BiFunction<Integer, Integer, Double> heuristics) throws SQLException
     {
@@ -170,15 +172,7 @@ public class RoutingAlgorithms
                 return false;
             }
 
-            return this.nodeIdentifier == ((VertexAstar) obj).nodeIdentifier; // Is
-                                                                                // this
-                                                                                // enough?
-                                                                                // Node
-                                                                                // identifiers
-                                                                                // should
-                                                                                // be
-                                                                                // unique,
-                                                                                // right?
+            return this.nodeIdentifier == ((VertexAstar) obj).nodeIdentifier; // Is this enough? Node identifiers should be unique, right?
         }
 
         @Override
@@ -199,12 +193,19 @@ public class RoutingAlgorithms
      * algorithm will find the shortest path from the starting node to the
      * ending node.
      *
+     * @param networkExtension
+     *             GeoPackageNetworkExtension containing the network
+     * @param network
+     *             network contain the start and end vertices
      * @param start
-     *            starting vertex
+     *             starting node
      * @param end
-     *            ending vertex
-     * @param edgeCostEvaluator
+     *             ending node
+     * @param edgeEvaluator
+     *             cost function for each edge in the path
+     * @return Optimal path from the start node to the end node
      * @throws SQLException
+     *             if there is a database error
      */
     public static List<Integer> dijkstra(final GeoPackageNetworkExtension networkExtension, final Network network, final Integer start, final Integer end, final Function<Edge, Double> edgeEvaluator) throws SQLException
     {

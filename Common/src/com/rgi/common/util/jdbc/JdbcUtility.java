@@ -196,24 +196,22 @@ public class JdbcUtility
         return null;
     }
 
-    public static <T> void forEach(final ResultSet resultSet, final ResultSetConsumer<T> resultSetConsumer) throws SQLException
-    {
-        if(resultSet == null || resultSet.isClosed())
-        {
-            throw new IllegalArgumentException("Result set may not be null or closed");
-        }
-
-        if(resultSetConsumer == null)
-        {
-            throw new IllegalArgumentException("Result set function may not be null");
-        }
-
-        while(resultSet.next())
-        {
-            resultSetConsumer.accept(resultSet);
-        }
-    }
-
+    /**
+     * Create list of {@link Object}s by repeatedly calling
+     * {@link ResultSet#getObject(int)}
+     *
+     * @param result
+     *             Result set to query
+     * @param startColumnIndex
+     *             Column index to begin with.  Must be less than or equal to
+     *             <tt>endColumnIndex</tt>
+     * @param endColumnIndex
+     *             Column index to end with (inclusive). Must be greater than
+     *             or equal to <tt>startColumnIndex</tt>
+     * @return List of {@link Object}s with size <tt>endColumnIndex - startColumnIndex + 1</tt>
+     * @throws SQLException
+     *             if there is a database error
+     */
     public static List<Object> getObjects(final ResultSet result, final int startColumnIndex, final int endColumnIndex) throws SQLException
     {
         if(result == null || result.isClosed())

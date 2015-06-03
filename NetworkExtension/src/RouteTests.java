@@ -17,10 +17,11 @@ import com.rgi.geopackage.extensions.network.Network;
 import com.rgi.geopackage.verification.ConformanceException;
 
 /**
- *
+ * @author Luke Lambert
  * @author Mary Carome
  *
  */
+@SuppressWarnings({"javadoc", "unused"})
 public class RouteTests
 {
     private static final File geoPackageFile = new File("test.gpkg");

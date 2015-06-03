@@ -26,19 +26,20 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
+
 /**
  *
  * @author Mary Carome
  *
  */
+@SuppressWarnings({ "javadoc", "static-method" })
 public class ThrowingFunctionTest
 {
 
-    @SuppressWarnings("static-method")
-	@Test(expected = RuntimeException.class)
-    public void testApplyThrowsException(){
-        final ThrowingFunction<String, Integer> tf = t ->
-        {
+    @Test(expected = RuntimeException.class)
+    public void testApplyThrowsException()
+    {
+        final ThrowingFunction<String, Integer> tf = t -> {
             if(t == null || t.length() == 0)
             {
                 throw new IllegalArgumentException();
@@ -49,11 +50,10 @@ public class ThrowingFunctionTest
         fail("Expexted ThrowingFunction method apply to throw a RuntimeException error.");
     }
 
-    @SuppressWarnings("static-method")
-	@Test
-    public void testApply(){
-        final ThrowingFunction<String, Integer> tf = t ->
-        {
+    @Test
+    public void testApply()
+    {
+        final ThrowingFunction<String, Integer> tf = t -> {
             if(t == null || t.length() == 0)
             {
                 throw new IllegalArgumentException();

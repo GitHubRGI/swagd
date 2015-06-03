@@ -545,7 +545,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Attributed edges collection may not be null or empty");
         }
 
-        final Pair<String, List<String>> schema = getSchema(Arrays.asList(attributeDescriptions), AttributedType.Edge); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
+        final Pair<String, List<String>> schema = getSchema(AttributedType.Edge, attributeDescriptions); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
 
         final String       networkTableName = schema.getLeft();
         final List<String> columnNames      = schema.getRight();
@@ -621,7 +621,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Values collection may not be null");
         }
 
-        final Pair<String, List<String>> schema = getSchema(Arrays.asList(attributeDescriptions), AttributedType.Edge); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
+        final Pair<String, List<String>> schema = getSchema(AttributedType.Edge, attributeDescriptions); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
 
         final String       networkTableName = schema.getLeft();
         final List<String> columnNames      = schema.getRight();
@@ -969,7 +969,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Attribute descriptions may not be null or empty");
         }
 
-        final Pair<String, List<String>> schema = getSchema(Arrays.asList(attributeDescriptions), AttributedType.Edge); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
+        final Pair<String, List<String>> schema = getSchema(AttributedType.Edge, attributeDescriptions); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
 
         final String       networkTableName = schema.getLeft();
         final List<String> columnNames      = schema.getRight();
@@ -1086,7 +1086,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Attribute descriptions may not be null or empty");
         }
 
-        final Pair<String, List<String>> schema = getSchema(Arrays.asList(attributeDescriptions), AttributedType.Node); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
+        final Pair<String, List<String>> schema = getSchema(AttributedType.Node, attributeDescriptions); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
 
         final String       networkTableName = schema.getLeft();
         final List<String> columnNames      = schema.getRight();
@@ -1130,7 +1130,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * Adds attributes to a node
      *
      * @param nodeIdentifier
-     *             Unique identifier to either a node or edge
+     *             Unique node identifier
      * @param attributeDescriptions
      *             Collection of which attributes should be set
      * @param values
@@ -1139,18 +1139,18 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * @throws SQLException
      *             if there is a database error
      */
-    public void addNodeAttributes(final int                        nodeIdentifier,
-                                  final List<AttributeDescription> attributeDescriptions,
-                                  final List<Object>               values) throws SQLException
+    public void addNodeAttributes(final int                     nodeIdentifier,
+                                  final List<Object>            values,
+                                  final AttributeDescription... attributeDescriptions) throws SQLException
     {
         if(values == null)
         {
             throw new IllegalArgumentException("Values list may not be null");
         }
 
-        final Pair<String, List<String>> schema = getSchema(attributeDescriptions, AttributedType.Node); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
+        final Pair<String, List<String>> schema = getSchema(AttributedType.Node, attributeDescriptions); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
 
-        if(values.size() != attributeDescriptions.size())
+        if(values.size() != attributeDescriptions.length)
         {
             throw new IllegalArgumentException("The size of the attribute description list must match the size of the values list");
         }
@@ -1169,8 +1169,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
             for(int valueIndex = 0; valueIndex < size; ++valueIndex)
             {
-                final AttributeDescription attributeDescription = attributeDescriptions.get(valueIndex);
-                final Object               value                = values               .get(valueIndex);
+                final AttributeDescription attributeDescription = attributeDescriptions[valueIndex];
+                final Object               value                = values.get(valueIndex);
 
                 if(!attributeDescription.dataTypeAgrees(value))
                 {
@@ -1216,7 +1216,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Collection of node-attribute may not be null");
         }
 
-        final Pair<String, List<String>> schema = getSchema(Arrays.asList(attributeDescriptions), AttributedType.Node); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
+        final Pair<String, List<String>> schema = getSchema(AttributedType.Node, attributeDescriptions); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
 
         final String       networkTableName = schema.getLeft();
         final List<String> columnNames      = schema.getRight();
@@ -1269,9 +1269,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         this.databaseConnection.commit();
     }
 
-    private static Pair<String, List<String>> getSchema(final List<AttributeDescription> attributeDescriptions, final AttributedType attributedType)
+    private static Pair<String, List<String>> getSchema(final AttributedType          attributedType,
+                                                        final AttributeDescription... attributeDescriptions)
     {
-        if(attributeDescriptions == null || attributeDescriptions.isEmpty())
+        if(attributeDescriptions == null || attributeDescriptions.length == 0)
         {
             throw new IllegalArgumentException("Collection of attribute descriptions may not be null or empty");
         }
@@ -1281,23 +1282,24 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Attributed type may not be null");
         }
 
-        final String firstNetworkTableName = attributeDescriptions.get(0).getNetworkTableName();
+        final String firstNetworkTableName = attributeDescriptions[0].getNetworkTableName();
 
         return Pair.of(firstNetworkTableName,
-                       attributeDescriptions.stream()
-                                            .map(description -> { if(!description.getNetworkTableName().equals(firstNetworkTableName))
-                                                                  {
-                                                                      throw new IllegalArgumentException("Attribute descriptions must all refer to the same network table");
-                                                                  }
+                       Arrays.asList(attributeDescriptions)
+                             .stream()
+                             .map(description -> { if(!description.getNetworkTableName().equals(firstNetworkTableName))
+                                                   {
+                                                       throw new IllegalArgumentException("Attribute descriptions must all refer to the same network table");
+                                                   }
 
-                                                                  if(!description.getAttributedType().equals(attributedType))
-                                                                  {
-                                                                      throw new IllegalArgumentException("Attribute descriptions must all refer exclusively to nodes or exclusively to edges");
-                                                                  }
+                                                   if(!description.getAttributedType().equals(attributedType))
+                                                   {
+                                                       throw new IllegalArgumentException("Attribute descriptions must all refer exclusively to nodes or exclusively to edges");
+                                                   }
 
-                                                                  return description.getName();
-                                                                })
-                                            .collect(Collectors.toList()));
+                                                   return description.getName();
+                                                 })
+                             .collect(Collectors.toList()));
     }
 
     @SuppressWarnings("static-method")
