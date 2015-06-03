@@ -38,6 +38,8 @@ import java.util.Random;
 
 import org.junit.Test;
 
+import utility.TestUtility;
+
 import com.rgi.android.common.BoundingBox;
 import com.rgi.android.geopackage.GeoPackage;
 import com.rgi.android.geopackage.GeoPackage.OpenMode;

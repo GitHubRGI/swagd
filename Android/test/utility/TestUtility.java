@@ -1,4 +1,4 @@
-package geopackage;
+package utility;
 
 import java.io.File;
 import java.sql.Connection;
@@ -53,7 +53,7 @@ public class TestUtility
 
         do
         {
-            final String filename = TestUtility.getRandomString(length) + ".gpkg";
+            final String filename = new File("").getAbsoluteFile() + TestUtility.getRandomString(length) + ".gpkg";
             testFile = new File(filename);
         }
         while(testFile.exists());

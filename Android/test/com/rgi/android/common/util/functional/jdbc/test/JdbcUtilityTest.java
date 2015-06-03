@@ -29,16 +29,14 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.Random;
-
-import javax.swing.filechooser.FileSystemView;
 
 import org.junit.Test;
+
+import utility.TestUtility;
 
 import com.rgi.android.common.util.functional.Predicate;
 import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
@@ -53,10 +51,9 @@ import com.rgi.android.geopackage.verification.ConformanceException;
  * @author Mary Carome
  *
  */
+@SuppressWarnings({"javadoc", "static-method"})
 public class JdbcUtilityTest
 {
-    private final Random randomGenerator = new Random();
-
     /**
      * Tests that anyMatch correctly return True or False depending on the
      * ResultSetPredicate it is given
@@ -69,7 +66,7 @@ public class JdbcUtilityTest
     @Test
     public void anyMatchTest() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile(10);
         final GeoPackage gpkg = new GeoPackage(testFile);
         try
         {
@@ -87,7 +84,7 @@ public class JdbcUtilityTest
                 gpkg.core().addSpatialReferenceSystem(name3, "WGS", 30, "foo", description);
                 gpkg.core().addSpatialReferenceSystem(name4, "ESPG", 40, "still", description);
 
-                final Connection con = this.getConnection(testFile.getAbsolutePath());
+                final Connection con = TestUtility.getConnection(testFile);
                 try
                 {
                     final String query = String.format("Select srs_name FROM %s WHERE description = '%s'", GeoPackageCore.SpatialRefSysTableName, description);
@@ -137,7 +134,7 @@ public class JdbcUtilityTest
         }
         finally
         {
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -153,12 +150,12 @@ public class JdbcUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentExceptionAnyMatch() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile(10);
         final GeoPackage gpkg = new GeoPackage(testFile);
         try
         {
             gpkg.close();
-            final Connection con = this.getConnection(testFile.getAbsolutePath());
+            final Connection con = TestUtility.getConnection(testFile);
             try
             {
                 final String query = "Select * from gpkg_contents;";
@@ -188,7 +185,7 @@ public class JdbcUtilityTest
         }
         finally
         {
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -204,12 +201,12 @@ public class JdbcUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentExceptionAnyMatchClosedSet() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile(10);
         final GeoPackage gpkg = new GeoPackage(testFile);
         try
         {
             gpkg.close();
-            final Connection con = this.getConnection(testFile.getAbsolutePath());
+            final Connection con = TestUtility.getConnection(testFile);
             try
             {
                 final String query = "Select * from gpkg_contents;";
@@ -240,7 +237,7 @@ public class JdbcUtilityTest
         }
         finally
         {
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -275,7 +272,7 @@ public class JdbcUtilityTest
     @Test
     public void mapTest() throws IOException, ClassNotFoundException, ConformanceException, SQLException
     {
-        final File testFile = this.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile(10);
         final GeoPackage gpkg = new GeoPackage(testFile);
         try
         {
@@ -292,7 +289,7 @@ public class JdbcUtilityTest
                 gpkg.core().addSpatialReferenceSystem(name3, "WGS", 30, "foo", description);
                 gpkg.core().addSpatialReferenceSystem(name4, "ESPG", 40, "still", description);
 
-                final Connection con = this.getConnection(testFile.getAbsolutePath());
+                final Connection con = TestUtility.getConnection(testFile);
                 try
                 {
                     final String query = String.format("Select srs_name FROM %s WHERE description = '%s'", GeoPackageCore.SpatialRefSysTableName, description);
@@ -338,7 +335,7 @@ public class JdbcUtilityTest
         }
         finally
         {
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -354,12 +351,12 @@ public class JdbcUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentExceptionMapFunction() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile(10);
         final GeoPackage gpkg = new GeoPackage(testFile);
         try
         {
             gpkg.close();
-            final Connection con = this.getConnection(testFile.getAbsolutePath());
+            final Connection con = TestUtility.getConnection(testFile);
             try
             {
                 final String query = "Select * from gpkg_contents;";
@@ -388,7 +385,7 @@ public class JdbcUtilityTest
         }
         finally
         {
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -423,12 +420,12 @@ public class JdbcUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentExceptionMapRSClosed() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        final File testFile = this.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile(10);
         final GeoPackage gpkg = new GeoPackage(testFile);
         try
         {
             gpkg.close();
-            final Connection con = this.getConnection(testFile.getAbsolutePath());
+            final Connection con = TestUtility.getConnection(testFile);
             try
             {
                 final String query = "Select * from gpkg_contents;";
@@ -459,7 +456,7 @@ public class JdbcUtilityTest
         }
         finally
         {
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -473,7 +470,7 @@ public class JdbcUtilityTest
      */
     @Test
     public void testMapFilter() throws ClassNotFoundException, ConformanceException, IOException, SQLException {
-        final File testFile = this.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile(10);
         final GeoPackage gpkg = new GeoPackage(testFile);
         try
         {
@@ -489,7 +486,7 @@ public class JdbcUtilityTest
                 gpkg.core().addSpatialReferenceSystem(name2, "AGC", 20, "test", description);
                 gpkg.core().addSpatialReferenceSystem(name3, "WGS", 30, "foo", description);
                 gpkg.core().addSpatialReferenceSystem(name4, "ESPG", 40, "still", description);
-                final Connection con = this.getConnection(testFile.getAbsolutePath());
+                final Connection con = TestUtility.getConnection(testFile);
                 try
                 {
                     final String query = String.format("Select srs_name FROM %s WHERE description = '%s'", GeoPackageCore.SpatialRefSysTableName, description);
@@ -541,7 +538,7 @@ public class JdbcUtilityTest
         }
         finally
         {
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -555,7 +552,7 @@ public class JdbcUtilityTest
      * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void illegalArgumentExceptionMapFilterRS() throws ClassNotFoundException, ConformanceException, IOException, SQLException
+    public void illegalArgumentExceptionMapFilterRS() throws SQLException
     {
         JdbcUtility.mapFilter(null, new ResultSetFunction<String>() {
                                                                         @Override
@@ -585,12 +582,12 @@ public class JdbcUtilityTest
      */
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentExceptionMapFilterFunction() throws IOException, ClassNotFoundException, ConformanceException, SQLException {
-        final File testFile = this.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile(10);
         final GeoPackage gkpg = new GeoPackage(testFile);
         try
         {
             gkpg.close();
-            final Connection con = this.getConnection(testFile.getAbsolutePath());
+            final Connection con = TestUtility.getConnection(testFile);
             try
             {
                 final String query = "Select * from gpkg_contents;";
@@ -624,7 +621,7 @@ public class JdbcUtilityTest
         }
         finally
         {
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -639,12 +636,12 @@ public class JdbcUtilityTest
      */
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentExceptionMapFilterPred() throws ClassNotFoundException, ConformanceException, IOException, SQLException {
-        final File testFile = this.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile(10);
         final GeoPackage gkpg = new GeoPackage(testFile);
         try
         {
             gkpg.close();
-            final Connection con = this.getConnection(testFile.getAbsolutePath());
+            final Connection con = TestUtility.getConnection(testFile);
             try
             {
                 final String query = "Select * from gpkg_contents;";
@@ -680,51 +677,7 @@ public class JdbcUtilityTest
         }
         finally
         {
-            this.deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
-    }
-
-    /*
-     * Private helper methods for the unit testing
-     */
-    private String getRanString(final int length)
-    {
-        final String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        final char[] text = new char[length];
-        for (int i = 0; i < length; i++)
-        {
-            text[i] = characters.charAt(this.randomGenerator.nextInt(characters.length()));
-        }
-        return new String(text);
-    }
-
-    private void deleteFile(final File testFile)
-    {
-        {
-            if (!testFile.delete())
-            {
-                throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
-            }
-        }
-    }
-
-    private File getRandomFile(final int length)
-    {
-        File testFile;
-
-        do
-        {
-            final String filename = FileSystemView.getFileSystemView().getDefaultDirectory().getAbsolutePath() + "/" + this.getRanString(length) + ".gpkg";
-            testFile = new File(filename);
-        } while (testFile.exists());
-
-        return testFile;
-    }
-
-    private Connection getConnection(final String filePath) throws SQLException, ClassNotFoundException
-    {
-        Class.forName("org.sqlite.JDBC"); // Register the driver
-
-        return DriverManager.getConnection("jdbc:sqlite:" + filePath);
     }
 }

@@ -32,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 import org.junit.Test;
@@ -49,7 +50,7 @@ import com.rgi.android.common.tile.scheme.TileMatrixDimensions;
  * @author Mary Carome
  *
  */
-@SuppressWarnings({"javadoc"})
+@SuppressWarnings({"javadoc", "static-method"})
 public class EllipsoidalMercatorCrsProfileTest
 {
     /**
@@ -67,7 +68,7 @@ public class EllipsoidalMercatorCrsProfileTest
        @Override
        public String toString()
        {
-        return String.format("Latitude: %f, Longitude: %f, MetersX: %f, MetersY: %f", this.latitude, this.longitude, this.metersX, this.metersY);
+        return String.format(Locale.getDefault(), "Latitude: %f, Longitude: %f, MetersX: %f, MetersY: %f", this.latitude, this.longitude, this.metersX, this.metersY);
 
        }
     }
@@ -261,8 +262,8 @@ public class EllipsoidalMercatorCrsProfileTest
                    incorrectCoordinate.append("\n");
                }
             }
-            assertTrue(String.format("Number of incorrect coordinates: %d out of 100\n"
-                                       + "Following coordinates did not convert correctly.\n%s.",
+            assertTrue(String.format(Locale.getDefault(),
+                                     "Number of incorrect coordinates: %d out of 100\nFollowing coordinates did not convert correctly.\n%s.",
                                      incorrectCoordinates.size(),
                                      incorrectCoordinate),
                        incorrectCoordinates.isEmpty());

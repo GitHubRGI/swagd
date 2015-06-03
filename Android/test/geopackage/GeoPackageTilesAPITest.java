@@ -43,6 +43,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
+import utility.TestUtility;
 import android.graphics.Bitmap;
 
 import com.rgi.android.common.BoundingBox;

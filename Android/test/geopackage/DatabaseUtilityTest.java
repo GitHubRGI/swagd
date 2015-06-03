@@ -36,6 +36,8 @@ import java.sql.Statement;
 
 import org.junit.Test;
 
+import utility.TestUtility;
+
 import com.rgi.android.geopackage.utility.DatabaseUtility;
 
 /**
