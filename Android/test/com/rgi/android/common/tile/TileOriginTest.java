@@ -34,6 +34,7 @@ import com.rgi.android.common.tile.scheme.TileMatrixDimensions;
  * @author Mary Carome
  *
  */
+@SuppressWarnings({ "static-method" })
 public class TileOriginTest
 {
     /**

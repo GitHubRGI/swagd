@@ -27,39 +27,34 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-public class ThrowingConsumerTest {
-
+@SuppressWarnings({ "javadoc", "static-method" })
+public class ThrowingConsumerTest
+{
     /**
      * Tests that accept throws a RuntimeException
      */
-    @SuppressWarnings("static-method")
-	@Test (expected = RuntimeException.class)
+    @Test(expected = RuntimeException.class)
     public void testAcceptThrowsException()
     {
-        final ThrowingConsumer<String> tc = t ->
-        {
-            if(t != null)
-            {
-                throw new NullPointerException();
-            }
-        };
+        final ThrowingConsumer<String> tc = t -> { if(t != null)
+                                                   {
+                                                       throw new NullPointerException();
+                                                   }
+                                                 };
         tc.accept("test");
         fail("Expected ThrowingConsumer method accept to throw a RuntimeException.");
     }
 
     /**
-     * Tests that accept does not always
-     * throw a RuntimeException
+     * Tests that accept does not always throw a RuntimeException
      */
-    @SuppressWarnings("static-method")
-	public void testAccept(){
-        final ThrowingConsumer<String> tc = t ->
-        {
-            if(t.length() < 0)
-            {
-                throw new IllegalArgumentException();
-            }
-        };
+    public void testAccept()
+    {
+        final ThrowingConsumer<String> tc = t -> { if(t.length() < 0)
+                                                   {
+                                                       throw new IllegalArgumentException();
+                                                   }
+                                                 };
         try
         {
             tc.accept("test");

@@ -33,6 +33,7 @@ import org.junit.Test;
  * @author Mary Carome
  *
  */
+@SuppressWarnings({ "static-method" })
 public class ColumnDefinitionTest
 {
 
@@ -40,41 +41,40 @@ public class ColumnDefinitionTest
      * Tests that the ColumnDefintion constructor throws an
      * IllegalArgumentException when passed a null SQL type
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void columnDefinitionIllegalArgumentException()
     {
         @SuppressWarnings("unused")
-        final
-        ColumnDefinition colDef = new ColumnDefinition(null, true, true, true, "default");
+        final ColumnDefinition colDef = new ColumnDefinition(null, true, true, true, "default");
         fail("Expected ColumnDefintion to throw an IllegalArgumentException when passed a null SQL type.");
     }
 
     /**
-     * Tests that equals returns false when
-     * passed null instead of a valid object
+     * Tests that equals returns false when passed null instead of a valid
+     * object
      */
     @Test
     public void testEquals1()
     {
         final ColumnDefinition def1 = new ColumnDefinition("Test", true, true, true, "default");
-        assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed null instead of an Object.",def1.equals(null));
+        assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed null instead of an Object.", def1.equals(null));
     }
 
     /**
-     * Tests that equals returns false when
-     * passed an Object that is not type ColumnDefinition
+     * Tests that equals returns false when passed an Object that is not type
+     * ColumnDefinition
      */
     @Test
     public void testEquals2()
     {
         final ColumnDefinition def1 = new ColumnDefinition("Test", true, true, true, "default");
         final Object test = new String();
-        assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed an Object not of type ColumnDefintion.",def1.equals(test));
+        assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed an Object not of type ColumnDefintion.", def1.equals(test));
     }
 
     /**
-     * Tests that equals returns true when passed itself
-     * (Tests that equals is reflexive)
+     * Tests that equals returns true when passed itself (Tests that equals is
+     * reflexive)
      */
     @Test
     public void testEquals3()
@@ -85,8 +85,8 @@ public class ColumnDefinitionTest
     }
 
     /**
-     * Verifies equals and hashCode return true
-     * and identical hash codes for two identical ColumnDefinition objects
+     * Verifies equals and hashCode return true and identical hash codes for two
+     * identical ColumnDefinition objects
      */
     @Test
     public void testEqualsAndHash1()
@@ -105,9 +105,8 @@ public class ColumnDefinitionTest
     }
 
     /**
-     * Verifies equals and hashCode return false
-     * and different hash codes for different
-     * ColumnDefinition objects
+     * Verifies equals and hashCode return false and different hash codes for
+     * different ColumnDefinition objects
      */
     @Test
     public void testEqualsAndHash2()
@@ -128,9 +127,8 @@ public class ColumnDefinitionTest
     }
 
     /**
-     * Verifies equals and hashCode return false
-     * and different hash codes for different
-     * ColumnDefinition objects
+     * Verifies equals and hashCode return false and different hash codes for
+     * different ColumnDefinition objects
      */
     @Test
     public void testEqualsAndHash3()
@@ -151,9 +149,8 @@ public class ColumnDefinitionTest
     }
 
     /**
-     * Verifies equals and hashCode return false
-     * and different hash codes for different
-     * ColumnDefinition objects
+     * Verifies equals and hashCode return false and different hash codes for
+     * different ColumnDefinition objects
      */
     @Test
     public void testEqualsAndHash4()
@@ -174,9 +171,8 @@ public class ColumnDefinitionTest
     }
 
     /**
-     * Verifies equals and hashCode return false
-     * and different hash codes for different
-     * ColumnDefinition objects
+     * Verifies equals and hashCode return false and different hash codes for
+     * different ColumnDefinition objects
      */
     @Test
     public void testEqualsAndHash5()
@@ -197,9 +193,8 @@ public class ColumnDefinitionTest
     }
 
     /**
-     * Verifies equals and hashCode return false
-     * and different hash codes for different
-     * ColumnDefinition objects
+     * Verifies equals and hashCode return false and different hash codes for
+     * different ColumnDefinition objects
      */
     @Test
     public void testEqualsAndHash6()

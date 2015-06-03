@@ -29,17 +29,18 @@ import org.junit.Test;
 
 import com.rgi.common.Dimensions;
 
-public class DimensionsTest {
+@SuppressWarnings({"javadoc", "static-method"})
+public class DimensionsTest
+{
 
     /**
      * Tests the Dimensions constructor creates a Dimensions object with the
      * given width and height
      */
     @Test
-    @SuppressWarnings({ "unused", "static-method" })
     public void dimensionsConstructorTest()
     {
-        final Dimensions<Integer> dim = new Dimensions<Integer>(10, 5);
+        final Dimensions<Integer> dim = new Dimensions<>(10, 5);
         assertTrue(dim.getClass().equals(Dimensions.class));
         assertTrue(dim.getWidth() == 10);
         assertTrue(dim.getHeight() == 5);
@@ -49,10 +50,9 @@ public class DimensionsTest {
      * Tests that getWidth returns the correct width for the Dimensions object
      */
     @Test
-    @SuppressWarnings({ "unused", "static-method" })
     public void getWidthTest()
     {
-        final Dimensions<Integer> dim = new Dimensions<Integer>(20, 5);
+        final Dimensions<Integer> dim = new Dimensions<>(20, 5);
         assertTrue(dim.getWidth() == 20);
     }
 
@@ -60,10 +60,9 @@ public class DimensionsTest {
      * Tests that getHeight returns the correct height for the Dimensions object
      */
     @Test
-    @SuppressWarnings({ "unused", "static-method" })
     public void getHeightTest()
     {
-        final Dimensions<Integer> dim = new Dimensions<Integer>(20, 55);
+        final Dimensions<Integer> dim = new Dimensions<>(20, 55);
         assertTrue(dim.getHeight() == 55);
     }
 }

@@ -26,7 +26,17 @@ package com.rgi.common.util.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public interface ResultSetConsumer<T>
+/**
+ * @author Luke.Lambert
+ *
+ */
+public interface ResultSetConsumer
 {
+    /**
+     * @param resultSet
+     *             Result set to consume
+     * @throws SQLException
+     *             if there is a database error
+     */
     public void accept(final ResultSet resultSet) throws SQLException;
 }

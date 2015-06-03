@@ -40,7 +40,6 @@ import com.rgi.android.common.coordinate.CoordinateReferenceSystem;
 @SuppressWarnings("static-method")
 public class CoordinateReferenceSystemTest
 {
-
     /**
      * Tests if CoordinateReferenceSystem throws an IllegalArgumentException
      * when a parameter is null or empty
@@ -69,8 +68,10 @@ public class CoordinateReferenceSystemTest
      * Tests if CoordinateReferenceSystem throws an IllegalArgumentException
      * when a parameter is null or empty
      */
-    @Test (expected = IllegalArgumentException.class)
-    public void illegalArgumentException3(){
+    @SuppressWarnings("unused")
+    @Test(expected = IllegalArgumentException.class)
+    public void illegalArgumentException3()
+    {
         new CoordinateReferenceSystem("", "test", 123);
         fail("Expected CoordinateReferenceSystem to throw an IllegalArgumentException when given a null or empty paramter");
     }
@@ -79,12 +80,13 @@ public class CoordinateReferenceSystemTest
      * Tests that toString returns the correct string
      */
     @Test
-    public void testToString(){
+    public void testToString()
+    {
         final String name = "bob";
         final String authority = "RGI";
         final int id = 123;
         final CoordinateReferenceSystem crs = new CoordinateReferenceSystem(name, authority, id);
-        assertTrue("CoordinateReferenceSysemt method toString() did not return expected string",crs.toString().equals(String.format("%s:%d - %s", authority, id, name)));
+        assertTrue("CoordinateReferenceSysemt method toString() did not return expected string", crs.toString().equals(String.format("%s:%d - %s", authority, id, name)));
     }
 
     /**
@@ -95,9 +97,7 @@ public class CoordinateReferenceSystemTest
     {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem(crs1.getAuthority(), crs1.getIdentifier());
-        assertEquals(String.format("The equals method returned false when it should have returned true. CrsCompared: %s, %s.",
-                                   crs1.toString(), crs2.toString()),
-                     crs1, crs2);
+        assertEquals(String.format("The equals method returned false when it should have returned true. CrsCompared: %s, %s.", crs1.toString(), crs2.toString()), crs1, crs2);
     }
 
     /**
@@ -108,9 +108,7 @@ public class CoordinateReferenceSystemTest
     {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem("Different Authority", crs1.getIdentifier());
-        assertTrue(String.format("The equals method returned true when it should have returned false. CrsCompared: %s, %s.",
-                                   crs1.toString(), crs2.toString()),
-                     !crs1.equals(crs2));
+        assertTrue(String.format("The equals method returned true when it should have returned false. CrsCompared: %s, %s.", crs1.toString(), crs2.toString()), !crs1.equals(crs2));
     }
 
     /**
@@ -121,9 +119,7 @@ public class CoordinateReferenceSystemTest
     {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem(crs1.getAuthority(), 888);
-        assertTrue(String.format("The equals method returned true when it should have returned false. CrsCompared: %s, %s.",
-                                   crs1.toString(), crs2.toString()),
-                     !crs1.equals(crs2));
+        assertTrue(String.format("The equals method returned true when it should have returned false. CrsCompared: %s, %s.", crs1.toString(), crs2.toString()), !crs1.equals(crs2));
     }
 
     /**
@@ -133,8 +129,7 @@ public class CoordinateReferenceSystemTest
     public void equalsTest4()
     {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
-        assertTrue("The equals method returned true when it should have returned false.",
-                   !crs1.equals(null));
+        assertTrue("The equals method returned true when it should have returned false.", !crs1.equals(null));
     }
 
     /**
@@ -145,9 +140,9 @@ public class CoordinateReferenceSystemTest
     {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final Double differentObject = Double.valueOf(291.2);
-        assertTrue("The equals method returned true when it should have returned false.",
-                   !crs1.equals(differentObject));
+        assertTrue("The equals method returned true when it should have returned false.", !crs1.equals(differentObject));
     }
+
     /**
      * Tests if the hashCode function returns the values expected
      */
@@ -156,10 +151,7 @@ public class CoordinateReferenceSystemTest
     {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem(crs1.getAuthority(), crs1.getIdentifier());
-        assertEquals(String.format(Locale.getDefault(),
-                                   "The hashcode method returned different values when it should have returned the same hashCode. Crs's hashCodes Compared: %d, %d.",
-                                   crs1.hashCode(), crs2.hashCode()),
-                     crs1.hashCode(), crs2.hashCode());
+        assertEquals(String.format(Locale.getDefault(), "The hashcode method returned different values when it should have returned the same hashCode. Crs's hashCodes Compared: %d, %d.", crs1.hashCode(), crs2.hashCode()), crs1.hashCode(), crs2.hashCode());
     }
 
     /**
@@ -170,17 +162,14 @@ public class CoordinateReferenceSystemTest
     {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
         final CoordinateReferenceSystem crs2 = new CoordinateReferenceSystem("different authority", crs1.getIdentifier());
-        assertTrue(String.format(Locale.getDefault(),
-                                 "The hashcode method returned same value when it should have returned different hashCodes. Crs's hashCodes Compared: %d, %d.",
-                                 crs1.hashCode(), crs2.hashCode()),
-                     crs1.hashCode() != crs2.hashCode());
+        assertTrue(String.format(Locale.getDefault(), "The hashcode method returned same value when it should have returned different hashCodes. Crs's hashCodes Compared: %d, %d.", crs1.hashCode(), crs2.hashCode()), crs1.hashCode() != crs2.hashCode());
     }
 
     /**
-     * Tests compareTo throws a NullPointerException when
-     * given an null parameter
+     * Tests compareTo throws a NullPointerException when given an null
+     * parameter
      */
-    @Test (expected = NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void testCompareTo1()
     {
         final CoordinateReferenceSystem crs1 = new CoordinateReferenceSystem("Authority", 555);
