@@ -227,7 +227,7 @@ public class DatabaseUtility
     	DatabaseUtility.verify(connection);
     	try(Statement statement = connection.createStatement())
     	{
-    		statement.execute("PRAGMA synchronous = OFF;");
+    		statement.execute(String.format("PRAGMA synchronous = OFF;"));
     	}
     }
 
