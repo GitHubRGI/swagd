@@ -23,6 +23,13 @@
 package com.rgi.suite.tilestoreadapter.tms;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -164,35 +171,28 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
     @Override
     public void removeStore() throws TileStoreException
     {
-        final File newDirectory = new File(this.directory.getText());
-        if(deleteDirectory(newDirectory) == false)
-        {
-            throw new TileStoreException(String.format("Unable to remove directory '%s'",
-                                                       newDirectory.getAbsolutePath()));
-        }
-    }
+        final Path path = Paths.get(this.directory.getText());
+        try
+	    {
+		 Files.walkFileTree(path, new SimpleFileVisitor<Path>(){
+		 	                                                      @Override
+			                                                      public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
+			                                                      {
+			                                                    	  Files.delete(file);
+			                                                    	  return FileVisitResult.CONTINUE;
+			                                                      }
 
-    /**
-     * Recursive method that deletes a non-empty directory
-     *
-     * @param directory the directory to be deleted
-     * @return true if the directory (including its files and sub-directories) is successfully deleted
-     */
-    private static boolean deleteDirectory(final File directory)
-    {
-    	final File[] files = directory.listFiles();
-    	boolean delete = true;
-    	for(final File file : files)
-    	{
-    		if(file.isDirectory())
-    		{
-    			delete = delete && deleteDirectory(file);
-    		}
-    		else
-    		{
-    			delete = delete && file.delete();
-    		}
-    	}
-    	return delete && directory.delete();
+			                                                      @Override
+			                                                      public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException
+			                                                      {
+			                                                    	  Files.delete(dir);
+			                                                    	  return FileVisitResult.CONTINUE;
+			                                                      }
+		                                                      });
+	    }
+        catch (final IOException e)
+	    {
+		   throw new TileStoreException("Caught exception when removing tiles.");
+	    }
     }
 }
