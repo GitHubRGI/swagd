@@ -32,8 +32,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import utility.DatabaseUtility;
 
@@ -1045,38 +1047,41 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         final String       networkTableName = schema.getLeft();
         final List<String> columnNames      = schema.getRight();
 
-        final String attributeQuery = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1;",
+        final String attributeQuery = String.format("SELECT %s, %s FROM %s WHERE %s IN (%s) LIMIT %d;",
+                                                    "node_id",
                                                     String.join(", ", columnNames),
                                                     getNodeAttributesTableName(networkTableName),
-                                                    "node_id");
+                                                    "node_id",
+                                                    String.join(", ", nodeIdentifiers.stream()
+                                                                                     .map(nodeIdentifier -> String.valueOf(nodeIdentifier))
+                                                                                     .collect(Collectors.toList())),
+                                                    nodeIdentifiers.size());
+
+        final List<List<Object>> valueCollections = new ArrayList<>(nodeIdentifiers.size());
 
         try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(attributeQuery))
         {
-            final List<List<Object>> valueCollections = new ArrayList<>(nodeIdentifiers.size());
-
-            for(final int nodeIdentifier : nodeIdentifiers)
+            try(final ResultSet resultSet = preparedStatement.executeQuery())
             {
-                preparedStatement.setInt(1, nodeIdentifier);
+                final Map<Integer, Integer> nodeIdentifierIndexMap = IntStream.range(0, nodeIdentifiers.size())
+                                                                              .boxed()
+                                                                              .collect(Collectors.toMap(index -> nodeIdentifiers.get(index),
+                                                                                                        index -> index));
 
-                try(final ResultSet resultSet = preparedStatement.executeQuery())
-                {
-                    if(!resultSet.isBeforeFirst())
-                    {
-                        throw new IllegalArgumentException("Edge does not belong to the network table specified by the supplied attributes");
-                    }
+                return JdbcUtility.map(resultSet,
+                                       results -> Pair.of(nodeIdentifierIndexMap.get(results.getInt(1)),            // Index of the node identifier used to sort the results so they can be returned in the same order as the node ids were requested
+                                                          JdbcUtility.getObjects(results, 2, columnNames.size()+1)))
+                                  .stream()
+                                  .sorted((pair1, pair2) -> Integer.compare(pair1.getLeft(), pair2.getLeft()))
+                                  .map(pair -> pair.getRight())
+                                  .collect(Collectors.toList());
 
-                    final List<Object> values = new ArrayList<>(attributeDescriptions.length);
-
-                    for(int attributeIndex = 1; attributeIndex <= attributeDescriptions.length; ++attributeIndex)
-                    {
-                        values.add(resultSet.getObject(attributeIndex));
-                    }
-
-                   valueCollections.add(values);
-                }
             }
-
-            return valueCollections;
+            catch(final IllegalStateException th)
+            {
+                th.printStackTrace();
+                throw th;
+            }
         }
     }
 

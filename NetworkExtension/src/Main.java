@@ -53,7 +53,7 @@ public class Main
 
         //createGpkg();
 
-        //runRoute();
+        runRoute();
         //runRoute2(geoPackageFile3, 100, 169028);
     }
 
