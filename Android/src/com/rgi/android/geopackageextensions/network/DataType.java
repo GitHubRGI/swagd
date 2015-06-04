@@ -21,58 +21,33 @@
  * SOFTWARE.
  */
 
-package com.rgi.common;
+package com.rgi.android.geopackageextensions.network;
 
 /**
+ * Enum describing what type an attribute should be stored in the database as
+ *
  * @author Luke Lambert
  *
- * @param <L> "Left" member of the pair
- * @param <R> "Right" member of the pair
  */
-public class Pair<L, R>
+public enum DataType
 {
     /**
-     * Constructor
-     *
-     * @param left
-     *             "Left" member of the pair
-     * @param right
-     *             "Right" member of the pair
+     * Equivalent to {@link byte[]}
      */
-    public Pair(final L left, final R right)
-    {
-        this.left  = left;
-        this.right = right;
-    }
+    Blob,
 
     /**
-     * @param left
-     *             "Left" member of the pair
-     * @param right
-     *             "Right" member of the pair
-     * @return a {@link Pair} constructed with the left and right parameters
+     * Equivalent to {@link int}
      */
-    public static <L, R> Pair<L, R> of(final L left, final R right)
-    {
-        return new Pair<>(left, right);
-    }
+    Integer,
 
     /**
-     * @return the left
+     * Equivalent to {@link float} or {@link double}
      */
-    public L getLeft()
-    {
-        return this.left;
-    }
+    Real,
 
     /**
-     * @return the right
+     * Equivalent to {@link String}
      */
-    public R getRight()
-    {
-        return this.right;
-    }
-
-    private final L left;
-    private final R right;
+    Text;
 }

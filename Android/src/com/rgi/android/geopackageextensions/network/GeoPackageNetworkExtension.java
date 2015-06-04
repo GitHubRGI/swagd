@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.extensions.network;
+package com.rgi.android.geopackageextensions.network;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -32,22 +32,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import utility.DatabaseUtility;
-
-import com.rgi.common.BoundingBox;
-import com.rgi.common.Pair;
-import com.rgi.common.util.jdbc.JdbcUtility;
-import com.rgi.geopackage.GeoPackage;
-import com.rgi.geopackage.core.GeoPackageCore;
-import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.extensions.Extension;
-import com.rgi.geopackage.extensions.GeoPackageExtensions;
-import com.rgi.geopackage.extensions.Scope;
-import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
-import com.rgi.geopackage.extensions.implementation.ImplementsExtension;
+import com.rgi.android.common.BoundingBox;
+import com.rgi.android.common.Pair;
+import com.rgi.android.common.util.functional.Consumer;
+import com.rgi.android.common.util.jdbc.JdbcUtility;
+import com.rgi.android.common.util.jdbc.PreparedStatementBiConsumer;
+import com.rgi.android.common.util.jdbc.PreparedStatementConsumer;
+import com.rgi.android.common.util.jdbc.ResultSetConsumer;
+import com.rgi.android.common.util.jdbc.ResultSetFunction;
+import com.rgi.android.geopackage.GeoPackage;
+import com.rgi.android.geopackage.core.ContentFactory;
+import com.rgi.android.geopackage.core.GeoPackageCore;
+import com.rgi.android.geopackage.core.SpatialReferenceSystem;
+import com.rgi.android.geopackage.extensions.Extension;
+import com.rgi.android.geopackage.extensions.GeoPackageExtensions;
+import com.rgi.android.geopackage.extensions.Scope;
+import com.rgi.android.geopackage.extensions.implementation.ExtensionImplementation;
+import com.rgi.android.geopackage.extensions.implementation.ImplementsExtension;
+import com.rgi.android.geopackage.utility.DatabaseUtility;
 
 /**
  * Implementation of the RGI Network GeoPackage extension
@@ -147,24 +150,31 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      *             supplied table name
      * @throws SQLException
      *             throws if the method
-     *             {@link GeoPackageCore#getContent(String, com.rgi.geopackage.core.ContentFactory, SpatialReferenceSystem)}
+     *             {@link GeoPackageCore#getContent(String, com.rgi.android.geopackage.core.ContentFactory)}
      *             throws an SQLException
      */
     public Network getNetwork(final String networkTableName) throws SQLException
     {
         return this.geoPackageCore.getContent(networkTableName,
-                                              (tableName,
-                                               dataType,
-                                               identifier,
-                                               description,
-                                               lastChange,
-                                               boundingBox,
-                                               spatialReferenceSystem) -> new Network(tableName,
-                                                                                      identifier,
-                                                                                      description,
-                                                                                      lastChange,
-                                                                                      boundingBox,
-                                                                                      spatialReferenceSystem));
+                                              new ContentFactory<Network>()
+                                              {
+                                                  @Override
+                                                  public Network create(final String      tableName,
+                                                                        final String      dataType,
+                                                                        final String      identifier,
+                                                                        final String      description,
+                                                                        final String      lastChange,
+                                                                        final BoundingBox boundingBox,
+                                                                        final Integer     spatialReferenceSystemIdentifier)
+                                                  {
+                                                       return new Network(tableName,
+                                                                          identifier,
+                                                                          description,
+                                                                          lastChange,
+                                                                          boundingBox,
+                                                                          spatialReferenceSystemIdentifier);
+                                                  }
+                                              });
     }
 
     /**
@@ -261,10 +271,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
             return network;
         }
-        catch(final Throwable th)
+        catch(final SQLException ex)
         {
             this.databaseConnection.rollback();
-            throw th;
+            throw ex;
         }
     }
 
@@ -297,12 +307,25 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         return JdbcUtility.getOne(this.databaseConnection,
                                   edgeQuery,
-                                  preparedStatement -> { preparedStatement.setInt(1, from);
-                                                         preparedStatement.setInt(2, to);
-                                                       },
-                                  results -> new Edge(results.getInt(1), // identifier
-                                                      from,              // attribute name
-                                                      to));              // attributed type
+                                  new PreparedStatementConsumer()
+                                  {
+                                      @Override
+                                      public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                      {
+                                          preparedStatement.setInt(1, from);
+                                          preparedStatement.setInt(2, to);
+                                      }
+                                  },
+                                  new ResultSetFunction<Edge>()
+                                  {
+                                      @Override
+                                      public Edge apply(final ResultSet resultSet) throws SQLException
+                                      {
+                                          return new Edge(resultSet.getInt(1),
+                                                          from,
+                                                          to);
+                                      }
+                                  });
     }
 
     /**
@@ -328,15 +351,24 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                network.getTableName(),
                                                "to_node");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(edgeQuery))
-        {
-            preparedStatement.setInt(1, node);
-
-            try(final ResultSet resultSet = preparedStatement.executeQuery())
-            {
-                return JdbcUtility.map(resultSet, results -> results.getInt(1));
-            }
-        }
+        return JdbcUtility.get(this.databaseConnection,
+                               edgeQuery,
+                               new PreparedStatementConsumer()
+                               {
+                                   @Override
+                                   public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                   {
+                                       preparedStatement.setInt(1, node);
+                                   }
+                               },
+                               new ResultSetFunction<Integer>()
+                               {
+                                   @Override
+                                   public Integer apply(final ResultSet resultSet) throws SQLException
+                                   {
+                                       return resultSet.getInt(1);
+                                   }
+                               });
     }
 
     /**
@@ -363,18 +395,26 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                network.getTableName(),
                                                "from_node");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(edgeQuery))
-        {
-            preparedStatement.setInt(1, node);
-
-            try(final ResultSet resultSet = preparedStatement.executeQuery())
-            {
-                return JdbcUtility.map(resultSet,
-                                       results -> new Edge(results.getInt(1),
-                                                           node,
-                                                           results.getInt(2)));
-            }
-        }
+        return JdbcUtility.get(this.databaseConnection,
+                               edgeQuery,
+                               new PreparedStatementConsumer()
+                               {
+                                   @Override
+                                   public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                   {
+                                       preparedStatement.setInt(1, node);
+                                   }
+                               },
+                               new ResultSetFunction<Edge>()
+                               {
+                                   @Override
+                                   public Edge apply(final ResultSet resultSet) throws SQLException
+                                   {
+                                       return new Edge(resultSet.getInt(1),
+                                                       node,
+                                                       resultSet.getInt(2));
+                                   }
+                               });
     }
 
     /**
@@ -406,18 +446,19 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                                "to_node",
                                                                network.getTableName());
 
-        try(final Statement statement = this.databaseConnection.createStatement())
-        {
-            try(final ResultSet resultSet = statement.executeQuery(attributeDescriptionQuery))
-            {
-                while(resultSet.next())
-                {
-                    consumer.accept(new Edge(resultSet.getInt(1),
-                                             resultSet.getInt(2),
-                                             resultSet.getInt(3)));
-                }
-            }
-        }
+        JdbcUtility.forEach(this.databaseConnection,
+                            attributeDescriptionQuery,
+                            null,
+                            new ResultSetConsumer()
+                            {
+                                @Override
+                                public void accept(final ResultSet resultSet) throws SQLException
+                                {
+                                    consumer.accept(new Edge(resultSet.getInt(1),
+                                                             resultSet.getInt(2),
+                                                             resultSet.getInt(3)));
+                                }
+                            });
     }
 
     /**
@@ -445,24 +486,25 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                             "from_node",
                                             "to_node");
 
-        int identifier = -1;
-
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS))
-        {
-            preparedStatement.setInt(1, from);
-            preparedStatement.setInt(2, to);
-
-            preparedStatement.executeUpdate();
-
-            identifier = preparedStatement.getGeneratedKeys().getInt(1);
-        }
-        catch(final Throwable th)
-        {
-            this.databaseConnection.rollback();
-            throw th;
-        }
-
-        this.databaseConnection.commit();
+        final int identifier = JdbcUtility.add(this.databaseConnection,
+                                               insert,
+                                               new PreparedStatementConsumer()
+                                               {
+                                                   @Override
+                                                   public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                                   {
+                                                       preparedStatement.setInt(1, from);
+                                                       preparedStatement.setInt(2, to);
+                                                   }
+                                               },
+                                               new ResultSetFunction<Integer>()
+                                               {
+                                                   @Override
+                                                   public Integer apply(final ResultSet resultSet) throws SQLException
+                                                   {
+                                                       return resultSet.getInt(1);
+                                                   }
+                                               });
 
         return new Edge(identifier, from, to);
     }
@@ -494,23 +536,18 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                             "from_node",
                                             "to_node");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert))
-        {
-            for(final Pair<Integer, Integer> edge : edges)
-            {
-                preparedStatement.setInt(1, edge.getLeft());
-                preparedStatement.setInt(2, edge.getRight());
-
-                preparedStatement.executeUpdate();
-            }
-        }
-        catch(final Throwable th)
-        {
-            this.databaseConnection.rollback();
-            throw th;
-        }
-
-        this.databaseConnection.commit();
+        JdbcUtility.add(this.databaseConnection,
+                        insert,
+                        edges,
+                        new PreparedStatementBiConsumer<Pair<Integer, Integer>>()
+                        {
+                            @Override
+                            public void accept(final PreparedStatement preparedStatement, final Pair<Integer, Integer> edge) throws SQLException
+                            {
+                                preparedStatement.setInt(1, edge.getLeft());
+                                preparedStatement.setInt(2, edge.getRight());
+                            }
+                        });
     }
 
     /**
@@ -572,10 +609,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                 preparedStatement.executeUpdate();
             }
         }
-        catch(final Throwable th)
+        catch(final SQLException ex)
         {
             this.databaseConnection.rollback();
-            throw th;
+            throw ex;
         }
 
         this.databaseConnection.commit();
@@ -633,10 +670,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
             preparedStatement.executeUpdate();
         }
-        catch(final Throwable th)
+        catch(final SQLException ex)
         {
             this.databaseConnection.rollback();
-            throw th;
+            throw ex;
         }
 
 
@@ -869,10 +906,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                             description,
                                             attributedType);
         }
-        catch(final Throwable th)
+        catch(final SQLException ex)
         {
             this.databaseConnection.rollback();
-            throw th;
+            throw ex;
         }
     }
 
@@ -1064,7 +1101,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 //            catch(final IllegalStateException th)
 //            {
 //                th.printStackTrace();
-//                throw th;
+//                throw ex;
 //            }
 //        }
         if(attributeDescriptions == null || attributeDescriptions.length == 0)
@@ -1170,10 +1207,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
             preparedStatement.executeUpdate();
         }
-        catch(final Throwable th)
+        catch(final SQLException ex)
         {
             this.databaseConnection.rollback();
-            throw th;
+            throw ex;
         }
 
         this.databaseConnection.commit();
@@ -1246,10 +1283,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                 }
             }
         }
-        catch(final Throwable th)
+        catch(final SQLException ex)
         {
             this.databaseConnection.rollback();
-            throw th;
+            throw ex;
         }
 
         this.databaseConnection.commit();

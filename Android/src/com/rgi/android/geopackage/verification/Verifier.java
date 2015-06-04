@@ -46,8 +46,8 @@ import com.rgi.android.common.util.StringUtility;
 import com.rgi.android.common.util.functional.Function;
 import com.rgi.android.common.util.functional.FunctionalUtility;
 import com.rgi.android.common.util.functional.Predicate;
-import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
-import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
+import com.rgi.android.common.util.jdbc.JdbcUtility;
+import com.rgi.android.common.util.jdbc.ResultSetFunction;
 
 /**
  * @author Luke Lambert

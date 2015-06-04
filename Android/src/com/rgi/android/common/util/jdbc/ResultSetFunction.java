@@ -1,4 +1,4 @@
-package com.rgi.android.common.util.functional.jdbc;
+package com.rgi.android.common.util.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

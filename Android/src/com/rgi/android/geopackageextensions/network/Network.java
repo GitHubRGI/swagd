@@ -21,10 +21,10 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.extensions.network;
+package com.rgi.android.geopackageextensions.network;
 
-import com.rgi.common.BoundingBox;
-import com.rgi.geopackage.core.Content;
+import com.rgi.android.common.BoundingBox;
+import com.rgi.android.geopackage.core.Content;
 
 /**
  * An object representation of an "rgi_network" GeoPackage extension network

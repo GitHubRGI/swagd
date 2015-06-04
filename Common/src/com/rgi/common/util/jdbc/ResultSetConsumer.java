@@ -27,7 +27,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * @author Luke.Lambert
+ * @author Luke Lambert
  *
  */
 public interface ResultSetConsumer

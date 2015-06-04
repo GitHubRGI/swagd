@@ -21,58 +21,61 @@
  * SOFTWARE.
  */
 
-package com.rgi.common;
+package com.rgi.android.geopackageextensions.network;
+
+import com.rgi.android.geopackage.GeoPackage;
 
 /**
+ * Representation of an <b>directional</b> edge in "rgi_network" network edge
+ * in a {@link GeoPackage}
+ *
  * @author Luke Lambert
  *
- * @param <L> "Left" member of the pair
- * @param <R> "Right" member of the pair
  */
-public class Pair<L, R>
+public class Edge
 {
     /**
      * Constructor
      *
-     * @param left
-     *             "Left" member of the pair
-     * @param right
-     *             "Right" member of the pair
+     * @param identifier
+     *             Unique identifier
+     * @param from
+     *             The origin node of an edge
+     * @param to
+     *             The destination node of an edge
      */
-    public Pair(final L left, final R right)
+    protected Edge(final int identifier, final int from, final int to)
     {
-        this.left  = left;
-        this.right = right;
+        this.identifier = identifier;
+        this.from       = from;
+        this.to         = to;
     }
 
     /**
-     * @param left
-     *             "Left" member of the pair
-     * @param right
-     *             "Right" member of the pair
-     * @return a {@link Pair} constructed with the left and right parameters
+     * @return the identifier
      */
-    public static <L, R> Pair<L, R> of(final L left, final R right)
+    public int getIdentifier()
     {
-        return new Pair<>(left, right);
+        return this.identifier;
     }
 
     /**
-     * @return the left
+     * @return the from
      */
-    public L getLeft()
+    public int getFrom()
     {
-        return this.left;
+        return this.from;
     }
 
     /**
-     * @return the right
+     * @return the to
      */
-    public R getRight()
+    public int getTo()
     {
-        return this.right;
+        return this.to;
     }
 
-    private final L left;
-    private final R right;
+    private final int identifier;
+    private final int from;
+    private final int to;
 }

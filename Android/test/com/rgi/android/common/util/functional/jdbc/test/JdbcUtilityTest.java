@@ -39,9 +39,9 @@ import org.junit.Test;
 import utility.TestUtility;
 
 import com.rgi.android.common.util.functional.Predicate;
-import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
-import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
-import com.rgi.android.common.util.functional.jdbc.ResultSetPredicate;
+import com.rgi.android.common.util.jdbc.JdbcUtility;
+import com.rgi.android.common.util.jdbc.ResultSetFunction;
+import com.rgi.android.common.util.jdbc.ResultSetPredicate;
 import com.rgi.android.geopackage.GeoPackage;
 import com.rgi.android.geopackage.core.GeoPackageCore;
 import com.rgi.android.geopackage.verification.ConformanceException;

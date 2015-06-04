@@ -40,8 +40,8 @@ import com.rgi.android.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.android.common.coordinate.CrsCoordinate;
 import com.rgi.android.common.tile.TileOrigin;
 import com.rgi.android.common.util.BoundsUtility;
-import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
-import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
+import com.rgi.android.common.util.jdbc.JdbcUtility;
+import com.rgi.android.common.util.jdbc.ResultSetFunction;
 import com.rgi.android.geopackage.core.ContentFactory;
 import com.rgi.android.geopackage.core.GeoPackageCore;
 import com.rgi.android.geopackage.core.SpatialReferenceSystem;
@@ -275,13 +275,13 @@ public class GeoPackageTiles
                                     new ContentFactory<TileSet>()
                                     {
                                         @Override
-                                        public TileSet create(final String tableName,
-                                                              final String dataType,
-                                                              final String identifier,
-                                                              final String description,
-                                                              final String lastChange,
+                                        public TileSet create(final String      tableName,
+                                                              final String      dataType,
+                                                              final String      identifier,
+                                                              final String      description,
+                                                              final String      lastChange,
                                                               final BoundingBox boundingBox,
-                                                              final Integer spatialReferenceSystemIdentifier)
+                                                              final Integer     spatialReferenceSystemIdentifier)
                                         {
                                             return new TileSet(tableName,
                                                                identifier,

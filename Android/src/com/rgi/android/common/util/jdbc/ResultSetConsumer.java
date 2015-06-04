@@ -21,58 +21,22 @@
  * SOFTWARE.
  */
 
-package com.rgi.common;
+package com.rgi.android.common.util.jdbc;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * @author Luke Lambert
  *
- * @param <L> "Left" member of the pair
- * @param <R> "Right" member of the pair
  */
-public class Pair<L, R>
+public interface ResultSetConsumer
 {
     /**
-     * Constructor
-     *
-     * @param left
-     *             "Left" member of the pair
-     * @param right
-     *             "Right" member of the pair
+     * @param resultSet
+     *             Result set to consume
+     * @throws SQLException
+     *             if there is a database error
      */
-    public Pair(final L left, final R right)
-    {
-        this.left  = left;
-        this.right = right;
-    }
-
-    /**
-     * @param left
-     *             "Left" member of the pair
-     * @param right
-     *             "Right" member of the pair
-     * @return a {@link Pair} constructed with the left and right parameters
-     */
-    public static <L, R> Pair<L, R> of(final L left, final R right)
-    {
-        return new Pair<>(left, right);
-    }
-
-    /**
-     * @return the left
-     */
-    public L getLeft()
-    {
-        return this.left;
-    }
-
-    /**
-     * @return the right
-     */
-    public R getRight()
-    {
-        return this.right;
-    }
-
-    private final L left;
-    private final R right;
+    public void accept(final ResultSet resultSet) throws SQLException;
 }
