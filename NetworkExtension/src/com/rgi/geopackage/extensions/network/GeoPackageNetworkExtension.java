@@ -307,7 +307,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(edgeQuery))
         {
             preparedStatement.setInt(1, from);
-            preparedStatement.setInt(1, to);
+            preparedStatement.setInt(2, to);
 
             try(final ResultSet resultSet = preparedStatement.executeQuery())
             {
