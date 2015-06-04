@@ -28,6 +28,7 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -269,20 +270,20 @@ public class FunctionalUtilityTest
         collection.add(name4);
         collection.add(name5);
         collection.add(name6);
-        final ArrayList<Integer> results = FunctionalUtility.filterMap(collection, new Predicate<String>() {
-                                                                                                               @Override
-                                                                                                               public boolean apply(final String t)
-                                                                                                               {
-                                                                                                                   return t.length() > 5;
-                                                                                                               }
-                                                                                                           },
-                                                                                   new Function<String, Integer>(){
-                                                                                                                      @Override
-                                                                                                                      public Integer apply(final String input)
-                                                                                                                      {
-                                                                                                                          return input.length();
-                                                                                                                      }
-                                                                                                                  });
+        final List<Integer> results = FunctionalUtility.filterMap(collection, new Predicate<String>() {
+                                                                                                          @Override
+                                                                                                          public boolean apply(final String t)
+                                                                                                          {
+                                                                                                              return t.length() > 5;
+                                                                                                          }
+                                                                                                      },
+                                                                              new Function<String, Integer>(){
+                                                                                                                 @Override
+                                                                                                                 public Integer apply(final String input)
+                                                                                                                 {
+                                                                                                                     return input.length();
+                                                                                                                 }
+                                                                                                             });
         assertTrue("FunctionalUtility method filterMap did not return the expected Collection.",
                 results.size() == 3 &&
                 results.get(0) == name2.length() &&
