@@ -23,8 +23,11 @@
 
 package com.rgi.common.util.jdbc;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,6 +40,38 @@ import java.util.function.Supplier;
  */
 public class JdbcUtility
 {
+    public static void executeUpdate(final Connection databaseConnection, final String sql) throws SQLException
+    {
+        try(Statement statement = databaseConnection.createStatement())
+        {
+            statement.executeUpdate(sql);
+        }
+    }
+
+    public static <T> T getOne(final Connection                databaseConnection,
+                               final String                    sql,
+                               final PreparedStatementConsumer parameterSetter,
+                               final ResultSetFunction<T>      resultMapper) throws SQLException
+    {
+        try(final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql))
+        {
+            if(parameterSetter != null)
+            {
+                parameterSetter.accept(preparedStatement);
+            }
+
+            try(final ResultSet resultSet = preparedStatement.executeQuery())
+            {
+                if(resultSet.isBeforeFirst())
+                {
+                    return resultMapper.apply(resultSet);
+                }
+
+                return null;
+            }
+        }
+    }
+
     /**
      * Returns {@link ArrayList} of the type of the input consisting of the
      * results of applying the operations in {@link ResultSetFunction} on the

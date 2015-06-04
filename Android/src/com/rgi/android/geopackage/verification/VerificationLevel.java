@@ -24,7 +24,7 @@
 package com.rgi.android.geopackage.verification;
 
 /**
- * @author Luke.Lambert
+ * @author Luke Lambert
  *
  */
 public enum VerificationLevel

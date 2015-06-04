@@ -21,58 +21,24 @@
  * SOFTWARE.
  */
 
-package com.rgi.common;
+package com.rgi.android.geopackageextensions.network;
 
 /**
+ * Enum describing whether an attribute refers to a network node, or a network
+ * edge
+ *
  * @author Luke Lambert
  *
- * @param <L> "Left" member of the pair
- * @param <R> "Right" member of the pair
  */
-public class Pair<L, R>
+public enum AttributedType
 {
     /**
-     * Constructor
-     *
-     * @param left
-     *             "Left" member of the pair
-     * @param right
-     *             "Right" member of the pair
+     * Network node
      */
-    public Pair(final L left, final R right)
-    {
-        this.left  = left;
-        this.right = right;
-    }
+    Node,
 
     /**
-     * @param left
-     *             "Left" member of the pair
-     * @param right
-     *             "Right" member of the pair
-     * @return a {@link Pair} constructed with the left and right parameters
+     * Network edge
      */
-    public static <L, R> Pair<L, R> of(final L left, final R right)
-    {
-        return new Pair<>(left, right);
-    }
-
-    /**
-     * @return the left
-     */
-    public L getLeft()
-    {
-        return this.left;
-    }
-
-    /**
-     * @return the right
-     */
-    public R getRight()
-    {
-        return this.right;
-    }
-
-    private final L left;
-    private final R right;
+    Edge;
 }

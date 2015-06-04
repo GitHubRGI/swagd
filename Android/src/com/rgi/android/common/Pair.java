@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.common;
+package com.rgi.android.common;
 
 /**
  * @author Luke Lambert
@@ -54,7 +54,7 @@ public class Pair<L, R>
      */
     public static <L, R> Pair<L, R> of(final L left, final R right)
     {
-        return new Pair<>(left, right);
+        return new Pair<L, R>(left, right);
     }
 
     /**
