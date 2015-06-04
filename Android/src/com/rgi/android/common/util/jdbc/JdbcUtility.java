@@ -39,24 +39,10 @@ import com.rgi.android.common.util.functional.Predicate;
  */
 public class JdbcUtility
 {
-    public static void executeUpdate(final Connection databaseConnection, final String sql) throws SQLException
-    {
-        final Statement statement = databaseConnection.createStatement();
-
-        try
-        {
-            statement.executeUpdate(sql);
-        }
-        finally
-        {
-            statement.close();
-        }
-    }
-
-    public static <T> T getOne(final Connection                databaseConnection,
-                               final String                    sql,
-                               final PreparedStatementConsumer parameterSetter,
-                               final ResultSetFunction<T>      resultMapper) throws SQLException
+    public static <T> T selectOne(final Connection                databaseConnection,
+                                  final String                    sql,
+                                  final PreparedStatementConsumer parameterSetter,
+                                  final ResultSetFunction<T>      resultMapper) throws SQLException
     {
         final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql);
 
@@ -89,10 +75,10 @@ public class JdbcUtility
         }
     }
 
-    public static <T> List<T> get(final Connection                databaseConnection,
-                                  final String                    sql,
-                                  final PreparedStatementConsumer parameterSetter,
-                                  final ResultSetFunction<T>      resultMapper) throws SQLException
+    public static <T> List<T> select(final Connection                databaseConnection,
+                                     final String                    sql,
+                                     final PreparedStatementConsumer parameterSetter,
+                                     final ResultSetFunction<T>      resultMapper) throws SQLException
     {
         final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql);
 
@@ -163,10 +149,75 @@ public class JdbcUtility
         }
     }
 
-    public static <T> T add(final Connection                databaseConnection,
-                            final String                    sql,
-                            final PreparedStatementConsumer parameterSetter,
-                            final ResultSetFunction<T>      keysMapper) throws SQLException
+    public static void update(final Connection databaseConnection, final String sql) throws SQLException
+    {
+        final Statement statement = databaseConnection.createStatement();
+
+        try
+        {
+            statement.executeUpdate(sql);
+        }
+        catch(final SQLException ex)
+        {
+            databaseConnection.rollback();
+            throw ex;
+        }
+        catch(final RuntimeException ex)
+        {
+            databaseConnection.rollback();
+            throw ex;
+        }
+        catch(final Throwable th)
+        {
+            databaseConnection.rollback();
+            throw new RuntimeException(th);
+        }
+        finally
+        {
+            statement.close();
+        }
+    }
+
+    public static void update(final Connection                databaseConnection,
+                              final String                    sql,
+                              final PreparedStatementConsumer parameterSetter) throws SQLException
+    {
+        final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql);
+
+        try
+        {
+            if(parameterSetter != null)
+            {
+                parameterSetter.accept(preparedStatement);
+            }
+
+            preparedStatement.executeUpdate();
+        }
+        catch(final SQLException ex)
+        {
+            databaseConnection.rollback();
+            throw ex;
+        }
+        catch(final RuntimeException ex)
+        {
+            databaseConnection.rollback();
+            throw ex;
+        }
+        catch(final Throwable th)
+        {
+            databaseConnection.rollback();
+            throw new RuntimeException(th);
+        }
+        finally
+        {
+            preparedStatement.close();
+        }
+    }
+
+    public static <T> T update(final Connection                databaseConnection,
+                               final String                    sql,
+                               final PreparedStatementConsumer parameterSetter,
+                               final ResultSetFunction<T>      keysMapper) throws SQLException
     {
         final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
@@ -197,20 +248,28 @@ public class JdbcUtility
             databaseConnection.rollback();
             throw ex;
         }
+        catch(final RuntimeException ex)
+        {
+            databaseConnection.rollback();
+            throw ex;
+        }
+        catch(final Throwable th)
+        {
+            databaseConnection.rollback();
+            throw new RuntimeException(th);
+        }
         finally
         {
             preparedStatement.close();
         }
 
-        databaseConnection.commit();
-
         return returnValue;
     }
 
-    public static <T> void add(final Connection                     databaseConnection,
-                               final String                         sql,
-                               final Iterable<T>                    values,
-                               final PreparedStatementBiConsumer<T> parameterSetter) throws SQLException
+    public static <T> void update(final Connection                     databaseConnection,
+                                  final String                         sql,
+                                  final Iterable<T>                    values,
+                                  final PreparedStatementBiConsumer<T> parameterSetter) throws SQLException
     {
         final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql);
 
@@ -231,12 +290,58 @@ public class JdbcUtility
             databaseConnection.rollback();
             throw ex;
         }
+        catch(final RuntimeException ex)
+        {
+            databaseConnection.rollback();
+            throw ex;
+        }
+        catch(final Throwable th)
+        {
+            databaseConnection.rollback();
+            throw new RuntimeException(th);
+        }
         finally
         {
             preparedStatement.close();
         }
+    }
 
-        databaseConnection.commit();
+    /**
+     * Create list of {@link Object}s by repeatedly calling
+     * {@link ResultSet#getObject(int)}
+     *
+     * @param result
+     *             Result set to query
+     * @param startColumnIndex
+     *             Column index to begin with.  Must be less than or equal to
+     *             <tt>endColumnIndex</tt>
+     * @param endColumnIndex
+     *             Column index to end with (inclusive). Must be greater than
+     *             or equal to <tt>startColumnIndex</tt>
+     * @return List of {@link Object}s with size <tt>endColumnIndex - startColumnIndex + 1</tt>
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public static List<Object> getObjects(final ResultSet result, final int startColumnIndex, final int endColumnIndex) throws SQLException
+    {
+        if(result == null || result.isClosed())
+        {
+            throw new IllegalArgumentException("Result may not be null or closed");
+        }
+
+        if(endColumnIndex < startColumnIndex)
+        {
+            throw new IllegalArgumentException("End column index must be greater than start column index");
+        }
+
+        final List<Object> objects = new ArrayList<Object>(endColumnIndex - startColumnIndex + 1);
+
+        for(int columnIndex = startColumnIndex; columnIndex <= endColumnIndex; ++columnIndex)
+        {
+            objects.add(result.getObject(columnIndex));
+        }
+
+        return objects;
     }
 
     /**

@@ -27,15 +27,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import com.rgi.android.common.BoundingBox;
 import com.rgi.android.common.Pair;
+import com.rgi.android.common.util.StringUtility;
 import com.rgi.android.common.util.functional.Consumer;
+import com.rgi.android.common.util.functional.Function;
+import com.rgi.android.common.util.functional.FunctionalUtility;
 import com.rgi.android.common.util.jdbc.JdbcUtility;
 import com.rgi.android.common.util.jdbc.PreparedStatementBiConsumer;
 import com.rgi.android.common.util.jdbc.PreparedStatementConsumer;
@@ -246,14 +249,14 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         {
             if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, AttributeDescriptionTableName))
             {
-                JdbcUtility.executeUpdate(this.databaseConnection, this.getAttributeDescriptionCreationSql());
+                JdbcUtility.update(this.databaseConnection, this.getAttributeDescriptionCreationSql());
             }
 
             // Create the network table
-            JdbcUtility.executeUpdate(this.databaseConnection, this.getNetworkCreationSql(tableName));
+            JdbcUtility.update(this.databaseConnection, this.getNetworkCreationSql(tableName));
 
             // Create the network's attributes table
-            JdbcUtility.executeUpdate(this.databaseConnection, this.getNodeAttributeTableCreationSql(nodeAttributesTableName));
+            JdbcUtility.update(this.databaseConnection, this.getNodeAttributeTableCreationSql(nodeAttributesTableName));
 
             // Add the network to the content table
             this.geoPackageCore.addContent(tableName,
@@ -305,27 +308,27 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                "from_node",
                                                "to_node");
 
-        return JdbcUtility.getOne(this.databaseConnection,
-                                  edgeQuery,
-                                  new PreparedStatementConsumer()
-                                  {
-                                      @Override
-                                      public void accept(final PreparedStatement preparedStatement) throws SQLException
-                                      {
-                                          preparedStatement.setInt(1, from);
-                                          preparedStatement.setInt(2, to);
-                                      }
-                                  },
-                                  new ResultSetFunction<Edge>()
-                                  {
-                                      @Override
-                                      public Edge apply(final ResultSet resultSet) throws SQLException
-                                      {
-                                          return new Edge(resultSet.getInt(1),
-                                                          from,
-                                                          to);
-                                      }
-                                  });
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     edgeQuery,
+                                     new PreparedStatementConsumer()
+                                     {
+                                         @Override
+                                         public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                         {
+                                             preparedStatement.setInt(1, from);
+                                             preparedStatement.setInt(2, to);
+                                         }
+                                     },
+                                     new ResultSetFunction<Edge>()
+                                     {
+                                         @Override
+                                         public Edge apply(final ResultSet resultSet) throws SQLException
+                                         {
+                                             return new Edge(resultSet.getInt(1),
+                                                             from,
+                                                             to);
+                                         }
+                                     });
     }
 
     /**
@@ -351,24 +354,24 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                network.getTableName(),
                                                "to_node");
 
-        return JdbcUtility.get(this.databaseConnection,
-                               edgeQuery,
-                               new PreparedStatementConsumer()
-                               {
-                                   @Override
-                                   public void accept(final PreparedStatement preparedStatement) throws SQLException
-                                   {
-                                       preparedStatement.setInt(1, node);
-                                   }
-                               },
-                               new ResultSetFunction<Integer>()
-                               {
-                                   @Override
-                                   public Integer apply(final ResultSet resultSet) throws SQLException
-                                   {
-                                       return resultSet.getInt(1);
-                                   }
-                               });
+        return JdbcUtility.select(this.databaseConnection,
+                                  edgeQuery,
+                                  new PreparedStatementConsumer()
+                                  {
+                                      @Override
+                                      public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                      {
+                                          preparedStatement.setInt(1, node);
+                                      }
+                                  },
+                                  new ResultSetFunction<Integer>()
+                                  {
+                                      @Override
+                                      public Integer apply(final ResultSet resultSet) throws SQLException
+                                      {
+                                          return resultSet.getInt(1);
+                                      }
+                                  });
     }
 
     /**
@@ -395,26 +398,26 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                network.getTableName(),
                                                "from_node");
 
-        return JdbcUtility.get(this.databaseConnection,
-                               edgeQuery,
-                               new PreparedStatementConsumer()
-                               {
-                                   @Override
-                                   public void accept(final PreparedStatement preparedStatement) throws SQLException
-                                   {
-                                       preparedStatement.setInt(1, node);
-                                   }
-                               },
-                               new ResultSetFunction<Edge>()
-                               {
-                                   @Override
-                                   public Edge apply(final ResultSet resultSet) throws SQLException
-                                   {
-                                       return new Edge(resultSet.getInt(1),
-                                                       node,
-                                                       resultSet.getInt(2));
-                                   }
-                               });
+        return JdbcUtility.select(this.databaseConnection,
+                                  edgeQuery,
+                                  new PreparedStatementConsumer()
+                                  {
+                                      @Override
+                                      public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                      {
+                                          preparedStatement.setInt(1, node);
+                                      }
+                                  },
+                                  new ResultSetFunction<Edge>()
+                                  {
+                                      @Override
+                                      public Edge apply(final ResultSet resultSet) throws SQLException
+                                      {
+                                          return new Edge(resultSet.getInt(1),
+                                                          node,
+                                                          resultSet.getInt(2));
+                                      }
+                                  });
     }
 
     /**
@@ -486,25 +489,27 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                             "from_node",
                                             "to_node");
 
-        final int identifier = JdbcUtility.add(this.databaseConnection,
-                                               insert,
-                                               new PreparedStatementConsumer()
-                                               {
-                                                   @Override
-                                                   public void accept(final PreparedStatement preparedStatement) throws SQLException
-                                                   {
-                                                       preparedStatement.setInt(1, from);
-                                                       preparedStatement.setInt(2, to);
-                                                   }
-                                               },
-                                               new ResultSetFunction<Integer>()
-                                               {
-                                                   @Override
-                                                   public Integer apply(final ResultSet resultSet) throws SQLException
-                                                   {
-                                                       return resultSet.getInt(1);
-                                                   }
-                                               });
+        final int identifier = JdbcUtility.update(this.databaseConnection,
+                                                  insert,
+                                                  new PreparedStatementConsumer()
+                                                  {
+                                                      @Override
+                                                      public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                                      {
+                                                          preparedStatement.setInt(1, from);
+                                                          preparedStatement.setInt(2, to);
+                                                      }
+                                                  },
+                                                  new ResultSetFunction<Integer>()
+                                                  {
+                                                      @Override
+                                                      public Integer apply(final ResultSet resultSet) throws SQLException
+                                                      {
+                                                          return resultSet.getInt(1);
+                                                      }
+                                                  });
+
+        this.databaseConnection.commit();
 
         return new Edge(identifier, from, to);
     }
@@ -536,18 +541,20 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                             "from_node",
                                             "to_node");
 
-        JdbcUtility.add(this.databaseConnection,
-                        insert,
-                        edges,
-                        new PreparedStatementBiConsumer<Pair<Integer, Integer>>()
-                        {
-                            @Override
-                            public void accept(final PreparedStatement preparedStatement, final Pair<Integer, Integer> edge) throws SQLException
-                            {
-                                preparedStatement.setInt(1, edge.getLeft());
-                                preparedStatement.setInt(2, edge.getRight());
-                            }
-                        });
+        JdbcUtility.update(this.databaseConnection,
+                           insert,
+                           edges,
+                           new PreparedStatementBiConsumer<Pair<Integer, Integer>>()
+                           {
+                               @Override
+                               public void accept(final PreparedStatement preparedStatement, final Pair<Integer, Integer> edge) throws SQLException
+                               {
+                                   preparedStatement.setInt(1, edge.getLeft());
+                                   preparedStatement.setInt(2, edge.getRight());
+                               }
+                           });
+
+        this.databaseConnection.commit();
     }
 
     /**
@@ -560,10 +567,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * @throws SQLException
      *             if there is a database error
      */
-    public void addAttributedEdges(final List<Pair<Pair<Integer, Integer>, List<Object>>> attributedEdges,
-                                   final AttributeDescription...                          attributeDescriptions) throws SQLException
+    public void addAttributedEdges(final Iterable<Pair<Pair<Integer, Integer>, List<Object>>> attributedEdges,
+                                   final AttributeDescription...                              attributeDescriptions) throws SQLException
     {
-        if(attributedEdges == null || attributedEdges.isEmpty())
+        if(attributedEdges == null || attributedEdges.iterator().hasNext())
         {
             throw new IllegalArgumentException("Attributed edges collection may not be null or empty");
         }
@@ -577,43 +584,40 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                             networkTableName,
                                             "from_node",
                                             "to_node",
-                                            String.join(", ", columnNames),
-                                            String.join(", ", Collections.nCopies(attributeDescriptions.length, "?")));
+                                            StringUtility.join(", ", columnNames),
+                                            StringUtility.join(", ", Collections.nCopies(attributeDescriptions.length, "?")));
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert))
-        {
-            for(final Pair<Pair<Integer, Integer>, List<Object>> attributedEdge : attributedEdges)
-            {
-                final Pair<Integer, Integer> edge   = attributedEdge.getLeft();
-                final List<Object>           values = attributedEdge.getRight();
+        JdbcUtility.update(this.databaseConnection,
+                           insert,
+                           attributedEdges,
+                           new PreparedStatementBiConsumer<Pair<Pair<Integer, Integer>, List<Object>>>()
+                           {
+                               @Override
+                               public void accept(final PreparedStatement preparedStatement, final Pair<Pair<Integer, Integer>, List<Object>> attributedEdge) throws SQLException
+                               {
+                                   final Pair<Integer, Integer> edge   = attributedEdge.getLeft();
+                                   final List<Object>           values = attributedEdge.getRight();
 
-                if(values.size() != attributeDescriptions.length)
-                {
-                    throw new IllegalArgumentException(String.format("Edge (%d -> %d) has %d values; expected %d",
-                                                                     edge.getLeft(),
-                                                                     edge.getRight(),
-                                                                     values.size(),
-                                                                     attributeDescriptions.length));
-                }
+                                   if(values.size() != attributeDescriptions.length)
+                                   {
+                                       throw new IllegalArgumentException(String.format("Edge (%d -> %d) has %d values; expected %d",
+                                                                                        edge.getLeft(),
+                                                                                        edge.getRight(),
+                                                                                        values.size(),
+                                                                                        attributeDescriptions.length));
+                                   }
 
-                int parameterIndex = 1;
+                                   int parameterIndex = 1;
 
-                preparedStatement.setInt(parameterIndex++, edge.getLeft());
-                preparedStatement.setInt(parameterIndex++, edge.getRight());
+                                   preparedStatement.setInt(parameterIndex++, edge.getLeft());
+                                   preparedStatement.setInt(parameterIndex++, edge.getRight());
 
-                for(final Object value : values)
-                {
-                    preparedStatement.setObject(parameterIndex++, value);
-                }
-
-                preparedStatement.executeUpdate();
-            }
-        }
-        catch(final SQLException ex)
-        {
-            this.databaseConnection.rollback();
-            throw ex;
-        }
+                                   for(final Object value : values)
+                                   {
+                                       preparedStatement.setObject(parameterIndex++, value);
+                                   }
+                               }
+                           });
 
         this.databaseConnection.commit();
     }
@@ -651,31 +655,35 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         final String update = String.format("UPDATE %s SET %s WHERE %s = ?",
                                             networkTableName,
-                                            String.join(", ",
-                                                        columnNames.stream()
-                                                                   .map(name -> name + " = ?")
-                                                                   .collect(Collectors.toList())),
+                                            StringUtility.join(", ",
+                                                               FunctionalUtility.map(columnNames,
+                                                                                     new Function<String, String>()
+                                                                                     {
+                                                                                         @Override
+                                                                                         public String apply(final String name)
+                                                                                         {
+                                                                                             return name + " = ?";
+                                                                                         }
+                                                                                     })),
                                             "id");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(update))
-        {
-            int parameterIndex = 1;
+        JdbcUtility.update(this.databaseConnection,
+                           update,
+                           new PreparedStatementConsumer()
+                           {
+                               @Override
+                               public void accept(final PreparedStatement preparedStatement) throws SQLException
+                               {
+                                   int parameterIndex = 1;
 
-            for(final Object value : values)
-            {
-                preparedStatement.setObject(parameterIndex++, value);
-            }
+                                   for(final Object value : values)
+                                   {
+                                       preparedStatement.setObject(parameterIndex++, value);
+                                   }
 
-            preparedStatement.setInt(parameterIndex, edge.getIdentifier());
-
-            preparedStatement.executeUpdate();
-        }
-        catch(final SQLException ex)
-        {
-            this.databaseConnection.rollback();
-            throw ex;
-        }
-
+                                   preparedStatement.setInt(parameterIndex, edge.getIdentifier());
+                               }
+                           });
 
         this.databaseConnection.commit();
     }
@@ -715,23 +723,31 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                                "table_name",
                                                                "attributed_type");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(attributeDescriptionQuery))
-        {
-            preparedStatement.setString(1, network.getTableName());
-            preparedStatement.setString(2, attributedType.toString());
-
-            try(final ResultSet resultSet = preparedStatement.executeQuery())
-            {
-                return JdbcUtility.map(preparedStatement.executeQuery(),
-                                       results -> new AttributeDescription(results.getInt(1),                      // attribute unique identifier
-                                                                           network.getTableName(),                 // network table name
-                                                                           results.getString(2),                   // attribute name
-                                                                           results.getString(3),                   // attribute units
-                                                                           DataType.valueOf(results.getString(4)), // attribute data type
-                                                                           results.getString(5),                   // attribute description
-                                                                           attributedType));                       // attributed type
-            }
-        }
+        return JdbcUtility.select(this.databaseConnection,
+                                  attributeDescriptionQuery,
+                                  new PreparedStatementConsumer()
+                                  {
+                                      @Override
+                                      public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                      {
+                                          preparedStatement.setString(1, network.getTableName());
+                                          preparedStatement.setString(2, attributedType.toString());
+                                      }
+                                  },
+                                  new ResultSetFunction<AttributeDescription>()
+                                  {
+                                      @Override
+                                      public AttributeDescription apply(final ResultSet resultSet) throws SQLException
+                                      {
+                                          return new AttributeDescription(resultSet.getInt(1),                      // attribute unique identifier
+                                                                          network.getTableName(),                   // network table name
+                                                                          resultSet.getString(2),                   // attribute name
+                                                                          resultSet.getString(3),                   // attribute units
+                                                                          DataType.valueOf(resultSet.getString(4)), // attribute data type
+                                                                          resultSet.getString(5),                   // attribute description
+                                                                          attributedType);                          // attributed type
+                                      }
+                                  });
     }
 
     /**
@@ -777,24 +793,32 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                                "attributed_type",
                                                                "name");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(attributeDescriptionQuery))
-        {
-            preparedStatement.setString(1, network.getTableName());
-            preparedStatement.setString(2, attributedType.toString());
-            preparedStatement.setString(3, name);
-
-            try(final ResultSet resultSet = preparedStatement.executeQuery())
-            {
-                return JdbcUtility.mapOne(resultSet,
-                                          results -> new AttributeDescription(results.getInt(1),                      // attribute unique identifier
-                                                                              network.getTableName(),                 // network table name
-                                                                              name,                                   // attribute name
-                                                                              results.getString(2),                   // attribute units
-                                                                              DataType.valueOf(results.getString(3)), // attribute data type
-                                                                              results.getString(4),                   // attribute description
-                                                                              attributedType));                       // attributed type
-            }
-        }
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     attributeDescriptionQuery,
+                                     new PreparedStatementConsumer()
+                                     {
+                                         @Override
+                                         public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                         {
+                                             preparedStatement.setString(1, network.getTableName());
+                                             preparedStatement.setString(2, attributedType.toString());
+                                             preparedStatement.setString(3, name);
+                                         }
+                                     },
+                                     new ResultSetFunction<AttributeDescription>()
+                                     {
+                                         @Override
+                                         public AttributeDescription apply(final ResultSet resultSet) throws SQLException
+                                         {
+                                             return new AttributeDescription(resultSet.getInt(1),                      // attribute unique identifier
+                                                                             network.getTableName(),                   // network table name
+                                                                             name,                                     // attribute name
+                                                                             resultSet.getString(2),                   // attribute units
+                                                                             DataType.valueOf(resultSet.getString(3)), // attribute data type
+                                                                             resultSet.getString(4),                   // attribute description
+                                                                             attributedType);                          // attributed type
+                                         }
+                                     });
     }
 
     /**
@@ -859,11 +883,6 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         final String tableName = attributedType == AttributedType.Edge ? network.getTableName()
                                                                        : getNodeAttributesTableName(network);
 
-        final String alter = String.format("ALTER TABLE %s ADD COLUMN %s %s DEFAULT NULL;",
-                                           tableName,
-                                           name,
-                                           dataType.toString().toUpperCase());
-
         final String insert = String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?)",
                                             AttributeDescriptionTableName,
                                             "table_name",
@@ -873,44 +892,46 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                             "description",
                                             "attributed_type");
 
-        try
-        {
-            int attributeDescriptionIdentifier = -1;
+        final int attributeDescriptionIdentifier = JdbcUtility.update(this.databaseConnection,
+                                                                      insert,
+                                                                      new PreparedStatementConsumer()
+                                                                      {
+                                                                          @Override
+                                                                          public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                                                          {
+                                                                              preparedStatement.setString(1, network.getTableName());
+                                                                              preparedStatement.setString(2, name);
+                                                                              preparedStatement.setString(3, units);
+                                                                              preparedStatement.setString(4, dataType.toString());
+                                                                              preparedStatement.setString(5, description);
+                                                                              preparedStatement.setString(6, attributedType.toString());
+                                                                          }
+                                                                      },
+                                                                      new ResultSetFunction<Integer>()
+                                                                      {
+                                                                          @Override
+                                                                          public Integer apply(final ResultSet keySet) throws SQLException
+                                                                          {
+                                                                              return keySet.getInt(1);
+                                                                          }
+                                                                      });
 
-            try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS))
-            {
-                preparedStatement.setString(1, network.getTableName());
-                preparedStatement.setString(2, name);
-                preparedStatement.setString(3, units);
-                preparedStatement.setString(4, dataType.toString());
-                preparedStatement.setString(5, description);
-                preparedStatement.setString(6, attributedType.toString());
+        final String alter = String.format("ALTER TABLE %s ADD COLUMN %s %s DEFAULT NULL;",
+                                           tableName,
+                                           name,
+                                           dataType.toString().toUpperCase(Locale.getDefault()));
 
-                preparedStatement.executeUpdate();
+        JdbcUtility.update(this.databaseConnection, alter);
 
-                attributeDescriptionIdentifier = preparedStatement.getGeneratedKeys().getInt(1);
-            }
+        this.databaseConnection.commit();
 
-            try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(alter))
-            {
-                preparedStatement.executeUpdate();
-            }
-
-            this.databaseConnection.commit();
-
-            return new AttributeDescription(attributeDescriptionIdentifier,
-                                            network.getTableName(),
-                                            name,
-                                            units,
-                                            dataType,
-                                            description,
-                                            attributedType);
-        }
-        catch(final SQLException ex)
-        {
-            this.databaseConnection.rollback();
-            throw ex;
-        }
+        return new AttributeDescription(attributeDescriptionIdentifier,
+                                        network.getTableName(),
+                                        name,
+                                        units,
+                                        dataType,
+                                        description,
+                                        attributedType);
     }
 
     /**
@@ -942,30 +963,37 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                     attributeDescription.getNetworkTableName(),
                                                     "id");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(attributeQuery))
-        {
-            preparedStatement.setInt(1, edge.getIdentifier());
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     attributeQuery,
+                                     new PreparedStatementConsumer()
+                                     {
+                                         @Override
+                                         public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                         {
+                                             preparedStatement.setInt(1, edge.getIdentifier());
+                                         }
+                                     },
+                                     new ResultSetFunction<T>()
+                                     {
+                                         @Override
+                                         public T apply(final ResultSet resultSet) throws SQLException
+                                         {
+                                             if(!resultSet.isBeforeFirst())
+                                             {
+                                                 throw new IllegalArgumentException("Edge and attribute description do not belong to the same network");
+                                             }
 
-            try(final ResultSet resultSet = preparedStatement.executeQuery())
-            {
-                return JdbcUtility.mapOne(resultSet,
-                                          results -> { if(!results.isBeforeFirst())
-                                                       {
-                                                           throw new IllegalArgumentException("Edge and attribute description do not belong to the same network");
-                                                       }
+                                             @SuppressWarnings("unchecked")
+                                             final T value = (T)resultSet.getObject(1); // This may throw a ClassCastException if the stored type cannot be converted to the requested type
 
-                                                       @SuppressWarnings("unchecked")
-                                                       final T value = (T)results.getObject(1); // This may throw a ClassCastException if the stored type cannot be converted to the requested type
+                                             if(!attributeDescription.dataTypeAgrees(value))
+                                             {
+                                                 throw new IllegalArgumentException("Value does not match the data type specified by the attribute description");   // Throw if the requested type doesn't match the
+                                             }
 
-                                                       if(!attributeDescription.dataTypeAgrees(value))
-                                                       {
-                                                           throw new IllegalArgumentException("Value does not match the data type specified by the attribute description");   // Throw if the requested type doesn't match the
-                                                       }
-
-                                                       return value;
-                                                     });
-            }
-        }
+                                             return value;
+                                         }
+                                     });
     }
 
     /**
@@ -998,31 +1026,28 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         final List<String> columnNames      = schema.getRight();
 
         final String attributeQuery = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1",
-                                                    String.join(", ", columnNames),
+                                                    StringUtility.join(", ", columnNames),
                                                     networkTableName,
                                                     "id");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(attributeQuery))
-        {
-            preparedStatement.setInt(1, edge.getIdentifier());
-
-            try(final ResultSet resultSet = preparedStatement.executeQuery())
-            {
-                if(resultSet.isBeforeFirst())
-                {
-                    throw new IllegalArgumentException("Edge does not belong to the network table specified by the supplied attributes");
-                }
-
-                final List<Object> values = new ArrayList<>(attributeDescriptions.length);
-
-                for(int attributeIndex = 1; attributeIndex <= attributeDescriptions.length; ++attributeIndex)
-                {
-                    values.add(resultSet.getObject(attributeIndex));
-                }
-
-                return values;
-            }
-        }
+        return JdbcUtility.select(this.databaseConnection,
+                                  attributeQuery,
+                                  new PreparedStatementConsumer()
+                                  {
+                                      @Override
+                                      public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                      {
+                                          preparedStatement.setInt(1, edge.getIdentifier());
+                                      }
+                                  },
+                                  new ResultSetFunction<Object>()
+                                  {
+                                      @Override
+                                      public Object apply(final ResultSet resultSet) throws SQLException
+                                      {
+                                          return JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length);
+                                      }
+                                  });
     }
 
     /**
@@ -1039,9 +1064,14 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     public List<Object> getNodeAttributes(final int                     nodeIdentifier,
                                           final AttributeDescription... attributeDescriptions) throws SQLException
     {
-        return this.getNodeAttributes(Arrays.asList(nodeIdentifier), attributeDescriptions)
-                   .iterator()
-                   .next();
+        final List<List<Object>> nodes = this.getNodeAttributes(Arrays.asList(nodeIdentifier), attributeDescriptions);
+
+        if(nodes.isEmpty())
+        {
+            throw new IllegalArgumentException("Query returned nothing. Node may not be related to the network described by the attribute descriptions");
+        }
+
+        return nodes.get(0);
     }
 
     /**
@@ -1058,52 +1088,6 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     public List<List<Object>> getNodeAttributes(final List<Integer>           nodeIdentifiers,
                                                 final AttributeDescription... attributeDescriptions) throws SQLException
     {
-//        if(attributeDescriptions == null || attributeDescriptions.length == 0)
-//        {
-//            throw new IllegalArgumentException("Attribute descriptions may not be null or empty");
-//        }
-//
-//        final Pair<String, List<String>> schema = getSchema(Arrays.asList(attributeDescriptions), AttributedType.Node); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
-//
-//        final String       networkTableName = schema.getLeft();
-//        final List<String> columnNames      = schema.getRight();
-//
-//        final String attributeQuery = String.format("SELECT %s, %s FROM %s WHERE %s IN (%s) LIMIT %d;",
-//                                                    "node_id",
-//                                                    String.join(", ", columnNames),
-//                                                    getNodeAttributesTableName(networkTableName),
-//                                                    "node_id",
-//                                                    String.join(", ", nodeIdentifiers.stream()
-//                                                                                     .map(nodeIdentifier -> String.valueOf(nodeIdentifier))
-//                                                                                     .collect(Collectors.toList())),
-//                                                    nodeIdentifiers.size());
-//
-//        final List<List<Object>> valueCollections = new ArrayList<>(nodeIdentifiers.size());
-//
-//        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(attributeQuery))
-//        {
-//            try(final ResultSet resultSet = preparedStatement.executeQuery())
-//            {
-//                final Map<Integer, Integer> nodeIdentifierIndexMap = IntStream.range(0, nodeIdentifiers.size())
-//                                                                              .boxed()
-//                                                                              .collect(Collectors.toMap(index -> nodeIdentifiers.get(index),
-//                                                                                                        index -> index));
-//
-//                return JdbcUtility.map(resultSet,
-//                                       results -> Pair.of(nodeIdentifierIndexMap.get(results.getInt(1)),            // Index of the node identifier used to sort the results so they can be returned in the same order as the node ids were requested
-//                                                          JdbcUtility.getObjects(results, 2, columnNames.size()+1)))
-//                                  .stream()
-//                                  .sorted((pair1, pair2) -> Integer.compare(pair1.getLeft(), pair2.getLeft()))
-//                                  .map(pair -> pair.getRight())
-//                                  .collect(Collectors.toList());
-//
-//            }
-//            catch(final IllegalStateException th)
-//            {
-//                th.printStackTrace();
-//                throw ex;
-//            }
-//        }
         if(attributeDescriptions == null || attributeDescriptions.length == 0)
         {
             throw new IllegalArgumentException("Attribute descriptions may not be null or empty");
@@ -1115,38 +1099,44 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         final List<String> columnNames      = schema.getRight();
 
         final String attributeQuery = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1;",
-                                                    String.join(", ", columnNames),
+                                                    StringUtility.join(", ", columnNames),
                                                     getNodeAttributesTableName(networkTableName),
                                                     "node_id");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(attributeQuery))
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(attributeQuery);
+
+        try
         {
-            final List<List<Object>> valueCollections = new ArrayList<>(nodeIdentifiers.size());
+            final List<List<Object>> valueCollections = new ArrayList<List<Object>>(nodeIdentifiers.size());
 
             for(final int nodeIdentifier : nodeIdentifiers)
             {
                 preparedStatement.setInt(1, nodeIdentifier);
 
-                try(final ResultSet resultSet = preparedStatement.executeQuery())
+                final ResultSet resultSet = preparedStatement.executeQuery();
+
+                try
                 {
                     if(!resultSet.isBeforeFirst())
                     {
                         throw new IllegalArgumentException("Edge does not belong to the network table specified by the supplied attributes");
                     }
 
-                    final List<Object> values = new ArrayList<>(attributeDescriptions.length);
-
-                    for(int attributeIndex = 1; attributeIndex <= attributeDescriptions.length; ++attributeIndex)
-                    {
-                        values.add(resultSet.getObject(attributeIndex));
-                    }
-
-                   valueCollections.add(values);
+                    valueCollections.add(JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length));
+                }
+                finally
+                {
+                    resultSet.close();
                 }
             }
 
             return valueCollections;
         }
+        finally
+        {
+            preparedStatement.close();
+        }
+
     }
 
     /**
@@ -1179,14 +1169,24 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
 
         final String       networkTableName = schema.getLeft();
-        final List<String> columnNames      = schema.getRight();
+        final List<String> columnNames      = FunctionalUtility.map(schema.getRight(),
+                                                                    new Function<String, String>()
+                                                                    {
+                                                                        @Override
+                                                                        public String apply(final String name)
+                                                                        {
+                                                                            return name + " = ?";
+                                                                        }
+                                                                    });
 
         final String update = String.format("UPDATE %s SET %s WHERE %s = ?",
                                             getNodeAttributesTableName(networkTableName),
-                                            String.join(", ", (String[])columnNames.stream().map(name -> name + " = ?").toArray()),
+                                            StringUtility.join(", ", columnNames),
                                             "id");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(update))
+        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(update);
+
+        try
         {
             final int size = values.size(); // Same as attributeDescriptions.size()
 
@@ -1211,6 +1211,20 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         {
             this.databaseConnection.rollback();
             throw ex;
+        }
+        catch(final RuntimeException ex)
+        {
+            this.databaseConnection.rollback();
+            throw ex;
+        }
+        catch(final Throwable th)
+        {
+            this.databaseConnection.rollback();
+            throw new RuntimeException(th);
+        }
+        finally
+        {
+            preparedStatement.close();
         }
 
         this.databaseConnection.commit();
@@ -1246,48 +1260,62 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         columnNames.add(0, "node_id");
 
-        try
+        for(final Pair<Integer, List<Object>> nodeAttributePair : nodeAttributePairs)
         {
-            for(final Pair<Integer, List<Object>> nodeAttributePair : nodeAttributePairs)
+            final int          nodeIdentifier = nodeAttributePair.getLeft();
+            final List<Object> values         = nodeAttributePair.getRight();
+
+            if(values == null)
             {
-                final int          nodeIdentifier = nodeAttributePair.getLeft();
-                final List<Object> values         = nodeAttributePair.getRight();
+                throw new IllegalArgumentException("Values list may not be null");
+            }
 
-                if(values == null)
+            if(values.size() != columnNames.size()-1) // We subtract 1 because "node_id" was added above...
+            {
+                throw new IllegalArgumentException("The size of the column name list must match the size of the values list");
+            }
+
+            final String insert = String.format("INSERT INTO %s (%s) VALUES (%s)",
+                                                getNodeAttributesTableName(networkTableName),
+                                                StringUtility.join(", ", columnNames),
+                                                StringUtility.join(", ", Collections.nCopies(columnNames.size(), "?")));
+
+            final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert);
+
+            try
+            {
+                int argumentIndex = 1;
+
+                preparedStatement.setInt(argumentIndex++, nodeIdentifier);
+
+                for(final Object value : values)
                 {
-                    throw new IllegalArgumentException("Values list may not be null");
+                    preparedStatement.setObject(argumentIndex++, value);
                 }
 
-                if(values.size() != columnNames.size()-1) // We subtract 1 because "node_id" was added above...
-                {
-                    throw new IllegalArgumentException("The size of the column name list must match the size of the values list");
-                }
-
-                final String insert = String.format("INSERT INTO %s (%s) VALUES (%s)",
-                                                    getNodeAttributesTableName(networkTableName),
-                                                    String.join(", ", columnNames),
-                                                    String.join(", ", Collections.nCopies(columnNames.size(), "?")));
-
-                try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert))
-                {
-                    int argumentIndex = 1;
-
-                    preparedStatement.setInt(argumentIndex++, nodeIdentifier);
-
-                    for(final Object value : values)
-                    {
-                        preparedStatement.setObject(argumentIndex++, value);
-                    }
-
-                    preparedStatement.executeUpdate();
-                }
+                preparedStatement.executeUpdate();
+            }
+            catch(final SQLException ex)
+            {
+                this.databaseConnection.rollback();
+                throw ex;
+            }
+            catch(final RuntimeException ex)
+            {
+                this.databaseConnection.rollback();
+                throw ex;
+            }
+            catch(final Throwable th)
+            {
+                this.databaseConnection.rollback();
+                throw new RuntimeException(th);
+            }
+            finally
+            {
+                preparedStatement.close();
             }
         }
-        catch(final SQLException ex)
-        {
-            this.databaseConnection.rollback();
-            throw ex;
-        }
+
 
         this.databaseConnection.commit();
     }
@@ -1308,21 +1336,25 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         final String firstNetworkTableName = attributeDescriptions[0].getNetworkTableName();
 
         return Pair.of(firstNetworkTableName,
-                       Arrays.asList(attributeDescriptions)
-                             .stream()
-                             .map(description -> { if(!description.getNetworkTableName().equals(firstNetworkTableName))
-                                                   {
-                                                       throw new IllegalArgumentException("Attribute descriptions must all refer to the same network table");
-                                                   }
+                       FunctionalUtility.map(Arrays.asList(attributeDescriptions),
+                                             new Function<AttributeDescription, String>()
+                                             {
+                                                 @Override
+                                                 public String apply(final AttributeDescription description)
+                                                 {
+                                                     if(!description.getNetworkTableName().equals(firstNetworkTableName))
+                                                     {
+                                                         throw new IllegalArgumentException("Attribute descriptions must all refer to the same network table");
+                                                     }
 
-                                                   if(!description.getAttributedType().equals(attributedType))
-                                                   {
-                                                       throw new IllegalArgumentException("Attribute descriptions must all refer exclusively to nodes or exclusively to edges");
-                                                   }
+                                                     if(!description.getAttributedType().equals(attributedType))
+                                                     {
+                                                         throw new IllegalArgumentException("Attribute descriptions must all refer exclusively to nodes or exclusively to edges");
+                                                     }
 
-                                                   return description.getName();
-                                                 })
-                             .collect(Collectors.toList()));
+                                                     return description.getName();
+                                                 }
+                                             }));
     }
 
     @SuppressWarnings("static-method")
