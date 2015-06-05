@@ -69,8 +69,8 @@ public class GenerateGeoPackages
     public static void main(final String[] args)
     {
     	createGpkg();
-    	//createGpkg2(geoPackageFile2, dataFile2, nodes2);
-    	//createGpkg2(geoPackageFile3, dataFile3, nodes3);
+    	createGpkg2(geoPackageFile2, dataFile2, nodes2);
+    	createGpkg2(geoPackageFile3, dataFile3, nodes3);
     }
 
 

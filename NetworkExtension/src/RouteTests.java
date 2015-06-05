@@ -48,9 +48,9 @@ import com.rgi.geopackage.verification.ConformanceException;
 @SuppressWarnings({"javadoc", "unused"})
 public class RouteTests
 {
-    private static final File geoPackageFile1 = new File("test.gpkg");
-    private static final File geoPackageFile2 = new File("test2.gpkg");
-    private static final File geoPackageFile3 = new File("test3.gpkg");
+    private static final File geoPackageFile1 = new File("contour.1.gpkg");
+    private static final File geoPackageFile2 = new File("usma_pandolf.gpkg");
+    private static final File geoPackageFile3 = new File("mwtc_pandolf.gpkg");
 
     public static void main(final String[] args)
     {
