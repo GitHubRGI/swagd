@@ -267,7 +267,6 @@ public class GenerateGeoPackages
                                               }
                                               catch(final Exception ex)
                                               {
-                                                  // TODO Auto-generated catch block
                                                   ex.printStackTrace();
                                               }
                                             });

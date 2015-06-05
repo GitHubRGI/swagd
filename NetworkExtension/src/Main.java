@@ -65,7 +65,7 @@ public class Main
 
     public static void main(final String[] args)
     {
-    	//TODO create geopackages here
+    	//
     }
 
 
@@ -251,7 +251,6 @@ public class Main
                                               }
                                               catch(final Exception ex)
                                               {
-                                                  // TODO Auto-generated catch block
                                                   ex.printStackTrace();
                                               }
                                             });
