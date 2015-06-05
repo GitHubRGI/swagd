@@ -39,11 +39,45 @@ import com.rgi.android.common.util.functional.Predicate;
  */
 public class JdbcUtility
 {
+    /**
+     * Selects and returns one result.  Null is returned if the query returns
+     * no result.
+     *
+     * @param databaseConnection
+     *             Connection to the database
+     * @param sql
+     *             SQL query
+     * @param parameterSetter
+     *             Callback that sets parameters of a {@link
+     *             PreparedStatement}. Ignored if null.
+     * @param resultMapper
+     *             Callback that accepts a {@link ResultSet} to create another
+     *             object
+     * @return Instance of T that corresponds to the singular result of the
+     *             query. Null is returned if the query returned no results.
+     * @throws SQLException
+     *             if there is a database error
+     */
     public static <T> T selectOne(final Connection                databaseConnection,
                                   final String                    sql,
                                   final PreparedStatementConsumer parameterSetter,
                                   final ResultSetFunction<T>      resultMapper) throws SQLException
     {
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException("Database connection may not be null");
+        }
+
+        if(sql == null || sql.isEmpty())
+        {
+            throw new IllegalArgumentException("Query statement may not be null or empty");
+        }
+
+        if(resultMapper == null)
+        {
+            throw new IllegalArgumentException("Mapping callback for the result set may not be null");
+        }
+
         final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql);
 
         try
@@ -75,11 +109,45 @@ public class JdbcUtility
         }
     }
 
+    /**
+     * Returns an instance of T per result of the query. If the query produces
+     * no results, an empty collection is returned.
+     *
+     * @param databaseConnection
+     *             Connection to the database
+     * @param sql
+     *             SQL query
+     * @param parameterSetter
+     *             Callback that sets parameters of a {@link
+     *             PreparedStatement}. Ignored if null.
+     * @param resultMapper
+     *             Callback that accepts a {@link ResultSet} to create another
+     *             object
+     * @return Instance of T per result of the query. If the query produces
+     *             no results, an empty collection is returned.
+     * @throws SQLException
+     *             if there is a database error
+     */
     public static <T> List<T> select(final Connection                databaseConnection,
                                      final String                    sql,
                                      final PreparedStatementConsumer parameterSetter,
                                      final ResultSetFunction<T>      resultMapper) throws SQLException
     {
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException("Database connection may not be null");
+        }
+
+        if(sql == null || sql.isEmpty())
+        {
+            throw new IllegalArgumentException("Query statement may not be null or empty");
+        }
+
+        if(resultMapper == null)
+        {
+            throw new IllegalArgumentException("Mapping callback for the result set may not be null");
+        }
+
         final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql);
 
         try
@@ -113,12 +181,40 @@ public class JdbcUtility
         }
     }
 
+    /**
+     * Applies an operation on every result of a query
+     *
+     * @param databaseConnection
+     *             Connection to the database
+     * @param sql
+     *             SQL query
+     * @param parameterSetter
+     *             Callback that sets parameters of a {@link
+     *             PreparedStatement}. Ignored if null.
+     * @param resultConsumer
+     *             Callback that is called for every result of a query
+     * @throws SQLException
+     *             if there is a database error
+     */
     public static void forEach(final Connection                databaseConnection,
                                final String                    sql,
                                final PreparedStatementConsumer parameterSetter,
                                final ResultSetConsumer         resultConsumer) throws SQLException
     {
-        // TODO NEEDS MORE NULLCHECKS
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException("Database connection may not be null");
+        }
+
+        if(sql == null || sql.isEmpty())
+        {
+            throw new IllegalArgumentException("Query statement may not be null or empty");
+        }
+
+        if(resultConsumer == null)
+        {
+            throw new IllegalArgumentException("Consumer callback for the result set may not be null");
+        }
 
         final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql);
 
@@ -149,8 +245,28 @@ public class JdbcUtility
         }
     }
 
+    /**
+     * Applies a database update
+     *
+     * @param databaseConnection
+     *             Connection to the database
+     * @param sql
+     *             SQL query
+     * @throws SQLException
+     *             if there is a database error
+     */
     public static void update(final Connection databaseConnection, final String sql) throws SQLException
     {
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException("Database connection may not be null");
+        }
+
+        if(sql == null || sql.isEmpty())
+        {
+            throw new IllegalArgumentException("Query statement may not be null or empty");
+        }
+
         final Statement statement = databaseConnection.createStatement();
 
         try
@@ -178,10 +294,33 @@ public class JdbcUtility
         }
     }
 
+    /**
+     * Applies a database update
+     *
+     * @param databaseConnection
+     *             Connection to the database
+     * @param sql
+     *             SQL query
+     * @param parameterSetter
+     *             Callback that sets parameters of a {@link
+     *             PreparedStatement}. Ignored if null.
+     * @throws SQLException
+     *             if there is a database error
+     */
     public static void update(final Connection                databaseConnection,
                               final String                    sql,
                               final PreparedStatementConsumer parameterSetter) throws SQLException
     {
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException("Database connection may not be null");
+        }
+
+        if(sql == null || sql.isEmpty())
+        {
+            throw new IllegalArgumentException("Query statement may not be null or empty");
+        }
+
         final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql);
 
         try
@@ -214,11 +353,47 @@ public class JdbcUtility
         }
     }
 
+    /**
+     * Applies a database update, and returns an object that represents the
+     * keys that were automatically generated.  See {@link PreparedStatement#
+     * executeUpdate(String sql, int autoGeneratedKeys)} for more detail on
+     * keys produced by updates.
+     *
+     * @param databaseConnection
+     *             Connection to the database
+     * @param sql
+     *             SQL query
+     * @param parameterSetter
+     *             Callback that sets parameters of a {@link
+     *             PreparedStatement}. Ignored if null.
+     * @param keysMapper
+     *             Callback that maps the {@link ResultSet} returned by {@link
+     *             PreparedStatement#getGeneratedKeys()} to an object that
+     *             represents the key(s)
+     * @return Object that represents the auto-generated key(s)
+     * @throws SQLException
+     *             if there is a database error
+     */
     public static <T> T update(final Connection                databaseConnection,
                                final String                    sql,
                                final PreparedStatementConsumer parameterSetter,
                                final ResultSetFunction<T>      keysMapper) throws SQLException
     {
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException("Database connection may not be null");
+        }
+
+        if(sql == null || sql.isEmpty())
+        {
+            throw new IllegalArgumentException("Query statement may not be null or empty");
+        }
+
+        if(keysMapper == null)
+        {
+            throw new IllegalArgumentException("Key mapping callback may not be null");
+        }
+
         final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
         try
@@ -262,11 +437,42 @@ public class JdbcUtility
         }
     }
 
+    /**
+     * Applies database updates.  {@link PreparedStatement#executeUpdate()} is
+     * called for each value supplied.
+     *
+     * @param databaseConnection
+     *             Connection to the database
+     * @param sql
+     *             SQL query
+     * @param values
+     *             Objects used to set the parameters to successive calls to
+     *             {@link PreparedStatement#executeUpdate()}
+     * @param parameterSetter
+     *             Callback that sets parameters of the {@link PreparedStatement}
+     * @throws SQLException
+     *             if there is a database error
+     */
     public static <T> void update(final Connection                     databaseConnection,
                                   final String                         sql,
                                   final Iterable<T>                    values,
                                   final PreparedStatementBiConsumer<T> parameterSetter) throws SQLException
     {
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException("Database connection may not be null");
+        }
+
+        if(sql == null || sql.isEmpty())
+        {
+            throw new IllegalArgumentException("Query statement may not be null or empty");
+        }
+
+        if(values == null)
+        {
+            throw new IllegalArgumentException("Collection of values may not be null");
+        }
+
         final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql);
 
         try

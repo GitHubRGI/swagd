@@ -701,7 +701,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * @throws SQLException
      *             if there is a database error
      */
-    public List<AttributeDescription> getAttributeDescriptions(final Network network, final AttributedType attributedType) throws SQLException
+    public List<AttributeDescription> getAttributeDescriptions(final Network        network,
+                                                               final AttributedType attributedType) throws SQLException
     {
         if(network == null)
         {
