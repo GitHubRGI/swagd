@@ -106,15 +106,13 @@ public class ProgressDialog
                                                                             }
                                                                         });
                                               }
-
                                               @Override
                                               protected void done()
                                               {
                                                   progressDialog.dispose();
                                               }
                                           };
-
-        cancelButton.addActionListener(e -> task.cancel(true));
+        //cancelButton.addActionListener();
         task.execute();
         progressDialog.setVisible(true);
         return task.get();
