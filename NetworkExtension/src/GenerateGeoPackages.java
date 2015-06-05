@@ -52,23 +52,25 @@ import com.rgi.geopackage.verification.VerificationLevel;
 public class GenerateGeoPackages
 {
 	//Files for geoPackage1
-    private static final File geoPackageFile  = new File("test.gpkg");
-    private static final File nodeFile        = new File("F:/contour.1/contour.1/contour.1.node");
-    private static final File edgeFile        = new File("F:/contour.1/contour.1/contour.1.edge");
+    private static final File geoPackageFile  = new File("contour.1.gpkg");
+    private static final File nodeFile        = new File("data/contour.1/contour.1.node");
+    private static final File edgeFile        = new File("data/contour.1/contour.1.edge");
+
     //Files for geoPackage2
-    private static final File geoPackageFile2 = new File("test2.gpkg");
-    private static final File dataFile2       = new File("F:/Routing Test Data/usma_pandolf.sqlite");
-    private static final File nodes2          = new File("F:/Routing Test Data/Nodes.txt");
+    private static final File geoPackageFile2 = new File("usma_pandolf.gpkg");
+    private static final File dataFile2       = new File("data/usma_pandolf.sqlite");
+    private static final File nodes2          = new File("data/usma_pandolf_node_geometries.txt");
+
     //Files for geoPackage3
-    private static final File geoPackageFile3 = new File("test3.gpkg");
-    private static final File dataFile3       = new File ("F:/Routing Test Data/mwtc_pandolf.sqlite");
-    private static final File nodes3          = new File("F:/Routing Test Data/MWTC_Nodes.txt");
+    private static final File geoPackageFile3 = new File("mwtc_pandolf.gpkg");
+    private static final File dataFile3       = new File("data/mwtc_pandolf.sqlite");
+    private static final File nodes3          = new File("data/mwtc_pandolf_node_geometries.txt");
 
     public static void main(final String[] args)
     {
     	createGpkg();
-    	createGpkg2(geoPackageFile2, dataFile2, nodes2);
-    	createGpkg2(geoPackageFile3, dataFile3, nodes3);
+    	//createGpkg2(geoPackageFile2, dataFile2, nodes2);
+    	//createGpkg2(geoPackageFile3, dataFile3, nodes3);
     }
 
 
@@ -248,8 +250,8 @@ public class GenerateGeoPackages
                                     edge -> { try
                                               {
                                                   final List<List<Object>> values = networkExtension.getNodeAttributes(Arrays.asList(edge.getFrom(), edge.getTo()),
-                                                                                                                   longitudeDescription,
-                                                                                                                   latitudeDescription);
+                                                                                                                       longitudeDescription,
+                                                                                                                       latitudeDescription);
 
                                                   final List<Object> startCoordinate = values.get(0);
                                                   final List<Object> endCoordinate   = values.get(1);
@@ -260,8 +262,8 @@ public class GenerateGeoPackages
                                                   final double distance = Math.sqrt(latitude*latitude + longitude*longitude);
 
                                                   networkExtension.updateEdgeAttributes(edge,
-                                                                                    Arrays.asList(distance),
-                                                                                    distanceDescription);
+                                                                                        Arrays.asList(distance),
+                                                                                        distanceDescription);
                                               }
                                               catch(final Exception ex)
                                               {
@@ -309,7 +311,7 @@ public class GenerateGeoPackages
 
                                                                                       return new Pair<>(Integer.valueOf(pieces[0]), // vertex # (node id)
                                                                                                         Arrays.asList((Object)Double.valueOf(pieces[1]),   // elevation
-                                                                                                                      (Object)Double.valueOf(pieces[2]),  // X (longitude)
+                                                                                                                      (Object)Double.valueOf(pieces[2]),   // X (longitude)
                                                                                                                       (Object)Double.valueOf(pieces[3]))); // y (latitude)
        };
 

@@ -40,18 +40,10 @@ import java.util.function.Supplier;
  */
 public class JdbcUtility
 {
-    public static void executeUpdate(final Connection databaseConnection, final String sql) throws SQLException
-    {
-        try(Statement statement = databaseConnection.createStatement())
-        {
-            statement.executeUpdate(sql);
-        }
-    }
-
-    public static <T> T getOne(final Connection                databaseConnection,
-                               final String                    sql,
-                               final PreparedStatementConsumer parameterSetter,
-                               final ResultSetFunction<T>      resultMapper) throws SQLException
+    public static <T> T selectOne(final Connection                databaseConnection,
+                                  final String                    sql,
+                                  final PreparedStatementConsumer parameterSetter,
+                                  final ResultSetFunction<T>      resultMapper) throws SQLException
     {
         try(final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql))
         {
@@ -71,6 +63,140 @@ public class JdbcUtility
             }
         }
     }
+
+    public static <T> List<T> select(final Connection                databaseConnection,
+                                     final String                    sql,
+                                     final PreparedStatementConsumer parameterSetter,
+                                     final ResultSetFunction<T>      resultMapper) throws SQLException
+    {
+        try(final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql))
+        {
+            if(parameterSetter != null)
+            {
+                parameterSetter.accept(preparedStatement);
+            }
+
+            try(final ResultSet resultSet = preparedStatement.executeQuery())
+            {
+                final ArrayList<T> results = new ArrayList<>();
+
+                while(resultSet.next())
+                {
+                    results.add(resultMapper.apply(resultSet));
+                }
+
+                return results;
+            }
+        }
+    }
+
+    public static void forEach(final Connection                databaseConnection,
+                               final String                    sql,
+                               final PreparedStatementConsumer parameterSetter,
+                               final ResultSetConsumer         resultConsumer) throws SQLException
+    {
+        // TODO NEEDS MORE NULLCHECKS
+
+        try(final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql))
+        {
+            if(parameterSetter != null)
+            {
+                parameterSetter.accept(preparedStatement);
+            }
+
+            try(final ResultSet resultSet = preparedStatement.executeQuery())
+            {
+                while(resultSet.next())
+                {
+                    resultConsumer.accept(resultSet);
+                }
+            }
+        }
+    }
+
+    public static void update(final Connection databaseConnection, final String sql) throws SQLException
+    {
+        try(final Statement statement = databaseConnection.createStatement())
+        {
+            statement.executeUpdate(sql);
+        }
+        catch(final Throwable th)
+        {
+            databaseConnection.rollback();
+            throw th;
+        }
+    }
+
+    public static void update(final Connection                databaseConnection,
+                              final String                    sql,
+                              final PreparedStatementConsumer parameterSetter) throws SQLException
+    {
+        try(final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql))
+        {
+            if(parameterSetter != null)
+            {
+                parameterSetter.accept(preparedStatement);
+            }
+
+            preparedStatement.executeUpdate();
+        }
+        catch(final Throwable th)
+        {
+            databaseConnection.rollback();
+            throw th;
+        }
+    }
+
+    public static <T> T update(final Connection                databaseConnection,
+                               final String                    sql,
+                               final PreparedStatementConsumer parameterSetter,
+                               final ResultSetFunction<T>      keysMapper) throws SQLException
+    {
+        try(final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
+        {
+            if(parameterSetter != null)
+            {
+                parameterSetter.accept(preparedStatement);
+            }
+
+            preparedStatement.executeUpdate();
+
+            try(final ResultSet resultKeys = preparedStatement.getGeneratedKeys())
+            {
+                return keysMapper.apply(resultKeys);
+            }
+        }
+        catch(final Throwable th)
+        {
+            databaseConnection.rollback();
+            throw th;
+        }
+    }
+
+    public static <T> void update(final Connection                     databaseConnection,
+                                  final String                         sql,
+                                  final Iterable<T>                    values,
+                                  final PreparedStatementBiConsumer<T> parameterSetter) throws SQLException
+    {
+        try(final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql))
+        {
+            for(final T value : values)
+            {
+                if(parameterSetter != null)
+                {
+                    parameterSetter.accept(preparedStatement, value);
+                }
+
+                preparedStatement.executeUpdate();
+            }
+        }
+        catch(final Throwable th)
+        {
+            databaseConnection.rollback();
+            throw th;
+        }
+    }
+
 
     /**
      * Returns {@link ArrayList} of the type of the input consisting of the

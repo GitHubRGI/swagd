@@ -221,8 +221,6 @@ public class JdbcUtility
     {
         final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
-        T returnValue = null;
-
         try
         {
             if(parameterSetter != null)
@@ -236,7 +234,7 @@ public class JdbcUtility
 
             try
             {
-                returnValue = keysMapper.apply(resultKeys);
+                return keysMapper.apply(resultKeys);
             }
             finally
             {
@@ -262,8 +260,6 @@ public class JdbcUtility
         {
             preparedStatement.close();
         }
-
-        return returnValue;
     }
 
     public static <T> void update(final Connection                     databaseConnection,

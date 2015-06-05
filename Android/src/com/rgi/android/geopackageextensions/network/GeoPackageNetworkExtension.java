@@ -1184,48 +1184,31 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                             StringUtility.join(", ", columnNames),
                                             "id");
 
-        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(update);
+        final int size = values.size(); // Same as attributeDescriptions.size()
 
-        try
-        {
-            final int size = values.size(); // Same as attributeDescriptions.size()
+        JdbcUtility.update(this.databaseConnection,
+                           update,
+                           new PreparedStatementConsumer()
+                           {
+                               @Override
+                               public void accept(final PreparedStatement preparedStatement) throws SQLException
+                               {
+                                   for(int valueIndex = 0; valueIndex < size; ++valueIndex)
+                                   {
+                                       final AttributeDescription attributeDescription = attributeDescriptions[valueIndex];
+                                       final Object               value                = values.get(valueIndex);
 
-            for(int valueIndex = 0; valueIndex < size; ++valueIndex)
-            {
-                final AttributeDescription attributeDescription = attributeDescriptions[valueIndex];
-                final Object               value                = values.get(valueIndex);
+                                       if(!attributeDescription.dataTypeAgrees(value))
+                                       {
+                                           throw new IllegalArgumentException("Value does not match the data type specified by the attribute description");
+                                       }
 
-                if(!attributeDescription.dataTypeAgrees(value))
-                {
-                    throw new IllegalArgumentException("Value does not match the data type specified by the attribute description");
-                }
+                                       preparedStatement.setObject(valueIndex+1, value);
+                                   }
 
-                preparedStatement.setObject(valueIndex+1, value);
-            }
-
-            preparedStatement.setInt(size, nodeIdentifier);
-
-            preparedStatement.executeUpdate();
-        }
-        catch(final SQLException ex)
-        {
-            this.databaseConnection.rollback();
-            throw ex;
-        }
-        catch(final RuntimeException ex)
-        {
-            this.databaseConnection.rollback();
-            throw ex;
-        }
-        catch(final Throwable th)
-        {
-            this.databaseConnection.rollback();
-            throw new RuntimeException(th);
-        }
-        finally
-        {
-            preparedStatement.close();
-        }
+                                   preparedStatement.setInt(size, nodeIdentifier);
+                               }
+                           });
 
         this.databaseConnection.commit();
     }
@@ -1260,62 +1243,42 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         columnNames.add(0, "node_id");
 
-        for(final Pair<Integer, List<Object>> nodeAttributePair : nodeAttributePairs)
-        {
-            final int          nodeIdentifier = nodeAttributePair.getLeft();
-            final List<Object> values         = nodeAttributePair.getRight();
+        final String insert = String.format("INSERT INTO %s (%s) VALUES (%s)",
+                                            getNodeAttributesTableName(networkTableName),
+                                            StringUtility.join(", ", columnNames),
+                                            StringUtility.join(", ", Collections.nCopies(columnNames.size(), "?")));
 
-            if(values == null)
-            {
-                throw new IllegalArgumentException("Values list may not be null");
-            }
+        JdbcUtility.update(this.databaseConnection,
+                           insert,
+                           nodeAttributePairs,
+                           new PreparedStatementBiConsumer<Pair<Integer, List<Object>>>()
+                           {
+                               @Override
+                               public void accept(final PreparedStatement preparedStatement, final Pair<Integer, List<Object>> nodeAttributePair) throws SQLException
+                               {
+                                   final int          nodeIdentifier = nodeAttributePair.getLeft();
+                                   final List<Object> values         = nodeAttributePair.getRight();
 
-            if(values.size() != columnNames.size()-1) // We subtract 1 because "node_id" was added above...
-            {
-                throw new IllegalArgumentException("The size of the column name list must match the size of the values list");
-            }
+                                    if(values == null)
+                                    {
+                                        throw new IllegalArgumentException("Values list may not be null");
+                                    }
 
-            final String insert = String.format("INSERT INTO %s (%s) VALUES (%s)",
-                                                getNodeAttributesTableName(networkTableName),
-                                                StringUtility.join(", ", columnNames),
-                                                StringUtility.join(", ", Collections.nCopies(columnNames.size(), "?")));
+                                    if(values.size() != columnNames.size()-1) // We subtract 1 because "node_id" was added above...
+                                    {
+                                        throw new IllegalArgumentException("The size of the column name list must match the size of the values list");
+                                    }
 
-            final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insert);
+                                    int argumentIndex = 1;
 
-            try
-            {
-                int argumentIndex = 1;
+                                    preparedStatement.setInt(argumentIndex++, nodeIdentifier);
 
-                preparedStatement.setInt(argumentIndex++, nodeIdentifier);
-
-                for(final Object value : values)
-                {
-                    preparedStatement.setObject(argumentIndex++, value);
-                }
-
-                preparedStatement.executeUpdate();
-            }
-            catch(final SQLException ex)
-            {
-                this.databaseConnection.rollback();
-                throw ex;
-            }
-            catch(final RuntimeException ex)
-            {
-                this.databaseConnection.rollback();
-                throw ex;
-            }
-            catch(final Throwable th)
-            {
-                this.databaseConnection.rollback();
-                throw new RuntimeException(th);
-            }
-            finally
-            {
-                preparedStatement.close();
-            }
-        }
-
+                                    for(final Object value : values)
+                                    {
+                                        preparedStatement.setObject(argumentIndex++, value);
+                                    }
+                                }
+                           });
 
         this.databaseConnection.commit();
     }

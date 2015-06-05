@@ -21,19 +21,25 @@
  * SOFTWARE.
  */
 
-package com.rgi.android.common.util.functional;
+package com.rgi.common.util.jdbc;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 /**
  * @author Luke Lambert
  *
- * @param <T> Type of objects to be consumed
- *
+ * @param <T> Additional parameter to consume
  */
-public interface Consumer<T>
+public interface PreparedStatementBiConsumer<T>
 {
     /**
+     * @param preparedStatement
+     *             {@link PreparedStatement} to consume
      * @param t
-     *             Object set to consume
+     *             Additional value used to set parameters
+     * @throws SQLException
+     *             if there is a database error
      */
-    public void accept(final T t);
+    public void accept(final PreparedStatement preparedStatement, final T t) throws SQLException;
 }
