@@ -11,5 +11,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/GeoPackage"/>
 	<classpathentry kind="lib" path="lib/jts-1.8.jar" sourcepath="C:/Users/mary.carome/Downloads/jts-1.8.0/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.8.0_45"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
