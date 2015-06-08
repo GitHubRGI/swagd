@@ -102,6 +102,10 @@ public class Packager
         }
     }
 
+    /**
+     * Cancels the execution of the
+     * packaging job
+     */
     public static void cancel()
     {
     	cancel = true;
