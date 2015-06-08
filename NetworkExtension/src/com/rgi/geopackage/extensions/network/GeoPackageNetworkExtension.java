@@ -288,12 +288,11 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         {
             throw new IllegalArgumentException("Network may not be null");
         }
-
-        final String edgeQuery = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1;",
-                                               "id",
-                                               network.getTableName(),
-                                               "from_node",
-                                               "to_node");
+        final String edgeQuery = String.format("Select %s FROM %s WHERE %s = ? AND %s = ? LIMIT 1;",
+        		                               "id",
+        		                               network.getTableName(),
+        		                               "from_node",
+        		                               "to_node");
 
         return JdbcUtility.selectOne(this.databaseConnection,
                                      edgeQuery,
