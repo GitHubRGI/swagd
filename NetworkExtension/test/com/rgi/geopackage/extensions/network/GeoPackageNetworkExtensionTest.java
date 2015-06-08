@@ -22,6 +22,7 @@
  */
 package com.rgi.geopackage.extensions.network;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -141,7 +142,7 @@ public class GeoPackageNetworkExtensionTest
    	    assertTrue(String.format("GeoPackageNetworkExtension method getNodeAttributesTableName returned %s, but %s was expected",
    	    		                  GeoPackageNetworkExtension.getNodeAttributesTableName(network),
    	    		                  tableName),
-   	    		   GeoPackageNetworkExtension.getNodeAttributesTableName(network).equals(tableName));
+   	    GeoPackageNetworkExtension.getNodeAttributesTableName(network).equals(tableName));
 	}
 
 	/**
@@ -155,6 +156,27 @@ public class GeoPackageNetworkExtensionTest
    	    assertTrue(String.format("GeoPackageNetworkExtension method getNodeAttributesTableName returned %s, but %s was expected",
    	    		                  GeoPackageNetworkExtension.getNodeAttributesTableName("my_table"),
    	    		                  tableName),
-   	    		   GeoPackageNetworkExtension.getNodeAttributesTableName("my_table").equals(tableName));
+   	    GeoPackageNetworkExtension.getNodeAttributesTableName("my_table").equals(tableName));
+	}
+
+	/**
+	 * Tests getNetwork returns the proper Network
+	 */
+	@Test (expected = IllegalArgumentException.class);
+	public void testGetNetworkException()
+	{
+        final File testFile = TestUtility.getRandomFile(7);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+       	    final String networkName = null;
+       	    networkExtension.getNetwork(networkName);
+       	    fails("Expected GeoPackageNetworkExtension method getNetwork to throw an illegal argument exception when given a null networkTableName");
+
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
 	}
 }
