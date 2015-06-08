@@ -31,12 +31,21 @@ import org.junit.Test;
  * @author Mary Carome
  *
  */
+<<<<<<< HEAD
 @SuppressWarnings({ "static-method" })
 public class TypeTest
 {
     /**
      * Tests that fromString returns null when passed a string that is not one
      * of the Type values
+=======
+public class TypeTest
+{
+    /**
+     * Tests that fromString returns null
+     * when passed a string that is not one of
+     * the Type values
+>>>>>>> origin/master
      */
     @Test
     public void fromStringNull()
@@ -46,7 +55,12 @@ public class TypeTest
     }
 
     /**
+<<<<<<< HEAD
      * Tests that fromString returns Range when passed the String "Range"
+=======
+     * Tests that fromString returns
+     * Range when passed the String "Range"
+>>>>>>> origin/master
      */
     @Test
     public void fromStringRange()
@@ -56,7 +70,12 @@ public class TypeTest
     }
 
     /**
+<<<<<<< HEAD
      * Tests that fromString returns Enum when passed the String "Enum"
+=======
+     * Tests that fromString returns
+     * Enum when passed the String "Enum"
+>>>>>>> origin/master
      */
     @Test
     public void fromStringEnum()
@@ -66,7 +85,12 @@ public class TypeTest
     }
 
     /**
+<<<<<<< HEAD
      * Tests that fromString returns Glob when passed the String "Glob"
+=======
+     * Tests that fromString returns
+     * Glob when passed the String "Glob"
+>>>>>>> origin/master
      */
     @Test
     public void fromStringGlob()

@@ -199,7 +199,7 @@ public class DatabaseUtility
                                             (state ? 1 : 0)));
         }
     }
-    
+
     /**
      * @param connection
      * 			  connection to the database
@@ -209,10 +209,25 @@ public class DatabaseUtility
     public static void setPragmaJournalModeMemory(final Connection connection) throws SQLException
     {
     	DatabaseUtility.verify(connection);
-    	
+
     	try(Statement statement = connection.createStatement())
     	{
     		statement.execute(String.format("PRAGMA journal_mode = MEMORY;"));
+    	}
+    }
+
+    /**
+     * @param connection
+     * 			  connection to the database
+     * @throws SQLException
+     * 		  	  throws if various SQLExceptions occur
+     */
+    public static void setPragmaSynchronousOff(final Connection connection) throws SQLException
+    {
+    	DatabaseUtility.verify(connection);
+    	try(Statement statement = connection.createStatement())
+    	{
+    		statement.execute(String.format("PRAGMA synchronous = OFF;"));
     	}
     }
 

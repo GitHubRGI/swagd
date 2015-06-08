@@ -9,6 +9,7 @@ import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.junit.Test;
 
+<<<<<<< HEAD
 @SuppressWarnings({"javadoc", "static-method"})
 public class GdalErrorTest
 {
@@ -25,5 +26,22 @@ public class GdalErrorTest
         {
             fail("Expected gdal to have an error");
         }
+=======
+public class GdalErrorTest
+{
+    @SuppressWarnings("static-method")
+	@Test
+    public void GdalErrorMessage()
+    {
+            final File testFile = new File(ClassLoader.getSystemResource("test.tif").getFile());
+            final Dataset dset   = gdal.Open(testFile.getAbsolutePath());
+            if(dset == null)
+            {
+                assertTrue("Gdal error did not return the expected message.",gdal.GetLastErrorMsg().equals(new GdalError().getMessage()));
+            }
+            else{
+                fail("Expected gdal to have an error");
+            }
+>>>>>>> origin/master
     }
 }

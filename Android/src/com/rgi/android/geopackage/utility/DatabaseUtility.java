@@ -259,6 +259,31 @@ public class DatabaseUtility
 
         try
         {
+<<<<<<< HEAD
+=======
+            statement.execute(String.format("PRAGMA synchronous = OFF;"));
+        }
+        finally
+        {
+            statement.close();
+        }
+    }
+
+    /**
+     * @param connection
+     *               connection to the database
+     * @throws SQLException
+     *                 throws if various SQLExceptions occur
+     */
+    public static void setPragmaSynchronousOff(final Connection connection) throws SQLException
+    {
+        DatabaseUtility.verify(connection);
+
+        final Statement statement = connection.createStatement();
+
+        try
+        {
+>>>>>>> origin/master
             statement.execute(String.format("PRAGMA journal_mode = MEMORY;"));
         }
         finally

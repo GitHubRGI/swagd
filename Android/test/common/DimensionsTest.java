@@ -33,7 +33,10 @@ import com.rgi.android.common.Dimensions;
  * @author Mary Carome
  *
  */
+<<<<<<< HEAD
 @SuppressWarnings({ "static-method" })
+=======
+>>>>>>> origin/master
 public class DimensionsTest
 {
 
