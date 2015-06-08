@@ -675,11 +675,7 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addEdge(network, 12, 44);
             networkExtension.addEdge(network, 54, 354);
 
-            final List<Integer> list = networkExtension.getExits(network, 12);
-            assertTrue("Expected GeoPackageNetworkExtension method getExits(Network, int) to return an empty list.",
-            		   list.size() == 3);
-            assertTrue("GeoPackageNetworkExtension method getEntries(Network, int) did not return the correct list of node identifiers",
-         		       list.contains(12) && list.contains(23) && list.contains(33)););
+
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
 		{
