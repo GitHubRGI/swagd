@@ -29,6 +29,8 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -36,6 +38,7 @@ import org.junit.Test;
 import utility.TestUtility;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.Pair;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.extensions.Scope;
@@ -269,7 +272,11 @@ public class GeoPackageNetworkExtensionTest
        	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
        	    final BoundingBox box = new BoundingBox(12, 23, 20, 55);
 
-       	    networkExtension.addNetwork(null, "test", "empty", box, gpkg.core().getSpatialReferenceSystem(-1));
+       	    networkExtension.addNetwork(null,
+       	    		                    "test",
+       	    		                    "empty",
+       	    		                    box,
+       	    		                    gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when given a null tableName");
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
@@ -294,7 +301,11 @@ public class GeoPackageNetworkExtensionTest
        	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
        	    final BoundingBox box = new BoundingBox(12, 23, 20, 55);
 
-       	    networkExtension.addNetwork("", "test", "empty", box, gpkg.core().getSpatialReferenceSystem(-1));
+       	    networkExtension.addNetwork("",
+       	    		                    "test",
+       	    		                    "empty",
+       	    		                    box,
+       	    		                    gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when given an empty tableaName");
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
@@ -319,7 +330,11 @@ public class GeoPackageNetworkExtensionTest
        	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
        	    final BoundingBox box = new BoundingBox(12, 23, 20, 55);
 
-       	    networkExtension.addNetwork("123abc", "test", "empty", box, gpkg.core().getSpatialReferenceSystem(-1));
+       	    networkExtension.addNetwork("123abc",
+       	    		                     "test",
+       	    		                     "empty",
+       	    		                     box,
+       	    		                     gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when given an invalid table");
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
@@ -344,7 +359,11 @@ public class GeoPackageNetworkExtensionTest
        	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
        	    final BoundingBox box = new BoundingBox(12, 23, 20, 55);
 
-       	    networkExtension.addNetwork("gpkg_", "test", "empty", box, gpkg.core().getSpatialReferenceSystem(-1));
+       	    networkExtension.addNetwork("gpkg_",
+       	    		                    "test",
+       	    		                    "empty",
+       	    		                    box,
+       	    		                    gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when given a table Name that starts with 'gpkg_'");
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
@@ -368,7 +387,11 @@ public class GeoPackageNetworkExtensionTest
         {
        	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
-       	    networkExtension.addNetwork("my_table", "test", "empty", null, gpkg.core().getSpatialReferenceSystem(-1));
+       	    networkExtension.addNetwork("my_table",
+       	    		                    "test",
+       	    		                    "empty",
+       	    		                    null,
+       	    		                    gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when given a null BoundingBox");
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
@@ -411,6 +434,34 @@ public class GeoPackageNetworkExtensionTest
         }
 	}
 
+	/**
+	 * Tests addNetwork throws an IllegalArgumentException
+	 */
+	@Test (expected = IllegalArgumentException.class)
+	public void testAddNetworkException7()
+	{
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+       	    final String identifier = "test";
+       	    final String description = "empty";
+       	    final BoundingBox box = new BoundingBox(12, 23, 20, 55);
+       	    final SpatialReferenceSystem srs = gpkg.core().getSpatialReferenceSystem(-1);
+
+       	    networkExtension.addNetwork("my_table_node_attributes", identifier, description, box, srs);
+       	    networkExtension.addNetwork("my_table", identifier, description, box, srs);
+            fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when adding a network whose node attributes table already exists");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+	}
     /**
      * Tests addNetwork correctly adds networks
      * with different names
@@ -425,7 +476,11 @@ public class GeoPackageNetworkExtensionTest
        	    final BoundingBox box = new BoundingBox(12, 23, 20, 55);
        	    final SpatialReferenceSystem srs = gpkg.core().getSpatialReferenceSystem(-1);
 
-       	    networkExtension.addNetwork("my_table", "test", "empty", box, srs);
+       	    networkExtension.addNetwork("my_table",
+       	    		                    "test",
+       	    		                     "empty",
+       	    		                     box,
+       	    		                     srs);
        	    assertTrue("GeoPackageNetworkExtension method addNetwork did not add/return the correct Network",
        	    		   networkExtension.addNetwork("my_second_table", "test, too", "empty", box, srs).equals("my_second_table", Network.NetworkContentType, "test, too", "empty", box, srs.getIdentifier()));
         }
@@ -474,7 +529,12 @@ public class GeoPackageNetworkExtensionTest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
         	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
-        	final Network network = networkExtension.addNetwork("my_table", "test", "empty", new BoundingBox(0,0,0,0), gpkg.core().getSpatialReferenceSystem(-1));
+        	final Network network = networkExtension.addNetwork("my_table",
+        			                                            "test",
+        			                                            "empty",
+        			                                            new BoundingBox(0,0,0,0),
+        			                                            gpkg.core().getSpatialReferenceSystem(-1));
+
         	assertNull("Expected GeoPackageNetworkExtension method getEdge(Network, int, int) to return null", networkExtension.getEdge(network, 0, 12));
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
@@ -498,7 +558,12 @@ public class GeoPackageNetworkExtensionTest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
         	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
-        	final Network network = networkExtension.addNetwork("my_table", "test", "empty", new BoundingBox(0,0,0,0), gpkg.core().getSpatialReferenceSystem(-1));
+        	final Network network = networkExtension.addNetwork("my_table",
+        			                                            "test",
+        			                                            "empty",
+        			                                            new BoundingBox(0,0,0,0),
+        			                                            gpkg.core().getSpatialReferenceSystem(-1));
+
         	final int from = 12;
         	final int to = 23;
         	networkExtension.addEdge(network,from , to);
@@ -555,7 +620,11 @@ public class GeoPackageNetworkExtensionTest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
         	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
-            final Network network = networkExtension.addNetwork("my_table", "blah", "foo", new BoundingBox(0,0,0,0), gpkg.core().getSpatialReferenceSystem(-1));
+            final Network network = networkExtension.addNetwork("my_table",
+            		                                            "blah",
+            		                                            "foo",
+            		                                            new BoundingBox(0,0,0,0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
             networkExtension.addEdge(network, 12, 10);
             networkExtension.addEdge(network, 23, 15);
             networkExtension.addEdge(network, 33, 12);
@@ -583,17 +652,23 @@ public class GeoPackageNetworkExtensionTest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
         	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
-            final Network network = networkExtension.addNetwork("my_table", "blah", "foo", new BoundingBox(0,0,0,0), gpkg.core().getSpatialReferenceSystem(-1));
+            final Network network = networkExtension.addNetwork("my_table",
+            		                                            "blah",
+            		                                            "foo",
+            		                                            new BoundingBox(0,0,0,0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
             networkExtension.addEdge(network, 12, 10);
             networkExtension.addEdge(network, 23, 10);
             networkExtension.addEdge(network, 33, 10);
             networkExtension.addEdge(network, 12, 15);
 
-            final List<Integer> list = networkExtension.getEntries(network, 10);
-            assertTrue("Expected GeoPackageNetworkExtension method getEntries(Network, int) to return an nonempty list.",
+            final List<Edge> list = networkExtension.getEntries(network, 10);
+            assertTrue("Expected GeoPackageNetworkExtension method getEntries(Network, int) to return an nonempty list of size 3.",
             		   list.size() == 3);
-            assertTrue("GeoPackageNetworkExtension method getEntries(Network, int) did not return the correct list of node identifiers",
-            		   list.contains(12) && list.contains(23) && list.contains(33));
+            assertTrue("GeoPackageNetworkExtension method getEntries did not return the correct list of Edges",
+            		    list.get(0).getFrom() == 12 &&
+            		    list.get(1).getFrom() == 23 &&
+            		    list.get(2).getFrom() == 33);
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
 		{
@@ -641,7 +716,12 @@ public class GeoPackageNetworkExtensionTest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
         	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
-            final Network network = networkExtension.addNetwork("my_table", "blah", "foo", new BoundingBox(0,0,0,0), gpkg.core().getSpatialReferenceSystem(-1));
+            final Network network = networkExtension.addNetwork("my_table",
+            		                                            "blah",
+            		                                            "foo",
+            		                                            new BoundingBox(0,0,0,0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
             networkExtension.addEdge(network, 12, 10);
             networkExtension.addEdge(network, 23, 15);
             networkExtension.addEdge(network, 33, 12);
@@ -669,12 +749,269 @@ public class GeoPackageNetworkExtensionTest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
         	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
-            final Network network = networkExtension.addNetwork("my_table", "blah", "foo", new BoundingBox(0,0,0,0), gpkg.core().getSpatialReferenceSystem(-1));
+            final Network network = networkExtension.addNetwork("mine",
+                                                                "test",
+                                                                "blah",
+                                                                new BoundingBox(0,0,0,0),
+                                                                gpkg.core().getSpatialReferenceSystem(-1));
+
             networkExtension.addEdge(network, 12, 10);
             networkExtension.addEdge(network, 12, 15);
             networkExtension.addEdge(network, 12, 44);
             networkExtension.addEdge(network, 54, 354);
 
+            final List<Edge> list = networkExtension.getExits(network, 12);
+            assertTrue("Expected GeoPackageNetworkExtension method getExits(Network, int) to return an nonempty list of size 3.",
+            		   list.size() == 3);
+            assertTrue("GeoPackageNetworkExtension method getExits did not return the correct list of Edges",
+            		    list.get(0).getTo() == 10 &&
+            		    list.get(1).getTo() == 15 &&
+            		    list.get(2).getTo() == 44);
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests visitEdges throws an
+     * Exception when given a null Network
+     */
+    @Test (expected = IllegalArgumentException.class)
+    public void testVisitEdgesException1()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+        	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+        	final List<Edge> edges = new ArrayList<>();
+
+        	networkExtension.visitEdges(null, edge-> edges.add(edge));
+            fail("Expected GeoPackageNetworkExtension method visitEdges to throw an IllegalArgumentException when passed a null Network");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests visitEdges throws an
+     * Exception when given a null Network
+     */
+    @Test (expected = IllegalArgumentException.class)
+    public void testVisitEdgesException2()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+        	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+            final Network network = networkExtension.addNetwork("mine",
+            		                                            "test",
+            		                                            "blah",
+            		                                            new BoundingBox(0,0,0,0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+            networkExtension.visitEdges(network, null);
+            fail("Expected GeoPackageNetworkExtension method visitEdges to throw an IllegalArgumentException when passed a null Consumer");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests visitEdges
+     */
+    @Test
+    public void testVisitEdges()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+        	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+            final Network network = networkExtension.addNetwork("mine",
+            		                                            "test",
+            		                                            "blah",
+            		                                            new BoundingBox(0,0,0,0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+            final Edge e1 = networkExtension.addEdge(network, 2, 3);
+            final Edge e2 = networkExtension.addEdge(network, 0, 55);
+            final Edge e3 = networkExtension.addEdge(network, 23, 90);
+
+            final List<Edge> edges = new ArrayList<>();
+            networkExtension.visitEdges(network, edge-> edges.add(edge));
+            assertTrue("GeoPackageNetworkExtension method visitEdges did not visit all edges in the network",
+            		   edges.size() == 3 &&
+            		   edgesEqual(e1, edges.get(0)) &&
+            		   edgesEqual(e2, edges.get(1)) &&
+            		   edgesEqual(e3, edges.get(2)));
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addEdge throws an Exception when
+     * given a null Network
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddEdgeException()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+        	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            networkExtension.addEdge(null, 12, 10);
+            fail("Expected GeoPackageNetworkExtension method addEdge to throw an IllegalArgumentException when passed a null Consumer");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Test addEdge returns the correct edge
+     */
+    @Test
+    public void testAddEdge()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+        	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+            final Network network = networkExtension.addNetwork("mine",
+            		                                            "test",
+            		                                            "blah",
+            		                                            new BoundingBox(0,0,0,0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+            final Edge edge = networkExtension.addEdge(network, 12, 54);
+            assertTrue("GeoPackageNetworkExtension method addEdge did not return the correct edge",edgesEqual(edge, new Edge(-1, 12, 54)));
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Test addEdges throws an Exception
+     * when given a null network
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddEdgesException1()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+        	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+        	networkExtension.addEdges(null, new ArrayList<Pair<Integer, Integer>>());
+        	fail("Expected GeoPackageNetworkExtension method addEdges(Network, Interable) to throw an IllegalArgumentException when passed a null Network");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Test addEdges throws an Exception
+     * when given a null collection of edges
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddEdgesException2()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+        	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+            final Network network = networkExtension.addNetwork("mine",
+            		                                            "test",
+            		                                            "empty",
+            		                                            new BoundingBox(0,0,0,0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+        	networkExtension.addEdges(network, null);
+        	fail("Expected GeoPackageNetworkExtension method addEdges(Network, Interable) to throw an IllegalArgumentException when passed a null edge Collection");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addEdges properly adds
+     * all edges in the Iterable collection it is given
+     */
+    @Test
+    public void testAddEdges()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+        	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+            final Network network = networkExtension.addNetwork("mine",
+            		                                            "test",
+            		                                            "empty",
+            		                                            new BoundingBox(0,0,0,0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+        	final List<Pair<Integer, Integer>> edges = new ArrayList<>();
+    		Pair<Integer, Integer> pair;
+        	for (int i = 2; i < 6; i++)
+        	{
+        		pair = new Pair<>(i, i*i);
+        		edges.add(pair);
+
+        	}
+        	networkExtension.addEdges(network, edges);
+        	for (int i = 2; i < 6; i++)
+        	{
+        		assertTrue(String.format("GeoPackageNetworkExtension method addEdges did not add %s, %s) to the given Network",i, i*i),
+        				   networkExtension.getEdge(network, i, i*i) != null);
+        	}
 
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
@@ -687,13 +1024,912 @@ public class GeoPackageNetworkExtensionTest
         }
     }
 
-	/**
-	 * Private method to print edges
-	 * @param edge
-	 * @return String representation of Edge in (from, to) format
-	 */
+    /**
+     * Tests addAttributedEdges throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAttributedEdgesException1()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+            final AttributeDescription test = new AttributeDescription(1,
+            		                                                   "my_table",
+            		                                                   "elevation",
+            		                                                   "meters",
+            		                                                   DataType.Real,
+            		                                                   "none",
+            		                                                   AttributedType.Edge);
+
+            networkExtension.addAttributedEdges(null, test);
+            fail("Expected GeoPackageNetworkExtension method addAttributedEdges to throw an IllegalArgumentException when given a null attributed edges collection");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addAttributedEdges throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAttributedEdgesException2()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+            final AttributeDescription test = new AttributeDescription(1,
+            		                                                   "my_table",
+            		                                                   "elevation",
+            		                                                   "meters",
+            		                                                   DataType.Real,
+            		                                                   "none",
+            		                                                   AttributedType.Edge);
+            final List<Pair<Pair<Integer, Integer>, List<Object>>> attributedEdges = new ArrayList<>();
+
+            networkExtension.addAttributedEdges(attributedEdges, test);
+            fail("Expected GeoPackageNetworkExtension method addAttributedEdges to throw an IllegalArgumentException when given a null attributed edges collection");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addAttributedEdges throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAttributedEdgesException3()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+       	    final Network network = networkExtension.addNetwork("my_table",
+       	    		                                            "test",
+       	    		                                            "test data",
+       	    		                                            new BoundingBox(0,0,0,0),
+       	    		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+            final AttributeDescription test = networkExtension.addAttributeDescription(network,
+            		                                                                   "elev",
+            		                                                                   "foo",
+            		                                                                   DataType.Real,
+            		                                                                   "test",
+            		                                                                   AttributedType.Edge);
+
+            final List<Pair<Pair<Integer, Integer>, List<Object>>> attributedEdges = new ArrayList<>();
+            Pair<Pair<Integer, Integer>, List<Object>> pair;
+            Pair<Integer, Integer> edge;
+            for (int i = 2; i < 4; i++)
+			{
+				edge = new Pair<>(i, i*i);
+				pair = new Pair<>(edge, Arrays.asList((Object)122.2,
+						                              (Object)20));
+				attributedEdges.add(pair);
+			}
+
+            networkExtension.addAttributedEdges(attributedEdges, test);
+            fail("Expected GeoPackageNetworkExtension method addAttributedEdges method to throw an IllegalArgumentException" +
+                 "when the number of AttributeDescriptions does not match the number of attributes for each edge");
+
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addAttributedEdges
+     */
+    @Test
+    public void testAddAttributedEdges()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+       	    final Network network = networkExtension.addNetwork("my_table",
+       	    		                                            "test",
+       	    		                                            "test data",
+       	    		                                            new BoundingBox(0,0,0,0),
+       	    		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+            final AttributeDescription test = networkExtension.addAttributeDescription(network,
+            		                                                                   "length",
+            		                                                                   "foo",
+            		                                                                   DataType.Real,
+            		                                                                   "test",
+            		                                                                   AttributedType.Edge);
+
+            final List<Pair<Pair<Integer, Integer>, List<Object>>> attributedEdges = new ArrayList<>();
+            Pair<Pair<Integer, Integer>, List<Object>> pair;
+            Pair<Integer, Integer> edge;
+            for (int i = 2; i < 5; i++)
+			{
+				edge = new Pair<>(i, i*i);
+				pair = new Pair<>(edge, Arrays.asList((Object)(i*122.0)));
+				attributedEdges.add(pair);
+			}
+
+            networkExtension.addAttributedEdges(attributedEdges, test);
+            final Edge e1 = networkExtension.getEdge(network, 2, 4);
+            final Edge e2 = networkExtension.getEdge(network, 3, 9);
+            final Edge e3 = networkExtension.getEdge(network, 4, 16);
+
+            assertTrue("GeoPackageNetworkExtension method addAttributedEdges did not add attributed edges correctly",
+            		   (Double)networkExtension.getEdgeAttribute(e1, test) == 244.0);
+            assertTrue("GeoPackageNetworkExtension method addAttributedEdges did not add attributed edges correctly",
+            		   (Double)networkExtension.getEdgeAttribute(e2, test) == 366.0);
+            assertTrue("GeoPackageNetworkExtension method addAttributedEdges did not add attributed edges correctly",
+            		   (Double)networkExtension.getEdgeAttribute(e3, test) == 488.0);
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests updateEdgeAttributes throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testUpdateEdgeAttributesException1()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+       	    final List<Object> values = new ArrayList<>();
+            final AttributeDescription test = new AttributeDescription(1,
+            		                                                   "my_table",
+            		                                                   "elevation",
+            		                                                   "meters",
+            		                                                   DataType.Real,
+            		                                                   "none",
+            		                                                   AttributedType.Edge);
+
+            networkExtension.updateEdgeAttributes(null, values, test);
+            fail("Expected GeoPackageNetworkExtension method updateEdgeAttributes to throw an IllegalArgumentException when given a null Edge");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests updateEdgeAttributes throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testUpdateEdgeAttributesException2()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+       	    final Edge edge = new Edge(0,0,0);
+       	    final List<Object> values = null;
+            final AttributeDescription test = new AttributeDescription(1,
+            		                                                   "my_table",
+            		                                                   "elevation",
+            		                                                   "meters",
+            		                                                   DataType.Real,
+            		                                                   "none",
+            		                                                   AttributedType.Edge);
+
+            networkExtension.updateEdgeAttributes(edge, values, test);
+            fail("Expected GeoPackageNetworkExtension method updateEdgeAttributes to throw an IllegalArgumentException when given a null values Collection");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests updateEdgeAttributes
+     */
+    @Test
+    public void testUpdateEdgeAttributes()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+       	    final Network network = networkExtension.addNetwork("my_table",
+       	    		                                            "none",
+       	    		                                            "test",
+       	    		                                            new BoundingBox(0,0,0,0),
+       	    		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+       	    final AttributeDescription length = networkExtension.addAttributeDescription(network,
+       	    		                                                                     "length",
+       	    		                                                                     "meters",
+       	    		                                                                     DataType.Real,
+       	    		                                                                     "blah",
+       	    		                                                                     AttributedType.Edge);
+
+       	    final AttributeDescription slope = networkExtension.addAttributeDescription(network,
+       	    		                                                                    "slope",
+       	    		                                                                    "feet",
+       	    		                                                                    DataType.Integer,
+       	    		                                                                    "foo",
+       	    		                                                                    AttributedType.Edge);
+
+       	    final List<Object> values = Arrays.asList((Object)122.56,
+       	    		                                  (Object)23);
+       	    final List<Object> newValues = Arrays.asList((Object)55.56,
+                                                         (Object)200);
+
+       	    final List<Pair<Pair<Integer, Integer>, List<Object>>> attributedEdges = new ArrayList<>();
+       	    attributedEdges.add(new Pair<>(new Pair<>(12, 23), values));
+       	    attributedEdges.add(new Pair<>(new Pair<>(45, 54), values));
+            networkExtension.addAttributedEdges(attributedEdges, length, slope);
+
+            final Edge edge1 = networkExtension.getEdge(network, 45, 54);
+            networkExtension.updateEdgeAttributes(edge1, newValues, length, slope);
+
+            assertTrue("GeopackageNetworkExtension method updateEdgeAttributes(Edge, List, AttributedDescription did not update the given edge",
+            		   (Double)networkExtension.getEdgeAttribute(edge1, length) == 55.56 &&
+            		   (Integer)networkExtension.getEdgeAttribute(edge1, slope)== 200);
+
+            final Edge edge2 = networkExtension.getEdge(network, 12, 23);
+
+            assertTrue("GeopackageNetworkExtension method updateEdgeAttributes(Edge, List, AttributedDescription update an additional edge",
+         		   (Double)networkExtension.getEdgeAttribute(edge2, length) == 122.56 &&
+         		   (Integer)networkExtension.getEdgeAttribute(edge2, slope)== 23);
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests getAttributeDescriptions throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetAttributeDescriptionsException1()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+       	    networkExtension.getAttributeDescriptions(null, AttributedType.Edge);
+       	    fail("Expected GeoPackageNetworkExtension(Network, AttributedType to throw an IllegalArgumentException when passed a null Network");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests getAttributeDescriptions throws an IllegalArgumentException
+     */
+    @Test (expected = IllegalArgumentException.class)
+    public void testGetAttributeDescriptionsException2()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("my_table",
+            		                                            "none",
+            		                                            "test",
+            		                                            new BoundingBox(0, 0, 0, 0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+       	    networkExtension.getAttributeDescriptions(network, null);
+       	    fail("Expected GeoPackageNetworkExtension(Network, AttributedType to throw an IllegalArgumentException when passed a null AttributedType");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests getAttributeDescriptions returns an empty list
+     * when applied to a network with no attributes
+     */
+    @Test
+    public void testGetAttributeDescriptions1()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("my_table",
+            		                                            "none",
+            		                                            "test",
+            		                                            new BoundingBox(0, 0, 0, 0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+       	    final List<AttributeDescription> list = networkExtension.getAttributeDescriptions(network, AttributedType.Edge);
+       	    assertTrue("Expected GeoPackageNetworkExtension method getAttributeDescriptions(Network, AttributedType) to return an empty list",
+       	    		   list.size() == 0);
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests getAttributeDescriptions returns a list
+     * of attributes for the given type
+     */
+    @Test
+    public void testGetAttributeDescriptions2()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("my_table",
+            		                                            "none",
+            		                                            "test",
+            		                                            new BoundingBox(0, 0, 0, 0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+            networkExtension.addAttributeDescription(network,
+            		                                 "one",
+            		                                 "seconds",
+            		                                 DataType.Real,
+                                                     "foo",
+                                                     AttributedType.Edge);
+
+            networkExtension.addAttributeDescription(network,
+                                                     "two",
+                                                     "calories",
+                                                     DataType.Real,
+                                                     "bar",
+                                                     AttributedType.Edge);
+
+           networkExtension.addAttributeDescription(network,
+            		                                "three",
+            		                                "fake",
+            		                                DataType.Blob,
+            		                                "foobar",
+            		                                AttributedType.Node);
+
+
+       	    final List<AttributeDescription> list = networkExtension.getAttributeDescriptions(network, AttributedType.Edge);
+       	    assertTrue("Expected GeoPackageNetworkExtension method getAttributeDescriptions(Network, AttributedType) to return a list of size 2",
+       	    		   list.size() == 2);
+       	    assertTrue("GeoPackageNetworkExtension method getAttributeDescriptions(Network, AttributedType) did not return the correct list",
+       	    		   list.get(0).getName().equals("one") &&
+       	    		   list.get(1).getName().equals("two"));
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests getAttributeDesciption throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetAttributeDescriptionException1()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+       	    networkExtension.getAttributeDescription(null, "name", AttributedType.Edge);
+       	    fail("Expected GeoPackageNetworkExtension method getAttributeDescription(Network, String, AttributedType) to throw an IllegalArgumentException when passed a null Network");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests getAttributeDesciption throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetAttributeDescriptionException2()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("MINE",
+            		                                            "test",
+            		                                            "none",
+            		                                            new BoundingBox(0, 0, 0, 0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+       	    networkExtension.getAttributeDescription(network, null, AttributedType.Edge);
+       	    fail("Expected GeoPackageNetworkExtensionmethod getAttributeDescription(Network, String, AttributedType) to throw an IllegalArgumentException when passed a null String");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests getAttributeDesciption throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetAttributeDescriptionException3()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("MINE",
+            		                                            "test",
+            		                                            "none",
+            		                                            new BoundingBox(0, 0, 0, 0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+       	    networkExtension.getAttributeDescription(network, "name", null);
+       	    fail("Expected GeoPackageNetworkExtensionmethod getAttributeDescription(Network, String, AttributedType) to throw an IllegalArgumentException when passed a null AttributedType");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests getAttributeDesciption on a network
+     * with no attributes
+     */
+    @Test
+    public void testGetAttributeDescription1()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("MINE",
+            		                                            "test",
+            		                                            "none",
+            		                                            new BoundingBox(0, 0, 0, 0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+       	    final AttributeDescription attribute = networkExtension.getAttributeDescription(network, "name", AttributedType.Edge);
+       	    assertNull(attribute);
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests getAttributeDesciption on a network
+     * with multiple attributes
+     */
+    @Test
+    public void testGetAttributeDescription2()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("MINE",
+            		                                            "test",
+            		                                            "none",
+            		                                            new BoundingBox(0, 0, 0, 0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+           networkExtension.addAttributeDescription(network,
+            		                                "foobar",
+            		                                "none",
+            		                                DataType.Real,
+            		                                "empty",
+            		                                AttributedType.Edge);
+
+            networkExtension.addAttributeDescription(network,
+                                                     "uno",
+                                                     "dos",
+                                                     DataType.Real,
+                                                     "tres",
+                                                     AttributedType.Edge);
+
+            networkExtension.addAttributeDescription(network,
+                                                     "une",
+                                                     "deux",
+                                                     DataType.Real,
+                                                     "tois",
+                                                     AttributedType.Edge);
+
+       	    final AttributeDescription attribute = networkExtension.getAttributeDescription(network, "foobar", AttributedType.Edge);
+       	    assertTrue("GeoPackageNetworkExtension method getAttributeDescription(Network, String, AttributeType) did not return the correct AttributeDescription",
+       	    		   attribute.getName().equals("foobar") &&
+       	    		   attribute.getUnits().equals("none") &&
+       	    		   attribute.getDescription().equals("empty") &&
+       	    		   attribute.getAttributedType().equals(AttributedType.Edge));
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addAttributeDescription throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAttributeDescriptionException1()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+       	    networkExtension.addAttributeDescription(null,
+       	    		                                 "name",
+       	    		                                 "units",
+       	    		                                 DataType.Real,
+       	    		                                 "description",
+       	    		                                 AttributedType.Edge);
+
+       	    fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed a null Network");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addAttributeDescription throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAttributeDescriptionException2()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("MINE",
+            		                                            "id",
+            		                                            "description",
+            		                                            new BoundingBox(0, 0, 0, 0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+       	    networkExtension.addAttributeDescription(network,
+                                                     null,
+                                                     "units",
+                                                     DataType.Real,
+                                                     "description",
+                                                     AttributedType.Edge);
+
+       	    fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed a null name");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addAttributeDescription throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAttributeDescriptionException3()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("MINE",
+            		                                            "id",
+            		                                            "description",
+            		                                            new BoundingBox(0, 0, 0, 0),
+            		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+       	    networkExtension.addAttributeDescription(network,
+                                                     "",
+                                                     "units",
+                                                     DataType.Real,
+                                                     "description",
+                                                     AttributedType.Edge);
+
+       	    fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed an empty name");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addAttributeDescription throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAttributeDescriptionException4()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+       	    final Network network = networkExtension.addNetwork("network",
+       	    		                                            "name",
+       	    		                                            "description",
+       	    		                                            new BoundingBox(0, 0, 0, 0),
+       	    		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+            networkExtension.addAttributeDescription(network, "name", null, DataType.Real, "description", AttributedType.Edge);
+       	    fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed a null units");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addAttributeDescription throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAttributeDescriptionException5()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+       	    final Network network = networkExtension.addNetwork("network",
+       	    		                                            "name",
+       	    		                                            "description",
+       	    		                                            new BoundingBox(0, 0, 0, 0),
+       	    		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+            networkExtension.addAttributeDescription(network, "name", "", DataType.Real, "description", AttributedType.Edge);
+       	    fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed an empty units");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addAttributeDescription throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAttributeDescriptionException6()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+       	    final Network network = networkExtension.addNetwork("network",
+       	    		                                            "name",
+       	    		                                            "description",
+       	    		                                            new BoundingBox(0, 0, 0, 0),
+       	    		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+            networkExtension.addAttributeDescription(network, "name", "units", null, "description", AttributedType.Edge);
+       	    fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed a null DataType");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addAttributeDescription throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAttributeDescriptionException7()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+       	    final Network network = networkExtension.addNetwork("network",
+       	    		                                            "name",
+       	    		                                            "description",
+       	    		                                            new BoundingBox(0, 0, 0, 0),
+       	    		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+            networkExtension.addAttributeDescription(network, "name", "units", DataType.Real, null, AttributedType.Edge);
+       	    fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed a null description");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addAttributeDescription throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAttributeDescriptionException8()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+       	    final Network network = networkExtension.addNetwork("network",
+       	    		                                            "name",
+       	    		                                            "description",
+       	    		                                            new BoundingBox(0, 0, 0, 0),
+       	    		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+            networkExtension.addAttributeDescription(network, "name", "units", DataType.Real, "", AttributedType.Edge);
+       	    fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed an empty units");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests addAttributeDescription throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAttributeDescriptionException9()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+       	    final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+       	    final Network network = networkExtension.addNetwork("network",
+       	    		                                            "name",
+       	    		                                            "description",
+       	    		                                            new BoundingBox(0, 0, 0, 0),
+       	    		                                            gpkg.core().getSpatialReferenceSystem(-1));
+
+            networkExtension.addAttributeDescription(network, "name", "units", DataType.Real, "description", null);
+       	    fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed a null AttributedType");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+		{
+			e.printStackTrace();
+		}
+        finally
+        {
+        	TestUtility.deleteFile(testFile);
+        }
+    }
+    /*
+     * Private method to print an Edge
+     */
 	private static String printEdge(final Edge edge)
 	{
 		return String.format("(%s, %s)", edge.getFrom(), edge.getTo());
+	}
+
+	/*
+	 * Private method to compare edges
+	 */
+	private static boolean edgesEqual(final Edge e1, final Edge e2)
+	{
+		return e1.getFrom() == e2.getFrom() && e1.getTo() == e2.getTo();
 	}
 }
