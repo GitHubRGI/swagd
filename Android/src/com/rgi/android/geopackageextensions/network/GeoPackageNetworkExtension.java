@@ -302,7 +302,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Network may not be null");
         }
 
-        final String edgeQuery = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1;",
+        final String edgeQuery = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ? LIMIT 1;",
                                                "id",
                                                network.getTableName(),
                                                "from_node",
@@ -342,7 +342,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * @throws SQLException
      *             if there is a database error
      */
-    public List<Integer> getEntries(final Network network, final int node) throws SQLException
+    public List<Edge> getEntries(final Network network, final int node) throws SQLException
     {
         if(network == null)
         {
@@ -369,7 +369,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                       @Override
                                       public Integer apply(final ResultSet resultSet) throws SQLException
                                       {
-                                          return resultSet.getInt(1);
+                                          return new Edge(resultSet.getInt(1),
+                                        		          resultSet.getInt(2),
+                                        		          node);
                                       }
                                   });
     }
