@@ -28,7 +28,6 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-<<<<<<< HEAD
 @SuppressWarnings({"javadoc", "static-method"})
 public class ThrowingSupplierTest
 {
@@ -36,29 +35,12 @@ public class ThrowingSupplierTest
     public void testGetThrowsException()
     {
         final ThrowingSupplier<String> ts = () -> { throw new NullPointerException(); };
-=======
-public class ThrowingSupplierTest
-{
 
-    @SuppressWarnings("static-method")
-	@Test(expected = RuntimeException.class)
-    public void testGetThrowsException()
-    {
-        final ThrowingSupplier<String> ts = () ->
-        {
-            throw new NullPointerException();
-        };
->>>>>>> origin/master
         ts.get();
         fail("Expected ThrowingSupplier method throws to throw at RuntimeException");
     }
 
-<<<<<<< HEAD
     @Test
-=======
-    @SuppressWarnings("static-method")
-	@Test
->>>>>>> origin/master
     public void testGet()
     {
         final ThrowingSupplier<String> ts = () -> "Hello, world!";
