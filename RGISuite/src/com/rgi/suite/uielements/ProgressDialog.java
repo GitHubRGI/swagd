@@ -37,6 +37,7 @@ import javax.swing.WindowConstants;
 
 import com.rgi.common.TaskMonitor;
 import com.rgi.common.util.functional.ThrowingFunction;
+import com.rgi.packager.Packager;
 
 /**
  * Convenience methods for creating a modal progress bar dialog
@@ -112,7 +113,7 @@ public class ProgressDialog
                                                   progressDialog.dispose();
                                               }
                                           };
-        //cancelButton.addActionListener();
+        cancelButton.addActionListener(e->Packager.cancel());
         task.execute();
         progressDialog.setVisible(true);
         return task.get();

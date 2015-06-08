@@ -22,6 +22,8 @@
  */
 package com.rgi.packager;
 
+import java.util.concurrent.CancellationException;
+
 import com.rgi.common.TaskMonitor;
 import com.rgi.store.tiles.TileHandle;
 import com.rgi.store.tiles.TileStoreException;
@@ -40,6 +42,7 @@ public class Packager
     private final TaskMonitor     taskMonitor;
     private final TileStoreReader tileStoreReader;
     private final TileStoreWriter tileStoreWriter;
+    private static boolean cancel = false;
 
     /**
      * Constructor
@@ -58,6 +61,7 @@ public class Packager
 
         this.tileStoreReader = tileStoreReader;
         this.tileStoreWriter = tileStoreWriter;
+        cancel = false;
     }
 
     /**
@@ -74,6 +78,10 @@ public class Packager
 
         for(final TileHandle tileHandle : (Iterable<TileHandle>)this.tileStoreReader.stream()::iterator)
         {
+        	if(cancel)
+        	{
+        		throw new CancellationException("Cancelled");
+        	}
             try
             {
                 this.tileStoreWriter.addTile(tileHandle.getCrsCoordinate(this.tileStoreWriter.getTileOrigin()),
@@ -92,5 +100,10 @@ public class Packager
                                   ex.getMessage());
             }
         }
+    }
+
+    public static void cancel()
+    {
+    	cancel = true;
     }
 }

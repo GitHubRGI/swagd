@@ -28,6 +28,7 @@ import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.io.File;
 import java.util.Collection;
+import java.util.concurrent.CancellationException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -339,6 +340,10 @@ public class TilerWindow extends NavigationWindow
                                          (new Packager(taskMonitor,
                                                        tileStoreReader,
                                                        tileStoreWriter)).execute();
+                                     }
+                                     catch(final CancellationException cancel)
+                                     {
+                                    	 this.tileStoreWriterAdapter.removeStore();
                                      }
                                      catch(final Exception ex)
                                      {
