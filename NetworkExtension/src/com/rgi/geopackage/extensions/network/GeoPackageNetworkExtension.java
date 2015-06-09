@@ -824,6 +824,11 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Attribute description may not be null");
         }
 
+        if(attributeDescription.getAttributedType() == AttributedType.Node)
+        {
+        	throw new IllegalArgumentException("Attribute description must be for an edge");
+        }
+
         final String attributeQuery = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1;",
                                                     attributeDescription.getName(),
                                                     attributeDescription.getNetworkTableName(),
