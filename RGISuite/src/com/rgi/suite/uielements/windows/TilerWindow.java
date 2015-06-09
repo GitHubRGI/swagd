@@ -343,7 +343,8 @@ public class TilerWindow extends NavigationWindow
                                      }
                                      catch(final CancellationException cancel)
                                      {
-                                    	 this.tileStoreWriterAdapter.removeStore();
+                                         this.warn("Cancelled Tiling");
+                                         this.tileStoreWriterAdapter.removeStore();
                                      }
                                      catch(final Exception ex)
                                      {
