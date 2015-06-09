@@ -42,7 +42,7 @@ public class CoordinateTest
      * when passed a null value as a parameter
      */
     @SuppressWarnings("unused")
-	@Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException1()
     {
         new Coordinate<>(null, 5);
@@ -54,7 +54,7 @@ public class CoordinateTest
      * when passed a null value as a parameter
      */
     @SuppressWarnings("unused")
-	@Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException2()
     {
         new Coordinate<>(5.89, null);
@@ -66,7 +66,7 @@ public class CoordinateTest
      * when passed a null value as a parameter
      */
     @SuppressWarnings("unused")
-	@Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException3()
     {
         new Coordinate<>(null);

@@ -289,10 +289,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Network may not be null");
         }
         final String edgeQuery = String.format("Select %s FROM %s WHERE %s = ? AND %s = ? LIMIT 1;",
-        		                               "id",
-        		                               network.getTableName(),
-        		                               "from_node",
-        		                               "to_node");
+                                               "id",
+                                               network.getTableName(),
+                                               "from_node",
+                                               "to_node");
 
         return JdbcUtility.selectOne(this.databaseConnection,
                                      edgeQuery,
@@ -323,7 +323,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
 
         final String edgeQuery = String.format("SELECT %s, %s FROM %s WHERE %s = ?;",
-        		                               "id",
+                                               "id",
                                                "from_node",
                                                network.getTableName(),
                                                "to_node");
@@ -332,8 +332,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                   edgeQuery,
                                   preparedStatement -> preparedStatement.setInt(1, node),
                                   resultSet -> new Edge(resultSet.getInt(1),
-                                		                resultSet.getInt(2),
-                                		                node));
+                                                        resultSet.getInt(2),
+                                                        node));
     }
 
     /**
@@ -826,7 +826,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         if(attributeDescription.getAttributedType() == AttributedType.Node)
         {
-        	throw new IllegalArgumentException("Attribute description must be for an edge");
+            throw new IllegalArgumentException("Attribute description must be for an edge");
         }
 
         final String attributeQuery = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1;",

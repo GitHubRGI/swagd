@@ -202,33 +202,33 @@ public class DatabaseUtility
 
     /**
      * @param connection
-     * 			  connection to the database
+     *               connection to the database
      * @throws SQLException
-     * 		  	  throws if various SQLExceptions occur
+     *                 throws if various SQLExceptions occur
      */
     public static void setPragmaJournalModeMemory(final Connection connection) throws SQLException
     {
-    	DatabaseUtility.verify(connection);
+        DatabaseUtility.verify(connection);
 
-    	try(Statement statement = connection.createStatement())
-    	{
-    		statement.execute(String.format("PRAGMA journal_mode = MEMORY;"));
-    	}
+        try(Statement statement = connection.createStatement())
+        {
+            statement.execute(String.format("PRAGMA journal_mode = MEMORY;"));
+        }
     }
 
     /**
      * @param connection
-     * 			  connection to the database
+     *               connection to the database
      * @throws SQLException
-     * 		  	  throws if various SQLExceptions occur
+     *                 throws if various SQLExceptions occur
      */
     public static void setPragmaSynchronousOff(final Connection connection) throws SQLException
     {
-    	DatabaseUtility.verify(connection);
-    	try(Statement statement = connection.createStatement())
-    	{
-    		statement.execute(String.format("PRAGMA synchronous = OFF;"));
-    	}
+        DatabaseUtility.verify(connection);
+        try(Statement statement = connection.createStatement())
+        {
+            statement.execute(String.format("PRAGMA synchronous = OFF;"));
+        }
     }
 
     /**

@@ -350,7 +350,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         }
 
         final String edgeQuery = String.format("SELECT %s, %s FROM %s WHERE %s = ?;",
-        		                               "id",
+                                               "id",
                                                "from_node",
                                                network.getTableName(),
                                                "to_node");
@@ -371,8 +371,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                       public Edge apply(final ResultSet resultSet) throws SQLException
                                       {
                                           return new Edge(resultSet.getInt(1),
-                                        		          resultSet.getInt(2),
-                                        		          node);
+                                                          resultSet.getInt(2),
+                                                          node);
                                       }
                                   });
     }
@@ -964,7 +964,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         if(attributeDescription.getAttributedType() == AttributedType.Node)
         {
-        	throw new IllegalArgumentException("Attribute description must be for an edge");
+            throw new IllegalArgumentException("Attribute description must be for an edge");
         }
 
         final String attributeQuery = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1;",

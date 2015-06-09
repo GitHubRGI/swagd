@@ -54,13 +54,13 @@ public class RouteTests
 
     public static void main(final String[] args)
     {
-    	final int nodes1 = 47181;
-    	final int nodes2 = 105247;
-    	final int nodes3 = 169027;
-    	runRoute2(geoPackageFile3, 100, nodes3);
+        final int nodes1 = 47181;
+        final int nodes2 = 105247;
+        final int nodes3 = 169027;
+        runRoute2(geoPackageFile3, 100, nodes3);
     }
 
-  	private static void runRoute()
+      private static void runRoute()
     {
         try(final GeoPackage gpkg = new GeoPackage(geoPackageFile1, OpenMode.Open))
         {
@@ -94,7 +94,7 @@ public class RouteTests
                                                                    endNode,
                                                                    (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getEdgeAttribute(edge, distanceAttribute),
                                                                    (startIdentifier, endIdentifier) -> { try
-                                                                                       		             {
+                                                                                                            {
                                                                                                              final List<List<Object>> values = networkExtension.getNodeAttributes(Arrays.asList(startIdentifier, endIdentifier),
                                                                                                                                                                                                 nodeLongitudeAttibute,
                                                                                                                                                                                                 nodeLatitudeAttibute);
@@ -106,8 +106,8 @@ public class RouteTests
                                                                                                              final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
 
                                                                                                              return Math.sqrt(latitude*latitude + longitude*longitude);
-                                                                                       		             }
-                                                                                       	                 catch(final SQLException ex)
+                                                                                                            }
+                                                                                                            catch(final SQLException ex)
                                                                                                          {
                                                                                                              throw new RuntimeException(ex);
                                                                                                          }
@@ -186,22 +186,22 @@ public class RouteTests
                                                                        startNode,
                                                                        endNode,
                                                                        (ThrowingFunction<Edge, Double>)(edge) -> {
-                                                                    	                                             final int key = edge.getIdentifier();
-                                                                    	                                             if(distanceCache.containsKey(key))
-                                                                    	                                             {
-                                                                    	                                            	 return distanceCache.get(key);
-                                                                    	                                             }
-                                                                    	                                             final Double cost = networkExtension.getEdgeAttribute(edge, distanceAttribute);
-                                                                    	                                             distanceCache.put(key, cost);
-                                                                    	                                             return cost;
+                                                                                                                     final int key = edge.getIdentifier();
+                                                                                                                     if(distanceCache.containsKey(key))
+                                                                                                                     {
+                                                                                                                         return distanceCache.get(key);
+                                                                                                                     }
+                                                                                                                     final Double cost = networkExtension.getEdgeAttribute(edge, distanceAttribute);
+                                                                                                                     distanceCache.put(key, cost);
+                                                                                                                     return cost;
                                                                                                                  },
                                                                        (startIdentifier, endIdentifier) -> { try
-                                                                                           					 {
-                                                                    	                                         final long key = ((startIdentifier + endIdentifier)*(startIdentifier + endIdentifier + 1)/2) + endIdentifier;
-                                                                    	                                         if(heuristicCache.containsKey(key))
-                                                                    	                                         {
-                                                                    	                                        	 return heuristicCache.get(key);
-                                                                    	                                         }
+                                                                                                                {
+                                                                                                                 final long key = ((startIdentifier + endIdentifier)*(startIdentifier + endIdentifier + 1)/2) + endIdentifier;
+                                                                                                                 if(heuristicCache.containsKey(key))
+                                                                                                                 {
+                                                                                                                     return heuristicCache.get(key);
+                                                                                                                 }
                                                                                                                  final List<Object> startCoordinate = networkExtension.getNodeAttributes(startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
                                                                                                                  final List<Object> endCoordinate   = networkExtension.getNodeAttributes(endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
 
@@ -211,11 +211,11 @@ public class RouteTests
                                                                                                                  final double distance = Math.sqrt(latitude*latitude + longitude*longitude);
                                                                                                                  heuristicCache.put(key, distance);
                                                                                                                  return distance;
-                                                                                           					 }
-                                                                                           	                 catch(final SQLException ex)
-                                                                                           					 {
-                                                                                           	                	 throw new RuntimeException(ex);
-                                                                                           					 }
+                                                                                                                }
+                                                                                                                catch(final SQLException ex)
+                                                                                                                {
+                                                                                                                    throw new RuntimeException(ex);
+                                                                                                                }
                                                                                                            });
                     path.forEach(node -> System.out.print(node + ", "));
 

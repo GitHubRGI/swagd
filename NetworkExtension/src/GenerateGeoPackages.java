@@ -51,7 +51,7 @@ import com.rgi.geopackage.verification.VerificationLevel;
 @SuppressWarnings({ "javadoc", "unused" })
 public class GenerateGeoPackages
 {
-	//Files for geoPackage1
+    //Files for geoPackage1
     private static final File geoPackageFile  = new File("contour.1.gpkg");
     private static final File nodeFile        = new File("data/contour.1/contour.1.node");
     private static final File edgeFile        = new File("data/contour.1/contour.1.edge");
@@ -68,9 +68,9 @@ public class GenerateGeoPackages
 
     public static void main(final String[] args)
     {
-    	createGpkg();
-    	createGpkg2(geoPackageFile2, dataFile2, nodes2);
-    	createGpkg2(geoPackageFile3, dataFile3, nodes3);
+        createGpkg();
+        createGpkg2(geoPackageFile2, dataFile2, nodes2);
+        createGpkg2(geoPackageFile3, dataFile3, nodes3);
     }
 
 
@@ -78,13 +78,13 @@ public class GenerateGeoPackages
     private static void createGpkg2(final File geoPackageFile, final File dataFile, final File nodes)
     {
         try
-		{
-			Class.forName("org.sqlite.JDBC"); //Register the driver
-		}
+        {
+            Class.forName("org.sqlite.JDBC"); //Register the driver
+        }
         catch (final ClassNotFoundException e2)
-		{
-			e2.printStackTrace();
-		}
+        {
+            e2.printStackTrace();
+        }
 
         try(final Connection db = DriverManager.getConnection("jdbc:sqlite:" + dataFile.getPath()))// Initialize the database connection
         {
@@ -95,7 +95,7 @@ public class GenerateGeoPackages
 
             try (final GeoPackage gpkg = new GeoPackage(geoPackageFile, VerificationLevel.None, OpenMode.Create))
             {
-            	final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+                final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
                 final Network myNetwork = networkExtension.addNetwork("mynetwork",
                                                                       "Super Important Routing Stuff",
@@ -148,15 +148,15 @@ public class GenerateGeoPackages
                 final String query = String.format("Select %s, %s, %s, %s, %s FROM %s", "from_node", "to_node", "slope", "length", "cost_pandolf", "edges");
                 try(final PreparedStatement stmt =  db.prepareStatement(query))
                 {
-                	try(ResultSet results = stmt.executeQuery())
-                	{
-                		loadAttributedEdges(networkExtension,
-                		                    results,
-                		                    myNetwork,
-                		                    slopeAttribute,
-                		                    lengthAttribute,
-                		                    pandolfCostAttribute);
-                	}
+                    try(ResultSet results = stmt.executeQuery())
+                    {
+                        loadAttributedEdges(networkExtension,
+                                            results,
+                                            myNetwork,
+                                            slopeAttribute,
+                                            lengthAttribute,
+                                            pandolfCostAttribute);
+                    }
                 }
 
                 //Add attributed nodes
@@ -174,9 +174,9 @@ public class GenerateGeoPackages
             }
         }
         catch (final SQLException e1)
-		{
-			e1.printStackTrace();
-		}
+        {
+            e1.printStackTrace();
+        }
     }
 
     private static void createGpkg()
@@ -302,7 +302,7 @@ public class GenerateGeoPackages
      * Takes nodes in text file and adds them to
      */
     private static void loadNodeAttributes2(final GeoPackageNetworkExtension networkExtension,
-    		                                final File nodes,
+                                            final File nodes,
                                             final Network network,
                                             final AttributeDescription... attributeDescriptions) throws SQLException, IOException
     {
