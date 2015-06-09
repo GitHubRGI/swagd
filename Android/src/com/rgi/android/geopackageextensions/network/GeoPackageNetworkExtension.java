@@ -987,9 +987,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                          @Override
                                          public T apply(final ResultSet resultSet) throws SQLException
                                          {
-                                             if(!resultSet.isBeforeFirst())
+                                             if(resultSet.getObject(1) == null)
                                              {
-                                                 throw new IllegalArgumentException("Edge and attribute description do not belong to the same network");
+                                                 return null;
                                              }
 
                                              @SuppressWarnings("unchecked")

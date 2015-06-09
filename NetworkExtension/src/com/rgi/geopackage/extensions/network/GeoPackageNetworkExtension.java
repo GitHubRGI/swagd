@@ -807,7 +807,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      *             Reference to an edge in a network table
      * @param attributeDescription
      *             Handle to which attribute should be retrieved
-     * @return the attribute's value stored for the node or edge
+     * @return the attribute's value stored for edge or null if the edge does
+     *             not have that attribute
      * @throws SQLException
      *             if there is a database error
      */
@@ -837,9 +838,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         return JdbcUtility.selectOne(this.databaseConnection,
                                      attributeQuery,
                                      preparedStatement -> preparedStatement.setInt(1, edge.getIdentifier()),
-                                     resultSet -> { if(!resultSet.isBeforeFirst())
+                                     resultSet -> { if(resultSet.getObject(1) == null)
                                                     {
-                                                        throw new IllegalArgumentException("Edge and attribute description do not belong to the same network");
+                                                        return null;
                                                     }
 
                                                     @SuppressWarnings("unchecked")

@@ -144,9 +144,15 @@ public class AttributeDescription
      *             Any value
      * @return <tt>true</tt> if {@link Object#getClass()} agrees with the data
      *             type, otherwise <tt>false</tt>
+     * @throws IllegalArgumentException
+     *             if the value given is null
      */
     public <T> boolean dataTypeAgrees(final T value)
     {
+        if(value == null)
+        {
+            throw new IllegalArgumentException("Value may not be null.");
+        }
         return this.dataTypeAgrees(value.getClass());
     }
 
