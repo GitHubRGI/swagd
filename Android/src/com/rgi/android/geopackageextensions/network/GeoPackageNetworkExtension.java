@@ -1024,11 +1024,6 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Edge may not be null");
         }
 
-        if(attributeDescriptions == null || attributeDescriptions.length == 0)
-        {
-            throw new IllegalArgumentException("Attribute descriptions may not be null or empty");
-        }
-
         final Pair<String, List<String>> schema = getSchema(AttributedType.Edge, attributeDescriptions); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
 
         final String       networkTableName = schema.getLeft();
