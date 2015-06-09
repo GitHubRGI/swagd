@@ -171,28 +171,28 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
     @Override
     public void removeStore() throws TileStoreException
     {
-		final Path path = Paths.get(this.directory.getText());
-		try
-		{
-			 Files.walkFileTree(path, new SimpleFileVisitor<Path>(){
-			 	                                                      @Override
-				                                                      public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
-				                                                      {
-				                                                    	  Files.delete(file);
-				                                                    	  return FileVisitResult.CONTINUE;
-				                                                      }
+        final Path path = Paths.get(this.directory.getText());
+        try
+        {
+             Files.walkFileTree(path, new SimpleFileVisitor<Path>(){
+                                                                       @Override
+                                                                      public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
+                                                                      {
+                                                                          Files.delete(file);
+                                                                          return FileVisitResult.CONTINUE;
+                                                                      }
 
-				                                                      @Override
-				                                                      public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException
-				                                                      {
-				                                                    	  Files.delete(dir);
-				                                                    	  return FileVisitResult.CONTINUE;
-				                                                      }
-			                                                      });
-		}
-		catch (final IOException e)
-		{
-		   throw new TileStoreException("Caught exception when removing tiles.");
-		}
+                                                                      @Override
+                                                                      public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException
+                                                                      {
+                                                                          Files.delete(dir);
+                                                                          return FileVisitResult.CONTINUE;
+                                                                      }
+                                                                  });
+        }
+        catch (final IOException e)
+        {
+           throw new TileStoreException("Caught exception when removing tiles.");
+        }
     }
 }

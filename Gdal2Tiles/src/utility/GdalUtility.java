@@ -1283,7 +1283,7 @@ public class GdalUtility
 
         if(params.getWriteXSize() < 0 || params.getWriteYSize() < 0)
         {
-        	throw new IOException("Tile call is outside the raster boundaries.");
+            throw new IOException("Tile call is outside the raster boundaries.");
         }
 
         final byte[] imageData = new byte[params.getWriteXSize() * params.getWriteYSize() * bandCount];
@@ -1305,7 +1305,7 @@ public class GdalUtility
 
         if(result == gdalconstConstants.CE_Fatal)
         {
-        	throw new TilingException("Fatal error detected from GDAL readRaster.");
+            throw new TilingException("Fatal error detected from GDAL readRaster.");
         }
 
         return imageData;

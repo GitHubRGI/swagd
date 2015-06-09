@@ -45,26 +45,26 @@ import com.rgi.geopackage.extensions.network.Network;
  */
 public class RoutingAlgorithms
 {
-	/**
-	 * This algorithm will find the shortest path from the starting
-	 * node to the ending node
-	 *
-	 * @param networkExtension
-	 *            GeoPackageNetworkExtension containing the network
-	 * @param network
-	 *            network contain the start and end node
-	 * @param start
-	 *            starting node
-	 * @param end
-	 *            ending node
-	 * @param cost
-	 *            cost function for each edge in the path
-	 * @param heuristics
-	 *            heuristic function for two nodes in the network
-	 * @return Optimal path from the start node to the end node
-	 * @throws SQLException
-	 *             if there is a database error
-	 */
+    /**
+     * This algorithm will find the shortest path from the starting
+     * node to the ending node
+     *
+     * @param networkExtension
+     *            GeoPackageNetworkExtension containing the network
+     * @param network
+     *            network contain the start and end node
+     * @param start
+     *            starting node
+     * @param end
+     *            ending node
+     * @param cost
+     *            cost function for each edge in the path
+     * @param heuristics
+     *            heuristic function for two nodes in the network
+     * @return Optimal path from the start node to the end node
+     * @throws SQLException
+     *             if there is a database error
+     */
     public static List<Integer> astar(final GeoPackageNetworkExtension networkExtension, final Network network, final Integer start, final Integer end, final Function<Edge, Double> cost, final BiFunction<Integer, Integer, Double> heuristics) throws SQLException
     {
         // changed comparator -> change back to distance from end
@@ -176,7 +176,7 @@ public class RoutingAlgorithms
         }
 
         @SuppressWarnings("unused")
-		public VertexAstar(final int nodeIdentifier, final VertexAstar previous)
+        public VertexAstar(final int nodeIdentifier, final VertexAstar previous)
         {
             this.nodeIdentifier = nodeIdentifier;
             this.previous = previous;

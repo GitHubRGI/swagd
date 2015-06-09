@@ -178,28 +178,28 @@ public class DatabaseUtilityTest
     @Test
     public void databaseUtilitySetPragmaSynchronousOff() throws Exception
     {
-    	final File testFile = this.getRandomFile(5);
-    	testFile.createNewFile();
-    	try (Connection con = this.getConnection(testFile.getAbsolutePath()))
-    	{
-    		DatabaseUtility.setPragmaSynchronousOff(con);
-    		final String query = "PRAGMA synchronous;";
-    		try(Statement stmt = con.createStatement())
-    		{
-    			try(ResultSet sPragma = stmt.executeQuery(query))
-    			{
-    				final int sync = sPragma.getInt("synchronous");
-    				assertTrue("DatabaseUtility did not set PRAGMA synchronous to off.",sync ==  0);
-    			}
-    		}
-    	}
-    	finally
-    	{
-    		if(testFile.exists())
-    		{
-    			testFile.delete();
-    		}
-    	}
+        final File testFile = this.getRandomFile(5);
+        testFile.createNewFile();
+        try (Connection con = this.getConnection(testFile.getAbsolutePath()))
+        {
+            DatabaseUtility.setPragmaSynchronousOff(con);
+            final String query = "PRAGMA synchronous;";
+            try(Statement stmt = con.createStatement())
+            {
+                try(ResultSet sPragma = stmt.executeQuery(query))
+                {
+                    final int sync = sPragma.getInt("synchronous");
+                    assertTrue("DatabaseUtility did not set PRAGMA synchronous to off.",sync ==  0);
+                }
+            }
+        }
+        finally
+        {
+            if(testFile.exists())
+            {
+                testFile.delete();
+            }
+        }
     }
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
