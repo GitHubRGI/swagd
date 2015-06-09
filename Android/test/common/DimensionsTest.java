@@ -28,15 +28,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.rgi.android.common.Dimensions;
+
 /**
  *
  * @author Mary Carome
  *
  */
-<<<<<<< HEAD
 @SuppressWarnings({ "static-method" })
-=======
->>>>>>> origin/master
 public class DimensionsTest
 {
 

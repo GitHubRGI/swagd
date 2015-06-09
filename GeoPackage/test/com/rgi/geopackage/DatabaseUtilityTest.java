@@ -45,7 +45,7 @@ import utility.DatabaseUtility;
  * @author Jenifer Cochran
  *
  */
-@SuppressWarnings("static-method")
+@SuppressWarnings({"javadoc", "static-method"})
 public class DatabaseUtilityTest
 {
     private final Random randomGenerator = new Random();

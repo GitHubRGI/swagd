@@ -365,10 +365,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                           preparedStatement.setInt(1, node);
                                       }
                                   },
-                                  new ResultSetFunction<Integer>()
+                                  new ResultSetFunction<Edge>()
                                   {
                                       @Override
-                                      public Integer apply(final ResultSet resultSet) throws SQLException
+                                      public Edge apply(final ResultSet resultSet) throws SQLException
                                       {
                                           return new Edge(resultSet.getInt(1),
                                         		          resultSet.getInt(2),

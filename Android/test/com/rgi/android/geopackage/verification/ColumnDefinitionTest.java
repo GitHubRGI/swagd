@@ -33,83 +33,47 @@ import org.junit.Test;
  * @author Mary Carome
  *
  */
-<<<<<<< HEAD
 @SuppressWarnings({ "static-method" })
-=======
->>>>>>> origin/master
 public class ColumnDefinitionTest
 {
-
     /**
      * Tests that the ColumnDefintion constructor throws an
      * IllegalArgumentException when passed a null SQL type
      */
-<<<<<<< HEAD
     @Test(expected = IllegalArgumentException.class)
     public void columnDefinitionIllegalArgumentException()
     {
         @SuppressWarnings("unused")
         final ColumnDefinition colDef = new ColumnDefinition(null, true, true, true, "default");
-=======
-    @Test (expected = IllegalArgumentException.class)
-    public void columnDefinitionIllegalArgumentException()
-    {
-        @SuppressWarnings("unused")
-        final
-        ColumnDefinition colDef = new ColumnDefinition(null, true, true, true, "default");
->>>>>>> origin/master
         fail("Expected ColumnDefintion to throw an IllegalArgumentException when passed a null SQL type.");
     }
 
     /**
-<<<<<<< HEAD
      * Tests that equals returns false when passed null instead of a valid
      * object
-=======
-     * Tests that equals returns false when
-     * passed null instead of a valid object
->>>>>>> origin/master
      */
     @Test
     public void testEquals1()
     {
         final ColumnDefinition def1 = new ColumnDefinition("Test", true, true, true, "default");
-<<<<<<< HEAD
         assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed null instead of an Object.", def1.equals(null));
     }
 
     /**
      * Tests that equals returns false when passed an Object that is not type
-     * ColumnDefinition
-=======
-        assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed null instead of an Object.",def1.equals(null));
-    }
-
-    /**
-     * Tests that equals returns false when
-     * passed an Object that is not type ColumnDefinition
->>>>>>> origin/master
      */
     @Test
     public void testEquals2()
     {
         final ColumnDefinition def1 = new ColumnDefinition("Test", true, true, true, "default");
         final Object test = new String();
-<<<<<<< HEAD
+
         assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed an Object not of type ColumnDefintion.", def1.equals(test));
     }
 
     /**
      * Tests that equals returns true when passed itself (Tests that equals is
      * reflexive)
-=======
-        assertFalse("Expected ColumnDefintion method equals(Object) to return false when passed an Object not of type ColumnDefintion.",def1.equals(test));
-    }
-
-    /**
-     * Tests that equals returns true when passed itself
-     * (Tests that equals is reflexive)
->>>>>>> origin/master
      */
     @Test
     public void testEquals3()
@@ -120,13 +84,8 @@ public class ColumnDefinitionTest
     }
 
     /**
-<<<<<<< HEAD
      * Verifies equals and hashCode return true and identical hash codes for two
      * identical ColumnDefinition objects
-=======
-     * Verifies equals and hashCode return true
-     * and identical hash codes for two identical ColumnDefinition objects
->>>>>>> origin/master
      */
     @Test
     public void testEqualsAndHash1()
