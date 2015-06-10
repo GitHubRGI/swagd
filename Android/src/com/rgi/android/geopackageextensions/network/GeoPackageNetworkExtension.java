@@ -308,27 +308,33 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                "from_node",
                                                "to_node");
 
-        return JdbcUtility.selectOne(this.databaseConnection,
-                                     edgeQuery,
-                                     new PreparedStatementConsumer()
-                                     {
-                                         @Override
-                                         public void accept(final PreparedStatement preparedStatement) throws SQLException
-                                         {
-                                             preparedStatement.setInt(1, from);
-                                             preparedStatement.setInt(2, to);
-                                         }
-                                     },
-                                     new ResultSetFunction<Edge>()
-                                     {
-                                         @Override
-                                         public Edge apply(final ResultSet resultSet) throws SQLException
-                                         {
-                                             return new Edge(resultSet.getInt(1),
-                                                             from,
-                                                             to);
-                                         }
-                                     });
+        final Edge edge = JdbcUtility.selectOne(this.databaseConnection,
+                                                edgeQuery,
+                                                new PreparedStatementConsumer()
+                                                {
+                                                    @Override
+                                                    public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                                    {
+                                                        preparedStatement.setInt(1, from);
+                                                        preparedStatement.setInt(2, to);
+                                                    }
+                                                },
+                                                new ResultSetFunction<Edge>()
+                                                {
+                                                    @Override
+                                                    public Edge apply(final ResultSet resultSet) throws SQLException
+                                                    {
+                                                        return new Edge(resultSet.getInt(1),
+                                                                        from,
+                                                                        to);
+                                                    }
+                                                });
+        if(edge == null)
+        {
+            throw new IllegalArgumentException("The given edge is not in the given network");
+        }
+
+        return edge;
     }
 
     /**
@@ -1068,14 +1074,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     public List<Object> getNodeAttributes(final int                     nodeIdentifier,
                                           final AttributeDescription... attributeDescriptions) throws SQLException
     {
-        final List<List<Object>> nodes = this.getNodeAttributes(Arrays.asList(nodeIdentifier), attributeDescriptions);
-
-        if(nodes.isEmpty())
-        {
-            throw new IllegalArgumentException("Query returned nothing. Node may not be related to the network described by the attribute descriptions");
-        }
-
-        return nodes.get(0);
+        return this.getNodeAttributes(Arrays.asList(nodeIdentifier), attributeDescriptions).get(0);
     }
 
     /**
@@ -1092,6 +1091,11 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     public List<List<Object>> getNodeAttributes(final List<Integer>           nodeIdentifiers,
                                                 final AttributeDescription... attributeDescriptions) throws SQLException
     {
+        if(nodeIdentifiers == null || nodeIdentifiers.isEmpty())
+        {
+            throw new IllegalArgumentException("NodeIdentifiers list may not be null or empty");
+        }
+
         if(attributeDescriptions == null || attributeDescriptions.length == 0)
         {
             throw new IllegalArgumentException("Attribute descriptions may not be null or empty");
@@ -1123,7 +1127,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                 {
                     if(!resultSet.isBeforeFirst())
                     {
-                        throw new IllegalArgumentException("Edge does not belong to the network table specified by the supplied attributes");
+                        throw new IllegalArgumentException("Node does not belong to the network table specified by the supplied attributes");
                     }
 
                     valueCollections.add(JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length));
