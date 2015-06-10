@@ -277,7 +277,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      *             The 'from' node of the edge
      * @param to
      *             The 'to' node of the edge
-     * @return an an {@link Edge} entry in the supplied {@link Network}, or null
+     * @return an {@link Edge} entry in the supplied {@link Network}, or null
      *             if no matching edge exists
      * @throws SQLException
      *             if there is a database error
