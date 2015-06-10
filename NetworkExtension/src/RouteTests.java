@@ -88,7 +88,7 @@ public class RouteTests
                 final long startTime = System.nanoTime();
 
 
-                final List<Integer> path = RoutingAlgorithms.astar(networkExtension,
+                final List<Integer> path = RoutingAlgorithms.aStar(networkExtension,
                                                                    network,
                                                                    startNode,
                                                                    endNode,
@@ -181,7 +181,7 @@ public class RouteTests
 
                     final HashMap<Long, Double> heuristicCache = new HashMap<>();
                     final HashMap<Integer, Double> distanceCache = new HashMap<>();
-                    final List<Integer> path = RoutingAlgorithms.astar(networkExtension,
+                    final List<Integer> path = RoutingAlgorithms.aStar(networkExtension,
                                                                        network,
                                                                        startNode,
                                                                        endNode,
