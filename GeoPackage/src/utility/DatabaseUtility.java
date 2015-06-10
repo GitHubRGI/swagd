@@ -212,7 +212,7 @@ public class DatabaseUtility
 
         try(Statement statement = connection.createStatement())
         {
-            statement.execute(String.format("PRAGMA journal_mode = MEMORY;"));
+            statement.execute("PRAGMA journal_mode = MEMORY;");
         }
     }
 
@@ -227,7 +227,7 @@ public class DatabaseUtility
         DatabaseUtility.verify(connection);
         try(Statement statement = connection.createStatement())
         {
-            statement.execute(String.format("PRAGMA synchronous = OFF;"));
+            statement.execute("PRAGMA synchronous = OFF;");
         }
     }
 

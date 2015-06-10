@@ -261,7 +261,7 @@ public class DatabaseUtility
 
         try
         {
-            statement.execute(String.format("PRAGMA synchronous = OFF;"));
+            statement.execute("PRAGMA journal_mode = MEMORY;");
         }
         finally
         {
@@ -283,7 +283,7 @@ public class DatabaseUtility
 
         try
         {
-            statement.execute(String.format("PRAGMA journal_mode = MEMORY;"));
+            statement.execute("PRAGMA synchronous = OFF;");
         }
         finally
         {

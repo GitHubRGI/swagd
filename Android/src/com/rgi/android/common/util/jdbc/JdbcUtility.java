@@ -547,17 +547,17 @@ public class JdbcUtility
     }
 
     /**
-     * Returns {@link ArrayList} of the type of the input consisting of the results of applying the
-     *  operations in {@link ResultSetPredicate} on the given {@link ResultSet}
+     * Checks to see if any result from a {@link ResultSet} matches the
+     * criteria defined by a {@link ResultSetPredicate}
      *
      * @param resultSet
-     *      The result set containing the elements
+     *             The result set containing the elements
      * @param resultSetPredicate
-     *      Evaluates each element in the given {@link ResultSet} to see if it satisfies the predicate
-     * @return
-     *      an ArrayList of the type of input consisting of the elements that satisfy the resultSetPredicate
+     *             Evaluates each element in the given {@link ResultSet} to see if it satisfies the predicate
+     * @return <tt>true</tt> if the {@link ResultSetPredicate} returns true for
+     *             any {@link ResultSet}
      * @throws SQLException
-     *      throws if an SQLException occurs
+     *             if an SQLException occurs
      */
     public static boolean anyMatch(final ResultSet resultSet, final ResultSetPredicate resultSetPredicate) throws SQLException
     {

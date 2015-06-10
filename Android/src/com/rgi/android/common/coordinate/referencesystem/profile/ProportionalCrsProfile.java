@@ -62,7 +62,7 @@ public abstract class ProportionalCrsProfile implements CrsProfile
             throw new IllegalArgumentException("Origin may not be null");
         }
 
-        if(!coordinate.getCoordinateReferenceSystem().equals(getCoordinateReferenceSystem()))
+        if(!coordinate.getCoordinateReferenceSystem().equals(this.getCoordinateReferenceSystem()))
         {
             throw new IllegalArgumentException("Coordinate's coordinate reference system does not match the tile profile's coordinate reference system");
         }
@@ -142,7 +142,7 @@ public abstract class ProportionalCrsProfile implements CrsProfile
 
         return new CrsCoordinate(boundsCorner.getX() + (tileCoordinate.getX() + tileOrigin.getHorizontal()) * (tileCrsWidth),
                                  boundsCorner.getY() + (tileCoordinate.getY() + tileOrigin.getVertical())   * (tileCrsHeight),
-                                 getCoordinateReferenceSystem());
+                                 this.getCoordinateReferenceSystem());
     }
 
     @Override
