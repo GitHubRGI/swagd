@@ -112,7 +112,7 @@ public class RoutingAlgorithms
             // if current vertex is the target then we are done
             if(currentVertex.nodeIdentifier == end)
             {
-                return getAstarPath(end, nodeMap);
+                return getAStarPath(end, nodeMap);
             }
 
             closedList.add(currentVertex); // put it in "done" pile
@@ -162,7 +162,7 @@ public class RoutingAlgorithms
         // return getAstarPath(end, nodeMap);//it shouldnt reach here...throw exception?
     }
 
-    private static List<Integer> getAstarPath(final Integer end, final Map<Integer, VertexAstar> nodeMap)
+    private static List<Integer> getAStarPath(final Integer end, final Map<Integer, VertexAstar> nodeMap)
     {
         final LinkedList<Integer> path = new LinkedList<>();
 
@@ -174,28 +174,22 @@ public class RoutingAlgorithms
         return path;
     }
 
+    // TODO make this a regular non-inner class to protect access to its members. In particular check that the distance variables aren't being set to something negative
     private static class VertexAstar
     {
-        public VertexAstar previous; // Parent node
+        private VertexAstar previous; // Parent node
 
-        public final int nodeIdentifier;
+        private final int nodeIdentifier;
 
-        public double distanceFromStart = Double.MAX_VALUE;
-        public double distanceFromEnd = Double.MAX_VALUE;
+        private double distanceFromStart = Double.MAX_VALUE;
+        private double distanceFromEnd   = Double.MAX_VALUE;
 
         public VertexAstar(final int nodeIdentifier)
         {
-            this.nodeIdentifier = nodeIdentifier;
-            this.previous = null;
+            this.nodeIdentifier    = nodeIdentifier;
+            this.previous          = null;
             this.distanceFromStart = 0.0;
-            this.distanceFromEnd = 0.0;
-        }
-
-        @SuppressWarnings("unused")
-        public VertexAstar(final int nodeIdentifier, final VertexAstar previous)
-        {
-            this.nodeIdentifier = nodeIdentifier;
-            this.previous = previous;
+            this.distanceFromEnd   = 0.0;
         }
 
         @Override
@@ -211,7 +205,7 @@ public class RoutingAlgorithms
                 return false;
             }
 
-            return this.nodeIdentifier == ((VertexAstar) obj).nodeIdentifier; // Is this enough? Node identifiers should be unique right?
+            return this.nodeIdentifier == ((VertexAstar)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique right?
         }
 
         @Override
