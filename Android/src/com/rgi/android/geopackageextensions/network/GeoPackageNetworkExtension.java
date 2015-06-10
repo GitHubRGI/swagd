@@ -329,6 +329,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                                         to);
                                                     }
                                                 });
+
         if(edge == null)
         {
             throw new IllegalArgumentException("The given edge is not in the given network");
@@ -655,6 +656,11 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         if(values == null)
         {
             throw new IllegalArgumentException("Values collection may not be null");
+        }
+
+        if(values.size() != attributeDescriptions.length)
+        {
+            throw new IllegalArgumentException("Values collection and AttributeDescription list must have the same length");
         }
 
         final Pair<String, List<String>> schema = getSchema(AttributedType.Edge, attributeDescriptions); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
@@ -1040,24 +1046,31 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                     networkTableName,
                                                     "id");
 
-        return JdbcUtility.select(this.databaseConnection,
-                                  attributeQuery,
-                                  new PreparedStatementConsumer()
-                                  {
-                                      @Override
-                                      public void accept(final PreparedStatement preparedStatement) throws SQLException
-                                      {
-                                          preparedStatement.setInt(1, edge.getIdentifier());
-                                      }
-                                  },
-                                  new ResultSetFunction<Object>()
-                                  {
-                                      @Override
-                                      public Object apply(final ResultSet resultSet) throws SQLException
-                                      {
-                                          return JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length);
-                                      }
-                                  });
+        final List<Object> attributes =  JdbcUtility.select(this.databaseConnection,
+                                                      attributeQuery,
+                                                      new PreparedStatementConsumer()
+                                                      {
+                                                          @Override
+                                                          public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                                          {
+                                                              preparedStatement.setInt(1, edge.getIdentifier());
+                                                          }
+                                                      },
+                                                      new ResultSetFunction<Object>()
+                                                      {
+                                                          @Override
+                                                          public Object apply(final ResultSet resultSet) throws SQLException
+                                                          {
+                                                              return JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length);
+                                                          }
+                                                      });
+
+        if(attributes.size() == 0)
+        {
+            throw new IllegalArgumentException("The given edge is not in the given table");
+        }
+
+        return attributes;
     }
 
     /**

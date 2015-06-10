@@ -288,6 +288,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         {
             throw new IllegalArgumentException("Network may not be null");
         }
+
         final String edgeQuery = String.format("Select %s FROM %s WHERE %s = ? AND %s = ? LIMIT 1;",
                                                "id",
                                                network.getTableName(),
@@ -302,6 +303,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                           results -> new Edge(results.getInt(1), // identifier
                                                               from,              // attribute name
                                                               to));              // attributed type
+
         if(edge == null)
         {
             throw new IllegalArgumentException("The given edge is not in the given network");
@@ -568,6 +570,11 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         if(values == null)
         {
             throw new IllegalArgumentException("Values collection may not be null");
+        }
+
+        if(values.size() != attributeDescriptions.length)
+        {
+            throw new IllegalArgumentException("Values collection and AttributeDescription list must have the same length");
         }
 
         final Pair<String, List<String>> schema = getSchema(AttributedType.Edge, attributeDescriptions); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
@@ -890,10 +897,16 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                     networkTableName,
                                                     "id");
 
-        return JdbcUtility.selectOne(this.databaseConnection,
-                                     attributeQuery,
-                                     preparedStatement -> preparedStatement.setInt(1, edge.getIdentifier()),
-                                     resultSet -> JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length));
+        final List<Object> attributes =  JdbcUtility.selectOne(this.databaseConnection,
+                                                               attributeQuery,
+                                                               preparedStatement -> preparedStatement.setInt(1, edge.getIdentifier()),
+                                                               resultSet -> JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length));
+        if(attributes == null)
+        {
+            throw new IllegalArgumentException("The given edge is not in the table");
+        }
+
+        return attributes;
     }
 
     /**
