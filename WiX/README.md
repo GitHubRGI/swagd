@@ -1,8 +1,8 @@
-###Steps to build the installers:
+##Steps to build the installers:
 
 _Prereq: Wix toolset v3.9.x is installed and in your system path._
 
-1. Build the swagd software using maven. (mvn install)
+1. Build the swagd software using maven: `mvn install`
 2. Download the msi's for gdal-core and gdal-mrsid, from the urls below, into the {swagd}/WiX/Resources folder.
     -http://download.gisinternals.com/sdk/downloads/release-1600-x64-gdal-1-11-1-mapserver-6-4-1/gdal-111-1600-x64-core.msi
     -http://download.gisinternals.com/sdk/downloads/release-1600-x64-gdal-1-11-1-mapserver-6-4-1/gdal-111-1600-x64-mrsid.msi
