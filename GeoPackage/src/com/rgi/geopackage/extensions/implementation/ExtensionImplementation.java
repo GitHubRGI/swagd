@@ -56,14 +56,19 @@ public abstract class ExtensionImplementation
                                    final GeoPackageCore       geoPackageCore,
                                    final GeoPackageExtensions geoPackageExtensions) throws SQLException
     {
-        if(databaseConnection == null)
+        if(databaseConnection == null || databaseConnection.isClosed())
         {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Database connection may not be null or closed");
+        }
+
+        if(geoPackageCore == null)
+        {
+            throw new IllegalArgumentException("GeoPackage core subsystem may not be null");
         }
 
         if(geoPackageExtensions == null)
         {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("GeoPackage extensions subsystem may not be null");
         }
 
         this.databaseConnection   = databaseConnection;

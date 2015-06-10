@@ -31,7 +31,7 @@ import org.junit.Test;
 public class ThrowingConsumerTest
 {
     /**
-     * Tests that accept throws a RuntimeException
+     * Tests that {@link ThrowingConsumerTest#accept} throws a RuntimeException
      */
     @Test(expected = RuntimeException.class)
     public void testAcceptThrowsException()
@@ -46,7 +46,7 @@ public class ThrowingConsumerTest
     }
 
     /**
-     * Tests that accept does not always throw a RuntimeException
+     * Tests that {@link ThrowingConsumerTest#accept} does not always throw a RuntimeException
      */
     public void testAccept()
     {
