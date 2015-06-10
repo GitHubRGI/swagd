@@ -115,6 +115,75 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     }
 
     /**
+     * Gets the number of edges in the given network
+     *
+     * @param network
+     * @return the number of edges in the network
+     * @throws SQLException
+     */
+    public int getEdgeCount(final Network network) throws SQLException
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("The given network is null");
+        }
+
+        final String query = String.format("SELECT COUNT(*) FROM %s;",
+                                           network.getTableName());
+        final PreparedStatement stmt = this.databaseConnection.prepareStatement(query);
+        try
+        {
+            final ResultSet results = stmt.executeQuery();
+            try
+            {
+                return results.getInt(1);
+            }
+            finally
+            {
+                results.close();
+            }
+        }
+        finally
+        {
+            stmt.close();
+        }
+    }
+
+    /**
+     * Gets the number of nodes in the given network
+     *
+     * @param network
+     * @return the number of nodes in the network
+     * @throws SQLException
+     */
+    public int getNodeCount(final Network network) throws SQLException
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("The given network is null");
+        }
+
+        final String query = String.format("SELECT COUNT(*) FROM %s;",
+                                           network.getTableName() + NodeAttributesTableSuffix);
+        final PreparedStatement stmt = this.databaseConnection.prepareStatement(query);
+        try
+        {
+            final ResultSet results = stmt.executeQuery();
+            try
+            {
+                return results.getInt(1);
+            }
+            finally
+            {
+                results.close();
+            }
+        }
+        finally
+        {
+            stmt.close();
+        }
+    }
+    /**
      * @param network
      *             Network table reference
      * @return the name of the unique corresponding network attribute table

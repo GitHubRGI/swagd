@@ -173,7 +173,10 @@ public class GeoPackageNetworkExtensionTest
                                                                 new BoundingBox(0, 0, 0, 0),
                                                                 gpkg.core().getSpatialReferenceSystem(-1));
 
-            assertTrue(networkExtension.getEdgeCount(network) == 0);
+            assertTrue(String.format("GeoPackageNetworkExtension method getEdgeCount returned %s, but %s was expected",
+                                     networkExtension.getEdgeCount(network),
+                                     0),
+                       networkExtension.getEdgeCount(network) == 0);
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
         {
@@ -187,7 +190,7 @@ public class GeoPackageNetworkExtensionTest
 
     /**
      * Tests that getEdgeCount correctly returns the
-     * number of edges in an empty network
+     * number of edges in a nonempty network
      */
     @Test
     public void testGetEdgeCount2()
@@ -201,13 +204,17 @@ public class GeoPackageNetworkExtensionTest
                                                                 "id:", "description",
                                                                 new BoundingBox(0, 0, 0, 0),
                                                                 gpkg.core().getSpatialReferenceSystem(-1));
+
             final Iterable<Pair<Integer, Integer>> edges = Arrays.asList(new Pair<>(12, 23),
                                                                    new Pair<>(22, 45),
                                                                    new Pair<>(345, 677),
                                                                    new Pair<>(234, 456));
             networkExtension.addEdges(network, edges);
 
-            assertTrue(networkExtension.getEdgeCount(network) == 4);
+            assertTrue(String.format("GeoPackageNetworkExtension method getEdgeCount returned %s, but %s was expected",
+                                     networkExtension.getEdgeCount(network),
+                                     4),
+                       networkExtension.getEdgeCount(network) == 4);
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
         {
@@ -219,6 +226,110 @@ public class GeoPackageNetworkExtensionTest
         }
     }
 
+    /**
+     * Tests that getNodeCount throws an exception
+     * when given a null Network
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetNodeCountException()
+    {
+        final File testFile = TestUtility.getRandomFile(10);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            networkExtension.getNodeCount(null);
+            fail("Expected getNodeCount to throw an IllegalArgumentException when given a null Network");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests that getNodeCount correctly returns the
+     * number of nodes in an empty network
+     */
+    @Test
+    public void testGetNodeCount1()
+    {
+        final File testFile = TestUtility.getRandomFile(10);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("my_table",
+                                                                "id:", "description",
+                                                                new BoundingBox(0, 0, 0, 0),
+                                                                gpkg.core().getSpatialReferenceSystem(-1));
+
+            assertTrue(String.format("GeoPackageNetworkExtension method getNodeCount returned %s, but %s was expected",
+                                     networkExtension.getNodeCount(network),
+                                     0),
+                       networkExtension.getNodeCount(network) == 0);
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests that getNodeCount correctly returns the
+     * number of nodes in an empty network
+     */
+    @Test
+    public void testGetNodeCount2()
+    {
+        final File testFile = TestUtility.getRandomFile(10);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("my_table",
+                                                                "id:", "description",
+                                                                new BoundingBox(0, 0, 0, 0),
+                                                                gpkg.core().getSpatialReferenceSystem(-1));
+
+
+            final AttributeDescription attribute = networkExtension.addAttributeDescription(network,
+                                                                                            "height",
+                                                                                            "meters",
+                                                                                            DataType.Integer,
+                                                                                            "description",
+                                                                                            AttributedType.Node );
+
+            final Iterable<Pair<Integer, List<Object>>> nodeAttributePairs = Arrays.asList(new Pair<>(12, Arrays.asList((Object)21)),
+                                                                                     new Pair<>(13, Arrays.asList((Object)31)),
+                                                                                     new Pair<>(14, Arrays.asList((Object)41)),
+                                                                                     new Pair<>(15, Arrays.asList((Object)51)));
+
+            networkExtension.addNodes(nodeAttributePairs, attribute);
+
+
+            assertTrue(String.format("GeoPackageNetworkExtension method getNodeCount returned %s, but %s was expected",
+                                     networkExtension.getNodeCount(network),
+                                     0),
+                       networkExtension.getNodeCount(network) == 4);
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            TestUtility.deleteFile(testFile);
+        }
+    }
     /**
      * Tests that getNodeAttributesTableName throws an IllegalArgumentException
      */
