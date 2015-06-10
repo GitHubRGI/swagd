@@ -189,7 +189,7 @@ public class DatabaseUtilityTest
                 try(ResultSet sPragma = stmt.executeQuery(query))
                 {
                     final int sync = sPragma.getInt("synchronous");
-                    assertTrue("DatabaseUtility did not set PRAGMA synchronous to off.",sync ==  0);
+                    assertTrue("DatabaseUtility did not set PRAGMA synchronous to off.",sync == 0);
                 }
             }
         }
