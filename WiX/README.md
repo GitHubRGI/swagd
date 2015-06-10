@@ -17,5 +17,9 @@ _Prereq: Wix toolset v3.9.x is installed and in your system path._
 * `candle -ext WixBalExtension -ext WixUtilExtension Swagd-deps.wxs`
 * `light -ext WixBalExtension -ext WixUtilExtension Swagd-deps.wixobj`
 
-5. To Install swagd, and dependencies: simply run the Swagd-deps.msi file located in {swagd}/WiX on any windows machine.
-6. To Install Swagd without dependencies: simply run the Swagd.msi file located at {swagd}/WiX/Resources on any windows machine. 
+##Installing SWAGD
+
+* _With dependencies_
+    * Run the Swagd-deps.msi file located in {swagd}/WiX on any windows machine
+* _Without dependencies_
+    * Run the Swagd.msi file located at {swagd}/WiX/Resources on any windows machine
