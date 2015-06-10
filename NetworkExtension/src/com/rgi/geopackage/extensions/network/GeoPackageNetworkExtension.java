@@ -130,9 +130,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      */
     public static String getNodeAttributesTableName(final String networkTableName)
     {
-        if(networkTableName == null)
+        if(networkTableName == null || networkTableName.isEmpty())
         {
-            throw new IllegalArgumentException("Network may not be null");
+            throw new IllegalArgumentException("Network may not be null or empty");
         }
 
         return networkTableName + NodeAttributesTableSuffix;
