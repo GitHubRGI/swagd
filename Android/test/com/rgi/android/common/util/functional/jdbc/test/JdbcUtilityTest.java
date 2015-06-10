@@ -96,21 +96,26 @@ public class JdbcUtilityTest
                         final ResultSet rs = stmt.executeQuery(query);
                         try
                         {
-                            final boolean results1 = JdbcUtility.anyMatch(rs, new ResultSetPredicate() {
-                                                                                                            @Override
-                                                                                                            public boolean apply(final ResultSet resultSet) throws SQLException
-                                                                                                            {
-                                                                                                                return resultSet.getString("srs_name").equals(name4);
-                                                                                                            }
-                                                                                                       });
+                            final boolean results1 = JdbcUtility.anyMatch(rs,
+                                                                          new ResultSetPredicate()
+                                                                          {
+                                                                              @Override
+                                                                              public boolean apply(final ResultSet resultSet) throws SQLException
+                                                                              {
+                                                                                  return resultSet.getString("srs_name").equals(name4);
+                                                                              }
+                                                                          });
 
-                            final boolean results2 = JdbcUtility.anyMatch(rs, new ResultSetPredicate() {
-                                                                                                            @Override
-                                                                                                            public boolean apply(final ResultSet resultSet) throws SQLException
-                                                                                                            {
-                                                                                                                return resultSet.getString("srs_name").equals(name5);
-                                                                                                            }
-                                                                                                        });
+                            final boolean results2 = JdbcUtility.anyMatch(rs,
+                                                                          new ResultSetPredicate()
+                                                                          {
+                                                                              @Override
+                                                                              public boolean apply(final ResultSet resultSet) throws SQLException
+                                                                              {
+                                                                                  return resultSet.getString("srs_name").equals(name5);
+                                                                              }
+                                                                          });
+
                             assertTrue("Expected JdbcUtility method anyMatch(ResultSet, ResultSetPredicate) to return true.", results1);
                             assertFalse("Expected JdbcUtility method anyMatch(ResultSet, ResultSetPredicate) to return false.", results2);
                         }
@@ -256,13 +261,15 @@ public class JdbcUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentExceptionAnyMatchNullSet() throws SQLException
     {
-        JdbcUtility.anyMatch(null, new ResultSetPredicate() {
-                                                                @Override
-                                                                public boolean apply(final ResultSet resultSet) throws SQLException
-                                                                {
-                                                                    return false;
-                                                                }
-                                                            });
+        JdbcUtility.anyMatch(null,
+                             new ResultSetPredicate()
+                             {
+                                 @Override
+                                 public boolean apply(final ResultSet resultSet) throws SQLException
+                                 {
+                                     return false;
+                                 }
+                             });
         fail("Expected JdbcUtility method anyMatch(ResultSet, ResultSetPredicate) to throw an IllegalArgumentException when given a null ResultSet");
     }
 
@@ -307,13 +314,16 @@ public class JdbcUtilityTest
                         final ResultSet rs = stmt.executeQuery(query);
                         try
                         {
-                            final List<String> results = JdbcUtility.map(rs, new ResultSetFunction<String>() {
-                                                                                                                   @Override
-                                                                                                                   public String apply(final ResultSet resultSet) throws SQLException
-                                                                                                                   {
-                                                                                                                       return resultSet.getString("srs_name");
-                                                                                                                   }
-                                                                                                              });
+                            final List<String> results = JdbcUtility.map(rs,
+                                                                         new ResultSetFunction<String>()
+                                                                         {
+                                                                             @Override
+                                                                             public String apply(final ResultSet resultSet) throws SQLException
+                                                                             {
+                                                                                 return resultSet.getString("srs_name");
+                                                                             }
+                                                                         });
+
                             assertTrue("Expected JdbcUtility method map(ResultSet, ResultSetFunction<T>) to return a List of size 4.", results.size() == 4);
                             final String error = String.format("Expected JDBC utlity to method map(ResultSet, ResultSetFunction<T>) to return a list containing: %s, %s, %s, and %s", name1, name2, name3, name4);
                             assertTrue(error, results.get(0).equals(name1) &&
@@ -380,7 +390,8 @@ public class JdbcUtilityTest
                         JdbcUtility.map(rs, null);
                         fail("Expected JdbcUtility method map(ResultSet, ResultSetFunction<T>) to throw an IllegalArgumentException when given a null ResultSetFUnction<T>");
                     }
-                    finally {
+                    finally
+                    {
                         rs.close();
                     }
                 }
@@ -409,13 +420,16 @@ public class JdbcUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentExceptionMapRS() throws SQLException
     {
-        JdbcUtility.map(null, new ResultSetFunction<String>() {
-                                                                  @Override
-                                                                  public String apply(final ResultSet resultSet) throws SQLException
-                                                                  {
-                                                                      return "test";
-                                                                  }
-                                                              });
+        JdbcUtility.map(null,
+                        new ResultSetFunction<String>()
+                        {
+                            @Override
+                            public String apply(final ResultSet resultSet) throws SQLException
+                            {
+                                return "test";
+                            }
+                        });
+
             fail("Expected JdbcUtility method map(ResultSet, ResultSetFunction<T>) to throw an IllegalArgumentException when given a null ResultSet.");
     }
 
@@ -431,7 +445,6 @@ public class JdbcUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentExceptionMapRSClosed() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-
         final File testFile = TestUtility.getRandomFile(10);
 
         final GeoPackage gpkg = new GeoPackage(testFile);
@@ -517,20 +530,23 @@ public class JdbcUtilityTest
                         try
                         {
                             final List<String> results = JdbcUtility.mapFilter(rs,
-                                    new ResultSetFunction<String>() {
-                                                                        @Override
-                                                                        public String apply(final ResultSet resultSet) throws SQLException
-                                                                        {
-                                                                            return resultSet.getString("srs_name");
-                                                                        }
-                                                                    },
-                                    new Predicate<String>() {
-                                                                        @Override
-                                                                        public boolean apply(final String t)
-                                                                        {
-                                                                            return t.equals(name1) || t.equals(name2);
-                                                                        }
-                                                            });
+                                                                              new ResultSetFunction<String>()
+                                                                              {
+                                                                                  @Override
+                                                                                  public String apply(final ResultSet resultSet) throws SQLException
+                                                                                  {
+                                                                                      return resultSet.getString("srs_name");
+                                                                                  }
+                                                                              },
+                                                                              new Predicate<String>()
+                                                                              {
+                                                                                  @Override
+                                                                                  public boolean apply(final String t)
+                                                                                  {
+                                                                                      return t.equals(name1) || t.equals(name2);
+                                                                                  }
+                                                                              });
+
                             assertTrue("Expected JdbcUtility method mapFilter(ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to return a list of size 2",
                                        results.size() == 2);
                             assertTrue(String.format("Expected JdbcUtility method mapFilter(ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to return a list containing: %s and %s",name1, name2),
@@ -574,20 +590,23 @@ public class JdbcUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void illegalArgumentExceptionMapFilterRS() throws SQLException
     {
-        JdbcUtility.mapFilter(null, new ResultSetFunction<String>() {
-                                                                        @Override
-                                                                        public String apply(final ResultSet resultSet) throws SQLException
-                                                                        {
-                                                                            return "test";
-                                                                        }
-                                                                    },
-                                       new Predicate<String>() {
-                                                                   @Override
-                                                                   public boolean apply(final String tableName)
-                                                                {
-                                                                    return true;
-                                                                }
-                                                            });
+        JdbcUtility.mapFilter(null,
+                              new ResultSetFunction<String>()
+                              {
+                                  @Override
+                                  public String apply(final ResultSet resultSet) throws SQLException
+                                  {
+                                      return "test";
+                                  }
+                              },
+                              new Predicate<String>()
+                              {
+                                  @Override
+                                  public boolean apply(final String tableName)
+                                  {
+                                      return true;
+                                  }
+                              });
         fail("Expected JdbcUtility method mapFilter (ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to throw an IllegalArgumentException when given a null ResultSet.");
     }
 
@@ -621,12 +640,16 @@ public class JdbcUtilityTest
                     final ResultSet rs = stmt.executeQuery(query);
                     try
                     {
-                        JdbcUtility.mapFilter(rs, null, new Predicate<String>() {
-                                                                                    @Override
-                                                                                    public boolean apply(final String tableName) {
-                                                                                        return true;
-                                                                                    }
-                                                                                });
+                        JdbcUtility.mapFilter(rs,
+                                              null,
+                                              new Predicate<String>()
+                                              {
+                                                  @Override
+                                                  public boolean apply(final String tableName)
+                                                  {
+                                                      return true;
+                                                  }
+                                              });
                         fail("Expected JdbcUtility method mapFilter (ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to throw an IllegalArgumentException when given a null ResultSetFunction.");
                     }
                     finally
@@ -679,13 +702,16 @@ public class JdbcUtilityTest
                     final ResultSet rs = stmt.executeQuery(query);
                     try
                     {
-                        JdbcUtility.mapFilter(rs, new ResultSetFunction<String>() {
-                                                                                      @Override
-                                                                                      public String apply(final ResultSet resultSet) throws SQLException
-                                                                                      {
-                                                                                          return "test";
-                                                                                      }
-                                                                                  }, null);
+                        JdbcUtility.mapFilter(rs,
+                                              new ResultSetFunction<String>()
+                                              {
+                                                  @Override
+                                                  public String apply(final ResultSet resultSet) throws SQLException
+                                                  {
+                                                      return "test";
+                                                  }
+                                              },
+                                              null);
                         fail("Expected JdbcUtility method mapFilter (ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to throw an IllegalArgumentException when given a null ResultSetPredicate.");
                     }
                     finally

@@ -51,13 +51,16 @@ public class FunctionalUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void anyMatchIllegalArgumentException1()
     {
-        FunctionalUtility.anyMatch(null, new Predicate<String>() {
-                                                                     @Override
-                                                                     public boolean apply(final String t)
-                                                                     {
-                                                                         return false;
-                                                                     }
-                                                                 });
+        FunctionalUtility.anyMatch(null,
+                                   new Predicate<String>()
+                                   {
+                                       @Override
+                                       public boolean apply(final String t)
+                                       {
+                                           return false;
+                                       }
+                                   });
+
         fail("Expected FunctionalUtility method anyMatch to throw an IllegalArgumentException when passed a null parameter.");
     }
 
@@ -80,13 +83,16 @@ public class FunctionalUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void filterIllegalArgumentException1()
     {
-        FunctionalUtility.filter(null, new Predicate<String>() {
-                                                                   @Override
-                                                                   public boolean apply(final String t)
-                                                                   {
-                                                                       return false;
-                                                                   }
-                                                               });
+        FunctionalUtility.filter(null,
+                                 new Predicate<String>()
+                                 {
+                                     @Override
+                                     public boolean apply(final String t)
+                                     {
+                                         return false;
+                                     }
+                                 });
+
         fail("Expected FunctionalUtility method filter to throw an IllegalArgumentException when passed a null parameter.");
     }
 
@@ -107,14 +113,18 @@ public class FunctionalUtilityTest
      * instead of a Collection
      */
     @Test(expected = IllegalArgumentException.class)
-    public void mapIllegalArgumentException1() {
-        FunctionalUtility.map(null, new Function<String, String>() {
+    public void mapIllegalArgumentException1()
+    {
+        FunctionalUtility.map(null,
+                              new Function<String, String>()
+                              {
+                                  @Override
+                                  public String apply(final String input)
+                                  {
+                                      return "test";
+                                  }
+                              });
 
-            @Override
-            public String apply(final String input) {
-                return "test";
-            }
-        });
         fail("Expected FunctionalUtility method map to throw an IllegalArgumentException when passed a null parameter.");
     }
 
@@ -136,20 +146,24 @@ public class FunctionalUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void mapFilterIllegalArgumentException1()
     {
-        FunctionalUtility.mapFilter(null, new Function<String, String>() {
-                                                                             @Override
-                                                                             public String apply(final String input)
-                                                                             {
-                                                                                 return input;
-                                                                             }
-                                                                         },
-                                          new Predicate<String>() {
-                                                                      @Override
-                                                                      public boolean apply(final String t)
-                                                                      {
-                                                                          return false;
-                                                                      }
-                                                                  });
+        FunctionalUtility.mapFilter(null,
+                                    new Function<String, String>()
+                                    {
+                                        @Override
+                                        public String apply(final String input)
+                                        {
+                                            return input;
+                                        }
+                                    },
+                                    new Predicate<String>()
+                                    {
+                                        @Override
+                                        public boolean apply(final String t)
+                                        {
+                                            return false;
+                                        }
+                                    });
+
         fail("Expected FunctionalUtility method mapFilter to throw an IllegalArgumentException when passed a null parameter.");
     }
 
@@ -161,13 +175,17 @@ public class FunctionalUtilityTest
     public void mapFilterIllegalArgumentException2()
     {
         final Collection<String> collection = new ArrayList<String>();
-        FunctionalUtility.mapFilter(collection, null, new Predicate<String>() {
-                                                                                  @Override
-                                                                                  public boolean apply(final String t)
-                                                                                  {
-                                                                                      return false;
-                                                                                  }
-                                                                              });
+        FunctionalUtility.mapFilter(collection,
+                                    null,
+                                    new Predicate<String>()
+                                    {
+                                        @Override
+                                        public boolean apply(final String t)
+                                        {
+                                            return false;
+                                        }
+                                    });
+
         fail("Expected FunctionalUtility method mapFilter to throw an IllegalArgumentException when passed a null parameter.");
     }
 
@@ -179,13 +197,17 @@ public class FunctionalUtilityTest
     public void mapFilterIllegalArgumentException3()
     {
         final Collection<String> collection = new ArrayList<String>();
-        FunctionalUtility.mapFilter(collection, new Function<String, String>() {
-                                                                                   @Override
-                                                                                   public String apply(final String input)
-                                                                                   {
-                                                                                       return input;
-                                                                                   }
-                                                                                }, null);
+        FunctionalUtility.mapFilter(collection,
+                                    new Function<String, String>()
+                                    {
+                                        @Override
+                                        public String apply(final String input)
+                                        {
+                                            return input;
+                                        }
+                                    },
+                                    null);
+
         fail("Expected FunctionalUtility method mapFilter to throw an IllegalArgumentException when passed a null parameter.");
     }
 
@@ -196,19 +218,24 @@ public class FunctionalUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void filterMapIllegalArgumentException1()
     {
-        FunctionalUtility.filterMap(null, new Predicate<String>() {
-                                                                      @Override
-                                                                      public boolean apply(final String t)
-                                                                      {
-                                                                          return false;
-                                                                      }
-                                                                  },
-                                          new Function<String, Integer>() {
-                                                                              @Override
-                                                                              public Integer apply(final String input) {
-                                                                                  return input.length();
-                                                                              }
-                                                                          });
+        FunctionalUtility.filterMap(null,
+                                    new Predicate<String>()
+                                    {
+                                        @Override
+                                        public boolean apply(final String t)
+                                        {
+                                            return false;
+                                        }
+                                    },
+                                    new Function<String, Integer>()
+                                    {
+                                        @Override
+                                        public Integer apply(final String input)
+                                        {
+                                            return input.length();
+                                        }
+                                    });
+
         fail("Expected FuntionalUtility method filterMap to throw an IllegalArgumentException when passed a null parameter.");
     }
 
@@ -220,13 +247,17 @@ public class FunctionalUtilityTest
     public void filterMapIllegalArgumentException2()
     {
         final Collection<String> collection = new ArrayList<String>();
-        FunctionalUtility.filterMap(collection, null, new Function<String, Integer>() {
-                                                                                          @Override
-                                                                                          public Integer apply(final String input)
-                                                                                          {
-                                                                                              return input.length();
-                                                                                          }
-                                                                                      });
+        FunctionalUtility.filterMap(collection,
+                                    null,
+                                    new Function<String, Integer>()
+                                    {
+                                        @Override
+                                        public Integer apply(final String input)
+                                        {
+                                            return input.length();
+                                        }
+                                    });
+
         fail("Expected FuntionalUtility method filterMap to throw an IllegalArgumentException when passed a null parameter.");
     }
 
@@ -238,13 +269,17 @@ public class FunctionalUtilityTest
     public void filterMapIllegalArgumentException3()
     {
         final Collection<String> collection = new ArrayList<String>();
-        FunctionalUtility.filterMap(collection, new Predicate<String>(){
-                                                                           @Override
-                                                                           public boolean apply(final String t)
-                                                                           {
-                                                                               return false;
-                                                                           }
-                                                                       }, null);
+        FunctionalUtility.filterMap(collection,
+                                    new Predicate<String>()
+                                    {
+                                        @Override
+                                        public boolean apply(final String t)
+                                        {
+                                            return false;
+                                        }
+                                    },
+                                    null);
+
         fail("Expected FuntionalUtility method filterMap to throw an IllegalArgumentException when passed a null parameter.");
     }
 
@@ -271,20 +306,23 @@ public class FunctionalUtilityTest
         collection.add(name5);
         collection.add(name6);
 
-        final List<Integer> results = FunctionalUtility.filterMap(collection, new Predicate<String>() {
-                                                                                                          @Override
-                                                                                                          public boolean apply(final String t)
-                                                                                                          {
-                                                                                                              return t.length() > 5;
-                                                                                                          }
-                                                                                                      },
-                                                                              new Function<String, Integer>(){
-                                                                                                                 @Override
-                                                                                                                 public Integer apply(final String input)
-                                                                                                                 {
-                                                                                                                     return input.length();
-                                                                                                                 }
-                                                                                                             });
+        final List<Integer> results = FunctionalUtility.filterMap(collection,
+                                                                  new Predicate<String>()
+                                                                  {
+                                                                      @Override
+                                                                      public boolean apply(final String t)
+                                                                      {
+                                                                          return t.length() > 5;
+                                                                      }
+                                                                  },
+                                                                  new Function<String, Integer>()
+                                                                  {
+                                                                      @Override
+                                                                      public Integer apply(final String input)
+                                                                      {
+                                                                          return input.length();
+                                                                      }
+                                                                  });
 
         assertTrue("FunctionalUtility method filterMap did not return the expected Collection.",
                 results.size() == 3 &&

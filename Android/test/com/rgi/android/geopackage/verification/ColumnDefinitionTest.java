@@ -104,14 +104,8 @@ public class ColumnDefinitionTest
     }
 
     /**
-<<<<<<< HEAD
      * Verifies equals and hashCode return false and different hash codes for
      * different ColumnDefinition objects
-=======
-     * Verifies equals and hashCode return false
-     * and different hash codes for different
-     * ColumnDefinition objects
->>>>>>> origin/master
      */
     @Test
     public void testEqualsAndHash2()
@@ -132,14 +126,8 @@ public class ColumnDefinitionTest
     }
 
     /**
-<<<<<<< HEAD
      * Verifies equals and hashCode return false and different hash codes for
      * different ColumnDefinition objects
-=======
-     * Verifies equals and hashCode return false
-     * and different hash codes for different
-     * ColumnDefinition objects
->>>>>>> origin/master
      */
     @Test
     public void testEqualsAndHash3()
@@ -160,14 +148,8 @@ public class ColumnDefinitionTest
     }
 
     /**
-<<<<<<< HEAD
      * Verifies equals and hashCode return false and different hash codes for
      * different ColumnDefinition objects
-=======
-     * Verifies equals and hashCode return false
-     * and different hash codes for different
-     * ColumnDefinition objects
->>>>>>> origin/master
      */
     @Test
     public void testEqualsAndHash4()
@@ -188,14 +170,8 @@ public class ColumnDefinitionTest
     }
 
     /**
-<<<<<<< HEAD
      * Verifies equals and hashCode return false and different hash codes for
      * different ColumnDefinition objects
-=======
-     * Verifies equals and hashCode return false
-     * and different hash codes for different
-     * ColumnDefinition objects
->>>>>>> origin/master
      */
     @Test
     public void testEqualsAndHash5()
@@ -216,14 +192,8 @@ public class ColumnDefinitionTest
     }
 
     /**
-<<<<<<< HEAD
      * Verifies equals and hashCode return false and different hash codes for
      * different ColumnDefinition objects
-=======
-     * Verifies equals and hashCode return false
-     * and different hash codes for different
-     * ColumnDefinition objects
->>>>>>> origin/master
      */
     @Test
     public void testEqualsAndHash6()
