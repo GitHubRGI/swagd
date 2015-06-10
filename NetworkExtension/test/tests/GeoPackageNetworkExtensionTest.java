@@ -132,6 +132,94 @@ public class GeoPackageNetworkExtensionTest
     }
 
     /**
+     * Tests that getEdgeCount throws an exception
+     * when given a null Network
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetEdgeCountException()
+    {
+        final File testFile = TestUtility.getRandomFile(10);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            networkExtension.getEdgeCount(null);
+            fail("Expected getEdgeCount to throw an IllegalArgumentException when given a null Network");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests that getEdgeCount correctly returns the
+     * number of edges in an empty network
+     */
+    @Test
+    public void testGetEdgeCount1()
+    {
+        final File testFile = TestUtility.getRandomFile(10);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("my_table",
+                                                                "id:", "description",
+                                                                new BoundingBox(0, 0, 0, 0),
+                                                                gpkg.core().getSpatialReferenceSystem(-1));
+
+            assertTrue(networkExtension.getEdgeCount(network) == 0);
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests that getEdgeCount correctly returns the
+     * number of edges in an empty network
+     */
+    @Test
+    public void testGetEdgeCount2()
+    {
+        final File testFile = TestUtility.getRandomFile(10);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("my_table",
+                                                                "id:", "description",
+                                                                new BoundingBox(0, 0, 0, 0),
+                                                                gpkg.core().getSpatialReferenceSystem(-1));
+            final Iterable<Pair<Integer, Integer>> edges = Arrays.asList(new Pair<>(12, 23),
+                                                                   new Pair<>(22, 45),
+                                                                   new Pair<>(345, 677),
+                                                                   new Pair<>(234, 456));
+            networkExtension.addEdges(network, edges);
+
+            assertTrue(networkExtension.getEdgeCount(network) == 4);
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
      * Tests that getNodeAttributesTableName throws an IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
@@ -635,6 +723,7 @@ public class GeoPackageNetworkExtensionTest
         }
     }
 
+// This test is not passing right now, need to modify getEntries so that it throws an exception when the node is not in the network
 //    /**
 //     * Tests getEntries throws an Exception
 //     * when given a node not in the network
@@ -731,6 +820,7 @@ public class GeoPackageNetworkExtensionTest
         }
     }
 
+// This test is not passing right now, need to modify getExits so that it throws an exception when the node is not in the network
 //    /**
 //     * Tests getExits return an empty list when given
 //     * a node not in the network
@@ -1291,6 +1381,46 @@ public class GeoPackageNetworkExtensionTest
 
             networkExtension.updateEdgeAttributes(edge, values, test);
             fail("Expected GeoPackageNetworkExtension method updateEdgeAttributes to throw an IllegalArgumentException when given a null values Collection");
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            TestUtility.deleteFile(testFile);
+        }
+    }
+
+    /**
+     * Tests updateEdgeAttribute throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testUpdateEdgeAttributesException3()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("table_name",
+                                                                "id",
+                                                                "description",
+                                                                new BoundingBox(0, 0, 0, 0),
+                                                                gpkg.core().getSpatialReferenceSystem(-1));
+
+            final AttributeDescription test = networkExtension.addAttributeDescription(network,
+                                                                                       "name",
+                                                                                       "units",
+                                                                                       DataType.Real,
+                                                                                       "description",
+                                                                                       AttributedType.Node);
+
+            final Edge edge = networkExtension.addEdge(network, 0, 23);
+            final List<Object> values = new ArrayList<>();
+
+            networkExtension.updateEdgeAttributes(edge, values, test);
+            fail("Expected GeoPackageNetworkExtension method updateEdgeAttributes to throw an IllegalArgumentException when the attribute description list and values collection have different lengths");
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
         {
