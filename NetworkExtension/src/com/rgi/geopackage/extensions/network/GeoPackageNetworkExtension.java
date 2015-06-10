@@ -884,10 +884,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                     networkTableName,
                                                     "id");
 
-        return JdbcUtility.select(this.databaseConnection,
-                                  attributeQuery,
-                                  preparedStatement -> preparedStatement.setInt(1, edge.getIdentifier()),
-                                  resultSet -> JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length));
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     attributeQuery,
+                                     preparedStatement -> preparedStatement.setInt(1, edge.getIdentifier()),
+                                     resultSet -> JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length));
     }
 
     /**

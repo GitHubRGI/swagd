@@ -53,7 +53,9 @@ public class TestUtility
 
         do
         {
-            final String filename = new File("").getAbsoluteFile() + TestUtility.getRandomString(length) + ".gpkg";
+            final String filename = String.format("%s/%s.gpkg",
+                                                  new File("").getAbsoluteFile(),
+                                                  TestUtility.getRandomString(length));
             testFile = new File(filename);
         }
         while(testFile.exists());
