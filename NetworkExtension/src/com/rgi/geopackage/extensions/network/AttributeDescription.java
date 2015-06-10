@@ -48,13 +48,13 @@ public class AttributeDescription
      *             Indicator of what's being described
      *
      */
-    public AttributeDescription(final int            identifier,
-                                final String         networkTableName,
-                                final String         name,
-                                final String         units,
-                                final DataType       dataType,
-                                final String         description,
-                                final AttributedType attributedType)
+    protected AttributeDescription(final int            identifier,
+                                   final String         networkTableName,
+                                   final String         name,
+                                   final String         units,
+                                   final DataType       dataType,
+                                   final String         description,
+                                   final AttributedType attributedType)
     {
         this.identifier       = identifier;
         this.networkTableName = networkTableName;
