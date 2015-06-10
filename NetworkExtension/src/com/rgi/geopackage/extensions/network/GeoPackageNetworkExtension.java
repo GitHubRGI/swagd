@@ -1088,7 +1088,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                       preparedStatement.setObject(valueIndex+1, value);
                                                   }
 
-                                                  preparedStatement.setInt(size, nodeIdentifier);
+                                                  preparedStatement.setInt(size+1, nodeIdentifier);
                                                 });
 
         this.databaseConnection.commit();

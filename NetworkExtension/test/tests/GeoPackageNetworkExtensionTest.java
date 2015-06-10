@@ -3327,6 +3327,59 @@ public class GeoPackageNetworkExtensionTest
 //    }
 
     /**
+     * Tests that addNodeAttributes correctly adds
+     * the attributes to the given node
+     */
+    @Test
+    public void testAddNodeAttributes()
+    {
+        final File testFile = TestUtility.getRandomFile(5);
+        try(final GeoPackage gpkg = new GeoPackage(testFile))
+        {
+            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
+
+            final Network network = networkExtension.addNetwork("my_table",
+                                                                "id",
+                                                                "description",
+                                                                new BoundingBox(0, 0, 0, 0),
+                                                                gpkg.core().getSpatialReferenceSystem(-1));
+
+            final AttributeDescription attribute1 = networkExtension.addAttributeDescription(network,
+                                                                                            "test",
+                                                                                            "units",
+                                                                                            DataType.Integer,
+                                                                                            "description",
+                                                                                            AttributedType.Node);
+
+            final AttributeDescription attribute2 = networkExtension.addAttributeDescription(network,
+                                                                                             "test_too",
+                                                                                             "units",
+                                                                                             DataType.Integer,
+                                                                                             "description",
+                                                                                             AttributedType.Node);
+
+            final Iterable<Pair<Integer, List<Object>>> nodeAttributePairs = Arrays.asList(new Pair<>(1, Arrays.asList((Object)12, (Object)21)));
+            networkExtension.addNodes(nodeAttributePairs, attribute1, attribute2);
+
+            networkExtension.addNodeAttributes(1, Arrays.asList((Object)555,
+                                                                (Object)444),
+                                               attribute1,
+                                               attribute2);
+
+            assertTrue("GeoPackageNetworkExtension method addNodeAttributes did not correctly update the node's attribute",
+                       (Integer)networkExtension.getNodeAttributes(1, attribute1, attribute2).get(0) == 555 &&
+                       (Integer)networkExtension.getNodeAttributes(1, attribute1, attribute2).get(1) == 444);
+        }
+        catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            TestUtility.deleteFile(testFile);
+        }
+    }
+    /**
      * Tests addNodes throws an IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
@@ -3370,11 +3423,11 @@ public class GeoPackageNetworkExtensionTest
                                                                 gpkg.core().getSpatialReferenceSystem(-1));
 
             final AttributeDescription attribute = networkExtension.addAttributeDescription(network,
-                                                    "one",
-                                                    "test",
-                                                    DataType.Real,
-                                                    "none",
-                                                    AttributedType.Node);
+                                                                                            "one",
+                                                                                            "test",
+                                                                                            DataType.Real,
+                                                                                            "none",
+                                                                                            AttributedType.Node);
 
             networkExtension.addNodes(null , attribute);
             fail("Expected GeoPackageNetworkExtension method addNodes to throw an IllegalArgumentException when given a null List of node attribute pairs");
