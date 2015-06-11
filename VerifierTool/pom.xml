@@ -100,7 +100,6 @@
                   <manifestEntries>
                       <mode>development</mode>
                       <url>${project.url}</url>
-                      <version>${buildNumber}</version>
                   </manifestEntries>
               </archive>
           </configuration>
