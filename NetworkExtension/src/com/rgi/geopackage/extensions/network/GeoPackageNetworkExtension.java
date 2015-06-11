@@ -128,13 +128,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         final String query = String.format("SELECT COUNT(*) FROM %s;",
                                            network.getTableName());
 
-        try(PreparedStatement stmt = this.databaseConnection.prepareStatement(query))
-        {
-            try(ResultSet results = stmt.executeQuery())
-            {
-                return results.getInt(1);
-            }
-        }
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     query,
+                                     null,
+                                     results -> results.getInt(1));
     }
 
     /**
@@ -153,16 +150,14 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("The given network is null");
         }
 
-        final String query = String.format("SELECT COUNT(*) FROM %s;",
-                                           network.getTableName() + NodeAttributesTableSuffix);
+        final String query = String.format("Select COUNT(*) from(select from_node from %s UNION select to_node from %s);",
+                                           network.getTableName(),
+                                           network.getTableName());
 
-        try(PreparedStatement stmt = this.databaseConnection.prepareStatement(query))
-        {
-            try(ResultSet results = stmt.executeQuery())
-            {
-                return results.getInt(1);
-            }
-        }
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     query,
+                                     null,
+                                     results -> results.getInt(1));
     }
 
     /**
@@ -922,7 +917,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                     }
 
                                                     return value;
-                                                  });
+                                                 });
     }
 
     /**

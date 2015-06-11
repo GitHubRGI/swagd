@@ -130,23 +130,18 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         final String query = String.format("SELECT COUNT(*) FROM %s;",
                                            network.getTableName());
-        final PreparedStatement stmt = this.databaseConnection.prepareStatement(query);
-        try
-        {
-            final ResultSet results = stmt.executeQuery();
-            try
-            {
-                return results.getInt(1);
-            }
-            finally
-            {
-                results.close();
-            }
-        }
-        finally
-        {
-            stmt.close();
-        }
+
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     query,
+                                     null,
+                                     new ResultSetFunction<Integer>()
+                                     {
+                                         @Override
+                                         public Integer apply(final ResultSet resultSet) throws SQLException
+                                         {
+                                            return resultSet.getInt(1);
+                                         }
+                                    });
     }
 
     /**
@@ -163,26 +158,23 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("The given network is null");
         }
 
-        final String query = String.format("SELECT COUNT(*) FROM %s;",
-                                           network.getTableName() + NodeAttributesTableSuffix);
-        final PreparedStatement stmt = this.databaseConnection.prepareStatement(query);
-        try
-        {
-            final ResultSet results = stmt.executeQuery();
-            try
-            {
-                return results.getInt(1);
-            }
-            finally
-            {
-                results.close();
-            }
-        }
-        finally
-        {
-            stmt.close();
-        }
+        final String query = String.format("Select COUNT(*) from(select from_node from %s UNION select to_node from %s);",
+                                           network.getTableName(),
+                                           network.getTableName());
+
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     query,
+                                     null,
+                                     new ResultSetFunction<Integer>()
+                                     {
+                                         @Override
+                                         public Integer apply(final ResultSet resultSet) throws SQLException
+                                         {
+                                            return resultSet.getInt(1);
+                                         }
+                                    });
     }
+
     /**
      * @param network
      *             Network table reference
