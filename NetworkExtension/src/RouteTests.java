@@ -96,7 +96,7 @@ public class RouteTests
                                                                    endNode,
                                                                    (ThrowingFunction<Edge, Double>)(edge) -> networkExtension.getEdgeAttribute(edge, distanceAttribute),
                                                                    (startIdentifier, endIdentifier) -> { try
-                                                                                                            {
+                                                                                                         {
                                                                                                              final List<List<Object>> values = networkExtension.getNodeAttributes(Arrays.asList(startIdentifier, endIdentifier),
                                                                                                                                                                                                 nodeLongitudeAttibute,
                                                                                                                                                                                                 nodeLatitudeAttibute);
@@ -108,8 +108,8 @@ public class RouteTests
                                                                                                              final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
 
                                                                                                              return Math.sqrt(latitude*latitude + longitude*longitude);
-                                                                                                            }
-                                                                                                            catch(final SQLException ex)
+                                                                                                         }
+                                                                                                         catch(final SQLException ex)
                                                                                                          {
                                                                                                              throw new RuntimeException(ex);
                                                                                                          }

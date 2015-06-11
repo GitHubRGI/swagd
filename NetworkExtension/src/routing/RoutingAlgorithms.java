@@ -1,4 +1,3 @@
-package routing;
 /* The MIT License (MIT)
  *
  * Copyright (c) 2015 Reinventing Geospatial, Inc.
@@ -21,6 +20,8 @@ package routing;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+package routing;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -141,15 +142,15 @@ public class RoutingAlgorithms
 
                     if(edgeCost <= 0.0)    // Are positive values that are extremely close to 0 going to be a problem?
                     {
-                        throw new RuntimeException("The A* algorithm is only valid for edge costs greater than 0.0");
+                        throw new RuntimeException("The A* algorithm is only valid for edge costs greater than 0");
                     }
 
-                    // Calculate a tentative distance (see if this is better than what you already may have)
                     final double distanceFromStart = currentVertex.getDistanceFromStart() + edgeCost;
-                    final double distanceFromEnd   = heuristic.apply(reachableVertex.getNodeIdentifier(), end);
 
                     if(!openList.contains(reachableVertex))         // If we don't have it, add it
                     {
+                        final double distanceFromEnd = heuristic.apply(reachableVertex.getNodeIdentifier(), end);
+
                         reachableVertex.setDistanceFromStart(distanceFromStart);
                         reachableVertex.setDistanceFromEnd  (distanceFromEnd);
                         reachableVertex.setPrevious         (currentVertex);
@@ -158,6 +159,8 @@ public class RoutingAlgorithms
                     }
                     else if(distanceFromStart < reachableVertex.getDistanceFromStart()) // If this is better then update the values and parent Vertex (previous)
                     {
+                        final double distanceFromEnd = heuristic.apply(reachableVertex.getNodeIdentifier(), end);
+
                         reachableVertex.setDistanceFromStart(distanceFromStart);
                         reachableVertex.setDistanceFromEnd  (distanceFromEnd);
                         reachableVertex.setPrevious         (currentVertex);
