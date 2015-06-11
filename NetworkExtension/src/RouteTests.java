@@ -62,7 +62,7 @@ public class RouteTests
         runRoute2(geoPackageFile3, 100, nodes3);
     }
 
-      private static void runRoute()
+    private static void runRoute()
     {
         try(final GeoPackage gpkg = new GeoPackage(geoPackageFile1, OpenMode.Open))
         {
