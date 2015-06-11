@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import routing.RoutingAlgorithms;
+
 import com.rgi.common.util.functional.ThrowingFunction;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;

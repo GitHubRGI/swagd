@@ -1,3 +1,4 @@
+package routing;
 /* The MIT License (MIT)
  *
  * Copyright (c) 2015 Reinventing Geospatial, Inc.
@@ -94,131 +95,93 @@ public class RoutingAlgorithms
         }
 
         // changed comparator -> change back to distance from end
-        final PriorityQueue<VertexAstar> openList = new PriorityQueue<>((o1, o2) -> Double.compare((o1.distanceFromEnd + o1.distanceFromStart), (o2.distanceFromEnd + o2.distanceFromStart)));
-        final HashSet<VertexAstar> closedList = new HashSet<>();
+        final PriorityQueue<AStarVertex> openList = new PriorityQueue<>((o1, o2) -> Double.compare((o1.getDistanceFromEnd() + o1.getDistanceFromStart()),
+                                                                                                   (o2.getDistanceFromEnd() + o2.getDistanceFromStart())));
+        final HashSet<Integer> closedList = new HashSet<>();
 
-        final Map<Integer, VertexAstar> nodeMap = new HashMap<>();
+        final Map<Integer, AStarVertex> nodeMap = new HashMap<>();
 
-        // initialize starting Vertex
-        final VertexAstar startVertex = new VertexAstar(start);
-        startVertex.distanceFromEnd = heuristic.apply(start, end);
+        // Starting Vertex
+        final AStarVertex startVertex = new AStarVertex(start,
+                                                        0,
+                                                        heuristic.apply(start, end));
+
         openList.add(startVertex);
         nodeMap.put(start, startVertex);
 
         while(!openList.isEmpty())
         {
-            final VertexAstar currentVertex = openList.poll();// get the Vertex closest to the end
+            final AStarVertex currentVertex = openList.poll(); // Get the Vertex closest to the end
 
-            // if current vertex is the target then we are done
-            if(currentVertex.nodeIdentifier == end)
+            // If current vertex is the target then we are done
+            if(currentVertex.getNodeIdentifier() == end)
             {
                 return getAStarPath(end, nodeMap);
             }
 
-            closedList.add(currentVertex); // put it in "done" pile
+            closedList.add(currentVertex.getNodeIdentifier()); // Put it in "done" pile
 
-            // for each reachable Vertex
-            for(final Edge edge : networkExtension.getExits(network, currentVertex.nodeIdentifier))
+            // For each reachable Vertex
+            for(final Edge edge : networkExtension.getExits(network, currentVertex.getNodeIdentifier()))
             {
                 final int adjacentNode = edge.getTo();
 
-                VertexAstar reachableVertex = nodeMap.get(adjacentNode);
+                AStarVertex reachableVertex = nodeMap.get(adjacentNode);
 
                 if(reachableVertex == null)
                 {
-                    reachableVertex = new VertexAstar(adjacentNode);
-                    reachableVertex.distanceFromEnd = Double.MAX_VALUE;
-                    reachableVertex.distanceFromStart = Double.MAX_VALUE;
+                    reachableVertex = new AStarVertex(adjacentNode);
                     nodeMap.put(adjacentNode, reachableVertex);
                 }
 
-                // calculate a tentative distance (see if this is better than what you already may have)
-                final double distanceFromStart = currentVertex.distanceFromStart + edgeCostEvaluator.apply(edge);
-                final double distanceFromEnd = heuristic.apply(reachableVertex.nodeIdentifier, end);
-                // if the closed list already searched this vertex, skip it
-                if(closedList.contains(reachableVertex))
+                // If the closed list already searched this vertex, skip it
+                if(!closedList.contains(reachableVertex.getNodeIdentifier()))
                 {
-                    continue;
-                }
-                if(!openList.contains(reachableVertex))// if we dont have it, add it
-                {
-                    reachableVertex.distanceFromStart = distanceFromStart;
-                    reachableVertex.distanceFromEnd = distanceFromEnd;
-                    reachableVertex.previous = currentVertex;
-                    openList.add(reachableVertex);
-                }
-                // if this is better then update the values and parent Vertex (previous)
-                else if(distanceFromStart < reachableVertex.distanceFromStart)
-                {
-                    reachableVertex.distanceFromStart = distanceFromStart;
-                    reachableVertex.distanceFromEnd = distanceFromEnd;
-                    reachableVertex.previous = currentVertex;
-                    openList.remove(reachableVertex);
-                    openList.add(reachableVertex);
+                    final double edgeCost = edgeCostEvaluator.apply(edge);
+
+                    if(edgeCost <= 0.0)    // Are positive values that are extremely close to 0 going to be a problem?
+                    {
+                        throw new RuntimeException("The A* algorithm is only valid for edge costs greater than 0.0");
+                    }
+
+                    // Calculate a tentative distance (see if this is better than what you already may have)
+                    final double distanceFromStart = currentVertex.getDistanceFromStart() + edgeCost;
+                    final double distanceFromEnd   = heuristic.apply(reachableVertex.getNodeIdentifier(), end);
+
+                    if(!openList.contains(reachableVertex))         // If we don't have it, add it
+                    {
+                        reachableVertex.setDistanceFromStart(distanceFromStart);
+                        reachableVertex.setDistanceFromEnd  (distanceFromEnd);
+                        reachableVertex.setPrevious         (currentVertex);
+
+                        openList.add(reachableVertex);
+                    }
+                    else if(distanceFromStart < reachableVertex.getDistanceFromStart()) // If this is better then update the values and parent Vertex (previous)
+                    {
+                        reachableVertex.setDistanceFromStart(distanceFromStart);
+                        reachableVertex.setDistanceFromEnd  (distanceFromEnd);
+                        reachableVertex.setPrevious         (currentVertex);
+
+                        openList.remove(reachableVertex);   // Re-add to trigger the reprioritization of this vertex
+                        openList.add(reachableVertex);
+                    }
                 }
             }
         }
-        throw new RuntimeException("Didnt find correct path");
-        // return getAstarPath(end, nodeMap);//it shouldnt reach here...throw exception?
+
+        throw new RuntimeException("Didnt find correct path"); // TODO, clean this up
     }
 
-    private static List<Integer> getAStarPath(final Integer end, final Map<Integer, VertexAstar> nodeMap)
+    private static List<Integer> getAStarPath(final Integer end, final Map<Integer, AStarVertex> nodeMap)
     {
         final LinkedList<Integer> path = new LinkedList<>();
 
-        for(VertexAstar backTrackVertex = nodeMap.get(end); backTrackVertex != null; backTrackVertex = backTrackVertex.previous)
+        for(AStarVertex backTrackVertex = nodeMap.get(end); backTrackVertex != null; backTrackVertex = backTrackVertex.getPrevious())
         {
-            path.addLast(backTrackVertex.nodeIdentifier);
+            path.addLast(backTrackVertex.getNodeIdentifier());
         }
 
         return path;
-    }
-
-    // TODO make this a regular non-inner class to protect access to its members. In particular check that the distance variables aren't being set to something negative
-    private static class VertexAstar
-    {
-        private VertexAstar previous; // Parent node
-
-        private final int nodeIdentifier;
-
-        private double distanceFromStart = Double.MAX_VALUE;
-        private double distanceFromEnd   = Double.MAX_VALUE;
-
-        public VertexAstar(final int nodeIdentifier)
-        {
-            this.nodeIdentifier    = nodeIdentifier;
-            this.previous          = null;
-            this.distanceFromStart = 0.0;
-            this.distanceFromEnd   = 0.0;
-        }
-
-        @Override
-        public boolean equals(final Object obj)
-        {
-            if(obj == this)
-            {
-                return true;
-            }
-
-            if(obj == null || this.getClass() != obj.getClass())
-            {
-                return false;
-            }
-
-            return this.nodeIdentifier == ((VertexAstar)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique right?
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return this.nodeIdentifier;
-        }
-
-        @Override
-        public String toString()
-        {
-            return String.format("%d (%f, %f, %d)", this.nodeIdentifier, this.distanceFromStart, this.distanceFromEnd, this.previous.nodeIdentifier);
-        }
     }
 
     /**

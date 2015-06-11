@@ -112,8 +112,11 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * Gets the number of edges in the given network
      *
      * @param network
+     *             Network table reference
      * @return the number of edges in the network
      * @throws SQLException
+     *             if there is a database error
+     *
      */
     public int getEdgeCount(final Network network) throws SQLException
     {
@@ -136,9 +139,12 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
     /**
      * Gets the number of nodes in the given Network
+     *
      * @param network
+     *             Network table reference
      * @return the number of nodes in the network
      * @throws SQLException
+     *             if there is a database error
      */
     public int getNodeCount(final Network network) throws SQLException
     {
