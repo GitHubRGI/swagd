@@ -7,14 +7,45 @@
 
     <groupId>com.rgi.TilingApp</groupId>
     <artifactId>SWAGD</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${buildNumber}</version>
     <name>Software for Aggregating Geospatial Data</name>
     <packaging>pom</packaging>
+
+    <issueManagement>
+        <url>https://github.com/GitHubRGI/swagd/issues</url>
+        <system>GitHub Issues</system>
+    </issueManagement>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/GitHubRGI/swagd</url>
+        <connection>scm:git:git://github.com/GitHubRGI/swagd.git</connection>
+        <developerConnection>scm:git:git@github.com:GitHubRGI/swagd.git</developerConnection>
+    </scm>
+
+    <developers>
+        <developer>
+            <email>steven.lander@rgi-corp.com</email>
+            <name>Steven D. Lander</name>
+            <url>https://github.com/stevendlander</url>
+            <id>stevendlander</id>
+        </developer>
+    </developers>
+
     <properties>
         <jdk.version>1.8</jdk.version>
         <jacoco.version>0.7.2.201409121644</jacoco.version>
         <compiler.version>3.1</compiler.version>
         <coveralls.version>3.0.1</coveralls.version>
+        <mavenjar.version>2.6</mavenjar.version>
+        <buildnumber.version>1.3</buildnumber.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--jacoco.report.android>Android/target/site/jacoco/jacoco.xml</jacoco.report.android-->
         <jacoco.report.common>Common/target/site/jacoco/jacoco.xml</jacoco.report.common>
@@ -43,6 +74,44 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${mavenjar.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <git-SHA-1>${buildNumber}</git-SHA-1>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>buildnumber-maven-plugin</artifactId>
+               <version>${buildnumber.version}</version>
+               <executions>
+                   <execution>
+                       <phase>validate</phase>
+                       <goals>
+                           <goal>create</goal>
+                       </goals>
+                   </execution>
+               </executions>
+               <configuration>
+                   <!--doCheck>true</doCheck>
+                   <doUpdate>true</doUpdate-->
+                   <shortRevisionLength>7</shortRevisionLength>
+                   <format>{0,date,yyyy-MM-dd}_{1}</format>
+                   <items>
+                       <item>timestamp</item>
+                       <item>scmVersion</item>
+                   </items>
+               </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
