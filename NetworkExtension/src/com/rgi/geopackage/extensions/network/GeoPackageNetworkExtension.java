@@ -900,6 +900,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                     attributeDescription.getNetworkTableName(),
                                                     "id");
 
+        //TODO: modify so it throws an exception when edge is not in the network associated with AttributeDescription
         return JdbcUtility.selectOne(this.databaseConnection,
                                      attributeQuery,
                                      preparedStatement -> preparedStatement.setInt(1, edge.getIdentifier()),
