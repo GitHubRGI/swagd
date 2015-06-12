@@ -36,11 +36,6 @@
           <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
-          <groupId>IntegrationTest</groupId>
-          <artifactId>IntegrationTest</artifactId>
-          <version>0.0.1-SNAPSHOT</version>
-      </dependency>
-      <dependency>
           <groupId>Common</groupId>
           <artifactId>Common</artifactId>
           <version>0.0.1-SNAPSHOT</version>
@@ -144,7 +139,6 @@
                   <excludes>
                       <exclude>junit:junit</exclude>
                       <exclude>org.hamcrest:hamcrest-core</exclude>
-                      <exclude>IntegrationTest:IntegrationTest</exclude>
                   </excludes>
               </artifactSet>
               <shadedArtifactAttached>true</shadedArtifactAttached>
