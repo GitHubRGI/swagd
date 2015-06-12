@@ -37,7 +37,6 @@ import com.rgi.android.common.Dimensions;
 @SuppressWarnings({ "static-method" })
 public class DimensionsTest
 {
-
     /**
      * Tests the Dimensions constructor creates a Dimensions object with the
      * given width and height

@@ -738,6 +738,7 @@ public class RawImageTileReader implements TileStoreReader
             try
             {
                 final BufferedImage scaledTile = this.scaleToTileCanvas(fullCanvas);
+
                 RawImageTileReader.this.cachedTiles.put(this.tileKey(this.zoomLevel, this.column, this.row), this.writeTempTile(scaledTile));
                 return scaledTile;
             }
@@ -765,6 +766,7 @@ public class RawImageTileReader implements TileStoreReader
             final BufferedImage tileCanvas = new BufferedImage(RawImageTileReader.this.tileSize.getWidth(),
                                                                RawImageTileReader.this.tileSize.getHeight(),
                                                                BufferedImage.TYPE_INT_ARGB);
+
             final AffineTransform affineTransform = new AffineTransform();
             affineTransform.scale(0.5, 0.5);
             final AffineTransformOp scaleOp = new AffineTransformOp(affineTransform, AffineTransformOp.TYPE_BILINEAR);

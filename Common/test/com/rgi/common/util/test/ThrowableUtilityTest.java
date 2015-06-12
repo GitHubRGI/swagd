@@ -15,7 +15,7 @@ public class ThrowableUtilityTest
      * Tests that getRoot returns null when
      * given a null Throwable object
      */
-    @Test
+	@Test
     public void testGetRootNull()
     {
         assertNull(ThrowableUtility.getRoot(null));

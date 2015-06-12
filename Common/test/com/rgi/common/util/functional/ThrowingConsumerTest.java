@@ -41,6 +41,7 @@ public class ThrowingConsumerTest
                                                        throw new NullPointerException();
                                                    }
                                                  };
+
         tc.accept("test");
         fail("Expected ThrowingConsumer method accept to throw a RuntimeException.");
     }

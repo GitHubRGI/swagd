@@ -43,7 +43,6 @@ import com.rgi.android.common.util.functional.Predicate;
 @SuppressWarnings("static-method")
 public class FunctionalUtilityTest
 {
-
     /**
      * Tests anyMatch throws an IllegalArgumentException when given a null
      * parameter instead of a Collection
@@ -175,6 +174,7 @@ public class FunctionalUtilityTest
     public void mapFilterIllegalArgumentException2()
     {
         final Collection<String> collection = new ArrayList<String>();
+
         FunctionalUtility.mapFilter(collection,
                                     null,
                                     new Predicate<String>()
@@ -197,6 +197,7 @@ public class FunctionalUtilityTest
     public void mapFilterIllegalArgumentException3()
     {
         final Collection<String> collection = new ArrayList<String>();
+
         FunctionalUtility.mapFilter(collection,
                                     new Function<String, String>()
                                     {
@@ -247,6 +248,7 @@ public class FunctionalUtilityTest
     public void filterMapIllegalArgumentException2()
     {
         final Collection<String> collection = new ArrayList<String>();
+
         FunctionalUtility.filterMap(collection,
                                     null,
                                     new Function<String, Integer>()
@@ -269,6 +271,7 @@ public class FunctionalUtilityTest
     public void filterMapIllegalArgumentException3()
     {
         final Collection<String> collection = new ArrayList<String>();
+
         FunctionalUtility.filterMap(collection,
                                     new Predicate<String>()
                                     {
@@ -325,9 +328,9 @@ public class FunctionalUtilityTest
                                                                   });
 
         assertTrue("FunctionalUtility method filterMap did not return the expected Collection.",
-                results.size() == 3 &&
-                results.get(0) == name2.length() &&
-                results.get(1) == name4.length() &&
-                results.get(2) == name6.length());
+                   results.size() == 3 &&
+                   results.get(0) == name2.length() &&
+                   results.get(1) == name4.length() &&
+                   results.get(2) == name6.length());
     }
 }

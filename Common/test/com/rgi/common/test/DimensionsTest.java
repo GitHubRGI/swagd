@@ -32,7 +32,6 @@ import com.rgi.common.Dimensions;
 @SuppressWarnings({"javadoc", "static-method"})
 public class DimensionsTest
 {
-
     /**
      * Tests the Dimensions constructor creates a Dimensions object with the
      * given width and height
@@ -41,6 +40,7 @@ public class DimensionsTest
     public void dimensionsConstructorTest()
     {
         final Dimensions<Integer> dim = new Dimensions<>(10, 5);
+
         assertTrue(dim.getClass().equals(Dimensions.class));
         assertTrue(dim.getWidth() == 10);
         assertTrue(dim.getHeight() == 5);

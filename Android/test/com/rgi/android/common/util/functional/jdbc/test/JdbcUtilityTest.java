@@ -164,6 +164,7 @@ public class JdbcUtilityTest
             gpkg.close();
 
             final Connection con = TestUtility.getConnection(testFile);
+
             try
             {
                 final String query = "Select * from gpkg_contents;";
@@ -270,6 +271,7 @@ public class JdbcUtilityTest
                                      return false;
                                  }
                              });
+
         fail("Expected JdbcUtility method anyMatch(ResultSet, ResultSetPredicate) to throw an IllegalArgumentException when given a null ResultSet");
     }
 
@@ -370,6 +372,7 @@ public class JdbcUtilityTest
     public void illegalArgumentExceptionMapFunction() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         final File testFile = TestUtility.getRandomFile(10);
+
 
         final GeoPackage gpkg = new GeoPackage(testFile);
         try
@@ -499,10 +502,9 @@ public class JdbcUtilityTest
     @Test
     public void testMapFilter() throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-
         final File testFile = TestUtility.getRandomFile(10);
-
         final GeoPackage gpkg = new GeoPackage(testFile);
+
         try
         {
             try
@@ -530,22 +532,22 @@ public class JdbcUtilityTest
                         try
                         {
                             final List<String> results = JdbcUtility.mapFilter(rs,
-                                                                              new ResultSetFunction<String>()
-                                                                              {
-                                                                                  @Override
-                                                                                  public String apply(final ResultSet resultSet) throws SQLException
-                                                                                  {
-                                                                                      return resultSet.getString("srs_name");
-                                                                                  }
-                                                                              },
-                                                                              new Predicate<String>()
-                                                                              {
-                                                                                  @Override
-                                                                                  public boolean apply(final String t)
-                                                                                  {
-                                                                                      return t.equals(name1) || t.equals(name2);
-                                                                                  }
-                                                                              });
+                                                                               new ResultSetFunction<String>()
+                                                                               {
+                                                                                   @Override
+                                                                                   public String apply(final ResultSet resultSet) throws SQLException
+                                                                                   {
+                                                                                       return resultSet.getString("srs_name");
+                                                                                   }
+                                                                               },
+                                                                               new Predicate<String>()
+                                                                               {
+                                                                                   @Override
+                                                                                   public boolean apply(final String t)
+                                                                                   {
+                                                                                       return t.equals(name1) || t.equals(name2);
+                                                                                   }
+                                                                               });
 
                             assertTrue("Expected JdbcUtility method mapFilter(ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to return a list of size 2",
                                        results.size() == 2);
@@ -607,6 +609,7 @@ public class JdbcUtilityTest
                                       return true;
                                   }
                               });
+
         fail("Expected JdbcUtility method mapFilter (ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to throw an IllegalArgumentException when given a null ResultSet.");
     }
 
@@ -620,8 +623,8 @@ public class JdbcUtilityTest
      * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void illegalArgumentExceptionMapFilterFunction() throws IOException, ClassNotFoundException, ConformanceException, SQLException {
-
+    public void illegalArgumentExceptionMapFilterFunction() throws IOException, ClassNotFoundException, ConformanceException, SQLException
+    {
         final File testFile = TestUtility.getRandomFile(10);
 
         final GeoPackage gkpg = new GeoPackage(testFile);
@@ -650,6 +653,7 @@ public class JdbcUtilityTest
                                                       return true;
                                                   }
                                               });
+
                         fail("Expected JdbcUtility method mapFilter (ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to throw an IllegalArgumentException when given a null ResultSetFunction.");
                     }
                     finally
@@ -682,8 +686,8 @@ public class JdbcUtilityTest
      * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void illegalArgumentExceptionMapFilterPred() throws ClassNotFoundException, ConformanceException, IOException, SQLException {
-
+    public void illegalArgumentExceptionMapFilterPred() throws ClassNotFoundException, ConformanceException, IOException, SQLException
+    {
         final File testFile = TestUtility.getRandomFile(10);
 
         final GeoPackage gkpg = new GeoPackage(testFile);
@@ -712,6 +716,7 @@ public class JdbcUtilityTest
                                                   }
                                               },
                                               null);
+
                         fail("Expected JdbcUtility method mapFilter (ResultSet, ResultSetFunction<T>, ResultSetPredicate<T>) to throw an IllegalArgumentException when given a null ResultSetPredicate.");
                     }
                     finally
