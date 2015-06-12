@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 import routing.RoutingAlgorithms;
 
@@ -59,7 +60,7 @@ public class RouteTests
         final int nodes1 = 47181;
         final int nodes2 = 105247;
         final int nodes3 = 169027;
-        runRoute2(geoPackageFile3, 100, nodes3);
+        runRoute2(geoPackageFile2, 100, nodes2);
     }
 
     private static void runRoute()
@@ -133,22 +134,25 @@ public class RouteTests
                                   final List<Integer>              path,
                                   final AttributeDescription       distanceAttribute) throws SQLException
     {
-        double totalWeight = 0.0;
+        final double totalWeight = IntStream.range(0, path.size()-1).mapToDouble(index ->
+                                                                                        {
+                                                                                            final int firstNode = path.get(index);
+                                                                                            final int secondNode = path.get(index +1);
 
-        for(int nodeIndex = 0; nodeIndex < path.size()-1; ++nodeIndex)
-        {
-            final int firstNode  = path.get(nodeIndex);
-            final int secondNode = path.get(nodeIndex+1);
+                                                                                            try
+                                                                                            {
+                                                                                                final Edge edge = networkExtension.getEdge(network, firstNode, secondNode);
+                                                                                                final double cost = networkExtension.getEdgeAttribute(edge, distanceAttribute);
 
-            final Edge edge = networkExtension.getEdge(network, firstNode, secondNode);
+                                                                                                System.out.printf("%f->(%d)-", cost, secondNode);
 
-            final double cost = networkExtension.getEdgeAttribute(edge, distanceAttribute);
-
-            System.out.printf("%f->(%d)-", cost, secondNode);
-
-            totalWeight += cost;
-        }
-
+                                                                                                return cost;
+                                                                                            }
+                                                                                            catch (final SQLException e)
+                                                                                            {
+                                                                                                throw new RuntimeException(e);
+                                                                                            }
+                                                                                        }).sum();
         System.out.println(String.format("\nTotal distance = %f", totalWeight));
     }
 
@@ -199,20 +203,20 @@ public class RouteTests
                                                                                                                  },
                                                                        (startIdentifier, endIdentifier) -> { try
                                                                                                                 {
-                                                                                                                 final long key = ((startIdentifier + endIdentifier)*(startIdentifier + endIdentifier + 1)/2) + endIdentifier;
-                                                                                                                 if(heuristicCache.containsKey(key))
-                                                                                                                 {
-                                                                                                                     return heuristicCache.get(key);
-                                                                                                                 }
-                                                                                                                 final List<Object> startCoordinate = networkExtension.getNodeAttributes(startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
-                                                                                                                 final List<Object> endCoordinate   = networkExtension.getNodeAttributes(endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
+                                                                                                                    final long key = ((startIdentifier + endIdentifier)*(startIdentifier + endIdentifier + 1)/2) + endIdentifier;
+                                                                                                                    if(heuristicCache.containsKey(key))
+                                                                                                                    {
+                                                                                                                        return heuristicCache.get(key);
+                                                                                                                    }
+                                                                                                                    final List<Object> startCoordinate = networkExtension.getNodeAttributes(startIdentifier, nodeLongitudeAttibute, nodeLatitudeAttibute);
+                                                                                                                    final List<Object> endCoordinate   = networkExtension.getNodeAttributes(endIdentifier,   nodeLongitudeAttibute, nodeLatitudeAttibute);
 
-                                                                                                                 final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
-                                                                                                                 final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
+                                                                                                                    final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
+                                                                                                                    final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
 
-                                                                                                                 final double distance = Math.sqrt(latitude*latitude + longitude*longitude);
-                                                                                                                 heuristicCache.put(key, distance);
-                                                                                                                 return distance;
+                                                                                                                    final double distance = Math.sqrt(latitude*latitude + longitude*longitude);
+                                                                                                                    heuristicCache.put(key, distance);
+                                                                                                                    return distance;
                                                                                                                 }
                                                                                                                 catch(final SQLException ex)
                                                                                                                 {
@@ -220,13 +224,13 @@ public class RouteTests
                                                                                                                 }
                                                                                                            });
                     path.forEach(node -> System.out.print(node + ", "));
-
-                    System.out.println(String.format("\nAstar took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
+                    System.out.println();
+                    //System.out.println(String.format("\nAstar took %.2f seconds to calculate.", (System.nanoTime() - startTime)/1.0e9));
                     sum += (System.nanoTime() - startTime)/1.0e9;
                 }
             }
 
-            System.out.println(String.format("TO calculat %s routes, astar took %.2f seconds to calculate", routes, sum));
+            System.out.println(String.format("To calculat %s routes, astar took %.2f seconds to calculate", routes, sum));
             System.out.println(String.format("Astar took an average of %.2f seconds to calculate", sum/routes));
         }
         catch(final ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException ex)
