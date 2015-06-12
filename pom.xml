@@ -7,7 +7,7 @@
 
     <groupId>com.rgi.TilingApp</groupId>
     <artifactId>SWAGD</artifactId>
-    <version>${buildNumber}</version>
+    <version>0.0.1-SNAPSHOT</version>
     <name>Software for Aggregating Geospatial Data</name>
     <packaging>pom</packaging>
 
