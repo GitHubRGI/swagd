@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.scm.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>RGISuite</groupId>
   <artifactId>RGISuite</artifactId>
@@ -148,7 +148,7 @@
                   </excludes>
               </artifactSet>
               <shadedArtifactAttached>true</shadedArtifactAttached>
-              <shadedClassifierName>shaded</shadedClassifierName>
+              <shadedClassifierName>with_dependencies</shadedClassifierName>
               <!--transformers>
                   <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                       <mainClass>com.rgi.suite.GeoSuite</mainClass>
@@ -170,7 +170,7 @@
                   <configuration>
                       <headerType>gui</headerType>
                       <outfile>target/swagd.exe</outfile>
-                      <jar>target/${project.artifactId}-${project.version}-shaded.jar</jar>
+                      <jar>target/${project.artifactId}-${project.version}-with_dependencies.jar</jar>
                       <errTitle>SWAGD Err</errTitle>
                       <classPath>
                           <mainClass>com.rgi.suite.GeoSuite</mainClass>
