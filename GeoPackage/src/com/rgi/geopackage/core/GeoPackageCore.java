@@ -219,6 +219,11 @@ public class GeoPackageCore
      */
     public SpatialReferenceSystem getSpatialReferenceSystem(final String organization, final int organizationSrsId) throws SQLException
     {
+        if(organization == null || organization.isEmpty())
+        {
+            throw new IllegalArgumentException("Organization may not be null or empty");
+        }
+
         final String srsQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s WHERE organization COLLATE NOCASE IN (?) AND organization_coordsys_id = ?;",
                                                  "srs_name",
                                                  "srs_id",
