@@ -60,7 +60,7 @@ public class RouteTests
         final int nodes1 = 47181;
         final int nodes2 = 105247;
         final int nodes3 = 169027;
-        runRoute2(geoPackageFile2, 100, nodes2);
+        runRoute2(geoPackageFile3, 100, nodes3);
     }
 
     private static void runRoute()
@@ -200,6 +200,7 @@ public class RouteTests
                                                                                                                      final Double cost = networkExtension.getEdgeAttribute(edge, distanceAttribute);
                                                                                                                      distanceCache.put(key, cost);
                                                                                                                      return cost;
+//                                                                                                                     return networkExtension.getEdgeAttribute(edge, distanceAttribute);
                                                                                                                  },
                                                                        (startIdentifier, endIdentifier) -> { try
                                                                                                                 {
@@ -217,6 +218,7 @@ public class RouteTests
                                                                                                                     final double distance = Math.sqrt(latitude*latitude + longitude*longitude);
                                                                                                                     heuristicCache.put(key, distance);
                                                                                                                     return distance;
+//                                                                                                                    return Math.sqrt(latitude*latitude + longitude*longitude);
                                                                                                                 }
                                                                                                                 catch(final SQLException ex)
                                                                                                                 {

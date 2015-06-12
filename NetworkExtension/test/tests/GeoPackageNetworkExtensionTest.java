@@ -1380,7 +1380,7 @@ public class GeoPackageNetworkExtensionTest
             final AttributeDescription test = networkExtension.addAttributeDescription(network,
                                                                                        "length",
                                                                                        "foo",
-                                                                                       DataType.Real,
+                                                                                       DataType.Integer,
                                                                                        "test",
                                                                                        AttributedType.Edge);
 
@@ -1390,7 +1390,7 @@ public class GeoPackageNetworkExtensionTest
             for (int i = 2; i < 5; i++)
             {
                 edge = new Pair<>(i, i*i);
-                pair = new Pair<>(edge, Arrays.asList((Object)(i*122.0)));
+                pair = new Pair<>(edge, Arrays.asList((Object)(i*122)));
                 attributedEdges.add(pair);
             }
 
@@ -1400,11 +1400,11 @@ public class GeoPackageNetworkExtensionTest
             final Edge e3 = networkExtension.getEdge(network, 4, 16);
 
             assertTrue("GeoPackageNetworkExtension method addAttributedEdges did not add attributed edges correctly",
-                       (Double)networkExtension.getEdgeAttribute(e1, test) == 244.0);
+                       (Integer)networkExtension.getEdgeAttribute(e1, test) == 244);
             assertTrue("GeoPackageNetworkExtension method addAttributedEdges did not add attributed edges correctly",
-                       (Double)networkExtension.getEdgeAttribute(e2, test) == 366.0);
+                       (Integer)networkExtension.getEdgeAttribute(e2, test) == 366);
             assertTrue("GeoPackageNetworkExtension method addAttributedEdges did not add attributed edges correctly",
-                       (Double)networkExtension.getEdgeAttribute(e3, test) == 488.0);
+                       (Integer)networkExtension.getEdgeAttribute(e3, test) == 488);
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
         {
@@ -2388,6 +2388,7 @@ public class GeoPackageNetworkExtensionTest
             TestUtility.deleteFile(testFile);
         }
     }
+
     /**
      * Tests getEdgeAttribute returns null
      * when given an edge that does not have the given attribute
@@ -2466,10 +2467,10 @@ public class GeoPackageNetworkExtensionTest
 
     /**
      * Tests getEdgeAttribute returns null when
-     * the edge does not have that attribute
+     * the edge is not in the table
      */
     @Test
-    public void testGetEdgeAttribute3()
+    public void testGetEdgeAttributeException5()
     {
         final File testFile = TestUtility.getRandomFile(5);
         try(final GeoPackage gpkg = new GeoPackage(testFile))
@@ -2495,8 +2496,8 @@ public class GeoPackageNetworkExtensionTest
                                                                                                        "none",
                                                                                                        AttributedType.Edge);
             final Edge edge = networkExtension.addEdge(network, 12, 54);
-            assertNull("Expected GeoPackageNetworkExtension method getEdgeAttribute to return null.",
-                        networkExtension.getEdgeAttribute(edge, attributeDescription));
+            assertNull("Expected GeoPackageNetworkExtension method getEdgeAttribute to return null when the given edge is not the network table",
+                       networkExtension.getEdgeAttribute(edge, attributeDescription));
         }
         catch (ClassNotFoundException | SQLException | ConformanceException | IOException | BadImplementationException e)
         {
@@ -2507,7 +2508,6 @@ public class GeoPackageNetworkExtensionTest
             TestUtility.deleteFile(testFile);
         }
     }
-
 
     /**
      * Tests that getEdgeAttributes throws an IllegalArgumentException

@@ -895,13 +895,20 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Attribute description must be for an edge");
         }
 
-        final String attributeQuery = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1;",
+// This query allows checking for the existence of the node, but slows down the routing algorithm Astar
+//        final String attributeQuery = String.format("SELECT EXISTS(SELECT %s FROM %s WHERE %s = ? LIMIT 1), (SELECT %s FROM %s WHERE %s = ? LIMIT 1);",
+//                                                    attributeDescription.getName(),
+//                                                    attributeDescription.getNetworkTableName(),
+//                                                    "id",
+//                                                    attributeDescription.getName(),
+//                                                    attributeDescription.getNetworkTableName(),
+//                                                    "id");
+        final String attributeQuery = String.format("SELECT %s FROM %s WHERE %s = ? LIMIT 1",
                                                     attributeDescription.getName(),
                                                     attributeDescription.getNetworkTableName(),
                                                     "id");
 
-        //TODO: modify so it throws an exception when edge is not in the network associated with AttributeDescription
-        return JdbcUtility.selectOne(this.databaseConnection,
+       return JdbcUtility.selectOne(this.databaseConnection,
                                      attributeQuery,
                                      preparedStatement -> preparedStatement.setInt(1, edge.getIdentifier()),
                                      resultSet -> { if(resultSet.getObject(1) == null)
