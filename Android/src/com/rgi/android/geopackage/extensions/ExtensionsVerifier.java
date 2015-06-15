@@ -231,7 +231,7 @@ public class ExtensionsVerifier extends Verifier
                                   Severity.Warning);
             }
             // Check that the table_name in GeoPackage Extensions references a table in sqlite master
-            final String query = String.format("SELECT table_name as extensionsTableName "+
+            final String query = String.format("SELECT table_name AS extensionsTableName "+
                                                "FROM   %s "+
                                                "WHERE  extensionsTableName NOT IN"+
                                                   "(SELECT tbl_name "+
@@ -294,7 +294,7 @@ public class ExtensionsVerifier extends Verifier
 
                 if(extensionData.tableName != null && columnName != null)
                 {
-                    final String query = String.format("PRAGMA table_info(%s);", extensionData.tableName);
+                    final String query = String.format("PRAGMA table_info('%s');", extensionData.tableName);
 
                     final PreparedStatement statement = this.getSqliteConnection().prepareStatement(query);
 
@@ -367,25 +367,26 @@ public class ExtensionsVerifier extends Verifier
                                                                                          new Function<ExtensionData, String>()
                                                                                          {
                                                                                              @Override
-                                                                                             public String apply(final ExtensionData input)
+                                                                                             public String apply(final ExtensionData extensionName)
                                                                                              {
-                                                                                                 return input.extensionName;
+
+                                                                                                 return extensionName.extensionName;
                                                                                              }
                                                                                          },
                                                                                          new Predicate<String>()
                                                                                          {
                                                                                              @Override
-                                                                                             public boolean apply(final String name)
+                                                                                             public boolean apply(final String extensionName)
                                                                                              {
-                                                                                                 if(name == null)
+                                                                                                 if(extensionName == null)
                                                                                                  {
                                                                                                      return true;
                                                                                                  }
 
-                                                                                                 final String author[] = name.split("_", 2);
+                                                                                                 final String author[] = extensionName.split("_", 2);
 
                                                                                                  return author.length != 2 ||
-                                                                                                        (author[0].matches("gpkg") && !isRegisteredExtension(name)) ||
+                                                                                                        (author[0].matches("gpkg") && !isRegisteredExtension(extensionName)) ||
                                                                                                         !author[0].matches("[a-zA-Z0-9]+") ||
                                                                                                         !author[1].matches("[a-zA-Z0-9_]+");
                                                                                              }

@@ -49,6 +49,7 @@ import java.util.Map;
 
 import com.rgi.android.common.util.StringUtility;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
+import com.rgi.android.geopackage.verification.Assert;
 import com.rgi.android.geopackage.verification.AssertionError;
 import com.rgi.android.geopackage.verification.ColumnDefinition;
 import com.rgi.android.geopackage.verification.ForeignKeyDefinition;
@@ -446,21 +447,28 @@ public class CoreVerifier extends Verifier
                  text      = "Every GeoPackage SQLite Configuration SHALL have the SQLite library compile and run time options specified in table http://www.geopackage.org/spec/#every_gpkg_sqlite_config_table.")
     public void Requirement9() throws SQLException, AssertionError
     {
-        final String query2 = "SELECT sqlite_compileoption_used('SQLITE_OMIT_*')";
+        Assert.assertTrue("Test skipped for android ",
+                          false,
+                          Severity.Skipped);
+
+
+        final String query2 = "SELECT sqlite_compileoption_used('SQLITE_OMIT_*')";//TODO does not have compileoption_used in SQLdroid, double check to make sure it is true
 
         final Statement stmt = this.getSqliteConnection().createStatement();
-
         try
         {
             final ResultSet omitUsed = stmt.executeQuery(query2);
 
             try
             {
-                final int result = omitUsed.getInt("sqlite_compileoption_used('SQLITE_OMIT_*')");
+                if(omitUsed.first())
+                {
+                    final int result = omitUsed.getInt("sqlite_compileoption_used('SQLITE_OMIT_*')");
 
-                assertTrue("SQLite library compilations shall not include any OMIT options.",
-                           result != 1,
-                           Severity.Warning);
+                    assertTrue("SQLite library compilations shall not include any OMIT options.",
+                               result != 1,
+                               Severity.Warning);
+                }
             }
             finally
             {

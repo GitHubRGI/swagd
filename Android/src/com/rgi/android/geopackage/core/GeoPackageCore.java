@@ -29,7 +29,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -227,6 +226,11 @@ public class GeoPackageCore
      */
     public SpatialReferenceSystem getSpatialReferenceSystem(final String organization, final int organizationSrsId) throws SQLException
     {
+        if(organization == null || organization.isEmpty())
+        {
+            throw new IllegalArgumentException("Organization may not be null or empty");
+        }
+
         final String srsQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s WHERE organization COLLATE NOCASE IN (?) AND organization_coordsys_id = ?;",
                                                  "srs_name",
                                                  "srs_id",
@@ -247,7 +251,7 @@ public class GeoPackageCore
 
             try
             {
-                if(srsResult.isBeforeFirst())
+                if(srsResult.first())
                 {
                     return new SpatialReferenceSystem(srsResult.getString(1),
                                                       srsResult.getInt   (2),
@@ -302,7 +306,7 @@ public class GeoPackageCore
 
             try
             {
-                if(srsResult.isBeforeFirst())
+                if(srsResult.first())
                 {
                     return new SpatialReferenceSystem(srsResult.getString(1),
                                                       srsResult.getInt   (2),
@@ -372,7 +376,7 @@ public class GeoPackageCore
 
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, tableName))
         {
-           throw new IllegalArgumentException("Content entry references a table that does not exist");
+            throw new IllegalArgumentException("Content entry references a table that does not exist");
         }
 
         if(dataType == null || dataType.isEmpty())
@@ -420,11 +424,11 @@ public class GeoPackageCore
             preparedStatement.setString(2, dataType);
             preparedStatement.setString(3, identifier);
             preparedStatement.setString(4, description);
-            preparedStatement.setObject(5, boundingBox.getMinX(), Types.DOUBLE); // Using setObject because spec allows the bounding box values to be null
-            preparedStatement.setObject(6, boundingBox.getMinY(), Types.DOUBLE);
-            preparedStatement.setObject(7, boundingBox.getMaxX(), Types.DOUBLE);
-            preparedStatement.setObject(8, boundingBox.getMaxY(), Types.DOUBLE);
-            preparedStatement.setObject(9, srsId, Types.INTEGER);                // Using setObject because the spec allows the srs id be null
+            preparedStatement.setObject(5, boundingBox.getMinX()); // Using setObject because spec allows the bounding box values to be null
+            preparedStatement.setObject(6, boundingBox.getMinY());
+            preparedStatement.setObject(7, boundingBox.getMaxX());
+            preparedStatement.setObject(8, boundingBox.getMaxY());
+            preparedStatement.setObject(9, srsId);                 // Using setObject because the spec allows the srs id be null
 
             preparedStatement.executeUpdate();
         }
@@ -502,11 +506,11 @@ public class GeoPackageCore
                                                       results.getString(3),                          // identifier
                                                       results.getString(4),                          // description
                                                       results.getString(5),                          // last change
-                                                      new BoundingBox((Double)results.getObject(6),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                                                      (Double)results.getObject(7),  // min y
-                                                                      (Double)results.getObject(8),  // max x
-                                                                      (Double)results.getObject(9)), // max y
-                                                      (Integer)results.getObject(10)));              // srs id
+                            new BoundingBox(DatabaseUtility.parseSQLDouble(results.getObject(6)),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
+                                            DatabaseUtility.parseSQLDouble(results.getObject(7)),  // min y
+                                            DatabaseUtility.parseSQLDouble(results.getObject(8)),  // max x
+                                            DatabaseUtility.parseSQLDouble(results.getObject(9))), // max y
+                                            (Integer)results.getObject(10)));                      // srs id
                 }
 
                 return content;
@@ -566,18 +570,18 @@ public class GeoPackageCore
 
             try
             {
-                if(result.isBeforeFirst())
+                if(result.first())
                 {
                     return contentFactory.create(tableName,                                    // table name
                                                  result.getString(1),                          // data type
                                                  result.getString(2),                          // identifier
                                                  result.getString(3),                          // description
                                                  result.getString(4),                          // last change
-                                                 new BoundingBox((Double)result.getObject(5),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                                                 (Double)result.getObject(6),  // min y
-                                                                 (Double)result.getObject(7),  // max x
-                                                                 (Double)result.getObject(8)), // max y
-                                                 (Integer)result.getObject(9));                // srs id
+                            new BoundingBox(DatabaseUtility.parseSQLDouble(result.getObject(5)),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
+                                            DatabaseUtility.parseSQLDouble(result.getObject(6)),  // min y
+                                            DatabaseUtility.parseSQLDouble(result.getObject(7)),  // max x
+                                            DatabaseUtility.parseSQLDouble(result.getObject(8))), // max y
+                                            (Integer)result.getObject(9));                        // srs id
                 }
 
                 return null;
@@ -816,9 +820,21 @@ public class GeoPackageCore
                                new ContentFactory<Content>()
                                {
                                    @Override
-                                   public Content create(final String inTableName, final String dataType, final String identifier, final String description, final String lastChange, final BoundingBox boundingBox, final Integer spatialReferenceSystemIdentifier)
+                                   public Content create(final String inTableName,
+                                                         final String dataType,
+                                                         final String identifier,
+                                                         final String description,
+                                                         final String lastChange,
+                                                         final BoundingBox boundingBox,
+                                                         final Integer spatialReferenceSystemIdentifier)
                                    {
-                                       return new Content(inTableName, dataType, identifier, description, lastChange, boundingBox, spatialReferenceSystemIdentifier);
+                                       return new Content(inTableName,
+                                                          dataType,
+                                                          identifier,
+                                                          description,
+                                                          lastChange,
+                                                          boundingBox,
+                                                          spatialReferenceSystemIdentifier);
                                    }
                                });
     }

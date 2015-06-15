@@ -56,3 +56,5 @@ VerifierTool/.project
 WiX/CustomAction3/CustomAction3/obj/
 *.cache
 NetworkExtension/data/
+
+Android/gen

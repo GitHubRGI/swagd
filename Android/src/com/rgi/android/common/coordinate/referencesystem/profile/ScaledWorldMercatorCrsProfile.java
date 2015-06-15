@@ -28,8 +28,11 @@ package com.rgi.android.common.coordinate.referencesystem.profile;
  * @author Luke Lambert
  *
  */
-//public class ScaledWorldMercatorCrsProfile extends EllipsoidalMercatorCrsProfile
-//{
+public class ScaledWorldMercatorCrsProfile extends EllipsoidalMercatorCrsProfile
+{
+//TODO:
+}
+
 //
 //    public ScaledWorldMercatorCrsProfile()
 //    {
