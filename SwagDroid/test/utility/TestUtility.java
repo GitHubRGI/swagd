@@ -2,6 +2,7 @@ package utility;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Locale;
@@ -33,7 +34,19 @@ public class TestUtility
             throw new IllegalArgumentException("Test file may not be null");
         }
 
-        Class.forName("org.sqlite.JDBC");   // Register the driver
+        try
+        {
+            //DriverManager.registerDriver((Driver)(Class.forName("org.sqldroid.SQLDroidDriver", true, GeoPackage.class.getClassLoader()).newInstance()));
+            DriverManager.registerDriver((Driver)(Class.forName("org.sqldroid.SQLDroidDriver").newInstance()));
+        }
+        catch(final InstantiationException ex)
+        {
+            throw new SQLException(ex);  // TODO Temporary
+        }
+        catch(final IllegalAccessException ex)
+        {
+            throw new SQLException(ex);  // TODO Temporary
+        }
 
         return DriverManager.getConnection("jdbc:sqlite:" + testFile.getPath()); // Initialize the database connection
     }

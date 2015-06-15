@@ -91,7 +91,7 @@ public class JdbcUtility
 
             try
             {
-                if(resultSet.isBeforeFirst())
+                if(resultSet.first())
                 {
                     return resultMapper.apply(resultSet);
                 }

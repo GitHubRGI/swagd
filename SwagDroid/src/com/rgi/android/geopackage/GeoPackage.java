@@ -331,7 +331,10 @@ public class GeoPackage implements Closeable
             if(this.databaseConnection            != null &&
                this.databaseConnection.isClosed() == false)
             {
-                this.databaseConnection.rollback(); // When Connection.close() is called, pending transactions are either automatically committed or rolled back depending on implementation defined behavior.  Make the call explicitly to avoid relying on implementation defined behavior.
+                this.databaseConnection.rollback();          // When Connection.close() is called, pending transactions are either automatically committed or rolled back depending on implementation defined behavior.  Make the call explicitly to avoid relying on implementation defined behavior.
+
+                this.databaseConnection.setAutoCommit(true); // AutoCommit is set to true to avoid a sql lock error when closing the db, as explained here: https://groups.google.com/forum/#!topic/sqldroid/9lkWI9nJj3g
+
                 this.databaseConnection.close();
             }
         }
@@ -412,7 +415,7 @@ public class GeoPackage implements Closeable
         {
             final ConformanceException conformanceException = new ConformanceException(verificationIssues);
 
-            System.out.println(conformanceException.toString());
+            //System.out.println(conformanceException.toString());
 
             if(FunctionalUtility.anyMatch(verificationIssues,
                                           new Predicate<VerificationIssue>()

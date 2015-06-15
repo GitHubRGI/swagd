@@ -39,6 +39,9 @@ import java.util.Locale;
 import java.util.Set;
 
 import com.rgi.android.common.util.StringUtility;
+import com.rgi.android.common.util.jdbc.JdbcUtility;
+import com.rgi.android.common.util.jdbc.PreparedStatementConsumer;
+import com.rgi.android.common.util.jdbc.ResultSetFunction;
 
 /**
  * @author Luke Lambert
@@ -112,18 +115,25 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        final PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;");
-
-        try
-        {
-            preparedStatement.setString(1, name);
-
-            return preparedStatement.executeQuery().getInt(1) > 0;
-        }
-        finally
-        {
-            preparedStatement.close();
-        }
+        final int count = JdbcUtility.selectOne(connection,
+                                                "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;",
+                                                new PreparedStatementConsumer()
+                                                {
+                                                    @Override
+                                                    public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                                    {
+                                                        preparedStatement.setString(1, name);
+                                                    }
+                                                },
+                                                new ResultSetFunction<Integer>()
+                                                {
+                                                    @Override
+                                                    public Integer apply(final ResultSet resultSet) throws SQLException
+                                                    {
+                                                        return resultSet.getInt(1);
+                                                    }
+                                                });
+        return count > 0;
     }
 
     /**
@@ -324,7 +334,7 @@ public class DatabaseUtility
 
             try
             {
-                if(result.isBeforeFirst())
+                if(result.first())
                 {
                     return (T)result.getObject(1);
                 }

@@ -47,6 +47,7 @@ local.properties
 
 .settings/
 *.gpkg
+*.gpkg-journal
 
 # Ignore coverity scan folder
 cov-int
