@@ -36,8 +36,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
-import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
+import com.rgi.android.common.util.jdbc.JdbcUtility;
+import com.rgi.android.common.util.jdbc.ResultSetFunction;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
 import com.rgi.android.geopackage.utility.SelectBuilder;
 import com.rgi.android.geopackage.verification.VerificationIssue;

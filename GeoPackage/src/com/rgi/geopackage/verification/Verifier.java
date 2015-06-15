@@ -34,6 +34,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,6 +44,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.common.util.jdbc.ResultSetStream;
 
 /**
@@ -240,37 +242,52 @@ public class Verifier
 
     protected void verifyForeignKeys(final String tableName, final Set<ForeignKeyDefinition> requiredForeignKeys) throws AssertionError, SQLException
     {
-        try(Statement statement = this.sqliteConnection.createStatement())
+        try(final Statement statement = this.sqliteConnection.createStatement())
         {
-            try(ResultSet fkInfo = statement.executeQuery(String.format("PRAGMA foreign_key_list(%s);", tableName)))
+            try(final ResultSet fkInfo = statement.executeQuery(String.format("PRAGMA foreign_key_list(%s);", tableName)))
             {
-                final Set<ForeignKeyDefinition> foreignKeys = ResultSetStream.getStream(fkInfo)
-                                                                             .map(resultSet -> { try
-                                                                                                 {
-                                                                                                     return new ForeignKeyDefinition(resultSet.getString("table"),
-                                                                                                                                     resultSet.getString("from"),
-                                                                                                                                     resultSet.getString("to"));
-                                                                                                 }
-                                                                                                 catch(final SQLException ex)
-                                                                                                 {
-                                                                                                     ex.printStackTrace();
-                                                                                                     return null;
-                                                                                                 }
-                                                                                               })
-                                                                             .filter(Objects::nonNull)
-                                                                             .collect(Collectors.toSet());
+                final List<ForeignKeyDefinition> foundForeignKeys = JdbcUtility.map(fkInfo,
+                                                                                    resultSet -> new ForeignKeyDefinition(resultSet.getString("table"),
+                                                                                                                          resultSet.getString("from"),
+                                                                                                                          resultSet.getString("to")));
 
-                // check to see if the correct foreign key constraints are placed
-                for(final ForeignKeyDefinition foreignKey : requiredForeignKeys)
+                final Collection<ForeignKeyDefinition> missingKeys = new HashSet<>(requiredForeignKeys);
+                missingKeys.removeAll(foundForeignKeys);
+
+                final Collection<ForeignKeyDefinition> extraneousKeys = new HashSet<>(foundForeignKeys);
+                extraneousKeys.removeAll(requiredForeignKeys);
+
+                final StringBuilder error = new StringBuilder();
+
+                if(!missingKeys.isEmpty())
                 {
-                    Assert.assertTrue(String.format("The table %s is missing the foreign key constraint: %1$s.%s => %s.%s",
-                                                     tableName,
-                                                     foreignKey.getFromColumnName(),
-                                                     foreignKey.getReferenceTableName(),
-                                                     foreignKey.getToColumnName()),
-                                      foreignKeys.contains(foreignKey),
-                                      Severity.Error);
+                    error.append(String.format("The table %s is missing the foreign key constraint(s): \n", tableName));
+                    for(final ForeignKeyDefinition key : missingKeys)
+                    {
+                        error.append(String.format("%s.%s -> %s.%s\n",
+                                                   tableName,
+                                                   key.getFromColumnName(),
+                                                   key.getReferenceTableName(),
+                                                   key.getToColumnName()));
+                    }
                 }
+
+                if(!extraneousKeys.isEmpty())
+                {
+                    error.append(String.format("The table %s has extraneous foreign key constraint(s): \n", tableName));
+                    for(final ForeignKeyDefinition key : extraneousKeys)
+                    {
+                        error.append(String.format("%s.%s -> %s.%s\n",
+                                                   tableName,
+                                                   key.getFromColumnName(),
+                                                   key.getReferenceTableName(),
+                                                   key.getToColumnName()));
+                    }
+                }
+
+                Assert.assertTrue(error.toString(),
+                                  error.length() == 0,
+                                  Severity.Error);
             }
             catch(final SQLException ex)
             {

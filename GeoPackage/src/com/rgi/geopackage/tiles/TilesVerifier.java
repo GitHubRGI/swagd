@@ -54,6 +54,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 import utility.DatabaseUtility;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.verification.Assert;
@@ -113,63 +114,40 @@ public class TilesVerifier extends Verifier
                                                           .filter(Objects::nonNull)
                                                           .collect(Collectors.toSet());
         }
-        catch(final SQLException ex)
-        {
-            this.allPyramidUserDataTables = Collections.emptySet();
-        }
 
         final String query2 = String.format("SELECT table_name FROM %s WHERE data_type = 'tiles';",
                                             GeoPackageCore.ContentsTableName);
 
-        try(Statement createStmt2           = this.getSqliteConnection().createStatement();
-            ResultSet contentsPyramidTables = createStmt2.executeQuery(query2))
+        try(final Statement createStmt2           = this.getSqliteConnection().createStatement();
+            final ResultSet contentsPyramidTables = createStmt2.executeQuery(query2))
         {
-            this.pyramidTablesInContents = ResultSetStream.getStream(contentsPyramidTables)
-                                                          .map(resultSet -> { try
-                                                                              {
-                                                                                 return resultSet.getString("table_name");
-                                                                              }
-                                                                              catch(final SQLException ex)
-                                                                              {
-                                                                                  return null;
-                                                                              }
-                                                                            })
-                                                          .filter(Objects::nonNull)
-                                                          .collect(Collectors.toSet());
-        }
-        catch(final SQLException ex)
-        {
-            this.pyramidTablesInContents = Collections.emptySet();
+            this.pyramidTablesInContents = JdbcUtility.map(contentsPyramidTables,
+                                                           resultSet -> resultSet.getString("table_name"),
+                                                           HashSet<String>::new);
         }
 
-        final String query3 = String.format("SELECT DISTINCT table_name FROM %s;", GeoPackageTiles.MatrixTableName);
 
-        try(Statement createStmt3             = this.getSqliteConnection().createStatement();
-            ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(query3))
+        this.hasTileMatrixSetTable = this.tileMatrixSetTableExists();
+        this.hasTileMatrixTable    = this.tileMatrixTableExists();
+
+        if(this.hasTileMatrixTable)
         {
-            this.pyramidTablesInTileMatrix = ResultSetStream.getStream(tileMatrixPyramidTables)
-                                                            .map(resultSet -> { try
-                                                                                {
-                                                                                    final String pyramidName = resultSet.getString("table_name");
-                                                                                    return DatabaseUtility.tableOrViewExists(this.getSqliteConnection(),
-                                                                                                                             pyramidName) ? pyramidName
-                                                                                                                                          : null;
-                                                                                }
-                                                                                catch(final SQLException ex)
-                                                                                {
-                                                                                    return null;
-                                                                                }
-                                                                              })
-                                                             .filter(Objects::nonNull)
-                                                             .collect(Collectors.toSet());
+            final String query = String.format("SELECT DISTINCT table_name FROM %s;", GeoPackageTiles.MatrixTableName);
+
+            try(Statement createStmt3             = this.getSqliteConnection().createStatement();
+                ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(query))
+            {
+                this.pyramidTablesInTileMatrix = JdbcUtility.mapFilter(tileMatrixPyramidTables,
+                                                                       resultSet -> resultSet.getString("table_name"),
+                                                                       pyramidName -> DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), pyramidName),
+                                                                       HashSet<String>::new);
+            }
         }
-        catch(final SQLException ex)
+        else
         {
             this.pyramidTablesInTileMatrix = Collections.emptySet();
         }
 
-        this.hasTileMatrixSetTable = this.tileMatrixSetTableExists();
-        this.hasTileMatrixTable    = this.tileMatrixTableExists();
     }
 
     /**
@@ -279,7 +257,6 @@ public class TilesVerifier extends Verifier
                                                   Severity.Warning);
                             }
                         }
-                        //TODO Test will be moved on later release//This tests if the pixel x values and pixel y values are valid based on their bounding box in the tile matrix set
                     }
                 }
             }
@@ -1268,25 +1245,17 @@ public class TilesVerifier extends Verifier
                 {
                     stmt2.setString(1, pyramidName);
 
-                    try(final ResultSet         incorrectColumns = stmt2.executeQuery())
+                    try(final ResultSet incorrectColumns = stmt2.executeQuery())
                     {
-                        final List<TileData> incorrectColumnSet = ResultSetStream.getStream(incorrectColumns)
-                                                                                 .map(resultSet -> { try
-                                                                                                       {
-                                                                                                             final TileData tileData = new TileData();
+                        final List<TileData> incorrectColumnSet = JdbcUtility.map(incorrectColumns,
+                                                                                  resultSet -> { final TileData tileData = new TileData();
 
-                                                                                                             tileData.matrixWidth = resultSet.getInt("width");
-                                                                                                             tileData.zoomLevel    = resultSet.getInt("zl");
+                                                                                                 tileData.matrixWidth = resultSet.getInt("width");
+                                                                                                 tileData.zoomLevel    = resultSet.getInt("zl");
 
-                                                                                                             return tileData;
-                                                                                                       }
-                                                                                                       catch(final SQLException ex)
-                                                                                                       {
-                                                                                                           return null;
-                                                                                                       }
-                                                                                                     })
-                                                                                 .filter(Objects::nonNull)
-                                                                                 .collect(Collectors.toList());
+                                                                                                 return tileData;
+                                                                                               });
+
                         Assert.assertTrue(String.format("The table '%s' there are tiles with a tile_column values oustide the ranges for a particular zoom_level. \n%s",
                                                         pyramidName,
                                                         incorrectColumnSet.stream()
@@ -1332,10 +1301,8 @@ public class TilesVerifier extends Verifier
                 // of the range
                 final String query2 = String.format("SELECT zoom_level as zl, "       +
                                                            "matrix_height as height " +
-
-                                                    "FROM   %1$s "        +
-
-                                                    "WHERE  table_name = ? "       +
+                                                    "FROM   %1$s "                    +
+                                                    "WHERE  table_name = ? "          +
                                                     "AND"                             +
                                                         "("                           +
                                                              "zoom_level in (SELECT zoom_level FROM %2$s WHERE tile_row < 0) "                    +
@@ -1347,29 +1314,20 @@ public class TilesVerifier extends Verifier
                                                     GeoPackageTiles.MatrixTableName,
                                                     pyramidName);
 
-                try(final PreparedStatement stmt2            = this.getSqliteConnection().prepareStatement(query2))
+                try(final PreparedStatement stmt2 = this.getSqliteConnection().prepareStatement(query2))
                 {
                     stmt2.setString(1, pyramidName);
 
                     try(final ResultSet incorrectTileRow = stmt2.executeQuery())
                     {
-                        final List<TileData> incorrectTileRowSet = ResultSetStream.getStream(incorrectTileRow)
-                                                                                  .map(resultSet -> { try
-                                                                                                      {
-                                                                                                          final TileData tileData = new TileData();
+                        final List<TileData> incorrectTileRowSet = JdbcUtility.map(incorrectTileRow,
+                                                                                   resultSet -> { final TileData tileData = new TileData();
 
-                                                                                                          tileData.matrixHeight = resultSet.getInt("height");
-                                                                                                          tileData.zoomLevel    = resultSet.getInt("zl");
+                                                                                                  tileData.matrixHeight = resultSet.getInt("height");
+                                                                                                  tileData.zoomLevel    = resultSet.getInt("zl");
 
-                                                                                                          return tileData;
-                                                                                                      }
-                                                                                                      catch(final SQLException ex)
-                                                                                                      {
-                                                                                                          return null;
-                                                                                                      }
-                                                                                                   })
-                                                                                  .filter(Objects::nonNull)
-                                                                                  .collect(Collectors.toList());
+                                                                                                  return tileData;
+                                                                                                });
 
                         Assert.assertTrue(String.format("The table '%s' there are tiles with a tile_row values oustide the ranges for a particular zoom_level. \n%s",
                                                          pyramidName,
@@ -1564,8 +1522,8 @@ public class TilesVerifier extends Verifier
                                                                                          .collect(Collectors.toList());
 
                                     Assert.assertTrue(String.format("The pixel_x_size and pixel_y_size should satisfy these two equations:"
-                                                                    + "\n\tpixel_x_size = (bounding box width  / matrix_width)  / tile_width "
-                                                                    + "AND \n\tpixel_y_size = (bounding box height / matrix_height)/ tile_height.  "
+                                                                    + "\n\tpixel_x_size = (bounding box width  / matrix_width) / tile_width "
+                                                                    + "AND \n\tpixel_y_size = (bounding box height / matrix_height) / tile_height.  "
                                                                     + "\nBased on these two equations, the following pixel values are invalid for the table '%s'.:\n%s ",
                                                                     tableName,
                                                                     invalidPixelValues.stream()

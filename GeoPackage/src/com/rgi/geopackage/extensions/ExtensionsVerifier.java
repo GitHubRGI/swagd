@@ -27,7 +27,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,6 +39,7 @@ import java.util.stream.Collectors;
 
 import utility.DatabaseUtility;
 
+import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.verification.Assert;
 import com.rgi.geopackage.verification.AssertionError;
@@ -60,44 +60,13 @@ public class ExtensionsVerifier extends Verifier
 {
     private class ExtensionData
     {
-        /**
-         * Constructor
-         *
-         * @param tableName
-         * @param columnName
-         * @param extensionName
-         */
-        public ExtensionData(final String tableName,
-                             final String columnName,
-                             final String extensionName)
+        private ExtensionData(final String tableName,
+                              final String columnName,
+                              final String extensionName)
         {
-            this.tableName = tableName;
-            this.columnName = columnName;
+            this.tableName     = tableName;
+            this.columnName    = columnName;
             this.extensionName = extensionName;
-        }
-
-        /**
-         * @return the tableName
-         */
-        public String getTableName()
-        {
-            return this.tableName;
-        }
-
-        /**
-         * @return the columnName
-         */
-        public String getColumnName()
-        {
-            return this.columnName;
-        }
-
-        /**
-         * @return the extensionName
-         */
-        public String getExtensionName()
-        {
-            return this.extensionName;
         }
 
         private final String tableName;
@@ -105,59 +74,38 @@ public class ExtensionsVerifier extends Verifier
         private final String extensionName;
     }
 
-    private boolean hasGpkgExtensionsTable;
+    private final boolean hasGpkgExtensionsTable;
 
-    // TODO reconsider this mapping.  it should at least be String, ExtensionData, but the column name is repeated as the key...
-    private Map<ExtensionData, String> gpkgExtensionsDataAndColumnName;
+    private List<ExtensionData> gpkgExtensionsDataAndColumnName;
 
     /**
      * Constructor
      *
      * @param verificationLevel
      *             Controls the level of verification testing performed
-     * @param sqliteConnection A connection handle to the database
+     * @param sqliteConnection
+     *             A connection handle to the database
+     * @throws SQLException
+     *             if test initialization fails to get information from the
+     *             database
      */
-    public ExtensionsVerifier(final Connection sqliteConnection, final VerificationLevel verificationLevel)
+    public ExtensionsVerifier(final Connection sqliteConnection, final VerificationLevel verificationLevel) throws SQLException
     {
         super(sqliteConnection, verificationLevel);
 
-        try
-        {
-            this.hasGpkgExtensionsTable = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageExtensions.ExtensionsTableName);
-        }
-        catch(final SQLException ex)
-        {
-            this.hasGpkgExtensionsTable = false;
-        }
+        this.hasGpkgExtensionsTable = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageExtensions.ExtensionsTableName);
 
         if(this.hasGpkgExtensionsTable)
         {
-
             final String query = String.format("SELECT table_name, column_name, extension_name FROM %s;", GeoPackageExtensions.ExtensionsTableName);
 
             try(Statement statement             = this.getSqliteConnection().createStatement();
-                 ResultSet tableNameColumnNameRS = statement.executeQuery(query))
+                ResultSet tableNameColumnNameRS = statement.executeQuery(query))
             {
-                this.gpkgExtensionsDataAndColumnName = ResultSetStream.getStream(tableNameColumnNameRS)
-                                                                      .map(resultSet ->
-                                                                                        {   try
-                                                                                            {
-                                                                                                 final ExtensionData extensionData = new ExtensionData(tableNameColumnNameRS.getString("table_name"),
-                                                                                                                                                       tableNameColumnNameRS.getString("column_name"),
-                                                                                                                                                       tableNameColumnNameRS.getString("extension_name"));
-                                                                                                return new AbstractMap.SimpleImmutableEntry<>(extensionData, extensionData.columnName);
-                                                                                            }
-                                                                                            catch(final SQLException ex)
-                                                                                            {
-                                                                                                return null;
-                                                                                            }
-                                                                                        })
-                                                                         .filter(Objects::nonNull)
-                                                                         .collect(Collectors.toMap(entry -> entry.getKey(),
-                                                                                                   entry -> entry.getValue()));
-            } catch(final SQLException ex)
-            {
-                this.gpkgExtensionsDataAndColumnName = Collections.emptyMap();
+                this.gpkgExtensionsDataAndColumnName = JdbcUtility.map(tableNameColumnNameRS,
+                                                                       resultSet -> new ExtensionData(tableNameColumnNameRS.getString("table_name"),
+                                                                                                      tableNameColumnNameRS.getString("column_name"),
+                                                                                                      tableNameColumnNameRS.getString("extension_name")));
             }
         }
     }
@@ -246,9 +194,9 @@ public class ExtensionsVerifier extends Verifier
     {
         if(this.hasGpkgExtensionsTable)
         {
-            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName.keySet())
+            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName)
             {
-                final String columnName = this.gpkgExtensionsDataAndColumnName.get(extensionData);
+                final String columnName = extensionData.columnName;
 
                 final boolean validEntry = extensionData.tableName == null ? columnName == null : true; // If table name is null then so must column name
 
@@ -305,14 +253,12 @@ public class ExtensionsVerifier extends Verifier
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
     @Requirement(reference = "Requirement 82",
-                 text    = "The column_name column value in a gpkg_extensions row SHALL"
-                           + " be the name of a column in the table specified by the "
-                           + "table_name column value for that row, or be NULL.")
+                 text      = "The column_name column value in a gpkg_extensions row SHALL be the name of a column in the table specified by the table_name column value for that row, or be NULL.")
     public void Requirement82() throws SQLException, AssertionError
     {
         if(this.hasGpkgExtensionsTable && !this.gpkgExtensionsDataAndColumnName.isEmpty())
         {
-            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName.keySet())
+            for(final ExtensionData extensionData : this.gpkgExtensionsDataAndColumnName)
             {
                 final String columnName = extensionData.columnName;
 
@@ -374,21 +320,31 @@ public class ExtensionsVerifier extends Verifier
         if(this.hasGpkgExtensionsTable)
         {
 
-            final Set<String> invalidExtensionNames = this.gpkgExtensionsDataAndColumnName.keySet()
-                                                                                          .stream()
-                                                                                          .map(extensionData -> ExtensionsVerifier.verifyExtensionName(extensionData.extensionName))
-                                                                                          .filter(Objects::nonNull)
+            final Set<String> invalidExtensionNames = this.gpkgExtensionsDataAndColumnName.stream()
+                                                                                          .map(extensionData -> extensionData.extensionName)
+                                                                                          .filter(name -> { if(name == null)
+                                                                                                            {
+                                                                                                                return true;
+                                                                                                            }
+
+                                                                                                            final String author[] = name.split("_", 2);
+
+                                                                                                            return author.length != 2 ||
+                                                                                                                   (author[0].matches("gpkg") && !isRegisteredExtension(name)) ||
+                                                                                                                   !author[0].matches("[a-zA-Z0-9]+") ||
+                                                                                                                   !author[1].matches("[a-zA-Z0-9_]+");
+                                                                                                          })
                                                                                           .collect(Collectors.toSet());
 
             Assert.assertTrue(String.format("The following extension_name(s) are invalid: \n%s",
                                             invalidExtensionNames.stream()
-                                                                 .map(extensionName ->{
-                                                                                           if(extensionName.isEmpty())
-                                                                                           {
-                                                                                               return "\t<empty string>";
-                                                                                           }
-                                                                                            return String.format("\t%s", extensionName);
-                                                                                      })
+                                                                 .map(extensionName -> { if(extensionName.isEmpty())
+                                                                                         {
+                                                                                             return "\t<empty string>";
+                                                                                         }
+
+                                                                                         return String.format("\t%s", extensionName);
+                                                                                       })
                                                                  .filter(Objects::nonNull)
                                                                  .collect(Collectors.joining(", "))),
                                invalidExtensionNames.isEmpty(),
@@ -467,9 +423,7 @@ public class ExtensionsVerifier extends Verifier
      * @throws AssertionError throws when the GeoPackage Fails to meet this requirement
      */
     @Requirement(reference = "Requirement 85",
-                 text    = "The scope column value in a gpkg_extensions row SHALL be lowercase "
-                           + "\"read-write\" for an extension that affects both readers and writers, "
-                           + "or \"write-only\" for an extension that affects only writers. ")
+                 text      = "The scope column value in a gpkg_extensions row SHALL be lowercase \"read-write\" for an extension that affects both readers and writers, or \"write-only\" for an extension that affects only writers.")
     public void Requirement85() throws SQLException, AssertionError
     {
         if(this.hasGpkgExtensionsTable)
@@ -501,29 +455,6 @@ public class ExtensionsVerifier extends Verifier
                                   Severity.Warning);
             }
         }
-    }
-
-    private static String verifyExtensionName(final String extensionName)
-    {
-        final String author[] = extensionName.split("_", 2);
-
-        if(author.length != 2)
-        {
-            return extensionName;
-        }
-
-        if(author[0].matches("gpkg") && !isRegisteredExtension(extensionName))
-        {
-            return extensionName;
-        }
-
-        if(!author[0].matches("[a-zA-Z0-9]+") ||
-            !author[1].matches("[a-zA-Z0-9_]+"))
-        {
-            return extensionName;
-        }
-
-        return null;
     }
 
     private static boolean isRegisteredExtension(final String extensionName)

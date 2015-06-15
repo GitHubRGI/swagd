@@ -23,41 +23,55 @@
 
 package com.rgi.geopackage.extensions;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import utility.DatabaseUtility;
 import utility.SelectBuilder;
 
-import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.common.util.jdbc.JdbcUtility;
+import com.rgi.geopackage.GeoPackage;
+import com.rgi.geopackage.core.GeoPackageCore;
+import com.rgi.geopackage.extensions.implementation.BadImplementationException;
+import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
+ * 'Extensions' subsystem of the {@link GeoPackage} implementation
+ *
  * @author Luke Lambert
  *
  */
 public class GeoPackageExtensions
 {
     /**
+     * The String name "gpkg_extensions" of the database Extensions table
+     * containing the extensions of the GeoPackage (http://www.geopackage.org/spec/#_extensions)
+     */
+    public final static String ExtensionsTableName = "gpkg_extensions";
+
+    /**
      * Constructor
      *
      * @param databaseConnection
      *             The open connection to the database that contains a GeoPackage
+     * @param geoPackageCore
+     *             'Core' subsystem of the {@link GeoPackage} implementation
+     *
      */
-    public GeoPackageExtensions(final Connection databaseConnection)
+    public GeoPackageExtensions(final Connection     databaseConnection,
+                                final GeoPackageCore geoPackageCore)
     {
         this.databaseConnection = databaseConnection;
+        this.geoPackageCore     = geoPackageCore;
     }
 
     /**
@@ -66,8 +80,10 @@ public class GeoPackageExtensions
      * @param verificationLevel
      *             Controls the level of verification testing performed
      * @return The extension GeoPackage requirements this GeoPackage fails to conform to
+     * @throws SQLException
+     *             if there is a database error
      */
-    public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel)
+    public Collection<VerificationIssue> getVerificationIssues(final VerificationLevel verificationLevel) throws SQLException
     {
         return new ExtensionsVerifier(this.databaseConnection, verificationLevel).getVerificationIssues();
     }
@@ -91,15 +107,14 @@ public class GeoPackageExtensions
             return false;
         }
 
-        final String extensionNameQuerySql = String.format("SELECT COUNT(*) FROM %s WHERE extension_name = ?",
+        final String extensionNameQuerySql = String.format("SELECT COUNT(*) FROM %s WHERE extension_name = ? LIMIT 1",
                                                            GeoPackageExtensions.ExtensionsTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(extensionNameQuerySql))
-        {
-            preparedStatement.setString(1, name);
-
-            return preparedStatement.executeQuery().getInt(1) > 0;
-        }
+        final int count = JdbcUtility.selectOne(this.databaseConnection,
+                                                extensionNameQuerySql,
+                                                preparedStatement -> preparedStatement.setString(1, name),
+                                                resultSet -> resultSet.getInt(1));
+        return count > 0;
     }
 
     /**
@@ -123,11 +138,10 @@ public class GeoPackageExtensions
      * @return Returns an instance of {@link Extension} that represents an entry
      *         in the GeoPackage extensions table
      * @throws SQLException
-     *             throws if the methods
-     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
-     *             or
-     *             {@link SelectBuilder#SelectBuilder(Connection, String, Collection, Collection)}
-     *             throws or other various SQLExceptions occur
+     *             throws if the methods {@link DatabaseUtility#
+     *             tableOrViewExists(Connection, String)} or {@link
+     *             SelectBuilder#SelectBuilder(Connection, String, Collection,
+     *             Collection)} throws or other various SQLExceptions occur
      */
     public Extension getExtension(final String tableName, final String columnName, final String extensionName) throws SQLException
     {
@@ -136,31 +150,25 @@ public class GeoPackageExtensions
             return null;
         }
 
-        // tableName, and columnName can be null which is why we need to use
-        // the SelectBuilder rather a simpler prepared statement
-        try(final SelectBuilder selectStatement = new SelectBuilder(this.databaseConnection,
-                                                                    GeoPackageExtensions.ExtensionsTableName,
-                                                                    Arrays.asList("table_name",
-                                                                                  "column_name",
-                                                                                  "extension_name",
-                                                                                  "definition",
-                                                                                  "scope"),
-                                                                    Arrays.asList(new AbstractMap.SimpleImmutableEntry<>("table_name",     tableName),
-                                                                                  new AbstractMap.SimpleImmutableEntry<>("column_name",    columnName),
-                                                                                  new AbstractMap.SimpleImmutableEntry<>("extension_name", extensionName)));
-            final ResultSet result = selectStatement.executeQuery())
-        {
-            if(result.isBeforeFirst())
-            {
-                return new Extension(result.getString(1),
-                                     result.getString(2),
-                                     result.getString(3),
-                                     result.getString(4),
-                                     result.getString(5));
-            }
-        }
+        final String extensionQuery = String.format("SELECT %s, %s FROM %s WHERE %s IS ? AND %s IS ? AND %s IS ? LIMIT 1;",   // 'IS' instead of '=' because the values could be null
+                                                    "definition",
+                                                    "scope",
+                                                    GeoPackageExtensions.ExtensionsTableName,
+                                                    "table_name",
+                                                    "column_name",
+                                                    "extension_name");
 
-        return null;
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     extensionQuery,
+                                     preparedStatement -> { preparedStatement.setString(1, tableName);
+                                                            preparedStatement.setString(2, columnName);
+                                                            preparedStatement.setString(3, extensionName);
+                                                          },
+                                     resultSet -> new Extension(tableName,
+                                                                columnName,
+                                                                extensionName,
+                                                                resultSet.getString(1),
+                                                                resultSet.getString(2)));
     }
 
     /**
@@ -168,13 +176,13 @@ public class GeoPackageExtensions
      * extension objects
      *
      * @return Returns a collection of {@link Extension} objects that represent
-     *         all of the entries in the GeoPackage extensions table
+     *             all of the entries in the GeoPackage extensions table
      * @throws SQLException
-     *             throws if the method
-     *             {@link DatabaseUtility#tableOrViewExists(Connection, String)}
-     *             throws or other various SQLExceptions occur
+     *             throws if the method {@link DatabaseUtility
+     *             #tableOrViewExists(Connection, String)} throws or other
+     *             various SQLExceptions occur
      */
-    public Collection<Extension> getExtensions() throws SQLException
+    public List<Extension> getExtensions() throws SQLException
     {
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageExtensions.ExtensionsTableName))
         {
@@ -189,29 +197,14 @@ public class GeoPackageExtensions
                                                        "scope",
                                                        GeoPackageExtensions.ExtensionsTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(extensionQuerySql))
-        {
-            try(ResultSet results = preparedStatement.executeQuery())
-            {
-                return ResultSetStream.getStream(results)
-                                      .map(result -> { try
-                                                       {
-                                                           return new Extension(result.getString(1),
-                                                                                result.getString(2),
-                                                                                result.getString(3),
-                                                                                result.getString(4),
-                                                                                result.getString(5));
-                                                       }
-                                                       catch(final SQLException ex)
-                                                       {
-                                                           return null;
-                                                       }
-                                                     })
-                                      .filter(Objects::nonNull)
-                                      .collect(Collectors.toCollection(ArrayList<Extension>::new));
-
-            }
-        }
+        return JdbcUtility.select(this.databaseConnection,
+                                  extensionQuerySql,
+                                  null,
+                                  resultSet -> new Extension(resultSet.getString(1),
+                                                             resultSet.getString(2),
+                                                             resultSet.getString(3),
+                                                             resultSet.getString(4),
+                                                             resultSet.getString(5)));
     }
 
     /**
@@ -309,29 +302,66 @@ public class GeoPackageExtensions
                                                      "scope");
         this.createExtensionTableNoCommit(); // Create the extension table
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertExtension))
-        {
-            preparedStatement.setString(1, tableName);
-            preparedStatement.setString(2, columnName);
-            preparedStatement.setString(3, extensionName);
-            preparedStatement.setString(4, definition);
-            preparedStatement.setString(5, scope.toString());
+        JdbcUtility.update(this.databaseConnection,
+                           insertExtension,
+                           preparedStatement -> { preparedStatement.setString(1, tableName);
+                                                  preparedStatement.setString(2, columnName);
+                                                  preparedStatement.setString(3, extensionName);
+                                                  preparedStatement.setString(4, definition);
+                                                  preparedStatement.setString(5, scope.toString());
+                                                });
 
-            preparedStatement.executeUpdate();
-
-            this.databaseConnection.commit();
-        }
-        catch(final Exception ex)
-        {
-            this.databaseConnection.rollback();
-            throw ex;
-        }
+        this.databaseConnection.commit();
 
         return new Extension(tableName,
                              columnName,
                              extensionName,
                              definition,
                              scope.toString());
+    }
+
+    /**
+     * Gets a handle to an {@link ExtensionImplementation} which exposes
+     * extension specific functionality
+     *
+     * @param clazz
+     *             {@link Class} representing
+     * @return a handle to an implementation of {@link ExtensionImplementation}
+     * @throws BadImplementationException
+     *             if the Class type parameter doesn't match the requirements
+     *             needed to create the requested extension.  See {@link
+     *             BadImplementationException#getCause()} for more details
+     */
+    public <T extends ExtensionImplementation> T getExtensionImplementation(final Class<T> clazz) throws BadImplementationException
+    {
+        if(clazz == null)
+        {
+            throw new IllegalArgumentException("Class cannot be null");
+        }
+
+        if(this.implementations.containsKey(clazz))
+        {
+            final ExtensionImplementation implementation = this.implementations.get(clazz);
+
+            return clazz.cast(implementation);
+        }
+
+        try
+        {
+            final Constructor<T> constructor = clazz.getDeclaredConstructor(Connection.class,
+                                                                            GeoPackageCore.class,
+                                                                            GeoPackageExtensions.class);
+
+            final T implementation = constructor.newInstance(this.databaseConnection, this.geoPackageCore, this);
+
+            this.implementations.put(clazz, implementation);
+
+            return implementation;
+        }
+        catch(final NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
+        {
+            throw new BadImplementationException(String.format("There was an error instantiating an instance of the '%s' GeoPackage extension implementation", clazz.getName()), ex);
+        }
     }
 
     @SuppressWarnings("static-method")
@@ -363,18 +393,12 @@ public class GeoPackageExtensions
         // Create the tile matrix set table or view
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageExtensions.ExtensionsTableName))
         {
-            try(Statement statement = this.databaseConnection.createStatement())
-            {
-                statement.executeUpdate(this.getExtensionsTableCreationSql());
-            }
+            JdbcUtility.update(this.databaseConnection, this.getExtensionsTableCreationSql());
         }
     }
 
-    private final Connection databaseConnection;
+    private final Connection     databaseConnection;
+    private final GeoPackageCore geoPackageCore;
 
-    /**
-     * The String name "gpkg_extensions" of the database Extensions table
-     * containing the extensions of the GeoPackage (http://www.geopackage.org/spec/#_extensions)
-     */
-    public final static String ExtensionsTableName = "gpkg_extensions";
+    private final Map<Class<? extends ExtensionImplementation>, ExtensionImplementation> implementations = new HashMap<>();
 }

@@ -35,6 +35,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import com.rgi.android.common.util.StringUtility;
@@ -84,7 +85,8 @@ public class DatabaseUtility
             final int minor    = (version - (major*1000000))/1000;
             final int revision = version - ((major*1000000) + (minor*1000));
 
-            return String.format("%d.%d.%d",
+            return String.format(Locale.getDefault(),
+                                 "%d.%d.%d",
                                  major,
                                  minor,
                                  revision);
@@ -247,24 +249,46 @@ public class DatabaseUtility
 
     /**
      * @param connection
-     * 			  connection to the database
+     *               connection to the database
      * @throws SQLException
-     * 		  	  throws if various SQLExceptions occur
+     *                 throws if various SQLExceptions occur
      */
     public static void setPragmaJournalModeMemory(final Connection connection) throws SQLException
     {
-    	DatabaseUtility.verify(connection);
+        DatabaseUtility.verify(connection);
 
-    	final Statement statement = connection.createStatement();
+        final Statement statement = connection.createStatement();
 
-    	try
-    	{
-    		statement.execute(String.format("PRAGMA journal_mode = MEMORY;"));
-    	}
-    	finally
-    	{
-    	    statement.close();
-    	}
+        try
+        {
+            statement.execute("PRAGMA journal_mode = MEMORY;");
+        }
+        finally
+        {
+            statement.close();
+        }
+    }
+
+    /**
+     * @param connection
+     *               connection to the database
+     * @throws SQLException
+     *                 throws if various SQLExceptions occur
+     */
+    public static void setPragmaSynchronousOff(final Connection connection) throws SQLException
+    {
+        DatabaseUtility.verify(connection);
+
+        final Statement statement = connection.createStatement();
+
+        try
+        {
+            statement.execute("PRAGMA synchronous = OFF;");
+        }
+        finally
+        {
+            statement.close();
+        }
     }
 
     /**

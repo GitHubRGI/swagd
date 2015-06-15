@@ -35,6 +35,7 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
@@ -1252,40 +1253,61 @@ public class GdalUtility
     /**
      * Read a subset of image data from a raster {@link Dataset}.
      *
-     * @param params A {@link GdalRasterParameters} object containing data on how the tile should be read from
-     *                  the raster image
-     * @param dataset The {@link Dataset} to read the tile data from
-     * @return A {@link Byte} array of size @params.writeXSize() * @params.writeYSize() * @dataset.GetRasterCount()
-     *            containing tile data for the area specified in @params
-     * @throws TilingException Thrown when ReadRaster reports a failure
+     * @param params
+     *             A {@link GdalRasterParameters} object containing data on how
+     *             the tile should be read from the raster image
+     * @param dataset
+     *             The {@link Dataset} to read the tile data from
+     * @return A {@link Byte} array of size @params.writeXSize() *
+     *             @params.writeYSize() * @dataset.GetRasterCount() containing
+     *             tile data for the area specified in @params
+     * @throws TilingException
+     *             Thrown when ReadRaster reports a failure
+     * @throws IOException
+     *             when {@link Dataset#ReadRaster} fails
      */
     public static byte[] readRaster(final GdalRasterParameters params,
-                                    final Dataset dataset) throws TilingException
+                                    final Dataset dataset) throws TilingException, IOException
     {
         if(params == null)
         {
             throw new IllegalArgumentException("GDAL parameters cannot be null.");
         }
+
         if(dataset == null)
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
+
         final int bandCount = dataset.GetRasterCount(); // correctNoDataSimple should have added an alpha band
-        final byte[] imageData = new byte[params.getWriteXSize() * params.getWriteYSize() * bandCount];
-        final int result = dataset.ReadRaster(params.getReadX(), // xOffset
-                                              params.getReadY(), // yOffset
-                                              params.getReadXSize(), // xSize
-                                              params.getReadYSize(), // ySize
-                                              params.getWriteXSize(), // buffer_xSize
-                                              params.getWriteYSize(), // buffer_ySize
-                                              gdalconstConstants.GDT_Byte, // buffer type
-                                              imageData, // array into which the data will be written, must
-                                                           // contain at least buffer_xSize * buffer_ySize * nBandCount
-                                              null); // Per documentation, will select the first nBandCount bands
-        if(result != gdalconstConstants.CE_None)
+
+        if(params.getWriteXSize() < 0 || params.getWriteYSize() < 0)
         {
-            throw new TilingException("Failure reported by ReadRaster call in GdalUtility.");
+            throw new IOException("Tile call is outside the raster boundaries.");
         }
+
+        final byte[] imageData = new byte[params.getWriteXSize() * params.getWriteYSize() * bandCount];
+
+        final int result = dataset.ReadRaster(params.getReadX(),           // xOffset
+                                              params.getReadY(),           // yOffset
+                                              params.getReadXSize(),       // xSize
+                                              params.getReadYSize(),       // ySize
+                                              params.getWriteXSize(),      // buffer_xSize
+                                              params.getWriteYSize(),      // buffer_ySize
+                                              gdalconstConstants.GDT_Byte, // buffer type
+                                              imageData,                   // array into which the data will be written, must contain at least buffer_xSize * buffer_ySize * nBandCount
+                                              null);                       // Per documentation, will select the first nBandCount bands
+
+        if(result == gdalconstConstants.CE_Failure)
+        {
+            throw new IOException("Tile call outside of raster bounds.");
+        }
+
+        if(result == gdalconstConstants.CE_Fatal)
+        {
+            throw new TilingException("Fatal error detected from GDAL readRaster.");
+        }
+
         return imageData;
     }
 

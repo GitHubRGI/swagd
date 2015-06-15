@@ -38,7 +38,6 @@ import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import javax.print.attribute.standard.Severity;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
@@ -95,7 +94,7 @@ public class GeoPackageReader implements TileStoreReader
      *             GeoPackage.  If verificationLevel is not None
      *             {@link GeoPackage#verify()} is called automatically and will throw if
      *             there are any conformance violations with the severity
-     *             {@link Severity#Error}.  Throwing from this method means
+     *             {@link com.rgi.geopackage.verification.Severity#Error}.  Throwing from this method means
      *             that it won't be possible to instantiate a GeoPackage object
      *             based on an SQLite "GeoPackage" file with severe errors.
      * @throws TileStoreException

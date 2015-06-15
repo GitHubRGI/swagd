@@ -34,15 +34,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import com.rgi.android.common.util.StringUtility;
 import com.rgi.android.common.util.functional.Function;
 import com.rgi.android.common.util.functional.FunctionalUtility;
 import com.rgi.android.common.util.functional.Predicate;
-import com.rgi.android.common.util.functional.jdbc.JdbcUtility;
-import com.rgi.android.common.util.functional.jdbc.ResultSetFunction;
-import com.rgi.android.common.util.functional.jdbc.ResultSetPredicate;
+import com.rgi.android.common.util.jdbc.JdbcUtility;
+import com.rgi.android.common.util.jdbc.ResultSetFunction;
+import com.rgi.android.common.util.jdbc.ResultSetPredicate;
 import com.rgi.android.geopackage.core.GeoPackageCore;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
 import com.rgi.android.geopackage.verification.Assert;
@@ -65,9 +66,9 @@ public class SchemaVerifier extends Verifier
 {
     private class DataColumns
     {
-        String tableName;
-        String columnName;
-        String constraintName;  // TODO I believe this was being used before, but hasn't after the changes to backport to java 1.6
+        private String tableName;
+        private String columnName;
+        private String constraintName;
     }
 
     private class DataColumnConstraints
@@ -82,11 +83,12 @@ public class SchemaVerifier extends Verifier
 
         public String invalidMinMaxWithRangeType()
         {
-           return String.format("constraint_name: %10s, constraint_type: %5s, invalid min: %.3f, invalid max: %.3f.",
-                                 this.constraintName,
-                                 this.constraintType,
-                                 this.min,
-                                 this.max);
+           return String.format(Locale.getDefault(),
+                                "constraint_name: %10s, constraint_type: %5s, invalid min: %.3f, invalid max: %.3f.",
+                                this.constraintName,
+                                this.constraintType,
+                                this.min,
+                                this.max);
         }
     }
 
@@ -227,7 +229,7 @@ public class SchemaVerifier extends Verifier
     {
         if(this.hasDataColumnsTable)
         {
-            for(final DataColumns dataColumn: this.dataColumnsValues)
+            for(final DataColumns dataColumn : this.dataColumnsValues)
             {
                 if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), dataColumn.tableName))
                 {
@@ -295,16 +297,16 @@ public class SchemaVerifier extends Verifier
             {
                 if(dataColumnConstraints.constraintName != null)
                 {
-                    final boolean containsConstraint = FunctionalUtility.anyMatch(this.dataColumnConstraintsValues,
-                                                                            new Predicate<DataColumnConstraints>()
-                                                                            {
-                                                                                @Override
-                                                                                public boolean apply(final DataColumnConstraints dataColumn)
-                                                                                {
-                                                                                    return dataColumn.constraintName != null &&
-                                                                                           dataColumn.constraintName.equals(dataColumnConstraints.constraintName);
-                                                                                }
-                                                                            });
+                    final boolean containsConstraint = FunctionalUtility.anyMatch(this.dataColumnsValues,
+                                                                                  new Predicate<DataColumns>()
+                                                                                  {
+                                                                                      @Override
+                                                                                      public boolean apply(final DataColumns dataColumn)
+                                                                                      {
+                                                                                          return dataColumn.constraintName != null &&
+                                                                                                 dataColumn.constraintName.equals(dataColumnConstraints.constraintName);
+                                                                                      }
+                                                                                  });
 
                    Assert.assertTrue(String.format("The constraint_name %s in %s is not referenced in %s table in the column constraint_name.",
                                                    dataColumnConstraints.constraintName,

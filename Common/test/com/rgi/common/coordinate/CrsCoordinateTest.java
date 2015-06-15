@@ -40,7 +40,7 @@ public class CrsCoordinateTest
      * or empty
      */
     @SuppressWarnings("unused")
-    @Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
     public void illegalArgumentException1()
     {
         new CrsCoordinate(5.8, 7.6, null);

@@ -41,10 +41,13 @@ import utility.DatabaseUtility;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
+ * 'Core' subsystem of the {@link GeoPackage} implementation
+ *
  * @author Luke Lambert
  *
  */
@@ -216,6 +219,11 @@ public class GeoPackageCore
      */
     public SpatialReferenceSystem getSpatialReferenceSystem(final String organization, final int organizationSrsId) throws SQLException
     {
+        if(organization == null || organization.isEmpty())
+        {
+            throw new IllegalArgumentException("Organization may not be null or empty");
+        }
+
         final String srsQuerySql = String.format("SELECT %s, %s, %s, %s, %s, %s FROM %s WHERE organization COLLATE NOCASE IN (?) AND organization_coordsys_id = ?;",
                                                  "srs_name",
                                                  "srs_id",
@@ -695,7 +703,7 @@ public class GeoPackageCore
     {
         // http://www.geopackage.org/spec/#_gpkg_spatial_ref_sys
         // http://www.geopackage.org/spec/#spatial_ref_sys
-        return "CREATE TABLE " + GeoPackageCore.SpatialRefSysTableName                                                                                    +
+        return "CREATE TABLE " + GeoPackageCore.SpatialRefSysTableName + "\n" +
                "(srs_name                 TEXT    NOT NULL,             -- Human readable name of this SRS (Spatial Reference System)\n"              +
                " srs_id                   INTEGER NOT NULL PRIMARY KEY, -- Unique identifier for each Spatial Reference System within a GeoPackage\n" +
                " organization             TEXT    NOT NULL,             -- Case-insensitive name of the defining organization e.g. EPSG or epsg\n"    +

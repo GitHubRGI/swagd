@@ -1,0 +1,4 @@
+*.msi
+*.exe
+*.wixpd
+*.wixobj

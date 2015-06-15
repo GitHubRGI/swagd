@@ -146,7 +146,7 @@ public class GeoPackageTiles
                                       identifier,
                                       description,
                                       boundingBox,
-                                      spatialReferenceSystem.getOrganizationSrsId()))
+                                      spatialReferenceSystem.getIdentifier()))
             {
                 return existingContent;
             }
@@ -793,7 +793,7 @@ public class GeoPackageTiles
      *
      * @param tileSetTableName
      *            Name of a tile set table
-     * @return Returns a TileSet or null if there isn't with the supplied table
+     * @return Returns a {@link TileSet} or null if there isn't with the supplied table
      *         name
      * @throws SQLException
      *             throws if the method

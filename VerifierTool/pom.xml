@@ -125,7 +125,7 @@
                   </excludes>
               </artifactSet>
               <shadedArtifactAttached>true</shadedArtifactAttached>
-              <shadedClassifierName>shaded</shadedClassifierName>
+              <shadedClassifierName>with_dependencies</shadedClassifierName>
           </configuration>
       </plugin>
       <plugin>
@@ -142,7 +142,7 @@
                   <configuration>
                       <headerType>gui</headerType>
                       <outfile>target/verifiertool.exe</outfile>
-                      <jar>target/${project.artifactId}-${project.version}-shaded.jar</jar>
+                      <jar>target/${project.artifactId}-${project.version}-with_dependencies.jar</jar>
                       <errTitle>VerifierTool Err</errTitle>
                       <classPath>
                           <mainClass>com.rgi.verifiertool.VerifierMainWindow</mainClass>

@@ -198,17 +198,19 @@ public class GeoPackage implements Closeable
 
         try
         {
-            this.databaseConnection.setAutoCommit(false);
-
             DatabaseUtility.setPragmaForeignKeys(this.databaseConnection, true);
             DatabaseUtility.setPragmaJournalModeMemory(this.databaseConnection);
+            DatabaseUtility.setPragmaSynchronousOff(this.databaseConnection);
+
+            // this was moved below setting the pragmas because is starts a transaction and causes setPragmaSynchronousOff to throw an exception
+            this.databaseConnection.setAutoCommit(false);
 
             this.core       = new GeoPackageCore      (this.databaseConnection, isNewFile);
             this.features   = new GeoPackageFeatures  (this.databaseConnection, this.core);
             this.tiles      = new GeoPackageTiles     (this.databaseConnection, this.core);
             this.schema     = new GeoPackageSchema    (this.databaseConnection);
             this.metadata   = new GeoPackageMetadata  (this.databaseConnection);
-            this.extensions = new GeoPackageExtensions(this.databaseConnection);
+            this.extensions = new GeoPackageExtensions(this.databaseConnection, this.core);
 
             if(isNewFile)
             {

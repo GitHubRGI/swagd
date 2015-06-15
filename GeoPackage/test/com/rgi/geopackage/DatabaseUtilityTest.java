@@ -45,7 +45,7 @@ import utility.DatabaseUtility;
  * @author Jenifer Cochran
  *
  */
-@SuppressWarnings("static-method")
+@SuppressWarnings({"javadoc", "static-method"})
 public class DatabaseUtilityTest
 {
     private final Random randomGenerator = new Random();
@@ -169,6 +169,33 @@ public class DatabaseUtilityTest
         finally
         {
             if (testFile.exists())
+            {
+                testFile.delete();
+            }
+        }
+    }
+
+    @Test
+    public void databaseUtilitySetPragmaSynchronousOff() throws Exception
+    {
+        final File testFile = this.getRandomFile(5);
+        testFile.createNewFile();
+        try (Connection con = this.getConnection(testFile.getAbsolutePath()))
+        {
+            DatabaseUtility.setPragmaSynchronousOff(con);
+            final String query = "PRAGMA synchronous;";
+            try(Statement stmt = con.createStatement())
+            {
+                try(ResultSet sPragma = stmt.executeQuery(query))
+                {
+                    final int sync = sPragma.getInt("synchronous");
+                    assertTrue("DatabaseUtility did not set PRAGMA synchronous to off.",sync == 0);
+                }
+            }
+        }
+        finally
+        {
+            if(testFile.exists())
             {
                 testFile.delete();
             }
@@ -438,10 +465,11 @@ public class DatabaseUtilityTest
         try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
         {
             this.addTable(con, "foo");
-            final String sqliteVersion =  DatabaseUtility.getSqliteVersion(testFile);
+            final String foundSqliteVersion = DatabaseUtility.getSqliteVersion(testFile);
             assertTrue(String.format("The SQLite Version was different from expected. Expected: %s, Actual: %s",
-                                     geopackageSqliteVersion, sqliteVersion),
-                       geopackageSqliteVersion.equals(sqliteVersion));
+                                     sqliteVersion,
+                                     foundSqliteVersion),
+                       sqliteVersion.equals(foundSqliteVersion));
         }
         finally
         {
@@ -519,10 +547,5 @@ public class DatabaseUtilityTest
         }
     }
 
-    /**
-     * The Sqlite version required for a GeoPackage shall contain SQLite 3
-     * format
-     */
-    private final static String geopackageSqliteVersion = "3.8.7";
-
+    private final static String sqliteVersion = "3.8.7";
 }

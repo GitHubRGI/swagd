@@ -39,6 +39,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import utility.TestUtility;
+
 import com.rgi.android.common.BoundingBox;
 import com.rgi.android.common.util.functional.FunctionalUtility;
 import com.rgi.android.common.util.functional.Predicate;

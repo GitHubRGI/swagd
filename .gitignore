@@ -53,8 +53,6 @@ cov-int
 
 RGISuite/settings.txt
 VerifierTool/.project
-
-# Ignore some android files
-
-# we don't use proguard for anything
-proguard-project.txt
+WiX/CustomAction3/CustomAction3/obj/
+*.cache
+NetworkExtension/data/

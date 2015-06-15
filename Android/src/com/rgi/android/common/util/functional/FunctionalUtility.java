@@ -25,6 +25,7 @@ package com.rgi.android.common.util.functional;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Luke Lambert
@@ -105,7 +106,7 @@ public class FunctionalUtility
     }
 
     /**
-     * Returns an {@link ArrayList} of the output type parameter consisting of the results
+     * Returns an {@link List} of the output type parameter consisting of the results
      * of applying the function to the elements in the given {@link Collection}
      *
      * @param collection
@@ -113,9 +114,9 @@ public class FunctionalUtility
      * @param function
      *      Contains the apply function that will map each element in the given {@link Collection} of the input type to an output of a different type
      * @return
-     *      Returns an {@link ArrayList} of the output type consisting of the elements mapped based on the elements in the given {@link Collection}
+     *      Returns an {@link List} of the output type consisting of the elements mapped based on the elements in the given {@link Collection}
      */
-    public static <I, O> ArrayList<O> map(final Collection<I> collection, final Function<I, O> function)
+    public static <I, O> List<O> map(final Collection<I> collection, final Function<I, O> function)
     {
         if(collection == null)
         {
@@ -191,9 +192,9 @@ public class FunctionalUtility
      * of filtering the elements  in the given {@link Collection} that only satisfy the given {@link Predicate} then applying
      * the filtered elements to the function function to the elements to the output type parameter
      */
-    public static <I, O> ArrayList<O> filterMap(final Collection<I>  collection,
-                                                final Predicate<I>   predicate,
-                                                final Function<I, O> function)
+    public static <I, O> List<O> filterMap(final Collection<I>  collection,
+                                           final Predicate<I>   predicate,
+                                           final Function<I, O> function)
     {
         if(collection == null)
         {
