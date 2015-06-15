@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package utility;
+package com.rgi.geopackage.utility;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

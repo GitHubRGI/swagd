@@ -35,8 +35,6 @@ import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import utility.DatabaseUtility;
-
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
 import com.rgi.common.util.jdbc.JdbcUtility;
@@ -48,6 +46,7 @@ import com.rgi.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.geopackage.extensions.Scope;
 import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
 import com.rgi.geopackage.extensions.implementation.ImplementsExtension;
+import com.rgi.geopackage.utility.DatabaseUtility;
 
 /**
  * Implementation of the RGI Network GeoPackage extension

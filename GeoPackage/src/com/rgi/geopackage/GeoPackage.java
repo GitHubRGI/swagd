@@ -34,14 +34,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import utility.DatabaseUtility;
-
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.geopackage.features.GeoPackageFeatures;
 import com.rgi.geopackage.metadata.GeoPackageMetadata;
 import com.rgi.geopackage.schema.GeoPackageSchema;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
+import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.VerificationIssue;

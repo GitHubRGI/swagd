@@ -33,14 +33,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import utility.DatabaseUtility;
-import utility.SelectBuilder;
-
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
+import com.rgi.geopackage.utility.DatabaseUtility;
+import com.rgi.geopackage.utility.SelectBuilder;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 

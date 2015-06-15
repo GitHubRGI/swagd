@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package utility;
+package com.rgi.geopackage.utility;
 
 import java.io.File;
 import java.io.FileNotFoundException;

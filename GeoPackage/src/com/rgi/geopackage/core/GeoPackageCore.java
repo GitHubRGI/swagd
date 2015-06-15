@@ -29,11 +29,10 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 
-import utility.DatabaseUtility;
-
 import com.rgi.common.BoundingBox;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.GeoPackage;
+import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
