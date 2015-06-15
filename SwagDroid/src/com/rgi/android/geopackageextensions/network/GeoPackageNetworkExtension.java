@@ -274,20 +274,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                               final BoundingBox            boundingBox,
                               final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
     {
-        if(tableName == null || tableName.isEmpty())
-        {
-            throw new IllegalArgumentException("Network set name may not be null");
-        }
-
-        if(!tableName.matches("^[_a-zA-Z]\\w*"))
-        {
-            throw new IllegalArgumentException("The network set's table name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
-        }
-
-        if(tableName.startsWith("gpkg_"))
-        {
-            throw new IllegalArgumentException("The network set's name may not start with the reserved prefix 'gpkg_'");
-        }
+        GeoPackageCore.validateNewContentTableName(tableName);
 
         if(boundingBox == null)
         {

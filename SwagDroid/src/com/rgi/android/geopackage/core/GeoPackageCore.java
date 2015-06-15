@@ -108,6 +108,31 @@ public class GeoPackageCore
     }
 
     /**
+     * Throws if the name of the new content table violates any of the content
+     * table name rules
+     *
+     * @param tableName
+     *             name of the new content table
+     */
+    public static void validateNewContentTableName(final String tableName)
+    {
+        if(tableName == null || tableName.isEmpty())
+        {
+            throw new IllegalArgumentException("Tile set name may not be null");
+        }
+
+        if(!tableName.matches("^[_a-zA-Z]\\w*"))
+        {
+            throw new IllegalArgumentException("The tile set's name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
+        }
+
+        if(tableName.startsWith("gpkg_"))
+        {
+            throw new IllegalArgumentException("The tile set's name may not start with the reserved prefix 'gpkg_'");
+        }
+    }
+
+    /**
      * Count the number of entries in a user content table
      *
      * @param content
@@ -359,20 +384,7 @@ public class GeoPackageCore
                               final BoundingBox            boundingBox,
                               final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
     {
-        if(tableName == null || tableName.isEmpty())
-        {
-            throw new IllegalArgumentException("Tile set name may not be null");
-        }
-
-        if(!tableName.matches("^[_a-zA-Z]\\w*"))
-        {
-            throw new IllegalArgumentException("The tile set's name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
-        }
-
-        if(tableName.startsWith("gpkg_"))
-        {
-            throw new IllegalArgumentException("The tile set's name may not start with the reserved prefix 'gpkg_'");
-        }
+        validateNewContentTableName(tableName);
 
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, tableName))
         {
