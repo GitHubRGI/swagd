@@ -21,13 +21,15 @@
  * SOFTWARE.
  */
 
-package com.rgi.android.geopackage.verification;
+package geopackage.verification;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
+
+import com.rgi.android.geopackage.verification.ColumnDefinition;
 
 /**
  * @author Mary Carome

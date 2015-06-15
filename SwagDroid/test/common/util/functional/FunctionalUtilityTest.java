@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.android.common.util.functionaltest;
+package common.util.functional;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;

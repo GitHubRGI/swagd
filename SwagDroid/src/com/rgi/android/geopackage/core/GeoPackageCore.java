@@ -36,6 +36,9 @@ import java.util.List;
 import java.util.Locale;
 
 import com.rgi.android.common.BoundingBox;
+import com.rgi.android.common.util.jdbc.JdbcUtility;
+import com.rgi.android.common.util.jdbc.PreparedStatementConsumer;
+import com.rgi.android.common.util.jdbc.ResultSetFunction;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
 import com.rgi.android.geopackage.verification.VerificationIssue;
 import com.rgi.android.geopackage.verification.VerificationLevel;
@@ -149,25 +152,17 @@ public class GeoPackageCore
 
         final String rowCountSql = String.format("SELECT COUNT(*) FROM %s;", content.getTableName());
 
-        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(rowCountSql);
-
-        try
-        {
-            final ResultSet tileResult = preparedStatement.executeQuery();
-
-            try
-            {
-                return tileResult.getLong(1);
-            }
-            finally
-            {
-                tileResult.close();
-            }
-        }
-        finally
-        {
-            preparedStatement.close();
-        }
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     rowCountSql,
+                                     null,
+                                     new ResultSetFunction<Long>()
+                                     {
+                                         @Override
+                                         public Long apply(final ResultSet resultSet) throws SQLException
+                                         {
+                                             return resultSet.getLong(1);
+                                         }
+                                    });
     }
 
     /**
@@ -265,38 +260,30 @@ public class GeoPackageCore
                                                  "description",
                                                  GeoPackageCore.SpatialRefSysTableName);
 
-        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(srsQuerySql);
-
-        try
-        {
-            preparedStatement.setString(1, organization);
-            preparedStatement.setInt   (2, organizationSrsId);
-
-            final ResultSet srsResult = preparedStatement.executeQuery();
-
-            try
-            {
-                if(srsResult.first())
-                {
-                    return new SpatialReferenceSystem(srsResult.getString(1),
-                                                      srsResult.getInt   (2),
-                                                      srsResult.getString(3),
-                                                      srsResult.getInt   (4),
-                                                      srsResult.getString(5),
-                                                      srsResult.getString(6));
-                }
-            }
-            finally
-            {
-                srsResult.close();
-            }
-        }
-        finally
-        {
-            preparedStatement.close();
-        }
-
-        return null;
+          return JdbcUtility.selectOne(this.databaseConnection,
+                                       srsQuerySql,
+                                       new PreparedStatementConsumer()
+                                       {
+                                           @Override
+                                           public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                           {
+                                               preparedStatement.setString(1, organization);
+                                                              preparedStatement.setInt   (2, organizationSrsId);
+                                           }
+                                       },
+                                       new ResultSetFunction<SpatialReferenceSystem>()
+                                       {
+                                           @Override
+                                           public com.rgi.android.geopackage.core.SpatialReferenceSystem apply(final ResultSet resultSet) throws SQLException
+                                           {
+                                               return new SpatialReferenceSystem(resultSet.getString(1),
+                                                                                 resultSet.getInt   (2),
+                                                                                 resultSet.getString(3),
+                                                                                 resultSet.getInt   (4),
+                                                                                 resultSet.getString(5),
+                                                                                 resultSet.getString(6));
+                                           }
+                                       });
     }
 
     /**

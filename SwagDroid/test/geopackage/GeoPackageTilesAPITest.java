@@ -42,6 +42,8 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
 import utility.TestUtility;
 import android.graphics.Bitmap;
@@ -73,6 +75,7 @@ import com.rgi.android.geopackage.verification.ConformanceException;
  * @author Jenifer Cochran
  */
 @SuppressWarnings("static-method")
+@RunWith(RobolectricTestRunner.class)
 public class GeoPackageTilesAPITest
 {
     /**

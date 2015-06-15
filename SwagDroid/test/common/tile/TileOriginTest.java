@@ -21,12 +21,13 @@
  * SOFTWARE.
  */
 
-package com.rgi.android.common.tile;
+package common.tile;
 
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
+import com.rgi.android.common.tile.TileOrigin;
 import com.rgi.android.common.tile.scheme.TileMatrixDimensions;
 
 /**

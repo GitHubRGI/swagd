@@ -35,6 +35,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
 import utility.TestUtility;
 
@@ -45,6 +47,7 @@ import com.rgi.android.geopackage.utility.DatabaseUtility;
  *
  */
 @SuppressWarnings("static-method")
+@RunWith(RobolectricTestRunner.class)
 public class DatabaseUtilityTest
 {
     /**

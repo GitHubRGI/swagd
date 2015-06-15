@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.rgi.android.common.util.functional.jdbc.test;
+package common.util.functional.jdbc;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

@@ -100,6 +100,7 @@
 								<source>src/com/rgi/android/geopackage/tiles</source>
 								<source>src/com/rgi/android/geopackage/utility</source>
 								<source>src/com/rgi/android/geopackage/verification</source>
+                                <source>src/com/rgi/android/geopackageextensions.network</source>
 							</sources>
 						</configuration>
 					</execution>
@@ -114,8 +115,16 @@
 								<source>test/common</source>
 								<source>test/common/coordinates</source>
 								<source>test/common/coordinates/referencesystem.profile</source>
-								<source>test/common/tile/scheme</source>
+								<source>test/common/tile</source>
+                                <source>test/common/tile/scheme</source>
+                                <source>test/common/util</source>
+                                <source>test/common/util/functional</source>
+                                <source>test/common/util/functional/jdbc</source>
 								<source>test/geopackage</source>
+                                <source>test/geopackage/extensions</source>
+                                <source>test/geopackage/schema</source>
+                                <source>test/geopackage/verification</source>
+                                <source>test/utility</source>
 							</sources>
 						</configuration>
 					</execution>

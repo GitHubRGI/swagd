@@ -21,11 +21,13 @@
  * SOFTWARE.
  */
 
-package com.rgi.android.geopackage.schema;
+package geopackage.schema;
 
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+
+import com.rgi.android.geopackage.schema.Type;
 
 /**
  * @author Mary Carome

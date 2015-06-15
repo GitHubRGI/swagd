@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -192,7 +193,20 @@ public class GeoPackage implements Closeable
 
         this.verificationLevel = verificationLevel;
 
-        Class.forName("org.sqlite.JDBC");   // Register the driver
+        //Class.forName("org.sqldroid.SqldroidDriver"); // Register the driver
+        try
+        {
+            //DriverManager.registerDriver((Driver)(Class.forName("org.sqldroid.SQLDroidDriver", true, GeoPackage.class.getClassLoader()).newInstance()));
+            DriverManager.registerDriver((Driver)(Class.forName("org.sqldroid.SQLDroidDriver").newInstance()));
+        }
+        catch(final InstantiationException ex)
+        {
+            throw new IOException(ex);  // TODO Temporary
+        }
+        catch(final IllegalAccessException ex)
+        {
+            throw new IOException(ex);  // TODO Temporary
+        }
 
         this.databaseConnection = DriverManager.getConnection("jdbc:sqlite:" + file.getPath()); // Initialize the database connection
 

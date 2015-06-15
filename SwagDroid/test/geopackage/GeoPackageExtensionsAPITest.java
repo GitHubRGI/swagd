@@ -38,6 +38,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
 import utility.TestUtility;
 
@@ -52,6 +54,7 @@ import com.rgi.android.geopackage.verification.ConformanceException;
 import com.rgi.android.geopackage.verification.VerificationLevel;
 
 @SuppressWarnings({"static-method", "javadoc"})
+@RunWith(RobolectricTestRunner.class)
 public class GeoPackageExtensionsAPITest
 {
     /**
