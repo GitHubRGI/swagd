@@ -485,7 +485,7 @@ public class GeoPackageCore
 
         return JdbcUtility.selectOne(this.databaseConnection,
                                      contentQuerySql,
-                                     preparedStatement ->preparedStatement.setString(1, tableName),
+                                     preparedStatement -> preparedStatement.setString(1, tableName),
                                      resultSet -> contentFactory.create(tableName,                                       // table name
                                                                         resultSet.getString(1),                          // data type
                                                                         resultSet.getString(2),                          // identifier

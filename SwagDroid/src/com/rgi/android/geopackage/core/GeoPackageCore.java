@@ -28,11 +28,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 
 import com.rgi.android.common.BoundingBox;
@@ -308,37 +305,29 @@ public class GeoPackageCore
                                                  "description",
                                                  GeoPackageCore.SpatialRefSysTableName);
 
-        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(srsQuerySql);
-
-        try
-        {
-            preparedStatement.setInt(1, identifier);
-
-            final ResultSet srsResult = preparedStatement.executeQuery();
-
-            try
-            {
-                if(srsResult.first())
-                {
-                    return new SpatialReferenceSystem(srsResult.getString(1),
-                                                      srsResult.getInt   (2),
-                                                      srsResult.getString(3),
-                                                      srsResult.getInt   (4),
-                                                      srsResult.getString(5),
-                                                      srsResult.getString(6));
-                }
-            }
-            finally
-            {
-                srsResult.close();
-            }
-        }
-        finally
-        {
-            preparedStatement.close();
-        }
-
-        return null;
+          return JdbcUtility.selectOne(this.databaseConnection,
+                                       srsQuerySql,
+                                       new PreparedStatementConsumer()
+                                       {
+                                           @Override
+                                           public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                           {
+                                               preparedStatement.setInt(1, identifier);
+                                           }
+                                       },
+                                       new ResultSetFunction<SpatialReferenceSystem>()
+                                       {
+                                           @Override
+                                           public SpatialReferenceSystem apply(final ResultSet resultSet) throws SQLException
+                                           {
+                                               return new SpatialReferenceSystem(resultSet.getString(1),
+                                                                                 resultSet.getInt   (2),
+                                                                                 resultSet.getString(3),
+                                                                                 resultSet.getInt   (4),
+                                                                                 resultSet.getString(5),
+                                                                                 resultSet.getString(6));
+                                           }
+                                       });
     }
 
     /**
@@ -412,29 +401,29 @@ public class GeoPackageCore
                                                    "max_y",
                                                    "srs_id");
 
-        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertContent);
+        final Integer srsId = spatialReferenceSystem == null ? null
+                                                             : spatialReferenceSystem.getIdentifier();
 
-        try
-        {
-            final Integer srsId = spatialReferenceSystem == null ? null
-                                                                 : spatialReferenceSystem.getIdentifier();
+        JdbcUtility.update(this.databaseConnection,
+                           insertContent,
+                           new PreparedStatementConsumer()
+                           {
+                               @Override
+                               public void accept(final PreparedStatement preparedStatement) throws SQLException
+                               {
+                                   preparedStatement.setString(1, tableName);
+                                   preparedStatement.setString(2, dataType);
+                                   preparedStatement.setString(3, identifier);
+                                   preparedStatement.setString(4, description);
+                                   preparedStatement.setObject(5, boundingBox.getMinX()); // Using setObject because spec allows the bounding box values to be null
+                                   preparedStatement.setObject(6, boundingBox.getMinY());
+                                   preparedStatement.setObject(7, boundingBox.getMaxX());
+                                   preparedStatement.setObject(8, boundingBox.getMaxY());
+                                   preparedStatement.setObject(9, srsId);                // Using setObject because the spec allows the srs id be null
+                                }
+                           });
 
-            preparedStatement.setString(1, tableName);
-            preparedStatement.setString(2, dataType);
-            preparedStatement.setString(3, identifier);
-            preparedStatement.setString(4, description);
-            preparedStatement.setObject(5, boundingBox.getMinX()); // Using setObject because spec allows the bounding box values to be null
-            preparedStatement.setObject(6, boundingBox.getMinY());
-            preparedStatement.setObject(7, boundingBox.getMaxX());
-            preparedStatement.setObject(8, boundingBox.getMaxY());
-            preparedStatement.setObject(9, srsId);                 // Using setObject because the spec allows the srs id be null
-
-            preparedStatement.executeUpdate();
-        }
-        finally
-        {
-            preparedStatement.close();
-        }
+        this.databaseConnection.commit();
 
         return this.getContent(tableName);
     }
@@ -481,48 +470,38 @@ public class GeoPackageCore
                                            spatialReferenceSystem != null ? " AND srs_id = ?"
                                                                           : "");
 
-        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(query);
+          return JdbcUtility.select(this.databaseConnection,
+                                    query,
+                                    new PreparedStatementConsumer()
+                                    {
+                                        @Override
+                                        public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                        {
+                                            preparedStatement.setString(1, dataType);
 
-        try
-        {
-            preparedStatement.setString(1, dataType);
-
-            if(spatialReferenceSystem != null)
-            {
-                preparedStatement.setInt(2, spatialReferenceSystem.getIdentifier());
-            }
-
-            final ResultSet results = preparedStatement.executeQuery();
-
-            try
-            {
-                final List<T> content = new ArrayList<T>();
-
-                while(results.next())
-                {
-                    content.add(contentFactory.create(results.getString(1),                          // table name
-                                                      results.getString(2),                          // data type
-                                                      results.getString(3),                          // identifier
-                                                      results.getString(4),                          // description
-                                                      results.getString(5),                          // last change
-                            new BoundingBox(DatabaseUtility.parseSQLDouble(results.getObject(6)),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                            DatabaseUtility.parseSQLDouble(results.getObject(7)),  // min y
-                                            DatabaseUtility.parseSQLDouble(results.getObject(8)),  // max x
-                                            DatabaseUtility.parseSQLDouble(results.getObject(9))), // max y
-                                            (Integer)results.getObject(10)));                      // srs id
-                }
-
-                return content;
-            }
-            finally
-            {
-                results.close();
-            }
-        }
-        finally
-        {
-            preparedStatement.close();
-        }
+                                            if(spatialReferenceSystem != null)
+                                            {
+                                                preparedStatement.setInt(2, spatialReferenceSystem.getIdentifier());
+                                            }
+                                        }
+                                    },
+                                    new ResultSetFunction<T>()
+                                    {
+                                        @Override
+                                        public T apply(final ResultSet resultSet) throws SQLException
+                                        {
+                                            return contentFactory.create(resultSet.getString(1),                                                  // table name
+                                                                         resultSet.getString(2),                                                  // data type
+                                                                         resultSet.getString(3),                                                  // identifier
+                                                                         resultSet.getString(4),                                                  // description
+                                                                         resultSet.getString(5),                                                  // last change
+                                                                         new BoundingBox(DatabaseUtility.parseSQLDouble(resultSet.getObject(6)),  // min x
+                                                                                         DatabaseUtility.parseSQLDouble(resultSet.getObject(7)),  // min y
+                                                                                         DatabaseUtility.parseSQLDouble(resultSet.getObject(8)),  // max x
+                                                                                         DatabaseUtility.parseSQLDouble(resultSet.getObject(9))), // max y
+                                                                         (Integer)resultSet.getObject(10));                                       // srs id
+                                        }
+                                    });
     }
 
     /**
@@ -559,41 +538,33 @@ public class GeoPackageCore
                                                      "srs_id",
                                                      GeoPackageCore.ContentsTableName);
 
-        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(contentQuerySql);
-
-        try
-        {
-            preparedStatement.setString(1, tableName);
-
-            final ResultSet result = preparedStatement.executeQuery();
-
-            try
-            {
-                if(result.first())
-                {
-                    return contentFactory.create(tableName,                                    // table name
-                                                 result.getString(1),                          // data type
-                                                 result.getString(2),                          // identifier
-                                                 result.getString(3),                          // description
-                                                 result.getString(4),                          // last change
-                            new BoundingBox(DatabaseUtility.parseSQLDouble(result.getObject(5)),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                            DatabaseUtility.parseSQLDouble(result.getObject(6)),  // min y
-                                            DatabaseUtility.parseSQLDouble(result.getObject(7)),  // max x
-                                            DatabaseUtility.parseSQLDouble(result.getObject(8))), // max y
-                                            (Integer)result.getObject(9));                        // srs id
-                }
-
-                return null;
-            }
-            finally
-            {
-                result.close();
-            }
-        }
-        finally
-        {
-            preparedStatement.close();
-        }
+          return JdbcUtility.selectOne(this.databaseConnection,
+                                       contentQuerySql,
+                                       new PreparedStatementConsumer()
+                                       {
+                                           @Override
+                                           public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                           {
+                                               preparedStatement.setString(1, tableName);
+                                           }
+                                       },
+                                       new ResultSetFunction<T>()
+                                       {
+                                           @Override
+                                           public T apply(final ResultSet resultSet) throws SQLException
+                                           {
+                                               return contentFactory.create(tableName,                                                  // table name
+                                                                            resultSet.getString(1),                                                  // data type
+                                                                            resultSet.getString(2),                                                  // identifier
+                                                                            resultSet.getString(3),                                                  // description
+                                                                            resultSet.getString(4),                                                  // last change
+                                                                            new BoundingBox(DatabaseUtility.parseSQLDouble(resultSet.getObject(5)),  // min x
+                                                                                            DatabaseUtility.parseSQLDouble(resultSet.getObject(6)),  // min y
+                                                                                            DatabaseUtility.parseSQLDouble(resultSet.getObject(7)),  // max x
+                                                                                            DatabaseUtility.parseSQLDouble(resultSet.getObject(8))), // max y
+                                                                            (Integer)resultSet.getObject(9));                                        // srs id
+                                           }
+                                       });
     }
 
     /**
@@ -673,30 +644,28 @@ public class GeoPackageCore
                                                       "definition",
                                                       "description");
 
-        final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertSpatialRef);
+        JdbcUtility.update(this.databaseConnection,
+                           insertSpatialRef,
+                           new PreparedStatementConsumer()
+                           {
+                               @Override
+                               public void accept(final PreparedStatement preparedStatement) throws SQLException
+                               {
+                                    preparedStatement.setString(1, name);
+                                    preparedStatement.setInt   (2, identifier);
+                                    preparedStatement.setString(3, organization);
+                                    preparedStatement.setInt   (4, organizationSrsId);
+                                    preparedStatement.setString(5, definition);
+                                    preparedStatement.setString(6, description);
+                               }
+                           });
 
-        try
-        {
-            preparedStatement.setString(1, name);
-            preparedStatement.setInt   (2, identifier);
-            preparedStatement.setString(3, organization);
-            preparedStatement.setInt   (4, organizationSrsId);
-            preparedStatement.setString(5, definition);
-            preparedStatement.setString(6, description);
-
-            preparedStatement.executeUpdate();
-
-            return new SpatialReferenceSystem(name,
-                                              identifier,
-                                              organization,
-                                              organizationSrsId,
-                                              definition,
-                                              description);
-        }
-        finally
-        {
-            preparedStatement.close();
-        }
+        return new SpatialReferenceSystem(name,
+                                          identifier,
+                                          organization,
+                                          organizationSrsId,
+                                          definition,
+                                          description);
     }
 
     /**
@@ -711,16 +680,7 @@ public class GeoPackageCore
             // Create the spatial reference system table
             if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageCore.SpatialRefSysTableName))
             {
-                final Statement statement = this.databaseConnection.createStatement();
-
-                try
-                {
-                    statement.executeUpdate(this.getSpatialReferenceSystemCreationSql());
-                }
-                finally
-                {
-                    statement.close();
-                }
+                JdbcUtility.update(this.databaseConnection, this.getSpatialReferenceSystemCreationSql());
             }
 
             // Add the default entries to the spatial reference system table
@@ -749,18 +709,9 @@ public class GeoPackageCore
             // Create the package contents table or view
             if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageCore.ContentsTableName))
             {
-                final Statement statement = this.databaseConnection.createStatement();
-
-                try
-                {
-                    // http://www.geopackage.org/spec/#gpkg_contents_sql
-                    // http://www.geopackage.org/spec/#_contents
-                    statement.executeUpdate(this.getContentsCreationSql());
-                }
-                finally
-                {
-                    statement.close();
-                }
+                // http://www.geopackage.org/spec/#gpkg_contents_sql
+                // http://www.geopackage.org/spec/#_contents
+                JdbcUtility.update(this.databaseConnection, this.getContentsCreationSql());
             }
 
             this.databaseConnection.commit();
