@@ -863,7 +863,7 @@ public class GeoPackageTiles
                                                               resultSet.getInt   (4),   // tile width
                                                               resultSet.getInt   (5),   // tile height
                                                               resultSet.getDouble(6),   // pixel x size
-                                                              resultSet.getDouble(7))); // pixel y size)
+                                                              resultSet.getDouble(7))); // pixel y size
     }
 
     /**
