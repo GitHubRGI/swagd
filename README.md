@@ -31,8 +31,6 @@ A Java-based application for converting geospatial images into tiles, packaging 
   * _Dependency_: Common
 * __GeoViewer__: Workflow code for the JMapViewer-based map canvas viewer for GeoPackages
   * _Dependencies_: Common, GeoPackage, JMapViewer (refer to build environment wiki)
-* __IntegrationTest__: Test code for integration environments
-  * _Dependencies_: Common, Gdal2Tiles, GeoPackage, GeoViewer
 * __NetworkExtension__: Networking and routing capability as a GeoPackage extension
   * _Dependency_: Nothing
 * __Packager__: Workflow code that will use the Geopackage library to create Geopackage data products
