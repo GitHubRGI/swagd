@@ -118,8 +118,11 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * Gets the number of edges in the given network
      *
      * @param network
+     *             Network table reference
      * @return the number of edges in the network
      * @throws SQLException
+     *             if there is a database error
+     *
      */
     public int getEdgeCount(final Network network) throws SQLException
     {
@@ -145,11 +148,13 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     }
 
     /**
-     * Gets the number of nodes in the given network
+     * Gets the number of nodes in the given Network
      *
      * @param network
+     *             Network table reference
      * @return the number of nodes in the network
      * @throws SQLException
+     *             if there is a database error
      */
     public int getNodeCount(final Network network) throws SQLException
     {
@@ -547,29 +552,46 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                             "from_node",
                                             "to_node");
 
-        final int identifier = JdbcUtility.update(this.databaseConnection,
-                                                  insert,
-                                                  new PreparedStatementConsumer()
-                                                  {
-                                                      @Override
-                                                      public void accept(final PreparedStatement preparedStatement) throws SQLException
-                                                      {
-                                                          preparedStatement.setInt(1, from);
-                                                          preparedStatement.setInt(2, to);
-                                                      }
-                                                  },
-                                                  new ResultSetFunction<Integer>()
-                                                  {
-                                                      @Override
-                                                      public Integer apply(final ResultSet resultSet) throws SQLException
-                                                      {
-                                                          return resultSet.getInt(1);
-                                                      }
-                                                  });
+        // TODO connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS) isn't implemented by the current sqlite jdbc driver :(
+//        final int identifier = JdbcUtility.update(this.databaseConnection,
+//                                                  insert,
+//                                                  new PreparedStatementConsumer()
+//                                                  {
+//                                                      @Override
+//                                                      public void accept(final PreparedStatement preparedStatement) throws SQLException
+//                                                      {
+//                                                          preparedStatement.setInt(1, from);
+//                                                          preparedStatement.setInt(2, to);
+//                                                      }
+//                                                  },
+//                                                  new ResultSetFunction<Integer>()
+//                                                  {
+//                                                      @Override
+//                                                      public Integer apply(final ResultSet resultSet) throws SQLException
+//                                                      {
+//                                                          return resultSet.getInt(1);
+//                                                      }
+//                                                  });
+//
+//        this.databaseConnection.commit();
+//
+//        return new Edge(identifier, from, to);
+
+         JdbcUtility.update(this.databaseConnection,
+                            insert,
+                            new PreparedStatementConsumer()
+                            {
+                                @Override
+                                public void accept(final PreparedStatement preparedStatement) throws SQLException
+                                {
+                                    preparedStatement.setInt(1, from);
+                                    preparedStatement.setInt(2, to);
+                                }
+                            });
 
         this.databaseConnection.commit();
 
-        return new Edge(identifier, from, to);
+        return this.getEdge(network, from, to);
     }
 
     /**
@@ -956,29 +978,46 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                             "description",
                                             "attributed_type");
 
-        final int attributeDescriptionIdentifier = JdbcUtility.update(this.databaseConnection,
-                                                                      insert,
-                                                                      new PreparedStatementConsumer()
-                                                                      {
-                                                                          @Override
-                                                                          public void accept(final PreparedStatement preparedStatement) throws SQLException
-                                                                          {
-                                                                              preparedStatement.setString(1, network.getTableName());
-                                                                              preparedStatement.setString(2, name);
-                                                                              preparedStatement.setString(3, units);
-                                                                              preparedStatement.setString(4, dataType.toString());
-                                                                              preparedStatement.setString(5, description);
-                                                                              preparedStatement.setString(6, attributedType.toString());
-                                                                          }
-                                                                      },
-                                                                      new ResultSetFunction<Integer>()
-                                                                      {
-                                                                          @Override
-                                                                          public Integer apply(final ResultSet keySet) throws SQLException
-                                                                          {
-                                                                              return keySet.getInt(1);
-                                                                          }
-                                                                      });
+        // TODO connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS) isn't implemented by the current sqlite jdbc driver :(
+//        final int attributeDescriptionIdentifier = JdbcUtility.update(this.databaseConnection,
+//                                                                      insert,
+//                                                                      new PreparedStatementConsumer()
+//                                                                      {
+//                                                                          @Override
+//                                                                          public void accept(final PreparedStatement preparedStatement) throws SQLException
+//                                                                          {
+//                                                                              preparedStatement.setString(1, network.getTableName());
+//                                                                              preparedStatement.setString(2, name);
+//                                                                              preparedStatement.setString(3, units);
+//                                                                              preparedStatement.setString(4, dataType.toString());
+//                                                                              preparedStatement.setString(5, description);
+//                                                                              preparedStatement.setString(6, attributedType.toString());
+//                                                                          }
+//                                                                      },
+//                                                                      new ResultSetFunction<Integer>()
+//                                                                      {
+//                                                                          @Override
+//                                                                          public Integer apply(final ResultSet keySet) throws SQLException
+//                                                                          {
+//                                                                              return keySet.getInt(1);
+//                                                                          }
+//                                                                      });
+
+        JdbcUtility.update(this.databaseConnection,
+                           insert,
+                           new PreparedStatementConsumer()
+                           {
+                               @Override
+                               public void accept(final PreparedStatement preparedStatement) throws SQLException
+                               {
+                                   preparedStatement.setString(1, network.getTableName());
+                                   preparedStatement.setString(2, name);
+                                   preparedStatement.setString(3, units);
+                                   preparedStatement.setString(4, dataType.toString());
+                                   preparedStatement.setString(5, description);
+                                   preparedStatement.setString(6, attributedType.toString());
+                               }
+                           });
 
         final String alter = String.format("ALTER TABLE %s ADD COLUMN %s %s DEFAULT NULL;",
                                            tableName,
@@ -989,13 +1028,15 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         this.databaseConnection.commit();
 
-        return new AttributeDescription(attributeDescriptionIdentifier,
-                                        network.getTableName(),
-                                        name,
-                                        units,
-                                        dataType,
-                                        description,
-                                        attributedType);
+//        return new AttributeDescription(attributeDescriptionIdentifier,
+//                                        network.getTableName(),
+//                                        name,
+//                                        units,
+//                                        dataType,
+//                                        description,
+//                                        attributedType);
+
+        return this.getAttributeDescription(network, name, attributedType);
     }
 
     /**

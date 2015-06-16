@@ -374,68 +374,69 @@ public class JdbcUtility
      * @throws SQLException
      *             if there is a database error
      */
-    public static <T> T update(final Connection                databaseConnection,
-                               final String                    sql,
-                               final PreparedStatementConsumer parameterSetter,
-                               final ResultSetFunction<T>      keysMapper) throws SQLException
-    {
-        if(databaseConnection == null)
-        {
-            throw new IllegalArgumentException("Database connection may not be null");
-        }
-
-        if(sql == null || sql.isEmpty())
-        {
-            throw new IllegalArgumentException("Query statement may not be null or empty");
-        }
-
-        if(keysMapper == null)
-        {
-            throw new IllegalArgumentException("Key mapping callback may not be null");
-        }
-
-        final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-
-        try
-        {
-            if(parameterSetter != null)
-            {
-                parameterSetter.accept(preparedStatement);
-            }
-
-            preparedStatement.executeUpdate();
-
-            final ResultSet resultKeys = preparedStatement.getGeneratedKeys();
-
-            try
-            {
-                return keysMapper.apply(resultKeys);
-            }
-            finally
-            {
-                resultKeys.close();
-            }
-        }
-        catch(final SQLException ex)
-        {
-            databaseConnection.rollback();
-            throw ex;
-        }
-        catch(final RuntimeException ex)
-        {
-            databaseConnection.rollback();
-            throw ex;
-        }
-        catch(final Throwable th)
-        {
-            databaseConnection.rollback();
-            throw new RuntimeException(th);
-        }
-        finally
-        {
-            preparedStatement.close();
-        }
-    }
+    // TODO connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS) isn't implemented by the current sqlite jdbc driver :(
+//    public static <T> T update(final Connection                databaseConnection,
+//                               final String                    sql,
+//                               final PreparedStatementConsumer parameterSetter,
+//                               final ResultSetFunction<T>      keysMapper) throws SQLException
+//    {
+//        if(databaseConnection == null)
+//        {
+//            throw new IllegalArgumentException("Database connection may not be null");
+//        }
+//
+//        if(sql == null || sql.isEmpty())
+//        {
+//            throw new IllegalArgumentException("Query statement may not be null or empty");
+//        }
+//
+//        if(keysMapper == null)
+//        {
+//            throw new IllegalArgumentException("Key mapping callback may not be null");
+//        }
+//
+//        final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+//
+//        try
+//        {
+//            if(parameterSetter != null)
+//            {
+//                parameterSetter.accept(preparedStatement);
+//            }
+//
+//            preparedStatement.executeUpdate();
+//
+//            final ResultSet resultKeys = preparedStatement.getGeneratedKeys();
+//
+//            try
+//            {
+//                return keysMapper.apply(resultKeys);
+//            }
+//            finally
+//            {
+//                resultKeys.close();
+//            }
+//        }
+//        catch(final SQLException ex)
+//        {
+//            databaseConnection.rollback();
+//            throw ex;
+//        }
+//        catch(final RuntimeException ex)
+//        {
+//            databaseConnection.rollback();
+//            throw ex;
+//        }
+//        catch(final Throwable th)
+//        {
+//            databaseConnection.rollback();
+//            throw new RuntimeException(th);
+//        }
+//        finally
+//        {
+//            preparedStatement.close();
+//        }
+//    }
 
     /**
      * Applies database updates.  {@link PreparedStatement#executeUpdate()} is

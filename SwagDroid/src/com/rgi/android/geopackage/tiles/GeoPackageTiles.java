@@ -503,35 +503,57 @@ public class GeoPackageTiles
                                                    "tile_row",
                                                    "tile_data");
 
-        final int tileIdentifier = JdbcUtility.update(this.databaseConnection,
-                                                      insertTileSql,
-                                                      new PreparedStatementConsumer()
-                                                      {
-                                                          @Override
-                                                          public void accept(final PreparedStatement preparedStatement) throws SQLException
-                                                          {
-                                                              preparedStatement.setInt  (1, tileMatrix.getZoomLevel());
-                                                                             preparedStatement.setInt  (2, column);
-                                                                             preparedStatement.setInt  (3, row);
-                                                                             preparedStatement.setBytes(4, imageData);  // .setBlob() didn't work as advertised in the sqlite-jdbc driver.  not sure about sqldroid
-                                                          }
-                                                      },
-                                                      new ResultSetFunction<Integer>()
-                                                      {
-                                                          @Override
-                                                          public Integer apply(final ResultSet resultSet) throws SQLException
-                                                          {
-                                                              return resultSet.getInt(1);    // tile identifier
-                                                          }
-                                                      });
+        // TODO connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS) isn't implemented by the current sqlite jdbc driver :(
+//        final int tileIdentifier = JdbcUtility.update(this.databaseConnection,
+//                                                      insertTileSql,
+//                                                      new PreparedStatementConsumer()
+//                                                      {
+//                                                          @Override
+//                                                          public void accept(final PreparedStatement preparedStatement) throws SQLException
+//                                                          {
+//                                                              preparedStatement.setInt  (1, tileMatrix.getZoomLevel());
+//                                                                             preparedStatement.setInt  (2, column);
+//                                                                             preparedStatement.setInt  (3, row);
+//                                                                             preparedStatement.setBytes(4, imageData);  // .setBlob() didn't work as advertised in the sqlite-jdbc driver.  not sure about sqldroid
+//                                                          }
+//                                                      },
+//                                                      new ResultSetFunction<Integer>()
+//                                                      {
+//                                                          @Override
+//                                                          public Integer apply(final ResultSet resultSet) throws SQLException
+//                                                          {
+//                                                              return resultSet.getInt(1);    // tile identifier
+//                                                          }
+//                                                      });
+//
+//        this.databaseConnection.commit();
+//
+//        return new Tile(tileIdentifier,
+//                        tileMatrix.getZoomLevel(),
+//                        column,
+//                        row,
+//                        imageData);
+
+        JdbcUtility.update(this.databaseConnection,
+                           insertTileSql,
+                           new PreparedStatementConsumer()
+                           {
+                               @Override
+                               public void accept(final PreparedStatement preparedStatement) throws SQLException
+                               {
+                                   preparedStatement.setInt  (1, tileMatrix.getZoomLevel());
+                                   preparedStatement.setInt  (2, column);
+                                   preparedStatement.setInt  (3, row);
+                                   preparedStatement.setBytes(4, imageData);  // .setBlob() didn't work as advertised in the sqlite-jdbc driver.  not sure about sqldroid
+                               }
+                           });
 
         this.databaseConnection.commit();
 
-        return new Tile(tileIdentifier,
-                        tileMatrix.getZoomLevel(),
-                        column,
-                        row,
-                        imageData);
+        return this.getTile(tileSet,
+                            column,
+                            row,
+                            tileMatrix.getZoomLevel());
     }
 
     /**
