@@ -118,7 +118,7 @@ public class GeoPackageTiles
 
         if(boundingBox == null)
         {
-            throw new IllegalArgumentException("Bounding box cannot be mull.");
+            throw new IllegalArgumentException("Bounding box cannot be null.");
         }
 
         final TileSet existingContent = this.getTileSet(tableName);
@@ -370,16 +370,20 @@ public class GeoPackageTiles
             throw new IllegalArgumentException("Cannot add a tile matrix to a tile set with no tile matrix set.");  // TODO do we need to expose addTileMatrixSet() to help avoid ever getting here? a tile matrix set is created automatically by this API on tile set creation, and the verifier insures that there's one for every tile set.
         }
 
-        //final SpatialReferenceSystem srs = this.core.getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
+//        final SpatialReferenceSystem srs = this.core.getSpatialReferenceSystem(tileSet.getSpatialReferenceSystemIdentifier());
+//
+//        int precision = CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId()).getPrecision();
+        // TODO is there another way we can get the precision ? above causes runtime error for non-supported crs
+        final int precision = 7;
 
-        final int precision = 7; //CrsProfileFactory.create(srs.getOrganization(), srs.getOrganizationSrsId()).getPrecision();   // TODO is there another way we can get the precision ?
-
+        //should not be used. if its smaller we are ok.
         if(!compare(matrixWidth * tileWidth * pixelXSize,
                     tileMatrixSet.getBoundingBox().getWidth(),
                     precision))
         {
             throw new IllegalArgumentException("The geographic width of the tile matrix [matrix width * tile width (pixels) * pixel x size (srs units per pixel)] differs from the minimum bounds for this tile set specified by the tile matrix set");
         }
+
 
         if(!compare(matrixHeight * tileHeight * pixelYSize,
                     tileMatrixSet.getBoundingBox().getHeight(),

@@ -109,6 +109,11 @@ public class DatabaseUtility
     public static boolean tableOrViewExists(final Connection connection, final String name) throws SQLException
     {
         DatabaseUtility.verify(connection);
+        //if name is null or empty, throw illegal argument exception
+        if(name == null || name.isEmpty())
+        {
+        	throw new IllegalArgumentException("Table Name cannot be Null or Empty.");
+        }
 
         final int count = JdbcUtility.selectOne(connection,
                                                 "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;",
@@ -369,11 +374,11 @@ public class DatabaseUtility
      */
     public static Double parseSQLDouble(final Object o)
     {
-        Double value = null;
+        final Double value = null;
         if(o != null)
         {
             //TODO: get type before assuming float.
-            value = ((Float)o).doubleValue();
+            return ((Float)o).doubleValue();
         }
         return value;
     }

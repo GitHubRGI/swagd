@@ -97,7 +97,10 @@ public class DatabaseUtility
     public static boolean tableOrViewExists(final Connection connection, final String name) throws SQLException
     {
         DatabaseUtility.verify(connection);
-
+        if(name == null || name.isEmpty())
+        {
+        	throw new IllegalArgumentException("TableName cannot be null or empty");
+        }
         return JdbcUtility.selectOne(connection,
                                      "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;",
                                      preparedStatement -> preparedStatement.setString(1, name),

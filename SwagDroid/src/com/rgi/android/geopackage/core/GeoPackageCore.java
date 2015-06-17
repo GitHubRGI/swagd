@@ -558,10 +558,10 @@ public class GeoPackageCore
                                                                             resultSet.getString(2),                                                  // identifier
                                                                             resultSet.getString(3),                                                  // description
                                                                             resultSet.getString(4),                                                  // last change
-                                                                            new BoundingBox(DatabaseUtility.parseSQLDouble(resultSet.getObject(5)),  // min x
-                                                                                            DatabaseUtility.parseSQLDouble(resultSet.getObject(6)),  // min y
-                                                                                            DatabaseUtility.parseSQLDouble(resultSet.getObject(7)),  // max x
-                                                                                            DatabaseUtility.parseSQLDouble(resultSet.getObject(8))), // max y
+                                                                            new BoundingBox(resultSet.getDouble(5),  // min x
+                                                                                            resultSet.getDouble(6),  // min y
+                                                                                            resultSet.getDouble(7),  // max x
+                                                                                            resultSet.getDouble(8)), // max y
                                                                             (Integer)resultSet.getObject(9));                                        // srs id
                                            }
                                        });

@@ -1358,8 +1358,6 @@ public class GeoPackageTilesAPITest
             final int matrixWidth  = 2;
             final int tileHeight   = 256;
             final int tileWidth    = 256;
-
-
             final TileMatrix matrixSet = gpkg.tiles().addTileMatrix(tileSet,
                                                                     1,
                                                                     matrixWidth,

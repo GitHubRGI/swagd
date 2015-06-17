@@ -263,7 +263,7 @@ public class DatabaseUtilityTest
      * @throws Exception
      *             throws when an Exception occurs
      */
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void databaseUtilityTableorViewExists3() throws Exception
     {
         final File testFile = TestUtility.getRandomFile(3);
@@ -272,8 +272,8 @@ public class DatabaseUtilityTest
 
         try
         {
-            final boolean tableFound = DatabaseUtility.tableOrViewExists(con, null);
-            assertTrue("The Database BoundsUtility method table or view exists method returned true when it should have returned false.", !tableFound);
+            DatabaseUtility.tableOrViewExists(con, null);
+            fail("DatabaseUtility should have thrown an IllegalArgumentException when table name is null or empty.");
         }
         finally
         {
