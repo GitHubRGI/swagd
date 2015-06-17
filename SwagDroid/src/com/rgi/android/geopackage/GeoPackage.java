@@ -314,10 +314,11 @@ public class GeoPackage implements Closeable
      * @return Returns the application id of the SQLite database.  For a GeoPackage, by its standard, this must be 0x47503130 ("GP10" in ASCII)
      * @throws SQLException Throws if there is an SQL error
      */
-    public int getApplicationId() throws SQLException
-    {
-        return DatabaseUtility.getApplicationId(this.databaseConnection);
-    }
+    // TODO The current version of SQLite being used doesn't support app id
+//    public int getApplicationId() throws SQLException
+//    {
+//        return DatabaseUtility.getApplicationId(this.databaseConnection);
+//    }
 
     /**
      * Closes the connection to the underlying SQLite database file
