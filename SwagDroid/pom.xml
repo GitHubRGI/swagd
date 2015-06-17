@@ -156,7 +156,7 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
-					<finalName>SwagDroidLib</finalName>
+					<finalName>SwagDroid</finalName>
 				</configuration>
 			</plugin>
 
