@@ -181,6 +181,7 @@ public class DatabaseUtilityTest
 
                 try
                 {
+                    fkPragma.first();
                     final int on = fkPragma.getInt("foreign_keys");
                     assertTrue("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to on when given the parameter true.", on == 1);
                 }

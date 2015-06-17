@@ -209,24 +209,7 @@ public class GeoPackage implements Closeable
             throw new IOException(ex);  // TODO Temporary
         }
 
-        try
-        {
-            this.databaseConnection = DriverManager.getConnection("jdbc:sqlite:" + file.getPath()); // Initialize the database connection
-        }
-        catch(final Throwable th)
-        {
-            Throwable cause = th;
-            while(cause != null && cause.getCause() != null)
-            {
-                cause = th.getCause();
-            }
-
-            System.err.println("***************************************************");
-            cause.printStackTrace();
-            System.err.println("***************************************************");
-
-            throw new SQLException(cause.getMessage() + ":(");
-        }
+        this.databaseConnection = DriverManager.getConnection("jdbc:sqlite:" + file.getPath()); // Initialize the database connection
 
         try
         {
@@ -234,8 +217,10 @@ public class GeoPackage implements Closeable
             DatabaseUtility.setPragmaJournalModeMemory(this.databaseConnection);
             DatabaseUtility.setPragmaSynchronousOff(this.databaseConnection);
 
-            // this was moved below setting the pragmas because is starts a transaction and causes setPragmaSynchronousOff to throw an exception
+            // This was moved below setting the pragmas because it starts a transaction and causes setPragmaSynchronousOff to throw an exception
             this.databaseConnection.setAutoCommit(false);
+
+            this.databaseConnection.commit();
 
             this.core       = new GeoPackageCore      (this.databaseConnection, isNewFile);
             this.features   = new GeoPackageFeatures  (this.databaseConnection, this.core);

@@ -251,7 +251,8 @@ public class GeoPackageCoreAPITest
                     assertTrue(String.format("The method getSqliteVersion() did not detect the same Version expected. Expected: %s   Actual: %s",
                                              this.sqliteVersionToString(randomInteger),
                                              sqliteVersionChanged),
-                              sqliteVersionChanged.equals(this.sqliteVersionToString(randomInteger)));
+                              sqliteVersionChanged.toString()
+                                                  .equals(this.sqliteVersionToString(randomInteger)));
                 }
                 finally
                 {
