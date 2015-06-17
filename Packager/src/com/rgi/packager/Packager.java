@@ -61,7 +61,6 @@ public class Packager
 
         this.tileStoreReader = tileStoreReader;
         this.tileStoreWriter = tileStoreWriter;
-        cancel = false;
     }
 
     /**
@@ -108,6 +107,6 @@ public class Packager
      */
     public static void cancel()
     {
-    	cancel = true;
+    	Packager.cancel = true;
     }
 }
