@@ -165,7 +165,12 @@ public class GeoPackageExtensions
             return null;
         }
 
-        final String extensionQuery = String.format("SELECT %s, %s FROM %s WHERE %s IS ? AND %s IS ? AND %s IS ? LIMIT 1;",   // 'IS' instead of '=' because the values could be null
+        if(extensionName == null)
+        {
+            throw new IllegalArgumentException("Extension name may not be null");
+        }
+
+        final String extensionQuery = String.format("SELECT %s, %s FROM %s WHERE %s IS ? AND %s IS ? AND %s = ? LIMIT 1;",   // 'IS' instead of '=' because the values could be null
                                                     "definition",
                                                     "scope",
                                                     GeoPackageExtensions.ExtensionsTableName,
@@ -180,9 +185,9 @@ public class GeoPackageExtensions
                                          @Override
                                          public void accept(final PreparedStatement preparedStatement) throws SQLException
                                          {
-                                             preparedStatement.setString(1, tableName     == null ? "NULL" : tableName);
-                                             preparedStatement.setString(2, columnName    == null ? "NULL" : columnName);
-                                             preparedStatement.setString(3, extensionName == null ? "NULL" : extensionName);
+                                             preparedStatement.setString(1, tableName  == null ? "NULL" : tableName);
+                                             preparedStatement.setString(2, columnName == null ? "NULL" : columnName);
+                                             preparedStatement.setString(3, extensionName);
                                          }
                                      },
                                      new ResultSetFunction<Extension>()
