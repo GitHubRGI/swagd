@@ -75,11 +75,10 @@ public class GeoPackageExtensionsAPITest
         {
             final String extensionName = "something_extension";
 
-            final Extension expectedExtension = gpkg.extensions().addExtension(null, null, extensionName, "definition", Scope.ReadWrite); //this works fine
+            final Extension expectedExtension = gpkg.extensions().addExtension(null, null, extensionName, "definition", Scope.ReadWrite); // This works fine
+            final Extension returnedExtension = gpkg.extensions().getExtension(null, null, extensionName);
 
-            final Extension returnedExtension = gpkg.extensions().getExtension(null, null, extensionName); //this does not
-
-
+            assertTrue("The GeoPackageExtensions did not return the extension expected", returnedExtension != null);
 
             assertTrue(String.format("The GeoPackageExtensions did not return the extension expected. Expected: %s.\nActual: %s.",
                                      String.format("TableName: %s, Column Name: %s, extension name: %s definition: %s, scope: %s",
@@ -126,6 +125,8 @@ public class GeoPackageExtensionsAPITest
 
             final Extension expectedExtension = gpkg.extensions().addExtension(tableName, columnName, extensionName, "definition", Scope.ReadWrite);
             final Extension returnedExtension = gpkg.extensions().getExtension(tableName, columnName, extensionName);
+
+            assertTrue("The GeoPackageExtensions did not return the extension expected", returnedExtension != null);
 
             assertTrue(String.format("Did not return the expected Extension.\nExpected: table_name: %s, column_name: %s, extension_name: %s, definition: %s, Scope: %s."
                             + " \nActual: table_name: %s, column_name: %s, extension_name: %s, definition: %s, Scope: %s. ",
