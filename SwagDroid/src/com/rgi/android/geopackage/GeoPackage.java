@@ -213,14 +213,12 @@ public class GeoPackage implements Closeable
 
         try
         {
-            DatabaseUtility.setPragmaForeignKeys(this.databaseConnection, true);
+            DatabaseUtility.setPragmaForeignKeys      (this.databaseConnection, true);
             DatabaseUtility.setPragmaJournalModeMemory(this.databaseConnection);
-            DatabaseUtility.setPragmaSynchronousOff(this.databaseConnection);
+            DatabaseUtility.setPragmaSynchronousOff   (this.databaseConnection);
 
             // This was moved below setting the pragmas because it starts a transaction and causes setPragmaSynchronousOff to throw an exception
             this.databaseConnection.setAutoCommit(false);
-
-            this.databaseConnection.commit();
 
             this.core       = new GeoPackageCore      (this.databaseConnection, isNewFile);
             this.features   = new GeoPackageFeatures  (this.databaseConnection, this.core);
@@ -316,10 +314,11 @@ public class GeoPackage implements Closeable
      * @return Returns the application id of the SQLite database.  For a GeoPackage, by its standard, this must be 0x47503130 ("GP10" in ASCII)
      * @throws SQLException Throws if there is an SQL error
      */
-    public int getApplicationId() throws SQLException
-    {
-        return DatabaseUtility.getApplicationId(this.databaseConnection);
-    }
+    // TODO The current version of SQLite being used doesn't support app id
+//    public int getApplicationId() throws SQLException
+//    {
+//        return DatabaseUtility.getApplicationId(this.databaseConnection);
+//    }
 
     /**
      * Closes the connection to the underlying SQLite database file
@@ -339,6 +338,17 @@ public class GeoPackage implements Closeable
                 this.databaseConnection.setAutoCommit(true); // AutoCommit is set to true to avoid a sql lock error when closing the db, as explained here: https://groups.google.com/forum/#!topic/sqldroid/9lkWI9nJj3g
 
                 this.databaseConnection.close();
+
+                // The current JDBC driver creates a journal automatically when auto commit is set to 'false', and that file never seems to go away. Delete it.  We should be using the 'memory' journal mode anyway.
+                final File journalFile = new File(this.file.getAbsolutePath() + "-journal");
+
+                if(journalFile.exists())
+                {
+                    if(!journalFile.delete())
+                    {
+                        System.err.printf("Could not delete: %s\n", journalFile.getAbsolutePath());
+                    }
+                }
             }
         }
         catch(final SQLException ex)

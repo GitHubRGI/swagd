@@ -165,12 +165,19 @@ public class GeoPackageExtensions
             return null;
         }
 
-        final String extensionQuery = String.format("SELECT %s, %s FROM %s WHERE %s IS ? AND %s IS ? AND %s IS ? LIMIT 1;",   // 'IS' instead of '=' because the values could be null
+        if(extensionName == null || extensionName.isEmpty())
+        {
+            throw new IllegalArgumentException("Extension name may not be null or empty");
+        }
+
+        final String extensionQuery = String.format("SELECT %s, %s FROM %s WHERE %s IS %s AND %s IS %s AND %s = ? LIMIT 1;",   // 'IS' instead of '=' because the values could be null
                                                     "definition",
                                                     "scope",
                                                     GeoPackageExtensions.ExtensionsTableName,
                                                     "table_name",
+                                                    tableName == null ? "NULL" : "?",
                                                     "column_name",
+                                                    columnName == null ? "NULL" : "?",
                                                     "extension_name");
 
         return JdbcUtility.selectOne(this.databaseConnection,
@@ -180,9 +187,19 @@ public class GeoPackageExtensions
                                          @Override
                                          public void accept(final PreparedStatement preparedStatement) throws SQLException
                                          {
-                                             preparedStatement.setString(1, tableName     == null ? "NULL" : tableName);
-                                             preparedStatement.setString(2, columnName    == null ? "NULL" : columnName);
-                                             preparedStatement.setString(3, extensionName == null ? "NULL" : extensionName);
+                                             int parameterIndex = 1;
+
+                                             if(tableName != null)
+                                             {
+                                                 preparedStatement.setString(parameterIndex++, tableName);
+                                             }
+
+                                             if(columnName != null)
+                                             {
+                                                 preparedStatement.setString(parameterIndex++, columnName);
+                                             }
+
+                                             preparedStatement.setString(parameterIndex++, extensionName);
                                          }
                                      },
                                      new ResultSetFunction<Extension>()
