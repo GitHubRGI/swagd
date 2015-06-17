@@ -365,21 +365,4 @@ public class DatabaseUtility
             throw new IllegalArgumentException("The connection cannot be closed.");
         }
     }
-
-    /**
-     * Parses result of Sql.getObject() into a Double. this is used in conjunction with Sqldroid,
-     * which returns a float if a double is put in.
-     * @param o - object from sql call
-     * @return null, or double value of the 'Float' result
-     */
-    public static Double parseSQLDouble(final Object o)
-    {
-        final Double value = null;
-        if(o != null)
-        {
-            //TODO: get type before assuming float.
-            return ((Float)o).doubleValue();
-        }
-        return value;
-    }
 }
