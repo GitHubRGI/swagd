@@ -23,7 +23,78 @@
 
 package com.rgi.suite;
 
+import org.kohsuke.args4j.CmdLineParser;
+
+import com.rgi.suite.cli.Headless;
+
 @SuppressWarnings("javadoc")
 public class HeadlessTest {
     // TODO
+
+
+	/**
+	 * invalid arguments
+	 */
+	public void invalidTilingAndPackaging() throws Exception{
+		final Headless opts = new Headless();
+		final CmdLineParser parser = new CmdLineParser(opts);
+	}
+
+	public void invalidInputsGibberish
+	public void invalidInputsTilingInputFile
+	public void invalidOuputSRS
+	public void invalidOutputSRSGPKG
+	public void invalidInputSRS
+	public void invalidTileWidthMax
+	public void invalidTileWidthMin
+	public void invalidTileHeightMax
+	public void invalidTileHeightMin
+	public void invalidImageFormat
+	public void invalidCompressionType
+	public void invalidImageQualityHigh
+	public void invalidImageQualityLow
+	/**
+	 * missing arguments
+	 */
+	public void missingRequiredInputsOperation
+	public void missingRequiredInputsInputFile
+	public void missingRequiredInputsOutputFile
+	public void missingRequiredInputsInputSRS
+	public void missingRequiredInputsOutputSRS
+	public void missingRequiredInputsTileSetNameGPKG
+	public void missingTilesetNameTMS
+	public void missingImageFormat
+	public void missingCompressionType
+	public void missingCompressionQuality
+
+	/**
+	 * check case/format of inputs
+	 */
+	public void malformedCaseInputPath
+	public void malformedCaseOutputPath
+	public void malformedInputHomeDir
+	public void malformedInputImageFormatCase
+	public void malformedInputCompressionTypeCase
+	public void malformedInputInputPathCurrentDir
+	/**
+	 * valid arguments/extras
+	 */
+	public void inputValidTilingTMS
+	public void inputValidTilingGPKG
+	public void inputValidTMStoGPKG
+	public void inputValidGPKGtoTMS
+	/**
+	 * TMS data set properly
+	 */
+	public void tmsOuputSRS
+	public void tmsTileSize
+	public void tmsImageSettings
+	/**
+	 * gpkg data set properly
+	 */
+	public void geopackageOutputSRS
+	public void geopackageTileSize
+	public void geopackageImageSettings
+	public void geoPackageTilesetName
+	public void geoPackageTilesetDescription
 }
