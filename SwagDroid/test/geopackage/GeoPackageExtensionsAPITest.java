@@ -78,11 +78,8 @@ public class GeoPackageExtensionsAPITest
         {
             final String extensionName = "something_extension";
 
-            final Extension expectedExtension = gpkg.extensions().addExtension(null, null, extensionName, "definition", Scope.ReadWrite); //this works fine
-
-            final Extension returnedExtension = gpkg.extensions().getExtension(null, null, extensionName); //this does not
-
-
+            final Extension expectedExtension = gpkg.extensions().addExtension(null, null, extensionName, "definition", Scope.ReadWrite); // This works fine
+            final Extension returnedExtension = gpkg.extensions().getExtension(null, null, extensionName);                                // This does not
 
             assertTrue(String.format("The GeoPackageExtensions did not return the extension expected. Expected: %s.\nActual: %s.",
                                      String.format("TableName: %s, Column Name: %s, extension name: %s definition: %s, scope: %s",

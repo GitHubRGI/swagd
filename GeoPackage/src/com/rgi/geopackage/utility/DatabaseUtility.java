@@ -28,14 +28,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import com.rgi.common.util.jdbc.JdbcUtility;
 
 /**
  * @author Luke Lambert
@@ -51,7 +50,7 @@ public class DatabaseUtility
      *             throws when the FileDoes not exist or unable to seek in the
      *             File to read the SQLite Version
      */
-    public static String getSqliteVersion(final File sqliteFile) throws IOException
+    public static DatabaseVersion getSqliteVersion(final File sqliteFile) throws IOException
     {
         if(sqliteFile == null)
         {
@@ -80,10 +79,7 @@ public class DatabaseUtility
             final int minor    = (version - (major*1000000))/1000;
             final int revision = version - ((major*1000000) + (minor*1000));
 
-            return String.format("%d.%d.%d",
-                                 major,
-                                 minor,
-                                 revision);
+            return new DatabaseVersion(major, minor, revision);
         }
     }
 
@@ -102,12 +98,10 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        try(PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;"))
-        {
-            preparedStatement.setString(1, name);
-
-            return preparedStatement.executeQuery().getInt(1) > 0;
-        }
+        return JdbcUtility.selectOne(connection,
+                                     "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;",
+                                     preparedStatement -> preparedStatement.setString(1, name),
+                                     resultSet -> resultSet.getInt(1)) > 0;
     }
 
     /**
@@ -127,17 +121,17 @@ public class DatabaseUtility
 
         final Set<String> uniqueNames = new HashSet<>(Arrays.asList(names));
 
-        try(PreparedStatement preparedStatement = connection.prepareStatement(String.format("SELECT COUNT(*) AS count FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name IN (%s);",
-                                                                                            String.join(", ", Collections.nCopies(uniqueNames.size(), "?")))))
-        {
-            int index = 1;
-            for(final String name : uniqueNames)
-            {
-                preparedStatement.setString(index++, name);
-            }
+        return JdbcUtility.selectOne(connection,
+                                     String.format("SELECT COUNT(*) AS count FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name IN (%s);",
+                                                   String.join(", ", Collections.nCopies(uniqueNames.size(), "?"))),
+                                     preparedStatement -> { int index = 1;
 
-            return preparedStatement.executeQuery().getInt("count") == uniqueNames.size();
-        }
+                                                            for(final String name : uniqueNames)
+                                                            {
+                                                                preparedStatement.setString(index++, name);
+                                                            }
+                                                          },
+                                     resultSet -> resultSet.getInt("count")) == uniqueNames.size();
     }
 
     /**
@@ -152,11 +146,7 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        try(Statement statement = connection.createStatement())
-        {
-            statement.execute(String.format("PRAGMA application_id = %d;",
-                                            applicationId));
-        }
+        JdbcUtility.update(connection, String.format("PRAGMA application_id = %d;", applicationId));
     }
 
     /**
@@ -170,14 +160,10 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        try(Statement statement = connection.createStatement())
-        {
-            final String sql = "PRAGMA application_id;";
-            try(ResultSet rs = statement.executeQuery(sql))
-            {
-                return rs.getInt("application_id");
-            }
-        }
+        return JdbcUtility.selectOne(connection,
+                                     "PRAGMA application_id;",
+                                     null,
+                                     resultSet -> resultSet.getInt("application_id"));
     }
 
     /**
@@ -193,11 +179,7 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        try(Statement statement = connection.createStatement())
-        {
-            statement.execute(String.format("PRAGMA foreign_keys = %d;",
-                                            (state ? 1 : 0)));
-        }
+        JdbcUtility.update(connection, String.format("PRAGMA foreign_keys = %d;", (state ? 1 : 0)));
     }
 
     /**
@@ -210,10 +192,7 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        try(Statement statement = connection.createStatement())
-        {
-            statement.execute("PRAGMA journal_mode = MEMORY;");
-        }
+        JdbcUtility.update(connection, "PRAGMA journal_mode = MEMORY;");
     }
 
     /**
@@ -225,10 +204,8 @@ public class DatabaseUtility
     public static void setPragmaSynchronousOff(final Connection connection) throws SQLException
     {
         DatabaseUtility.verify(connection);
-        try(Statement statement = connection.createStatement())
-        {
-            statement.execute("PRAGMA synchronous = OFF;");
-        }
+
+        JdbcUtility.update(connection, "PRAGMA synchronous = OFF;");
     }
 
     /**
@@ -255,31 +232,17 @@ public class DatabaseUtility
                                                               "LIMIT 1",
                                                               columnName,
                                                               tableName);
-
-        try(PreparedStatement preparedStatement = connection.prepareStatement(smallestNonexistentValue))
-        {
-            try(ResultSet result = preparedStatement.executeQuery())
-            {
-                if(result.isBeforeFirst())
-                {
-                    return (T)result.getObject(1);
-                }
-
-                return null;
-            }
-        }
+        return JdbcUtility.selectOne(connection,
+                                     smallestNonexistentValue,
+                                     null,
+                                     resultSet -> (T)resultSet.getObject(1));
     }
 
     private static void verify(final Connection connection) throws SQLException
     {
-        if(connection == null)
+        if(connection == null || connection.isClosed())
         {
-            throw new IllegalArgumentException("The connection cannot be null.");
-        }
-
-        if(connection.isClosed())
-        {
-            throw new IllegalArgumentException("The connection cannot be closed.");
+            throw new IllegalArgumentException("The connection cannot be null or closed.");
         }
     }
 }

@@ -384,7 +384,7 @@ public class GeoPackageSchema
 
             try
             {
-                if(result.isBeforeFirst())
+                if(result.first())
                 {
                     return new DataColumn(table.getTableName(),
                                           columnName,
@@ -466,7 +466,7 @@ public class GeoPackageSchema
 
             try
             {
-                if(result.isBeforeFirst())
+                if(result.first())
                 {
                     return new DataColumnConstraint(constraintName,
                                                     constraintType.toString(),

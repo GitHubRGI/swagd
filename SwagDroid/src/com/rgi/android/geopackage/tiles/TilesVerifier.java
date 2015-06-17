@@ -1755,7 +1755,7 @@ public class TilesVerifier extends Verifier
         {
             for(final String pyramidTable: this.allPyramidUserDataTables)
             {
-
+                // TODO these queries should be using COUNT()
                 final String tileRowMaxQuery = String.format("SELECT matrix_height as height, " +
                                                                      "zoom_level as zoom, "      +
                                                                      "table_name "               +

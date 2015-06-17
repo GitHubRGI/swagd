@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -75,8 +74,10 @@ public class GeoPackageSchemaAPITest
     public void addDataColumn() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
         final File testFile = TestUtility.getRandomFile(5);
+
         final String   columnName     = "columnName";
         final String   tableName      = "tableName";
+
         final GeoPackage gpkg = createGeoPackage(tableName, columnName, testFile);
 
         try
@@ -1415,38 +1416,39 @@ public class GeoPackageSchemaAPITest
 
         try
         {
-
            final Number  minimumNull            = null;
            final Boolean minimumIsInclusiveNull = null;
            final Number  maximumNull            = null;
            final Boolean maximumIsInclusiveNull = null;
            final String  descriptionNull        = null;
-           final String  valueNull        = null;
+           final String  valueNull              = null;
 
            final DataColumnConstraint  constraint1 = gpkg.schema().addDataColumnConstraint("name1",
-                                                                                     Type.Enum,
-                                                                                     "value1",
-                                                                                     minimumNull,
-                                                                                     minimumIsInclusiveNull,
-                                                                                     maximumNull,
-                                                                                     maximumIsInclusiveNull,
-                                                                                     descriptionNull);
+                                                                                           Type.Enum,
+                                                                                           "value1",
+                                                                                           minimumNull,
+                                                                                           minimumIsInclusiveNull,
+                                                                                           maximumNull,
+                                                                                           maximumIsInclusiveNull,
+                                                                                           descriptionNull);
+
            final DataColumnConstraint  constraint2 = gpkg.schema().addDataColumnConstraint("name2",
-                                                                                     Type.Glob,
-                                                                                     "value2",
-                                                                                     minimumNull,
-                                                                                     minimumIsInclusiveNull,
-                                                                                     maximumNull,
-                                                                                     maximumIsInclusiveNull,
-                                                                                     descriptionNull);
+                                                                                           Type.Glob,
+                                                                                           "value2",
+                                                                                           minimumNull,
+                                                                                           minimumIsInclusiveNull,
+                                                                                           maximumNull,
+                                                                                           maximumIsInclusiveNull,
+                                                                                           descriptionNull);
+
            final DataColumnConstraint  constraint3 = gpkg.schema().addDataColumnConstraint("name3",
-                                                                                     Type.Range,
-                                                                                     valueNull,
-                                                                                     0,
-                                                                                     true,
-                                                                                     20,
-                                                                                     false,
-                                                                                     "description");
+                                                                                           Type.Range,
+                                                                                           valueNull,
+                                                                                           0,
+                                                                                           true,
+                                                                                           20,
+                                                                                           false,
+                                                                                           "description");
 
            final Collection<DataColumnConstraint> expectedCollection = Arrays.asList(constraint1, constraint2, constraint3);
            final Collection<DataColumnConstraint> returnedCollection = gpkg.schema().getDataColumnConstraints();
@@ -1491,7 +1493,7 @@ public class GeoPackageSchemaAPITest
                                             tableName,
                                             columnName);
 
-        final Connection con = getConnection(testFile);
+        final Connection con = TestUtility.getConnection(testFile);
 
         try
         {
@@ -1509,13 +1511,6 @@ public class GeoPackageSchemaAPITest
         {
             con.close();
         }
-    }
-
-    private static Connection getConnection(final File testFile) throws ClassNotFoundException, SQLException
-    {
-        Class.forName("org.sqlite.JDBC");   // Register the driver
-
-        return DriverManager.getConnection("jdbc:sqlite:" + testFile.getPath()); // Initialize the database connection
     }
 
     private static boolean dataColumnConstraintsEqual(final DataColumnConstraint expected, final DataColumnConstraint returned)

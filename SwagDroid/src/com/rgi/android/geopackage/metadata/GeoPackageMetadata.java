@@ -401,7 +401,7 @@ public class GeoPackageMetadata
 
             try
             {
-                if(result.isBeforeFirst())
+                if(result.first())
                 {
                     return new Metadata(identifier,
                                         result.getString(1),  // scope
@@ -616,7 +616,7 @@ public class GeoPackageMetadata
 
             try
             {
-                if(result.isBeforeFirst())
+                if(result.first())
                 {
                     return new Metadata(result.getInt(1), // identifier
                                         scope,
@@ -687,7 +687,7 @@ public class GeoPackageMetadata
 
             try
             {
-                if(result.isBeforeFirst())
+                if(result.first())
                 {
                     return new MetadataReference(referenceScope,
                                                  tableName,

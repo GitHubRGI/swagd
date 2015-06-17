@@ -2562,6 +2562,7 @@ public class GeoPackageTilesAPITest
 
                 try
                 {
+                    tableName.first();
                     Assert.assertTrue("The GeoPackage did not enter the correct record into the gpkg_tile_matrix table", tableName.getString("table_name").equals("tileSetName"));
                 }
                 finally

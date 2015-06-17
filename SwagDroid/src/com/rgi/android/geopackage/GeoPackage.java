@@ -43,6 +43,7 @@ import com.rgi.android.geopackage.metadata.GeoPackageMetadata;
 import com.rgi.android.geopackage.schema.GeoPackageSchema;
 import com.rgi.android.geopackage.tiles.GeoPackageTiles;
 import com.rgi.android.geopackage.utility.DatabaseUtility;
+import com.rgi.android.geopackage.utility.DatabaseVersion;
 import com.rgi.android.geopackage.verification.ConformanceException;
 import com.rgi.android.geopackage.verification.Severity;
 import com.rgi.android.geopackage.verification.VerificationIssue;
@@ -186,7 +187,7 @@ public class GeoPackage implements Closeable
 
         if(openMode == OpenMode.Open && isNewFile)
         {
-           throw new FileNotFoundException(String.format("%s does not exist", file.getAbsolutePath()));
+            throw new FileNotFoundException(file.getAbsolutePath() + " does not exist");
         }
 
         this.file = file;
@@ -208,7 +209,24 @@ public class GeoPackage implements Closeable
             throw new IOException(ex);  // TODO Temporary
         }
 
-        this.databaseConnection = DriverManager.getConnection("jdbc:sqlite:" + file.getPath()); // Initialize the database connection
+        try
+        {
+            this.databaseConnection = DriverManager.getConnection("jdbc:sqlite:" + file.getPath()); // Initialize the database connection
+        }
+        catch(final Throwable th)
+        {
+            Throwable cause = th;
+            while(cause != null && cause.getCause() != null)
+            {
+                cause = th.getCause();
+            }
+
+            System.err.println("***************************************************");
+            cause.printStackTrace();
+            System.err.println("***************************************************");
+
+            throw new SQLException(cause.getMessage() + ":(");
+        }
 
         try
         {
@@ -302,7 +320,7 @@ public class GeoPackage implements Closeable
      *
      * @return the sqliteVersion
      */
-    public String getSqliteVersion()
+    public DatabaseVersion getSqliteVersion()
     {
         return this.sqliteVersion;
     }
@@ -518,7 +536,7 @@ public class GeoPackage implements Closeable
 
     private final File                 file;
     private final Connection           databaseConnection;
-    private final String               sqliteVersion;
+    private final DatabaseVersion      sqliteVersion;
     private final VerificationLevel    verificationLevel;
     private final GeoPackageCore       core;
     private final GeoPackageFeatures   features;

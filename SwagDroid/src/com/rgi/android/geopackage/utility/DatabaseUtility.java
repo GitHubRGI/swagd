@@ -35,7 +35,6 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
 
 import com.rgi.android.common.util.StringUtility;
@@ -57,7 +56,7 @@ public class DatabaseUtility
      *             throws when the FileDoes not exist or unable to seek in the
      *             File to read the SQLite Version
      */
-    public static String getSqliteVersion(final File sqliteFile) throws IOException
+    public static DatabaseVersion getSqliteVersion(final File sqliteFile) throws IOException
     {
         if(sqliteFile == null)
         {
@@ -88,11 +87,7 @@ public class DatabaseUtility
             final int minor    = (version - (major*1000000))/1000;
             final int revision = version - ((major*1000000) + (minor*1000));
 
-            return String.format(Locale.getDefault(),
-                                 "%d.%d.%d",
-                                 major,
-                                 minor,
-                                 revision);
+            return new DatabaseVersion(major, minor, revision);
         }
         finally
         {
@@ -164,7 +159,17 @@ public class DatabaseUtility
                 preparedStatement.setString(index++, name);
             }
 
-            return preparedStatement.executeQuery().getInt("count") == uniqueNames.size();
+            final ResultSet resultSet = preparedStatement.executeQuery();
+
+            try
+            {
+                resultSet.first();
+                return resultSet.getInt("count") == uniqueNames.size();
+            }
+            finally
+            {
+                resultSet.close();
+            }
         }
         finally
         {
@@ -184,23 +189,15 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        final Statement statement = connection.createStatement();
-
-        try
-        {
-            statement.execute(String.format("PRAGMA application_id = %d;",
-                                            applicationId));
-        }
-        finally
-        {
-            statement.close();
-        }
+        // Versions of SQLite older than 3.7.17 don't have the 'PRAGMA application_id' command :( ref -> http://www.geopackage.org/spec/#_footnoteref_3
+        JdbcUtility.update(connection, String.format("PRAGMA application_id = %d;", applicationId));
     }
 
     /**
      * @param connection
      *            connection to the database
-     * @return the application Id of the database
+     * @return the application Id of the database, or -1 if the database does
+     *            not contain one
      * @throws SQLException
      *             throws if various SQLExceptions occur
      */
@@ -208,27 +205,26 @@ public class DatabaseUtility
     {
         DatabaseUtility.verify(connection);
 
-        final Statement statement = connection.createStatement();
+        final String sql = "PRAGMA application_id;";
 
-        try
+        final Integer applicationId = JdbcUtility.selectOne(connection,
+                                                            sql,
+                                                            null,
+                                                            new ResultSetFunction<Integer>()
+                                                            {
+                                                               @Override
+                                                               public Integer apply(final ResultSet resultSet) throws SQLException
+                                                               {
+                                                                   return resultSet.getInt("application_id");
+                                                               }
+                                                            });
+
+        if(applicationId == null)
         {
-            final String sql = "PRAGMA application_id;";
-
-            final ResultSet rs = statement.executeQuery(sql);
-
-            try
-            {
-                return rs.getInt("application_id");
-            }
-            finally
-            {
-                rs.close();
-            }
+            throw new SQLException("Database contains no application identifier.");
         }
-        finally
-        {
-            statement.close();
-        }
+
+        return applicationId;
     }
 
     /**
@@ -373,7 +369,6 @@ public class DatabaseUtility
      */
     public static Double parseSQLDouble(final Object o)
     {
-
         Double value = null;
         if(o != null)
         {

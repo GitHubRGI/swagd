@@ -41,6 +41,7 @@ import org.robolectric.RobolectricTestRunner;
 import utility.TestUtility;
 
 import com.rgi.android.geopackage.utility.DatabaseUtility;
+import com.rgi.android.geopackage.utility.DatabaseVersion;
 
 /**
  * @author Jenifer Cochran
@@ -68,7 +69,7 @@ public class DatabaseUtilityTest
         try
         {
             final int appId = DatabaseUtility.getApplicationId(con);
-            assertTrue("DatabaseUtility did not return the expected application Id.",appId == 0);
+            assertTrue("DatabaseUtility did not return the expected application Id.", appId == 0);
         }
         finally
         {
@@ -76,8 +77,6 @@ public class DatabaseUtilityTest
             TestUtility.deleteFile(testFile);
         }
     }
-
-
 
     /**
      * Tests if the application Id can be set correctly through the
@@ -132,6 +131,7 @@ public class DatabaseUtilityTest
 
                 try
                 {
+                    fkPragma.first();
                     final int off = fkPragma.getInt("foreign_keys");
                     assertTrue("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to off when given the parameter false.", off == 0);
 
@@ -454,10 +454,11 @@ public class DatabaseUtilityTest
         try
         {
             this.addTable(con, "foo");
-            final String sqliteVersion =  DatabaseUtility.getSqliteVersion(testFile);
-            assertTrue(String.format("The SQLite Version was different from expected. Expected: %s, Actual: %s",
-                                     geopackageSqliteVersion, sqliteVersion),
-                       geopackageSqliteVersion.equals(sqliteVersion));
+            final DatabaseVersion sqliteVersion =  DatabaseUtility.getSqliteVersion(testFile);
+            assertTrue(String.format("The SQLite Version was different from expected. Expected: %d.x, Actual: %s",
+                                     geoPackageSqliteMajorVersion,
+                                     sqliteVersion.toString()),
+                       sqliteVersion.getMajor() == geoPackageSqliteMajorVersion);
         }
         finally
         {
@@ -513,6 +514,6 @@ public class DatabaseUtilityTest
      * The Sqlite version required for a GeoPackage shall contain SQLite 3
      * format
      */
-    private final static String geopackageSqliteVersion = "3.8.7";
+    private final static int geoPackageSqliteMajorVersion = 3;
 
 }

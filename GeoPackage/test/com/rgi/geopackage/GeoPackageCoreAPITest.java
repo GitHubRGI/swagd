@@ -45,6 +45,7 @@ import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.Content;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.TileSet;
+import com.rgi.geopackage.utility.DatabaseVersion;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.VerificationLevel;
 
@@ -199,15 +200,13 @@ public class GeoPackageCoreAPITest
 
        try(GeoPackage gpkg = new GeoPackage(testFile))
        {
-           // get the first number in the sqlite version and make sure it is a
-           // version 3
-           String sqliteVersion = gpkg.getSqliteVersion();
-                  sqliteVersion = sqliteVersion.substring(0, sqliteVersion.indexOf('.'));
+           // get the first number in the sqlite version and make sure it is a version 3
+           final DatabaseVersion sqliteVersion = gpkg.getSqliteVersion();
 
-           assertTrue(String.format("The GeoPackage Sqlite Version is incorrect."
-                                  + " Sqlite Version Id Expected:  %s"
-                                  + " SqliteVersion recieved: %s", geopackageSqliteVersion, sqliteVersion),
-                                           geopackageSqliteVersion.equals(sqliteVersion));
+           assertTrue(String.format("The GeoPackage Sqlite Version is incorrect. Sqlite Version Id Expected: %d.x SqliteVersion recieved: %s",
+                                    geoPackageSqliteMajorVersion,
+                                    sqliteVersion.toString()),
+                      sqliteVersion.getMajor() == geoPackageSqliteMajorVersion);
        }
        finally
        {
@@ -247,10 +246,13 @@ public class GeoPackageCoreAPITest
                try(GeoPackage gpkg2 = new GeoPackage(testFile, OpenMode.Open))
                {
                    gpkg2.getSqliteVersion();
-                   final String sqliteVersionChanged = gpkg2.getSqliteVersion();
+                   final DatabaseVersion sqliteVersionChanged = gpkg2.getSqliteVersion();
 
-                   assertTrue(String.format("The method getSqliteVersion() did not detect the same Version expected. Expected: %s   Actual: %s", this.sqliteVersionToString(randomInteger), sqliteVersionChanged),
-                                             sqliteVersionChanged.equals(this.sqliteVersionToString(randomInteger)));
+                   assertTrue(String.format("The method getSqliteVersion() did not detect the same Version expected. Expected: %s   Actual: %s",
+                                            this.sqliteVersionToString(randomInteger),
+                                            sqliteVersionChanged),
+                              sqliteVersionChanged.toString()
+                                                  .equals(this.sqliteVersionToString(randomInteger)));
                }
            }
        }
@@ -1680,7 +1682,7 @@ public class GeoPackageCoreAPITest
      * The Sqlite version required for a GeoPackage shall contain SQLite 3
      * format
      */
-    private final static String geopackageSqliteVersion = "3";
+    private final static int geoPackageSqliteMajorVersion = 3;
     /**
      * A GeoPackage SHALL contain 0x47503130 ("GP10" in ASCII) in the
      * application id field of the SQLite database header to indicate a

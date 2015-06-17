@@ -180,9 +180,9 @@ public class GeoPackageExtensions
                                          @Override
                                          public void accept(final PreparedStatement preparedStatement) throws SQLException
                                          {
-                                             preparedStatement.setString(1, tableName);
-                                             preparedStatement.setString(2, columnName);
-                                             preparedStatement.setString(3, extensionName);
+                                             preparedStatement.setString(1, tableName     == null ? "NULL" : tableName);
+                                             preparedStatement.setString(2, columnName    == null ? "NULL" : columnName);
+                                             preparedStatement.setString(3, extensionName == null ? "NULL" : extensionName);
                                          }
                                      },
                                      new ResultSetFunction<Extension>()

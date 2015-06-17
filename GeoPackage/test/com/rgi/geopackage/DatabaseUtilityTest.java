@@ -40,6 +40,7 @@ import java.util.Random;
 import org.junit.Test;
 
 import com.rgi.geopackage.utility.DatabaseUtility;
+import com.rgi.geopackage.utility.DatabaseVersion;
 
 /**
  * @author Jenifer Cochran
@@ -465,11 +466,11 @@ public class DatabaseUtilityTest
         try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
         {
             this.addTable(con, "foo");
-            final String foundSqliteVersion = DatabaseUtility.getSqliteVersion(testFile);
-            assertTrue(String.format("The SQLite Version was different from expected. Expected: %s, Actual: %s",
-                                     sqliteVersion,
+            final DatabaseVersion foundSqliteVersion = DatabaseUtility.getSqliteVersion(testFile);
+            assertTrue(String.format("The SQLite Version was different from expected. Expected: %s.x, Actual: %s",
+                                     sqliteMajorVersion,
                                      foundSqliteVersion),
-                       sqliteVersion.equals(foundSqliteVersion));
+                       foundSqliteVersion.getMajor() == sqliteMajorVersion);
         }
         finally
         {
@@ -547,5 +548,5 @@ public class DatabaseUtilityTest
         }
     }
 
-    private final static String sqliteVersion = "3.8.7";
+    private final static int sqliteMajorVersion = 3;
 }

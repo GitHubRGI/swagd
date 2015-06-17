@@ -1227,7 +1227,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
                 try
                 {
-                    if(!resultSet.isBeforeFirst())
+                    if(!resultSet.first())
                     {
                         throw new IllegalArgumentException("Node does not belong to the network table specified by the supplied attributes");
                     }
