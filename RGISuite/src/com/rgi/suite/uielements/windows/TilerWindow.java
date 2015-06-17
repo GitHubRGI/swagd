@@ -28,6 +28,7 @@ import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.io.File;
 import java.util.Collection;
+import java.util.concurrent.CancellationException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -329,26 +330,31 @@ public class TilerWindow extends NavigationWindow
 
         // This spawns a modal dialog and blocks this thread
         ProgressDialog.trackProgress(this,
-                                     this.processName() + "...",
-                                     taskMonitor -> { final File file = new File(this.inputFileName.getText());
+                this.processName() + "...",
+                taskMonitor -> { final File file = new File(this.inputFileName.getText());
 
-                                                      try(final TileStoreReader tileStoreReader = new RawImageTileReader(file, tileDimensions, noDataColor, crs))
-                                                      {
-                                                          try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
-                                                          {
-                                                              (new Packager(taskMonitor,
-                                                                            tileStoreReader,
-                                                                            tileStoreWriter)).execute();
-                                                          }
-                                                          catch(final Exception ex)
-                                                          {
-                                                              this.tileStoreWriterAdapter.removeStore();
-                                                              throw ex;
-                                                          }
+                                 try(final TileStoreReader tileStoreReader = new RawImageTileReader(file, tileDimensions, noDataColor, crs))
+                                 {
+                                     try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
+                                     {
+                                         (new Packager(taskMonitor,
+                                                       tileStoreReader,
+                                                       tileStoreWriter)).execute();
+                                     }
+                                     catch(final CancellationException cancel)
+                                     {
+                                         this.warn("Cancelled Tiling");
+                                         this.tileStoreWriterAdapter.removeStore();
+                                     }
+                                     catch(final Exception ex)
+                                     {
+                                         this.tileStoreWriterAdapter.removeStore();
+                                         throw ex;
+                                     }
 
-                                                          return null;
-                                                      }
-                                                    });
+                                     return null;
+                                 }
+                               });
 
         return true;
     }
