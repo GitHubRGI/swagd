@@ -34,14 +34,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import utility.DatabaseUtility;
-
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.geopackage.features.GeoPackageFeatures;
 import com.rgi.geopackage.metadata.GeoPackageMetadata;
 import com.rgi.geopackage.schema.GeoPackageSchema;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
+import com.rgi.geopackage.utility.DatabaseUtility;
+import com.rgi.geopackage.utility.DatabaseVersion;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.VerificationIssue;
@@ -267,7 +267,7 @@ public class GeoPackage implements AutoCloseable
      *
      * @return the sqliteVersion
      */
-    public String getSqliteVersion()
+    public DatabaseVersion getSqliteVersion()
     {
         return this.sqliteVersion;
     }
@@ -456,7 +456,7 @@ public class GeoPackage implements AutoCloseable
 
     private final File                 file;
     private final Connection           databaseConnection;
-    private final String               sqliteVersion;
+    private final DatabaseVersion      sqliteVersion;
     private final VerificationLevel    verificationLevel;
     private final GeoPackageCore       core;
     private final GeoPackageFeatures   features;

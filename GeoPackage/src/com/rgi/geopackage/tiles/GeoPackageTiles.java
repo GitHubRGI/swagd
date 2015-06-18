@@ -24,20 +24,12 @@
 package com.rgi.geopackage.tiles;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import utility.DatabaseUtility;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.Coordinate;
@@ -45,9 +37,10 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.util.BoundsUtility;
-import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
+import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
@@ -117,20 +110,7 @@ public class GeoPackageTiles
                               final BoundingBox            boundingBox,
                               final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
     {
-        if(tableName == null || tableName.isEmpty())
-        {
-            throw new IllegalArgumentException("Tile set name may not be null");
-        }
-
-        if(!tableName.matches("^[_a-zA-Z]\\w*"))
-        {
-            throw new IllegalArgumentException("The tile set's table name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
-        }
-
-        if(tableName.startsWith("gpkg_"))
-        {
-            throw new IllegalArgumentException("The tile set's name may not start with the reserved prefix 'gpkg_'");
-        }
+        GeoPackageCore.validateNewContentTableName(tableName);
 
         if(boundingBox == null)
         {
@@ -164,10 +144,7 @@ public class GeoPackageTiles
             this.createTilesTablesNoCommit(); // Create the tile metadata tables
 
             // Create the tile set table
-            try(Statement statement = this.databaseConnection.createStatement())
-            {
-                statement.executeUpdate(this.getTileSetCreationSql(tableName));
-            }
+            JdbcUtility.update(this.databaseConnection, this.getTileSetCreationSql(tableName));
 
             // Add tile set to the content table
             this.core.addContent(tableName,
@@ -211,22 +188,10 @@ public class GeoPackageTiles
         final String zoomLevelQuerySql = String.format("SELECT zoom_level FROM %s WHERE table_name = ?;",
                                                        GeoPackageTiles.MatrixTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(zoomLevelQuerySql))
-        {
-            preparedStatement.setString(1, tileSet.getTableName());
-
-            try(ResultSet results = preparedStatement.executeQuery())
-            {
-                final Set<Integer> zoomLevels = new HashSet<>();
-
-                while(results.next())
-                {
-                    zoomLevels.add(results.getInt(1));
-                }
-
-                return zoomLevels;
-            }
-        }
+        return new HashSet<>(JdbcUtility.select(this.databaseConnection,
+                                                zoomLevelQuerySql,
+                                                preparedStatement -> preparedStatement.setString(1, tileSet.getTableName()),
+                                                resultSet -> resultSet.getInt(1)));
     }
 
     /**
@@ -387,49 +352,38 @@ public class GeoPackageTiles
             throw new IllegalArgumentException("The geographic height of the tile matrix [matrix height * tile height (pixels) * pixel y size (srs units per pixel)] differs from the minimum bounds for this tile set specified by the tile matrix set");
         }
 
-        try
-        {
-            final String insertTileMatrix = String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                                                          GeoPackageTiles.MatrixTableName,
-                                                          "table_name",
-                                                          "zoom_level",
-                                                          "matrix_width",
-                                                          "matrix_height",
-                                                          "tile_width",
-                                                          "tile_height",
-                                                          "pixel_x_size",
-                                                          "pixel_y_size");
+        final String insertTileMatrix = String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                                                      GeoPackageTiles.MatrixTableName,
+                                                      "table_name",
+                                                      "zoom_level",
+                                                      "matrix_width",
+                                                      "matrix_height",
+                                                      "tile_width",
+                                                      "tile_height",
+                                                      "pixel_x_size",
+                                                      "pixel_y_size");
 
-            try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileMatrix))
-            {
-                preparedStatement.setString(1, tileSet.getTableName());
-                preparedStatement.setInt   (2, zoomLevel);
-                preparedStatement.setInt   (3, matrixWidth);
-                preparedStatement.setInt   (4, matrixHeight);
-                preparedStatement.setInt   (5, tileWidth);
-                preparedStatement.setInt   (6, tileHeight);
-                preparedStatement.setDouble(7, pixelXSize);
-                preparedStatement.setDouble(8, pixelYSize);
+        JdbcUtility.update(this.databaseConnection,
+                           insertTileMatrix,
+                           preparedStatement -> { preparedStatement.setString(1, tileSet.getTableName());
+                                                  preparedStatement.setInt   (2, zoomLevel);
+                                                  preparedStatement.setInt   (3, matrixWidth);
+                                                  preparedStatement.setInt   (4, matrixHeight);
+                                                  preparedStatement.setInt   (5, tileWidth);
+                                                  preparedStatement.setInt   (6, tileHeight);
+                                                  preparedStatement.setDouble(7, pixelXSize);
+                                                  preparedStatement.setDouble(8, pixelYSize);
+                                                });
+        this.databaseConnection.commit();
 
-                preparedStatement.executeUpdate();
-            }
-
-            this.databaseConnection.commit();
-
-            return new TileMatrix(tileSet.getTableName(),
-                                  zoomLevel,
-                                  matrixWidth,
-                                  matrixHeight,
-                                  tileWidth,
-                                  tileHeight,
-                                  pixelXSize,
-                                  pixelYSize);
-        }
-        catch(final SQLException ex)
-        {
-            this.databaseConnection.rollback();
-            throw ex;
-        }
+        return new TileMatrix(tileSet.getTableName(),
+                              zoomLevel,
+                              matrixWidth,
+                              matrixHeight,
+                              tileWidth,
+                              tileHeight,
+                              pixelXSize,
+                              pixelYSize);
     }
 
     /**
@@ -498,19 +452,22 @@ public class GeoPackageTiles
                                                    "tile_row",
                                                    "tile_data");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileSql))
-        {
-            preparedStatement.setInt  (1, tileMatrix.getZoomLevel());
-            preparedStatement.setInt  (2, column);
-            preparedStatement.setInt  (3, row);
-            preparedStatement.setBytes(4, imageData);  // .setBlob() does not work as advertised in the sqlite-jdbc driver.  See this post by the developer: https://groups.google.com/d/msg/xerial/FfNOo-dPlsE/hUQWDPrZvSYJ
-
-            preparedStatement.executeUpdate();
-        }
+        final int tileIdentifier = JdbcUtility.update(this.databaseConnection,
+                                                      insertTileSql,
+                                                      preparedStatement -> { preparedStatement.setInt  (1, tileMatrix.getZoomLevel());
+                                                                             preparedStatement.setInt  (2, column);
+                                                                             preparedStatement.setInt  (3, row);
+                                                                             preparedStatement.setBytes(4, imageData);  // .setBlob() didn't work as advertised in the sqlite-jdbc driver.  not sure about sqldroid
+                                                                           },
+                                                      resultSet -> resultSet.getInt(1));   // tile identifier
 
         this.databaseConnection.commit();
 
-        return this.getTile(tileSet, column, row, tileMatrix.getZoomLevel());
+        return new Tile(tileIdentifier,
+                        tileMatrix.getZoomLevel(),
+                        column,
+                        row,
+                        imageData);
     }
 
     /**
@@ -580,26 +537,13 @@ public class GeoPackageTiles
                                                "tile_row",
                                                tileSet.getTableName());
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
-        {
-            return ResultSetStream.getStream(preparedStatement.executeQuery(),
-                                             resultSet -> { try
-                                                            {
-                                                                final int zoomLevel = resultSet.getInt(1);
-                                                                final int column    = resultSet.getInt(2);
-                                                                final int row       = resultSet.getInt(3);
-
-                                                                return new TileCoordinate(column, row, zoomLevel);
-                                                            }
-                                                            catch(final Exception ex)
-                                                            {
-                                                                return null;
-                                                            }
-                                                          })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toList()) // By collecting here, we prevent the problem of the prepared statement being closed before we've read the results
-                                  .stream();
-        }
+        return JdbcUtility.select(this.databaseConnection,
+                                  tileQuery,
+                                  null,
+                                  resultSet -> new TileCoordinate(resultSet.getInt(2),
+                                                                  resultSet.getInt(3),
+                                                                  resultSet.getInt(1)))
+                          .stream();
     }
 
     /**
@@ -630,24 +574,11 @@ public class GeoPackageTiles
                                                "tile_row",
                                                tileSet.getTableName());
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
-        {
-            preparedStatement.setInt(1, zoomLevel);
-
-            return ResultSetStream.getStream(preparedStatement.executeQuery(),
-                                             resultSet -> { try
-                                                            {
-                                                                return new Coordinate<>(resultSet.getInt(1), resultSet.getInt(2));
-                                                            }
-                                                            catch(final Exception ex)
-                                                            {
-                                                                return null;
-                                                            }
-                                                          })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toList()) // By collecting here, we prevent the problem of the prepared statement being closed before we've read the results
-                                  .stream();
-        }
+        return JdbcUtility.select(this.databaseConnection,
+                                  tileQuery,
+                                  preparedStatement -> preparedStatement.setInt(1, zoomLevel),
+                                  resultSet -> new Coordinate<>(resultSet.getInt(1), resultSet.getInt(2)))
+                          .stream();
     }
 
     /**
@@ -685,26 +616,18 @@ public class GeoPackageTiles
                                                "tile_data",
                                                tileSet.getTableName());
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
-        {
-            preparedStatement.setInt(1, zoomLevel);
-            preparedStatement.setInt(2, column);
-            preparedStatement.setInt(3, row);
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     tileQuery,
+                                     preparedStatement -> { preparedStatement.setInt(1, zoomLevel);
+                                                            preparedStatement.setInt(2, column);
+                                                            preparedStatement.setInt(3, row);
+                                                          },
+                                     resultSet -> new Tile(resultSet.getInt(1),     // id
+                                                           resultSet.getInt(2),     // zoom level
+                                                           resultSet.getInt(3),     // column
+                                                           resultSet.getInt(4),     // row
+                                                           resultSet.getBytes(5))); // data
 
-            try(ResultSet tileResult = preparedStatement.executeQuery())
-            {
-                if(tileResult.isBeforeFirst())
-                {
-                    return new Tile(tileResult.getInt(1),    // id
-                                    tileResult.getInt(2),    // zoom level
-                                    tileResult.getInt(3),    // row
-                                    tileResult.getInt(4),    // column
-                                    tileResult.getBytes(5)); // data
-                }
-
-                return null; // No tile exists for this coordinate and zoom level
-            }
-        }
     }
 
     /**
@@ -772,20 +695,15 @@ public class GeoPackageTiles
                                               "max_y",
                                               GeoPackageTiles.MatrixSetTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(querySql))
-        {
-            preparedStatement.setString(1, tileSet.getTableName());
-
-            try(ResultSet result = preparedStatement.executeQuery())
-            {
-                return new TileMatrixSet(result.getString(1),                                   // table name
-                                         this.core.getSpatialReferenceSystem(result.getInt(2)), // srs id
-                                         new BoundingBox(result.getDouble(3),                   // min x
-                                                         result.getDouble(4),                   // min y
-                                                         result.getDouble(5),                   // max x
-                                                         result.getDouble(6)));                 // max y
-            }
-        }
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     querySql,
+                                     preparedStatement -> preparedStatement.setString(1, tileSet.getTableName()),
+                                     resultSet -> new TileMatrixSet(resultSet.getString(1),                                   // table name
+                                                                    this.core.getSpatialReferenceSystem(resultSet.getInt(2)), // srs id
+                                                                    new BoundingBox(resultSet.getDouble(3),                   // min x
+                                                                                    resultSet.getDouble(4),                   // min y
+                                                                                    resultSet.getDouble(5),                   // max x
+                                                                                    resultSet.getDouble(6))));                // max y
     }
 
     /**
@@ -850,17 +768,15 @@ public class GeoPackageTiles
                                                             "max_x",
                                                             "max_y");
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(insertTileMatrixSetSql))
-        {
-            preparedStatement.setString(1, tableName);
-            preparedStatement.setInt   (2, spatialReferenceSystem.getIdentifier());
-            preparedStatement.setDouble(3, boundingBox.getMinX());
-            preparedStatement.setDouble(4, boundingBox.getMinY());
-            preparedStatement.setDouble(5, boundingBox.getMaxX());
-            preparedStatement.setDouble(6, boundingBox.getMaxY());
-
-            preparedStatement.executeUpdate();
-        }
+        JdbcUtility.update(this.databaseConnection,
+                           insertTileMatrixSetSql,
+                           preparedStatement -> { preparedStatement.setString(1, tableName);
+                                                  preparedStatement.setInt   (2, spatialReferenceSystem.getIdentifier());
+                                                  preparedStatement.setDouble(3, boundingBox.getMinX());
+                                                  preparedStatement.setDouble(4, boundingBox.getMinY());
+                                                  preparedStatement.setDouble(5, boundingBox.getMaxX());
+                                                  preparedStatement.setDouble(6, boundingBox.getMaxY());
+                                                });
     }
 
     /**
@@ -893,28 +809,19 @@ public class GeoPackageTiles
                                                "pixel_y_size",
                                                GeoPackageTiles.MatrixTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
-        {
-            preparedStatement.setString(1, tileSet.getTableName());
-            preparedStatement.setInt   (2, zoomLevel);
-
-            try(ResultSet result = preparedStatement.executeQuery())
-            {
-                if(result.isBeforeFirst())
-                {
-                    return new TileMatrix(tileSet.getTableName(),
-                                          zoomLevel,
-                                          result.getInt   (1),  // matrix width
-                                          result.getInt   (2),  // matrix height
-                                          result.getInt   (3),  // tile width
-                                          result.getInt   (4),  // tile height
-                                          result.getDouble(5),  // pixel x size
-                                          result.getDouble(6)); // pixel y size
-                }
-
-                return null; // No matrix exists for this table name and zoom level
-            }
-        }
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     tileQuery,
+                                     preparedStatement -> { preparedStatement.setString(1, tileSet.getTableName());
+                                                            preparedStatement.setInt   (2, zoomLevel);
+                                                          },
+                                     resultSet -> new TileMatrix(tileSet.getTableName(),
+                                                                 zoomLevel,
+                                                                 resultSet.getInt   (1),   // matrix width
+                                                                 resultSet.getInt   (2),   // matrix height
+                                                                 resultSet.getInt   (3),   // tile width
+                                                                 resultSet.getInt   (4),   // tile height
+                                                                 resultSet.getDouble(5),   // pixel x size
+                                                                 resultSet.getDouble(6))); // pixel y size
     }
 
     /**
@@ -946,29 +853,17 @@ public class GeoPackageTiles
                                                "pixel_y_size",
                                                GeoPackageTiles.MatrixTableName);
 
-        try(PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(tileQuery))
-        {
-            preparedStatement.setString(1, tileSet.getTableName());
-
-            try(ResultSet results = preparedStatement.executeQuery())
-            {
-                final List<TileMatrix> tileMatrices = new ArrayList<>();
-
-                while(results.next())
-                {
-                    tileMatrices.add(new TileMatrix(tileSet.getTableName(),
-                                                    results.getInt   (1),   // zoom level
-                                                    results.getInt   (2),   // matrix width
-                                                    results.getInt   (3),   // matrix height
-                                                    results.getInt   (4),   // tile width
-                                                    results.getInt   (5),   // tile height
-                                                    results.getDouble(6),   // pixel x size
-                                                    results.getDouble(7))); // pixel y size
-                }
-
-                return tileMatrices;
-            }
-        }
+        return JdbcUtility.select(this.databaseConnection,
+                                  tileQuery,
+                                  preparedStatement -> preparedStatement.setString(1, tileSet.getTableName()),
+                                  resultSet -> new TileMatrix(tileSet.getTableName(),
+                                                              resultSet.getInt   (1),   // zoom level
+                                                              resultSet.getInt   (2),   // matrix width
+                                                              resultSet.getInt   (3),   // matrix height
+                                                              resultSet.getInt   (4),   // tile width
+                                                              resultSet.getInt   (5),   // tile height
+                                                              resultSet.getDouble(6),   // pixel x size
+                                                              resultSet.getDouble(7))); // pixel y size
     }
 
     /**
@@ -1137,19 +1032,13 @@ public class GeoPackageTiles
         // Create the tile matrix set table or view
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixSetTableName))
         {
-            try(Statement statement = this.databaseConnection.createStatement())
-            {
-                statement.executeUpdate(this.getTileMatrixSetCreationSql());
-            }
+            JdbcUtility.update(this.databaseConnection, this.getTileMatrixSetCreationSql());
         }
 
         // Create the tile matrix table or view
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixTableName))
         {
-            try(Statement statement = this.databaseConnection.createStatement())
-            {
-                statement.executeUpdate(this.getTileMatrixCreationSql());
-            }
+            JdbcUtility.update(this.databaseConnection, this.getTileMatrixCreationSql());
         }
     }
 

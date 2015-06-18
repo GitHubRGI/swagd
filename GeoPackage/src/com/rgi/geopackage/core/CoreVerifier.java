@@ -48,9 +48,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import utility.DatabaseUtility;
-
 import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.ColumnDefinition;
 import com.rgi.geopackage.verification.ForeignKeyDefinition;

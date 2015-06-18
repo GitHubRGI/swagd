@@ -72,8 +72,8 @@ public class Tile
 
         this.identifier = identifier;
         this.zoomLevel  = zoomLevel;
-        this.row        = row;
         this.column     = column;
+        this.row        = row;
         this.imageData  = imageData;
     }
 

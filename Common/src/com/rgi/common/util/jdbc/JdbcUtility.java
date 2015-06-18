@@ -88,7 +88,7 @@ public class JdbcUtility
 
             try(final ResultSet resultSet = preparedStatement.executeQuery())
             {
-                if(resultSet.isBeforeFirst())
+                if(resultSet.next())
                 {
                     return resultMapper.apply(resultSet);
                 }
