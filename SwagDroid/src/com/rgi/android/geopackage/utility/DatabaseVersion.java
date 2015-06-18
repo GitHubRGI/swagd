@@ -59,6 +59,11 @@ public class DatabaseVersion implements Comparable<DatabaseVersion>
     @Override
     public int compareTo(final DatabaseVersion another)
     {
+        if(another == null)
+        {
+            throw new IllegalArgumentException("Other database version may not be null");
+        }
+
         final int compareMajor = Integer.valueOf(this.getMajor()).compareTo(another.getMajor());
 
         if(compareMajor != 0)
@@ -73,7 +78,7 @@ public class DatabaseVersion implements Comparable<DatabaseVersion>
             return compareMinor;
         }
 
-        return Integer.valueOf(this.getRevision()).compareTo(another.getRevision()); 
+        return Integer.valueOf(this.getRevision()).compareTo(another.getRevision());
     }
 
     /**
