@@ -27,59 +27,301 @@ public class HeadlessOptions
 	// set to true when validate is called
 	private TileFormat inputType;
 	private TileFormat outputType;
+	private boolean isValid = false;
 
-	// Arguments for command line, these are ALWAYS required (input and output
-	// path).
+	// variables to hold command line arguments
 	private File inputFile;
-	@Argument(required = true, index = 0, usage = "Input source for tiling/Packaging operation")
-
-	@Argument(required = true, index = 1, usage = "Full output path for tiling/Packaging operation")
 	private File outputFile;
+	private int outputSrs = 3857;
+	private int inputSrs = 4326;
+	private String tileSetName;
+	private String tileSetDescription;
+	private String imageFormat = "png";
+	private final int tileWidth = 256;
+	private int tileHeight = 256;
+	private String compressionType = "jpeg";
+	private int quality = 75;
 
-	// operation to perform
+	//internal, no mutators for these options.
 	@Option(name = "-t", aliases =
-	{ "--tile" }, usage = "Tile image into desired format", forbids =
-	{ "-p" })
+	{ "--tile" }, usage = "Tile image into desired format", forbids ={ "-p" })
 	private boolean isTiling;
+
 	@Option(name = "-p", aliases =
-	{ "--package" }, usage = "Tile image into desired format", forbids =
-	{ "-t" })
+	{ "--package" }, usage = "Tile image into desired format", forbids ={ "-t" })
 	private boolean isPackaging;
 
-	// input/output srs
-	@Option(name = "--ouputsrs", usage = "Desired output SRS EPSG identifier, eg 3857")
-	private final int outputSrs = 3857;
-	@Option(name = "-intputsrs", usage = "Input Spatial reference system EPSG identifier (ie 4326)")
-	private int inputSRS = 4326;
+	/**
+	 * path to the input file/directory for packaging/tiling.
+	 * @param filePath
+	 * @throws IllegalArgumentException if filePath leads to a non-existent file, is null, or is empty.
+	 */
+	@Argument(required = true, metaVar="<Input File Path>", index = 0, usage = "Input source for tiling/Packaging operation")
+	public void setinputFile(final String filePath)
+	{
+			final String path = getAbsolutePath(filePath);
+			final File f = new File(path);
+			if(f.exists())
+			{
+				this.inputFile = new File(path);
+			}
+			else
+			{
+				throw new IllegalArgumentException("FilePath: %s does not exist, input files must exist");
+			}
+	}
 
-	// tileset names
-	@Option(name = "-n", aliases =
-	{ "--tileset", "--tilesetname" }, usage = "Input Tile Set for GeoPackages, default is short name of output geopackage.")
-	private String tileSetName;
+	/**
+	 * path to the output file/directory for packaging/tiling
+	 * @param filePath
+	 * @throws IllegalArgumentException - if output path  is null or empty
+	 */
+	@Argument(required = true,metaVar="<Output File Path>", index = 1, usage = "Full output path for tiling/Packaging operation")
+	public void setoutputFile(final String filePath)
+	{
+		final String path = getAbsolutePath(filePath);
+		this.outputFile = new File(path);
+	}
+
+	/**
+	 * EPSG output SRS number
+	 * @param i
+	 * @throws IllegalArgumentException if unrecognized spatial reference.
+	 */
+	@Option(name = "--ouputsrs",metaVar="<Output SRS>", usage = "Desired output SRS EPSG identifier, eg 3857")
+	public void setOutputSrs(final int i)
+	{
+		// special case for TMS.
+		final SpatialReference srs = new SpatialReference();
+		if (srs.ImportFromEPSG(i) == 0) {
+			this.outputSrs = i;
+		}
+		else
+		{
+			throw new IllegalArgumentException(String.format("Error: Output SRS %d is not a GDAL supported EPSG value.",i));
+		}
+
+	}
+
+	/**
+	 * EPSG input SRS number, required if input is a tms cache
+	 * @param i
+	 * @throws IllegalArgumentException if unrecognized spatial reference.
+	 */
+	@Option(name = "-intputsrs", metaVar="<Input Srs>", usage = "Input Spatial reference system EPSG identifier (ie 4326)")
+	public void setInputSRS(final int i)
+	{
+		// special case for TMS.
+		final SpatialReference srs = new SpatialReference();
+		if (srs.ImportFromEPSG(i) == 0) {
+			this.inputSrs = i;
+		}
+		else
+		{
+			throw new IllegalArgumentException(String.format("Error: input SRS %d is not a GDAL supported EPSG value.",i));
+		}
+	}
+
+	/**
+	 * Tile set Name
+	 * @param name
+	 * @throws IllegalArgumentException - name is null, or longer than 10000 characters
+	 */
+	@Option(name = "-n",metaVar="<Tile Set Name>", aliases = { "--tileset", "--tilesetname" },
+			usage = "Input Tile Set for GeoPackages, default is short name of output geopackage.")
+	public void setTileSetName(final String name)
+	{
+		if(name != null && name.length() <= 10000)
+		{
+			this.tileSetName = name;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Provided Name is invalid, must be a "
+					+ "non-null string shorter than 10000 characters");
+		}
+	}
+
+	/**
+	 * Tile Set Description
+	 * @param description
+	 */
 	@Option(name = "-d", aliases =
 	{ "--description" }, usage = "Tile set description")
-	private final String tileSetDescription = "";
+	public void setTileSetDescription(final String description)
+	{
+		if(description != null  && description.length() <= 10000)
+		{
+			this.tileSetName = description;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Provided Description is invalid, must be a "
+					+ "non-null string shorter than 10000 characters");
+		}
+	}
 
-	// tile settings
+	/**
+	 * tile width
+	 * @param i
+	 * @throws IllegalArgumentException value must be between 1 - 10000
+	 */
 	@Option(name = "-w", aliases =
-	{ "--width" }, usage = "Tile width in pixels; default is 256")
-	private final int tileWidth = 256;
+	{ "--width" },metaVar="<Width>", usage = "Tile width in pixels; default is 256")
+	public void setTileWidth(final int i)
+	{
+		if(i > 0 && i < 10000)
+		{
+			this.tileHeight = i;
+		}
+		else
+		{
+			throw new IllegalArgumentException(String.format("error setting tile Width to %d, "
+					+ "value must be greater than 0 and less than 10000",i));
+		}
+	}
+
+	/**
+	 * Tile Height
+	 * @param i
+	 * @throws IllegalArgumentException - value must be between 1 and 10000
+	 */
 	@Option(name = "-h", aliases =
-	{ "--height" }, usage = "Tile height in pixels; default is 256")
-	private final int tileHeight = 256;
+	{ "--height" },metaVar="<Height>", usage = "Tile height in pixels; default is 256")
+	public void setTileHeight(final int i)
+	{
+		if(i > 0 && i < 10000)
+		{
+			this.tileHeight = i;
+		}
+		else
+		{
+			throw new IllegalArgumentException(String.format("error setting tile height to %d, "
+					+ "value must be greater than 0 and less than 10000",i));
+		}
+	}
+
 
 	// image settings
 	@Option(name = "-f", aliases =
 	{ "--format" }, usage = "Image format for tiling operations, default is png (options are png, jpeg,etc.)")
-	private final String imageFormat = "png";
+	private void setImageFormat(final String formatString)
+	{
+		if (formatString.equalsIgnoreCase("jpeg")
+				|| formatString.equalsIgnoreCase("png"))
+		{
+			this.imageFormat = formatString;
+		}
+		else
+		{
+			System.out.println(String.format("error setting image format to %s, value Remains unchanged!",formatString));
+		}
+	}
+
 	@Option(name = "-c", aliases =
 	{ "--compression" }, usage = "Compression type for image tiling, default is jpeg")
-	private String compressionType = "jpeg";
+	public void setCompressionType(final String compressionType)
+	{
+		if(compressionType.equalsIgnoreCase("jpeg"))
+		{
+			this.compressionType = compressionType.toLowerCase();
+		}
+		else
+		{
+			this.compressionType = "jpeg";
+			System.out.println("WARNING: Compression type must be jpeg. forcing option.");
+		}
+	}
+
 	@Option(name = "-q", aliases =
 	{ "--quality" }, usage = "Compression quality for jpeg compression, between 0-100")
-	private final int quality = 100;
+	public void setCompressionQuality(final int i)
+	{
+		if( i > 0 && i <=100)
+		{
+			this.quality = i;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Error: Compression Quality must be between 1-100");
+		}
+	}
 
+	/**
+	 * Enum type to help with logic when running tile functions
+	 * @param type
+	 */
+	private void setInputType(final TileFormat type)
+	{
+		this.inputType = type;
+	}
 
+	/**
+	 * Enum type to help with logic when running tile functions
+	 * @param type
+	 */
+	private void setOutputType(final TileFormat type)
+	{
+		this.outputType = type;
+	}
+
+	//Getters
+	public int getTileWidth()
+	{
+		return this.tileWidth;
+	}
+	public int getTileHeight()
+	{
+		return this.tileHeight;
+	}
+	public int getOutputSrs()
+	{
+		return this.outputSrs;
+	}
+	private int getInputSrs()
+	{
+		return this.inputSrs;
+	}
+	public File getInputFile()
+	{
+		return this.inputFile;
+	}
+	public String getImageFormat()
+	{
+		return this.imageFormat;
+	}
+	public TileFormat getInputType()
+	{
+		return this.inputType;
+	}
+	public TileFormat getOutputType()
+	{
+		return this.outputType;
+	}
+	public File getOutputFile()
+	{
+		return this.outputFile;
+	}
+	public String getTileSetName()
+	{
+		return this.tileSetName;
+	}
+	public String getTileSetDescription()
+	{
+		return this.tileSetDescription;
+	}
+	public String getCompressionType()
+	{
+		return this.compressionType;
+	}
+	public int getcompressionQuality()
+	{
+		return this.quality;
+	}
+	public boolean isValid()
+	{
+		return this.isValid;
+	}
 
 	/**
 	 * Validates options parsed from the command line, returns
@@ -95,23 +337,24 @@ public class HeadlessOptions
 		if (this.isTiling && this.isPackaging)
 		{
 			// if trying to do both, options are invalid, return false
+			this.isValid = false;
 			System.out
 					.println("Invalid Settings: Cannot specify both tiling and packaging operations.");
-			return false;
 		} else if (this.isTiling)
 		{
 			// validate tiling parameters
-			return this.validateTiling();
+			this.isValid = this.validateTiling();
 		} else if (this.isPackaging)
 		{
 			// validate packaging parameters
-			return this.validatePackaging();
+			this.isValid = this.validatePackaging();
 		} else
 		{ // if not packaging or tiling, inputs are by definition invalid
 			System.out
 					.println("No operation specified, please specifiy tiling or packaging operation using '-t' or '-p'");
-			return false;
+			this.isValid = false;
 		}
+		return this.isValid;
 	}
 
 	/**
@@ -273,7 +516,6 @@ public class HeadlessOptions
 	 * @return true/false if SRS inputs are valid.
 	 */
 	private boolean validateSRSOptions() {
-		// validate output SRS
 		if(this.getOutputType() == TileFormat.GPKG)
 		{
 			if( this.getOutputSrs() == 3857)
@@ -285,6 +527,10 @@ public class HeadlessOptions
 		else if(this.getInputSrs() > 0 && this.getOutputSrs() > 0)
 		 {
 			return true; //setter sets them to a valid default, so they may have to pay attention to that.
+		}
+		else
+		{
+			return false;
 		}
 	}
 
@@ -337,211 +583,23 @@ public class HeadlessOptions
 		}
 	}
 
-
-
 	/**
-	 * Getters for Headless Options
+	 * returns a full path to the specified file, replacing cmdline based shortcuts
+	 * TODO: test ../ and ./
+	 * @param filePath
+	 * @return
 	 */
-
-	public int getTileWidth()
+	private static String getAbsolutePath(final String filePath) throws IllegalArgumentException
 	{
-		return this.tileWidth;
-	}
-
-	public int getTileHeight()
-	{
-		return this.tileHeight;
-	}
-
-	public int getOutputSrs()
-	{
-		return this.outputSrs;
-	}
-
-	private int getInputSrs()
-	{
-		return this.inputSRS;
-	}
-
-	public File getInputFile()
-	{
-		return this.inputFile;
-	}
-
-	public String getImageFormat()
-	{
-		return this.imageFormat;
-	}
-
-	public TileFormat getInputType()
-	{
-		return this.inputType;
-	}
-
-	public TileFormat getOutputType()
-	{
-		return this.outputType;
-	}
-
-	public File getOutputFile()
-	{
-		return this.outputFile;
-	}
-
-	public String getTileSetName()
-	{
-		return this.tileSetName;
-	}
-
-	public String getTileSetDescription()
-	{
-		return this.tileSetDescription;
-	}
-
-	public String getCompressionType()
-	{
-		return this.compressionType;
-	}
-
-
-	/**
-	 * Setters For Headless Options
-	 */
-
-	private void setInputType(final TileFormat type)
-	{
-		this.inputType = type;
-	}
-
-	private void setOutputType(final TileFormat type)
-	{
-		this.outputType = type;
-	}
-
-	public void setinputFile(String filePath)
-	{
-		if(filePath.startsWith("~" + File.separator))
+		if(filePath != null && !filePath.isEmpty())
 		{
-			filePath = System.getProperty("user.home") + filePath.substring(1);
+			String path = filePath;
+			if(path.startsWith("~" + File.separator))
+			{
+				path = System.getProperty("user.home") + path.substring(1);
+			}
+			return path;
 		}
-		this.inputFile = new File(filePath);
+		throw new IllegalArgumentException("File Path provided is null or empty!");
 	}
-
-	public void setoutputFile(final String filePath)
-	{
-		if(filePath.startsWith("~" + File.separator))
-		{
-			filePath = System.getProperty("user.home") + filePath.substring(1);
-		}
-		this.outputFile = new File(filePath);
-	}
-
-	public void setCompressionType(final String compressionType)
-	{
-		if(compressionType.equalsIgnoreCase("jpeg"))
-		{
-			this.compressionType = compressionType.toLowerCase();
-		}
-		else
-		{
-			this.compressionType = "jpeg";
-			System.out.println("WARNING: Compression type must be jpeg. forcing option.");
-		}
-	}
-
-	private void setImageFormat(final String formatString)
-	{
-		if (formatString.equalsIgnoreCase("jpeg")
-				|| formatString.equalsIgnoreCase("png"))
-		{
-
-		}
-
-
-	}
-
-	public void setTileHeight(final int i)
-	{
-		if(i > 0 && i < 10000)
-		{
-			this.tileHeight = i;
-		}
-		else
-		{
-			System.out.println(String.format("error setting tile height to %d, "
-					+ "value must be greater than 0 and less than 10000",i));
-		}
-
-	}
-
-	public void setTileWidth(final int i)
-	{
-		if(i > 0 && i < 10000)
-		{
-			this.tileHeight = i;
-		}
-		else
-		{
-			System.out.println(String.format("error setting tile Width to %d, "
-					+ "value must be greater than 0 and less than 10000",i));
-		}
-	}
-
-	public void setOutputSrs(final int i)
-	{
-		// special case for TMS.
-		final SpatialReference srs = new SpatialReference();
-		if (srs.ImportFromEPSG(i) == 0) {
-			this.inputSRS = i;
-		}
-		else
-		{
-			this.outputSrs = -1;
-			System.out
-			.println(String.format("Error: Output SRS %d is not a GDAL supported EPSG value.",i));
-		}
-
-	}
-
-	public void setInputSRS(final int i)
-	{
-		// special case for TMS.
-		final SpatialReference srs = new SpatialReference();
-		if (srs.ImportFromEPSG(i) == 0) {
-			this.inputSRS = i;
-		}
-		else
-		{
-			this.inputSRS = -1;
-				System.out
-				.println(String.format("Error: Input SRS %d is not a GDAL supported EPSG value.",i));
-		}
-
-	}
-
-	public void setTileSetName(final String name)
-	{
-		if(name != null && name.length() <= 255)
-		{
-			this.tileSetName = name;
-		}
-		else
-		{
-			System.out.println("Provided TileSet Name is invalid.");
-		}
-	}
-
-	public void setTileSetDescription(final String description)
-	{
-		if(description != null  && description.length() <= 1000)
-		{
-			this.tileSetName = description;
-		}
-		else
-		{
-			System.out.println("Tile set description is invalid");
-		}
-
-	}
-
 }
