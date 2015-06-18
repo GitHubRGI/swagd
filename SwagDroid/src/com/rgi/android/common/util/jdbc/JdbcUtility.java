@@ -103,16 +103,6 @@ public class JdbcUtility
                 resultSet.close();
             }
         }
-        catch(final SQLException ex)
-        {
-            ex.printStackTrace();
-            throw ex;
-        }
-        catch(final RuntimeException ex)
-        {
-            ex.printStackTrace();
-            throw ex;
-        }
         finally
         {
             preparedStatement.close();
