@@ -230,7 +230,7 @@ public class GeoPackageCoreAPITest
    public void getSqliteVersionFromFileWithSQLiteVersion() throws SQLException, Exception
    {
        final File testFile      = this.getRandomFile(6);
-       final int  randomInteger = this.randomGenerator.nextInt();
+       final int  versionNumber = 42;
 
        try(GeoPackage gpkg = new GeoPackage(testFile))
        {
@@ -240,7 +240,7 @@ public class GeoPackageCoreAPITest
                // Bytes 96 -> 100 are an int representing the sqlite version
                // used random integer
                randomAccessFile.seek(96);
-               randomAccessFile.writeInt(randomInteger);
+               randomAccessFile.writeInt(versionNumber);
                randomAccessFile.close();
 
                try(GeoPackage gpkg2 = new GeoPackage(testFile, OpenMode.Open))
@@ -249,10 +249,10 @@ public class GeoPackageCoreAPITest
                    final DatabaseVersion sqliteVersionChanged = gpkg2.getSqliteVersion();
 
                    assertTrue(String.format("The method getSqliteVersion() did not detect the same Version expected. Expected: %s   Actual: %s",
-                                            this.sqliteVersionToString(randomInteger),
+                                            this.sqliteVersionToString(versionNumber),
                                             sqliteVersionChanged),
                               sqliteVersionChanged.toString()
-                                                  .equals(this.sqliteVersionToString(randomInteger)));
+                                                  .equals(this.sqliteVersionToString(versionNumber)));
                }
            }
        }
