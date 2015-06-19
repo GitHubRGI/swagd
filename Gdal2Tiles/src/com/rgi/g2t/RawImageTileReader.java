@@ -286,14 +286,13 @@ public class RawImageTileReader implements TileStoreReader
         final int zoomMinYTile = bottomRightCoordinate.getY();
         final int zoomMaxYTile =     topLeftCoordinate.getY();
 
-        // Ensure one tile was calculated for the lowest integer zoom level
-        if(zoomMaxYTile == zoomMinYTile && zoomMinXTile == zoomMaxXTile)
+        //Make tiles for each tile at the min zoom level
+        for(int x = zoomMinXTile; x <= zoomMaxXTile; x++)
         {
-            this.makeTiles(tileHandles, new RawImageTileHandle(zoomRange.getMinimum(), zoomMinXTile, zoomMinYTile), zoomRange.getMaximum());
-        }
-        else
-        {
-            throw new TileStoreException("Min zoom has more than one tile.");
+            for (int y = zoomMinYTile; y <= zoomMaxYTile; y++)
+            {
+                this.makeTiles(tileHandles, new RawImageTileHandle(zoomRange.getMinimum(), x, y), zoomRange.getMaximum());
+            }
         }
 
         // Sort the tile handles so that they decrement.  This ensures all base level tiles
