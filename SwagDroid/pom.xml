@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>swagdroid</artifactId>
-	<packaging>apklib</packaging>
+	<packaging>jar</packaging>
 	<version>1.0.0</version>
 
 	<properties>
@@ -186,41 +186,10 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.18.1</version>
-				<configuration>
-					<!-- skipTests>true</skipTests-->
-				</configuration>
-			</plugin>
-
-			<!-- required for android support! -->
-			<plugin>
-				<groupId>com.simpligility.maven.plugins</groupId>
-				<artifactId>android-maven-plugin</artifactId>
-				<configuration>
-				<nativeLibrariesDirectory>libs/</nativeLibrariesDirectory>
-					<sdk>
-						<platform>22</platform>
-					</sdk>
-				</configuration>
 			</plugin>
 
 		</plugins>
 
-		<pluginManagement>
-			<plugins>
-				<!-- android mavin plugin  --> 
-				<plugin>
-					<groupId>com.simpligility.maven.plugins</groupId>
-					<artifactId>android-maven-plugin</artifactId>
-					<version>${it-plugin.version}</version>
-					<extensions>true</extensions>
-					<configuration>
-						<androidManifestFile>${project.basedir}/AndroidManifest.xml</androidManifestFile>
-						<assetsDirectory>${project.basedir}/assets</assetsDirectory>
-						<resourceDirectory>${project.basedir}/res</resourceDirectory>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 	<groupId>com.rgi.swagdroid</groupId>
 </project>
