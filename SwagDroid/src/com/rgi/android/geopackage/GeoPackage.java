@@ -344,16 +344,25 @@ public class GeoPackage implements Closeable
 
                 if(journalFile.exists())
                 {
-                    if(!journalFile.delete())
+                    for(int x = 0; x < 10 && !journalFile.delete(); ++x)
                     {
-                        System.err.printf("Could not delete: %s\n", journalFile.getAbsolutePath());
+                        Thread.sleep(10);
                     }
+                }
+
+                if(journalFile.exists())
+                {
+                    System.err.printf("Could not delete: %s\n", journalFile.getAbsolutePath());
                 }
             }
         }
         catch(final SQLException ex)
         {
             throw new IOException(ex);
+        }
+        catch(final InterruptedException ex)
+        {
+            // Ignore
         }
     }
 

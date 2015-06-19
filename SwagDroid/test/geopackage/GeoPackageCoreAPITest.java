@@ -230,10 +230,11 @@ public class GeoPackageCoreAPITest
         final File testFile      = TestUtility.getRandomFile(6);
         final int  randomInteger = this.randomGenerator.nextInt();
 
-        final GeoPackage gpkg = new GeoPackage(testFile);
-
         try
         {
+            final GeoPackage gpkg = new GeoPackage(testFile);
+            gpkg.close();
+
             final RandomAccessFile randomAccessFile = new RandomAccessFile(testFile, "rw");
             try
             {
@@ -254,8 +255,8 @@ public class GeoPackageCoreAPITest
                     assertTrue(String.format("The method getSqliteVersion() did not detect the same Version expected. Expected: %s   Actual: %s",
                                              this.sqliteVersionToString(randomInteger),
                                              sqliteVersionChanged),
-                              sqliteVersionChanged.toString()
-                                                  .equals(this.sqliteVersionToString(randomInteger)));
+                               sqliteVersionChanged.toString()
+                                                   .equals(this.sqliteVersionToString(randomInteger)));
                 }
                 finally
                 {
@@ -269,7 +270,6 @@ public class GeoPackageCoreAPITest
         }
         finally
         {
-           gpkg.close();
            TestUtility.deleteFile(testFile);
         }
     }
