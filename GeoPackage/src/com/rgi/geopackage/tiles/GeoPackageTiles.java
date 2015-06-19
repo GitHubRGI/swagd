@@ -214,8 +214,8 @@ public class GeoPackageTiles
      * data_type that also match the supplied spatial reference system
      *
      * @param matchingSpatialReferenceSystem
-     *            Spatial reference system that returned {@link TileSet}s much
-     *            refer to
+     *            Spatial reference system that returned {@link TileSet}s refer
+     *            to
      * @return Returns a collection of {@link TileSet}s
      * @throws SQLException
      *             Throws if there's an SQL error

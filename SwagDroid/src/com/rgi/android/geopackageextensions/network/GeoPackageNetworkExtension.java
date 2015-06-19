@@ -29,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -112,6 +113,57 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     public Scope getScope()
     {
         return Scope.ReadWrite;
+    }
+
+    /**
+     * Gets all entries in the GeoPackage's contents table with the "network"
+     * data_type
+     *
+     * @return Returns a collection of {@link Network}s
+     * @throws SQLException
+     *             throws if the method
+     *             {@link #getNetworks(SpatialReferenceSystem) getNetworks}
+     *             throws
+     */
+    public Collection<Network> getNetworks() throws SQLException
+    {
+        return this.getNetworks(null);
+    }
+
+    /**
+     * Gets all entries in the GeoPackage's contents table with the "network"
+     * data_type that also match the supplied spatial reference system
+     *
+     * @param matchingSpatialReferenceSystem
+     *            Spatial reference system that returned {@link Network}s refer
+     *            to
+     * @return Returns a collection of {@link Network}s
+     * @throws SQLException
+     *             Throws if there's an SQL error
+     */
+    public Collection<Network> getNetworks(final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
+    {
+        return this.geoPackageCore.getContent(Network.NetworkContentType,
+                                              new ContentFactory<Network>()
+                                              {
+                                                  @Override
+                                                  public Network create(final String      tableName,
+                                                                        final String      dataType,
+                                                                        final String      identifier,
+                                                                        final String      description,
+                                                                        final String      lastChange,
+                                                                        final BoundingBox boundingBox,
+                                                                        final Integer     spatialReferenceSystemIdentifier)
+                                                  {
+                                                      return new Network(tableName,
+                                                                         identifier,
+                                                                         description,
+                                                                         lastChange,
+                                                                         boundingBox,
+                                                                         spatialReferenceSystemIdentifier);
+                                                  }
+                                              },
+                                              matchingSpatialReferenceSystem);
     }
 
     /**
