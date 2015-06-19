@@ -48,6 +48,7 @@ import java.util.zip.DataFormatException;
 import org.gdal.gdal.Band;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
+import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.gdal.osr.SpatialReference;
 import org.gdal.osr.osr;
@@ -1012,6 +1013,61 @@ public class GdalUtility
                                                         gdalconstConstants.GRA_Average);
 
         if(output == null)
+        {
+            throw new RuntimeException(new GdalError().getMessage());
+        }
+
+        return output;
+    }
+
+    /**
+     * Reproject an input {@link Dataset} into a different spatial reference system. Does
+     * not correct for NODATA values.
+     *
+     * @param dataset
+     *             An input {@link Dataset}
+     * @param fromSrs
+     *             Original spatial reference system of the <code>dataset</code>
+     * @param toSrs
+     *             Spatial reference system to warp the <code>dataset</code> to
+     * @return A {@link Dataset} in the input {@link SpatialReference} requested
+     */
+    public static Dataset reprojectDatasetToSrs(final Dataset          dataset,
+                                                final SpatialReference fromSrs,
+                                                final SpatialReference toSrs)
+    {
+        if(dataset == null)
+        {
+            throw new IllegalArgumentException("Input dataset cannot be null.");
+        }
+
+        if(fromSrs == null)
+        {
+            throw new IllegalArgumentException("From-Srs cannot be null.");
+        }
+
+        if(toSrs == null)
+        {
+            throw new IllegalArgumentException("To-Srs cannot be null.");
+        }
+
+        //TODO:finish using ReprojectImage to create a dataset in the toSRS
+        // http://gis.stackexchange.com/questions/9415/problems-with-gdal1-8-java-bindings-gdal-reprojectimage-produces-no-data
+        final Dataset output = dataset.GetDriver().Create("test", dataset.getRasterXSize(), dataset.getRasterCount());
+
+        output.SetProjection(toSrs.ExportToWkt());
+
+        final double[] affineCoefficients = new double[6];
+//        determine values of argin
+//        adfGeoTransform[0] /* top left x */
+//        adfGeoTransform[1] /* w-e pixel resolution */
+//        adfGeoTransform[2] /* 0 */
+//        adfGeoTransform[3] /* top left y */
+//        adfGeoTransform[4] /* 0 */
+//        adfGeoTransform[5] /* n-s pixel resolution (negative value) */
+        output.SetGeoTransform(affineCoefficients);
+
+        if(gdal.ReprojectImage(dataset, output, fromSrs.ExportToWkt(), toSrs.ExportToWkt()) == gdalconst.CE_Failure)
         {
             throw new RuntimeException(new GdalError().getMessage());
         }

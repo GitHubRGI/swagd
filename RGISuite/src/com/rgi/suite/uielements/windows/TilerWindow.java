@@ -328,6 +328,8 @@ public class TilerWindow extends NavigationWindow
             return false;
         }
 
+        //TODO: insert progress dialog to track progress of reprojecting
+
         // This spawns a modal dialog and blocks this thread
         ProgressDialog.trackProgress(this,
                 this.processName() + "...",
