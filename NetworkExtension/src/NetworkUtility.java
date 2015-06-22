@@ -39,6 +39,7 @@ import com.rgi.geopackage.verification.ConformanceException;
  * @author Luke Lambert
  *
  */
+@SuppressWarnings("javadoc")
 public class NetworkUtility
 {
     private static final File geoPackageFile = new File("contour.1.gpkg");
@@ -63,7 +64,7 @@ public class NetworkUtility
     private static int snap(final GeoPackage gpkg,
                             final String     networkTable,
                             final double     longitude,
-                            final double     latitude) throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
+                            final double     latitude) throws SQLException, BadImplementationException
     {
         final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
         final Network network = networkExtension.getNetwork(networkTable);

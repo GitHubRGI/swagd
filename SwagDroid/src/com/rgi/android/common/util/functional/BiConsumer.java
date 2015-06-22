@@ -24,16 +24,18 @@
 package com.rgi.android.common.util.functional;
 
 /**
- * @author Luke Lambert
+ * @author Luke.Lambert
  *
- * @param <T> Type of object to be consumed
- *
+ * @param <T> First type of object to be consumed
+ * @param <U> Second type of object to be consumed
  */
-public interface Consumer<T>
+public interface BiConsumer<T, U>
 {
     /**
      * @param t
      *             First object to be consumed
+     * @param u
+     *             Second object to be consumed
      */
-    public void accept(final T t);
+    public void accept(final T t, final U u);
 }

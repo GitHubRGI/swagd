@@ -404,6 +404,25 @@ public class JdbcUtility
         }
     }
 
+    /**
+     * Accumulates results from a query.
+     *
+     * @param databaseConnection
+     *             Connection to the database
+     * @param sql
+     *             SQL query
+     * @param parameterSetter
+     *             Callback that sets parameters of the {@link PreparedStatement}
+     * @param initialValue
+     *             A starting value for the accumulation
+     * @param resultFunction
+     *             Maps a result set to an instance of T
+     * @param combiner
+     *             Combines two instances of T
+     * @return the accumulation of all results
+     * @throws SQLException
+     *             if there is a database error
+     */
     public static <T> T accumulate(final Connection                databaseConnection,
                                    final String                    sql,
                                    final PreparedStatementConsumer parameterSetter,

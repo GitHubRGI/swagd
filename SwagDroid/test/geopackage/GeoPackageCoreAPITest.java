@@ -1551,6 +1551,4 @@ public class GeoPackageCoreAPITest
      * results in 1196437808
      */
     private final static int geoPackageApplicationId = 1196437808;
-
-
 }

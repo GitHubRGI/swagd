@@ -530,6 +530,25 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                          JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length)));
     }
 
+    /**
+     * Performs an accumulation operation on all nodes.
+     *
+     * @param network
+     *             Network table reference
+     * @param initialValue
+     *             A starting value for the accumulation
+     * @param nodeEvaluator
+     *             Maps a node identifier and a list of attributes (in order of
+     *             request) to an instance of T
+     * @param combiner
+     *             Combines two instances of T
+     * @param attributeDescriptions
+     *             Indicates which attributes to make available to the node
+     *             evaluator
+     * @return the accumulation of all results
+     * @throws SQLException
+     *             if there is a database error
+     */
     public <T> T accumulateNodes(final Network                              network,
                                  final T                                    initialValue,
                                  final BiFunction<Integer, List<Object>, T> nodeEvaluator,
