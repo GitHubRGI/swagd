@@ -31,6 +31,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -400,6 +401,56 @@ public class JdbcUtility
         {
             databaseConnection.rollback();
             throw th;
+        }
+    }
+
+    public static <T> T accumulate(final Connection                databaseConnection,
+                                   final String                    sql,
+                                   final PreparedStatementConsumer parameterSetter,
+                                   final T                         initialValue,
+                                   final ResultSetFunction<T>      resultFunction,
+                                   final BinaryOperator<T>         combiner) throws SQLException
+    {
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException("Database connection may not be null");
+        }
+
+        if(sql == null || sql.isEmpty())
+        {
+            throw new IllegalArgumentException("Query statement may not be null or empty");
+        }
+
+        if(resultFunction == null)
+        {
+            throw new IllegalArgumentException("Result function may not be null");
+        }
+
+        if(combiner == null)
+        {
+            throw new IllegalArgumentException("Combiner may not be null");
+        }
+
+        try(final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql))
+        {
+            if(parameterSetter != null)
+            {
+                parameterSetter.accept(preparedStatement);
+            }
+
+            try(final ResultSet resultSet = preparedStatement.executeQuery())
+            {
+                T value = initialValue;
+
+                while(resultSet.next())
+                {
+                    final T currentValue = resultFunction.apply(resultSet);
+
+                    value = combiner.apply(value, currentValue);
+                }
+
+                return value;
+            }
         }
     }
 
