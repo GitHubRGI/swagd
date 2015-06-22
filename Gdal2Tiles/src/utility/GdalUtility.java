@@ -133,12 +133,11 @@ public class GdalUtility
 
         try
         {
-            final SpatialReference inputSrs = GdalUtility.getSpatialReference(dataset);
-            final SpatialReference outputSrs = GdalUtility.getSpatialReference(coordinateReferenceSystem);
-
-            if (inputSrs.equals(outputSrs))
+            if (GdalUtility.dataSetMatches(dataset, coordinateReferenceSystem))
             {
-                final Dataset warpedDataset = GdalUtility.warpDatasetToSrs(dataset, inputSrs, outputSrs);
+                final Dataset warpedDataset = GdalUtility.warpDatasetToSrs(dataset,
+                                                                           GdalUtility.getSpatialReference(dataset),
+                                                                           GdalUtility.getSpatialReference(coordinateReferenceSystem));
 
                 if(warpedDataset == null)
                 {
@@ -148,7 +147,9 @@ public class GdalUtility
                 return warpedDataset;
             }
 
-            final Dataset reprojectedDataset = GdalUtility.reprojectDatasetToSrs(dataset, inputSrs, outputSrs);
+            final Dataset reprojectedDataset = GdalUtility.reprojectDatasetToSrs(dataset,
+                                                                                 GdalUtility.getSpatialReference(dataset),
+                                                                                 GdalUtility.getSpatialReference(coordinateReferenceSystem));
 
             if(reprojectedDataset == null)
             {
@@ -161,6 +162,11 @@ public class GdalUtility
         {
             dataset.delete();
         }
+    }
+
+    public static boolean dataSetMatches(final Dataset d1, final CoordinateReferenceSystem crs)
+    {
+        return GdalUtility.getSpatialReference(d1).equals(GdalUtility.getSpatialReference(crs));
     }
 
     /**
