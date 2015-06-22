@@ -46,6 +46,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
 
 import org.gdal.gdal.Dataset;
@@ -333,8 +334,8 @@ public class TilerWindow extends NavigationWindow
             return false;
         }
 
-        // Generate dataset in needed crs
-        final JDialog projecting = new JDialog(this, "Reprojecting...", ModalityType.MODELESS);
+        // Generate Dataset in needed CoordinateReference System
+        final JDialog projecting = new JDialog(this, "Reprojecting...", ModalityType.DOCUMENT_MODAL);
 
         projecting.setResizable(false);
         projecting.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -345,10 +346,25 @@ public class TilerWindow extends NavigationWindow
 
         projecting.setVisible(true);
 
-        final File data = new File(this.inputFileName.getText());
-        final Dataset dataset = GdalUtility.open(data, crs);
+        final SwingWorker<Dataset, Void> task = new SwingWorker<Dataset, Void>()
+                                    {
+                                        @Override
+                                        protected Dataset doInBackground() throws Exception
+                                        {
+                                            final File file = new File(TilerWindow.this.inputFileName.getText());
+                                            return GdalUtility.open(file, crs);
+                                        }
 
-        projecting.dispose();
+                                        @Override
+                                        protected void done()
+                                        {
+                                            projecting.dispose();
+                                        }
+                                    };
+
+
+        task.execute();
+        final Dataset dataset = task.get();
 
         // This spawns a modal dialog and blocks this thread
         ProgressDialog.trackProgress(this,
