@@ -129,6 +129,20 @@ public class RawImageTileReader implements TileStoreReader
                               final Color                     noDataColor,
                               final CoordinateReferenceSystem coordinateReferenceSystem) throws TileStoreException
     {
+        this(rawImage,
+             GdalUtility.open(rawImage, coordinateReferenceSystem),
+             tileSize,
+             noDataColor,
+             coordinateReferenceSystem);
+    }
+
+
+    public RawImageTileReader(final File                      rawImage,
+                              final Dataset                   dataset,
+                              final Dimensions<Integer>       tileSize,
+                              final Color                     noDataColor,
+                              final CoordinateReferenceSystem coordinateReferenceSystem) throws TileStoreException
+    {
         if(rawImage == null || !rawImage.canRead())
         {
             throw new IllegalArgumentException("Raw image may not be null, and must represent a valid file on disk.");
@@ -145,7 +159,7 @@ public class RawImageTileReader implements TileStoreReader
         // TODO check noDataColor for null when the feature is implemented
         // this.noDataColor = noDataColor;
 
-        this.dataset = GdalUtility.open(rawImage, coordinateReferenceSystem);
+        this.dataset = dataset;
 
         try
         {

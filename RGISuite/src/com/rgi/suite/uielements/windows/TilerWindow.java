@@ -24,8 +24,10 @@
 package com.rgi.suite.uielements.windows;
 
 import java.awt.Color;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.awt.Label;
 import java.io.File;
 import java.util.Collection;
 import java.util.concurrent.CancellationException;
@@ -38,12 +40,15 @@ import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.WindowConstants;
 
+import org.gdal.gdal.Dataset;
 import org.gdal.osr.SpatialReference;
 
 import utility.GdalUtility;
@@ -328,14 +333,29 @@ public class TilerWindow extends NavigationWindow
             return false;
         }
 
-        //TODO: insert progress dialog to track progress of reprojecting
+        // Generate dataset in needed crs
+        final JDialog projecting = new JDialog(this, "Reprojecting...", ModalityType.MODELESS);
+
+        projecting.setResizable(false);
+        projecting.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        projecting.setSize(300, 70);
+        projecting.add(new Label("Reprojecting image, this may take a moment . . . "));
+        projecting.setLocationRelativeTo(this);
+
+        projecting.setVisible(true);
+
+        final File data = new File(this.inputFileName.getText());
+        final Dataset dataset = GdalUtility.open(data, crs);
+
+        projecting.dispose();
 
         // This spawns a modal dialog and blocks this thread
         ProgressDialog.trackProgress(this,
                 this.processName() + "...",
                 taskMonitor -> { final File file = new File(this.inputFileName.getText());
 
-                                 try(final TileStoreReader tileStoreReader = new RawImageTileReader(file, tileDimensions, noDataColor, crs))
+                                 try(final TileStoreReader tileStoreReader = new RawImageTileReader(file, dataset, tileDimensions, noDataColor, crs))
                                  {
                                      try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
                                      {
@@ -353,7 +373,6 @@ public class TilerWindow extends NavigationWindow
                                          this.tileStoreWriterAdapter.removeStore();
                                          throw ex;
                                      }
-
                                      return null;
                                  }
                                });
