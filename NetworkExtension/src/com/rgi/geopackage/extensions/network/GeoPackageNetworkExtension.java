@@ -33,6 +33,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -471,18 +474,117 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Consumer callback may not be null");
         }
 
-        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s FROM %s;",
-                                                               "id",
-                                                               "from_node",
-                                                               "to_node",
-                                                               network.getTableName());
+        final String edgeQuery = String.format("SELECT %s, %s, %s FROM %s;",
+                                               "id",
+                                               "from_node",
+                                               "to_node",
+                                               network.getTableName());
 
         JdbcUtility.forEach(this.databaseConnection,
-                            attributeDescriptionQuery,
+                            edgeQuery,
                             null,
                             resultSet -> consumer.accept(new Edge(resultSet.getInt(1),
                                                                   resultSet.getInt(2),
                                                                   resultSet.getInt(3))));
+    }
+
+    /**
+     * Iterate through the nodes of a {@link Network}, applying a supplied
+     * operation
+     *
+     * @param network
+     *             Network table reference
+     * @param consumer
+     *             Callback applied to each node
+     * @param attributeDescriptions
+     *             Indicates which attributes to make available to the consumer
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public void visitNodes(final Network                           network,
+                           final BiConsumer<Integer, List<Object>> consumer,
+                           final AttributeDescription...           attributeDescriptions) throws SQLException
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        if(consumer == null)
+        {
+            throw new IllegalArgumentException("Consumer callback may not be null");
+        }
+
+        final List<String> columnNames = getColumnNames(AttributedType.Node, attributeDescriptions);
+
+        columnNames.add(0, "node_id");
+
+        final String nodeQuery = String.format("SELECT %s FROM %s;",
+                                               String.join(", ", columnNames),
+                                               getNodeAttributesTableName(network));
+
+        JdbcUtility.forEach(this.databaseConnection,
+                            nodeQuery,
+                            null,
+                            resultSet -> consumer.accept(resultSet.getInt(1),
+                                                         JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length)));
+    }
+
+    /**
+     * Performs an accumulation operation on all nodes.
+     *
+     * @param network
+     *             Network table reference
+     * @param initialValue
+     *             A starting value for the accumulation
+     * @param nodeEvaluator
+     *             Maps a node identifier and a list of attributes (in order of
+     *             request) to an instance of T
+     * @param combiner
+     *             Combines two instances of T
+     * @param attributeDescriptions
+     *             Indicates which attributes to make available to the node
+     *             evaluator
+     * @return the accumulation of all results
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public <T> T accumulateNodes(final Network                              network,
+                                 final T                                    initialValue,
+                                 final BiFunction<Integer, List<Object>, T> nodeEvaluator,
+                                 final BinaryOperator<T>                    combiner,
+                                 final AttributeDescription...              attributeDescriptions) throws SQLException
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        if(nodeEvaluator == null)
+        {
+            throw new IllegalArgumentException("Node evaluator may not be null");
+        }
+
+        if(combiner == null)
+        {
+            throw new IllegalArgumentException("Combiner may not be null");
+        }
+
+        final List<String> columnNames = getColumnNames(AttributedType.Node, attributeDescriptions);
+
+        columnNames.add(0, "node_id");
+
+        final String nodeQuery = String.format("SELECT %s FROM %s;",
+                                               String.join(", ", columnNames),
+                                               getNodeAttributesTableName(network));
+
+        return JdbcUtility.accumulate(this.databaseConnection,
+                                      nodeQuery,
+                                      null,
+                                      initialValue,
+                                      resultSet -> nodeEvaluator.apply(resultSet.getInt(1),
+                                                                       JdbcUtility.getObjects(resultSet, 2, columnNames.size())),
+                                      combiner);
     }
 
     /**
@@ -1218,6 +1320,38 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                    return description.getName();
                                                  })
                              .collect(Collectors.toList()));
+    }
+
+    private static List<String> getColumnNames(final AttributedType          attributedType,
+                                               final AttributeDescription... attributeDescriptions)
+    {
+        if(attributedType == null)
+        {
+            throw new IllegalArgumentException("Attributed type may not be null");
+        }
+
+        if(attributeDescriptions == null || attributeDescriptions.length == 0)
+        {
+            return Collections.emptyList();
+        }
+
+        final String firstNetworkTableName = attributeDescriptions[0].getNetworkTableName();
+
+        return Arrays.asList(attributeDescriptions)
+                     .stream()
+                     .map(description -> { if(!description.getNetworkTableName().equals(firstNetworkTableName))
+                                           {
+                                               throw new IllegalArgumentException("Attribute descriptions must all refer to the same network table");
+                                           }
+
+                                           if(!description.getAttributedType().equals(attributedType))
+                                           {
+                                               throw new IllegalArgumentException("Attribute descriptions must all refer exclusively to nodes or exclusively to edges");
+                                           }
+
+                                           return description.getName();
+                                         })
+                     .collect(Collectors.toList());
     }
 
     @SuppressWarnings("static-method")

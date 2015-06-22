@@ -24,16 +24,23 @@
 package com.rgi.android.common.util.functional;
 
 /**
- * @author Luke Lambert
+ * @author Luke.Lambert
  *
- * @param <T> Type of object to be consumed
- *
+ * @param <T> First parameter type
+ * @param <U> Second parameter type
+ * @param <R> Return type
  */
-public interface Consumer<T>
+public interface BiFunction<T, U, R>
 {
     /**
+     * Applies this function to the given arguments.
+     *
      * @param t
-     *             First object to be consumed
+     *             First parameter
+     * @param u
+     *             Second parameter
+     * @return
+     *      the function result
      */
-    public void accept(final T t);
+    public R apply(final T t, final U u);
 }

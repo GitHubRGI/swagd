@@ -31,6 +31,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.rgi.android.common.util.functional.BinaryOperator;
 import com.rgi.android.common.util.functional.Predicate;
 
 /**
@@ -545,6 +546,87 @@ public class JdbcUtility
         }
 
         return objects;
+    }
+
+    /**
+     * Accumulates results from a query.
+     *
+     * @param databaseConnection
+     *             Connection to the database
+     * @param sql
+     *             SQL query
+     * @param parameterSetter
+     *             Callback that sets parameters of the {@link PreparedStatement}
+     * @param initialValue
+     *             A starting value for the accumulation
+     * @param resultFunction
+     *             Maps a result set to an instance of T
+     * @param combiner
+     *             Combines two instances of T
+     * @return the accumulation of all results
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public static <T> T accumulate(final Connection                databaseConnection,
+                                   final String                    sql,
+                                   final PreparedStatementConsumer parameterSetter,
+                                   final T                         initialValue,
+                                   final ResultSetFunction<T>      resultFunction,
+                                   final BinaryOperator<T>         combiner) throws SQLException
+    {
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException("Database connection may not be null");
+        }
+
+        if(sql == null || sql.isEmpty())
+        {
+            throw new IllegalArgumentException("Query statement may not be null or empty");
+        }
+
+        if(resultFunction == null)
+        {
+            throw new IllegalArgumentException("Result function may not be null");
+        }
+
+        if(combiner == null)
+        {
+            throw new IllegalArgumentException("Combiner may not be null");
+        }
+
+        final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql);
+
+        try
+        {
+            if(parameterSetter != null)
+            {
+                parameterSetter.accept(preparedStatement);
+            }
+
+            final ResultSet resultSet = preparedStatement.executeQuery();
+
+            try
+            {
+                T value = initialValue;
+
+                while(resultSet.next())
+                {
+                    final T currentValue = resultFunction.apply(resultSet);
+
+                    value = combiner.apply(value, currentValue);
+                }
+
+                return value;
+            }
+            finally
+            {
+                resultSet.close();
+            }
+        }
+        finally
+        {
+            preparedStatement.close();
+        }
     }
 
     /**
