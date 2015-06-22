@@ -25,10 +25,12 @@ public class NetworkUtility
     {
         try(GeoPackage gpkg = new GeoPackage(geoPackageFile))
         {
-            final double longitude = 0.0;
-            final double latitude  = 0.0;
+            final double longitude = 272661.49;
+            final double latitude  = 4240831.49;
 
-            snap(gpkg, "mynetwork", longitude, latitude);
+            final int closestNode = snap(gpkg, "mynetwork", longitude, latitude);
+
+            System.out.println(closestNode);
         }
         catch(ClassNotFoundException | ConformanceException | IOException | SQLException | BadImplementationException e)
         {
@@ -59,7 +61,7 @@ public class NetworkUtility
 
                                                                                                                  return Pair.of(nodeIdentifier, distanceSquared);
                                                                                                                },
-                                                                               (currentValue, newValue) -> (currentValue.getRight() < newValue.getRight()) ? newValue : currentValue,
+                                                                               (currentValue, newValue) -> (currentValue.getRight() < newValue.getRight()) ? currentValue : newValue,
                                                                                longitudeDesription,
                                                                                latitudeDesription);
         return closest.getLeft();

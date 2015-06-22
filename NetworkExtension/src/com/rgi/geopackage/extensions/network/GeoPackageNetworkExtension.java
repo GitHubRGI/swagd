@@ -564,7 +564,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                       null,
                                       initialValue,
                                       resultSet -> nodeEvaluator.apply(resultSet.getInt(1),
-                                                                       JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length)),
+                                                                       JdbcUtility.getObjects(resultSet, 2, columnNames.size())),
                                       combiner);
     }
 
