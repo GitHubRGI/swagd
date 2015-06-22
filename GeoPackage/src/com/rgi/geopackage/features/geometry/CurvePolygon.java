@@ -23,6 +23,15 @@
 
 package com.rgi.geopackage.features.geometry;
 
+/**
+ * A planar surface defined by an exterior ring and zero or more interior ring.
+ * Each ring is defined by a Curve instance.
+ *
+ * @see "http://www.geopackage.org/spec/#sfsql_intro"
+ *
+ * @author Luke Lambert
+ *
+ */
 public class CurvePolygon extends Surface
 {
 

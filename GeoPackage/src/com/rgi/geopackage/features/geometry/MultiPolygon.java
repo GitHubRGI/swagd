@@ -23,6 +23,15 @@
 
 package com.rgi.geopackage.features.geometry;
 
+/**
+ * A restricted form of MultiSurface where each Surface in the collection must
+ * be of type Polygon.
+ *
+ * @see "http://www.geopackage.org/spec/#sfsql_intro"
+ *
+ * @author Luke Lambert
+ *
+ */
 public class MultiPolygon extends MultiSurface
 {
 

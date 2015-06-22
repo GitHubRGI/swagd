@@ -23,6 +23,15 @@
 
 package com.rgi.geopackage.features.geometry;
 
+/**
+ * A single location in space. Each point has an X and Y coordinate. A point
+ * MAY optionally also have a Z and/or an M value.
+ *
+ * @see "http://www.geopackage.org/spec/#sfsql_intro"
+ *
+ * @author Luke Lambert
+ *
+ */
 public class Point extends Geometry
 {
 

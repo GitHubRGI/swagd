@@ -20,8 +20,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.rgi.geopackage.features.geometry;
 
+/**
+ * A Curve that connects two or more points in space.
+ *
+ * @see "http://www.geopackage.org/spec/#sfsql_intro"
+ *
+ * @author Luke Lambert
+ *
+ */
 public class LineString extends Curve
 {
 

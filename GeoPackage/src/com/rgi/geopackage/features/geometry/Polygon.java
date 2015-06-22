@@ -23,6 +23,15 @@
 
 package com.rgi.geopackage.features.geometry;
 
+/**
+ * A restricted form of CurvePolygon where each ring is defined as a simple,
+ * closed LineString.
+ *
+ * @see "http://www.geopackage.org/spec/#sfsql_intro"
+ *
+ * @author Luke Lambert
+ *
+ */
 public class Polygon extends CurvePolygon
 {
 

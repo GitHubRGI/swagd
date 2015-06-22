@@ -23,6 +23,15 @@
 
 package com.rgi.geopackage.features.geometry;
 
+/**
+ * A restricted form of MultiCurve where each Curve in the collection must be
+ * of type LineString.
+ *
+ * @see "http://www.geopackage.org/spec/#sfsql_intro"
+ *
+ * @author Luke Lambert
+ *
+ */
 public class MultiLineString extends MultiCurve
 {
 

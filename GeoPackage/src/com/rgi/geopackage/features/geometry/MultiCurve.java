@@ -23,6 +23,15 @@
 
 package com.rgi.geopackage.features.geometry;
 
+/**
+ * A restricted form of GeometryCollection where each Geometry in the
+ * collection must be of type Curve.
+ *
+ * @see "http://www.geopackage.org/spec/#sfsql_intro"
+ *
+ * @author Luke Lambert
+ *
+ */
 public class MultiCurve extends GeometryCollection
 {
 

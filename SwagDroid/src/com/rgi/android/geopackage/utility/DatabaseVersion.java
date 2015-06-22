@@ -26,7 +26,7 @@ package com.rgi.android.geopackage.utility;
 import java.util.Locale;
 
 /**
- * @author Luke.Lambert
+ * @author Luke Lambert
  *
  */
 public class DatabaseVersion implements Comparable<DatabaseVersion>

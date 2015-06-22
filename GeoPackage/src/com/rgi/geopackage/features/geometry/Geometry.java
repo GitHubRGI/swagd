@@ -24,7 +24,11 @@
 package com.rgi.geopackage.features.geometry;
 
 /**
- * @author Luke.Lambert
+ * The root of the geometry type hierarchy.
+ *
+ * @see "http://www.geopackage.org/spec/#sfsql_intro"
+ *
+ * @author Luke Lambert
  *
  */
 public abstract class Geometry
