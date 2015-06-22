@@ -344,8 +344,6 @@ public class TilerWindow extends NavigationWindow
         projecting.add(new Label("Reprojecting image, this may take a moment . . . "));
         projecting.setLocationRelativeTo(this);
 
-        projecting.setVisible(true);
-
         final SwingWorker<Dataset, Void> task = new SwingWorker<Dataset, Void>()
                                     {
                                         @Override
@@ -364,6 +362,7 @@ public class TilerWindow extends NavigationWindow
 
 
         task.execute();
+        projecting.setVisible(true);
         final Dataset dataset = task.get();
 
         // This spawns a modal dialog and blocks this thread
