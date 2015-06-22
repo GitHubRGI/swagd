@@ -37,6 +37,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -48,7 +49,6 @@ import java.util.zip.DataFormatException;
 import org.gdal.gdal.Band;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
-import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.gdal.osr.SpatialReference;
 import org.gdal.osr.osr;
@@ -134,15 +134,28 @@ public class GdalUtility
         try
         {
             final SpatialReference inputSrs = GdalUtility.getSpatialReference(dataset);
+            final SpatialReference outputSrs = GdalUtility.getSpatialReference(coordinateReferenceSystem);
 
-            final Dataset warpedDataset = GdalUtility.warpDatasetToSrs(dataset, inputSrs, GdalUtility.getSpatialReference(coordinateReferenceSystem));
+            if (inputSrs.equals(outputSrs))
+            {
+                final Dataset warpedDataset = GdalUtility.warpDatasetToSrs(dataset, inputSrs, outputSrs);
 
-            if(warpedDataset == null)
+                if(warpedDataset == null)
+                {
+                    throw new RuntimeException(new GdalError().getMessage());
+                }
+
+                return warpedDataset;
+            }
+
+            final Dataset reprojectedDataset = GdalUtility.reprojectDatasetToSrs(dataset, inputSrs, outputSrs);
+
+            if(reprojectedDataset == null)
             {
                 throw new RuntimeException(new GdalError().getMessage());
             }
 
-            return warpedDataset;
+            return reprojectedDataset;
         }
         finally
         {
@@ -1031,6 +1044,7 @@ public class GdalUtility
      * @param toSrs
      *             Spatial reference system to warp the <code>dataset</code> to
      * @return A {@link Dataset} in the input {@link SpatialReference} requested
+     * @throws IOException
      */
     public static Dataset reprojectDatasetToSrs(final Dataset          dataset,
                                                 final SpatialReference fromSrs,
@@ -1051,25 +1065,28 @@ public class GdalUtility
             throw new IllegalArgumentException("To-Srs cannot be null.");
         }
 
-        //TODO:finish using ReprojectImage to create a dataset in the toSRS
-        // http://gis.stackexchange.com/questions/9415/problems-with-gdal1-8-java-bindings-gdal-reprojectimage-produces-no-data
-        final Dataset output = dataset.GetDriver().Create("test", dataset.getRasterXSize(), dataset.getRasterCount());
+        Path path;
+        try
+        {
+            path = File.createTempFile("Reprojection", ".tiff").toPath();
+        }
+        catch (final IOException e)
+        {
+            throw new RuntimeException("Caught error when creating reprojecting image");
+        }
+        final Dataset output = gdal.GetDriverByName("GTiff").Create(path.toString(), dataset.getRasterXSize(), dataset.getRasterYSize(), dataset.getRasterCount());
 
         output.SetProjection(toSrs.ExportToWkt());
 
-        final double[] affineCoefficients = new double[6];
-//        determine values of argin
-//        adfGeoTransform[0] /* top left x */
-//        adfGeoTransform[1] /* w-e pixel resolution */
-//        adfGeoTransform[2] /* 0 */
-//        adfGeoTransform[3] /* top left y */
-//        adfGeoTransform[4] /* 0 */
-//        adfGeoTransform[5] /* n-s pixel resolution (negative value) */
-        output.SetGeoTransform(affineCoefficients);
+        final Dataset temp = gdal.AutoCreateWarpedVRT(dataset,
+                                                      fromSrs.ExportToWkt(),
+                                                      toSrs.ExportToWkt(),
+                                                      gdalconstConstants.GRA_Average);
 
-        if(gdal.ReprojectImage(dataset, output, fromSrs.ExportToWkt(), toSrs.ExportToWkt()) == gdalconst.CE_Failure)
+        output.SetGeoTransform(temp.GetGeoTransform());
+        if(gdal.ReprojectImage(dataset, output, fromSrs.ExportToWkt(), toSrs.ExportToWkt()) == gdalconstConstants.CE_Failure)
         {
-            throw new RuntimeException(new GdalError().getMessage());
+            throw new RuntimeException("Failed to reproject image");
         }
 
         return output;
