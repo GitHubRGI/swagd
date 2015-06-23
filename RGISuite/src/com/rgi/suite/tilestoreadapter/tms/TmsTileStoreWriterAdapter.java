@@ -137,7 +137,7 @@ public class TmsTileStoreWriterAdapter extends ImageFormatTileStoreAdapter
                                                        File.separatorChar,
                                                        FileUtility.nameWithoutExtension(inputFile));
 
-            this.directory.setText(FileUtility.appendForUnique(directoryName) + File.separatorChar);
+            this.directory.setText(FileUtility.appendForUniqueFolder(directoryName) + File.separatorChar);
         }
     }
 

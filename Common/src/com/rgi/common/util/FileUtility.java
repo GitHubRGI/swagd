@@ -87,4 +87,29 @@ public class FileUtility
 
         return newFileName;
     }
+
+    /**
+     * Appends a number to a foldername if the original name already exists.
+     *
+     * @param foldername
+     *             Desired folder name
+     * @return A folder name with a number appended before the extension if the
+     *             original was already a folder.
+     */
+    public static String appendForUniqueFolder(final String foldername)
+    {
+        if(foldername == null)
+        {
+            throw new IllegalArgumentException("Foldername may not be null.");
+        }
+
+        String newFoldername = foldername;
+
+        for(int x = 1; new File(newFoldername).exists(); ++x)
+        {
+            newFoldername = String.format("%s (%d)", foldername, x);
+        }
+
+        return newFoldername;
+    }
 }
