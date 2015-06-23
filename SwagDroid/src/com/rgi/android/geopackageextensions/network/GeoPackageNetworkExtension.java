@@ -1564,12 +1564,12 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     /**
      * Returns the node identifier of the closest node to a point
      *
-     * @param xDesription
+     * @param xDescription
      *             Attribute description of the horizontal component of a
      *             coordinate
      * @param x
      *             Horizontal component of a coordinate
-     * @param yDesription
+     * @param yDescription
      *             Attribute description of the vertical component of a
      *             coordinate
      * @param y
@@ -1584,15 +1584,18 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      *             if there is a database error
      */
     @Deprecated
-    public Integer getClosestNode(final AttributeDescription xDesription, final double x, final AttributeDescription yDesription, final double y) throws SQLException
+    public Integer getClosestNode(final AttributeDescription xDescription,
+                                  final double               x,
+                                  final AttributeDescription yDescription,
+                                  final double               y) throws SQLException
     {
-        final Pair<String, List<String>> schema = getSchema(AttributedType.Node, xDesription, yDesription);
+        final Pair<String, List<String>> schema = getSchema(AttributedType.Node, xDescription, yDescription);
 
         final String distanceQuery = String.format("SELECT %s, MIN(((%2$s - %3$f) * (%2$s - %3$f)) + ((%4$s - %5$s) * (%4$s - %5$s))) as distSqrd FROM %6$s;",
                                                    "node_id",
-                                                   xDesription.getName(),
+                                                   xDescription.getName(),
                                                    x,
-                                                   yDesription.getName(),
+                                                   yDescription.getName(),
                                                    y,
                                                    getNodeAttributesTableName(schema.getLeft()));
 
