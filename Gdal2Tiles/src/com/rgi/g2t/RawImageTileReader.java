@@ -33,12 +33,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -235,12 +237,28 @@ public class RawImageTileReader implements TileStoreReader
         this.cachedTiles = new HashMap<>();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void close()
     {
         if(this.dataset != null)
         {
+            final Vector<String> files = this.dataset.GetFileList();
             this.dataset.delete();
+            for (final String file : files)
+            {
+                if(file.startsWith((System.getProperty("java.io.tmpdir"))))
+                {
+                    try
+                    {
+                        Files.delete(Paths.get(file));
+                    }
+                    catch (final IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
     }
 

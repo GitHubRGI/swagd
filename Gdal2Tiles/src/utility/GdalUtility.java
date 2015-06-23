@@ -37,6 +37,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
@@ -1074,6 +1075,7 @@ public class GdalUtility
 
         final Path path = File.createTempFile("Reprojection", ".tiff").toPath();
 
+
         final Dataset output = gdal.GetDriverByName("GTiff").Create(path.toString(), dataset.getRasterXSize(), dataset.getRasterYSize(), dataset.getRasterCount());
 
         output.SetProjection(toSrs.ExportToWkt());
@@ -1090,7 +1092,8 @@ public class GdalUtility
         if(result != gdalconstConstants.CE_None)
         {
             //remove database on error
-            gdal.GetDriverByName("GTiff").Delete(path.toString());
+            output.delete();
+            Files.delete(path);
 
             if(result == gdalconstConstants.CE_Failure)
             {
