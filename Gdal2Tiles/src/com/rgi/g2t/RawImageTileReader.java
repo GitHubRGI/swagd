@@ -239,7 +239,7 @@ public class RawImageTileReader implements TileStoreReader
 
     @SuppressWarnings("unchecked")
     @Override
-    public void close()
+    public void close() throws TileStoreException
     {
         if(this.dataset != null)
         {
@@ -255,7 +255,7 @@ public class RawImageTileReader implements TileStoreReader
                     }
                     catch (final IOException e)
                     {
-                        e.printStackTrace();
+                        throw new TileStoreException(e);
                     }
                 }
             }
