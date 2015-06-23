@@ -1561,6 +1561,54 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         this.databaseConnection.commit();
     }
 
+    /**
+     * Returns the node identifier of the closest node to a point
+     *
+     * @param xDesription
+     *             Attribute description of the horizontal component of a
+     *             coordinate
+     * @param x
+     *             Horizontal component of a coordinate
+     * @param yDesription
+     *             Attribute description of the vertical component of a
+     *             coordinate
+     * @param y
+     *             Vertical component of a coordinate
+     * @return Node identifier of the closest node to a point
+     *
+     * @deprecated This is very 'routing' specific, and therefore does not
+     * belong in the network plug-in. It'll get moved to a routing specific
+     * plug-in when time allows.
+     *
+     * @throws SQLException
+     *             if there is a database error
+     */
+    @Deprecated
+    public Integer getClosestNode(final AttributeDescription xDesription, final double x, final AttributeDescription yDesription, final double y) throws SQLException
+    {
+        final Pair<String, List<String>> schema = getSchema(AttributedType.Node, xDesription, yDesription);
+
+        final String distanceQuery = String.format("SELECT %s, MIN(((%2$s - %3$f) * (%2$s - %3$f)) + ((%4$s - %5$s) * (%4$s - %5$s))) as distSqrd FROM %6$s;",
+                                                   "node_id",
+                                                   xDesription.getName(),
+                                                   x,
+                                                   yDesription.getName(),
+                                                   y,
+                                                   getNodeAttributesTableName(schema.getLeft()));
+
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     distanceQuery,
+                                     null,
+                                     new ResultSetFunction<Integer>()
+                                     {
+                                         @Override
+                                         public Integer apply(final ResultSet resultSet) throws SQLException
+                                         {
+                                             return resultSet.getInt(1);
+                                         }
+                                     });
+    }
+
     private static Pair<String, List<String>> getSchema(final AttributedType          attributedType,
                                                         final AttributeDescription... attributeDescriptions)
     {
