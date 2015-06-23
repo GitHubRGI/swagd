@@ -345,21 +345,20 @@ public class TilerWindow extends NavigationWindow
         projecting.setLocationRelativeTo(this);
 
         final SwingWorker<Dataset, Void> task = new SwingWorker<Dataset, Void>()
-                                    {
-                                        @Override
-                                        protected Dataset doInBackground() throws Exception
-                                        {
-                                            final File file = new File(TilerWindow.this.inputFileName.getText());
-                                            return GdalUtility.open(file, crs);
-                                        }
+                                                {
+                                                    @Override
+                                                    protected Dataset doInBackground() throws Exception
+                                                    {
+                                                        final File file = new File(TilerWindow.this.inputFileName.getText());
+                                                        return GdalUtility.open(file, crs);
+                                                    }
 
-                                        @Override
-                                        protected void done()
-                                        {
-                                            projecting.dispose();
-                                        }
-                                    };
-
+                                                    @Override
+                                                    protected void done()
+                                                    {
+                                                        projecting.dispose();
+                                                    }
+                                                };
 
         task.execute();
         projecting.setVisible(true);

@@ -133,30 +133,26 @@ public class GdalUtility
 
         try
         {
+            final Dataset openDataset;
             if (GdalUtility.dataSetMatches(dataset, coordinateReferenceSystem))
             {
-                final Dataset warpedDataset = GdalUtility.warpDatasetToSrs(dataset,
-                                                                           GdalUtility.getSpatialReference(dataset),
-                                                                           GdalUtility.getSpatialReference(coordinateReferenceSystem));
-
-                if(warpedDataset == null)
-                {
-                    throw new RuntimeException(new GdalError().getMessage());
-                }
-
-                return warpedDataset;
+                openDataset = GdalUtility.warpDatasetToSrs(dataset,
+                                                           GdalUtility.getSpatialReference(dataset),
+                                                           GdalUtility.getSpatialReference(coordinateReferenceSystem));
+            }
+            else
+            {
+               openDataset = GdalUtility.reprojectDatasetToSrs(dataset,
+                                                               GdalUtility.getSpatialReference(dataset),
+                                                               GdalUtility.getSpatialReference(coordinateReferenceSystem));
             }
 
-            final Dataset reprojectedDataset = GdalUtility.reprojectDatasetToSrs(dataset,
-                                                                                 GdalUtility.getSpatialReference(dataset),
-                                                                                 GdalUtility.getSpatialReference(coordinateReferenceSystem));
-
-            if(reprojectedDataset == null)
+            if(openDataset == null)
             {
                 throw new RuntimeException(new GdalError().getMessage());
             }
 
-            return reprojectedDataset;
+            return openDataset;
         }
         finally
         {
