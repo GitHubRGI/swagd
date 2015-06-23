@@ -108,13 +108,13 @@ public class FileUtility
             throw new IllegalArgumentException("FolderName may not be empty.");
         }
 
-        String newFoldername = folderName;
+        String newFolderName = folderName;
 
-        for(int x = 1; new File(newFoldername).exists(); ++x)
+        for(int x = 1; new File(newFolderName).exists(); ++x)
         {
-            newFoldername = String.format("%s (%d)", folderName, x);
+            newFolderName = String.format("%s (%d)", folderName, x);
         }
 
-        return newFoldername;
+        return newFolderName;
     }
 }
