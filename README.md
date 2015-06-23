@@ -19,8 +19,6 @@ A Java-based application for converting geospatial images into tiles, packaging 
 * Windows executable download link will be available soon.
 
 ## Projects
-* __Android__: Android-specific implementations of the GeoPackage and Common projects
-  * _Dependency_: Nothing
 * __Common__: Contains functionality for coordinates, tiles, tile stores, and tasks
   * _Dependency_: Nothing
 * __DataStore__: Functionality responsible for manipulating Tile Stores
@@ -37,5 +35,7 @@ A Java-based application for converting geospatial images into tiles, packaging 
   * _Dependencies_: Common, GeoPackage
 * __RGISuite__: Main project and workflow aggregation
   * _Dependencies_: Common, Gdal2Tiles, Geopackage, GeoViewer, Packager
+* __SwagDroid__: Android-specific implementations of the GeoPackage and Common projects
+  * _Dependency_: Nothing
 * __VerifierTool__: Verify GeoPackages against the OGC GeoPackage Specification
   * _Dependencies_: Common, GeoPackage
