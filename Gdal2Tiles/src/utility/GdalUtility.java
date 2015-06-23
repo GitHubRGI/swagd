@@ -154,6 +154,10 @@ public class GdalUtility
 
             return openDataset;
         }
+        catch (IOException | TilingException e)
+        {
+            throw new RuntimeException(e);
+        }
         finally
         {
             dataset.delete();
@@ -1047,10 +1051,11 @@ public class GdalUtility
      *             Spatial reference system to warp the <code>dataset</code> to
      * @return A {@link Dataset} in the input {@link SpatialReference} requested
      * @throws IOException
+     * @throws TilingException
      */
     public static Dataset reprojectDatasetToSrs(final Dataset          dataset,
                                                 final SpatialReference fromSrs,
-                                                final SpatialReference toSrs)
+                                                final SpatialReference toSrs) throws IOException, TilingException
     {
         if(dataset == null)
         {
@@ -1067,15 +1072,8 @@ public class GdalUtility
             throw new IllegalArgumentException("To-Srs cannot be null.");
         }
 
-        Path path;
-        try
-        {
-            path = File.createTempFile("Reprojection", ".tiff").toPath();
-        }
-        catch (final IOException e)
-        {
-            throw new RuntimeException("Caught error when creating reprojecting image");
-        }
+        final Path path = File.createTempFile("Reprojection", ".tiff").toPath();
+
         final Dataset output = gdal.GetDriverByName("GTiff").Create(path.toString(), dataset.getRasterXSize(), dataset.getRasterYSize(), dataset.getRasterCount());
 
         output.SetProjection(toSrs.ExportToWkt());
@@ -1086,9 +1084,23 @@ public class GdalUtility
                                                       gdalconstConstants.GRA_Average);
 
         output.SetGeoTransform(temp.GetGeoTransform());
-        if(gdal.ReprojectImage(dataset, output, fromSrs.ExportToWkt(), toSrs.ExportToWkt()) == gdalconstConstants.CE_Failure)
+        temp.delete();
+
+        final int result = gdal.ReprojectImage(dataset, output, fromSrs.ExportToWkt(), toSrs.ExportToWkt());
+        if(result != gdalconstConstants.CE_None)
         {
-            throw new RuntimeException("Failed to reproject image");
+            //remove database on error
+            gdal.GetDriverByName("GTiff").Delete(path.toString());
+
+            if(result == gdalconstConstants.CE_Failure)
+            {
+                throw new IOException("Tile call outside of raster bounds.");
+            }
+
+            if(result == gdalconstConstants.CE_Fatal)
+            {
+                throw new TilingException("Fatal error detected from GDAL readRaster.");
+            }
         }
 
         return output;
