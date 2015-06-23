@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import com.rgi.common.Pair;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.extensions.network.AttributeDescription;
@@ -51,7 +50,7 @@ public class NetworkUtility
             final double longitude = 272661.49;
             final double latitude  = 4240831.49;
 
-            final int closestNode = snap(gpkg, "mynetwork", longitude, latitude);
+            final Integer closestNode = snap(gpkg, "mynetwork", longitude, latitude);
 
             System.out.println(closestNode);
         }
@@ -61,10 +60,11 @@ public class NetworkUtility
         }
     }
 
-    private static int snap(final GeoPackage gpkg,
-                            final String     networkTable,
-                            final double     longitude,
-                            final double     latitude) throws SQLException, BadImplementationException
+    @SuppressWarnings("deprecation")
+    private static Integer snap(final GeoPackage gpkg,
+                                final String     networkTable,
+                                final double     longitude,
+                                final double     latitude) throws SQLException, BadImplementationException
     {
         final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
         final Network network = networkExtension.getNetwork(networkTable);
@@ -72,21 +72,27 @@ public class NetworkUtility
         final AttributeDescription longitudeDesription = networkExtension.getAttributeDescription(network, "longitude", AttributedType.Node);
         final AttributeDescription latitudeDesription  = networkExtension.getAttributeDescription(network, "latitude",  AttributedType.Node);
 
-        final Pair<Integer, Double> closest = networkExtension.accumulateNodes(network,
-                                                                               Pair.of(null, Double.MAX_VALUE),
-                                                                               (nodeIdentifier, attributes) -> { final double nodeLongitude = (Double)attributes.get(0);
-                                                                                                                 final double nodeLatitude  = (Double)attributes.get(1);
+//        final Pair<Integer, Double> closest = networkExtension.accumulateNodes(network,
+//                                                                               Pair.of(null, Double.MAX_VALUE),
+//                                                                               (nodeIdentifier, attributes) -> { final double nodeLongitude = (Double)attributes.get(0);
+//                                                                                                                 final double nodeLatitude  = (Double)attributes.get(1);
+//
+//                                                                                                                 final double longitudeDifference = nodeLongitude - longitude;
+//                                                                                                                 final double latitudeDifference  = nodeLatitude  - latitude;
+//
+//                                                                                                                 final double distanceSquared = (longitudeDifference*longitudeDifference) + (latitudeDifference*latitudeDifference);
+//
+//                                                                                                                 return Pair.of(nodeIdentifier, distanceSquared);
+//                                                                                                               },
+//                                                                               (currentValue, newValue) -> (currentValue.getRight() < newValue.getRight()) ? currentValue : newValue,
+//                                                                               longitudeDesription,
+//                                                                               latitudeDesription);
+//        return closest.getLeft();
 
-                                                                                                                 final double longitudeDifference = nodeLongitude - longitude;
-                                                                                                                 final double latitudeDifference  = nodeLatitude  - latitude;
+//        networkExtension.getNodesInRange(network,
+//                                         Pair.of(longitudeDescription, new Range()),
+//                                         Pair.of()));
 
-                                                                                                                 final double distanceSquared = (longitudeDifference*longitudeDifference) + (latitudeDifference*latitudeDifference);
-
-                                                                                                                 return Pair.of(nodeIdentifier, distanceSquared);
-                                                                                                               },
-                                                                               (currentValue, newValue) -> (currentValue.getRight() < newValue.getRight()) ? currentValue : newValue,
-                                                                               longitudeDesription,
-                                                                               latitudeDesription);
-        return closest.getLeft();
+        return networkExtension.getClosestNode(longitudeDesription, longitude, latitudeDesription, latitude);
     }
 }
