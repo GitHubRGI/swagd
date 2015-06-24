@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>Gdal2Tiles</groupId>
-  <artifactId>Gdal2Tiles</artifactId>
-  <packaging>jar</packaging>
-  <name>Gdal2Tiles Library</name>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>Gdal2Tiles</groupId>
+    <artifactId>Gdal2Tiles</artifactId>
+    <packaging>jar</packaging>
+    <name>Gdal2Tiles Library</name>
 
     <properties>
         <jacoco.version>0.7.2.201409121644</jacoco.version>
