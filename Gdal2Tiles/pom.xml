@@ -7,6 +7,14 @@
 
     <properties>
         <jacoco.version>0.7.2.201409121644</jacoco.version>
+        <junit.version>4.11</junit.version>
+        <compiler.version>3.1</compiler.version>
+        <assembly.version>2.5.3</assembly.version>
+        <jdk.version>1.8</jdk.version>
+        <findbugs.version>3.0.0</findbugs.version>
+        <xalan.version>2.7.2</xalan.version>
+        <xerces.version>2.11.0</xerces.version>
+        <gdal.version>1.11.1</gdal.version>
     </properties>
 
     <parent>
@@ -29,22 +37,22 @@
         <dependency>
             <groupId>org.osgeo</groupId>
             <artifactId>gdal</artifactId>
-            <version>1.11.1</version>
+            <version>${gdal.version}</version>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
-            <version>2.11.0</version>
+            <version>${xerces.version}</version>
         </dependency>
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
-            <version>2.7.2</version>
+            <version>${xalan.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>${junit.version}</version>
         </dependency>
     </dependencies>
 
@@ -68,7 +76,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.5.3</version>
+                <version>${assembly.version}</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -77,10 +85,10 @@
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>${compiler.version}</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
                 </configuration>
             </plugin>
             <plugin>

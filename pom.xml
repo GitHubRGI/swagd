@@ -51,11 +51,11 @@
         <jacoco.report.common>Common/target/site/jacoco/jacoco.xml</jacoco.report.common>
         <jacoco.report.datastore>DataStore/target/site/jacoco/jacoco.xml</jacoco.report.datastore>
         <jacoco.report.gdal2tiles>Gdal2Tiles/target/site/jacoco/jacoco.xml</jacoco.report.gdal2tiles>
-        <jacoco.report.geoviewer>GeoViewer/target/site/jacoco/jacoco.xml</jacoco.report.geoviewer>
-        <jacoco.report.tile2gpkg>GeoPackage/target/site/jacoco/jacoco.xml</jacoco.report.tile2gpkg>
+        <!--jacoco.report.geoviewer>GeoViewer/target/site/jacoco/jacoco.xml</jacoco.report.geoviewer-->
+        <jacoco.report.geopackage>GeoPackage/target/site/jacoco/jacoco.xml</jacoco.report.geopackage>
         <jacoco.report.packager>Packager/target/site/jacoco/jacoco.xml</jacoco.report.packager>
-        <jacoco.report.rgisuite>RGISuite/target/site/jacoco/jacoco.xml</jacoco.report.rgisuite>
-        <jacoco.report.verifiertool>VerifierTool/target/site/jacoco/jacoco.xml</jacoco.report.verifiertool>
+        <!--jacoco.report.rgisuite>RGISuite/target/site/jacoco/jacoco.xml</jacoco.report.rgisuite-->
+        <!--jacoco.report.verifiertool>VerifierTool/target/site/jacoco/jacoco.xml</jacoco.report.verifiertool-->
     </properties>
 
     <modules>
@@ -142,11 +142,11 @@
                         <jacocoReport>${jacoco.report.common}</jacocoReport>
                         <jacocoReport>${jacoco.report.datastore}</jacocoReport>
                         <jacocoReport>${jacoco.report.gdal2tiles}</jacocoReport>
-                        <jacocoReport>${jacoco.report.geoviewer}</jacocoReport>
-                        <jacocoReport>${jacoco.report.tile2gpkg}</jacocoReport>
-                        <jacocoReport>${jacoco.report.packager}</jacocoReport>
-                        <jacocoReport>${jacoco.report.rgisuite}</jacocoReport>
-                        <jacocoReport>${jacoco.report.verifiertool}</jacocoReport>
+                        <!--jacocoReport>${jacoco.report.geoviewer}</jacocoReport-->
+                        <jacocoReport>${jacoco.report.geopackage}</jacocoReport>
+                        <!--jacocoReport>${jacoco.report.packager}</jacocoReport-->
+                        <!--jacocoReport>${jacoco.report.rgisuite}</jacocoReport-->
+                        <!--jacocoReport>${jacoco.report.verifiertool}</jacocoReport-->
                     </jacocoReports>
                     <repoToken>fe7NkBn0up0oqz1ynsOnyQg8O0O3ML9Sh</repoToken>
                     <!--dryRun>true</dryRun-->
