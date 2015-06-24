@@ -148,7 +148,6 @@
                         <jacocoReport>${jacoco.report.rgisuite}</jacocoReport>
                         <jacocoReport>${jacoco.report.verifiertool}</jacocoReport>
                     </jacocoReports>
-                    <repoToken>JcXH59BZHMFTbsrZJpWKBtnIUTPaoAeLM</repoToken>
                     <!--dryRun>true</dryRun-->
                 </configuration>
             </plugin>
