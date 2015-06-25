@@ -1,4 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                        http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
     <groupId>Gdal2Tiles</groupId>
     <artifactId>Gdal2Tiles</artifactId>
@@ -18,9 +23,9 @@
     </properties>
 
     <parent>
-      <groupId>com.rgi.TilingApp</groupId>
-      <artifactId>SWAGD</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+        <groupId>com.rgi.TilingApp</groupId>
+        <artifactId>SWAGD</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -30,7 +35,7 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.rgi.DataStore</groupId>
+            <groupId>DataStore</groupId>
             <artifactId>DataStore</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
@@ -98,14 +103,14 @@
                 <executions>
                     <execution>
                         <goals>
-                          <goal>prepare-agent</goal>
+                            <goal>prepare-agent</goal>
                         </goals>
                     </execution>
                     <execution>
                         <id>report</id>
                         <phase>prepare-package</phase>
                         <goals>
-                          <goal>report</goal>
+                            <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>
