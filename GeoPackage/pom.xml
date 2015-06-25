@@ -1,4 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" >
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                        http://maven.apache.org/xsd/maven-4.0.0.xsd" >
+
     <modelVersion>4.0.0</modelVersion>
     <groupId>GeoPackage</groupId>
     <artifactId>GeoPackage</artifactId>
@@ -6,7 +11,11 @@
     <description>A tool for tiling source geospatial imagery and producing a derivative geopackage.</description>
 
     <properties>
+        <jdk.version>1.8</jdk.version>
         <jacoco.version>0.7.2.201409121644</jacoco.version>
+        <xerial.version>3.8.7</xerial.version>
+        <junit.version>4.11</junit.version>
+        <compiler.version>3.1</compiler.version>
     </properties>
 
     <parent>
@@ -19,12 +28,12 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.8.7</version>
+            <version>${xerial.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>${junit.version}</version>
         </dependency>
         <dependency>
             <groupId>Common</groupId>
@@ -39,10 +48,10 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>${compiler.version}</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
                 </configuration>
             </plugin>
           <plugin>
