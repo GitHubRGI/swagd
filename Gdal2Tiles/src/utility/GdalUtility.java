@@ -37,6 +37,8 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -132,21 +134,40 @@ public class GdalUtility
 
         try
         {
-            final SpatialReference inputSrs = GdalUtility.getSpatialReference(dataset);
+            final Dataset openDataset;
+            if (GdalUtility.dataSetMatches(dataset, coordinateReferenceSystem))
+            {
+                openDataset = GdalUtility.warpDatasetToSrs(dataset,
+                                                           GdalUtility.getSpatialReference(dataset),
+                                                           GdalUtility.getSpatialReference(coordinateReferenceSystem));
+            }
+            else
+            {
+               openDataset = GdalUtility.reprojectDatasetToSrs(dataset,
+                                                               GdalUtility.getSpatialReference(dataset),
+                                                               GdalUtility.getSpatialReference(coordinateReferenceSystem));
+            }
 
-            final Dataset warpedDataset = GdalUtility.warpDatasetToSrs(dataset, inputSrs, GdalUtility.getSpatialReference(coordinateReferenceSystem));
-
-            if(warpedDataset == null)
+            if(openDataset == null)
             {
                 throw new RuntimeException(new GdalError().getMessage());
             }
 
-            return warpedDataset;
+            return openDataset;
+        }
+        catch (IOException | TilingException e)
+        {
+            throw new RuntimeException(e);
         }
         finally
         {
             dataset.delete();
         }
+    }
+
+    public static boolean dataSetMatches(final Dataset d1, final CoordinateReferenceSystem crs)
+    {
+        return GdalUtility.getSpatialReference(d1).equals(GdalUtility.getSpatialReference(crs));
     }
 
     /**
@@ -1014,6 +1035,75 @@ public class GdalUtility
         if(output == null)
         {
             throw new RuntimeException(new GdalError().getMessage());
+        }
+
+        return output;
+    }
+
+    /**
+     * Reproject an input {@link Dataset} into a different spatial reference system. Does
+     * not correct for NODATA values.
+     *
+     * @param dataset
+     *             An input {@link Dataset}
+     * @param fromSrs
+     *             Original spatial reference system of the <code>dataset</code>
+     * @param toSrs
+     *             Spatial reference system to warp the <code>dataset</code> to
+     * @return A {@link Dataset} in the input {@link SpatialReference} requested
+     * @throws IOException
+     * @throws TilingException
+     */
+    public static Dataset reprojectDatasetToSrs(final Dataset          dataset,
+                                                final SpatialReference fromSrs,
+                                                final SpatialReference toSrs) throws IOException, TilingException
+    {
+        if(dataset == null)
+        {
+            throw new IllegalArgumentException("Input dataset cannot be null.");
+        }
+
+        if(fromSrs == null)
+        {
+            throw new IllegalArgumentException("From-Srs cannot be null.");
+        }
+
+        if(toSrs == null)
+        {
+            throw new IllegalArgumentException("To-Srs cannot be null.");
+        }
+
+        final Path path = File.createTempFile("Reprojection", ".tiff").toPath();
+
+
+        final Dataset output = gdal.GetDriverByName("GTiff").Create(path.toString(), dataset.getRasterXSize(), dataset.getRasterYSize(), dataset.getRasterCount());
+
+        output.SetProjection(toSrs.ExportToWkt());
+
+        final Dataset temp = gdal.AutoCreateWarpedVRT(dataset,
+                                                      fromSrs.ExportToWkt(),
+                                                      toSrs.ExportToWkt(),
+                                                      gdalconstConstants.GRA_Average);
+
+        output.SetGeoTransform(temp.GetGeoTransform());
+        temp.delete();
+
+        final int result = gdal.ReprojectImage(dataset, output, fromSrs.ExportToWkt(), toSrs.ExportToWkt());
+        if(result != gdalconstConstants.CE_None)
+        {
+            //remove database on error
+            output.delete();
+            Files.delete(path);
+
+            if(result == gdalconstConstants.CE_Failure)
+            {
+                throw new IOException("Tile call outside of raster bounds.");
+            }
+
+            if(result == gdalconstConstants.CE_Fatal)
+            {
+                throw new TilingException("Fatal error detected from GDAL readRaster.");
+            }
         }
 
         return output;

@@ -39,7 +39,8 @@ import java.util.Random;
 
 import org.junit.Test;
 
-import utility.DatabaseUtility;
+import com.rgi.geopackage.utility.DatabaseUtility;
+import com.rgi.geopackage.utility.DatabaseVersion;
 
 /**
  * @author Jenifer Cochran
@@ -265,7 +266,7 @@ public class DatabaseUtilityTest
      * @throws Exception
      *             throws when an Exception occurs
      */
-    @Test
+    @Test(expected= IllegalArgumentException.class)
     public void databaseUtilityTableorViewExists3() throws Exception
     {
         final File testFile = this.getRandomFile(3);
@@ -274,8 +275,8 @@ public class DatabaseUtilityTest
         try(Connection con  = this.getConnection(testFile.getAbsolutePath());
             )
         {
-            final boolean tableFound = DatabaseUtility.tableOrViewExists(con, null);
-            assertTrue("The Database BoundsUtility method table or view exists method returned true when it should have returned false.", !tableFound);
+            DatabaseUtility.tableOrViewExists(con, null);
+            fail("DatabaseUtility should have thrown an IllegalArgumentException when tablename was null or empty");
         }
         finally
         {
@@ -465,11 +466,11 @@ public class DatabaseUtilityTest
         try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
         {
             this.addTable(con, "foo");
-            final String foundSqliteVersion = DatabaseUtility.getSqliteVersion(testFile);
-            assertTrue(String.format("The SQLite Version was different from expected. Expected: %s, Actual: %s",
-                                     sqliteVersion,
+            final DatabaseVersion foundSqliteVersion = DatabaseUtility.getSqliteVersion(testFile);
+            assertTrue(String.format("The SQLite Version was different from expected. Expected: %s.x, Actual: %s",
+                                     sqliteMajorVersion,
                                      foundSqliteVersion),
-                       sqliteVersion.equals(foundSqliteVersion));
+                       foundSqliteVersion.getMajor() == sqliteMajorVersion);
         }
         finally
         {
@@ -547,5 +548,5 @@ public class DatabaseUtilityTest
         }
     }
 
-    private final static String sqliteVersion = "3.8.7";
+    private final static int sqliteMajorVersion = 3;
 }

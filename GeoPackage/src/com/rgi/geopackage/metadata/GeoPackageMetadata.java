@@ -39,10 +39,9 @@ import java.util.stream.Collectors;
 
 import javax.activation.MimeType;
 
-import utility.DatabaseUtility;
-import utility.SelectBuilder;
-
 import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.utility.DatabaseUtility;
+import com.rgi.geopackage.utility.SelectBuilder;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 

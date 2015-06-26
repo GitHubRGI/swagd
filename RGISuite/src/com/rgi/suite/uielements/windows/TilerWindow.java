@@ -24,10 +24,13 @@
 package com.rgi.suite.uielements.windows;
 
 import java.awt.Color;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.awt.Label;
 import java.io.File;
 import java.util.Collection;
+import java.util.concurrent.CancellationException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,12 +40,16 @@ import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
+import javax.swing.WindowConstants;
 
+import org.gdal.gdal.Dataset;
 import org.gdal.osr.SpatialReference;
 
 import utility.GdalUtility;
@@ -327,28 +334,62 @@ public class TilerWindow extends NavigationWindow
             return false;
         }
 
+        // Generate Dataset in needed CoordinateReference System
+        final JDialog projecting = new JDialog(this, "Reprojecting...", ModalityType.DOCUMENT_MODAL);
+
+        projecting.setResizable(false);
+        projecting.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        projecting.setSize(300, 70);
+        projecting.add(new Label("Reprojecting image, this may take a moment . . . "));
+        projecting.setLocationRelativeTo(this);
+
+        final SwingWorker<Dataset, Void> task = new SwingWorker<Dataset, Void>()
+                                                {
+                                                    @Override
+                                                    protected Dataset doInBackground() throws Exception
+                                                    {
+                                                        final File file = new File(TilerWindow.this.inputFileName.getText());
+                                                        return GdalUtility.open(file, crs);
+                                                    }
+
+                                                    @Override
+                                                    protected void done()
+                                                    {
+                                                        projecting.dispose();
+                                                    }
+                                                };
+
+        task.execute();
+        projecting.setVisible(true);
+        final Dataset dataset = task.get();
+
         // This spawns a modal dialog and blocks this thread
         ProgressDialog.trackProgress(this,
-                                     this.processName() + "...",
-                                     taskMonitor -> { final File file = new File(this.inputFileName.getText());
+                this.processName() + "...",
+                taskMonitor -> { final File file = new File(this.inputFileName.getText());
 
-                                                      try(final TileStoreReader tileStoreReader = new RawImageTileReader(file, tileDimensions, noDataColor, crs))
-                                                      {
-                                                          try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
-                                                          {
-                                                              (new Packager(taskMonitor,
-                                                                            tileStoreReader,
-                                                                            tileStoreWriter)).execute();
-                                                          }
-                                                          catch(final Exception ex)
-                                                          {
-                                                              this.tileStoreWriterAdapter.removeStore();
-                                                              throw ex;
-                                                          }
-
-                                                          return null;
-                                                      }
-                                                    });
+                                 try(final TileStoreReader tileStoreReader = new RawImageTileReader(file, dataset, tileDimensions, noDataColor, crs))
+                                 {
+                                     try(final TileStoreWriter tileStoreWriter = this.tileStoreWriterAdapter.getTileStoreWriter(tileStoreReader))
+                                     {
+                                         (new Packager(taskMonitor,
+                                                       tileStoreReader,
+                                                       tileStoreWriter)).execute();
+                                     }
+                                     catch(final CancellationException cancel)
+                                     {
+                                         this.warn("Cancelled Tiling");
+                                         this.tileStoreWriterAdapter.removeStore();
+                                     }
+                                     catch(final Exception ex)
+                                     {
+                                         this.tileStoreWriterAdapter.removeStore();
+                                         throw ex;
+                                     }
+                                     return null;
+                                 }
+                               });
 
         return true;
     }

@@ -29,6 +29,7 @@ import java.awt.Frame;
 import java.awt.Window;
 import java.util.concurrent.ExecutionException;
 
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
@@ -36,6 +37,7 @@ import javax.swing.WindowConstants;
 
 import com.rgi.common.TaskMonitor;
 import com.rgi.common.util.functional.ThrowingFunction;
+import com.rgi.packager.Packager;
 
 /**
  * Convenience methods for creating a modal progress bar dialog
@@ -71,12 +73,14 @@ public class ProgressDialog
         progressDialog.setLayout(new FlowLayout(FlowLayout.CENTER));
 
         final JProgressBar progressBar = new JProgressBar();
+        final JButton cancelButton = new JButton("Cancel");
 
         progressBar.setSize(200, 15);
         progressBar.setStringPainted(true);
         progressBar.setMinimum(0);
 
         progressDialog.add(progressBar);
+        progressDialog.add(cancelButton);
         progressDialog.pack();
         progressDialog.setLocationRelativeTo(owner);
 
@@ -103,14 +107,13 @@ public class ProgressDialog
                                                                             }
                                                                         });
                                               }
-
                                               @Override
                                               protected void done()
                                               {
                                                   progressDialog.dispose();
                                               }
                                           };
-
+        cancelButton.addActionListener(e->Packager.cancel());
         task.execute();
         progressDialog.setVisible(true);
         return task.get();

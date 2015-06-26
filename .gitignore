@@ -47,6 +47,7 @@ local.properties
 
 .settings/
 *.gpkg
+*.gpkg-journal
 
 # Ignore coverity scan folder
 cov-int
@@ -56,3 +57,5 @@ VerifierTool/.project
 WiX/CustomAction3/CustomAction3/obj/
 *.cache
 NetworkExtension/data/
+
+Android/gen
