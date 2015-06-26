@@ -25,14 +25,17 @@ package com.rgi.geopackage.features;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.core.ContentFactory;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.tiles.GeoPackageTiles;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
@@ -76,21 +79,6 @@ public class GeoPackageFeatures
      *            with a letter (A..Z, a..z) or an underscore (_) and may only
      *            be followed by letters, underscores, or numbers, and may not
      *            begin with the prefix "gpkg_"
-     * @param geometryColumnName
-     *            Name of a column in the feature table that is a Geometry
-     *            Column
-     * @param geometryType
-     *            Type from <a href=
-     *            "http://www.geopackage.org/spec/#geometry_types_core">
-     *            Geometry Type Codes (Core)</a> or <a href=
-     *            "http://www.geopackage.org/spec/#geometry_types_extension">
-     *            Geometry Type Codes (Extension)</a> in <a href=
-     *            "http://www.geopackage.org/spec/#geometry_types">Geometry
-     *            Types (Normative)</a>
-     * @param zRequirement
-     *            Restrictions on the presence of a 'z' value
-     * @param mRequirement
-     *            Restrictions on the presence of an 'm' value
      * @param identifier
      *            A human-readable identifier (e.g. short name) for the
      *            tableName content
@@ -100,6 +88,8 @@ public class GeoPackageFeatures
      *            Bounding box for all content in tableName
      * @param spatialReferenceSystem
      *            Spatial Reference System (SRS)
+     * @param geometryColumn
+     * @param columnDefinitions
      * @return Returns a newly created user defined features table
      * @throws SQLException
      *             throws if the method {@link #getFeatureSet(String)
@@ -109,26 +99,34 @@ public class GeoPackageFeatures
      *             changes after a different exception throws will throw an
      *             SQLException
      */
-    public FeatureSet addFeatureSet(final String                 tableName,
-                                    final String                 geometryColumnName,
-                                    final GeometryType           geometryType,
-                                    final ValueRequirement       zRequirement,
-                                    final ValueRequirement       mRequirement,
-                                    final String                 identifier,
-                                    final String                 description,
-                                    final BoundingBox            boundingBox,
-                                    final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
+    public FeatureSet addFeatureSet(final String                   tableName,
+                                    final String                   identifier,
+                                    final String                   description,
+                                    final BoundingBox              boundingBox,
+                                    final SpatialReferenceSystem   spatialReferenceSystem,
+                                    final GeometryColumnDefinition geometryColumn,
+                                    final ColumnDefinition...      columnDefinitions) throws SQLException
     {
         GeoPackageCore.validateNewContentTableName(tableName);
-
-        if(geometryColumnName == null || geometryColumnName.isEmpty())
-        {
-            throw new IllegalArgumentException("Geometry column name may not be null");
-        }
 
         if(boundingBox == null)
         {
             throw new IllegalArgumentException("Bounding box cannot be mull.");
+        }
+
+        if(spatialReferenceSystem == null)
+        {
+            throw new IllegalArgumentException("Spatial reference system may not be null");
+        }
+
+        if(geometryColumn == null)
+        {
+            throw new IllegalArgumentException("Geometry column definition name may not be null");
+        }
+
+        if(columnDefinitions == null || Arrays.asList(columnDefinitions).stream().anyMatch(definition -> definition == null))
+        {
+            throw new IllegalArgumentException("Column definitions may not be null");
         }
 
         final FeatureSet existingContent = this.getFeatureSet(tableName);
@@ -156,7 +154,9 @@ public class GeoPackageFeatures
         try
         {
             // Create the feature set table
-            JdbcUtility.update(this.databaseConnection, this.getFeatureSetCreationSql(tableName)); final this has to change to final be much final more flexible
+            this.addFeatureTableNoCommit(tableName,
+                                         geometryColumn,
+                                         columnDefinitions);
 
             // Add feature set to the content table
             this.core.addContent(tableName,
@@ -166,14 +166,9 @@ public class GeoPackageFeatures
                                  boundingBox,
                                  spatialReferenceSystem);
 
-            this.createGeometryColumnTableNoCommit(); // Create the feature metadata table
-
             this.addGeometryColumnNoCommit(tableName,
-                                   geometryColumnName,
-                                   geometryType,
-                                   zRequirement,
-                                   mRequirement,
-                                   spatialReferenceSystem.getIdentifier());
+                                           geometryColumn,
+                                           spatialReferenceSystem.getIdentifier());
 
             this.databaseConnection.commit();
 
@@ -185,7 +180,6 @@ public class GeoPackageFeatures
             throw ex;
         }
     }
-
 
     /**
      * Gets a feature set object based on its table name
@@ -249,6 +243,34 @@ public class GeoPackageFeatures
                                     matchingSpatialReferenceSystem);
     }
 
+    public Feature getFeature(final FeatureSet featureSet,
+                              final int        featureId)
+    {
+
+    }
+
+    public List<Feature> getFeatures(final FeatureSet featureSet)
+    {
+
+    }
+
+    public void visitFeatures(final FeatureSet featureSet)
+    {
+
+    }
+
+    public Feature addFeature(final List<String> columns,
+                              final List<Object> values)
+    {
+
+    }
+
+    public void addFeatures(final List<String>       columns,
+                            final List<List<Object>> values)
+    {
+
+    }
+
     /**
      * Creates the Geometry Column table
      * <br>
@@ -278,53 +300,64 @@ public class GeoPackageFeatures
      *
      * @param tableName
      *            The name of the features table
-     * @param geometryColumnName
-     *            Name of a column in the feature table that is a Geometry
-     *            Column
-     * @param geometryType
-     *            Type from <a href=
-     *            "http://www.geopackage.org/spec/#geometry_types_core">
-     *            Geometry Type Codes (Core)</a> or <a href=
-     *            "http://www.geopackage.org/spec/#geometry_types_extension">
-     *            Geometry Type Codes (Extension)</a> in <a href=
-     *            "http://www.geopackage.org/spec/#geometry_types">Geometry
-     *            Types (Normative)</a>
-     * @param zRequirement
-     *            Restrictions on the presence of a 'z' value
-     * @param mRequirement
-     *            Restrictions on the presence of an 'm' value
+
      * @param spatialReferenceSystemidentifier
      *            Spatial Reference System (SRS)
+     * @throws SQLException
      */
-    protected void addGeometryColumnNoCommit(final String           tableName,
-                                             final String           geometryColumnName,
-                                             final GeometryType     geometryType,
-                                             final ValueRequirement zRequirement,
-                                             final ValueRequirement mRequirement,
-                                             final int              spatialReferenceSystemidentifier)
+    protected void addGeometryColumnNoCommit(final String                   tableName,
+                                             final GeometryColumnDefinition geometryColumn,
+                                             final int                      spatialReferenceSystemIdentifier) throws SQLException
     {
-        final String insertTileMatrix = String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                                                      GeoPackageTiles.MatrixTableName,
+        this.createGeometryColumnTableNoCommit(); // Create the feature metadata table
+
+        final String insertTileMatrix = String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?)",
+                                                      GeoPackageFeatures.GeometryColumnsTableName,
                                                       "table_name",
-                                                      "zoom_level",
-                                                      "matrix_width",
-                                                      "matrix_height",
-                                                      "tile_width",
-                                                      "tile_height",
-                                                      "pixel_x_size",
-                                                      "pixel_y_size");
+                                                      "column_name",
+                                                      "geometry_type_name",
+                                                      "srs_id",
+                                                      "z",
+                                                      "m");
 
         JdbcUtility.update(this.databaseConnection,
                            insertTileMatrix,
-                           preparedStatement -> { preparedStatement.setString(1, tileSet.getTableName());
-                                                  preparedStatement.setInt   (2, zoomLevel);
-                                                  preparedStatement.setInt   (3, matrixWidth);
-                                                  preparedStatement.setInt   (4, matrixHeight);
-                                                  preparedStatement.setInt   (5, tileWidth);
-                                                  preparedStatement.setInt   (6, tileHeight);
-                                                  preparedStatement.setDouble(7, pixelXSize);
-                                                  preparedStatement.setDouble(8, pixelYSize);
+                           preparedStatement -> { preparedStatement.setString(1, tableName);
+                                                  preparedStatement.setString(2, geometryColumn.getName());
+                                                  preparedStatement.setString(3, geometryColumn.getType());
+                                                  preparedStatement.setInt   (4, spatialReferenceSystemIdentifier);
+                                                  preparedStatement.setInt   (5, geometryColumn.getZRequirement().getValue());
+                                                  preparedStatement.setInt   (6, geometryColumn.getMRequirement().getValue());
                                                 });
+    }
+
+    private void addFeatureTableNoCommit(final String                   featureTableName,
+                                         final GeometryColumnDefinition geometryColumn,
+                                         final ColumnDefinition...      columnDefinitions) throws SQLException
+    {
+        // http://www.geopackage.org/spec/#feature_user_tables
+        // http://www.geopackage.org/spec/#example_feature_table_sql
+
+        final List<AbstractColumnDefinition> columns = new LinkedList<>(Arrays.asList(columnDefinitions));
+
+        columns.add(0, geometryColumn);
+
+        final String userColumns = String.join("\n",
+                                               columns.stream()
+                                                      .map(column -> String.format("%s %s %s %s -- %s",
+                                                                                   column.getName(),
+                                                                                   column.getType(),
+                                                                                   column.isNullable() ? "" : "NOT NULL",
+                                                                                   column.isUnique()   ? "UNIQUE" : "",
+                                                                                   column.getComment()))
+                                                      .collect(Collectors.toList()));
+
+
+        final String createTableSql = String.format("CREATE TABLE %s\n(id INTEGER PRIMARY KEY AUTOINCREMENT, -- Autoincrement primary key\n%s);",
+                                                    featureTableName,
+                                                    userColumns);
+
+        JdbcUtility.update(this.databaseConnection, createTableSql);
     }
 
     @SuppressWarnings("static-method")
@@ -343,20 +376,6 @@ public class GeoPackageFeatures
                " CONSTRAINT uk_gc_table_name UNIQUE      (table_name),"                                                                                           +
                " CONSTRAINT fk_gc_tn         FOREIGN KEY (table_name) REFERENCES gpkg_contents        (table_name),"                                              +
                " CONSTRAINT fk_gc_srs        FOREIGN KEY (srs_id)     REFERENCES gpkg_spatial_ref_sys (srs_id));";
-    }
-
-    @SuppressWarnings("static-method")
-    protected String getFeatureSetCreationSql(final String featureTableName)
-    {
-        // http://www.geopackage.org/spec/#feature_user_tables
-        // http://www.geopackage.org/spec/#example_feature_table_sql
-        return "CREATE TABLE " + featureTableName + "\n" +
-               "(id                INTEGER PRIMARY KEY AUTOINCREMENT, -- Autoincrement primary key\n"    +
-               " geometry          GEOMETRY,                          -- GeoPackage Geometry\n"          +
-               " text_attribute    TEXT,                              -- Text attribute of feature\n"    +
-               " real_attribute    REAL,                              -- Real attribute of feature\n"    +
-               " boolean_attribute BOOLEAN,                           -- Boolean attribute of feature\n" +
-               " raster_or_photo   BLOB,                              -- Photograph of the area\n);";
     }
 
     /**

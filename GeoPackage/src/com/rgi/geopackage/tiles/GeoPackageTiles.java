@@ -117,6 +117,11 @@ public class GeoPackageTiles
             throw new IllegalArgumentException("Bounding box cannot be mull.");
         }
 
+        if(spatialReferenceSystem == null)
+        {
+            throw new IllegalArgumentException("Spatial reference system may not be null");
+        }
+
         final TileSet existingContent = this.getTileSet(tableName);
 
         if(existingContent != null)
