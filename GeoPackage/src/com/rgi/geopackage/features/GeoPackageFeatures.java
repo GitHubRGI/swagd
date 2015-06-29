@@ -23,19 +23,28 @@
 
 package com.rgi.geopackage.features;
 
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import javax.sql.rowset.serial.SerialBlob;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.core.ContentFactory;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
+import com.rgi.geopackage.features.geometry.Geometry;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
@@ -243,32 +252,231 @@ public class GeoPackageFeatures
                                     matchingSpatialReferenceSystem);
     }
 
-    public Feature getFeature(final FeatureSet featureSet,
-                              final int        featureId)
+    /**
+     * @param featureSet
+     * @return
+     * @throws SQLException
+     */
+    public GeometryColumn getGeometryColumn(final FeatureSet featureSet) throws SQLException
     {
+        if(featureSet == null)
+        {
+            throw new IllegalArgumentException("Feature set may not be null");
+        }
 
+        final String geometryColumnQuery = String.format("SELECT %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
+                                                         "column_name",
+                                                         "geometry_type_name",
+                                                         "srs_id",
+                                                         "z",
+                                                         "m",
+                                                         GeoPackageFeatures.GeometryColumnsTableName,
+                                                         "table_name");
+
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     geometryColumnQuery,
+                                     preparedStatement -> preparedStatement.setString(1, featureSet.getTableName()),
+                                     resultSet -> new GeometryColumn(featureSet.getTableName(),
+                                                                     resultSet.getString(1),
+                                                                     resultSet.getString(2),
+                                                                     resultSet.getInt   (3),
+                                                                     resultSet.getInt   (4),
+                                                                     resultSet.getInt   (5)));
     }
 
-    public List<Feature> getFeatures(final FeatureSet featureSet)
+    public Feature getFeature(final GeometryColumn geometryColumn,
+                              final int            featureIdentifier) throws SQLException
     {
+        if(geometryColumn == null)
+        {
+            throw new IllegalArgumentException("Geometry column may not be null");
+        }
 
+        final List<String> schema = this.getSchema(geometryColumn); // Feature table's columns name with "id" listed first, the geometry column second, and the rest in the order returned by SQL.
+
+        schema.remove(0);   // Remove "id", we've already got that value
+
+        final String featureQuery = String.format("SELECT %s FROM %s WHERE %s = ?",
+                                                  String.join(", ", schema),
+                                                  GeoPackageFeatures.GeometryColumnsTableName,
+                                                  "id");
+
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     featureQuery,
+                                     preparedStatement -> preparedStatement.setInt(1, featureIdentifier),
+                                     resultSet -> { final Map<String, Object> attributes = new HashMap<>();
+
+                                                    schema.remove(0); // Ignore the geometry column
+
+                                                    for(final String columnName : schema)
+                                                    {
+                                                        attributes.put(columnName, resultSet.getObject(columnName));
+                                                    }
+
+                                                    return new Feature(featureIdentifier,
+                                                                       getGeometry(resultSet.getBlob(geometryColumn.getColumnName())),
+                                                                       attributes);
+                                                  });
     }
 
-    public void visitFeatures(final FeatureSet featureSet)
+    public List<Feature> getFeatures(final GeometryColumn geometryColumn) throws SQLException
     {
+        if(geometryColumn == null)
+        {
+            throw new IllegalArgumentException("Geometry column may not be null");
+        }
 
+        final List<String> schema = this.getSchema(geometryColumn); // Feature table's columns name with "id" listed first, the geometry column second, and the rest in the order returned by SQL.
+
+        final String featureQuery = String.format("SELECT %s FROM %s",
+                                                  String.join(", ", schema),
+                                                  GeoPackageFeatures.GeometryColumnsTableName);
+
+        schema.remove(0);   // Remove, "id". We'll later refer to it by name.
+        schema.remove(0);   // Remove the geometry column name. We'll also refer to it by name.
+
+        return JdbcUtility.select(this.databaseConnection,
+                                  featureQuery,
+                                  null,
+                                  resultSet -> { final Map<String, Object> attributes = new HashMap<>();
+
+                                                 for(final String columnName : schema)
+                                                 {
+                                                     attributes.put(columnName, resultSet.getObject(columnName));
+                                                 }
+
+                                                 return new Feature(resultSet.getInt("id"),
+                                                                    getGeometry(resultSet.getBlob(geometryColumn.getColumnName())),
+                                                                    attributes);
+                                               });
     }
 
-    public Feature addFeature(final List<String> columns,
-                              final List<Object> values)
+    public void visitFeatures(final GeometryColumn geometryColumn, final Consumer<Feature> featureConsumer) throws SQLException
     {
+        if(geometryColumn == null)
+        {
+            throw new IllegalArgumentException("Geometry column may not be null");
+        }
 
+        if(featureConsumer == null)
+        {
+            throw new IllegalArgumentException("Feature consumer may not be null");
+        }
+
+        final List<String> schema = this.getSchema(geometryColumn); // Feature table's columns name with "id" listed first, the geometry column second, and the rest in the order returned by SQL.
+
+        final String featureQuery = String.format("SELECT %s FROM %s",
+                                                  String.join(", ", schema),
+                                                  GeoPackageFeatures.GeometryColumnsTableName);
+
+        schema.remove(0);   // Remove, "id". We'll later refer to it by name.
+        schema.remove(0);   // Remove the geometry column name. We'll also refer to it by name.
+
+        JdbcUtility.forEach(this.databaseConnection,
+                            featureQuery,
+                            null,
+                            resultSet -> { final Map<String, Object> attributes = new HashMap<>();
+
+                                           for(final String columnName : schema)
+                                           {
+                                               attributes.put(columnName, resultSet.getObject(columnName));
+                                           }
+
+                                           featureConsumer.accept(new Feature(resultSet.getInt("id"),
+                                                                              getGeometry(resultSet.getBlob(geometryColumn.getColumnName())),
+                                                                              attributes));
+                                         });
     }
 
-    public void addFeatures(final List<String>       columns,
+    public Feature addFeature(final GeometryColumn      geometryColumn,
+                              final Geometry            geometry,
+                              final Map<String, Object> attributes) throws SQLException
+    {
+        if(geometryColumn == null)
+        {
+            throw new IllegalArgumentException("Geometry column may not be null");
+        }
+
+        if(geometry == null)
+        {
+            throw new IllegalArgumentException("Geometry may not be null");
+        }
+
+        if(attributes == null)
+        {
+            throw new IllegalAccessError("Attributes may not be null");
+        }
+
+        final List<String> columnNames = new LinkedList<>(attributes.keySet());
+
+        columnNames.add(0, geometryColumn.getColumnName());
+
+        final String insertFeatureSql = String.format("INSERT INTO %s (%s) VALUES (%s)",
+                                                      geometryColumn.getTableName(),
+                                                      String.join(", ", columnNames),
+                                                      String.join(", ", Collections.nCopies(columnNames.size(), "?")));
+
+        final int identifier = JdbcUtility.update(this.databaseConnection,
+                                                  insertFeatureSql,
+                                                  preparedStatement -> { int parameterIndex = 1;
+                                                                         preparedStatement.setBlob(parameterIndex++, new SerialBlob(geometry.toBytes()));
+
+                                                                         columnNames.remove(0);    // Skip the geometry column
+
+                                                                         for(final String columnName : columnNames)
+                                                                         {
+                                                                             preparedStatement.setObject(parameterIndex++, attributes.get(columnName)); // TODO Map index instead of iterating over the KVPs due to order iteration concerns. Looking up values might be slow.
+                                                                         }
+                                                                        },
+                                                  resultSet -> resultSet.getInt(1));    // New feature identifier
+
+        this.databaseConnection.commit();
+
+        return new Feature(identifier,
+                           geometry,
+                           attributes);
+    }
+
+    public void addFeatures(final GeometryColumn     geometryColumn,
+                            final List<Geometry>     geometries,
+                            final Set<String>        columns,
                             final List<List<Object>> values)
     {
+        if(geometryColumn == null)
+        {
+            throw new IllegalArgumentException("Geometry column may not be null");
+        }
 
+        if(columns == null)
+        {
+            throw new IllegalArgumentException("Columns may not be null");
+        }
+
+        final List<String> columnNames = new LinkedList<>(columns);
+
+        columnNames.add(0, geometryColumn.getColumnName());
+
+        final String insertFeatureSql = String.format("INSERT INTO %s (%s) VALUES (%s)",
+                                                      geometryColumn.getTableName(),
+                                                      String.join(", ", columnNames),
+                                                      String.join(", ", Collections.nCopies(columnNames.size(), "?")));
+
+        JdbcUtility.update(this.databaseConnection,
+                           insertFeatureSql,
+                           values,
+                           preparedStatement -> { int parameterIndex = 1;
+                                                  preparedStatement.setBlob(parameterIndex++, new SerialBlob(geometry.toBytes()));
+
+                                                  columnNames.remove(0);    // Skip the geometry column
+
+                                                  for(final String columnName : columnNames)
+                                                  {
+                                                      preparedStatement.setObject(parameterIndex++, attributes.get(columnName)); // TODO Map index instead of iterating over the KVPs due to order iteration concerns. Looking up values might be slow.
+                                                  }
+                                                 },
+                           resultSet -> resultSet.getInt(1));    // New feature identifier
+
+        this.databaseConnection.commit();
     }
 
     /**
@@ -329,6 +537,36 @@ public class GeoPackageFeatures
                                                   preparedStatement.setInt   (5, geometryColumn.getZRequirement().getValue());
                                                   preparedStatement.setInt   (6, geometryColumn.getMRequirement().getValue());
                                                 });
+    }
+
+
+    /**
+     * Returns the column names of a feature table, but reorders them so that
+     * "id" is first, the geometry column name is second, followed by the rest
+     * of the columns in the order returned by the query.
+     *
+     * @param geometryColumn
+     *             {@link GeometryColumn}
+     * @return The column names of a feature table, but reorders them so that
+     *             "id" is first, the geometry column name is second, followed
+     *             by the rest of the columns in the order returned by the
+     *             query.
+     * @throws SQLException
+     *             if there is a database error
+     */
+    private List<String> getSchema(final GeometryColumn geometryColumn) throws SQLException
+    {
+        final List<String> columns = DatabaseUtility.getColumnNames(this.databaseConnection, geometryColumn.getTableName());
+
+        Collections.swap(columns, 0, columns.indexOf("id"));                           // List "id" first
+        Collections.swap(columns, 1, columns.indexOf(geometryColumn.getColumnName())); // List geometry column second
+
+        return columns;
+    }
+
+    private static Geometry getGeometry(final Blob blob)
+    {
+
     }
 
     private void addFeatureTableNoCommit(final String                   featureTableName,

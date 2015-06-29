@@ -33,5 +33,5 @@ package com.rgi.geopackage.features.geometry;
  */
 public abstract class Geometry
 {
-
+    public abstract byte[] toBytes();
 }

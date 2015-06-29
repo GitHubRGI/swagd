@@ -27,10 +27,11 @@ package com.rgi.geopackage.features;
  * @author Luke Lambert
  *
  */
-public class GeometryColumnDefinition extends AbstractColumnDefinition
+public class GeometryColumn
 {
     /**
-     * @param name
+     * @param tableName
+     * @param columnName
      *            Name of a column in the feature table that is a Geometry
      *            Column
      * @param geometryType
@@ -41,42 +42,63 @@ public class GeometryColumnDefinition extends AbstractColumnDefinition
      *            Geometry Type Codes (Extension)</a> in <a href=
      *            "http://www.geopackage.org/spec/#geometry_types">Geometry
      *            Types (Normative)</a>
+     * @param spatialReferenceSystemIdentifier
      * @param zRequirement
      *            Restrictions on the presence of a 'z' value
      * @param mRequirement
      *            Restrictions on the presence of an 'm' value
-     * @param nullable
-     * @param unique
-     * @param comment
      */
-    public GeometryColumnDefinition(final String           name,
-                                    final String           geometryType,
-                                    final ValueRequirement zRequirement,
-                                    final ValueRequirement mRequirement,
-                                    final boolean          nullable,
-                                    final boolean          unique,
-                                    final String           comment)
+    protected GeometryColumn(final String tableName,
+                             final String columnName,
+                             final String geometryType,
+                             final int    spatialReferenceSystemIdentifier,
+                             final int    zRequirement,
+                             final int    mRequirement)
     {
-        super(name, geometryType, nullable, unique, comment);
+        this.tableName                        = tableName;
+        this.columnName                       = columnName;
+        this.geometryType                     = geometryType;
+        this.spatialReferenceSystemIdentifier = spatialReferenceSystemIdentifier;
+        this.zRequirement                     = zRequirement;
+        this.mRequirement                     = mRequirement;
+    }
 
-        if(zRequirement == null)
-        {
-            throw new IllegalArgumentException("Z requirement may not be null");
-        }
+    /**
+     * @return the tableName
+     */
+    public String getTableName()
+    {
+        return this.tableName;
+    }
 
-        if(mRequirement == null)
-        {
-            throw new IllegalArgumentException("M requirement may not be null");
-        }
+    /**
+     * @return the columnName
+     */
+    public String getColumnName()
+    {
+        return this.columnName;
+    }
 
-        this.zRequirement = zRequirement;
-        this.mRequirement = mRequirement;
+    /**
+     * @return the geometryType
+     */
+    public String getGeometryType()
+    {
+        return this.geometryType;
+    }
+
+    /**
+     * @return the spatialReferenceSystemIdentifier
+     */
+    public int getSpatialReferenceSystemIdentifier()
+    {
+        return this.spatialReferenceSystemIdentifier;
     }
 
     /**
      * @return the zRequirement
      */
-    public ValueRequirement getZRequirement()
+    public int getZRequirement()
     {
         return this.zRequirement;
     }
@@ -84,11 +106,15 @@ public class GeometryColumnDefinition extends AbstractColumnDefinition
     /**
      * @return the mRequirement
      */
-    public ValueRequirement getMRequirement()
+    public int getMRequirement()
     {
         return this.mRequirement;
     }
 
-    private final ValueRequirement zRequirement;
-    private final ValueRequirement mRequirement;
+    final String tableName;
+    final String columnName;
+    final String geometryType;
+    final int    spatialReferenceSystemIdentifier;
+    final int    zRequirement;
+    final int    mRequirement;
 }

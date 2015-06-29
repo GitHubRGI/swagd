@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.rgi.common.util.jdbc.JdbcUtility;
@@ -241,6 +242,21 @@ public class DatabaseUtility
                                      smallestNonexistentValue,
                                      null,
                                      resultSet -> (T)resultSet.getObject(1));
+    }
+
+    public static List<String> getColumnNames(final Connection connection, final String tableOrViewName) throws SQLException
+    {
+        verify(connection);
+
+        if(tableOrViewName == null || tableOrViewName.isEmpty())
+        {
+            throw new IllegalArgumentException("Table or view name may not be null or empty");
+        }
+
+        return JdbcUtility.select(connection,
+                                  String.format("PRAGMA table_info('%s')", tableOrViewName),
+                                  null,
+                                  resultSet -> resultSet.getString("name"));
     }
 
     private static void verify(final Connection connection) throws SQLException

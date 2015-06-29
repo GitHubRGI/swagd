@@ -45,5 +45,4 @@ public class ColumnDefinition extends AbstractColumnDefinition
     {
         super(name, type, nullable, unique, comment);
     }
-
 }
