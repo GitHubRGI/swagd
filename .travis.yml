@@ -11,15 +11,15 @@ before_install:
     - wget http://dl.google.com/android/android-sdk_r22.0.5-linux.tgz
     - tar xzf android-sdk_r22.0.5-linux.tgz
     - export ANDROID_HOME=$PWD/android-sdk-linux
-    - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
+    - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platforms
     # Install android build tools
-    - wget https://dl-ssl.google.com/android/repository/build-tools_r19.0.1-linux.zip
-    - unzip build-tools_r19.0.1-linux.zip -d $ANDROID_HOME
+    - wget https://dl-ssl.google.com/android/repository/build-tools_r22.0.1-linux.zip
+    - unzip build-tools_r22.0.1-linux.zip -d $ANDROID_HOME
     - mkdir -p $ANDROID_HOME/build-tools/
-    - mv $ANDROID_HOME/android-4.4.2 $ANDROID_HOME/build-tools/19.0.1
+    - mv $ANDROID_HOME/android-5.1 $ANDROID_HOME/build-tools/22.0.1
     # Install required components.
     - echo yes | android update sdk --filter platform-tools --no-ui --force > /dev/null
-    - echo yes | android update sdk --filter android-19 --no-ui --force > /dev/null
+    - echo yes | android update sdk --filter android-21 --no-ui --force > /dev/null
     - echo yes | android update sdk --filter extra-android-support --no-ui --force > /dev/null
     - echo yes | android update sdk --filter extra-android-m2repository --no-ui --force > /dev/null
 install:
