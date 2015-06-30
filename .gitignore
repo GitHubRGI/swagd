@@ -59,3 +59,8 @@ WiX/CustomAction3/CustomAction3/obj/
 NetworkExtension/data/
 
 Android/gen
+
+# IntelliJ files
+.idea/
+settings.txt
+out/

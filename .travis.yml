@@ -6,7 +6,13 @@ jdk:
     - oraclejdk8
 install:
     - ./install-deps-linux.sh
-script: mvn test
+    - cd SwagDroid
+    - ./install-deps-linux.sh
+    - cd ..
+script:
+    - mvn test
+    - jdk_switcher use openjdk6
+    - mvn -f SwagDroid/pom.xml test
 after_success:
     - mvn jacoco:report coveralls:report
 addons:
