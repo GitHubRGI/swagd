@@ -23,6 +23,8 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.GeoPackageGeometryBinaryHeader;
+
 /**
  * The root of the geometry type hierarchy.
  *
@@ -33,5 +35,20 @@ package com.rgi.geopackage.features.geometry;
  */
 public abstract class Geometry
 {
-    public abstract byte[] toBytes();
+    protected Geometry(final GeoPackageGeometryBinaryHeader header)
+    {
+
+    }
+
+    public byte[] getStandardBinary()
+    {
+
+    }
+
+    public abstract String getGeometryType();
+
+    public static Geometry fromBytes(final byte[] bytes)
+    {
+
+    }
 }

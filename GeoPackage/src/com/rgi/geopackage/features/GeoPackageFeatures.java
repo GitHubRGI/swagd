@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import javax.sql.rowset.serial.SerialBlob;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.Pair;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.core.ContentFactory;
 import com.rgi.geopackage.core.GeoPackageCore;
@@ -419,7 +420,7 @@ public class GeoPackageFeatures
         final int identifier = JdbcUtility.update(this.databaseConnection,
                                                   insertFeatureSql,
                                                   preparedStatement -> { int parameterIndex = 1;
-                                                                         preparedStatement.setBlob(parameterIndex++, new SerialBlob(geometry.toBytes()));
+                                                                         preparedStatement.setBlob(parameterIndex++, new SerialBlob(geometry.getStandardBinary()));
 
                                                                          columnNames.remove(0);    // Skip the geometry column
 
@@ -437,10 +438,9 @@ public class GeoPackageFeatures
                            attributes);
     }
 
-    public void addFeatures(final GeometryColumn     geometryColumn,
-                            final List<Geometry>     geometries,
-                            final Set<String>        columns,
-                            final List<List<Object>> values)
+    public void addFeatures(final GeometryColumn                     geometryColumn,
+                            final Set<String>                        columns,
+                            final List<Pair<Geometry, List<Object>>> features) throws SQLException
     {
         if(geometryColumn == null)
         {
@@ -452,9 +452,16 @@ public class GeoPackageFeatures
             throw new IllegalArgumentException("Columns may not be null");
         }
 
+        if(features == null)
+        {
+            throw new IllegalArgumentException("Values may not be null");
+        }
+
         final List<String> columnNames = new LinkedList<>(columns);
 
         columnNames.add(0, geometryColumn.getColumnName());
+
+        final int columnCount = columnNames.size();
 
         final String insertFeatureSql = String.format("INSERT INTO %s (%s) VALUES (%s)",
                                                       geometryColumn.getTableName(),
@@ -463,18 +470,17 @@ public class GeoPackageFeatures
 
         JdbcUtility.update(this.databaseConnection,
                            insertFeatureSql,
-                           values,
-                           preparedStatement -> { int parameterIndex = 1;
-                                                  preparedStatement.setBlob(parameterIndex++, new SerialBlob(geometry.toBytes()));
+                           features,
+                           (preparedStatement, feature) -> { final Geometry     geometry   = feature.getLeft();
+                                                             final List<Object> attributes = feature.getRight();
 
-                                                  columnNames.remove(0);    // Skip the geometry column
+                                                             preparedStatement.setBlob(1, new SerialBlob(geometry.getStandardBinary()));
 
-                                                  for(final String columnName : columnNames)
-                                                  {
-                                                      preparedStatement.setObject(parameterIndex++, attributes.get(columnName)); // TODO Map index instead of iterating over the KVPs due to order iteration concerns. Looking up values might be slow.
-                                                  }
-                                                 },
-                           resultSet -> resultSet.getInt(1));    // New feature identifier
+                                                             for(int parameterIndex = 2; parameterIndex <= columnCount; ++parameterIndex)
+                                                             {
+                                                                 preparedStatement.setObject(parameterIndex, attributes.get(parameterIndex-1));
+                                                             }
+                                                           });
 
         this.databaseConnection.commit();
     }
@@ -564,9 +570,13 @@ public class GeoPackageFeatures
         return columns;
     }
 
-    private static Geometry getGeometry(final Blob blob)
+    private static Geometry getGeometry(final Blob blob) throws SQLException
     {
+        final Geometry geometry = Geometry.fromBytes(blob.getBytes(1L, (int)blob.length()));
 
+        blob.free();
+
+        return geometry;
     }
 
     private void addFeatureTableNoCommit(final String                   featureTableName,

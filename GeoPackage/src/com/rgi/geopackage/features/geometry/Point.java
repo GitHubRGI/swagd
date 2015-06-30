@@ -23,6 +23,8 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.GeometryType;
+
 /**
  * A single location in space. Each point has an X and Y coordinate. A point
  * MAY optionally also have a Z and/or an M value.
@@ -34,5 +36,9 @@ package com.rgi.geopackage.features.geometry;
  */
 public class Point extends Geometry
 {
-
+    @Override
+    public String getGeometryType()
+    {
+        return GeometryType.Point.toString();
+    }
 }
