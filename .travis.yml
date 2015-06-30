@@ -2,13 +2,26 @@ language: java
 env:
   global:
    - secure: "WIAl49jT9jhp+1COTf7PAkn9SLsdKufzSqV5xDO4UiOHYpSJVunoPNWI2H/UdsWzznrHlQeZBpftrJ2ygZRMi0USt2mEUrA4V8s1teYKdxRUzWAzx2IePAwcwLVuAR/3/qYy7bpGeoyLHOsOw3dcP3A+gFdJaXeHeWh7bU02zG0="
-android:
-    components:
-        - android-21
-        - extra-google-m2repository
-        - extra-android-m2repository
 jdk:
     - oraclejdk8
+before_install:
+    # Install base Android SDK
+    - sudo apt-get update -qq
+    - if [ `uname -m` = x86_64 ]; then sudo apt-get install -qq --force-yes libgd2-xpm ia32-libs ia32-libs-multiarch > /dev/null; fi
+    - wget http://dl.google.com/android/android-sdk_r21.1.1-linux.tgz
+    - tar xzf android-sdk_r21.1.1-linux.tgz
+    - export ANDROID_HOME=$PWD/android-sdk-linux
+    - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
+    # Install android build tools
+    - wget https://dl-ssl.google.com/android/repository/build-tools_r19.0.1-linux.zip
+    - unzip build-tools_r19.0.1-linux.zip -d $ANDROID_HOME
+    - mkdir -p $ANDROID_HOME/build-tools/
+    - mv $ANDROID_HOME/android-4.4.2 $ANDROID_HOME/build-tools/19.0.1
+    # Install required components.
+    - echo yes | android update sdk --filter platform-tools --no-ui --force > /dev/null
+    - echo yes | android update sdk --filter android-19 --no-ui --force > /dev/null
+    - echo yes | android update sdk --filter extra-android-support --no-ui --force > /dev/null
+    - echo yes | android update sdk --filter extra-android-m2repository --no-ui --force > /dev/null
 install:
     - ./install-deps-linux.sh
     - cd SwagDroid
