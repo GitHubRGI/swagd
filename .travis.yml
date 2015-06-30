@@ -4,37 +4,10 @@ env:
    - secure: "WIAl49jT9jhp+1COTf7PAkn9SLsdKufzSqV5xDO4UiOHYpSJVunoPNWI2H/UdsWzznrHlQeZBpftrJ2ygZRMi0USt2mEUrA4V8s1teYKdxRUzWAzx2IePAwcwLVuAR/3/qYy7bpGeoyLHOsOw3dcP3A+gFdJaXeHeWh7bU02zG0="
 jdk:
     - oraclejdk8
-before_install:
-    # Install base Android SDK
-    - sudo apt-get update -qq
-    - if [ `uname -m` = x86_64 ]; then sudo apt-get install -qq --force-yes libgd2-xpm ia32-libs ia32-libs-multiarch > /dev/null; fi
-    - wget http://dl.google.com/android/android-sdk_r22.0.5-linux.tgz
-    - tar xzf android-sdk_r22.0.5-linux.tgz
-    - export ANDROID_HOME=$PWD/android-sdk-linux
-    - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platforms
-    # Install android build tools
-    - wget https://dl-ssl.google.com/android/repository/build-tools_r22.0.1-linux.zip
-    - unzip build-tools_r22.0.1-linux.zip -d $ANDROID_HOME
-    - mkdir -p $ANDROID_HOME/build-tools/
-    - mv $ANDROID_HOME/android-5.1 $ANDROID_HOME/build-tools/22.0.1
-    # Install required components.
-    #- echo yes | android update sdk --filter platform-tools --no-ui --force > /dev/null
-    #- echo yes | android update sdk --filter android-21 --no-ui --force > /dev/null
-    #- echo yes | android update sdk --filter extra-android-support --no-ui --force > /dev/null
-    #- echo yes | android update sdk --filter extra-android-m2repository --no-ui --force > /dev/null
-    - "android-update-sdk --components='platform-tools,tools' --accept-licenses='.+'"
-    - "android-update-sdk --components='build-tools-21.1.1' --accept-licenses='.+'"
-    - "android-update-sdk --components='android-21' --accept-licenses='.+'"
-    - "android-update-sdk --components='extra-android-m2repository,extra-google-m2repository' --accept-licenses='.+'"
 install:
     - ./install-deps-linux.sh
-    - cd SwagDroid
-    - ./install-deps-linux.sh
-    - cd ..
 script:
     - mvn test
-    - jdk_switcher use openjdk6
-    - mvn -f SwagDroid/pom.xml test
 after_success:
     - mvn jacoco:report coveralls:report
 addons:
@@ -46,3 +19,6 @@ addons:
     build_command_prepend: "mvn clean"
     build_command:   "mvn -DskipTests=true compile"
     branch_pattern: coverity_scan
+cache:
+    directories:
+        - $HOME/.m2
