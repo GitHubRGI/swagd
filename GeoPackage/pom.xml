@@ -16,6 +16,7 @@
         <xerial.version>3.8.7</xerial.version>
         <junit.version>4.11</junit.version>
         <compiler.version>3.1</compiler.version>
+        <surefire.version>2.18.1</surefire.version>
     </properties>
 
     <parent>
