@@ -2,6 +2,9 @@ language: java
 env:
   global:
    - secure: "WIAl49jT9jhp+1COTf7PAkn9SLsdKufzSqV5xDO4UiOHYpSJVunoPNWI2H/UdsWzznrHlQeZBpftrJ2ygZRMi0USt2mEUrA4V8s1teYKdxRUzWAzx2IePAwcwLVuAR/3/qYy7bpGeoyLHOsOw3dcP3A+gFdJaXeHeWh7bU02zG0="
+android:
+    components:
+        - android-21
 jdk:
     - oraclejdk8
 install:
