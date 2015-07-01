@@ -53,7 +53,8 @@ import org.kohsuke.args4j.CmdLineParser;
 import utility.PropertiesAction;
 import utility.TileStoreUtility;
 
-import com.rgi.suite.cli.Headless;
+import com.rgi.suite.cli.HeadlessOptions;
+import com.rgi.suite.cli.HeadlessRunner;
 import com.rgi.suite.uielements.windows.PackagerWindow;
 import com.rgi.suite.uielements.windows.TileReadersOptionWindow;
 import com.rgi.suite.uielements.windows.TilerWindow;
@@ -241,14 +242,15 @@ public class GeoSuite
 	 */
 	private static void runHeadless(@SuppressWarnings("unused") final String[] args)
 	{
-		final Headless opts = new Headless();
+		final HeadlessOptions opts = new HeadlessOptions();
 		final CmdLineParser parser = new CmdLineParser(opts);
 		try{
 			parser.parseArgument(args);
 			if(opts.validate())
 			{
 				final ExecutorService executor = Executors.newFixedThreadPool(1); //only 1 background thread supported
-				executor.execute(opts);
+				HeadlessRunner runner = new HeadlessRunner(opts);
+				executor.execute(runner);
 			}
 		}
 		catch (final CmdLineException e){

@@ -3,17 +3,7 @@
  */
 package com.rgi.suite.cli;
 
-import java.awt.Color;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-
+import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
 import com.rgi.common.Range;
 import com.rgi.common.TaskMonitor;
@@ -26,8 +16,19 @@ import com.rgi.store.tiles.TileHandle;
 import com.rgi.store.tiles.TileStoreException;
 import com.rgi.store.tiles.TileStoreReader;
 import com.rgi.store.tiles.TileStoreWriter;
+import com.rgi.store.tiles.geopackage.GeoPackageReader;
 import com.rgi.store.tiles.geopackage.GeoPackageWriter;
+import com.rgi.store.tiles.tms.TmsReader;
 import com.rgi.store.tiles.tms.TmsWriter;
+
+import javax.activation.MimeTypeParseException;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import java.awt.*;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author matthew.moran
@@ -35,7 +36,6 @@ import com.rgi.store.tiles.tms.TmsWriter;
  */
 public class HeadlessRunner implements Runnable
 {
-
 	private final HeadlessOptions opts;
 	public HeadlessRunner(final HeadlessOptions options)
 	{
@@ -50,56 +50,88 @@ public class HeadlessRunner implements Runnable
 	public void run()
 	{
 		final TaskMonitor taskMonitor = new HeadlessTaskMonitor();
-		final Dimensions<Integer> tileDimensions = new Dimensions<>(
-				this.opts.getTileWidth(), this.opts.getTileHeight());
-		final Color noDataColor = new Color(0, 0, 0, 0);
-		final CoordinateReferenceSystem crs = new CoordinateReferenceSystem(
-				"EPSG", this.opts.getOutputSrs());
 
-		try (	TileStoreWriter tileStoreWriter = null;
-				final TileStoreReader tileStoreReader = new RawImageTileReader(
-				this.opts.getInputFile(), tileDimensions, noDataColor, crs))
+		try (final TileStoreReader tileStoreReader = getTileStoreReader();
+		     final TileStoreWriter tileStoreWriter = getTileStoreWriter(tileStoreReader);
+		)
 		{
-			final MimeType imageType = new MimeType("image", this.opts.getImageFormat());
-			switch (this.opts.getOutputType())
-			{
-			case TMS:
-				tileStoreWriter = new TmsWriter(crs, this.opts.getOutputFile().toPath(),
-						imageType);
-				break;
-			case GPKG:
-				tileStoreWriter = new GeoPackageWriter(this.opts.getOutputFile(),
-						tileStoreReader.getCoordinateReferenceSystem(),
-						this.opts.getTileSetName(), this.opts.getTileSetName(),
-						this.opts.getTileSetDescription(), tileStoreReader.getBounds(),
-						getRelativeZoomTimesTwoTileScheme(tileStoreReader),
-						imageType, this.getImageWriteParameter());
-				break;
-			default:
-				throw new Exception("output Type must be TMS or GPKG!");
-			}
+
 			// kick of packager operation.
 			new Packager(taskMonitor, tileStoreReader, tileStoreWriter)
 					.execute();
 		} catch (final Exception ex)
 		{
 			System.err.println(ex.getMessage());
-		} finally
-		{
-				if (tileStoreWriter != null)
-				{
-					try
-					{
-						tileStoreWriter.close();
-					} catch (final Exception e)
-					{
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
 		}
 	}
 
+	/**
+	 * returns a tileStore reader based on input from headless options class
+	 * @return
+	 * @throws TileStoreException
+	 */
+	private TileStoreReader getTileStoreReader() throws TileStoreException
+	{
+		switch(opts.getInputType())
+		{
+			case ERR:
+				return null;
+			case RAW:
+				final Dimensions<Integer> tileDimensions = new Dimensions<>(
+						this.opts.getTileWidth(), this.opts.getTileHeight());
+				final Color noDataColor = new Color(0, 0, 0, 0);
+				return new RawImageTileReader(this.opts.getInputFile(),
+											tileDimensions,
+											noDataColor);
+			case GPKG:
+				return new GeoPackageReader(opts.getInputFile(),opts.getTileSetName());
+			case TMS:
+				final CoordinateReferenceSystem crs = new CoordinateReferenceSystem(
+						"EPSG", this.opts.getInputSrs());
+				return new TmsReader(crs, opts.getInputFile().toPath());
+			default:
+				return null;
+		}
+
+	}
+
+	/**
+	 * returns a tileStore Writer based on output type from headless options classs
+	 * @param reader
+	 * @return
+	 * @throws TileStoreException
+	 * @throws MimeTypeParseException
+	 */
+	private TileStoreWriter getTileStoreWriter(TileStoreReader reader) throws TileStoreException, MimeTypeParseException
+	{
+		final CoordinateReferenceSystem crs = new CoordinateReferenceSystem(
+				"EPSG", this.opts.getOutputSrs());
+		switch(opts.getInputType())
+		{
+			case ERR:
+				return null;
+			case RAW:
+				return null; //cannot write to raw image
+			case GPKG:
+				return new GeoPackageWriter(opts.getOutputFile(),
+											crs,
+											opts.getTileSetName(),
+											opts.getTileSetName(),
+											opts.getTileSetDescription(),
+											new BoundingBox(-180.0,-90.0,180.0,90.0),//always whole world (lame)
+											getRelativeZoomTimesTwoTileScheme(reader),
+											opts.getImageFormat(),
+											getImageWriteParameter());
+
+			case TMS:
+				return new TmsWriter(crs,
+									opts.getOutputFile().toPath(),
+									opts.getImageFormat(),
+									getImageWriteParameter());
+			default:
+				return null;
+		}
+	}
 
 	/**
 	 * returns an image writer for the supplied image type.
@@ -108,20 +140,8 @@ public class HeadlessRunner implements Runnable
 	 */
 	private ImageWriter getImageWriter()
 	{
-		MimeType mimeType;
-		try
-		{
-			mimeType = new MimeType("image", this.opts.getImageFormat());
-			return ImageIO.getImageWritersByMIMEType(mimeType.toString())
+			return ImageIO.getImageWritersByMIMEType(this.opts.getImageFormat().toString())
 					.next();
-
-		} catch (final MimeTypeParseException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-
 	}
 
 	/**
@@ -131,27 +151,23 @@ public class HeadlessRunner implements Runnable
 	 */
 	private ImageWriteParam getImageWriteParameter()
 	{
-		final ImageWriteParam imageWriteParameter = this.opts.getImageWriter()
+		final ImageWriteParam imageWriteParameter = this.getImageWriter()
 				.getDefaultWriteParam();
-
-		final Float compressionQualityValue = (float) ((this.opts.getQuality()) / 100.00);
-
+		final Float compressionQualityValue = (float) ((this.opts.getCompressionQuality()) / 100.00);
 		if (this.opts.getCompressionType() != null
 				&& imageWriteParameter.canWriteCompressed())
 		{
 			imageWriteParameter
 					.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-			imageWriteParameter.setCompressionType(this.opts.compressionType);
+			imageWriteParameter.setCompressionType(this.opts.getCompressionType());
 
 			if (compressionQualityValue != null)
 			{
 				imageWriteParameter
 						.setCompressionQuality(compressionQualityValue);
 			}
-
 			return imageWriteParameter;
 		}
-
 		return null;
 	}
 
@@ -165,29 +181,23 @@ public class HeadlessRunner implements Runnable
 			final TileStoreReader tileStoreReader) throws TileStoreException
 	{
 		final Set<Integer> zoomLevels = tileStoreReader.getZoomLevels();
-
 		if (zoomLevels.size() == 0)
 		{
 			throw new TileStoreException(
 					"Input tile store contains no zoom levels");
 		}
-
 		final Range<Integer> zoomLevelRange = new Range<>(zoomLevels,
 				Integer::compare);
-
 		final List<TileHandle> tiles = tileStoreReader.stream(
 				zoomLevelRange.getMinimum()).collect(Collectors.toList());
-
 		final Range<Integer> columnRange = new Range<>(tiles,
 				tile -> tile.getColumn(), Integer::compare);
 		final Range<Integer> rowRange = new Range<>(tiles,
 				tile -> tile.getRow(), Integer::compare);
-
 		final int minZoomLevelMatrixWidth = columnRange.getMaximum()
 				- columnRange.getMinimum() + 1;
 		final int minZoomLevelMatrixHeight = rowRange.getMaximum()
 				- rowRange.getMinimum() + 1;
-
 		return new ZoomTimesTwo(zoomLevelRange.getMinimum(),
 				zoomLevelRange.getMaximum(), minZoomLevelMatrixWidth,
 				minZoomLevelMatrixHeight);
