@@ -241,6 +241,7 @@ public class RawImageTileReader implements TileStoreReader
     @Override
     public void close() throws TileStoreException
     {
+        // Remove temporary reprojected file
         if(this.dataset != null)
         {
             final Vector<String> files = this.dataset.GetFileList();
@@ -258,6 +259,18 @@ public class RawImageTileReader implements TileStoreReader
                         throw new TileStoreException(e);
                     }
                 }
+            }
+        }
+        // Remove final temporary cached tile
+        for(Map.Entry<String, Path> entry : cachedTiles.entrySet())
+        {
+            try
+            {
+                Files.delete(entry.getValue());
+            }
+            catch (final IOException e)
+            {
+                throw new TileStoreException(e);
             }
         }
     }
