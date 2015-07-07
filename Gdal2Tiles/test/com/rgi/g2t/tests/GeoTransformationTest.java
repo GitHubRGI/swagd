@@ -29,13 +29,16 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 
+import com.rgi.common.BoundingBox;
 import org.gdal.gdal.Dataset;
+import org.gdal.gdal.gdal;
 import org.junit.Test;
 
-import utility.GdalUtility;
-
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.g2t.GeoTransformation;
+import com.rgi.g2t.RawImageTileReader;
+import com.rgi.store.tiles.TileStoreException;
 
 public class GeoTransformationTest
 {
@@ -148,6 +151,21 @@ public class GeoTransformationTest
     @Test
     public void testGetBounds()
     {
-//        final Dataset data = GdalUtility.open(new File("test.tif"));
+        gdal.AllRegister();
+        final Dataset data = gdal.GetDriverByName("MEM").Create("data", 100, 300, 0);
+        final double[] affineTransform = {0, 1, 2, 3, 4, 5};
+        final BoundingBox box = new BoundingBox(0, 3-5 * 300, 0+1*100, 3);
+
+        try
+        {
+            final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
+            assertTrue("GeoTransformation method getBounds(Dataset) did not return the correct BoundingBox",
+                        geoTransformation.getBounds(data).equals(box));
+        }
+        finally
+        {
+            data.delete();
+        }
+
     }
 }

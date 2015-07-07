@@ -55,6 +55,24 @@ public class TilingExceptionTest
      */
     @SuppressWarnings("static-method")
     @Test
+    public void testMessageAndCauseConstructor()
+    {
+        final Throwable cause = new Throwable("cause");
+        final String message = "Message";
+        final TilingException e = new TilingException(message, cause);
+
+        assertTrue("TilingException constructor did not correctly set the message for the exception.",
+                e.getMessage().equals(message));
+
+        assertTrue("TilingException constructor did not correctly set the cause for the exception.",
+                   e.getCause().equals(cause));
+    }
+
+    /**
+     * Tests message constructor
+     */
+    @SuppressWarnings("static-method")
+    @Test
     public void testMessageConstructor()
     {
         final Exception e = new TilingException("This is a test");

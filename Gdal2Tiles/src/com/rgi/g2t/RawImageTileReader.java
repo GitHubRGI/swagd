@@ -165,14 +165,14 @@ public class RawImageTileReader implements TileStoreReader
 
         try
         {
-            if(this.dataset.GetRasterBand(1).GetColorTable() != null)
-            {
-                System.out.println("expand this raster to RGB/RGBA"); // TODO: make a temporary vrt with gdal_translate to expand this to RGB/RGBA
-            }
-
             if(this.dataset.GetRasterCount() == 0)
             {
                 throw new IllegalArgumentException("Input file has no raster bands");
+            }
+
+            if(this.dataset.GetRasterBand(1).GetColorTable() != null)
+            {
+                System.out.println("expand this raster to RGB/RGBA"); // TODO: make a temporary vrt with gdal_translate to expand this to RGB/RGBA
             }
 
             // We cannot tile an image with no geo referencing information
