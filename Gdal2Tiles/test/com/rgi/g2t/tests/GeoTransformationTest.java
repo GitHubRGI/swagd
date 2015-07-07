@@ -23,10 +23,18 @@
 
 package com.rgi.g2t.tests;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+
+import org.gdal.gdal.Dataset;
 import org.junit.Test;
 
+import utility.GdalUtility;
+
+import com.rgi.common.coordinate.Coordinate;
 import com.rgi.g2t.GeoTransformation;
 
 public class GeoTransformationTest
@@ -44,4 +52,102 @@ public class GeoTransformationTest
         fail("Expected GeoTransformation constructor to throw an IllegalArgumentException when the given array is null.");
     }
 
+    /**
+     * Tests constructor throws and IllegalArgumentException when
+     * given an array not of length 6
+     */
+    @SuppressWarnings("static-method")
+    @Test(expected = IllegalArgumentException.class)
+    public void constructorIllegalArgumentExcpetion2()
+    {
+        final double[] affineTransform = new double[3];
+        final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
+
+        fail("Expected GeoTransformation constructor to throw an IllegalArgumentException when the given array's length is not 6.");
+    }
+
+    /**
+     * Tests the constructor correctly sets the value of the affine transformation array,
+     * the top left coordinate, and the pixel resolution
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void constructorTest()
+    {
+        final double[] affineTransform = {0, 1, 2, 3, 4, 5};
+        final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
+
+        assertTrue("GeoTransformation constructor did not properly set the affine transformation array",
+                   geoTransformation.getAffineTransform().equals(affineTransform));
+
+        assertTrue("GeoTransformation constructor did not properly set the top left coordinate.",
+                   geoTransformation.getTopLeft().equals(new Coordinate<Double>(0.0, 3.0)));
+
+        assertTrue("GeoTransformation constructor did not properly set the pixel resolution.",
+                   geoTransformation.getPixelResolution().getHeight() == -5.0 &&
+                   geoTransformation.getPixelResolution().getWidth() == 1.0);
+    }
+
+    /**
+     * Tests isNorthUp
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void testIsNorthUp1()
+    {
+        final double[] affineTransform = {0, 1, 2, 3, 4, 5};
+        final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
+
+        assertFalse("GeoTransformation method isNorthUp returned true instead of false.",
+                geoTransformation.isNorthUp());
+    }
+
+    /**
+     * Tests is NorthUp
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void testIsNorthUp2()
+    {
+        final double[] affineTransform = {0, 1, 0, 3, 4, 5};
+        final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
+
+        assertFalse("GeoTransformation method isNorthUp returned true instead of false.",
+                    geoTransformation.isNorthUp());
+    }
+
+    /**
+     * Tests is NorthUp
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void testIsNorthUp3()
+    {
+        final double[] affineTransform = {0, 1, 2, 3, 0, 5};
+        final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
+
+        assertFalse("GeoTransformation method isNorthUp returned true instead of false.",
+                    geoTransformation.isNorthUp());
+    }
+
+    /**
+     * Tests is NorthUp
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void testIsNorthUp4()
+    {
+        final double[] affineTransform = {2, 1, 0, 3, 0, 5};
+        final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
+
+        assertTrue("GeoTransformation method isNorthUp returned true instead of false.",
+                geoTransformation.isNorthUp());
+    }
+
+    @SuppressWarnings("static-method")
+    @Test
+    public void testGetBounds()
+    {
+//        final Dataset data = GdalUtility.open(new File("test.tif"));
+    }
 }
