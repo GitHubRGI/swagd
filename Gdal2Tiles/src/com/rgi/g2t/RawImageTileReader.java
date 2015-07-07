@@ -262,17 +262,16 @@ public class RawImageTileReader implements TileStoreReader
             }
         }
         // Remove final temporary cached tile
-        for(Map.Entry<String, Path> entry : cachedTiles.entrySet())
-        {
-            try
-            {
-                Files.delete(entry.getValue());
-            }
-            catch (final IOException e)
-            {
-                throw new TileStoreException(e);
-            }
-        }
+        cachedTiles.values().stream().forEach(tile -> {
+                                                          try
+                                                          {
+                                                              Files.delete(tile);
+                                                          }
+                                                          catch (final IOException e)
+                                                          {
+                                                              throw new RuntimeException(e);
+                                                          }
+                                                      });
     }
 
     @Override
