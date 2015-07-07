@@ -3,11 +3,9 @@ package com.rgi.g2t.tests;
 import com.rgi.common.Dimensions;
 import com.rgi.g2t.RawImageTileReader;
 import com.rgi.store.tiles.TileStoreException;
-import org.gdal.gdal.Band;
-import org.gdal.gdal.ColorTable;
-import org.gdal.gdal.Dataset;
-import org.gdal.gdal.gdal;
+import org.gdal.gdal.*;
 import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 import utility.GdalUtility;
 
 import java.awt.*;
@@ -136,6 +134,21 @@ public class RawImageTileReaderTest
         finally
         {
             dataset.delete();
+        }
+    }
+
+    @Test
+    public void testConstructor() throws TileStoreException
+    {
+        final File rawData = new File("test.tif");
+        final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
+        try(final RawImageTileReader reader = new RawImageTileReader(rawData, tileSize , Color.BLACK))
+        {
+            assertTrue("RawImageTileReader constructor did not properly set up the RawImageTileReader",
+                       reader.getName().equals("test") &&
+                       reader.getImageType().equals("tiff") &&
+                       reader.getImageDimensions().equals(tileSize) &&
+                       reader.getByteSize() == rawData.length());
         }
     }
 }
