@@ -1,26 +1,26 @@
 package utility.tests;
 
-import org.gdal.gdal.Dataset;
+import static org.junit.Assert.assertTrue;
+
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
 import org.junit.Test;
-import utility.GdalError;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import utility.GdalError;
 
 public class GdalErrorTest
 {
     /**
      * Tests GdalError constructor
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorConstructor()
     {
         final String message = "testing";
         final int errorCode = 12;
         gdal.Error(gdalconst.CE_Warning, errorCode, message);
-        GdalError error = new GdalError();
+        final GdalError error = new GdalError();
 
         assertTrue("GdalError constructor did not correctly set the GdalError message.",
                    error.getMessage().equals(message));
@@ -35,27 +35,45 @@ public class GdalErrorTest
     /**
      * Tests GdalError toString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testToString()
     {
         final String message = "testing";
         gdal.Error(gdalconst.CE_None, gdalconst.CPLE_AppDefined, message);
 
-        GdalError error = new GdalError();
-        String expected = "<None:Application Defined> testing";
+        final GdalError error = new GdalError();
+        final String expected = "<None:Application Defined> testing";
 
         assertTrue("GdalError toString method did not return the correct String",
                    error.toString().equals(expected));
     }
 
     /**
+     * Tests GdalError lastError
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void testlastError()
+    {
+        final String message = "testing";
+        gdal.Error(gdalconst.CE_None, gdalconst.CPLE_AppDefined, message);
+
+        final String expected = "<None:Application Defined> testing";
+        final String returned = GdalError.lastError();
+
+        assertTrue("GdalError toString method did not return the correct String",
+                   returned.equals(expected));
+    }
+    /**
      * Tests gdalErrorNumberToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorNumberToString1()
     {
-        String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_AppDefined);
-        String expected = "Application Defined";
+        final String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_AppDefined);
+        final String expected = "Application Defined";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -63,14 +81,16 @@ public class GdalErrorTest
                    returned.equals(expected));
     }
 
+
     /**
      * Tests gdalErrorNumberToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorNumberToString2()
     {
-        String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_AssertionFailed);
-        String expected = "Assertion Failed";
+        final String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_AssertionFailed);
+        final String expected = "Assertion Failed";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -81,11 +101,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorNumberToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorNumberToString3()
     {
-        String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_FileIO);
-        String expected = "File IO";
+        final String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_FileIO);
+        final String expected = "File IO";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -96,11 +117,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorNumberToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorNumberToString4()
     {
-        String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_IllegalArg);
-        String expected = "Illegal Argument";
+        final String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_IllegalArg);
+        final String expected = "Illegal Argument";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -111,11 +133,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorNumberToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorNumberToString5()
     {
-        String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_None);
-        String expected = "None";
+        final String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_None);
+        final String expected = "None";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -126,11 +149,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorNumberToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorNumberToString6()
     {
-        String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_NotSupported);
-        String expected = "Not Supported";
+        final String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_NotSupported);
+        final String expected = "Not Supported";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -141,11 +165,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorNumberToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorNumberToString7()
     {
-        String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_NoWriteAccess);
-        String expected = "No Write Access";
+        final String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_NoWriteAccess);
+        final String expected = "No Write Access";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -156,11 +181,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorNumberToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorNumberToString8()
     {
-        String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_OpenFailed);
-        String expected = "Open Failed";
+        final String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_OpenFailed);
+        final String expected = "Open Failed";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -171,11 +197,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorNumberToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorNumberToString9()
     {
-        String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_OutOfMemory);
-        String expected = "Out Of Memory";
+        final String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_OutOfMemory);
+        final String expected = "Out Of Memory";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                   returned,
@@ -186,11 +213,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorNumberToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorNumberToString10()
     {
-        String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_UserInterrupt);
-        String expected = "User Interrupt";
+        final String returned = GdalError.gdalErrorNumberToString(gdalconst.CPLE_UserInterrupt);
+        final String expected = "User Interrupt";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -201,11 +229,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorNumberToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorNumberToString11()
     {
-        String returned = GdalError.gdalErrorNumberToString(-100);
-        String expected = "Unrecognized GDAL Error Number";
+        final String returned = GdalError.gdalErrorNumberToString(-100);
+        final String expected = "Unrecognized GDAL Error Number";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -216,11 +245,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorTypeToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorTypeToString1()
     {
-        String returned = GdalError.gdalErrorTypeToString(gdalconst.CE_Debug);
-        String expected = "Debug";
+        final String returned = GdalError.gdalErrorTypeToString(gdalconst.CE_Debug);
+        final String expected = "Debug";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -231,11 +261,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorTypeToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorTypeToString2()
     {
-        String returned = GdalError.gdalErrorTypeToString(gdalconst.CE_Failure);
-        String expected = "Failure";
+        final String returned = GdalError.gdalErrorTypeToString(gdalconst.CE_Failure);
+        final String expected = "Failure";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -246,11 +277,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorTypeToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorTypeToString3()
     {
-        String returned = GdalError.gdalErrorTypeToString(gdalconst.CE_Fatal);
-        String expected = "Fatal";
+        final String returned = GdalError.gdalErrorTypeToString(gdalconst.CE_Fatal);
+        final String expected = "Fatal";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -261,11 +293,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorTypeToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorTypeToString4()
     {
-        String returned = GdalError.gdalErrorTypeToString(gdalconst.CE_None);
-        String expected = "None";
+        final String returned = GdalError.gdalErrorTypeToString(gdalconst.CE_None);
+        final String expected = "None";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -276,11 +309,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorTypeToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorTypeToString5()
     {
-        String returned = GdalError.gdalErrorTypeToString(gdalconst.CE_Warning);
-        String expected = "Warning";
+        final String returned = GdalError.gdalErrorTypeToString(gdalconst.CE_Warning);
+        final String expected = "Warning";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,
@@ -291,11 +325,12 @@ public class GdalErrorTest
     /**
      * Tests gdalErrorTypeToString
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGdalErrorTypeToString6()
     {
-        String returned = GdalError.gdalErrorTypeToString(-100);
-        String expected = "Unrecognized GDAL Error Type";
+        final String returned = GdalError.gdalErrorTypeToString(-100);
+        final String expected = "Unrecognized GDAL Error Type";
 
         assertTrue(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
                                  returned,

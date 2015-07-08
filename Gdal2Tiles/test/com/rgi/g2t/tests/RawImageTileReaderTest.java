@@ -26,18 +26,19 @@ package com.rgi.g2t.tests;
 import static org.junit.Assert.assertTrue;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.DataFormatException;
 
+import javax.imageio.ImageIO;
 import javax.naming.OperationNotSupportedException;
 
-import com.rgi.store.tiles.TileHandle;
 import org.gdal.gdal.Band;
 import org.gdal.gdal.ColorTable;
 import org.gdal.gdal.Dataset;
@@ -55,9 +56,11 @@ import com.rgi.common.coordinate.CrsCoordinate;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
 import com.rgi.common.coordinate.referencesystem.profile.CrsProfileFactory;
 import com.rgi.common.tile.TileOrigin;
+import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.g2t.RawImageTileReader;
+import com.rgi.store.tiles.TileHandle;
 import com.rgi.store.tiles.TileStoreException;
 
 /**
@@ -194,6 +197,7 @@ public class RawImageTileReaderTest
      * Tests constructor properly sets up the RawImageTileReader
      * @throws TileStoreException
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testConstructor() throws TileStoreException
     {
@@ -209,6 +213,7 @@ public class RawImageTileReaderTest
     /**
      * Tests the getBoundsMethod
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGetBounds() throws TileStoreException, DataFormatException
     {
@@ -276,6 +281,7 @@ public class RawImageTileReaderTest
                                                       (range.getMinimum().getY() - range.getMaximum().getY() + 1);
                                            })
                                            .sum();
+
         try(final RawImageTileReader reader = new RawImageTileReader(rawData, tileSize, Color.BLACK))
         {
             assertTrue("RawImageTileReader did not return the correct number of tiles for the test image",
@@ -292,6 +298,7 @@ public class RawImageTileReaderTest
      *
      * @throws TileStoreException
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGetByteSize() throws TileStoreException
     {
@@ -310,7 +317,7 @@ public class RawImageTileReaderTest
      */
     @SuppressWarnings("static-method")
     @Test
-    public void testGetTile1() throws TileStoreException
+    public void testGetTile1()
     {
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
 
@@ -331,7 +338,7 @@ public class RawImageTileReaderTest
      */
     @SuppressWarnings("static-method")
     @Test
-    public void testGetTile2() throws TileStoreException
+    public void testGetTile2()
     {
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
         final CrsCoordinate coordinate = new CrsCoordinate(0,0,"test", 0);
@@ -428,6 +435,7 @@ public class RawImageTileReaderTest
      *
      * @throws TileStoreException
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGetCoordinateReferenceSystem() throws TileStoreException
     {
@@ -445,6 +453,7 @@ public class RawImageTileReaderTest
      *
      * @throws TileStoreException
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGetImageDimensions() throws TileStoreException
     {
@@ -463,6 +472,7 @@ public class RawImageTileReaderTest
      *
      * @throws TileStoreException
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testTileScheme() throws TileStoreException
     {
@@ -480,6 +490,7 @@ public class RawImageTileReaderTest
      *
      * @throws TileStoreException
      */
+    @SuppressWarnings("static-method")
     @Test
     public void testGetTileOrigin() throws TileStoreException
     {
@@ -490,5 +501,226 @@ public class RawImageTileReaderTest
             assertTrue("RawImageTileReader getCoordinateReferenceSystem did not return the correct CoordinateReferenceSystem",
                        reader.getTileOrigin().equals(TileOrigin.LowerLeft));
         }
+    }
+
+    /**
+     * Tests RawImageTileHandle getMatrix
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void testGetMatrix()throws TileStoreException, DataFormatException
+    {
+        final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
+
+        //Create expected TileMatrixDimensions
+        final Dataset data = GdalUtility.open(rawData);
+        final TileScheme tileScheme = new ZoomTimesTwo(0,31,1,1);
+        final CrsProfile profile = CrsProfileFactory.create(new CoordinateReferenceSystem("EPSG", 3395));
+
+        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
+                GdalUtility.getBounds(data),
+                profile.getBounds(),
+                profile,
+                TileOrigin.LowerLeft);
+
+        final int minimumZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+
+        final TileMatrixDimensions expectedDimensions = tileScheme.dimensions(minimumZoom);
+
+        try(final RawImageTileReader reader = new RawImageTileReader(rawData, tileSize, Color.BLACK))
+        {
+            final TileHandle handle = reader.stream(minimumZoom).findFirst().get();
+
+            assertTrue("RawImageTileHandle methods getMatrix did not return the correct TileMatrixDimensions.",
+                    handle.getMatrix().getHeight() == expectedDimensions.getHeight() &&
+                            handle.getMatrix().getWidth() == expectedDimensions.getWidth());
+        }
+    }
+
+    /**
+     * Tests RawImageTileHandle getCrsCoordinate
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void testGetCrsCoordinate1() throws TileStoreException, DataFormatException
+    {
+        final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
+
+        //Create ExpectedCrsCoordinate
+        final Dataset data = GdalUtility.open(rawData);
+        final TileScheme tileScheme = new ZoomTimesTwo(0,31,1,1);
+        final CrsProfile profile = CrsProfileFactory.create(new CoordinateReferenceSystem("EPSG", 3395));
+
+        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
+                GdalUtility.getBounds(data),
+                profile.getBounds(),
+                profile,
+                TileOrigin.LowerLeft);
+
+        final int minimumZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+        final Coordinate<Integer> minTile = tileRanges.get(minimumZoom).getMinimum();
+
+        final CrsCoordinate coordinate = profile.tileToCrsCoordinate(minTile.getX() + TileOrigin.LowerLeft.getHorizontal(),
+                minTile.getY() + TileOrigin.LowerLeft.getVertical(),
+                profile.getBounds(),
+                tileScheme.dimensions(minimumZoom),
+                TileOrigin.LowerLeft);
+
+        try(final RawImageTileReader reader = new RawImageTileReader(rawData, tileSize, Color.BLACK))
+        {
+            final TileHandle handle = reader.stream(minimumZoom).findFirst().get();
+
+            assertTrue("RawImageTileHandle methods getCrsCoordinate() did not return the correct CrsCoordinate.",
+                       handle.getCrsCoordinate().equals(coordinate));
+        }
+        finally
+        {
+            data.delete();
+        }
+    }
+
+    /**
+     * Tests RawImageTileHandle getCrsCoordinate(TileOrigin)
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void testGetCrsCoordinate2() throws TileStoreException, DataFormatException
+    {
+        final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
+
+        //Create ExpectedCrsCoordinate
+        final Dataset data = GdalUtility.open(rawData);
+        final TileScheme tileScheme = new ZoomTimesTwo(0,31,1,1);
+        final CrsProfile profile = CrsProfileFactory.create(new CoordinateReferenceSystem("EPSG", 3395));
+
+        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
+                GdalUtility.getBounds(data),
+                profile.getBounds(),
+                profile,
+                TileOrigin.LowerLeft);
+
+        final int minimumZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+        final Coordinate<Integer> minTile = tileRanges.get(minimumZoom).getMinimum();
+
+        final CrsCoordinate coordinate = profile.tileToCrsCoordinate(minTile.getX() + TileOrigin.UpperRight.getHorizontal(),
+                minTile.getY() + TileOrigin.UpperRight.getVertical(),
+                profile.getBounds(),
+                tileScheme.dimensions(minimumZoom),
+                TileOrigin.LowerLeft);
+
+        try(final RawImageTileReader reader = new RawImageTileReader(rawData, tileSize, Color.BLACK))
+        {
+            final TileHandle handle = reader.stream(minimumZoom).findFirst().get();
+
+            assertTrue("RawImageTileHandle methods getCrsCoordinate(TileOrigin) did not return the correct CrsCoordinate.",
+                       handle.getCrsCoordinate(TileOrigin.UpperRight).equals(coordinate));
+        }
+        finally
+        {
+            data.delete();
+        }
+    }
+
+    /**
+     * Tests RawImageTileHandle getBounds
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void testTileGetBounds()throws TileStoreException, DataFormatException
+    {
+        final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
+
+        //Create expected TileMatrixDimensions
+        final Dataset data = GdalUtility.open(rawData);
+        final TileScheme tileScheme = new ZoomTimesTwo(0,31,1,1);
+        final CrsProfile profile = CrsProfileFactory.create(new CoordinateReferenceSystem("EPSG", 3395));
+
+        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
+                GdalUtility.getBounds(data),
+                profile.getBounds(),
+                profile,
+                TileOrigin.LowerLeft);
+
+        final int minimumZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+        final Coordinate<Integer> minTile = tileRanges.get(minimumZoom).getMinimum();
+
+        final TileMatrixDimensions dimensions = tileScheme.dimensions(minimumZoom);
+
+        final BoundingBox expectedBox = profile.getTileBounds(minTile.getX(),
+                minTile.getY(),
+                profile.getBounds(),
+                dimensions,
+                TileOrigin.LowerLeft);
+
+        try(final RawImageTileReader reader = new RawImageTileReader(rawData, tileSize, Color.BLACK))
+        {
+            final TileHandle handle = reader.stream(minimumZoom).findFirst().get();
+
+            assertTrue("RawImageTileHandle method getBounds did not return the correct tile bounds.",
+                    handle.getBounds().equals(expectedBox));
+        }
+    }
+
+    /**
+     * Tests RawImageTileHandle getImage when
+     * the image needs to be read from the raw data
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void testGetImage1() throws TileStoreException, DataFormatException, IOException
+    {
+        final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
+        final CoordinateReferenceSystem crs = new CoordinateReferenceSystem("WGS84 / Web Mercator", "EPSG", 3857);
+
+        //Create expected TileMatrixDimensions
+        final Dataset data = GdalUtility.open(rawData);
+        final TileScheme tileScheme = new ZoomTimesTwo(0,31,1,1);
+        final CrsProfile profile = CrsProfileFactory.create(new CoordinateReferenceSystem("EPSG", 3395));
+
+        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
+                GdalUtility.getBounds(data),
+                profile.getBounds(),
+                profile,
+                TileOrigin.LowerLeft);
+
+        final int minimumZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+
+
+        try(final RawImageTileReader reader = new RawImageTileReader(rawData, tileSize, Color.BLACK, crs))
+        {
+            final TileHandle handle = reader.stream(minimumZoom).findFirst().get();
+            final BufferedImage image = ImageIO.read(new File("base1.png"));
+
+            assertTrue("RawImageTileHandle method getImage did not read the image correctly.",
+                    bufferedImagesEqual(image, handle.getImage()));
+        }
+    }
+
+    /**
+     * Compares two BufferedImages and determines if they are equal
+     *
+     * @param img1 the first buffered image
+     * @param img2 the second buffered image
+     * @return true if the two BufferedImages are equal
+     */
+    private static boolean bufferedImagesEqual(final BufferedImage img1, final BufferedImage img2)
+    {
+        if(img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight())
+        {
+            return false;
+        }
+
+        for(int x = 0; x < img1.getWidth(); x++)
+        {
+            for(int y = 0; y < img1.getHeight(); y++)
+            {
+                if(img1.getRGB(x, y) != img2.getRGB(x, y))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
