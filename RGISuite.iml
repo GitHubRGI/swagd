@@ -6,6 +6,7 @@
     <content url="file://$MODULE_DIR$/RGISuite">
       <sourceFolder url="file://$MODULE_DIR$/RGISuite/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/RGISuite/test" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/RGISuite/res" type="java-resource" />
       <excludeFolder url="file://$MODULE_DIR$/RGISuite/target" />
     </content>
     <orderEntry type="inheritedJdk" />

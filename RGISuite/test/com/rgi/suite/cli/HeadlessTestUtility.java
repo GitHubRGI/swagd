@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Random;
 
 public class HeadlessTestUtility {
@@ -34,7 +35,11 @@ public class HeadlessTestUtility {
 		return tempFolder.getRoot();
 	}
 
-	public static Path createTMSFolderGeodetic(
+	public static String getNonExistantFileString(TemporaryFolder tempFolder, String extension)
+	{
+		return Paths.get(tempFolder.getRoot().getAbsolutePath(),getRandomString(6)+extension).toString();
+	}
+	public static Path getTMSFolderGeodetic(
 			final TemporaryFolder tempFolder, final int zooms) {
 		try {
 			final File tmsFolder = tempFolder.newFolder(getRandomString(8));

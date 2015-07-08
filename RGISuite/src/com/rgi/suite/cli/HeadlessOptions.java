@@ -10,10 +10,27 @@ import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 import java.io.File;
 
+
+
+
 /**
  * Business Logic for Running SWAGD in a headless environment. contains logic to
  * support Args4J command line arguments, as well as implementing the runnable
  * interface so it can be run in another thread
+ *      -h                                     : show help
+ *		--inputsrs <epsg int>                  : Input Spatial reference system EPSG identifier (ie 4326)
+ *		--outputsrs <epsg int value>           : Desired output SRS EPSG identifier,eg 3857
+ *		-c (--compression) <jpeg               : Compression type for image tiling,default is jpeg
+ *		-d (--description) <text description>  : Tile set description
+ *		-f (--format) <image/png or image/jpg> : Image format for tiling operations,default is png (options are png,jpeg,etc.)
+ *		-h (--height) <Height>                 : Tile height in pixels; default is 256
+ *		-i (-in) <Input File Path>             : REQUIRED! Input source for tiling/Packaging operation
+ *		-ti (--intileset, --intilesetname) <text>   : Tile Set name for GeoPackages (input), default is short name of output geopackage.
+ *	    -to (--outtileset, --outtilesetname)    :Tile set name for geopackage output
+ *		-op(--operation) <tile or package>     : Operation to execute
+ *		-o (-out) <Output File Path>           : Full output path for tiling/Packaging operation
+ *		-q (--quality) <1-100>                 : Compression quality for jpeg compression, between 0-100
+ *		-w (--width) <1-10000>                 : Tile width in pixels; default is 256
  *
  * @author matthew.moran
  */
@@ -29,10 +46,11 @@ public class HeadlessOptions
 	private File outputFile;
 	private int outputSrs = 3857;
 	private int inputSrs = 4326;
-	private String tileSetName;
-	private String tileSetDescription;
+	private String tileSetNameIn = "";
+	private String tileSetNameOut = "";
+	private String tileSetDescription = "";
 	private MimeType imageFormat;
-	private final int tileWidth = 256;
+	private int tileWidth = 256;
 	private int tileHeight = 256;
 	private String compressionType = "jpeg";
 	private int quality = 75;
@@ -51,8 +69,8 @@ public class HeadlessOptions
 	}
 
 	//internal, no mutators for these options.
-	@Option(required = true, name = "-o", aliases =
-			{"--operation"}, usage = "operation to do")
+	@Option(required = true, name = "-op", aliases =
+			{"--operation"},metaVar="<tile or package>", usage = "operation to do")
 	private void setOperation(String input)
 	{
 		if (input.equalsIgnoreCase("tile"))
@@ -75,7 +93,7 @@ public class HeadlessOptions
 	 * @param filePath
 	 * @throws IllegalArgumentException if filePath leads to a non-existent file, is null, or is empty.
 	 */
-	@Option(required = true, name = "-in", metaVar = "<Input File Path>", usage = "Input source for tiling/Packaging operation")
+	@Option(required = true, name = "-i",aliases = {"-in"}, metaVar = "<Input File Path>", usage = "Input source for tiling/Packaging operation")
 	public void setInputFile(final String filePath)
 	{
 		final String path = getFullPath(filePath);
@@ -96,7 +114,7 @@ public class HeadlessOptions
 	 * @param filePath
 	 * @throws IllegalArgumentException - if output path  is null or empty
 	 */
-	@Option(required = true, name = "-out", metaVar = "<Output File Path>", usage = "Full output path for tiling/Packaging operation")
+	@Option(required = true, name = "-o",aliases= {"-out"}, metaVar = "<Output File Path>", usage = "Full output path for tiling/Packaging operation")
 	public void setOutputFile(final String filePath)
 	{
 		final String path = getFullPath(filePath);
@@ -109,7 +127,7 @@ public class HeadlessOptions
 	 * @param i
 	 * @throws IllegalArgumentException if unrecognized spatial reference.
 	 */
-	@Option(name = "--outputsrs", metaVar = "<Output SRS>", usage = "Desired output SRS EPSG identifier, eg 3857")
+	@Option(name = "--outputsrs", metaVar = "<epsg srs int>", usage = "Desired output SRS EPSG identifier, eg 3857")
 	public void setOutputSrs(final int i)
 	{
 		// special case for TMS.
@@ -139,7 +157,7 @@ public class HeadlessOptions
 	 * @param i
 	 * @throws IllegalArgumentException if unrecognized spatial reference.
 	 */
-	@Option(name = "--inputsrs", metaVar = "<Input Srs>", usage = "Input Spatial reference system EPSG identifier (ie 4326)")
+	@Option(name = "--inputsrs", metaVar = "<epsg srs int>", usage = "Input Spatial reference system EPSG identifier (ie 4326)")
 	public void setInputSRS(final int i)
 	{
 		// special case for TMS.
@@ -167,13 +185,13 @@ public class HeadlessOptions
 	 * @param name
 	 * @throws IllegalArgumentException - name is null, or longer than 10000 characters
 	 */
-	@Option(name = "-n", metaVar = "<Tile Set Name>", aliases = {"--tileset", "--tilesetname"},
+	@Option(name = "-ti", metaVar = "<Tile Set Name>", aliases = {"--intileset", "--intilesetname"},
 			usage = "Input Tile Set for GeoPackages, default is short name of output geopackage.")
-	public void setTileSetName(final String name)
+	public void setTileSetNameIn(final String name)
 	{
 		if (name != null && name.length() <= 10000)
 		{
-			this.tileSetName = name;
+			this.tileSetNameIn = name;
 		}
 		else
 		{
@@ -183,17 +201,37 @@ public class HeadlessOptions
 	}
 
 	/**
+	 * Tile set Name
+	 *
+	 * @param name
+	 * @throws IllegalArgumentException - name is null, or longer than 10000 characters
+	 */
+	@Option(name = "-to", metaVar = "<Tile Set Name>", aliases = {"--outtileset", "--outtilesetname"},
+			usage = "Input Tile Set for GeoPackages, default is short name of output geopackage.")
+	public void setTileSetNameOut(final String name)
+	{
+		if (name != null && name.length() <= 10000)
+		{
+			this.tileSetNameOut = name;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Provided Name is invalid, must be a "
+					+ "non-null string shorter than 10000 characters");
+		}
+	}
+	/**
 	 * Tile Set Description
 	 *
 	 * @param description
 	 */
 	@Option(name = "-d", aliases =
-			{"--description"}, usage = "Tile set description")
+			{"--description"},metaVar="<text tile set description>", usage = "Tile set description")
 	public void setTileSetDescription(final String description)
 	{
 		if (description != null && description.length() <= 10000)
 		{
-			this.tileSetName = description;
+			this.tileSetDescription = description;
 		}
 		else
 		{
@@ -209,12 +247,12 @@ public class HeadlessOptions
 	 * @throws IllegalArgumentException value must be between 1 - 10000
 	 */
 	@Option(name = "-w", aliases =
-			{"--width"}, metaVar = "<Width>", usage = "Tile width in pixels; default is 256")
+			{"--width"}, metaVar = "<1-9999>", usage = "Tile width in pixels; default is 256")
 	public void setTileWidth(final int i)
 	{
 		if (i > 0 && i < 10000)
 		{
-			this.tileHeight = i;
+			this.tileWidth = i;
 		}
 		else
 		{
@@ -230,7 +268,7 @@ public class HeadlessOptions
 	 * @throws IllegalArgumentException - value must be between 1 and 10000
 	 */
 	@Option(name = "-h", aliases =
-			{"--height"}, metaVar = "<Height>", usage = "Tile height in pixels; default is 256")
+			{"--height"}, metaVar = "<1-9999>", usage = "Tile height in pixels; default is 256")
 	public void setTileHeight(final int i)
 	{
 		if (i > 0 && i < 10000)
@@ -246,8 +284,8 @@ public class HeadlessOptions
 
 
 	// image settings
-	@Option(name = "-f", aliases =
-			{"--format"}, usage = "Image format for tiling operations, default is png (options are png, jpeg,etc.)")
+	@Option(name = "-f", aliases ={"--format"}, metaVar ="image/png or image/jpeg",
+			usage = "Image format for tiling operations, default is png (options are png, jpeg,etc.)")
 	private void setImageFormat(final String formatString) throws MimeTypeParseException,IllegalArgumentException
 	{
 
@@ -263,8 +301,8 @@ public class HeadlessOptions
 		}
 	}
 
-	@Option(name = "-c", aliases =
-			{"--compression"}, usage = "Compression type for image tiling, default is jpeg")
+	@Option(name = "-c", aliases = {"--compression"}, metaVar="<jpeg>",
+			usage = "Compression type for image tiling, default is jpeg")
 	public void setCompressionType(final String compressionType)
 	{
 		if (compressionType.equalsIgnoreCase("jpeg"))
@@ -278,7 +316,7 @@ public class HeadlessOptions
 	}
 
 	@Option(name = "-q", aliases =
-			{"--quality"}, usage = "Compression quality for jpeg compression, between 0-100")
+			{"--quality"}, metaVar="<1-99>", usage = "Compression quality for jpeg compression, between 0-100")
 	public void setCompressionQuality(final int i)
 	{
 		if (i > 0 && i <= 100)
@@ -351,10 +389,12 @@ public class HeadlessOptions
 		return this.outputFile;
 	}
 
-	public String getTileSetName()
+	public String getTileSetNameIn()
 	{
-		return this.tileSetName;
+		return this.tileSetNameIn;
 	}
+
+	public String getTileSetNameOut(){return this.tileSetNameOut;}
 
 	public String getTileSetDescription()
 	{
@@ -397,6 +437,10 @@ public class HeadlessOptions
 			if (path.startsWith("~" + File.separator))
 			{
 				path = System.getProperty("user.home") + path.substring(1);
+			}
+			else if(path.startsWith("." + File.separator))
+			{
+				path = System.getProperty("user.dir") + path.substring(1);
 			}
 			return path;
 		}

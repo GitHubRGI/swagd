@@ -23,12 +23,19 @@
 
 package com.rgi.suite;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Container;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import com.rgi.suite.cli.HeadlessOptions;
+import com.rgi.suite.cli.HeadlessRunner;
+import com.rgi.suite.uielements.windows.PackagerWindow;
+import com.rgi.suite.uielements.windows.TileReadersOptionWindow;
+import com.rgi.suite.uielements.windows.TilerWindow;
+import com.rgi.view.MapViewWindow;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import utility.PropertiesAction;
+import utility.TileStoreUtility;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -38,27 +45,6 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
-
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-
-import utility.PropertiesAction;
-import utility.TileStoreUtility;
-
-import com.rgi.suite.cli.HeadlessOptions;
-import com.rgi.suite.cli.HeadlessRunner;
-import com.rgi.suite.uielements.windows.PackagerWindow;
-import com.rgi.suite.uielements.windows.TileReadersOptionWindow;
-import com.rgi.suite.uielements.windows.TilerWindow;
-import com.rgi.view.MapViewWindow;
 
 /**
  * Entry point for the program.
@@ -246,7 +232,7 @@ public class GeoSuite
 		final CmdLineParser parser = new CmdLineParser(opts);
 		try{
 			parser.parseArgument(args);
-			if(opts.validate())
+			if(opts.isValid())
 			{
 				final ExecutorService executor = Executors.newFixedThreadPool(1); //only 1 background thread supported
 				HeadlessRunner runner = new HeadlessRunner(opts);
@@ -260,10 +246,7 @@ public class GeoSuite
 		catch (final Exception e){
 			System.err.println(e.getMessage());
 		}
-		finally
-		{
-			System.out.println("Complete!");
-		}
+
 	}
 
 	private final Settings settings;

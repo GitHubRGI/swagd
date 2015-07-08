@@ -3,7 +3,6 @@
  */
 package com.rgi.suite.cli;
 
-import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
 import com.rgi.common.Range;
 import com.rgi.common.TaskMonitor;
@@ -72,23 +71,26 @@ public class HeadlessRunner implements Runnable
 	 */
 	private TileStoreReader getTileStoreReader() throws TileStoreException
 	{
+		final CoordinateReferenceSystem crsout = new CoordinateReferenceSystem(
+				"EPSG", this.opts.getOutputSrs());
 		switch(opts.getInputType())
 		{
 			case ERR:
 				return null;
 			case RAW:
+				//pass in the output reference system so it will convert
+
 				final Dimensions<Integer> tileDimensions = new Dimensions<>(
 						this.opts.getTileWidth(), this.opts.getTileHeight());
 				final Color noDataColor = new Color(0, 0, 0, 0);
 				return new RawImageTileReader(this.opts.getInputFile(),
 											tileDimensions,
-											noDataColor);
+											noDataColor,
+											crsout);
 			case GPKG:
-				return new GeoPackageReader(opts.getInputFile(),opts.getTileSetName());
+				return new GeoPackageReader(opts.getInputFile(),opts.getTileSetNameIn());
 			case TMS:
-				final CoordinateReferenceSystem crs = new CoordinateReferenceSystem(
-						"EPSG", this.opts.getInputSrs());
-				return new TmsReader(crs, opts.getInputFile().toPath());
+				return new TmsReader(crsout, opts.getInputFile().toPath());
 			default:
 				return null;
 		}
@@ -106,7 +108,7 @@ public class HeadlessRunner implements Runnable
 	{
 		final CoordinateReferenceSystem crs = new CoordinateReferenceSystem(
 				"EPSG", this.opts.getOutputSrs());
-		switch(opts.getInputType())
+		switch(opts.getOutputType())
 		{
 			case ERR:
 				return null;
@@ -115,10 +117,10 @@ public class HeadlessRunner implements Runnable
 			case GPKG:
 				return new GeoPackageWriter(opts.getOutputFile(),
 											crs,
-											opts.getTileSetName(),
-											opts.getTileSetName(),
+											opts.getTileSetNameOut(),
+											opts.getTileSetNameOut(),
 											opts.getTileSetDescription(),
-											new BoundingBox(-180.0,-90.0,180.0,90.0),//always whole world (lame)
+											reader.getBounds(),//always whole world (lame)
 											getRelativeZoomTimesTwoTileScheme(reader),
 											opts.getImageFormat(),
 											getImageWriteParameter());
@@ -159,7 +161,7 @@ public class HeadlessRunner implements Runnable
 		{
 			imageWriteParameter
 					.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-			imageWriteParameter.setCompressionType(this.opts.getCompressionType());
+			imageWriteParameter.setCompressionType(this.opts.getCompressionType().toUpperCase());
 
 			if (compressionQualityValue != null)
 			{

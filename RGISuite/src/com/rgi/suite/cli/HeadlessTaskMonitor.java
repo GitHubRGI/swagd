@@ -38,7 +38,7 @@ public class HeadlessTaskMonitor implements TaskMonitor
 	public void setProgress(final int value)
 	{
 
-		final int percent = (int) ((float) (value) / (float) (this.maximum) * 100.00);
+		final int percent = (int) ((value) / (float) (this.maximum) * 100.00);
 		if (value > (this.last + this.step))
 		{
 			final StringBuilder bar = new StringBuilder("[");
@@ -59,6 +59,12 @@ public class HeadlessTaskMonitor implements TaskMonitor
 			// return carriage and write over progress bar.
 			System.out.print("\r" + bar.toString());
 			this.last = value;
+		}
+		if(value == this.maximum)
+		{
+
+			System.out.println(String.format("\r[=========================] %d / %d",value,this.maximum));
+			System.out.println("Tiling Complete!");
 		}
 
 	}
