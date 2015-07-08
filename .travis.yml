@@ -7,9 +7,9 @@ jdk:
 install:
     - ./install-deps-linux.sh
 script:
-    - mvn test
+    - mvn test jacoco:report
 after_success:
-    - mvn jacoco:report coveralls:report
+    - mvn coveralls:report
 addons:
   coverity_scan:
     project:
