@@ -47,7 +47,6 @@
         <mavenjar.version>2.6</mavenjar.version>
         <buildnumber.version>1.3</buildnumber.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!--jacoco.report.android>Android/target/site/jacoco/jacoco.xml</jacoco.report.android-->
         <jacoco.report.common>Common/target/site/jacoco/jacoco.xml</jacoco.report.common>
         <jacoco.report.datastore>DataStore/target/site/jacoco/jacoco.xml</jacoco.report.datastore>
         <jacoco.report.gdal2tiles>Gdal2Tiles/target/site/jacoco/jacoco.xml</jacoco.report.gdal2tiles>
@@ -140,7 +139,6 @@
                 <version>${coveralls.version}</version>
                 <configuration>
                     <jacocoReports>
-                        <!--jacocoReport>${jacoco.report.android}</jacocoReport-->
                         <jacocoReport>${jacoco.report.common}</jacocoReport>
                         <jacocoReport>${jacoco.report.datastore}</jacocoReport>
                         <jacocoReport>${jacoco.report.gdal2tiles}</jacocoReport>

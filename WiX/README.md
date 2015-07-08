@@ -11,7 +11,7 @@ _Prereq: Wix toolset v3.9.x is installed and in your system path._
 4. Open a command prompt into the {swagd}/WiX/ directory, and enter the commands listed below. The first two will build the installer for the actual
 Swagd software. The second will build the bundled installer with the dependencies. You can then use these installers anywhere. 
     * `candle Swagd.wxs`
-    * `light Swagd.wixobj -out packages/Swagd.msi`
+    * `light Swagd.wixobj -out Resources/Swagd.msi`
     * `candle -ext WixBalExtension -ext WixUtilExtension Swagd-deps.wxs`
     * `light -ext WixBalExtension -ext WixUtilExtension Swagd-deps.wixobj`
 

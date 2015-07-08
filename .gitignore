@@ -48,7 +48,6 @@ local.properties
 .settings/
 *.gpkg
 *.gpkg-journal
-.idea/*
 # Ignore coverity scan folder
 cov-int
 
@@ -59,3 +58,8 @@ WiX/CustomAction3/CustomAction3/obj/
 NetworkExtension/data/
 
 Android/gen
+
+# IntelliJ files
+.idea/
+settings.txt
+out/
