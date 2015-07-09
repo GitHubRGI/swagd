@@ -21,6 +21,7 @@
       <!-- List components that go in or reference in the installdir, eg C:\Program Files\swagd, which is the default defined above.
             these include path shortcuts-->
       <Property Id="INSTALLDIR"  />
+      <Property Id="withDeps" Value="0"/>
       
       <!-- swagd components -->
       <DirectoryRef Id="INSTALLDIR">
@@ -41,8 +42,14 @@
         
         <!-- set path variables-->
         <Component Id="gdalDataPath" Guid="EF67942F-D3D9-492B-824D-CCE63B10B805" Win64="yes">
+          <Condition><![CDATA[withDeps <> "0"]]></Condition>
           <CreateFolder />
           <Environment Id="gdaldatapath" Name="GDAL_DATA" Value="[INSTALLDIR]GDAL\gdal-data" Permanent="no" Part="all" Action="set" System="yes" />
+        </Component>
+        <Component Id="gdalPath" Guid="E69183C0-F599-45EB-925F-F9D09432577F" Win64="yes">
+          <Condition><![CDATA[withDeps <> "0"]]></Condition>
+          <CreateFolder />
+          <Environment Id="gdalpath" Name="Path" Value="[INSTALLDIR]GDAL" Permanent="no" Part="last" Action="set" System="yes" />
         </Component>
         <Component Id="swagdPath" Guid="9031B5C3-E038-4FF6-8DA5-FAB0C49B4FCF" Win64="yes">
           <CreateFolder />
@@ -50,12 +57,9 @@
         </Component>
         <Component Id="swagdLibPath" Guid="2CC73C95-0D75-417E-A271-F94CE1C25B41" Win64="yes">
           <CreateFolder />
-          <Environment Id="swagdlibpath" Name="Path" Value="[LIB64]" Permanent="no" Part="last" Action="set" System="yes"/>
+          <Environment Id="swagdlibpath" Name="Path" Value="[LIB64]" Permanent="no" Part="first" Action="set" System="yes"/>
         </Component>
-        <Component Id="gdalPath" Guid="E69183C0-F599-45EB-925F-F9D09432577F" Win64="yes">
-          <CreateFolder />
-          <Environment Id="gdalpath" Name="Path" Value="[INSTALLDIR]GDAL" Permanent="no" Part="last" Action="set" System="yes" />
-        </Component>
+
       </DirectoryRef>
 
       <!-- List components that go in or reference in the installdir, eg C:\Program Files\swagd
