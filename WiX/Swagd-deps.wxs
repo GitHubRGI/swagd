@@ -31,6 +31,10 @@
                            Result="exists"
                            Win64="yes"
                          />
+      <!-- Check some requirements ONLY on "install", but not on modify or uninstall. -->
+  <Property Id="JAVA_CURRENT_VERSION">
+    <RegistrySearch Id="JRE_CURRENT_VERSION_REGSEARCH" Root="HKLM" Key="SOFTWARE\JavaSoft\Java Runtime Environment" Name="CurrentVersion" Type="raw" Win64="yes" />
+  </Property>
     <!-- setting variables (install location)-->
     <Variable Name="InstallFolder" Type="string" Value="C:\Program Files\swagd\" />
     
@@ -64,7 +68,7 @@
       <!-- java is installed with an exe, therefore the condition "installed" is a built in wix variable. 
       Its also set to permanant, so uninstalling swagd will not remove the java install. -->
       <ExePackage Id="InstallJava"
-                  DetectCondition="Installed"
+                  DetectCondition="<![CDATA[Installed OR (JAVA_CURRENT_VERSION >= "1.8")]]>"
                   SourceFile=".\Resources\jre-8u45-windows-x64.exe"
                   Compressed="yes"
                   Permanent="yes"
