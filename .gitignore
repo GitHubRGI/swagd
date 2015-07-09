@@ -64,3 +64,9 @@ Android/gen
 .idea/
 settings.txt
 out/
+
+#Wix files
+*.wixpdb
+*.msi
+*.wixobj
+*.exe
