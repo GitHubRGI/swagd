@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Common/Common.iml" filepath="$PROJECT_DIR$/Common/Common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DataStore/DataStore.iml" filepath="$PROJECT_DIR$/DataStore/DataStore.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Gdal2Tiles/Gdal2Tiles.iml" filepath="$PROJECT_DIR$/Gdal2Tiles/Gdal2Tiles.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GeoPackage/GeoPackage.iml" filepath="$PROJECT_DIR$/GeoPackage/GeoPackage.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GeoViewer/GeoViewer.iml" filepath="$PROJECT_DIR$/GeoViewer/GeoViewer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/NetworkExtension/NetworkExtension.iml" filepath="$PROJECT_DIR$/NetworkExtension/NetworkExtension.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Packager/Packager.iml" filepath="$PROJECT_DIR$/Packager/Packager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RGISuite/RGISuite.iml" filepath="$PROJECT_DIR$/RGISuite/RGISuite.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SWAGD.iml" filepath="$PROJECT_DIR$/SWAGD.iml" />
+      <module fileurl="file://$PROJECT_DIR$/VerifierTool/VerifierTool.iml" filepath="$PROJECT_DIR$/VerifierTool/VerifierTool.iml" />
+    </modules>
+  </component>
+</project>
