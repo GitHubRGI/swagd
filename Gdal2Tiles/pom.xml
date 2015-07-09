@@ -11,15 +11,14 @@
     <name>Gdal2Tiles Library</name>
 
     <properties>
-        <jacoco.version>0.7.2.201409121644</jacoco.version>
         <junit.version>4.11</junit.version>
         <compiler.version>3.1</compiler.version>
         <assembly.version>2.5.3</assembly.version>
         <jdk.version>1.8</jdk.version>
-        <findbugs.version>3.0.0</findbugs.version>
         <xalan.version>2.7.2</xalan.version>
         <xerces.version>2.11.0</xerces.version>
         <gdal.version>1.11.1</gdal.version>
+        <cobertura.version>2.7</cobertura.version>
     </properties>
 
     <parent>
@@ -60,20 +59,6 @@
             <version>${junit.version}</version>
         </dependency>
     </dependencies>
-
-    <reporting>
-        <plugins>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>findbugs-maven-plugin</artifactId>
-              <version>${findbugs.version}</version>
-              <configuration>
-                  <xmlOutput>true</xmlOutput>
-                  <xmlOutputDirectory>target/site</xmlOutputDirectory>
-              </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
 
     <build>
         <sourceDirectory>src</sourceDirectory>
