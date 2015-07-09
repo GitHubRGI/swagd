@@ -8,9 +8,9 @@ install:
     - ./install-deps-linux.sh
     - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script:
-    - mvn test cobertura:cobertura
+    - mvn test
 after_success:
-    - mvn coveralls:report
+    - mvn clean cobertura:cobertura coveralls:report
 addons:
   coverity_scan:
     project:
