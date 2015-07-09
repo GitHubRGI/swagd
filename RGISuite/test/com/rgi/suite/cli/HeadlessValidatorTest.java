@@ -232,9 +232,9 @@ public class HeadlessValidatorTest
 	{
 		final HeadlessOptions opts = new HeadlessOptions();
 		final CmdLineParser parser = new CmdLineParser(opts);
-		final String inputFile = getClass().getResource("../../../../testRaster_compressed1").getPath().toString();
+		final String inputFile = getClass().getResource("../../../../testRaster_TMS").getPath().toString();
 		final String outputFile = HeadlessTestUtility.getNonExistantFileString(tempFolder, ".gpkg");
-		String[] args = {"-op", "package", "-in", inputFile, "-out", outputFile,"-to","testRaster"};
+		String[] args = {"-op", "package", "-in", inputFile, "-out", outputFile,"-to","testRaster","--inputsrs","3857"};
 		parser.parseArgument(args);
 		if (opts.isValid())
 		{
@@ -262,7 +262,7 @@ public class HeadlessValidatorTest
 	{
 		final HeadlessOptions opts = new HeadlessOptions();
 		final CmdLineParser parser = new CmdLineParser(opts);
-		final String inputFile = getClass().getResource("../../../../testRaster_compressed1").getPath().toString();
+		final String inputFile = getClass().getResource("../../../../testRaster_TMS").getPath().toString();
 		final String outputFile = HeadlessTestUtility.getNonExistantFileString(tempFolder, "");
 		String[] args = {"-op", "package", "-in", inputFile, "-out", outputFile,};
 		parser.parseArgument(args);
