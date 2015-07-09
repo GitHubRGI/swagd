@@ -156,6 +156,7 @@
                     <format>xml</format>
                     <maxmem>256m</maxmem>
                     <aggregate>true</aggregate>
+                    <repoToken>fe7NkBn0up0oqz1ynsOnyQg8O0O3ML9Sh</repoToken>
                 </configuration>
             </plugin>
         </plugins>
