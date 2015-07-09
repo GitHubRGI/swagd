@@ -34,7 +34,7 @@
           <File Id="LICENSE.TXT" Name="LICENSE.txt" Source="..\LICENSE.txt"/>
         </Component>
         <Component Id="swagdShared.jar" DiskId="1" KeyPath="yes" Guid="c5bc0fb2-fef6-45e0-9343-1ae6da204dc8" Win64='yes'>
-          <File Id="RGISUITE_0.0.1_SNAPSHOT_SHADED.JAR" Name="RGISuite-0.0.1-SNAPSHOT-shaded.jar" Source="..\RGISuite\target\RGISuite-0.0.1-SNAPSHOT-shaded.jar" ProcessorArchitecture ="x64"/>
+          <File Id="RGISUITE_0.0.1_SNAPSHOT_WITH_DEPENDENCIES.JAR" Name="RGISuite-0.0.1-SNAPSHOT-with_dependencies.jar" Source="..\RGISuite\target\RGISuite-0.0.1-SNAPSHOT-with_dependencies.jar" ProcessorArchitecture ="x64"/>
         </Component>
         <Component Id="settings" DiskId="1" KeyPath="yes" Guid="E7C4DB1B-E7AC-4006-9733-81C677D2D521" Win64='yes'>
           <File Id="settings" Name="settings.txt" Source=".\Resources\settings.txt" ProcessorArchitecture ="x64"/>

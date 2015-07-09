@@ -33,12 +33,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -129,6 +131,20 @@ public class RawImageTileReader implements TileStoreReader
                               final Color                     noDataColor,
                               final CoordinateReferenceSystem coordinateReferenceSystem) throws TileStoreException
     {
+        this(rawImage,
+             GdalUtility.open(rawImage, coordinateReferenceSystem),
+             tileSize,
+             noDataColor,
+             coordinateReferenceSystem);
+    }
+
+
+    public RawImageTileReader(final File                      rawImage,
+                              final Dataset                   dataset,
+                              final Dimensions<Integer>       tileSize,
+                              final Color                     noDataColor,
+                              final CoordinateReferenceSystem coordinateReferenceSystem) throws TileStoreException
+    {
         if(rawImage == null || !rawImage.canRead())
         {
             throw new IllegalArgumentException("Raw image may not be null, and must represent a valid file on disk.");
@@ -145,7 +161,7 @@ public class RawImageTileReader implements TileStoreReader
         // TODO check noDataColor for null when the feature is implemented
         // this.noDataColor = noDataColor;
 
-        this.dataset = GdalUtility.open(rawImage, coordinateReferenceSystem);
+        this.dataset = dataset;
 
         try
         {
@@ -221,12 +237,47 @@ public class RawImageTileReader implements TileStoreReader
         this.cachedTiles = new HashMap<>();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void close()
+    public void close() throws TileStoreException
     {
+        // Remove temporary reprojected file
         if(this.dataset != null)
         {
+            final Vector<String> files = this.dataset.GetFileList();
             this.dataset.delete();
+            for (final String file : files)
+            {
+                if(file.startsWith((System.getProperty("java.io.tmpdir"))))
+                {
+                    try
+                    {
+                        Files.delete(Paths.get(file));
+                    }
+                    catch (final IOException e)
+                    {
+                        throw new TileStoreException(e);
+                    }
+                }
+            }
+        }
+        // Remove final temporary cached tile(s)
+        try
+        {
+            cachedTiles.values().stream().forEach(tile -> {
+                                                              try
+                                                              {
+                                                                  Files.delete(tile);
+                                                              }
+                                                              catch (final IOException e)
+                                                              {
+                                                                  throw new RuntimeException(e);
+                                                              }
+                                                          });
+        }
+        catch(RuntimeException e)
+        {
+            throw new TileStoreException(e);
         }
     }
 
@@ -286,14 +337,13 @@ public class RawImageTileReader implements TileStoreReader
         final int zoomMinYTile = bottomRightCoordinate.getY();
         final int zoomMaxYTile =     topLeftCoordinate.getY();
 
-        // Ensure one tile was calculated for the lowest integer zoom level
-        if(zoomMaxYTile == zoomMinYTile && zoomMinXTile == zoomMaxXTile)
+        //Make tiles for each tile at the min zoom level
+        for(int x = zoomMinXTile; x <= zoomMaxXTile; x++)
         {
-            this.makeTiles(tileHandles, new RawImageTileHandle(zoomRange.getMinimum(), zoomMinXTile, zoomMinYTile), zoomRange.getMaximum());
-        }
-        else
-        {
-            throw new TileStoreException("Min zoom has more than one tile.");
+            for (int y = zoomMinYTile; y <= zoomMaxYTile; y++)
+            {
+                this.makeTiles(tileHandles, new RawImageTileHandle(zoomRange.getMinimum(), x, y), zoomRange.getMaximum());
+            }
         }
 
         // Sort the tile handles so that they decrement.  This ensures all base level tiles

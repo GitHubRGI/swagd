@@ -29,9 +29,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -105,6 +109,39 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     public Scope getScope()
     {
         return Scope.ReadWrite;
+    }
+
+    /**
+     * Gets all entries in the GeoPackage's contents table with the "network"
+     * data_type
+     *
+     * @return Returns a collection of {@link Network}s
+     * @throws SQLException
+     *             throws if the method
+     *             {@link #getNetworks(SpatialReferenceSystem) getNetworks}
+     *             throws
+     */
+    public Collection<Network> getNetworks() throws SQLException
+    {
+        return this.getNetworks(null);
+    }
+
+    /**
+     * Gets all entries in the GeoPackage's contents table with the "network"
+     * data_type that also match the supplied spatial reference system
+     *
+     * @param matchingSpatialReferenceSystem
+     *            Spatial reference system that returned {@link Network}s refer
+     *            to
+     * @return Returns a collection of {@link Network}s
+     * @throws SQLException
+     *             Throws if there's an SQL error
+     */
+    public Collection<Network> getNetworks(final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
+    {
+        return this.geoPackageCore.getContent(Network.NetworkContentType,
+                                              (tableName, dataType, identifier, description, lastChange, boundingBox, spatialReferenceSystemIdentifier) -> new Network(tableName, identifier, description, lastChange, boundingBox, spatialReferenceSystemIdentifier),
+                                              matchingSpatialReferenceSystem);
     }
 
     /**
@@ -437,18 +474,117 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Consumer callback may not be null");
         }
 
-        final String attributeDescriptionQuery = String.format("SELECT %s, %s, %s FROM %s;",
-                                                               "id",
-                                                               "from_node",
-                                                               "to_node",
-                                                               network.getTableName());
+        final String edgeQuery = String.format("SELECT %s, %s, %s FROM %s;",
+                                               "id",
+                                               "from_node",
+                                               "to_node",
+                                               network.getTableName());
 
         JdbcUtility.forEach(this.databaseConnection,
-                            attributeDescriptionQuery,
+                            edgeQuery,
                             null,
                             resultSet -> consumer.accept(new Edge(resultSet.getInt(1),
                                                                   resultSet.getInt(2),
                                                                   resultSet.getInt(3))));
+    }
+
+    /**
+     * Iterate through the nodes of a {@link Network}, applying a supplied
+     * operation
+     *
+     * @param network
+     *             Network table reference
+     * @param consumer
+     *             Callback applied to each node
+     * @param attributeDescriptions
+     *             Indicates which attributes to make available to the consumer
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public void visitNodes(final Network                           network,
+                           final BiConsumer<Integer, List<Object>> consumer,
+                           final AttributeDescription...           attributeDescriptions) throws SQLException
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        if(consumer == null)
+        {
+            throw new IllegalArgumentException("Consumer callback may not be null");
+        }
+
+        final List<String> columnNames = getColumnNames(AttributedType.Node, attributeDescriptions);
+
+        columnNames.add(0, "node_id");
+
+        final String nodeQuery = String.format("SELECT %s FROM %s;",
+                                               String.join(", ", columnNames),
+                                               getNodeAttributesTableName(network));
+
+        JdbcUtility.forEach(this.databaseConnection,
+                            nodeQuery,
+                            null,
+                            resultSet -> consumer.accept(resultSet.getInt(1),
+                                                         JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.length)));
+    }
+
+    /**
+     * Performs an accumulation operation on all nodes.
+     *
+     * @param network
+     *             Network table reference
+     * @param initialValue
+     *             A starting value for the accumulation
+     * @param nodeEvaluator
+     *             Maps a node identifier and a list of attributes (in order of
+     *             request) to an instance of T
+     * @param combiner
+     *             Combines two instances of T
+     * @param attributeDescriptions
+     *             Indicates which attributes to make available to the node
+     *             evaluator
+     * @return the accumulation of all results
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public <T> T accumulateNodes(final Network                              network,
+                                 final T                                    initialValue,
+                                 final BiFunction<Integer, List<Object>, T> nodeEvaluator,
+                                 final BinaryOperator<T>                    combiner,
+                                 final AttributeDescription...              attributeDescriptions) throws SQLException
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        if(nodeEvaluator == null)
+        {
+            throw new IllegalArgumentException("Node evaluator may not be null");
+        }
+
+        if(combiner == null)
+        {
+            throw new IllegalArgumentException("Combiner may not be null");
+        }
+
+        final List<String> columnNames = getColumnNames(AttributedType.Node, attributeDescriptions);
+
+        columnNames.add(0, "node_id");
+
+        final String nodeQuery = String.format("SELECT %s FROM %s;",
+                                               String.join(", ", columnNames),
+                                               getNodeAttributesTableName(network));
+
+        return JdbcUtility.accumulate(this.databaseConnection,
+                                      nodeQuery,
+                                      null,
+                                      initialValue,
+                                      resultSet -> nodeEvaluator.apply(resultSet.getInt(1),
+                                                                       JdbcUtility.getObjects(resultSet, 2, columnNames.size())),
+                                      combiner);
     }
 
     /**
@@ -1153,6 +1289,50 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         this.databaseConnection.commit();
     }
 
+    /**
+     * Returns the node identifier of the closest node to a point
+     *
+     * @param xDescription
+     *             Attribute description of the horizontal component of a
+     *             coordinate
+     * @param x
+     *             Horizontal component of a coordinate
+     * @param yDescription
+     *             Attribute description of the vertical component of a
+     *             coordinate
+     * @param y
+     *             Vertical component of a coordinate
+     * @return Node identifier of the closest node to a point
+     *
+     * @deprecated This is very 'routing' specific, and therefore does not
+     * belong in the network plug-in. It'll get moved to a routing specific
+     * plug-in when time allows.
+     *
+     * @throws SQLException
+     *             if there is a database error
+     */
+    @Deprecated
+    public Integer getClosestNode(final AttributeDescription xDescription,
+                                  final double               x,
+                                  final AttributeDescription yDescription,
+                                  final double               y) throws SQLException
+    {
+        final Pair<String, List<String>> schema = getSchema(AttributedType.Node, xDescription, yDescription);
+
+        final String distanceQuery = String.format("SELECT %s, MIN(((%2$s - %3$f) * (%2$s - %3$f)) + ((%4$s - %5$s) * (%4$s - %5$s))) as distSqrd FROM %6$s;",
+                                                   "node_id",
+                                                   xDescription.getName(),
+                                                   x,
+                                                   yDescription.getName(),
+                                                   y,
+                                                   getNodeAttributesTableName(schema.getLeft()));
+
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     distanceQuery,
+                                     null,
+                                     resultSet -> resultSet.getInt(1));
+    }
+
     private static Pair<String, List<String>> getSchema(final AttributedType          attributedType,
                                                         final AttributeDescription... attributeDescriptions)
     {
@@ -1184,6 +1364,38 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                    return description.getName();
                                                  })
                              .collect(Collectors.toList()));
+    }
+
+    private static List<String> getColumnNames(final AttributedType          attributedType,
+                                               final AttributeDescription... attributeDescriptions)
+    {
+        if(attributedType == null)
+        {
+            throw new IllegalArgumentException("Attributed type may not be null");
+        }
+
+        if(attributeDescriptions == null || attributeDescriptions.length == 0)
+        {
+            return Collections.emptyList();
+        }
+
+        final String firstNetworkTableName = attributeDescriptions[0].getNetworkTableName();
+
+        return Arrays.asList(attributeDescriptions)
+                     .stream()
+                     .map(description -> { if(!description.getNetworkTableName().equals(firstNetworkTableName))
+                                           {
+                                               throw new IllegalArgumentException("Attribute descriptions must all refer to the same network table");
+                                           }
+
+                                           if(!description.getAttributedType().equals(attributedType))
+                                           {
+                                               throw new IllegalArgumentException("Attribute descriptions must all refer exclusively to nodes or exclusively to edges");
+                                           }
+
+                                           return description.getName();
+                                         })
+                     .collect(Collectors.toList());
     }
 
     @SuppressWarnings("static-method")
