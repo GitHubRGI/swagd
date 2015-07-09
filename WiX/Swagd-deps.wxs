@@ -66,7 +66,7 @@
       <ExePackage Id="InstallJava"
                   DetectCondition="Installed"
                   SourceFile=".\Resources\jre-8u45-windows-x64.exe"
-                  Compressed="no"
+                  Compressed="yes"
                   Permanent="yes"
                   />
       
@@ -76,6 +76,7 @@
                   Visible="yes"
                   >
         <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]" />
+        <MsiProperty Name="withDeps" Value="1" />
       </MsiPackage>
     </PackageGroup>
   </Fragment>
