@@ -11,7 +11,6 @@
     <name>RGI Main Application</name>
 
     <properties>
-        <jacoco.version>0.7.2.201409121644</jacoco.version>
         <project.url>https://github.com/GitHubRGI/swagd</project.url>
         <jar.plugin.version>2.5</jar.plugin.version>
         <resources.plugin.version>2.6</resources.plugin.version>
