@@ -43,7 +43,7 @@
   <!-- Bundle Installer Chain. Components in the packageGroup will be installed in the order they are listed.-->
   <Fragment>
     <PackageGroup Id="InstallGDAL">
-      <MsiPackage SourceFile=".\Resources\gdal-111-1600-x64-core.msi"
+      <MsiPackage SourceFile=".\Resources\gdal-111-1800-x64-core.msi"
                   Visible="yes"
                   Description="Gdal Core Libraries"
                   InstallCondition="NOT gdalCoreInstalled"
@@ -52,7 +52,7 @@
                   >
         <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]GDAL\" />
       </MsiPackage>
-      <MsiPackage SourceFile=".\Resources\gdal-111-1600-x64-mrsid.msi"
+      <MsiPackage SourceFile=".\Resources\gdal-111-1800-x64-mrsid.msi"
                   Visible="yes"
                   Description="GDAL Mr.SID library extensions"
                   InstallCondition="NOT gdalMrSidInstalled"
