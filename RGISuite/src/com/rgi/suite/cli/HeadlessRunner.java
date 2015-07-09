@@ -90,7 +90,9 @@ public class HeadlessRunner implements Runnable
 			case GPKG:
 				return new GeoPackageReader(opts.getInputFile(),opts.getTileSetNameIn());
 			case TMS:
-				return new TmsReader(crsout, opts.getInputFile().toPath());
+				final CoordinateReferenceSystem crs = new CoordinateReferenceSystem(
+						"EPSG", this.opts.getInputSrs());
+				return new TmsReader(crs, opts.getInputFile().toPath());
 			default:
 				return null;
 		}

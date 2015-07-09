@@ -308,7 +308,7 @@ public class HeadlessOptionsTest
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
 		String[] args = {"-in", inputFile, "-out", outputFile};
 		parser.parseArgument(args);
-		fail("parsing should have thrown exception for missing required input (-t or -p)");
+		fail("parsing should have thrown exception for missing required input (operation not specified)");
 	}
 
 	/**
@@ -426,42 +426,5 @@ public class HeadlessOptionsTest
 			testFile.delete();
 		}
 	}
-/**
-
- /**
- * validation
- *
- public void validateRequiredInputsInputSRS
- public void validateRequiredInputsOutputSRS
- public void missingRequiredInputsTileSetNameGPKG
- public void missingTilesetNameTMS
- public void missingImageFormat
- public void missingCompressionType
- public void missingCompressionQuality
-
-
- /**
- * valid arguments/extras
- *
- public void inputValidTilingTMS
- public void inputValidTilingGPKG
- public void inputValidTMStoGPKG
- public void inputValidGPKGtoTMS
- /**
- * data set properly
- *
- public void tmsOuputSRS
- public void tmsTileSize
- public void tmsImageSettings
- /**
- * gpkg data set properly
- *
- public void geopackageOutputSRS
- public void invalidOutputSRSGPKG
- public void geopackageTileSize
- public void geopackageImageSettings
- public void geoPackageTilesetName
- public void geoPackageTilesetDescription
- */
 
 }

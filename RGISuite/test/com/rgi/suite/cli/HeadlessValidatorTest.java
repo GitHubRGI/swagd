@@ -41,7 +41,7 @@ public class HeadlessValidatorTest
 	 * @throws IOException
 	 */
 	@Test
-	public void validateRequiredInputsSRS() throws CmdLineException, IllegalArgumentException, IOException
+	public void validateRequiredOutputSRS() throws CmdLineException, IllegalArgumentException, IOException
 	{
 		final HeadlessOptions opts = new HeadlessOptions();
 		final CmdLineParser parser = new CmdLineParser(opts);
@@ -56,7 +56,7 @@ public class HeadlessValidatorTest
 			System.setOut(new PrintStream(bytes));
 			if (opts.isValid())
 			{
-				fail("Should have returned invalid");
+				fail("Should have returned invalid due to invalid output srs");
 			}
 		}
 		finally
@@ -122,7 +122,7 @@ public class HeadlessValidatorTest
 		}
 		else
 		{
-			fail("Should have returned valid");
+			fail("Unable to validate settings");
 		}
 	}
 
@@ -148,7 +148,7 @@ public class HeadlessValidatorTest
 		}
 		else
 		{
-			fail("Should have returned valid");
+			fail("Unable to Validate settings");
 		}
 	}
 	/**
@@ -168,7 +168,7 @@ public class HeadlessValidatorTest
 		if (opts.isValid())
 		{
 
-			fail("should not pass validation");
+			fail("Should not pass validation due to the geopackage being an empty file");
 		}
 		else
 		{
@@ -188,11 +188,9 @@ public class HeadlessValidatorTest
 
 		//Content information
 		final String tableName = "testRaster";
-		final String columnName = "columnName";
-		//set up streamds
+		//set up streams
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		PrintStream console = System.out;
-
 		try
 		{
 			final HeadlessOptions opts = new HeadlessOptions();
@@ -204,7 +202,7 @@ public class HeadlessValidatorTest
 			System.setOut(new PrintStream(bytes));
 			if (opts.isValid())
 			{
-				fail("should not have returned valid");
+				fail("Should not have returned valid, as the table name already exists");
 			}
 			else
 			{
@@ -214,7 +212,7 @@ public class HeadlessValidatorTest
 		}
 		catch (Exception e)
 		{
-			fail("exception: \n" + e.getStackTrace());
+			fail("Exception: \n" + e.getStackTrace());
 		}
 		finally
 		{
@@ -238,14 +236,13 @@ public class HeadlessValidatorTest
 		parser.parseArgument(args);
 		if (opts.isValid())
 		{
-
-			assertTrue(opts.getOutputType() == TileFormat.GPKG);
-			assertTrue(opts.getInputType() == TileFormat.TMS);
-			assertFalse(opts.isTiling());
+			assertTrue("Correct output type parsed from filetype",opts.getOutputType() == TileFormat.GPKG);
+			assertTrue("Correct input type parsed from filetype",opts.getInputType() == TileFormat.TMS);
+			assertFalse("correct operation parsed",opts.isTiling());
 		}
 		else
 		{
-			fail("package settings read as invalid");
+			fail("package settings failed to validate.");
 		}
 	}
 
@@ -275,7 +272,7 @@ public class HeadlessValidatorTest
 		}
 		else
 		{
-			fail("package settings read as invalid");
+			fail("package settings failed to validate.");
 		}
 	}
 	/**
@@ -295,11 +292,11 @@ public class HeadlessValidatorTest
 		if (opts.isValid())
 		{
 
-			fail("validation should have failed");
+			fail("Validation passed when it should have failed due to no input tileset provided");
 		}
 		else
 		{
-			assertTrue(opts.getInputType() == TileFormat.ERR);
+			assertTrue("Input validation failed due to missing tileset",opts.getInputType() == TileFormat.ERR);
 		}
 	}
 
@@ -326,7 +323,7 @@ public class HeadlessValidatorTest
 		}
 		else
 		{
-			fail("package settings read as invalid");
+			fail("Package settings failed to validate");
 		}
 	}
 	/**
@@ -352,15 +349,8 @@ public class HeadlessValidatorTest
 		}
 		else
 		{
-			fail("package settings read as invalid");
+			fail("Package settings failed to validate");
 		}
 	}
 
-	/**
-	 * valid arguments/extras
-	 *
-
-
-	 public void inputValidGPKGtoTMS
-	 } */
 }
