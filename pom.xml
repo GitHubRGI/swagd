@@ -84,6 +84,8 @@
                                 <excludes>com/rgi/common/util/functional/**/*.class</excludes>
                                 <excludes>com/rgi/view/**/*.class</excludes>
                                 <excludes>com/rgi/packager/**/*.class</excludes>
+                                <excludes>com/rgi/verifiertool/**/*.class</excludes>
+                                <excludes>com/rgi/store/tiles/tilecluster/**/*.class</excludes>
                             </excludes>
                         </instrumentation>
                     </configuration>
