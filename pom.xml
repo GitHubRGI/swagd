@@ -41,7 +41,6 @@
 
     <properties>
         <jdk.version>1.8</jdk.version>
-        <jacoco.version>0.7.2.201409121644</jacoco.version>
         <compiler.version>3.1</compiler.version>
         <coveralls.version>3.1.0</coveralls.version>
         <mavenjar.version>2.6</mavenjar.version>
@@ -49,11 +48,6 @@
         <cobertura.version>2.7</cobertura.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Report paths -->
-        <jacoco.report.common>Common/target/site/jacoco/jacoco.xml</jacoco.report.common>
-        <jacoco.report.datastore>DataStore/target/site/jacoco/jacoco.xml</jacoco.report.datastore>
-        <jacoco.report.gdal2tiles>Gdal2Tiles/target/site/jacoco/jacoco.xml</jacoco.report.gdal2tiles>
-        <jacoco.report.geopackage>GeoPackage/target/site/jacoco/jacoco.xml</jacoco.report.geopackage>
-        <jacoco.report.networkextension>NetworkExtension/target/site/jacoco/jacoco.xml</jacoco.report.networkextension>
     </properties>
 
     <modules>

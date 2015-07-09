@@ -10,10 +10,6 @@
     <packaging>jar</packaging>
     <name>GeoViewer Library</name>
 
-    <properties>
-        <jacoco.version>0.7.2.201409121644</jacoco.version>
-    </properties>
-
     <parent>
         <groupId>com.rgi.TilingApp</groupId>
         <artifactId>SWAGD</artifactId>
