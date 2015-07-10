@@ -28,7 +28,6 @@ public class HeadlessTaskMonitor implements TaskMonitor
 		{
 			this.step = maximum / 25;
 		}
-
 	}
 
 	/**
@@ -37,7 +36,6 @@ public class HeadlessTaskMonitor implements TaskMonitor
 	@Override
 	public void setProgress(final int value)
 	{
-
 		final int percent = (int) ((value) / (float) (this.maximum) * 100.00);
 		if (value > (this.last + this.step))
 		{
@@ -62,7 +60,6 @@ public class HeadlessTaskMonitor implements TaskMonitor
 		}
 		if(value == this.maximum)
 		{
-
 			System.out.println(String.format("\r[=========================] %d / %d",value,this.maximum));
 			System.out.println("Tiling Complete!");
 		}

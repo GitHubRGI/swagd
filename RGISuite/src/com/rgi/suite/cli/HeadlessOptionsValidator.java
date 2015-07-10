@@ -37,7 +37,7 @@ public class HeadlessOptionsValidator
 	 */
 	public boolean validate()
 	{
-		System.out.println("Validating input settings...");
+		System.out.println("Validating arguments provided.");
 		if(this.opts == null)
 		{
 			System.out.println("No arguments provided");
@@ -50,16 +50,16 @@ public class HeadlessOptionsValidator
 					&& this.validateOutputImageSettings()
 					&& this.validateSRSOptions())
 			{
-				System.out.println("Tiling settings are OK!");
+				System.out.println("Options Provided passed Validation.");
 				return true;
 			}
 			//if we get here something is extremely wrong, freak out
-			System.out.println("Error: Tiling Settings NOT OK, options provided are not Valid!");
+			System.out.println("Error: Options Provided did not pass Validation.");
 			return false;
 		}
 		catch (Exception e)
 		{
-			System.out.println("Error Validating: \n\r" + e.getMessage());
+			System.out.println("Error: Exception thrown while validating. \n\r" + e.getMessage());
 			return false;
 		}
 	}
@@ -85,7 +85,6 @@ public class HeadlessOptionsValidator
 		if (this.opts.getTileWidth() <= 0 || this.opts.getTileWidth() > 10000
 				|| this.opts.getTileHeight() <= 0 || this.opts.getTileHeight() > 10000)
 		{
-			//TODO: update
 			System.out.println("Error: Tile Width and Height must be Greater than 0 and Less than 10000");
 			return false;
 		}
@@ -98,6 +97,7 @@ public class HeadlessOptionsValidator
 			}
 			return true;
 		}
+		System.out.println("Error: Failed to validate image settings, Image format is null");
 		return false;
 	}
 
@@ -116,7 +116,7 @@ public class HeadlessOptionsValidator
 			{
 				return true;
 			}
-			System.out.println("Error: For tiling into geopackage, output SRS must be 3857");
+			System.out.println("Error: For tiling into geopackage, output SRS must be 3857.");
 			return false;
 		}
 		return true;
@@ -124,16 +124,20 @@ public class HeadlessOptionsValidator
 
 	private boolean validateInputFile()
 	{
-		System.out.println("Validating input Data...");
+		System.out.println("Validating input Data.");
 		if(!this.opts.getInputFile().exists())
 		{
-			System.out.println("no input file provided");
+			System.out.println("Error: No input file provided.");
 			return false;
 		}
 		this.inputType = TileFormat.ERR;
 		//gpkg will handle the gpkg filetype, raw will accept all filetypes, tms will only take directories
-		return this.validateGPKGInput() || this.validateRawInput() || this.validateTMSInput();
-
+		final boolean valid = this.validateGPKGInput() || this.validateRawInput() || this.validateTMSInput();
+		if(!valid)
+		{
+			System.out.println("Error: Failed to validate input File.");
+		}
+		return valid;
 	}
 
 	/**
@@ -153,13 +157,12 @@ public class HeadlessOptionsValidator
 					.getSpatialReference(this.opts.getInputFile());
 			if (srs != null)
 			{
-				System.out.println("Tiling Input Raw Image File is Valid!");
 				this.inputType = TileFormat.RAW;
 				return true;
 			}
 			else
 			{
-				System.out.println("Error: Input Image File is not a valid GDAL supported format!");
+				System.out.println("Error: Input Image File is not a valid GDAL supported format.");
 				return false;
 			}
 		}
@@ -175,10 +178,9 @@ public class HeadlessOptionsValidator
 		if ( this.opts.getInputFile().getName().toLowerCase()
 				.endsWith("gpkg"))
 		{
-			System.out.println("Packaging Input GeoPackage exists");
 			if(this.opts.getTileSetNameIn().equals(""))
 			{
-				System.out.println("Error: No input TileSet Name specified");
+				System.out.println("Error: No input TileSet Name specified.");
 				return false;
 			}
 			else
@@ -188,18 +190,17 @@ public class HeadlessOptionsValidator
 					if (gpkg.tiles().getTileSets().stream()
 							.anyMatch(tileSet -> tileSet.getTableName().equals(this.opts.getTileSetNameIn())))
 					{
-						System.out.println("Input GeoPackage is valid, TileSet was found!");
 						this.inputType = TileFormat.GPKG;
 						return true;
 					}
 					else
 					{
-						System.out.println("Error: Input Tileset not found");
+						System.out.println("Error: Input Tileset not found.");
 					}
 				}
 				catch (Exception e)
 				{
-					System.out.println("Error: Parsing gpkg for existing tableNames.. ");
+					System.out.println("Error: exception while parsing gpkg file. \r\n "+e.getMessage());
 				}
 			}
 		}
@@ -215,7 +216,6 @@ public class HeadlessOptionsValidator
 	{
 		if (this.opts.getInputFile().isDirectory() &&  this.opts.getInputFile().length() > 0) //non-emtpy directory.
 		{
-			System.out.println("Packaging Input Directory exists");
 			this.inputType = TileFormat.TMS;
 			return true;
 		}
@@ -232,11 +232,18 @@ public class HeadlessOptionsValidator
 	private boolean validateOutputFile()
 	{
 		this.outputType= TileFormat.ERR;
-		if(this.opts.getOutputFile() != null)
+
+		if(this.opts.getOutputFile() == null)
 		{
-			return this.checkGeoPackageOutput() || this.checkTMSOutput();
+			System.out.println("Error: No Output File Provided.");
+			return false;
 		}
-		return false;
+		final boolean valid = this.checkGeoPackageOutput() || this.checkTMSOutput();
+		if(!valid)
+		{
+			System.out.println("Error: Could not validate output File.");
+		}
+		return valid;
 	}
 
 	/**
@@ -247,19 +254,15 @@ public class HeadlessOptionsValidator
 	{
 		if (this.opts.getOutputFile().getName().toLowerCase().endsWith(".gpkg"))
 		{
-			System.out.println(String.format("Output file provided is %s", this.opts.getOutputFile().getPath()));
 			if (this.opts.getTileSetNameOut().isEmpty())
 			{
-				System.out.println("Tileset name not provided, defaulting to file name");
+				System.out.println("Warning: Tileset name not provided, defaulting to file short name.");
 				this.opts.setTileSetNameOut(FileUtility
 						.nameWithoutExtension(this.opts.getOutputFile()));
 			}
 
-			if (!this.opts.getOutputFile().exists()) //geopackage file
+			if (!this.opts.getOutputFile().exists()) //non- existent geopackage file
 			{
-				System.out
-						.println("Output GeoPackage name is a Valid,checking tilesetName..");
-				// set TileSet name if none is provided
 				this.outputType = TileFormat.GPKG;
 				return true;
 			}
@@ -270,14 +273,13 @@ public class HeadlessOptionsValidator
 					if (!gpkg.tiles().getTileSets().stream()
 							.anyMatch(tileSet -> tileSet.getTableName().equals(this.opts.getTileSetNameOut())))
 					{
-						System.out.println("Output Geopackage is valid, tilesetName is unique!");
 						this.outputType = TileFormat.GPKG;
 						return true;
 					}
 				}
 				catch (Exception e)
 				{
-					System.out.println("Error: Parsing gpkg for existing tableNames.. ");
+					System.out.println("Error: exception while parsing gpkg file. \r\n "+e.getMessage());
 				}
 			}
 		}
@@ -292,13 +294,11 @@ public class HeadlessOptionsValidator
 	{
 		try
 		{
-			System.out.println("Checking Output Path..");
 			if (this.opts.getOutputFile().exists())
 			{
 				if(this.opts.getOutputFile().isDirectory()
 						&& this.opts.getOutputFile().list().length == 0) // existing, empty directory
 				{
-					System.out.println("Tiling Output Directory is a Valid! ");
 					this.outputType = TileFormat.TMS;
 					return true;
 				}
@@ -309,7 +309,6 @@ public class HeadlessOptionsValidator
 				//non-existent, anything but .gpkg is a go
 				if(!this.opts.getOutputFile().getName().toLowerCase().endsWith(".gpkg"))
 				{
-					System.out.println("Output Directory is valid, tiling into TMS format..");
 					this.outputType = TileFormat.TMS;
 					return true;
 				}
@@ -318,7 +317,7 @@ public class HeadlessOptionsValidator
 		}
 		catch (final Exception Ex)
 		{
-			System.err.println(Ex.getMessage());
+			System.err.println("Error: Exception while validating TMS output. "+Ex.getMessage());
 			this.outputType=TileFormat.ERR;
 			return false;
 		}
