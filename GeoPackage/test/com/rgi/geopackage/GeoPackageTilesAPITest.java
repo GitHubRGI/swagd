@@ -151,6 +151,16 @@ public class GeoPackageTilesAPITest
                 }
             }
         }
+        finally
+        {
+            if(testFile.exists())
+            {
+                if(!testFile.delete())
+                {
+                    throw new RuntimeException(String.format("Unable to delete testFile. testFile: %s", testFile));
+                }
+            }
+        }
     }
 
     /**
