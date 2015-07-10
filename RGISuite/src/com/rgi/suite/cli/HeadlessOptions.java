@@ -17,7 +17,7 @@ import java.io.File;
  * Business Logic for Running SWAGD in a headless environment. contains logic to
  * support Args4J command line arguments, as well as implementing the runnable
  * interface so it can be run in another thread
- *      -h                                     : show help
+ *		-h                                     : show help
  *		--inputsrs <epsg int>                  : Input Spatial reference system EPSG identifier (ie 4326)
  *		--outputsrs <epsg int value>           : Desired output SRS EPSG identifier,eg 3857
  *		-c (--compression) <jpeg               : Compression type for image tiling,default is jpeg
@@ -26,7 +26,7 @@ import java.io.File;
  *		-h (--height) <Height>                 : Tile height in pixels; default is 256
  *		-i (-in) <Input File Path>             : REQUIRED! Input source for tiling/Packaging operation
  *		-ti (--intileset, --intilesetname) <text>   : Tile Set name for GeoPackages (input), default is short name of output geopackage.
- *	    -to (--outtileset, --outtilesetname)    :Tile set name for geopackage output
+ *		-to (--outtileset, --outtilesetname)    :Tile set name for geopackage output
  *		-op(--operation) <tile or package>     : Operation to execute
  *		-o (-out) <Output File Path>           : Full output path for tiling/Packaging operation
  *		-q (--quality) <1-100>                 : Compression quality for jpeg compression, between 0-100
@@ -64,26 +64,7 @@ public class HeadlessOptions
 		}
 		catch (MimeTypeParseException e)
 		{
-			e.printStackTrace();
-		}
-	}
-
-	//internal, no mutators for these options.
-	@Option(required = true, name = "-op", aliases =
-			{"--operation"},metaVar="<tile or package>", usage = "operation to do")
-	private void setOperation(String input)
-	{
-		if (input.equalsIgnoreCase("tile"))
-		{
-			this.isTiling = true;
-		}
-		else if (input.equalsIgnoreCase("package"))
-		{
-			this.isTiling = false;
-		}
-		else
-		{
-			throw new IllegalArgumentException("operation must be 'tile' or 'package' !");
+			System.out.println("Error creating default image format: "+ e.getMessage());
 		}
 	}
 
@@ -368,11 +349,6 @@ public class HeadlessOptions
 			return this.validator.getInputType();
 		}
 		return TileFormat.ERR;
-	}
-
-	public boolean isTiling()
-	{
-		return this.isTiling;
 	}
 
 	public TileFormat getOutputType()

@@ -12,7 +12,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -47,7 +46,7 @@ public class HeadlessValidatorTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = getClass().getResource("../../../../testRaster.tif").getPath().toString();
 		final String outputFile = HeadlessTestUtility.getNonExistantFileString(this.tempFolder, ".gpkg");
-		String[] args = {"-op", "tile", "-in", inputFile, "-out", outputFile, "--outputsrs", "4326", "--inputsrs", "4326"};
+		String[] args = { "-in", inputFile, "-out", outputFile, "--outputsrs", "4326", "--inputsrs", "4326"};
 		parser.parseArgument(args);
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		PrintStream console = System.out;
@@ -79,7 +78,7 @@ public class HeadlessValidatorTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = getClass().getResource("../../../../testRaster.tif").getPath().toString();
 		final String outputFile = HeadlessTestUtility.getNonExistantFileString(this.tempFolder, ".gpkg");
-		String[] args = {"-op", "tile", "-in", inputFile, "-out", outputFile,};
+		String[] args = { "-in", inputFile, "-out", outputFile,};
 		parser.parseArgument(args);
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		PrintStream console = System.out;
@@ -113,7 +112,7 @@ public class HeadlessValidatorTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = getClass().getResource("../../../../testRaster.tif").getPath().toString();
 		final String outputFile = HeadlessTestUtility.getNonExistantFileString(this.tempFolder, ".TMS"); //tms extension can be anything but .gpkg
-		String[] args = {"-op", "tile", "-in", inputFile, "-out", outputFile,};
+		String[] args = { "-in", inputFile, "-out", outputFile,};
 		parser.parseArgument(args);
 		if (opts.isValid())
 		{
@@ -139,7 +138,7 @@ public class HeadlessValidatorTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = getClass().getResource("../../../../testRaster.tif").getPath().toString();
 		final String outputFile = HeadlessTestUtility.getNonExistantFileString(this.tempFolder, ".gpkg");
-		String[] args = {"-op", "tile", "-in", inputFile, "-out", outputFile,};
+		String[] args = { "-in", inputFile, "-out", outputFile,};
 		parser.parseArgument(args);
 		if (opts.isValid())
 		{
@@ -163,7 +162,7 @@ public class HeadlessValidatorTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = getClass().getResource("../../../../testRaster.tif").getPath().toString();
 		final String outputFile = HeadlessTestUtility.getRandomFile(6,".gpkg",this.tempFolder).getAbsolutePath();
-		String[] args = {"-op", "tile", "-in", inputFile, "-out", outputFile,};
+		String[] args = { "-in", inputFile, "-out", outputFile,};
 		parser.parseArgument(args);
 		if (opts.isValid())
 		{
@@ -197,7 +196,7 @@ public class HeadlessValidatorTest
 			final CmdLineParser parser = new CmdLineParser(opts);
 			final String inputFile = this.getClass().getResource("../../../../testRaster.tif").getPath().toString();
 			final String outputFile = this.getClass().getResource("../../../../testRaster.gpkg").getPath().toString();
-			String[] args = {"-op", "tile", "-in", inputFile, "-out", outputFile, "-to", tableName};
+			String[] args = { "-in", inputFile, "-out", outputFile, "-to", tableName};
 			parser.parseArgument(args);
 			System.setOut(new PrintStream(bytes));
 			if (opts.isValid())
@@ -232,13 +231,12 @@ public class HeadlessValidatorTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = getClass().getResource("../../../../testRaster_TMS").getPath().toString();
 		final String outputFile = HeadlessTestUtility.getNonExistantFileString(tempFolder, ".gpkg");
-		String[] args = {"-op", "package", "-in", inputFile, "-out", outputFile,"-to","testRaster","--inputsrs","3857"};
+		String[] args = { "-in", inputFile, "-out", outputFile,"-to","testRaster","--inputsrs","3857"};
 		parser.parseArgument(args);
 		if (opts.isValid())
 		{
 			assertTrue("Correct output type parsed from filetype",opts.getOutputType() == TileFormat.GPKG);
 			assertTrue("Correct input type parsed from filetype",opts.getInputType() == TileFormat.TMS);
-			assertFalse("correct operation parsed",opts.isTiling());
 		}
 		else
 		{
@@ -261,14 +259,14 @@ public class HeadlessValidatorTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = getClass().getResource("../../../../testRaster_TMS").getPath().toString();
 		final String outputFile = HeadlessTestUtility.getNonExistantFileString(tempFolder, "");
-		String[] args = {"-op", "package", "-in", inputFile, "-out", outputFile,};
+		String[] args = { "-in", inputFile, "-out", outputFile,};
 		parser.parseArgument(args);
 		if (opts.isValid())
 		{
 
 			assertTrue(opts.getOutputType() == TileFormat.TMS);
 			assertTrue(opts.getInputType() == TileFormat.TMS);
-			assertFalse(opts.isTiling());
+
 		}
 		else
 		{
@@ -287,7 +285,7 @@ public class HeadlessValidatorTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = getClass().getResource("../../../../testRaster.gpkg").getPath().toString();
 		final String outputFile = HeadlessTestUtility.getNonExistantFileString(tempFolder, "");
-		String[] args = {"-op", "package", "-in", inputFile, "-out", outputFile,};
+		String[] args = { "-in", inputFile, "-out", outputFile,};
 		parser.parseArgument(args);
 		if (opts.isValid())
 		{
@@ -312,14 +310,13 @@ public class HeadlessValidatorTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = getClass().getResource("../../../../testRaster.gpkg").getPath().toString();
 		final String outputFile = HeadlessTestUtility.getNonExistantFileString(tempFolder, "");
-		String[] args = {"-op", "package", "-in", inputFile, "-out", outputFile,"-ti","testRaster"};
+		String[] args = { "-in", inputFile, "-out", outputFile,"-ti","testRaster"};
 		parser.parseArgument(args);
 		if (opts.isValid())
 		{
 
 			assertTrue(opts.getOutputType() == TileFormat.TMS);
 			assertTrue(opts.getInputType() == TileFormat.GPKG);
-			assertFalse(opts.isTiling());
 		}
 		else
 		{
@@ -338,14 +335,13 @@ public class HeadlessValidatorTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = getClass().getResource("../../../../testRaster.gpkg").getPath().toString();
 		final String outputFile = HeadlessTestUtility.getNonExistantFileString(tempFolder, ".gpkg");
-		String[] args = {"-op", "package", "-in", inputFile, "-out", outputFile,"-ti","testRaster","-to","outTable"};
+		String[] args = { "-in", inputFile, "-out", outputFile,"-ti","testRaster","-to","outTable"};
 		parser.parseArgument(args);
 		if (opts.isValid())
 		{
 
 			assertTrue(opts.getOutputType() == TileFormat.GPKG);
 			assertTrue(opts.getInputType() == TileFormat.GPKG);
-			assertFalse(opts.isTiling());
 		}
 		else
 		{

@@ -62,4 +62,5 @@ Android/gen
 # IntelliJ files
 .idea/
 settings.txt
+settings.txt
 out/

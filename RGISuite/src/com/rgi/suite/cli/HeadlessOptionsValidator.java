@@ -45,16 +45,17 @@ public class HeadlessOptionsValidator
 		}
 		try
 		{
-			if (this.opts.isTiling())
+			// if everything is kosher, we can run the tiling
+			if (this.validateInputFile() && this.validateOutputFile()
+					&& this.validateOutputImageSettings()
+					&& this.validateSRSOptions())
 			{
-				// validate tiling parameters
-				return this.validateTiling();
+				System.out.println("Tiling settings are OK!");
+				return true;
 			}
-			else
-			{
-				// validate packaging parameters
-				return this.validatePackaging();
-			}
+			//if we get here something is extremely wrong, freak out
+			System.out.println("Error: Tiling Settings NOT OK, options provided are not Valid!");
+			return false;
 		}
 		catch (Exception e)
 		{
@@ -62,76 +63,6 @@ public class HeadlessOptionsValidator
 			return false;
 		}
 	}
-
-	/**
-	 * Validates settings for the action of Tiling/packaging an image.
-	 * <p>
-	 * input must be a raw image, output can be a TMS or gdal package. each of
-	 * these output types has corresponding settings, which are validated in
-	 * turn.
-	 *
-	 * @return
-	 */
-	private boolean validateTiling()
-	{
-		this.inputType = TileFormat.ERR;
-		if(this.opts.getInputFile() == null)
-		{
-			return false;
-		}
-		System.out
-				.println(String
-						.format("Validating Tiling Parameters: Input Data: %s, Output Path: %s, Output SRS: ",
-								this.opts.getInputFile().getName(),
-								this.opts.getOutputFile().getName(), this.opts.getOutputSrs()));
-
-		// if everything is kosher, we can run the tiling
-		if (this.validateInputFile() && this.validateOutputFile()
-				&& this.validateOutputImageSettings()
-				&& this.validateSRSOptions())
-		{
-			System.out.println("Tiling settings are OK!");
-			return true;
-		}
-		//if we get here something is extremely wrong, freak out
-		System.out.println("Error: Tiling Settings NOT OK, input types found invalid!");
-		return false;
-	}
-
-	/**
-	 * Validates if the settings are ok for a packaging operation. the settings
-	 * must match the following parameters
-	 * <p>
-	 * InputPath - must be an existing TMS store.
-	 * <p>
-	 * OutputPath- must be a non-existent *.gpkg file path.
-	 * <p>
-	 * OutputSRS - must be 3857 for geopackages.
-	 *
-	 * @return
-	 */
-	private boolean validatePackaging()
-	{
-		this.inputType = TileFormat.ERR;
-		System.out
-				.println(String
-						.format("Validating Packaging Parameters: Input Data: %s, Output Path: %s, Output SRS: ",
-								this.opts.getInputFile().getName(),
-								this.opts.getOutputFile().getName(), this.opts.getOutputSrs()));
-
-			// if everything is kosher, we can run the tiling
-			if (this.validateInputFile() && this.validateOutputFile()
-					&& this.validateOutputImageSettings()
-					&& this.validateSRSOptions())
-			{
-				System.out.println("Packaging settings are OK!");
-				return true;
-			}
-			//if we get here something is severely wrong, freak out
-			System.out.println("Error: Packaging Settings NOT OK, inputs invalid!");
-			return false;
-	}
-
 
 	/**
 	 * Validates image settings for output. settings involved are:
@@ -199,16 +130,9 @@ public class HeadlessOptionsValidator
 			System.out.println("no input file provided");
 			return false;
 		}
-
 		this.inputType = TileFormat.ERR;
-		if(this.opts.isTiling())
-		{
-			return this.validateRawInput();
-		}
-		else
-		{
-			return this.validateGPKGInput() || this.validateTMSInput();
-		}
+		//gpkg will handle the gpkg filetype, raw will accept all filetypes, tms will only take directories
+		return this.validateGPKGInput() || this.validateRawInput() || this.validateTMSInput();
 
 	}
 
@@ -221,7 +145,6 @@ public class HeadlessOptionsValidator
 		// Validate input File settings.
 		// verify existence, not a directory, then verify its a valid gdal
 		// format
-
 		if (this.opts.getInputFile().exists() &&
 				!this.opts.getInputFile().isDirectory())
 		{
@@ -313,10 +236,7 @@ public class HeadlessOptionsValidator
 		{
 			return this.checkGeoPackageOutput() || this.checkTMSOutput();
 		}
-		else
-		{
-			return false;
-		}
+		return false;
 	}
 
 	/**

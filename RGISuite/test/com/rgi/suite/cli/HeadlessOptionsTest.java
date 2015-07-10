@@ -59,24 +59,6 @@ public class HeadlessOptionsTest
 	}
 
 	/**
-	 * invalid arguments
-	 *
-	 * @throws CmdLineException
-	 */
-	@Test(expected = IllegalArgumentException.class)
-	public void invalidArgsOperation() throws IllegalArgumentException, CmdLineException, IOException
-	{
-
-		final HeadlessOptions opts = new HeadlessOptions();
-		final CmdLineParser parser = new CmdLineParser(opts);
-		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
-		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","things", "-in", inputFile, "-out", outputFile};
-		parser.parseArgument(args);
-		fail("parsing should have thrown exception upon receiving invalid operation command");
-	}
-
-	/**
 	 * @throws CmdLineException
 	 * @throws IllegalArgumentException
 	 */
@@ -102,7 +84,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = Paths.get(this.tempFolder.getRoot().getAbsolutePath(), HeadlessTestUtility.getRandomString(8), ".test").toString();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile};
+		String[] args = { "-in", inputFile, "-out", outputFile};
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception upon being unable to parse the input file");
 	}
@@ -119,7 +101,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = ""; //empty output file fails
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile};
+		String[] args = { "-in", inputFile, "-out", outputFile};
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception upon being unable to parse the Ouput file");
 	}
@@ -136,7 +118,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile, "--outputsrs", "12345"}; //srs 12345 should fail
+		String[] args = { "-in", inputFile, "-out", outputFile, "--outputsrs", "12345"}; //srs 12345 should fail
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception upon being unable to parse the Ouputsrs");
 	}
@@ -153,7 +135,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile, "--inputsrs", "12345"}; //srs 12345 should fail
+		String[] args = { "-in", inputFile, "-out", outputFile, "--inputsrs", "12345"}; //srs 12345 should fail
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception upon being unable to parse the input srs");
 	}
@@ -170,7 +152,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile, "-w", "10000"}; //width 10000 should fail
+		String[] args = { "-in", inputFile, "-out", outputFile, "-w", "10000"}; //width 10000 should fail
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception upon being unable to parse the tile width (too high)");
 	}
@@ -187,7 +169,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile, "-w", "0"}; //width 0 should fail
+		String[] args = { "-in", inputFile, "-out", outputFile, "-w", "0"}; //width 0 should fail
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception upon being unable to parse the tile width (too low)");
 	}
@@ -204,7 +186,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile, "-h", "10000"}; //height 10000 should fail
+		String[] args = { "-in", inputFile, "-out", outputFile, "-h", "10000"}; //height 10000 should fail
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception upon being unable to parse the tile height (too high)");
 	}
@@ -221,7 +203,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile, "-h", "0"}; //height 0 should fail
+		String[] args = { "-in", inputFile, "-out", outputFile, "-h", "0"}; //height 0 should fail
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception upon being unable to parse the tile height (too low)");
 	}
@@ -238,7 +220,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile, "--format", "unreal"};
+		String[] args = { "-in", inputFile, "-out", outputFile, "--format", "unreal"};
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception upon being unable to parse the image format");
 	}
@@ -255,7 +237,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile, "--compression", "such"};
+		String[] args = { "-in", inputFile, "-out", outputFile, "--compression", "such"};
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception upon being unable to parse the compression type");
 	}
@@ -272,7 +254,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile, "-q", "121"};
+		String[] args = { "-in", inputFile, "-out", outputFile, "-q", "121"};
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception upon being unable to parse the image quality (too high)");
 	}
@@ -289,7 +271,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile, "-q", "0"};
+		String[] args = { "-in", inputFile, "-out", outputFile, "-q", "0"};
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception upon being unable to parse the image quality (too low)");
 	}
@@ -322,7 +304,7 @@ public class HeadlessOptionsTest
 		final HeadlessOptions opts = new HeadlessOptions();
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-out", outputFile};
+		String[] args = { "-out", outputFile};
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception for missing required input inputFile");
 	}
@@ -338,7 +320,7 @@ public class HeadlessOptionsTest
 		final HeadlessOptions opts = new HeadlessOptions();
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile};
+		String[] args = { "-in", inputFile};
 		parser.parseArgument(args);
 		fail("parsing should have thrown exception for missing required input OutputFile");
 	}
@@ -358,7 +340,7 @@ public class HeadlessOptionsTest
 		{
 			final String inputFile = "~/" + testFile.getName();
 			final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-			String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile};
+			String[] args = { "-in", inputFile, "-out", outputFile};
 			parser.parseArgument(args);
 			assertEquals(opts.getInputFile().getPath(), testFile.getPath());
 		}
@@ -380,7 +362,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile, "--format", "image/JPeg"};
+		String[] args = { "-in", inputFile, "-out", outputFile, "--format", "image/JPeg"};
 		parser.parseArgument(args);
 		assertEquals(opts.getImageFormat().toString(),"image/jpeg");
 	}
@@ -397,7 +379,7 @@ public class HeadlessOptionsTest
 		final CmdLineParser parser = new CmdLineParser(opts);
 		final String inputFile = HeadlessTestUtility.getRandomFile(4, ".tif", this.tempFolder).getAbsolutePath();
 		final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-		String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile, "--compression", "JPeg"};
+		String[] args = { "-in", inputFile, "-out", outputFile, "--compression", "JPeg"};
 		parser.parseArgument(args);
 		assertEquals(opts.getCompressionType(),"jpeg");
 	}
@@ -417,7 +399,7 @@ public class HeadlessOptionsTest
 		{
 			final String inputFile = "./" + testFile.getName();
 			final String outputFile = HeadlessTestUtility.getRandomFile(4, ".gpkg", this.tempFolder).getAbsolutePath();
-			String[] args = {"-op","tile", "-in", inputFile, "-out", outputFile};
+			String[] args = { "-in", inputFile, "-out", outputFile};
 			parser.parseArgument(args);
 			assertEquals(opts.getInputFile().getPath(), testFile.getPath());
 		}

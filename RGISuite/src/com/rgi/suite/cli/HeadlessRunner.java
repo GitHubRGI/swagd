@@ -54,7 +54,6 @@ public class HeadlessRunner implements Runnable
 		     final TileStoreWriter tileStoreWriter = getTileStoreWriter(tileStoreReader);
 		)
 		{
-
 			// kick of packager operation.
 			new Packager(taskMonitor, tileStoreReader, tileStoreWriter)
 					.execute();
@@ -126,7 +125,6 @@ public class HeadlessRunner implements Runnable
 											getRelativeZoomTimesTwoTileScheme(reader),
 											opts.getImageFormat(),
 											getImageWriteParameter());
-
 			case TMS:
 				return new TmsWriter(crs,
 									opts.getOutputFile().toPath(),
