@@ -27,7 +27,6 @@ import java.io.File;
  *		-i (-in) <Input File Path>             : REQUIRED! Input source for tiling/Packaging operation
  *		-ti (--intileset, --intilesetname) <text>   : Tile Set name for GeoPackages (input), default is short name of output geopackage.
  *		-to (--outtileset, --outtilesetname)    :Tile set name for geopackage output
- *		-op(--operation) <tile or package>     : Operation to execute
  *		-o (-out) <Output File Path>           : Full output path for tiling/Packaging operation
  *		-q (--quality) <1-100>                 : Compression quality for jpeg compression, between 0-100
  *		-w (--width) <1-10000>                 : Tile width in pixels; default is 256
