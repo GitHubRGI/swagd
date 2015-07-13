@@ -1,5 +1,5 @@
 <project
-    xmlns="http://maven.scm.org/POM/4.0.0"
+    xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                         http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -11,11 +11,9 @@
     <name>RGI Main Application</name>
 
     <properties>
-        <jacoco.version>0.7.2.201409121644</jacoco.version>
         <project.url>https://github.com/GitHubRGI/swagd</project.url>
         <jar.plugin.version>2.5</jar.plugin.version>
         <resources.plugin.version>2.6</resources.plugin.version>
-        <findbugs.plugin.version>3.0.0</findbugs.plugin.version>
     </properties>
 
     <parent>
@@ -61,20 +59,6 @@
             <version>4.11</version>
         </dependency>
     </dependencies>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>${findbugs.plugin.version}</version>
-                <configuration>
-                    <xmlOutput>true</xmlOutput>
-                    <xmlOutputDirectory>target/site</xmlOutputDirectory>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
 
     <build>
         <sourceDirectory>src</sourceDirectory>
@@ -193,25 +177,6 @@
                                 <originalFilename>SWAGD.exe</originalFilename>
                             </versionInfo>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>

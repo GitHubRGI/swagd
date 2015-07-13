@@ -3,8 +3,8 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                         http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
 
+    <modelVersion>4.0.0</modelVersion>
     <groupId>com.rgi.TilingApp</groupId>
     <artifactId>SWAGD</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -41,25 +41,16 @@
 
     <properties>
         <jdk.version>1.8</jdk.version>
-        <jacoco.version>0.7.2.201409121644</jacoco.version>
         <compiler.version>3.1</compiler.version>
-        <coveralls.version>3.0.1</coveralls.version>
+        <coveralls.version>3.1.0</coveralls.version>
         <mavenjar.version>2.6</mavenjar.version>
         <buildnumber.version>1.3</buildnumber.version>
+        <cobertura.version>2.7</cobertura.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jacoco.report.common>Common/target/site/jacoco/jacoco.xml</jacoco.report.common>
-        <jacoco.report.datastore>DataStore/target/site/jacoco/jacoco.xml</jacoco.report.datastore>
-        <jacoco.report.gdal2tiles>Gdal2Tiles/target/site/jacoco/jacoco.xml</jacoco.report.gdal2tiles>
-        <!--jacoco.report.geoviewer>GeoViewer/target/site/jacoco/jacoco.xml</jacoco.report.geoviewer-->
-        <jacoco.report.geopackage>GeoPackage/target/site/jacoco/jacoco.xml</jacoco.report.geopackage>
-        <jacoco.report.networkextension>NetworkExtension/target/site/jacoco/jacoco.xml</jacoco.report.networkextension>
-        <jacoco.report.packager>Packager/target/site/jacoco/jacoco.xml</jacoco.report.packager>
-        <!--jacoco.report.rgisuite>RGISuite/target/site/jacoco/jacoco.xml</jacoco.report.rgisuite-->
-        <!--jacoco.report.verifiertool>VerifierTool/target/site/jacoco/jacoco.xml</jacoco.report.verifiertool-->
+        <!-- Report paths -->
     </properties>
 
     <modules>
-        <!--module>Android</module-->
         <module>Common</module>
         <module>DataStore</module>
         <module>Gdal2Tiles</module>
@@ -72,7 +63,48 @@
     </modules>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>cobertura-maven-plugin</artifactId>
+                    <version>${cobertura.version}</version>
+                    <configuration>
+                        <check/>
+                        <formats>
+                            <format>html</format>
+                            <format>xml</format>
+                        </formats>
+                        <aggregate>true</aggregate>
+                        <instrumentation>
+                            <excludes>
+                                <!-- ignore these areas in final report -->
+                                <excludes>org/openstreetmap/**/*.class</excludes>
+                                <excludes>com/rgi/suite/**/*.class</excludes>
+                                <excludes>com/rgi/common/util/functional/**/*.class</excludes>
+                                <excludes>com/rgi/view/**/*.class</excludes>
+                                <excludes>com/rgi/packager/**/*.class</excludes>
+                                <excludes>com/rgi/verifiertool/**/*.class</excludes>
+                                <excludes>com/rgi/store/tiles/tilecluster/**/*.class</excludes>
+                            </excludes>
+                        </instrumentation>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>cobertura</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -101,8 +133,6 @@
                    </execution>
                </executions>
                <configuration>
-                   <!--doCheck>true</doCheck>
-                   <doUpdate>true</doUpdate-->
                    <shortRevisionLength>7</shortRevisionLength>
                    <format>{0,date,yyyy-MM-dd}_{1}</format>
                    <items>
@@ -121,36 +151,13 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
-                <executions>
-                    <execution>
-                        <id>default-prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>${coveralls.version}</version>
                 <configuration>
-                    <jacocoReports>
-                        <jacocoReport>${jacoco.report.common}</jacocoReport>
-                        <jacocoReport>${jacoco.report.datastore}</jacocoReport>
-                        <jacocoReport>${jacoco.report.gdal2tiles}</jacocoReport>
-                        <!--jacocoReport>${jacoco.report.geoviewer}</jacocoReport-->
-                        <jacocoReport>${jacoco.report.geopackage}</jacocoReport>
-                        <jacocoReport>${jacoco.report.networkextension}</jacocoReport>
-                        <!--jacocoReport>${jacoco.report.packager}</jacocoReport-->
-                        <!--jacocoReport>${jacoco.report.rgisuite}</jacocoReport-->
-                        <!--jacocoReport>${jacoco.report.verifiertool}</jacocoReport-->
-                    </jacocoReports>
-                    <repoToken>fe7NkBn0up0oqz1ynsOnyQg8O0O3ML9Sh</repoToken>
-                    <!--dryRun>true</dryRun-->
+                    <format>xml</format>
+                    <maxmem>256m</maxmem>
+                    <aggregate>true</aggregate>
                 </configuration>
             </plugin>
         </plugins>
