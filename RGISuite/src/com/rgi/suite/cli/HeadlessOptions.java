@@ -61,7 +61,7 @@ public class HeadlessOptions
 		{
 			this.imageFormat = new MimeType("image/jpeg");
 		}
-		catch (MimeTypeParseException e)
+		catch (final MimeTypeParseException e)
 		{
 			System.out.println("Error creating default image format: "+ e.getMessage());
 		}
@@ -144,7 +144,7 @@ public class HeadlessOptions
 		final SpatialReference srs = new SpatialReference();
 		try
 		{
-			if (srs.ImportFromEPSG(i) == 0)
+			if(srs.ImportFromEPSG(i) == 0)
 			{
 				this.inputSrs = i;
 			}
@@ -169,7 +169,7 @@ public class HeadlessOptions
 			usage = "Input Tile Set for GeoPackages, default is short name of output geopackage.")
 	public void setTileSetNameIn(final String name)
 	{
-		if (name != null && name.length() <= 10000)
+		if(name != null && name.length() <= 10000)
 		{
 			this.tileSetNameIn = name;
 		}
@@ -399,7 +399,6 @@ public class HeadlessOptions
 
 	/**
 	 * returns a full path to the specified file, replacing cmdline based shortcuts
-	 * TODO: test ../ and ./
 	 *
 	 * @param filePath
 	 * @return

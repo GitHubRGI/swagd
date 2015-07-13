@@ -57,9 +57,9 @@ public class HeadlessOptionsValidator
 			System.out.println("Error: Options Provided did not pass Validation.");
 			return false;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			System.out.println("Error: Exception thrown while validating. \n\r" + e.getMessage());
+			System.err.println("Error: Exception thrown while validating. \n\r" + e.getMessage());
 			return false;
 		}
 	}
@@ -198,9 +198,9 @@ public class HeadlessOptionsValidator
 						System.out.println("Error: Input Tileset not found.");
 					}
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
-					System.out.println("Error: exception while parsing gpkg file. \r\n "+e.getMessage());
+					System.err.println("Error: exception while parsing gpkg file. \r\n "+e.getMessage());
 				}
 			}
 		}
@@ -277,9 +277,9 @@ public class HeadlessOptionsValidator
 						return true;
 					}
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
-					System.out.println("Error: exception while parsing gpkg file. \r\n "+e.getMessage());
+					System.err.println("Error: exception while parsing gpkg file. \r\n "+e.getMessage());
 				}
 			}
 		}
