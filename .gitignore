@@ -60,7 +60,11 @@ NetworkExtension/data/
 Android/gen
 
 # IntelliJ files
-.idea/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/.name
+.idea/copyright/
+.idea/libraries/
 settings.txt
 settings.txt
 out/

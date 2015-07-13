@@ -6,10 +6,11 @@ jdk:
     - oraclejdk8
 install:
     - ./install-deps-linux.sh
+    - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script:
     - mvn test
 after_success:
-    - mvn jacoco:report coveralls:report
+    - mvn clean cobertura:cobertura coveralls:report
 addons:
   coverity_scan:
     project:
