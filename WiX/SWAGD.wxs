@@ -21,7 +21,7 @@
       <!-- List components that go in or reference in the installdir, eg C:\Program Files\swagd, which is the default defined above.
             these include path shortcuts-->
       <Property Id="INSTALLDIR"  />
-      <Property Id="withDeps" Value="0"/>
+      <Property Id="withDeps"/>
       
       <!-- swagd components -->
       <DirectoryRef Id="INSTALLDIR">

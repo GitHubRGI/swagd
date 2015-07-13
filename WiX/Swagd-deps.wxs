@@ -71,7 +71,7 @@
         <!-- java is installed with an exe, therefore the condition "installed" is a built in wix variable. 
         Its also set to permanant, so uninstalling swagd will not remove the java install. -->
         <ExePackage Id="InstallJava"
-                    DetectCondition="JAVA_CURRENT_VERSION >= 1.8"
+                    InstallCondition="NOT (JAVA_CURRENT_VERSION= &quot;1.8&quot;)"
                     SourceFile=".\Resources\jre-8u45-windows-x64.exe"
                     Compressed="yes"
                     Permanent="yes"
