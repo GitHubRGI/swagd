@@ -5,63 +5,75 @@ package com.rgi.suite.cli;
 
 import com.rgi.common.TaskMonitor;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.IntStream;
+
 /**
  * TaskMonitor for headless operation, outputs progress bar to the command line for tracking status.
- * @author matthew.moran
  *
+ * @author matthew.moran
  */
 public class HeadlessTaskMonitor implements TaskMonitor
 {
 
-	private int maximum = 0;
+	public static final int PROGRESS_BAR_LENGTH = 25;
+	private int maximum;
 	private int step = 1;
-	private int last = 0;
+	private       int    last;
+	private final Logger logger;
 
-	/**
-	 * @see com.rgi.common.TaskMonitor#setMaximum(int)
-	 */
+	HeadlessTaskMonitor(final Logger logger)
+	{
+		this.logger = logger;
+	}
+
 	@Override
 	public void setMaximum(final int maximum)
 	{
 		this.maximum = maximum;
-		if (maximum >= 25)
+		if( maximum >= HeadlessTaskMonitor.PROGRESS_BAR_LENGTH )
 		{
-			this.step = maximum / 25;
+			this.step = maximum / HeadlessTaskMonitor.PROGRESS_BAR_LENGTH;
 		}
 	}
 
-	/**
-	 * @see com.rgi.common.TaskMonitor#setProgress(int)
-	 */
+	@SuppressWarnings("NumericCastThatLosesPrecision")
 	@Override
 	public void setProgress(final int value)
 	{
-		final int percent = (int) ((value) / (float) (this.maximum) * 100.00);
-		if (value > (this.last + this.step))
+		final int percent = value * 100 / this.maximum;
+		if( value > this.last + this.step )
 		{
-			final StringBuilder bar = new StringBuilder("[");
-			for (int i = 0; i < 25; i++)
-			{
-				if (i < (percent / 4))
+			final StringBuilder builder = new StringBuilder( "[" );
+			//25 works well with console progress bars, the value is fairly arbitrary though.
+			IntStream.rangeClosed( 1, HeadlessTaskMonitor.PROGRESS_BAR_LENGTH ).forEach( index -> {
+				if( index < percent / 4 )
 				{
-					bar.append("=");
-				} else if (i == (percent / 4))
-				{
-					bar.append(">");
-				} else
-				{
-					bar.append(" ");
+					builder.append( '=' );
 				}
-			}
-			bar.append(String.format("]  - %d / %d ", value, this.maximum));
+				else if( index == percent / 4 )
+				{
+					builder.append( '>' );
+				}
+				else
+				{
+					builder.append( ' ' );
+				}
+			} );
+			builder.append( String.format( "]  - %d / %d ", value, this.maximum ) );
 			// return carriage and write over progress bar.
-			System.out.print("\r" + bar.toString());
+			//noinspection HardcodedLineSeparator,UseOfSystemOutOrSystemErr
+			System.out.print( "\r" + builder );
 			this.last = value;
 		}
-		if(value == this.maximum)
+		if( value == this.maximum )
 		{
-			System.out.println(String.format("\r[=========================] %d / %d",value,this.maximum));
-			System.out.println("Tiling Complete!");
+			this.logger.log( Level.INFO,
+							 String.format( "\rGenerated %d/%d tiles successfully!", value, this.maximum ) );
+			//noinspection HardcodedLineSeparator,UseOfSystemOutOrSystemErr
+			System.out.println( String.format( "\r[=========================] %d / %d", value, this.maximum ) );
+
 		}
 
 	}
