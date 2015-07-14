@@ -10,6 +10,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: args4j:args4j:2.32" level="project" />
     <orderEntry type="module" module-name="Common" />
     <orderEntry type="module" module-name="GeoPackage" />
     <orderEntry type="library" name="Maven: args4j:args4j:2.32" level="project" />

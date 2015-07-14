@@ -42,6 +42,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -54,8 +55,10 @@ import java.util.logging.*;
  * @author Duff Means
  * @author Steven D. Lander
  */
+@SuppressWarnings("OverlyComplexAnonymousInnerClass")
 public final class GeoSuite
 {
+	private static final String SETTINGS_FILE_NAME = "swagd.prefs";
 	private final Settings settings;
 
 	/**
@@ -65,9 +68,9 @@ public final class GeoSuite
 	 */
 	public static void main(final String[] args)
 	{
-		if( args != null && args.length > 0 )
+		if(args != null && args.length > 0)
 		{
-			GeoSuite.runHeadless( args );
+			GeoSuite.runHeadless(args);
 		}
 		else
 		{
@@ -77,43 +80,40 @@ public final class GeoSuite
 
 	private GeoSuite()
 	{
-		this.settings = new Settings( new File( "settings.txt" ) );
-
-		SwingUtilities.invokeLater( () -> this.startGui() );
+		this.settings = new Settings(new File(Paths.get(System.getProperty("user.home"),
+														SETTINGS_FILE_NAME).toString()));
+		SwingUtilities.invokeLater(this::startGui);
 	}
 
 	@SuppressWarnings("deprecation")
 	private void startGui()
 	{
-		final JPanel contentPanel = new JPanel( new CardLayout() );
-		final JPanel navPanel     = new JPanel( new CardLayout() );
-
-		final JFrame suiteWindow = new JFrame();
-
-		final Properties props = new Properties();
-
-		try( InputStream inputStream = this.getClass().getResourceAsStream( "geosuite.properties" ) )
+		final JPanel     contentPanel = new JPanel(new CardLayout());
+		final JPanel     navPanel     = new JPanel(new CardLayout());
+		final JFrame     suiteWindow  = new JFrame();
+		final Properties props        = new Properties();
+		try(InputStream inputStream = this.getClass().getResourceAsStream("geosuite.properties"))
 		{
-			props.load( inputStream );
+			props.load(inputStream);
 		}
-		catch( final IllegalArgumentException | IOException ex )
+		catch(final IllegalArgumentException | IOException exception)
 		{
-			JOptionPane.showMessageDialog( null, "RGI Suite", "Unable to load properties", JOptionPane.OK_OPTION );
-			ex.printStackTrace();
+			JOptionPane.showMessageDialog(null, "RGI Suite", "Unable to load properties", JOptionPane.OK_OPTION);
+			System.out.println(exception.getMessage());
 		}
 
 		final Container c = suiteWindow.getContentPane();
-		c.setLayout( new BorderLayout() );
+		c.setLayout(new BorderLayout());
 
-		c.add( contentPanel, BorderLayout.CENTER );
-		c.add( navPanel, BorderLayout.SOUTH );
+		c.add(contentPanel, BorderLayout.CENTER);
+		c.add(navPanel, BorderLayout.SOUTH);
 
-		suiteWindow.setTitle( "RGI Tiling and Packaging Suite" );
-		suiteWindow.setSize( 540, 240 );
-		suiteWindow.setResizable( false );
-		suiteWindow.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
+		suiteWindow.setTitle("RGI Tiling and Packaging Suite");
+		suiteWindow.setSize(540, 240);
+		suiteWindow.setResizable(false);
+		suiteWindow.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		suiteWindow.addWindowListener( new WindowAdapter()
+		suiteWindow.addWindowListener(new WindowAdapter()
 		{
 			@Override
 			public void windowClosing(final WindowEvent event)
@@ -121,90 +121,91 @@ public final class GeoSuite
 				//final int option = JOptionPane.showConfirmDialog(suiteWindow, "Are you sure you want to exit?", "Confirm Exit", JOptionPane.YES_NO_OPTION);
 				//if(option == JOptionPane.YES_OPTION)
 				//{
-				System.exit( 0 );
+				System.exit(0);
 				//}
 			}
-		} );
+		});
 
 		// main buttons
-		final JPanel             mainButtonPanel = new JPanel( new GridBagLayout() );
+		final JPanel             mainButtonPanel = new JPanel(new GridBagLayout());
 		final GridBagConstraints gbc             = new GridBagConstraints();
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
 
-		final JButton tileButton = new JButton( new PropertiesAction( props, "tile" )
+		final JButton tileButton = new JButton(new PropertiesAction(props, "tile")
 		{
 			private static final long serialVersionUID = -3249428374853166484L;
 
 			@Override
 			public void actionPerformed(final ActionEvent event)
 			{
-				final JFrame frame = new TilerWindow( GeoSuite.this.settings );
-				frame.setLocationRelativeTo( null );
-				frame.setVisible( true );
+				final JFrame frame = new TilerWindow(GeoSuite.this.getSettings());
+				frame.setLocationRelativeTo(null);
+				frame.setVisible(true);
 			}
-		} );
+		});
 
-		tileButton.setHideActionText( true );
-		tileButton.setMargin( new Insets( 0, 0, 0, 0 ) );
+		tileButton.setHideActionText(true);
+		tileButton.setMargin(new Insets(0, 0, 0, 0));
 
-		final JButton gpkgButton = new JButton( new PropertiesAction( props, "gpkg" )
+		final JButton gpkgButton = new JButton(new PropertiesAction(props, "gpkg")
 		{
 			private static final long serialVersionUID = -1836754318915912580L;
 
 			@Override
 			public void actionPerformed(final ActionEvent event)
 			{
-				final JFrame frame = new PackagerWindow( GeoSuite.this.settings );
-				frame.setLocationRelativeTo( null );
-				frame.setVisible( true );
+				final JFrame frame = new PackagerWindow(GeoSuite.this.getSettings());
+				frame.setLocationRelativeTo(null);
+				frame.setVisible(true);
 			}
-		} );
+		});
 
-		gpkgButton.setHideActionText( true );
-		gpkgButton.setMargin( new Insets( 0, 0, 0, 0 ) );
+		gpkgButton.setHideActionText(true);
+		gpkgButton.setMargin(new Insets(0, 0, 0, 0));
 
-		final JButton viewButton = new JButton( new PropertiesAction( props, "view" )
+		final JButton viewButton = new JButton(new PropertiesAction(props, "view")
 		{
 			private static final long serialVersionUID = 1882624675173160883L;
 
-			private static final String LastLocationSettingName = "ui.viewer.lastLocation";
+			private static final String LAST_LOCATION_SETTING_NAME = "ui.viewer.lastLocation";
 
 			@Override
 			public void actionPerformed(final ActionEvent event)
 			{
 				final String startDirectory =
-						GeoSuite.this.settings.get( LastLocationSettingName, System.getProperty( "user.home" ) );
+						GeoSuite.this.getSettings().get(LAST_LOCATION_SETTING_NAME,
+														System.getProperty("user.home"));
 
-				final JFileChooser fileChooser = new JFileChooser( new File( startDirectory ) );
+				final JFileChooser fileChooser = new JFileChooser(new File(startDirectory));
 
-				fileChooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
-				fileChooser.setMultiSelectionEnabled( true );
+				fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+				fileChooser.setMultiSelectionEnabled(true);
 
-				fileChooser.addActionListener( chooseEvent -> {
-					if( JFileChooser.APPROVE_SELECTION.equals( chooseEvent.getActionCommand() ) )
+				fileChooser.addActionListener(chooseEvent -> {
+					if(JFileChooser.APPROVE_SELECTION.equals(chooseEvent.getActionCommand()))
 					{
 						final File[] files = fileChooser.getSelectedFiles();
 
-						if( files.length > 0 )
+						if(files.length > 0)
 						{
-							GeoSuite.this.settings.set( LastLocationSettingName, files[0].getParent() );
-							GeoSuite.this.settings.save();
+							GeoSuite.this.getSettings().set(LAST_LOCATION_SETTING_NAME, files[0].getParent());
+							GeoSuite.this.getSettings().save();
 
 							final TileReadersOptionWindow tileReadersOptionWindow =
-									new TileReadersOptionWindow( TileStoreUtility.getTileStoreReaderAdapters( true,
-																											  files ),
-																 readers -> {
-																	 final JFrame viewWindow =
-																			 new MapViewWindow( readers );
-																	 viewWindow.setLocationRelativeTo( null );
-																	 viewWindow.setVisible( true );
-																 } );
+									new TileReadersOptionWindow(TileStoreUtility.getTileStoreReaderAdapters(true,
+																											files),
+																readers -> {
+																	final JFrame viewWindow =
+																			new MapViewWindow(readers);
+																	viewWindow.setLocationRelativeTo(null);
+																	viewWindow.setVisible(true);
+																});
 
-							if( tileReadersOptionWindow.needsInput() )
+							if(tileReadersOptionWindow.needsInput())
 							{
-								tileReadersOptionWindow.setLocationRelativeTo( null );
-								tileReadersOptionWindow.setVisible( true );
+								tileReadersOptionWindow.setLocationRelativeTo(null);
+								tileReadersOptionWindow.setVisible(true);
 							}
 							else
 							{
@@ -212,24 +213,24 @@ public final class GeoSuite
 							}
 						}
 					}
-				} );
+				});
 
-				fileChooser.showOpenDialog( suiteWindow );
+				fileChooser.showOpenDialog(suiteWindow);
 
 			}
-		} );
+		});
 
-		viewButton.setHideActionText( true );
-		viewButton.setMargin( new Insets( 0, 0, 0, 0 ) );
+		viewButton.setHideActionText(true);
+		viewButton.setMargin(new Insets(0, 0, 0, 0));
 
-		mainButtonPanel.add( tileButton, gbc );
-		mainButtonPanel.add( gpkgButton, gbc );
-		mainButtonPanel.add( viewButton, gbc );
+		mainButtonPanel.add(tileButton, gbc);
+		mainButtonPanel.add(gpkgButton, gbc);
+		mainButtonPanel.add(viewButton, gbc);
 
-		contentPanel.add( mainButtonPanel );
+		contentPanel.add(mainButtonPanel);
 
-		suiteWindow.setLocationRelativeTo( null );
-		suiteWindow.setVisible( true );
+		suiteWindow.setLocationRelativeTo(null);
+		suiteWindow.setVisible(true);
 	}
 
 	/**
@@ -239,37 +240,42 @@ public final class GeoSuite
 	 */
 	private static void runHeadless(@SuppressWarnings("unused") final String[] args)
 	{
-		final Logger logger = Logger.getLogger( "RGISuite.logger" );
-		logger.setUseParentHandlers( false );
-		logger.setLevel( Level.ALL );
+		final Logger logger = Logger.getLogger("RGISuite.logger");
+		logger.setUseParentHandlers(false);
+		logger.setLevel(Level.ALL);
 		final ConsoleHandler handler = new ConsoleHandler();
 		final Formatter formatter = new Formatter()
 		{
 			@Override
 			public String format(final LogRecord record)
 			{
-				return String.valueOf( new Date() ) + ' ' + record.getLevel() + ' ' + record.getMessage() +
-					   System.getProperty( "line.separator" );
+				return String.valueOf(new Date()) + ' ' + record.getLevel() + ' ' + record.getMessage() +
+					   System.getProperty("line.separator");
 			}
 		};
-		handler.setFormatter( formatter );
-		logger.addHandler( handler );
+		handler.setFormatter(formatter);
+		logger.addHandler(handler);
 		try
 		{
-			final HeadlessOptions opts = new HeadlessOptions( logger );
-			final CmdLineParser parser = new CmdLineParser( opts );
-			parser.parseArgument( args );
-			if( opts.isValid() )
+			final HeadlessOptions opts = new HeadlessOptions(logger);
+			final CmdLineParser parser = new CmdLineParser(opts);
+			parser.parseArgument(args);
+			if(opts.isValid())
 			{
-				final ExecutorService executor = Executors.newFixedThreadPool( 1 ); //only 1 background thread supported
-				final Runnable runner = new HeadlessRunner( opts, logger );
-				logger.log( Level.INFO, "Begining tile generation:" );
-				executor.execute( runner );
+				final ExecutorService executor = Executors.newFixedThreadPool(1); //only 1 background thread supported
+				final Runnable runner = new HeadlessRunner(opts, logger);
+				logger.log(Level.INFO, "Begining tile generation:");
+				executor.execute(runner);
 			}
 		}
-		catch( final RuntimeException | CmdLineException error )
+		catch(final RuntimeException | CmdLineException error)
 		{
-			logger.log( Level.SEVERE, error.getMessage() );
+			logger.log(Level.SEVERE, error.getMessage());
 		}
+	}
+
+	public Settings getSettings()
+	{
+		return this.settings;
 	}
 }
