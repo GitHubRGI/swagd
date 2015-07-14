@@ -32,7 +32,7 @@ public class HeadlessTaskMonitor implements TaskMonitor
 	public void setMaximum(final int maximum)
 	{
 		this.maximum = maximum;
-		if( maximum >= HeadlessTaskMonitor.PROGRESS_BAR_LENGTH )
+		if(maximum >= HeadlessTaskMonitor.PROGRESS_BAR_LENGTH)
 		{
 			this.step = maximum / HeadlessTaskMonitor.PROGRESS_BAR_LENGTH;
 		}
@@ -43,36 +43,36 @@ public class HeadlessTaskMonitor implements TaskMonitor
 	public void setProgress(final int value)
 	{
 		final int percent = value * 100 / this.maximum;
-		if( value > this.last + this.step )
+		if(value > this.last + this.step)
 		{
-			final StringBuilder builder = new StringBuilder( "[" );
+			final StringBuilder builder = new StringBuilder("[");
 			//25 works well with console progress bars, the value is fairly arbitrary though.
-			IntStream.rangeClosed( 1, HeadlessTaskMonitor.PROGRESS_BAR_LENGTH ).forEach( index -> {
-				if( index < percent / 4 )
+			IntStream.rangeClosed(1, HeadlessTaskMonitor.PROGRESS_BAR_LENGTH).forEach(index -> {
+				if(index < percent / 4)
 				{
-					builder.append( '=' );
+					builder.append('=');
 				}
-				else if( index == percent / 4 )
+				else if(index == percent / 4)
 				{
-					builder.append( '>' );
+					builder.append('>');
 				}
 				else
 				{
-					builder.append( ' ' );
+					builder.append(' ');
 				}
-			} );
-			builder.append( String.format( "]  - %d / %d ", value, this.maximum ) );
+			});
+			builder.append(String.format("]  - %d / %d ", value, this.maximum));
 			// return carriage and write over progress bar.
 			//noinspection HardcodedLineSeparator,UseOfSystemOutOrSystemErr
-			System.out.print( "\r" + builder );
+			System.out.print("\r" + builder);
 			this.last = value;
 		}
-		if( value == this.maximum )
+		if(value == this.maximum)
 		{
-			this.logger.log( Level.INFO,
-							 String.format( "\rGenerated %d/%d tiles successfully!", value, this.maximum ) );
+			this.logger.log(Level.INFO,
+							String.format("\rGenerated %d/%d tiles successfully!", value, this.maximum));
 			//noinspection HardcodedLineSeparator,UseOfSystemOutOrSystemErr
-			System.out.println( String.format( "\r[=========================] %d / %d", value, this.maximum ) );
+			System.out.println(String.format("\r[=========================] %d / %d", value, this.maximum));
 
 		}
 

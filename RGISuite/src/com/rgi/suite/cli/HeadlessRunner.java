@@ -30,17 +30,17 @@ public class HeadlessRunner implements Runnable
 	@Override
 	public void run()
 	{
-		final TaskMonitor taskMonitor = new HeadlessTaskMonitor( this.logger );
+		final TaskMonitor taskMonitor = new HeadlessTaskMonitor(this.logger);
 
-		try( final TileStoreReader tileStoreReader = this.opts.getInputAdapter().getReader( this.opts );
-			 final TileStoreWriter tileStoreWriter = this.opts.getOutputAdapter().getWriter( this.opts,
-																							 tileStoreReader ) )
+		try(final TileStoreReader tileStoreReader = this.opts.getInputAdapter().getReader(this.opts);
+			final TileStoreWriter tileStoreWriter = this.opts.getOutputAdapter().getWriter(this.opts,
+																						   tileStoreReader))
 		{
-			new Packager( taskMonitor, tileStoreReader, tileStoreWriter ).execute();
+			new Packager(taskMonitor, tileStoreReader, tileStoreWriter).execute();
 		}
-		catch( final Exception exception )
+		catch(final Exception exception)
 		{
-			this.logger.log( Level.SEVERE, exception.getMessage() );
+			this.logger.log(Level.SEVERE, exception.getMessage());
 		}
 
 	}

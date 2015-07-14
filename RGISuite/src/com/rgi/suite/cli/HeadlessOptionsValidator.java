@@ -52,29 +52,29 @@ public class HeadlessOptionsValidator
 	 */
 	public boolean isValid()
 	{
-		this.logger.log( Level.INFO, "Validating arguments provided." );
-		if( this.opts == null )
+		this.logger.log(Level.INFO, "Validating arguments provided.");
+		if(this.opts == null)
 		{
-			this.logger.log( Level.SEVERE, "No arguments provided" );
+			this.logger.log(Level.SEVERE, "No arguments provided");
 			return false;
 		}
 		try
 		{
 			// if everything is kosher, we can run the tiling
-			if( this.isinputFileValid() && this.isOutputFileValid()
-				&& this.isImageSettingsValid()
-				&& this.isSRSOptionsValid() )
+			if(this.isinputFileValid() && this.isOutputFileValid()
+			   && this.isImageSettingsValid()
+			   && this.isSRSOptionsValid())
 			{
-				this.logger.log( Level.INFO, "Options Provided passed Validation." );
+				this.logger.log(Level.INFO, "Options Provided passed Validation.");
 				return true;
 			}
 			//if we get here something is extremely wrong, freak out
-			this.logger.log( Level.SEVERE, "Error: Options Provided did not pass Validation." );
+			this.logger.log(Level.SEVERE, "Error: Options Provided did not pass Validation.");
 			return false;
 		}
-		catch( final RuntimeException error )
+		catch(final RuntimeException error)
 		{
-			this.logger.log( Level.SEVERE, "Error: Exception thrown while validating." + error.getMessage() );
+			this.logger.log(Level.SEVERE, "Error: Exception thrown while validating." + error.getMessage());
 			return false;
 		}
 	}
@@ -97,23 +97,23 @@ public class HeadlessOptionsValidator
 	private boolean isImageSettingsValid()
 	{
 		//isValid tile size, arbitrarily 10000 pixels because i needed a number
-		if( this.opts.getTileWidth() <= 0 || this.opts.getTileWidth() > HeadlessOptions.MAGIC_MAX_VALUE
-			|| this.opts.getTileHeight() <= 0 || this.opts.getTileHeight() > HeadlessOptions.MAGIC_MAX_VALUE )
+		if(this.opts.getTileWidth() <= 0 || this.opts.getTileWidth() > HeadlessOptions.MAGIC_MAX_VALUE
+		   || this.opts.getTileHeight() <= 0 || this.opts.getTileHeight() > HeadlessOptions.MAGIC_MAX_VALUE)
 		{
-			this.logger.log( Level.SEVERE, "Error: Tile Width and Height must be Greater than 0 and Less than 10000" );
+			this.logger.log(Level.SEVERE, "Error: Tile Width and Height must be Greater than 0 and Less than 10000");
 			return false;
 		}
-		if( this.opts.getImageFormat() != null )
+		if(this.opts.getImageFormat() != null)
 		{
-			if( !this.opts.getCompressionType().equalsIgnoreCase( "jpeg" ) )
+			if(!this.opts.getCompressionType().equalsIgnoreCase("jpeg"))
 			{
-				this.logger.log( Level.SEVERE,
-								 "Error: jpeg compression type must be 'jpeg', and compression quality must be between 0 and 100" );
+				this.logger.log(Level.SEVERE,
+								"Error: jpeg compression type must be 'jpeg', and compression quality must be between 0 and 100");
 				return false;
 			}
 			return true;
 		}
-		this.logger.log( Level.SEVERE, "Error: Failed to isValid image settings, Image format is null" );
+		this.logger.log(Level.SEVERE, "Error: Failed to isValid image settings, Image format is null");
 		return false;
 	}
 
@@ -126,13 +126,13 @@ public class HeadlessOptionsValidator
 	 */
 	private boolean isSRSOptionsValid()
 	{
-		if( this.opts.getOutputAdapter() instanceof GPKGTileStoreAdapter )
+		if(this.opts.getOutputAdapter() instanceof GPKGTileStoreAdapter)
 		{
-			if( this.opts.getOutputSrs() == HeadlessOptions.GLOBAL_WEB_MERCATOR )
+			if(this.opts.getOutputSrs() == HeadlessOptions.GLOBAL_WEB_MERCATOR)
 			{
 				return true;
 			}
-			this.logger.log( Level.SEVERE, "Error: For tiling into geopackage, output SRS must be 3857." );
+			this.logger.log(Level.SEVERE, "Error: For tiling into geopackage, output SRS must be 3857.");
 			return false;
 		}
 		return true;
@@ -140,17 +140,17 @@ public class HeadlessOptionsValidator
 
 	private boolean isinputFileValid()
 	{
-		this.logger.log( Level.INFO, "Validating input Data." );
-		if( !this.opts.getInputFile().exists() )
+		this.logger.log(Level.INFO, "Validating input Data.");
+		if(!this.opts.getInputFile().exists())
 		{
-			this.logger.log( Level.SEVERE, "Error: No input file provided." );
+			this.logger.log(Level.SEVERE, "Error: No input file provided.");
 			return false;
 		}
 		//gpkg will handle the gpkg filetype, raw will accept all filetypes, tms will only take directories
 		final boolean valid = this.isGPKGInputValid() || this.isRawInputValid() || this.isTMSInputValid();
-		if( !valid )
+		if(!valid)
 		{
-			this.logger.log( Level.SEVERE, "Error: Failed to validate input File." );
+			this.logger.log(Level.SEVERE, "Error: Failed to validate input File.");
 		}
 		return valid;
 	}
@@ -165,20 +165,20 @@ public class HeadlessOptionsValidator
 		// Validate input File settings.
 		// verify existence, not a directory, then verify its a valid gdal
 		// format
-		if( this.opts.getInputFile().exists() &&
-			!this.opts.getInputFile().isDirectory() )
+		if(this.opts.getInputFile().exists() &&
+		   !this.opts.getInputFile().isDirectory())
 		{
 			// check gdal compatibility by grabbing the SRS
 			final SpatialReference srs = GdalUtility
-												 .getSpatialReference( this.opts.getInputFile() );
-			if( srs != null )
+												 .getSpatialReference(this.opts.getInputFile());
+			if(srs != null)
 			{
 				this.inputAdapter = new RawImageTileStoreAdapter();
 				return true;
 			}
 			else
 			{
-				this.logger.log( Level.SEVERE, "Error: Input Image File is not a valid GDAL supported format." );
+				this.logger.log(Level.SEVERE, "Error: Input Image File is not a valid GDAL supported format.");
 				return false;
 			}
 		}
@@ -192,33 +192,33 @@ public class HeadlessOptionsValidator
 	 */
 	private boolean isGPKGInputValid()
 	{
-		if( this.opts.getInputFile().getName().toLowerCase()
-					 .endsWith( "gpkg" ) )
+		if(this.opts.getInputFile().getName().toLowerCase()
+					.endsWith("gpkg"))
 		{
-			if( this.opts.getTileSetNameIn().isEmpty() )
+			if(this.opts.getTileSetNameIn().isEmpty())
 			{
-				this.logger.log( Level.INFO, "Error: No input TileSet Name specified." );
+				this.logger.log(Level.INFO, "Error: No input TileSet Name specified.");
 				return false;
 			}
 			else
 			{
-				try( GeoPackage gpkg = new GeoPackage( this.opts.getInputFile() ) )
+				try(GeoPackage gpkg = new GeoPackage(this.opts.getInputFile()))
 				{
-					if( gpkg.tiles().getTileSets().stream()
-							.anyMatch( tileSet -> tileSet.getTableName().equals( this.opts.getTileSetNameIn() ) ) )
+					if(gpkg.tiles().getTileSets().stream()
+						   .anyMatch(tileSet -> tileSet.getTableName().equals(this.opts.getTileSetNameIn())))
 					{
 						this.inputAdapter = new GPKGTileStoreAdapter();
 						return true;
 					}
 					else
 					{
-						this.logger.log( Level.INFO, "Error: Input Tileset not found." );
+						this.logger.log(Level.INFO, "Error: Input Tileset not found.");
 					}
 				}
-				catch( final SQLException | ClassNotFoundException | IOException | ConformanceException sqlError )
+				catch(final SQLException | ClassNotFoundException | IOException | ConformanceException sqlError)
 				{
-					this.logger.log( Level.SEVERE,
-									 "Error:  Exception while parsing gpkg input file." + sqlError.getMessage() );
+					this.logger.log(Level.SEVERE,
+									"Error:  Exception while parsing gpkg input file." + sqlError.getMessage());
 				}
 
 			}
@@ -234,7 +234,7 @@ public class HeadlessOptionsValidator
 	 */
 	private boolean isTMSInputValid()
 	{
-		if( this.opts.getInputFile().isDirectory() && this.opts.getInputFile().length() > 0L ) //non-emtpy directory.
+		if(this.opts.getInputFile().isDirectory() && this.opts.getInputFile().length() > 0L) //non-emtpy directory.
 		{
 			this.inputAdapter = new TMSTileStoreAdapter();
 			return true;
@@ -251,15 +251,15 @@ public class HeadlessOptionsValidator
 	 */
 	private boolean isOutputFileValid()
 	{
-		if( this.opts.getOutputFile() == null )
+		if(this.opts.getOutputFile() == null)
 		{
-			this.logger.log( Level.SEVERE, "Error: No Output File Provided." );
+			this.logger.log(Level.SEVERE, "Error: No Output File Provided.");
 			return false;
 		}
 		final boolean valid = this.isGPKGOutputValid() || this.isTMSOutputValid();
-		if( !valid )
+		if(!valid)
 		{
-			this.logger.log( Level.SEVERE, "Error: Could not validate output File." );
+			this.logger.log(Level.SEVERE, "Error: Could not validate output File.");
 		}
 		return valid;
 	}
@@ -271,29 +271,29 @@ public class HeadlessOptionsValidator
 	 */
 	private boolean isGPKGOutputValid()
 	{
-		if( this.opts.getOutputFile().getName().toLowerCase().endsWith( ".gpkg" ) )
+		if(this.opts.getOutputFile().getName().toLowerCase().endsWith(".gpkg"))
 		{
-			if( this.opts.getTileSetNameOut().isEmpty() )
+			if(this.opts.getTileSetNameOut().isEmpty())
 			{
-				this.logger.log( Level.INFO, "Warning: Tileset name not provided, defaulting to file short name." );
-				this.opts.setTileSetNameOut( FileUtility
-													 .nameWithoutExtension( this.opts.getOutputFile() ) );
+				this.logger.log(Level.INFO, "Warning: Tileset name not provided, defaulting to file short name.");
+				this.opts.setTileSetNameOut(FileUtility
+													.nameWithoutExtension(this.opts.getOutputFile()));
 			}
-			if( this.opts.getOutputFile().exists() )
+			if(this.opts.getOutputFile().exists())
 			{
-				try( GeoPackage gpkg = new GeoPackage( this.opts.getOutputFile() ) )
+				try(GeoPackage gpkg = new GeoPackage(this.opts.getOutputFile()))
 				{
-					if( !gpkg.tiles().getTileSets().stream()
-							 .anyMatch( tileSet -> tileSet.getTableName().equals( this.opts.getTileSetNameOut() ) ) )
+					if(!gpkg.tiles().getTileSets().stream()
+							.anyMatch(tileSet -> tileSet.getTableName().equals(this.opts.getTileSetNameOut())))
 					{
 						this.outputAdapter = new GPKGTileStoreAdapter();
 						return true;
 					}
 				}
-				catch( final SQLException | ClassNotFoundException | IOException | ConformanceException sqlError )
+				catch(final SQLException | ClassNotFoundException | IOException | ConformanceException sqlError)
 				{
-					this.logger.log( Level.SEVERE,
-									 "Error:  Exception while parsing gpkg output file." + sqlError.getMessage() );
+					this.logger.log(Level.SEVERE,
+									"Error:  Exception while parsing gpkg output file." + sqlError.getMessage());
 				}
 			}
 			else //file doesnt exist, we can make a new one.
@@ -314,10 +314,10 @@ public class HeadlessOptionsValidator
 	{
 		try
 		{
-			if( this.opts.getOutputFile().exists() )
+			if(this.opts.getOutputFile().exists())
 			{
-				if( this.opts.getOutputFile().isDirectory()
-					&& this.opts.getOutputFile().list().length == 0 ) // existing, empty directory
+				if(this.opts.getOutputFile().isDirectory()
+				   && this.opts.getOutputFile().list().length == 0) // existing, empty directory
 				{
 					this.outputAdapter = new TMSTileStoreAdapter();
 					return true;
@@ -327,7 +327,7 @@ public class HeadlessOptionsValidator
 			else
 			{
 				//non-existent, anything but .gpkg is a go
-				if( !this.opts.getOutputFile().getName().toLowerCase().endsWith( ".gpkg" ) )
+				if(!this.opts.getOutputFile().getName().toLowerCase().endsWith(".gpkg"))
 				{
 					this.outputAdapter = new TMSTileStoreAdapter();
 					return true;
@@ -335,9 +335,9 @@ public class HeadlessOptionsValidator
 				return false;
 			}
 		}
-		catch( final RuntimeException error )
+		catch(final RuntimeException error)
 		{
-			this.logger.log( Level.SEVERE, "Error: Exception while validating TMS output. " + error.getMessage() );
+			this.logger.log(Level.SEVERE, "Error: Exception while validating TMS output. " + error.getMessage());
 			return false;
 		}
 	}
