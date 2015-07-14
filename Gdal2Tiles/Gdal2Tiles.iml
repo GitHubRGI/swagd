@@ -13,6 +13,7 @@
     <orderEntry type="module" module-name="DataStore" />
     <orderEntry type="module" module-name="GeoPackage" />
     <orderEntry type="library" name="Maven: org.xerial:sqlite-jdbc:3.8.7" level="project" />
+    <orderEntry type="library" name="Maven: args4j:args4j:2.32" level="project" />
     <orderEntry type="library" name="Maven: org.osgeo:gdal:1.11.1" level="project" />
     <orderEntry type="library" name="Maven: xerces:xercesImpl:2.11.0" level="project" />
     <orderEntry type="library" name="Maven: xml-apis:xml-apis:1.4.01" level="project" />

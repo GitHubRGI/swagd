@@ -48,7 +48,6 @@ local.properties
 .settings/
 *.gpkg
 *.gpkg-journal
-
 # Ignore coverity scan folder
 cov-int
 
@@ -66,6 +65,7 @@ Android/gen
 .idea/.name
 .idea/copyright/
 .idea/libraries/
+settings.txt
 settings.txt
 out/
 

@@ -20,6 +20,7 @@
     <orderEntry type="library" name="Maven: org.openstreetmap:JMapViewer:1.05" level="project" />
     <orderEntry type="module" module-name="GeoPackage" />
     <orderEntry type="library" name="Maven: org.xerial:sqlite-jdbc:3.8.7" level="project" />
+    <orderEntry type="library" name="Maven: args4j:args4j:2.32" level="project" />
     <orderEntry type="module" module-name="Common" />
     <orderEntry type="module" module-name="DataStore" />
     <orderEntry type="module" module-name="Packager" />
