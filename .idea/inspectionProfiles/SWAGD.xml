@@ -959,7 +959,7 @@
       <option name="ignoreLazyOperators" value="true" />
       <option name="ignoreObscureOperators" value="false" />
     </inspection_tool>
-    <inspection_tool class="ResultOfObjectAllocationIgnored" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="ResultOfObjectAllocationIgnored" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="ResultSetIndexZero" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ReturnFromFinallyBlock" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ReturnNull" enabled="true" level="ERROR" enabled_by_default="true">
@@ -1145,7 +1145,7 @@
     <inspection_tool class="SystemExit" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="SystemGC" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="SystemGetenv" enabled="false" level="ERROR" enabled_by_default="false" />
-    <inspection_tool class="SystemOutErr" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="SystemOutErr" enabled="true" level="ERROR" enabled_by_default="false">
       <scope name="Tests" level="ERROR" enabled="false" />
     </inspection_tool>
     <inspection_tool class="SystemProperties" enabled="false" level="ERROR" enabled_by_default="false" />
@@ -1293,7 +1293,7 @@
       <option name="ignoreReferencesToLocalInnerClasses" value="false" />
     </inspection_tool>
     <inspection_tool class="UnqualifiedMethodAccess" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="UnqualifiedStaticUsage" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="UnqualifiedStaticUsage" enabled="false" level="ERROR" enabled_by_default="false">
       <option name="m_ignoreStaticFieldAccesses" value="false" />
       <option name="m_ignoreStaticMethodCalls" value="false" />
       <option name="m_ignoreStaticAccessFromStaticContext" value="false" />

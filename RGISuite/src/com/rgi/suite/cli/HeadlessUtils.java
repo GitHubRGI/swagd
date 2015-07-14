@@ -21,7 +21,7 @@ public final class HeadlessUtils
 	 */
 	private static ImageWriter getImageWriter(final MimeType imageFormat)
 	{
-		return ImageIO.getImageWritersByMIMEType( imageFormat.toString() )
+		return ImageIO.getImageWritersByMIMEType(imageFormat.toString())
 					  .next();
 	}
 
@@ -33,18 +33,18 @@ public final class HeadlessUtils
 	public static ImageWriteParam getImageWriteParameter(final int quality, final String compressionType,
 														 final MimeType imageFormat)
 	{
-		final ImageWriteParam imageWriteParameter = HeadlessUtils.getImageWriter( imageFormat )
+		final ImageWriteParam imageWriteParameter = HeadlessUtils.getImageWriter(imageFormat)
 																 .getDefaultWriteParam();
-		final Float compressionQualityValue = (float) ( ( quality ) / 100.00 );
-		if( compressionType != null
-			&& imageWriteParameter.canWriteCompressed() )
+		final Float compressionQualityValue = (float)((quality) / 100.00);
+		if(compressionType != null
+		   && imageWriteParameter.canWriteCompressed())
 		{
 			imageWriteParameter
-					.setCompressionMode( ImageWriteParam.MODE_EXPLICIT );
-			imageWriteParameter.setCompressionType( compressionType.toUpperCase() );
+					.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			imageWriteParameter.setCompressionType(compressionType.toUpperCase());
 
 			imageWriteParameter
-					.setCompressionQuality( compressionQualityValue );
+					.setCompressionQuality(compressionQualityValue);
 			return imageWriteParameter;
 		}
 		return null;

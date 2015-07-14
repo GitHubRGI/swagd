@@ -16,20 +16,20 @@ public class TMSTileStoreAdapter implements HeadlessTileStoreAdapter
 	@Override
 	public TileStoreReader getReader(final HeadlessOptions opts)
 	{
-		final CoordinateReferenceSystem crs = new CoordinateReferenceSystem( "EPSG", opts.getInputSrs() );
-		return new TmsReader( crs, opts.getInputFile().toPath() );
+		final CoordinateReferenceSystem crs = new CoordinateReferenceSystem("EPSG", opts.getInputSrs());
+		return new TmsReader(crs, opts.getInputFile().toPath());
 	}
 
 	@Override
 	public TileStoreWriter getWriter(final HeadlessOptions opts, final TileStoreReader reader)
 	{
-		final CoordinateReferenceSystem crs = new CoordinateReferenceSystem( "EPSG", opts.getOutputSrs() );
-		return new TmsWriter( crs,
-							  opts.getOutputFile().toPath(),
-							  opts.getImageFormat(),
-							  HeadlessUtils.getImageWriteParameter( opts.getCompressionQuality(),
-																	opts.getCompressionType(),
-																	opts.getImageFormat() ) );
+		final CoordinateReferenceSystem crs = new CoordinateReferenceSystem("EPSG", opts.getOutputSrs());
+		return new TmsWriter(crs,
+							 opts.getOutputFile().toPath(),
+							 opts.getImageFormat(),
+							 HeadlessUtils.getImageWriteParameter(opts.getCompressionQuality(),
+																  opts.getCompressionType(),
+																  opts.getImageFormat()));
 
 	}
 }

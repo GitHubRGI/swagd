@@ -12,6 +12,7 @@ public interface HeadlessTileStoreAdapter
 {
 	/**
 	 * returns a tile store reader
+	 *
 	 * @param opts
 	 * @return Tile store reader
 	 */
@@ -19,7 +20,8 @@ public interface HeadlessTileStoreAdapter
 
 	/**
 	 * returns a tile store writer
-	 * @param opts options for the writer
+	 *
+	 * @param opts   options for the writer
 	 * @param reader reader to base the writer off of
 	 * @return tile store writer
 	 */
