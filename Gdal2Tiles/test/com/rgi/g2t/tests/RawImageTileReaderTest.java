@@ -20,10 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
+//@formatter:off
 package com.rgi.g2t.tests;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -34,7 +35,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.zip.DataFormatException;
+import java.util.stream.Stream;import java.util.zip.DataFormatException;
 
 import javax.imageio.ImageIO;
 import javax.naming.OperationNotSupportedException;
@@ -44,6 +45,7 @@ import org.gdal.gdal.ColorTable;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.junit.Test;
+
 
 import utility.GdalUtility;
 
@@ -82,9 +84,9 @@ public class RawImageTileReaderTest
     {
         final Dataset dataset = GdalUtility.open(rawData);
         final Dimensions<Integer> tileDimensions = new Dimensions<>(256, 256);
-        try (final RawImageTileReader reader = new RawImageTileReader(null, dataset, tileDimensions, null, null))
+        try (final RawImageTileReader ignored = new RawImageTileReader(null, dataset, tileDimensions, null, null))
         {
-            // An exception should be thrown
+            fail("Expected RawImageTileReader to throw an IllegalArgumentException.");
         }
         finally
         {
@@ -102,9 +104,9 @@ public class RawImageTileReaderTest
         final Dataset dataset = GdalUtility.open(rawData);
         final Dimensions<Integer> tileDimensions = new Dimensions<>(256, 256);
 
-        try (final RawImageTileReader reader = new RawImageTileReader(new File("S"), dataset, tileDimensions, null, null))
+        try (final RawImageTileReader ignored = new RawImageTileReader(new File("S"), dataset, tileDimensions, null, null))
         {
-            // An exception should be thrown
+            fail("Expected RawImageTileReader to throw an IllegalArgumentException.");
         }
         finally
         {
@@ -120,9 +122,9 @@ public class RawImageTileReaderTest
     public void constructorIllegalArgumentException3() throws TileStoreException
     {
         final Color color = Color.BLUE;
-        try (final RawImageTileReader reader = new RawImageTileReader(rawData, null, color))
+        try (final RawImageTileReader ignored = new RawImageTileReader(rawData, null, color))
         {
-            // An exception should be thrown
+            fail("Expected RawImageTileReader to throw an IllegalArgumentException.");
         }
     }
 
@@ -137,9 +139,9 @@ public class RawImageTileReaderTest
         final Dataset dataset = gdal.GetDriverByName("MEM").Create("test", 12, 23, 0);
         final Dimensions<Integer> tileDimensions = new Dimensions<>(256, 256);
 
-        try (final RawImageTileReader reader = new RawImageTileReader(rawData, dataset, tileDimensions, null, null))
+        try (final RawImageTileReader ignored = new RawImageTileReader(rawData, dataset, tileDimensions, null, null))
         {
-            // An exception should be thrown
+            fail("Expected RawImageTileReader to throw an IllegalArgumentException.");
         }
         finally
         {
@@ -158,9 +160,9 @@ public class RawImageTileReaderTest
         final Dataset dataset = gdal.GetDriverByName("MEM").Create("test", 12, 23, 1);
         final Dimensions<Integer> tileDimensions = new Dimensions<>(256, 256);
 
-        try (final RawImageTileReader reader = new RawImageTileReader(rawData, dataset, tileDimensions, null, null))
+        try (final RawImageTileReader ignored = new RawImageTileReader(rawData, dataset, tileDimensions, null, null))
         {
-            // An exception should be thrown
+            fail("Expected RawImageTileReader to throw an IllegalArgumentException.");
         }
         finally
         {
@@ -183,9 +185,9 @@ public class RawImageTileReaderTest
 
         final Dimensions<Integer> tileDimensions = new Dimensions<>(256, 256);
 
-        try (final RawImageTileReader reader = new RawImageTileReader(rawData, dataset, tileDimensions, null, null))
+        try (final RawImageTileReader ignored = new RawImageTileReader(rawData, dataset, tileDimensions, null, null))
         {
-            // An exception should be thrown
+            fail("Expected RawImageTileReader to throw an IllegalArgumentException.");
         }
         finally
         {
@@ -584,7 +586,7 @@ public class RawImageTileReaderTest
      */
     @SuppressWarnings("static-method")
     @Test
-    public void testGetCrsCoordinate2() throws TileStoreException, DataFormatException
+    public void testTileGetCrsCoordinate() throws TileStoreException, DataFormatException
     {
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
 
@@ -670,9 +672,32 @@ public class RawImageTileReaderTest
     public void testGetImage1() throws TileStoreException, DataFormatException, IOException
     {
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
-        final CoordinateReferenceSystem crs = new CoordinateReferenceSystem("WGS84 / Web Mercator", "EPSG", 3857);
 
-        //Create expected TileMatrixDimensions
+        try(final RawImageTileReader reader = new RawImageTileReader(rawData, tileSize, Color.BLACK, null))
+        {
+            final TileHandle handle = reader.stream()
+                                            .filter(tile -> tile.getColumn() == 32627 && tile.getRow() == 224798)
+                                            .findFirst()
+                                            .get();
+
+            BufferedImage image = ImageIO.read(new File("224798.png"));
+
+            assertTrue("RawImageTileHandle method getImage did not return the correct image.",
+                       bufferedImagesEqual(image, handle.getImage()));
+        }
+    }
+
+        /**
+     * Tests RawImageTileHandle getImage when
+     * the image needs to be read from cached tiles
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void testGetImage2() throws TileStoreException, DataFormatException, IOException
+    {
+        final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
+
+        /* Get the maximum zoom level */
         final Dataset data = GdalUtility.open(rawData);
         final TileScheme tileScheme = new ZoomTimesTwo(0,31,1,1);
         final CrsProfile profile = CrsProfileFactory.create(new CoordinateReferenceSystem("EPSG", 3395));
@@ -683,18 +708,65 @@ public class RawImageTileReaderTest
                                                                                                     profile,
                                                                                                     TileOrigin.LowerLeft);
 
-        final int minimumZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+        final int maxZoom = GdalUtility.getMaximalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
 
 
-        try(final RawImageTileReader reader = new RawImageTileReader(rawData, tileSize, Color.BLACK, crs))
+        try(final RawImageTileReader reader = new RawImageTileReader(rawData, tileSize, Color.BLACK, null))
         {
-            final TileHandle handle = reader.stream(minimumZoom).findFirst().get();
-            final BufferedImage image = ImageIO.read(new File("base1.png"));
+           /* Cache all tile images for the base zoom level */
+           reader.stream()
+                 .filter(tile -> tile.getZoomLevel() == maxZoom)
+                 .forEach(tile->{ try
+                                  {
+                                     tile.getImage();
+                                  }
+                                  catch (TileStoreException e)
+                                  {
+                                      throw new RuntimeException(e);
+                                  }});
 
-            assertTrue("RawImageTileHandle method getImage did not read the image correctly.",
-                       bufferedImagesEqual(image, handle.getImage()));
+           final TileHandle handle = reader.stream()
+                                           .filter(tile -> tile.getColumn() == 16313 && tile.getRow() == 112398)
+                                           .findAny()
+                                           .get();
+
+           BufferedImage image = ImageIO.read(new File("112398.png"));
+
+           assertTrue("RawImageTileHandle method getImage did not return the correct image.",
+                      bufferedImagesEqual(image, handle.getImage()));
+        }
+        finally
+        {
+            data.delete();
         }
     }
+
+    /**
+     * Tests RawImageTileHandle toString method
+     */
+    @SuppressWarnings("static-method")
+    @Test
+    public void testToString() throws TileStoreException, DataFormatException, IOException
+    {
+        final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
+
+        try(final RawImageTileReader reader = new RawImageTileReader(rawData, tileSize, Color.BLACK, null))
+        {
+            final TileHandle handle = reader.stream()
+                                            .filter(tile -> tile.getColumn() == 32627 && tile.getRow() == 224798 && tile.getZoomLevel() == 18)
+                                            .findFirst()
+                                            .get();
+
+            final String expected = "18/32627/224798";
+            final String returned = handle.toString();
+
+            assertTrue(String.format("RawImageTileHandle method toString did not return the correct String, %s was returned, but %s was expected.",
+                                     returned,
+                                     expected),
+                       returned.equals(expected));
+        }
+    }
+
 
     /**
      * Compares two BufferedImages and determines if they are equal
