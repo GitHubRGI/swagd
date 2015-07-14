@@ -1,7 +1,4 @@
 language: java
-env:
-  global:
-   - secure: "WIAl49jT9jhp+1COTf7PAkn9SLsdKufzSqV5xDO4UiOHYpSJVunoPNWI2H/UdsWzznrHlQeZBpftrJ2ygZRMi0USt2mEUrA4V8s1teYKdxRUzWAzx2IePAwcwLVuAR/3/qYy7bpGeoyLHOsOw3dcP3A+gFdJaXeHeWh7bU02zG0="
 jdk:
     - oraclejdk8
 install:
@@ -11,15 +8,6 @@ script:
     - mvn test
 after_success:
     - mvn clean cobertura:cobertura coveralls:report
-addons:
-  coverity_scan:
-    project:
-      name: "GitHubRGI/swagd"
-      description: "Build submitted via Travis CI"
-    notification_email: build@rgi-corp.com
-    build_command_prepend: "mvn clean"
-    build_command:   "mvn -DskipTests=true compile"
-    branch_pattern: coverity_scan
 cache:
     directories:
         - $HOME/.m2
