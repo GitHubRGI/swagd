@@ -5,8 +5,6 @@ env:
 jdk:
     - oraclejdk8
 install:
-    - export COVERALLS_SERVICE_NAME=travis-pro
-    - export COVERALLS_REPO_TOKEN=D2hjjqELJcAAyA8sv1WgOZ1GENG27WXoR
     - ./install-deps-linux.sh
     - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script:
