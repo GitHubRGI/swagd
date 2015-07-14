@@ -6,7 +6,6 @@ A Java-based application for converting geospatial images into tiles, packaging 
 [![Build Status](https://magnum.travis-ci.com/GitHubRGI/swagd.svg?token=sMDZhk629WtJNL1nWEEK&branch=master)](https://magnum.travis-ci.com/GitHubRGI/swagd)
 [![Coverage Status](https://coveralls.io/repos/GitHubRGI/swagd/badge.svg?branch=master&service=github&t=T5is6i)](https://coveralls.io/github/GitHubRGI/swagd?branch=master)
 [![Stories in Ready](https://badge.waffle.io/githubrgi/swagd.svg?label=ready&title=Ready)](http://waffle.io/githubrgi/swagd)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/3993/badge.svg)](https://scan.coverity.com/projects/3993)
 
 ## Release 2.0 Progress
 [See current status towards Release 2.0 here.](https://github.com/GitHubRGI/swagd/milestones/Release%202.0)
