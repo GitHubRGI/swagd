@@ -86,6 +86,7 @@
                                 <excludes>com/rgi/packager/**/*.class</excludes>
                                 <excludes>com/rgi/verifiertool/**/*.class</excludes>
                                 <excludes>com/rgi/store/tiles/tilecluster/**/*.class</excludes>
+                                <excludes>com/rgi/geopackage/extensions/ExtensionsVerifier*.class</excludes>
                             </excludes>
                         </instrumentation>
                     </configuration>
