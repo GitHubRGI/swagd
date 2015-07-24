@@ -30,6 +30,38 @@ import java.nio.ByteOrder;
 
 public class GeoPackageGeometryBinaryHeader
 {
+    public GeoPackageGeometryBinaryHeader(final byte[] bytes)
+    {
+        if(bytes == null)
+        {
+            throw new IllegalArgumentException("Byte buffer may not be null");
+        }
+
+        if(bytes.length < 8)
+        {
+            throw new IllegalArgumentException("Byte buffer must be at least 8 bytes to contain a valid GeoPackage geometry binary header");
+        }
+
+        if(bytes[0] != magic[0] ||
+           bytes[1] != magic[1])
+        {
+            throw new IllegalArgumentException("The first two bytes of a GeoPackage geometry binary header must be 'G', 'P'");
+        }
+
+        this.version = bytes[2];
+        this.flags   = bytes[3];
+
+        // read flags
+        this.binaryType = GeoPackageGeometryBinaryType.type(bytes[3]);
+        this.empty      = ((bytes[3] << 4) & 1) == 1;
+        this.byteOrder  =
+
+        final ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+
+        byteBuffer.
+
+    }
+
     public GeoPackageGeometryBinaryHeader(final byte                         version,
                                           final GeoPackageGeometryBinaryType binaryType,
                                           final boolean                      empty,

@@ -23,6 +23,9 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import com.rgi.geopackage.features.GeoPackageGeometryBinaryHeader;
 
 /**
@@ -40,15 +43,19 @@ public abstract class Geometry
 
     }
 
-    public byte[] getStandardBinary()
-    {
-
-    }
+    abstract public byte[] getStandardBinary();
 
     public abstract String getGeometryType();
 
-    public static Geometry fromBytes(final byte[] bytes)
+    public static Geometry fromBytes(final byte[] bytes) throws IOException
     {
+        if(bytes == null)
+        {
+            throw new IllegalArgumentException("Byte buffer may not be null");
+        }
 
+        final ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+
+        byteBuffer.
     }
 }

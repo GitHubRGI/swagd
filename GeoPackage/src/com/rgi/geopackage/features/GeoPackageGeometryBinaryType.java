@@ -42,6 +42,11 @@ public enum GeoPackageGeometryBinaryType
         return this.bitMask;
     }
 
+    public static GeoPackageGeometryBinaryType type(final byte flags)
+    {
+        return ((flags >> 5) & 1) == 0 ? Standard : Extended;   // Check to see if the 5th bit is unset. unset -> Standard, set -> Extended
+    }
+
     private GeoPackageGeometryBinaryType(final int bitMask)
     {
         this.bitMask = bitMask;

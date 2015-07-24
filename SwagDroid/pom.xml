@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>swagdroid</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
+	<version>1.0.0-SNAPSHOT</version>
 
 	<properties>
 		<jacoco.version>0.7.2.201409121644</jacoco.version>
@@ -186,6 +186,10 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.18.1</version>
+                <configuration>
+                  <jvm>C:/Program Files/Java/jdk1.8.0_45/bin/java</jvm>
+                  <forkMode>once</forkMode>
+                </configuration>
 			</plugin>
 
 		</plugins>
