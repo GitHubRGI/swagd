@@ -158,7 +158,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     {
         if(network == null)
         {
-            throw new IllegalArgumentException("The given network is null");
+            throw new IllegalArgumentException("The network may not be null");
         }
 
         final String query = String.format("SELECT COUNT(*) FROM %s;",
@@ -183,7 +183,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     {
         if(network == null)
         {
-            throw new IllegalArgumentException("The given network is null");
+            throw new IllegalArgumentException("The network may not be null");
         }
 
         final String query = String.format("Select COUNT(*) from(select from_node from %s UNION select to_node from %s);",
@@ -1290,50 +1290,24 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     }
 
     /**
-     * Returns the node identifier of the closest node to a point
+     * Exposes the Edge constructor to subclasses of this class
      *
-     * @param xDescription
-     *             Attribute description of the horizontal component of a
-     *             coordinate
-     * @param x
-     *             Horizontal component of a coordinate
-     * @param yDescription
-     *             Attribute description of the vertical component of a
-     *             coordinate
-     * @param y
-     *             Vertical component of a coordinate
-     * @return Node identifier of the closest node to a point
-     *
-     * @deprecated This is very 'routing' specific, and therefore does not
-     * belong in the network plug-in. It'll get moved to a routing specific
-     * plug-in when time allows.
-     *
-     * @throws SQLException
-     *             if there is a database error
+     * @param identifier
+     *             Unique identifier
+     * @param from
+     *             The origin node of an edge
+     * @param to
+     *             The destination node of an edge
+     * @return a new edge
      */
-    @Deprecated
-    public Integer getClosestNode(final AttributeDescription xDescription,
-                                  final double               x,
-                                  final AttributeDescription yDescription,
-                                  final double               y) throws SQLException
+    protected static Edge createEdge(final int identifier, final int from, final int to)
     {
-        final Pair<String, List<String>> schema = getSchema(AttributedType.Node, xDescription, yDescription);
-
-        final String distanceQuery = String.format("SELECT %s, MIN(((%2$s - %3$f) * (%2$s - %3$f)) + ((%4$s - %5$s) * (%4$s - %5$s))) as distSqrd FROM %6$s;",
-                                                   "node_id",
-                                                   xDescription.getName(),
-                                                   x,
-                                                   yDescription.getName(),
-                                                   y,
-                                                   getNodeAttributesTableName(schema.getLeft()));
-
-        return JdbcUtility.selectOne(this.databaseConnection,
-                                     distanceQuery,
-                                     null,
-                                     resultSet -> resultSet.getInt(1));
+        return new Edge(identifier,
+                        from,
+                        to);
     }
 
-    private static Pair<String, List<String>> getSchema(final AttributedType          attributedType,
+    protected static Pair<String, List<String>> getSchema(final AttributedType          attributedType,
                                                         final AttributeDescription... attributeDescriptions)
     {
         if(attributeDescriptions == null || attributeDescriptions.length == 0)

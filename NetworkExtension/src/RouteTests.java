@@ -191,16 +191,16 @@ public class RouteTests
                                                                        network,
                                                                        startNode,
                                                                        endNode,
-                                                                       (ThrowingFunction<Edge, Double>)(edge) -> {
-                                                                                                                     final int key = edge.getIdentifier();
-                                                                                                                     if(distanceCache.containsKey(key))
-                                                                                                                     {
-                                                                                                                         return distanceCache.get(key);
-                                                                                                                     }
-                                                                                                                     final Double cost = networkExtension.getEdgeAttribute(edge, distanceAttribute);
-                                                                                                                     distanceCache.put(key, cost);
-                                                                                                                     return cost;
-//                                                                                                                     return networkExtension.getEdgeAttribute(edge, distanceAttribute);
+                                                                       (ThrowingFunction<Edge, Double>)(edge) -> { final int key = edge.getIdentifier();
+
+                                                                                                                   if(distanceCache.containsKey(key))
+                                                                                                                   {
+                                                                                                                       return distanceCache.get(key);
+                                                                                                                   }
+                                                                                                                   final Double cost = networkExtension.getEdgeAttribute(edge, distanceAttribute);
+                                                                                                                   distanceCache.put(key, cost);
+                                                                                                                   return cost;
+//                                                                                                                   return networkExtension.getEdgeAttribute(edge, distanceAttribute);
                                                                                                                  },
                                                                        (startIdentifier, endIdentifier) -> { try
                                                                                                                 {
