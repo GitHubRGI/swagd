@@ -1300,7 +1300,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      *             The destination node of an edge
      * @return a new edge
      */
-    protected static Edge createEdge(final int identifier, final int from, final int to)
+    public static Edge createEdge(final int identifier, final int from, final int to)
     {
         return new Edge(identifier,
                         from,
@@ -1308,7 +1308,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     }
 
     protected static Pair<String, List<String>> getSchema(final AttributedType          attributedType,
-                                                        final AttributeDescription... attributeDescriptions)
+                                                          final AttributeDescription... attributeDescriptions)
     {
         if(attributeDescriptions == null || attributeDescriptions.length == 0)
         {
