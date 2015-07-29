@@ -1307,8 +1307,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                         to);
     }
 
-    protected static Pair<String, List<String>> getSchema(final AttributedType          attributedType,
-                                                          final AttributeDescription... attributeDescriptions)
+    private static Pair<String, List<String>> getSchema(final AttributedType          attributedType,
+                                                        final AttributeDescription... attributeDescriptions)
     {
         if(attributeDescriptions == null || attributeDescriptions.length == 0)
         {
