@@ -86,11 +86,25 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         return Scope.ReadWrite;
     }
 
+    /**
+     * @return the {@link GeoPackageNetworkExtension} object used by the
+     *             routing extension
+     */
     public GeoPackageNetworkExtension getNetworkExtension()
     {
         return this.networkExtension;
     }
 
+    /**
+     * Gets a specific routing network by table name, or null if no routing
+     * network exists with that table name.
+     *
+     * @param networkTableName
+     *             Name of the routing network table
+     * @return handle to the routing network
+     * @throws SQLException
+     *             if there is a database error
+     */
     public RoutingNetworkDescription getRoutingNetworkDescription(final String networkTableName) throws SQLException
     {
         if(networkTableName == null)
@@ -126,6 +140,14 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                                                   });
     }
 
+    /**
+     * Gets the routing networks from a GeoPackage
+     *
+     * @return Collection of the routing descriptions of networks contained in
+     *             the GeoPackage
+     * @throws SQLException
+     *             if there is a database error
+     */
     public List<RoutingNetworkDescription> getRoutingNetworkDescriptions() throws SQLException
     {
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, RoutingNetworkDescriptionsTableName))
@@ -257,7 +279,69 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
     }
 
     /**
-     * Returns edges that are within a circle
+     * Applies a callback to edges that are "close to" a specified radial area
+     *
+     * @param routingNetwork
+     *             Routing network being searched for the closest node
+     * @param centerX
+     *             x coordinate for the center of the circle bounds
+     * @param centerY
+     *             y coordinate for the center of the circle bounds
+     * @param radius
+     *             the radius for the circle bounds
+     * @param visitor
+     *             Callback applied to each edge
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public void visitEdgesCloseToCircle(final RoutingNetworkDescription routingNetwork,
+                                        final double                    centerX,
+                                        final double                    centerY,
+                                        final double                    radius,
+                                        final Consumer<Edge>            visitor) throws SQLException
+    {
+        if(routingNetwork == null)
+        {
+            throw new IllegalArgumentException("Routing network description may not be null");
+        }
+
+        if(visitor == null)
+        {
+            throw new IllegalArgumentException("The visitor callback may not be null");
+        }
+
+        final String networkTableName               = routingNetwork.getNetwork().getTableName();
+        final String networkNodeAttributesTableName = GeoPackageNetworkExtension.getNodeAttributesTableName(networkTableName);
+        final String longitudeName                  = routingNetwork.getLongitudeDescription().getName();
+        final String latitudeName                   = routingNetwork.getLatitudeDescription() .getName();
+        final String distanceName                   = routingNetwork.getDistanceDescription() .getName();
+
+        final String edgeQuery = String.format("SELECT id, from_node, to_node " +
+                                               "FROM %1$s "+
+                                               "WHERE  EXISTS "+
+                                                      "(SELECT NULL "+
+                                                      "FROM %2$s "+
+                                                      "WHERE (node_id = from_node OR node_id = to_node) "+
+                                                      "AND (((%3$s - %5$f) * (%3$s - %5$f) + (%4$s - %6$f) * (%4$s - %6$f)) - %7$f) <= (%8$s*%8$s))",
+                                               networkTableName,               // %1$s
+                                               networkNodeAttributesTableName, // %2$s
+                                               longitudeName,                  // %3$s
+                                               latitudeName,                   // %4$s
+                                               centerX,                        // %5$f
+                                               centerY,                        // %6$f
+                                               radius*radius,                  // %7$f
+                                               distanceName);                  // %8$s
+
+        JdbcUtility.forEach(this.databaseConnection,
+                            edgeQuery,
+                            null,
+                            resultSet -> visitor.accept(GeoPackageNetworkExtension.createEdge(resultSet.getInt(1),
+                                                                                              resultSet.getInt(2),
+                                                                                              resultSet.getInt(3))));
+    }
+
+    /**
+     * Applies a callback to edges that intersect with a specified radial area
      *
      * @param routingNetwork
      *             Routing network being searched for the closest node
@@ -278,50 +362,122 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                                    final double                    radius,
                                    final Consumer<Edge>            visitor) throws SQLException
     {
-        // TODO
-        // TODO
-        // TODO
-        // TODO
-        // TODO
-        // TODO
-        // https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+        if(routingNetwork == null)
+        {
+            throw new IllegalArgumentException("Routing network description may not be null");
+        }
 
-//        if(routingNetwork == null)
-//        {
-//            throw new IllegalArgumentException("Routing network description may not be null");
-//        }
-//
-//        if(visitor == null)
-//        {
-//            throw new IllegalArgumentException("The visitor callback may not be null");
-//        }
-//
-//        final String networkTableName = routingNetwork.getNetwork().getTableName();
-//
-//        final String edgeQuery = String.format("SELECT %1$s, %2$s, %3$s " +
-//                                               "FROM %4$s "+
-//                                               "WHERE  EXISTS "+
-//                                                      "(SELECT NULL "+
-//                                                      "FROM %5$s "+
-//                                                      "WHERE (node_id = %2$s OR node_id = %3$s) "+
-//                                                      "AND (((longitude - %6$f)*(longitude-%6$f) + (latitude-%7$f)*(latitude-%7$f)) - (%8$f*%8$f)) <= (length*length))",  // TODO DON'T HARDCODE 'latitude' AND 'longitude' !!!
-//                                               "id",             // %1$s
-//                                               "from_node",      // %2$s
-//                                               "to_node",        // %3$s
-//                                               networkTableName, // %4$s
-//                                               GeoPackageNetworkExtension.getNodeAttributesTableName(networkTableName), // %5$s
-//                                               "node_id",
-//                                               "",
-//                                               centerX,          // %6$f
-//                                               centerY,          // %7$f
-//                                               radius);          // %8$s
-//
-//        JdbcUtility.forEach(this.databaseConnection,
-//                            edgeQuery,
-//                            null,
-//                            resultSet -> visitor.accept(GeoPackageNetworkExtension.createEdge(resultSet.getInt(1),
-//                                                                                              resultSet.getInt(2),
-//                                                                                              resultSet.getInt(3))));
+        if(visitor == null)
+        {
+            throw new IllegalArgumentException("Visitor callback may not be null");
+        }
+
+        if(radius < 0.0)
+        {
+            throw new IllegalArgumentException("Radius may not be less than 0");
+        }
+
+        if(radius > Math.sqrt(Double.MAX_VALUE))
+        {
+            throw new IllegalArgumentException("Radius exceeds the square root of the maximum size of a double which will cause a numeric overflow");
+        }
+
+        final String networkTableName               = routingNetwork.getNetwork().getTableName();
+        final String networkNodeAttributesTableName = GeoPackageNetworkExtension.getNodeAttributesTableName(networkTableName);
+        final String longitudeName                  = routingNetwork.getLongitudeDescription().getName();
+        final String latitudeName                   = routingNetwork.getLatitudeDescription() .getName();
+
+        // The following SQL query is asking which edges intersect (partially
+        // or completely) with a circle. It does this by finding the shortest
+        // distance between the circle's center and each edge. If that distance
+        // is less than or equal to the radius of the circle, the two objects
+        // intersect. We operate on square distances because SQLite doesn't
+        // have a square root operation. The algorithm is based on the
+        // pseudocode found here: https://stackoverflow.com/a/6853926/16434
+        //
+        // function pDistance(x, y, x1, y1, x2, y2)
+        // {
+        //     var A = x - x1;
+        //     var B = y - y1;
+        //     var C = x2 - x1;
+        //     var D = y2 - y1;
+        //
+        //     var dot = A * C + B * D;
+        //     var len_sq = C * C + D * D;
+        //     var param = -1;
+        //     if(len_sq != 0) //in case of 0 length line
+        //         param = dot / len_sq;
+        //
+        //     var xx, yy;
+        //
+        //     if(param < 0)
+        //     {
+        //       xx = x1;
+        //       yy = y1;
+        //     }
+        //     else if (param > 1)
+        //     {
+        //       xx = x2;
+        //       yy = y2;
+        //     }
+        //     else
+        //     {
+        //       xx = x1 + param * C;
+        //       yy = y1 + param * D;
+        //     }
+        //
+        //     var dx = x - xx;
+        //     var dy = y - yy;
+        //     return Math.sqrt(dx * dx + dy * dy);
+        // }
+
+        // I apologize for how disgusting the whole thing ends up looking.
+
+        final String edgeQuery = String.format("SELECT id, from_node, to_node\n" +
+                                               // Compute "param"
+                                               "FROM (SELECT id, from_node, to_node, x1, y1, x2, y2, c, d,\n" +
+                                                            // "switch" to determine the value of "param"
+                                                            "CASE WHEN x1 = x2 AND y1 = y2\n" +              // points 1 and 2 are the same, so the distance/length between them is 0. don't divide by 0.
+                                                                 "THEN -1\n" +
+                                                                 "ELSE (a * c + b * d) / (c * c + d * d)\n" + // dot / length squared
+                                                                 "END AS param\n" +
+                                                     // Compute a, b, c, d and pass along other properties
+                                                     "FROM (SELECT id, from_node, to_node, x1, y1, x2, y2,\n" +
+                                                                  "(%1$f - x1) AS a,\n" +
+                                                                  "(%2$f - y1) AS b,\n" +
+                                                                  "(  x2 - x1) AS c,\n" +
+                                                                  "(  y2 - y1) AS d\n" +
+                                                           // Select the edge (id, and from/to nodes) as well as the x/y of the from/to nodes
+                                                           "FROM (SELECT id, from_node, to_node,\n" +
+                                                                        "a1.%3$s AS x1,\n" +
+                                                                        "a1.%4$s AS y1,\n" +
+                                                                        "a2.%3$s AS x2,\n" +
+                                                                        "a2.%4$s AS y2\n" +
+                                                                 "FROM %5$s,\n" +
+                                                                      "%6$s AS a1,\n" +
+                                                                      "%6$s AS a2\n" +
+                                                                 "WHERE a1.node_id = %5$s.from_node AND\n" +
+                                                                       "a2.node_id = %5$s.to_node)))\n" +
+                                               // dx = x - xx
+                                               // dy = y - yy
+                                               // distance squared = dx*dx + dy*dy
+                                               "WHERE (param < 0 AND (%1$f - x1) * (%1$f - x1) + (%2$f - y1) * (%2$f - y1) <= %7$f) OR\n" +                                      // xx, yy = x1, y1
+                                                     "(param > 1 AND (%1$f - x2) * (%1$f - x2) + (%2$f - y2) * (%2$f - y2) <= %7$f) OR\n" +                                      // xx, yy = x2, y2
+                                                     "((%1$f - (x1 + param * c)) * (%1$f - (x1 + param * c)) + (%2$f - (y1 + param * d)) * (%2$f - (y1 + param * d)) <= %7$f);", // xx, yy = (x1 + param * c), (y1 + param * d)
+                                               centerX,                         // %1$f
+                                               centerY,                         // %2$f
+                                               longitudeName,                   // %3$s
+                                               latitudeName,                    // %4$s
+                                               networkTableName,                // %5$s
+                                               networkNodeAttributesTableName,  // %6$s
+                                               radius*radius);                  // %7$f
+
+        JdbcUtility.forEach(this.databaseConnection,
+                            edgeQuery,
+                            null,
+                            resultSet -> visitor.accept(GeoPackageNetworkExtension.createEdge(resultSet.getInt(1),
+                                                                                              resultSet.getInt(2),
+                                                                                              resultSet.getInt(3))));
     }
 
     /**

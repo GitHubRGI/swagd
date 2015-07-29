@@ -51,9 +51,36 @@ public class RoutingUtility
             final GeoPackageRoutingExtension routingExtension = gpkg.extensions().getExtensionImplementation(GeoPackageRoutingExtension.class);
             final RoutingNetworkDescription routingNetwork = routingExtension.getRoutingNetworkDescriptions().get(0);
 
-            final Integer closestNode = routingExtension.getClosestNode(routingNetwork, longitude, latitude);
+            //final Integer closestNode = routingExtension.getClosestNode(routingNetwork, longitude, latitude);
+            //System.out.println(closestNode);
 
-            System.out.println(closestNode);
+            final int[] counter = {0};
+
+            long startTime = System.nanoTime();
+
+            routingExtension.visitEdgesInCircle(routingNetwork,
+                                                278991.0,
+                                                4248780.0,
+                                                600.0,
+                                                edge -> ++counter[0]);
+
+            System.out.println(String.format("in circle took %.2f seconds.", (System.nanoTime() - startTime)/1.0e9));
+
+            System.out.println(counter[0]);
+
+            counter[0] = 0;
+
+            startTime = System.nanoTime();
+
+            routingExtension.visitEdgesCloseToCircle(routingNetwork,
+                                                     278991.0,
+                                                     4248780.0,
+                                                     600.0,
+                                                     edge -> ++counter[0]);
+
+            System.out.println(String.format("'close to' circle took %.2f seconds.", (System.nanoTime() - startTime)/1.0e9));
+
+            System.out.println(counter[0]);
         }
         catch(ClassNotFoundException | ConformanceException | IOException | SQLException | BadImplementationException e)
         {
