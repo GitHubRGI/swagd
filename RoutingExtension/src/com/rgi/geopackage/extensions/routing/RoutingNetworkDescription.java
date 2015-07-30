@@ -11,10 +11,19 @@ import com.rgi.geopackage.extensions.network.Network;
 public class RoutingNetworkDescription
 {
     /**
+     * Constructor
+     *
      * @param network
+     *             Routing network being searched for the closest node
      * @param longitudeDescription
+     *             Routing network attribute description for the horizontal
+     *             portion of a node's coordinate
      * @param latitudeDescription
+     *             Routing network attribute description for the vertical
+     *             portion of a node's coordinate
      * @param distanceDescription
+     *             Routing network attribute description for the distance
+     *             between an edge's two nodes
      */
     public RoutingNetworkDescription(final Network              network,
                                      final AttributeDescription longitudeDescription,

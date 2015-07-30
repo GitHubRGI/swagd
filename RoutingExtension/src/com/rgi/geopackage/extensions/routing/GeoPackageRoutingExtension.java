@@ -178,6 +178,24 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                                                });
     }
 
+    /**
+     * Associates a routing description with a network
+     *
+     * @param network
+     *             Routing network being searched for the closest node
+     * @param longitudeDescription
+     *             Routing network attribute description for the horizontal
+     *             portion of a node's coordinate
+     * @param latitudeDescription
+     *             Routing network attribute description for the vertical
+     *             portion of a node's coordinate
+     * @param distanceDescription
+     *             Routing network attribute description for the distance
+     *             between an edge's two nodes
+     * @return A handle to the newly created {@link RoutingNetworkDescription}
+     * @throws SQLException
+     *             if there is a database error
+     */
     public RoutingNetworkDescription addRoutingNetworkDescription(final Network              network,
                                                                   final AttributeDescription longitudeDescription,
                                                                   final AttributeDescription latitudeDescription,
@@ -201,6 +219,36 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         if(distanceDescription == null)
         {
             throw new IllegalArgumentException("Distance description may not be null");
+        }
+
+        if(longitudeDescription.getAttributedType() != AttributedType.Node)
+        {
+            throw new IllegalArgumentException("Longitude description must refer to a node attribute");
+        }
+
+        if(latitudeDescription.getAttributedType() != AttributedType.Node)
+        {
+            throw new IllegalArgumentException("Latitude description must refer to a node attribute");
+        }
+
+        if(distanceDescription.getAttributedType() != AttributedType.Edge)
+        {
+            throw new IllegalArgumentException("Distance description must refer to an edge attribute");
+        }
+
+        if(!longitudeDescription.getNetworkTableName().equals(network.getTableName()))
+        {
+            throw new IllegalArgumentException("Longitude description must refer to a node attribute");
+        }
+
+        if(!latitudeDescription.getNetworkTableName().equals(network.getTableName()))
+        {
+            throw new IllegalArgumentException("Latitude description must refer to an attribute of the specified network");
+        }
+
+        if(!distanceDescription.getNetworkTableName().equals(network.getTableName()))
+        {
+            throw new IllegalArgumentException("Distance description must refer to an attribute of the specified network");
         }
 
         try
