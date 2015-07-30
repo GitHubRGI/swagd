@@ -89,7 +89,7 @@
       <option name="ignoreTestCases" value="false" />
       <option name="ignoreLibraryOverrides" value="false" />
     </inspection_tool>
-    <inspection_tool class="BadExceptionThrown" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="BadExceptionThrown" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="exceptionsString" value="" />
       <option name="exceptions">
         <value />
@@ -108,7 +108,7 @@
       <option name="ignoreBooleanMethods" value="false" />
       <option name="ignoreInAnnotationInterface" value="true" />
       <option name="onlyWarnOnBaseMethods" value="true" />
-      <option name="questionString" value="is,can,has,should,could,will,shall,check,contains,equals,add,put,remove,startsWith,endsWith" />
+      <option name="questionString" value="is,can,has,should,could,will,shall,check,contains,equals,add,put,remove,startsWith,endsWith,does" />
     </inspection_tool>
     <inspection_tool class="BooleanParameter" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="BooleanVariableAlwaysNegated" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -134,7 +134,7 @@
       <option name="REPORT_FIELDS" value="true" />
     </inspection_tool>
     <inspection_tool class="CastConflictsWithInstanceof" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="CastThatLosesPrecision" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="CastThatLosesPrecision" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoreIntegerCharCasts" value="false" />
     </inspection_tool>
     <inspection_tool class="CastToConcreteClass" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -154,7 +154,7 @@
       <option name="m_limit" value="64" />
     </inspection_tool>
     <inspection_tool class="CheckedExceptionClass" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="ClassComplexity" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="ClassComplexity" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="m_limit" value="80" />
     </inspection_tool>
     <inspection_tool class="ClassCoupling" enabled="true" level="ERROR" enabled_by_default="true">
@@ -241,7 +241,7 @@
     <inspection_tool class="ComparisonOfShortAndChar" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ComparisonToNaN" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ConditionSignal" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="ConditionalExpression" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="ConditionalExpression" enabled="false" level="ERROR" enabled_by_default="false">
       <option name="ignoreSimpleAssignmentsAndReturns" value="false" />
     </inspection_tool>
     <inspection_tool class="ConditionalExpressionWithIdenticalBranches" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -470,7 +470,7 @@
       <option name="m_ignoreForObjectSubclasses" value="false" />
     </inspection_tool>
     <inspection_tool class="ImplicitDefaultCharsetUsage" enabled="false" level="ERROR" enabled_by_default="false" />
-    <inspection_tool class="ImplicitNumericConversion" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="ImplicitNumericConversion" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="ignoreWideningConversions" value="false" />
       <option name="ignoreCharConversions" value="false" />
       <option name="ignoreConstantConversions" value="false" />
@@ -641,7 +641,7 @@
     <inspection_tool class="MathRandomCastToInt" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="MethodCallInLoopCondition" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="MethodCanBeVariableArityMethod" enabled="false" level="ERROR" enabled_by_default="false" />
-    <inspection_tool class="MethodCount" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="MethodCount" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="m_limit" value="30" />
       <option name="ignoreGettersAndSetters" value="true" />
       <option name="ignoreOverridingMethods" value="false" />
@@ -869,7 +869,7 @@
       <option name="m_ignoreSingleCharacterNames" value="false" />
       <option name="m_ignoreOverridesOfLibraryMethods" value="false" />
     </inspection_tool>
-    <inspection_tool class="ParameterNamingConvention" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="ParameterNamingConvention" enabled="true" level="INFO" enabled_by_default="true">
       <option name="m_regex" value="[a-z][A-Za-z\d]*" />
       <option name="m_minLength" value="1" />
       <option name="m_maxLength" value="20" />
@@ -1216,7 +1216,7 @@
     <inspection_tool class="TypeParameterExtendsFinalClass" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="TypeParameterExtendsObject" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="TypeParameterHidesVisibleType" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="TypeParameterNamingConvention" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="TypeParameterNamingConvention" enabled="true" level="INFO" enabled_by_default="true">
       <option name="m_regex" value="[A-Z][A-Za-z\d]*" />
       <option name="m_minLength" value="1" />
       <option name="m_maxLength" value="1" />
@@ -1250,7 +1250,7 @@
     <inspection_tool class="UnnecessaryContinue" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="UnnecessaryDefault" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="UnnecessaryEnumModifier" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="UnnecessaryExplicitNumericCast" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="UnnecessaryExplicitNumericCast" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="UnnecessaryFinalOnLocalVariableOrParameter" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="UnnecessaryFullyQualifiedName" enabled="true" level="ERROR" enabled_by_default="true">
       <option name="m_ignoreJavadoc" value="false" />
