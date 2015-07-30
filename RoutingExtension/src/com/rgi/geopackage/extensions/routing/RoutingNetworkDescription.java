@@ -103,6 +103,12 @@ public class RoutingNetworkDescription
         return this.distanceDescription;
     }
 
+    @Override
+    public String toString()
+    {
+        return this.network.getIdentifier();
+    }
+
     private final Network              network;
     private final AttributeDescription longitudeDescription;
     private final AttributeDescription latitudeDescription;
