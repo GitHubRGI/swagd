@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import routing.RoutingAlgorithms;
-
 import com.rgi.common.util.functional.ThrowingFunction;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.GeoPackage.OpenMode;

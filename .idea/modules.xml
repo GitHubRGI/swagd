@@ -10,6 +10,7 @@
       <module fileurl="file://$PROJECT_DIR$/NetworkExtension/NetworkExtension.iml" filepath="$PROJECT_DIR$/NetworkExtension/NetworkExtension.iml" />
       <module fileurl="file://$PROJECT_DIR$/Packager/Packager.iml" filepath="$PROJECT_DIR$/Packager/Packager.iml" />
       <module fileurl="file://$PROJECT_DIR$/RGISuite/RGISuite.iml" filepath="$PROJECT_DIR$/RGISuite/RGISuite.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RoutingExtension/RoutingExtension.iml" filepath="$PROJECT_DIR$/RoutingExtension/RoutingExtension.iml" />
       <module fileurl="file://$PROJECT_DIR$/SWAGD.iml" filepath="$PROJECT_DIR$/SWAGD.iml" />
       <module fileurl="file://$PROJECT_DIR$/VerifierTool/VerifierTool.iml" filepath="$PROJECT_DIR$/VerifierTool/VerifierTool.iml" />
     </modules>

@@ -1,11 +1,5 @@
 package com.rgi.geopackage.extensions.routing;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Consumer;
-
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.GeoPackageCore;
@@ -20,6 +14,20 @@ import com.rgi.geopackage.extensions.network.Edge;
 import com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension;
 import com.rgi.geopackage.extensions.network.Network;
 import com.rgi.geopackage.utility.DatabaseUtility;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Implementation of the RGI Routing GeoPackage extension
@@ -71,13 +79,13 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
     @Override
     public String getExtensionName()
     {
-        return ExtensionName;
+        return "rgi_routing";
     }
 
     @Override
     public String getDefinition()
     {
-        return ExtensionDefinition;
+        return "definition"; // TODO
     }
 
     @Override
@@ -206,56 +214,32 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Network may not be null");
         }
 
-        if(longitudeDescription == null)
+        if(longitudeDescription == null                                    ||
+           longitudeDescription.getAttributedType() != AttributedType.Node ||
+           !longitudeDescription.getNetworkTableName().equals(network.getTableName()))
         {
-            throw new IllegalArgumentException("Longitude description may not be null");
+            throw new IllegalArgumentException("Longitude description may not be null, it must refer to a node, and must refer to the supplied network");
         }
 
-        if(latitudeDescription == null)
+        if(latitudeDescription == null                                    ||
+           latitudeDescription.getAttributedType() != AttributedType.Node ||
+           !latitudeDescription.getNetworkTableName().equals(network.getTableName()))
         {
-            throw new IllegalArgumentException("Latitude description may not be null");
+            throw new IllegalArgumentException("Latitude description may not be null, it must refer to a node, and must refer to the supplied network");
         }
 
-        if(distanceDescription == null)
+        if(distanceDescription == null                                    ||
+           distanceDescription.getAttributedType() != AttributedType.Edge ||
+           !distanceDescription.getNetworkTableName().equals(network.getTableName()))
         {
-            throw new IllegalArgumentException("Distance description may not be null");
-        }
-
-        if(longitudeDescription.getAttributedType() != AttributedType.Node)
-        {
-            throw new IllegalArgumentException("Longitude description must refer to a node attribute");
-        }
-
-        if(latitudeDescription.getAttributedType() != AttributedType.Node)
-        {
-            throw new IllegalArgumentException("Latitude description must refer to a node attribute");
-        }
-
-        if(distanceDescription.getAttributedType() != AttributedType.Edge)
-        {
-            throw new IllegalArgumentException("Distance description must refer to an edge attribute");
-        }
-
-        if(!longitudeDescription.getNetworkTableName().equals(network.getTableName()))
-        {
-            throw new IllegalArgumentException("Longitude description must refer to a node attribute");
-        }
-
-        if(!latitudeDescription.getNetworkTableName().equals(network.getTableName()))
-        {
-            throw new IllegalArgumentException("Latitude description must refer to an attribute of the specified network");
-        }
-
-        if(!distanceDescription.getNetworkTableName().equals(network.getTableName()))
-        {
-            throw new IllegalArgumentException("Distance description must refer to an attribute of the specified network");
+            throw new IllegalArgumentException("Distance description may not be null, it must refer to an edge, and must refer to the supplied network");
         }
 
         try
         {
             if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, RoutingNetworkDescriptionsTableName))
             {
-                JdbcUtility.update(this.databaseConnection, this.getRoutingNetworkDescriptionCreationSql());
+                JdbcUtility.update(this.databaseConnection, GeoPackageRoutingExtension.getRoutingNetworkDescriptionCreationSql());
             }
 
 
@@ -574,10 +558,149 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                                   resultSet -> resultSet.getInt(1));
     }
 
-    @SuppressWarnings("static-method")
-    protected String getRoutingNetworkDescriptionCreationSql()
+
+    /**
+     * This algorithm will find the shortest path from the starting
+     * node to the ending node
+     *
+     * @param networkExtension
+     *            GeoPackageNetworkExtension containing the network
+     * @param network
+     *            network contain the start and end node
+     * @param start
+     *            starting node
+     * @param end
+     *            ending node
+     * @param edgeCostEvaluator
+     *            cost function for each edge in the path
+     * @param heuristic
+     *            heuristic function for two nodes in the network
+     * @return Optimal path from the start node to the end node
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public static List<Integer> aStar(final GeoPackageNetworkExtension           networkExtension,
+                                      final Network                              network,
+                                      final int                                  start,
+                                      final int                                  end,
+                                      final Function<Edge, Double>               edgeCostEvaluator,
+                                      final BiFunction<Integer, Integer, Double> heuristic) throws SQLException
     {
-        return "CREATE TABLE " + RoutingNetworkDescriptionsTableName + "\n" +
+        if(networkExtension == null)
+        {
+            throw new IllegalArgumentException("Network extension may not be null");
+        }
+
+        if(network == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        if(edgeCostEvaluator == null)
+        {
+            throw new IllegalArgumentException("Edge cost function may not be null");
+        }
+
+        if(heuristic == null)
+        {
+            throw new IllegalArgumentException("Heuristic function may not be null");
+        }
+
+        // changed comparator -> change back to distance from end
+        final PriorityQueue<AStarVertex> openList = new PriorityQueue<>((vertex1, vertex2) -> Double.compare((vertex1.getDistanceFromEnd() + vertex1.getDistanceFromStart()),
+                                                                                                             (vertex2.getDistanceFromEnd() + vertex2.getDistanceFromStart())));
+        final Collection<Integer> closedList = new HashSet<>();
+
+        final Map<Integer, AStarVertex> nodeMap = new HashMap<>();
+
+        // Starting Vertex
+        final AStarVertex startVertex = new AStarVertex(start,
+                                                        0.0,
+                                                        heuristic.apply(start, end));
+
+        openList.add(startVertex);
+        nodeMap.put(start, startVertex);
+
+        while(!openList.isEmpty())
+        {
+            final AStarVertex currentVertex = openList.poll(); // Get the Vertex closest to the end
+
+            // If current vertex is the target then we are done
+            if(currentVertex.getNodeIdentifier() == end)
+            {
+                return getAStarPath(end, nodeMap);
+            }
+
+            closedList.add(currentVertex.getNodeIdentifier()); // Put it in "done" pile
+
+            // For each reachable Vertex
+            for(final Edge edge : networkExtension.getExits(network, currentVertex.getNodeIdentifier()))
+            {
+                final int adjacentNode = edge.getTo();
+
+                AStarVertex reachableVertex = nodeMap.get(adjacentNode);
+
+                if(reachableVertex == null)
+                {
+                    reachableVertex = new AStarVertex(adjacentNode);
+                    nodeMap.put(adjacentNode, reachableVertex);
+                }
+
+                // If the closed list already searched this vertex, skip it
+                if(!closedList.contains(reachableVertex.getNodeIdentifier()))
+                {
+                    final double edgeCost = edgeCostEvaluator.apply(edge);
+
+                    if(edgeCost <= 0.0)    // Are positive values that are extremely close to 0 going to be a problem?
+                    {
+                        throw new RuntimeException("The A* algorithm is only valid for edge costs greater than 0");
+                    }
+
+                    final double distanceFromStart = currentVertex.getDistanceFromStart() + edgeCost;
+
+                    if(!openList.contains(reachableVertex))         // If we don't have it, add it
+                    {
+                        final double distanceFromEnd = heuristic.apply(reachableVertex.getNodeIdentifier(), end);
+
+                        reachableVertex.setDistanceFromStart(distanceFromStart);
+                        reachableVertex.setDistanceFromEnd  (distanceFromEnd);
+                        reachableVertex.setPrevious         (currentVertex);
+
+                        openList.add(reachableVertex);
+                    }
+                    else if(distanceFromStart < reachableVertex.getDistanceFromStart()) // If this is better then update the values and parent Vertex (previous)
+                    {
+                        final double distanceFromEnd = heuristic.apply(reachableVertex.getNodeIdentifier(), end);
+
+                        reachableVertex.setDistanceFromStart(distanceFromStart);
+                        reachableVertex.setDistanceFromEnd(distanceFromEnd);
+                        reachableVertex.setPrevious(currentVertex);
+
+                        openList.remove(reachableVertex);   // Re-add to trigger the reprioritization of this vertex
+                        openList.add(reachableVertex);
+                    }
+                }
+            }
+        }
+
+        throw new RuntimeException("Didnt find correct path"); // TODO, clean this up
+    }
+
+    private static List<Integer> getAStarPath(final Integer end, final Map<Integer, AStarVertex> nodeMap)
+    {
+        final LinkedList<Integer> path = new LinkedList<>();
+
+        for(AStarVertex backTrackVertex = nodeMap.get(end); backTrackVertex != null; backTrackVertex = backTrackVertex.getPrevious())
+        {
+            path.addLast(backTrackVertex.getNodeIdentifier());
+        }
+
+        return path;
+    }
+
+    private static String getRoutingNetworkDescriptionCreationSql()
+    {
+        return "CREATE TABLE " + RoutingNetworkDescriptionsTableName + '\n' +
                "(table_name          TEXT PRIMARY KEY NOT NULL, -- Name of network table\n"                 +
                " longitude_attribute TEXT NOT NULL,             -- Name of horizontal (x) node attribute\n" +
                " latitude_attribute  TEXT NOT NULL,             -- Name of vertical (y) node attribute\n"   +
@@ -590,8 +713,5 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
      */
     public static final String RoutingNetworkDescriptionsTableName = "routing_networks";
 
-    protected final GeoPackageNetworkExtension networkExtension;
-
-    private static final String ExtensionName       = "rgi_routing";
-    private static final String ExtensionDefinition = "definition"; // TODO
+    private final GeoPackageNetworkExtension networkExtension;
 }

@@ -1,3 +1,4 @@
+package com.rgi.geopackage.extensions.routing;
 /* The MIT License (MIT)
  *
  * Copyright (c) 2015 Reinventing Geospatial, Inc.
@@ -21,7 +22,7 @@
  * SOFTWARE.
  */
 
-package routing;
+
 
 /**
  * @author Luke Lambert

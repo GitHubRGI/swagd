@@ -47,12 +47,17 @@ import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 @SuppressWarnings({ "javadoc", "unused" })
-public class GenerateRoutingNetworks
+public final class GenerateRoutingNetworks
 {
     //Files for geoPackage1
     private static final File geoPackageFile  = new File("contour.1.gpkg");
     private static final File nodeFile        = new File("data/contour.1/contour.1.node");
     private static final File edgeFile        = new File("data/contour.1/contour.1.edge");
+
+    private GenerateRoutingNetworks()
+    {
+
+    }
 
     public static void main(final String[] args)
     {
