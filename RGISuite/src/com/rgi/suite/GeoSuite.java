@@ -255,10 +255,10 @@ public final class GeoSuite
 		};
 		handler.setFormatter(formatter);
 		logger.addHandler(handler);
+		final HeadlessOptions opts   = new HeadlessOptions(logger);
+		final CmdLineParser   parser = new CmdLineParser(opts);
 		try
 		{
-			final HeadlessOptions opts = new HeadlessOptions(logger);
-			final CmdLineParser parser = new CmdLineParser(opts);
 			parser.parseArgument(args);
 			if(opts.isValid())
 			{
@@ -268,10 +268,16 @@ public final class GeoSuite
 				executor.execute(runner);
 			}
 		}
-		catch(final RuntimeException | CmdLineException error)
+		catch(final RuntimeException error)
 		{
 			logger.log(Level.SEVERE, error.getMessage());
 		}
+		catch(final CmdLineException cmdError)
+		{
+			logger.log(Level.SEVERE, "Error Parsing Arguments." + cmdError.getMessage());
+			parser.printUsage(System.out);
+		}
+
 	}
 
 	public Settings getSettings()
