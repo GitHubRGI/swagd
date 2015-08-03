@@ -63,6 +63,10 @@ public final class GeoSuite
 
 	/**
 	 * Code decision point for running in either GUI mode or headless (command-line) mode.
+	 * <p>
+	 * exit codes: 	0 - exited normally
+	 * 1 - cmd line exception, invalid arguments
+	 * 2 - run time exception, see logs.
 	 *
 	 * @param args A string array of command line arguments.
 	 */
@@ -271,11 +275,17 @@ public final class GeoSuite
 		catch(final RuntimeException error)
 		{
 			logger.log(Level.SEVERE, error.getMessage());
+			System.exit(2);
 		}
 		catch(final CmdLineException cmdError)
 		{
 			logger.log(Level.SEVERE, "Error Parsing Arguments." + cmdError.getMessage());
 			parser.printUsage(System.out);
+			System.exit(1);
+		}
+		finally
+		{
+			System.exit(0);
 		}
 
 	}
