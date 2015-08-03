@@ -133,7 +133,7 @@ public final class GenerateRoutingNetworks
 
             final AttributeDescription pandolfCostAttribute = networkExtension.addAttributeDescription(network,
                                                                                                        "cost_pandolf",
-                                                                                                       "unknown",
+                                                                                                       "kcal",
                                                                                                        DataType.Real,
                                                                                                        "caloric cost walking",
                                                                                                        AttributedType.Edge);
