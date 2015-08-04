@@ -98,7 +98,7 @@ public class HeadlessOptions
 		}
 	}
 
-	@Option(required = false, help = true, name = "-h", aliases = "--help")
+	@Option(required = false, help = true, name = "-h", aliases = "--help", usage = "Show Help")
 	public void showHelp(final boolean show) throws CmdLineException
 	{
 		this.showHelp = show;
