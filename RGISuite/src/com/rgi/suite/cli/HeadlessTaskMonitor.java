@@ -73,6 +73,7 @@ public class HeadlessTaskMonitor implements TaskMonitor
 							String.format("\rGenerated %d/%d tiles successfully!", value, this.maximum));
 			//noinspection HardcodedLineSeparator,UseOfSystemOutOrSystemErr
 			System.out.println(String.format("\r[=========================] %d / %d", value, this.maximum));
+			System.exit(0);
 
 		}
 

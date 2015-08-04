@@ -283,11 +283,6 @@ public final class GeoSuite
 			parser.printUsage(System.out);
 			System.exit(1);
 		}
-		finally
-		{
-			System.exit(0);
-		}
-
 	}
 
 	public Settings getSettings()
