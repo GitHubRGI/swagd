@@ -22,6 +22,10 @@
 // */
 //
 //
+//import com.rgi.geopackage.extensions.network.Edge;
+//import com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension;
+//import com.rgi.geopackage.extensions.network.Network;
+//import com.rgi.geopackage.extensions.routing.AStarVertex;
 //
 //import java.sql.SQLException;
 //import java.util.HashMap;
@@ -32,11 +36,6 @@
 //import java.util.PriorityQueue;
 //import java.util.function.BiFunction;
 //import java.util.function.Function;
-//
-//import com.rgi.geopackage.extensions.network.Edge;
-//import com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension;
-//import com.rgi.geopackage.extensions.network.Network;
-//import com.rgi.geopackage.extensions.routing.AStarVertex;
 //
 ///**
 // * Implementation of two shortest path/routing algorithms:
@@ -97,8 +96,8 @@
 //        }
 //
 //        // changed comparator -> change back to distance from end
-//        final PriorityQueue<AStarVertex> openList = new PriorityQueue<>((o1, o2) -> Double.compare((o1.getDistanceFromEnd() + o1.getDistanceFromStart()),
-//                                                                                                   (o2.getDistanceFromEnd() + o2.getDistanceFromStart())));
+//        final PriorityQueue<AStarVertex> openList = new PriorityQueue<>((o1, o2) -> Double.compare((o1.getCostToEnd() + o1.getCostFromStart()),
+//                                                                                                   (o2.getCostToEnd() + o2.getCostFromStart())));
 //        final HashSet<Integer> closedList = new HashSet<>();
 //
 //        final Map<Integer, AStarVertex> nodeMap = new HashMap<>();
@@ -146,24 +145,24 @@
 //                        throw new RuntimeException("The A* algorithm is only valid for edge costs greater than 0");
 //                    }
 //
-//                    final double distanceFromStart = currentVertex.getDistanceFromStart() + edgeCost;
+//                    final double distanceFromStart = currentVertex.getCostFromStart() + edgeCost;
 //
 //                    if(!openList.contains(reachableVertex))         // If we don't have it, add it
 //                    {
 //                        final double distanceFromEnd = heuristic.apply(reachableVertex.getNodeIdentifier(), end);
 //
-//                        reachableVertex.setDistanceFromStart(distanceFromStart);
-//                        reachableVertex.setDistanceFromEnd  (distanceFromEnd);
+//                        reachableVertex.setCostFromStart(distanceFromStart);
+//                        reachableVertex.setCostToEnd  (distanceFromEnd);
 //                        reachableVertex.setPrevious         (currentVertex);
 //
 //                        openList.add(reachableVertex);
 //                    }
-//                    else if(distanceFromStart < reachableVertex.getDistanceFromStart()) // If this is better then update the values and parent Vertex (previous)
+//                    else if(distanceFromStart < reachableVertex.getCostFromStart()) // If this is better then update the values and parent Vertex (previous)
 //                    {
 //                        final double distanceFromEnd = heuristic.apply(reachableVertex.getNodeIdentifier(), end);
 //
-//                        reachableVertex.setDistanceFromStart(distanceFromStart);
-//                        reachableVertex.setDistanceFromEnd  (distanceFromEnd);
+//                        reachableVertex.setCostFromStart(distanceFromStart);
+//                        reachableVertex.setCostToEnd  (distanceFromEnd);
 //                        reachableVertex.setPrevious         (currentVertex);
 //
 //                        openList.remove(reachableVertex);   // Re-add to trigger the reprioritization of this vertex

@@ -1,4 +1,3 @@
-package com.rgi.geopackage.extensions.routing;
 /* The MIT License (MIT)
  *
  * Copyright (c) 2015 Reinventing Geospatial, Inc.
@@ -22,7 +21,7 @@ package com.rgi.geopackage.extensions.routing;
  * SOFTWARE.
  */
 
-
+package com.rgi.geopackage.extensions.routing;
 
 /**
  * @author Luke Lambert
@@ -30,39 +29,32 @@ package com.rgi.geopackage.extensions.routing;
  */
 public class AStarVertex
 {
-    private AStarVertex previous = null; // Parent node
+    private AStarVertex previous; // Parent node
 
     private final int nodeIdentifier;
 
-    private double distanceFromStart = Double.MAX_VALUE;
-    private double distanceFromEnd   = Double.MAX_VALUE;
+    private double costFromStart = Double.MAX_VALUE;
+    private double costToEnd     = Double.MAX_VALUE;
 
     protected AStarVertex(final int nodeIdentifier)
     {
         this.nodeIdentifier = nodeIdentifier;
     }
 
-    protected AStarVertex(final int nodeIdentifier, final double distanceFromStart, final double distanceFromEnd)
+    protected AStarVertex(final int nodeIdentifier, final double costFromStart, final double costToEnd)
     {
         this(nodeIdentifier);
-        this.distanceFromStart = distanceFromStart;
-        this.distanceFromEnd   = distanceFromEnd;
+
+        this.costFromStart = costFromStart;
+        this.costToEnd     = costToEnd;
     }
 
     @Override
     public boolean equals(final Object obj)
     {
-        if(obj == this)
-        {
-            return true;
-        }
+        return obj == this ||
+               !(obj == null || this.getClass() != obj.getClass()) && this.nodeIdentifier == ((AStarVertex)obj).nodeIdentifier;
 
-        if(obj == null || this.getClass() != obj.getClass())
-        {
-            return false;
-        }
-
-        return this.nodeIdentifier == ((AStarVertex)obj).nodeIdentifier; // Is this enough? Node identifiers should be unique right?
     }
 
     @Override
@@ -74,49 +66,53 @@ public class AStarVertex
     @Override
     public String toString()
     {
-        return String.format("%d (%f, %f, %d)", this.nodeIdentifier, this.distanceFromStart, this.distanceFromEnd, this.previous.nodeIdentifier);
+        return String.format("%d (%f, %f, %d)",
+                             this.nodeIdentifier,
+                             this.costFromStart,
+                             this.costToEnd,
+                             this.previous.nodeIdentifier);
     }
 
     /**
-     * @return the distanceFromStart
+     * @return the costFromStart
      */
-    public double getDistanceFromStart()
+    public double getCostFromStart()
     {
-        return this.distanceFromStart;
+        return this.costFromStart;
     }
 
     /**
-     * @param distanceFromStart the distanceFromStart to set
+     * @param costFromStart the costFromStart to set
      */
-    public void setDistanceFromStart(final double distanceFromStart)
+    public void setCostFromStart(final double costFromStart)
     {
-        if(distanceFromStart < 0.0)
+        if(costFromStart < 0.0)
         {
             throw new IllegalArgumentException("Distance from start may not be less than 0");
         }
 
-        this.distanceFromStart = distanceFromStart;
+        this.costFromStart = costFromStart;
     }
 
     /**
-     * @return the distanceFromEnd
+     * @return the costToEnd
      */
-    public double getDistanceFromEnd()
+    public double getCostToEnd()
     {
-        return this.distanceFromEnd;
+        return this.costToEnd;
     }
 
     /**
-     * @param distanceFromEnd the distanceFromEnd to set
+     * @param costToEnd the costToEnd to set
      */
-    public void setDistanceFromEnd(final double distanceFromEnd)
+    public void setCostToEnd(final double costToEnd)
     {
-        if(distanceFromEnd < 0.0)
+        if(costToEnd < 0.0)
         {
             throw new IllegalArgumentException("Distance from end may not be less than 0");
         }
 
-        this.distanceFromEnd = distanceFromEnd;
+        this.costToEnd = costToEnd;
     }
 
     /**

@@ -114,19 +114,19 @@ public final class GenerateRoutingNetworks
             final Network network = networkExtension.addNetwork(name,
                                                                   name,
                                                                   name + " dataset provided by Matt Renner of AGC",
-                                                                  getBoundingBox(nodesFile),
+                                                                  getBoundingBox(nodesFile, 2, 3),
                                                                   geoPackage.core().getSpatialReferenceSystem(-1));
 
             final AttributeDescription slopeAttribute = networkExtension.addAttributeDescription(network,
                                                                                                  "slope",
-                                                                                                 "meters(?)",
+                                                                                                 "meters",
                                                                                                  DataType.Real,
                                                                                                  "slope",
                                                                                                  AttributedType.Edge);
 
             final AttributeDescription distanceAttribute = networkExtension.addAttributeDescription(network,
                                                                                                     "distance",
-                                                                                                    "meters(?)",
+                                                                                                    "meters",
                                                                                                     DataType.Real,
                                                                                                     "distance",
                                                                                                     AttributedType.Edge);
@@ -140,7 +140,7 @@ public final class GenerateRoutingNetworks
 
             final AttributeDescription elevationAttribute = networkExtension.addAttributeDescription(network,
                                                                                                      "elevation",
-                                                                                                     "meters(?)",
+                                                                                                     "meters",
                                                                                                      DataType.Real,
                                                                                                      "elevation",
                                                                                                      AttributedType.Node);
@@ -205,7 +205,7 @@ public final class GenerateRoutingNetworks
         final Network network = networkExtension.addNetwork("contour_1",
                                                             "contour_1",
                                                             "contour.1 dataset provided by Matt Renner of AGC",
-                                                            getBoundingBox(nodeFile),
+                                                            getBoundingBox(nodeFile, 1, 2),
                                                             geoPackage.core().getSpatialReferenceSystem(-1));
 
         final AttributeDescription longitudeAttribute = networkExtension.addAttributeDescription(network,
@@ -282,7 +282,9 @@ public final class GenerateRoutingNetworks
                                                      });
     }
 
-    private static BoundingBox getBoundingBox(final File triangleFormatNodes) throws IOException
+    private static BoundingBox getBoundingBox(final File triangleFormatNodes,
+                                              final int  longitudeIndex,
+                                              final int  latitudeIndex) throws IOException
     {
         final double[] bbox = { Double.MAX_VALUE, // x min
                                 Double.MAX_VALUE, // y min
@@ -295,8 +297,8 @@ public final class GenerateRoutingNetworks
              .filter(line -> !line.startsWith("#"))
              .forEach(line -> { final String[] pieces = SpacePattern.split(line.trim());
 
-                                double x = Double.valueOf(pieces[1]);   // x (longitude)
-                                double y = Double.valueOf(pieces[2]);   // y (latitude)
+                                double x = Double.valueOf(pieces[longitudeIndex]);
+                                double y = Double.valueOf(pieces[latitudeIndex]);
 
                                 if(x < bbox[0])
                                 {

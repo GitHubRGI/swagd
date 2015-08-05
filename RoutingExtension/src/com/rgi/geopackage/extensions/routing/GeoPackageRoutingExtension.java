@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -563,10 +564,8 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
      * This algorithm will find the shortest path from the starting
      * node to the ending node
      *
-     * @param networkExtension
-     *            GeoPackageNetworkExtension containing the network
-     * @param network
-     *            network contain the start and end node
+     * @param routingNetwork
+     *            network on which to route between a start and end node
      * @param start
      *            starting node
      * @param end
@@ -579,19 +578,15 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
      * @throws SQLException
      *             if there is a database error
      */
-    public static List<Integer> aStar(final GeoPackageNetworkExtension           networkExtension,
-                                      final Network                              network,
-                                      final int                                  start,
-                                      final int                                  end,
-                                      final Function<Edge, Double>               edgeCostEvaluator,
-                                      final BiFunction<Integer, Integer, Double> heuristic) throws SQLException
+    public List<Integer> aStar(final RoutingNetworkDescription                routingNetwork,
+                               final int                                      start,
+                               final int                                      end,
+                               final List<AttributeDescription>               nodeAttributes,
+                               final List<AttributeDescription>               edgeAttributes,
+                               final Function<List<Objects>, Double>          edgeCostEvaluator,
+                               final BiFunction<List<Objects>, List<Objects>, Double> heuristic) throws SQLException
     {
-        if(networkExtension == null)
-        {
-            throw new IllegalArgumentException("Network extension may not be null");
-        }
-
-        if(network == null)
+        if(routingNetwork == null)
         {
             throw new IllegalArgumentException("Network may not be null");
         }
@@ -607,11 +602,13 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         }
 
         // changed comparator -> change back to distance from end
-        final PriorityQueue<AStarVertex> openList = new PriorityQueue<>((vertex1, vertex2) -> Double.compare((vertex1.getDistanceFromEnd() + vertex1.getDistanceFromStart()),
-                                                                                                             (vertex2.getDistanceFromEnd() + vertex2.getDistanceFromStart())));
+        final PriorityQueue<AStarVertex> openList = new PriorityQueue<>((vertex1, vertex2) -> Double.compare((vertex1.getCostToEnd() + vertex1.getCostFromStart()),
+                                                                                                             (vertex2.getCostToEnd() + vertex2.getCostFromStart())));
         final Collection<Integer> closedList = new HashSet<>();
 
         final Map<Integer, AStarVertex> nodeMap = new HashMap<>();
+
+        final List<Object> startNodeAttributes = this.networkExtension.getNodeAttributes(start, nodeAttributes.toArray(AttributeDescription[]::new));
 
         // Starting Vertex
         final AStarVertex startVertex = new AStarVertex(start,
@@ -634,7 +631,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
             closedList.add(currentVertex.getNodeIdentifier()); // Put it in "done" pile
 
             // For each reachable Vertex
-            for(final Edge edge : networkExtension.getExits(network, currentVertex.getNodeIdentifier()))
+            for(final Edge edge : this.networkExtension.getExits(routingNetwork.getNetwork(), currentVertex.getNodeIdentifier()))
             {
                 final int adjacentNode = edge.getTo();
 
@@ -656,24 +653,24 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                         throw new RuntimeException("The A* algorithm is only valid for edge costs greater than 0");
                     }
 
-                    final double distanceFromStart = currentVertex.getDistanceFromStart() + edgeCost;
+                    final double distanceFromStart = currentVertex.getCostFromStart() + edgeCost;
 
                     if(!openList.contains(reachableVertex))         // If we don't have it, add it
                     {
                         final double distanceFromEnd = heuristic.apply(reachableVertex.getNodeIdentifier(), end);
 
-                        reachableVertex.setDistanceFromStart(distanceFromStart);
-                        reachableVertex.setDistanceFromEnd  (distanceFromEnd);
+                        reachableVertex.setCostFromStart(distanceFromStart);
+                        reachableVertex.setCostToEnd(distanceFromEnd);
                         reachableVertex.setPrevious         (currentVertex);
 
                         openList.add(reachableVertex);
                     }
-                    else if(distanceFromStart < reachableVertex.getDistanceFromStart()) // If this is better then update the values and parent Vertex (previous)
+                    else if(distanceFromStart < reachableVertex.getCostFromStart()) // If this is better then update the values and parent Vertex (previous)
                     {
                         final double distanceFromEnd = heuristic.apply(reachableVertex.getNodeIdentifier(), end);
 
-                        reachableVertex.setDistanceFromStart(distanceFromStart);
-                        reachableVertex.setDistanceFromEnd(distanceFromEnd);
+                        reachableVertex.setCostFromStart(distanceFromStart);
+                        reachableVertex.setCostToEnd(distanceFromEnd);
                         reachableVertex.setPrevious(currentVertex);
 
                         openList.remove(reachableVertex);   // Re-add to trigger the reprioritization of this vertex
