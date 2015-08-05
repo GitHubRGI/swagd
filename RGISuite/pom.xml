@@ -174,10 +174,11 @@
                             <goal>launch4j</goal>
                         </goals>
                         <configuration>
-                            <headerType>gui</headerType>
+                            <headerType>console</headerType>
                             <outfile>target/swagd.exe</outfile>
                             <jar>target/${project.artifactId}-${project.version}-with_dependencies.jar</jar>
                             <errTitle>SWAGD Err</errTitle>
+                            <stayAlive>true</stayAlive>
                             <classPath>
                                 <mainClass>com.rgi.suite.GeoSuite</mainClass>
                             </classPath>

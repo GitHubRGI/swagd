@@ -52,12 +52,16 @@ public class HeadlessOptionsValidator
 	 */
 	public boolean isValid()
 	{
-		this.logger.log(Level.INFO, "Validating arguments provided.");
 		if(this.opts == null)
 		{
 			this.logger.log(Level.SEVERE, "No arguments provided");
 			return false;
 		}
+		if(this.opts.getShowHelp())
+		{
+			return false;
+		}
+		this.logger.log(Level.INFO, "Validating arguments provided.");
 		try
 		{
 			// if everything is kosher, we can run the tiling
