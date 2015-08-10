@@ -76,7 +76,7 @@ import com.rgi.store.tiles.TileStoreException;
  * @author Luke D. Lambert
  * @author Steven D. Lander
  */
-public class GdalUtility
+public final class GdalUtility
 {
     static
     {
@@ -94,6 +94,11 @@ public class GdalUtility
 
         osr.UseExceptions();
         gdal.AllRegister(); // Register GDAL extensions
+    }
+
+    private GdalUtility()
+    {
+        // Empty constructor for private class
     }
 
     /**
@@ -134,19 +139,11 @@ public class GdalUtility
 
         try
         {
-            final Dataset openDataset;
-            if (GdalUtility.dataSetMatches(dataset, coordinateReferenceSystem))
-            {
-                openDataset = GdalUtility.warpDatasetToSrs(dataset,
-                                                           GdalUtility.getSpatialReference(dataset),
-                                                           GdalUtility.getSpatialReference(coordinateReferenceSystem));
-            }
-            else
-            {
-               openDataset = GdalUtility.reprojectDatasetToSrs(dataset,
-                                                               GdalUtility.getSpatialReference(dataset),
-                                                               GdalUtility.getSpatialReference(coordinateReferenceSystem));
-            }
+            final Dataset openDataset = GdalUtility.doesDataSetMatchCRS(dataset, coordinateReferenceSystem) ? GdalUtility.warpDatasetToSrs(dataset,
+                    GdalUtility.getSpatialReference(dataset),
+                    GdalUtility.getSpatialReference(coordinateReferenceSystem)) : GdalUtility.reprojectDatasetToSrs(dataset,
+                    GdalUtility.getSpatialReference(dataset),
+                    GdalUtility.getSpatialReference(coordinateReferenceSystem));
 
             if(openDataset == null)
             {
@@ -155,9 +152,9 @@ public class GdalUtility
 
             return openDataset;
         }
-        catch (IOException | TilingException e)
+        catch (IOException | TilingException exception)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException(exception);
         }
         finally
         {
@@ -165,7 +162,7 @@ public class GdalUtility
         }
     }
 
-    public static boolean dataSetMatches(final Dataset d1, final CoordinateReferenceSystem crs)
+    public static boolean doesDataSetMatchCRS(final Dataset d1, final CoordinateReferenceSystem crs)
     {
         return GdalUtility.getSpatialReference(d1).equals(GdalUtility.getSpatialReference(crs));
     }
