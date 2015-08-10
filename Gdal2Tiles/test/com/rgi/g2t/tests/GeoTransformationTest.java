@@ -23,10 +23,6 @@
 
 package com.rgi.g2t.tests;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.junit.Test;
@@ -34,6 +30,10 @@ import org.junit.Test;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.g2t.GeoTransformation;
+
+import java.util.Arrays;
+
+import static org.junit.Assert.*;
 
 public class GeoTransformationTest
 {
@@ -70,7 +70,7 @@ public class GeoTransformationTest
      * Tests the constructor correctly sets the value of the affine transformation array,
      * the top left coordinate, and the pixel resolution
      */
-    @SuppressWarnings("static-method")
+    @SuppressWarnings({"static-method", "MagicNumber"})
     @Test
     public void constructorTest()
     {
@@ -78,14 +78,15 @@ public class GeoTransformationTest
         final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
 
         assertTrue("GeoTransformation constructor did not properly set the affine transformation array",
-                   geoTransformation.getAffineTransform().equals(affineTransform));
+                Arrays.equals(affineTransform, geoTransformation.getAffineTransform()));
 
-        assertTrue("GeoTransformation constructor did not properly set the top left coordinate.",
-                   geoTransformation.getTopLeft().equals(new Coordinate<>(0.0, 3.0)));
+        assertEquals("GeoTransformation constructor did not properly set the top left coordinate.",
+                new Coordinate<>(0.0, 3.0),
+                geoTransformation.getTopLeft());
 
         assertTrue("GeoTransformation constructor did not properly set the pixel resolution.",
-                   geoTransformation.getPixelResolution().getHeight() == -5.0 &&
-                   geoTransformation.getPixelResolution().getWidth() == 1.0);
+                   geoTransformation.getPixelResolution().getHeight().equals(-5.0) &&
+                   geoTransformation.getPixelResolution().getWidth().equals(1.0));
     }
 
     /**
@@ -99,7 +100,7 @@ public class GeoTransformationTest
         final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
 
         assertFalse("GeoTransformation method isNorthUp returned true instead of false.",
-                geoTransformation.isNorthUp());
+                    geoTransformation.isNorthUp());
     }
 
     /**
@@ -144,20 +145,21 @@ public class GeoTransformationTest
                 geoTransformation.isNorthUp());
     }
 
-    @SuppressWarnings("static-method")
+    @SuppressWarnings({"static-method", "MagicNumber"})
     @Test
     public void testGetBounds()
     {
         gdal.AllRegister();
         final Dataset data = gdal.GetDriverByName("MEM").Create("data", 100, 300, 0);
         final double[] affineTransform = {0, 1, 2, 3, 4, 5};
-        final BoundingBox box = new BoundingBox(0, 3-5 * 300, 0+1*100, 3);
+        final BoundingBox box = new BoundingBox(0, 3-5 * 300.0, 100, 3);
 
         try
         {
             final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
-            assertTrue("GeoTransformation method getBounds(Dataset) did not return the correct BoundingBox",
-                        geoTransformation.getBounds(data).equals(box));
+            assertEquals("GeoTransformation method getBounds(Dataset) did not return the correct BoundingBox",
+                         box,
+                         geoTransformation.getBounds(data));
         }
         finally
         {

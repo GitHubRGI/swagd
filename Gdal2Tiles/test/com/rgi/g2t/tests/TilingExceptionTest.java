@@ -23,7 +23,8 @@
 
 package com.rgi.g2t.tests;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 
@@ -44,10 +45,11 @@ public class TilingExceptionTest
     @Test
     public void testDefaultConstructor()
     {
-        final Exception e =  new TilingException();
+        final Exception exception =  new TilingException("test");
 
-        assertTrue("TilingException constructor did not make an exception of the correct type.",
-                   e.getClass().equals(TilingException.class));
+        assertSame("TilingException constructor did not make an exception of the correct type.",
+                TilingException.class,
+                exception.getClass());
     }
 
     /**
@@ -59,13 +61,15 @@ public class TilingExceptionTest
     {
         final Throwable cause = new Throwable("cause");
         final String message = "Message";
-        final TilingException e = new TilingException(message, cause);
+        final TilingException exception = new TilingException(message, cause);
 
-        assertTrue("TilingException constructor did not correctly set the message for the exception.",
-                e.getMessage().equals(message));
+        assertEquals("TilingException constructor did not correctly set the message for the exception.",
+                     message,
+                     exception.getMessage());
 
-        assertTrue("TilingException constructor did not correctly set the cause for the exception.",
-                   e.getCause().equals(cause));
+        assertEquals("TilingException constructor did not correctly set the cause for the exception.",
+                     cause,
+                     exception.getCause());
     }
 
     /**
@@ -75,10 +79,11 @@ public class TilingExceptionTest
     @Test
     public void testMessageConstructor()
     {
-        final Exception e = new TilingException("This is a test");
+        final Exception exception = new TilingException("This is a test");
 
-        assertTrue("TilingException constructor did not correctly set the message for the exception.",
-                   e.getMessage().equals("This is a test"));
+        assertEquals("TilingException constructor did not correctly set the message for the exception.",
+                     "This is a test",
+                     exception.getMessage());
     }
 
     /**
@@ -89,10 +94,11 @@ public class TilingExceptionTest
     public void testCauseConstructor()
     {
         final Throwable cause = new Throwable("Testing!!");
-        final Exception e = new TilingException(cause);
+        final Exception exception = new TilingException(cause);
 
-        assertTrue("TilingException constructor did not correct setly the cause for the exception.",
-                    e.getCause().equals(cause));
+        assertEquals("TilingException constructor did not correct setly the cause for the exception.",
+                     cause,
+                     exception.getCause());
     }
 
 

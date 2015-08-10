@@ -29,7 +29,6 @@ import com.rgi.common.coordinate.referencesystem.profile.EllipsoidalMercatorCrsP
 import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
-import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.gdal.osr.SpatialReference;
 import org.gdal.osr.osr;
@@ -51,9 +50,11 @@ import static org.junit.Assert.*;
  *
  *
  */
+@SuppressWarnings("MagicNumber")
 public class GdalUtilityTest
 {
-    public class ImageDataProperties
+    @SuppressWarnings({"PublicInnerClass", "PackageVisibleField"})
+    public static class ImageDataProperties
     {
         Dataset           dataset;
         File              imageFile;
@@ -63,9 +64,9 @@ public class GdalUtilityTest
         BoundingBox       boundingBox;
     }
 
-    ImageDataProperties dataset1 = new ImageDataProperties();
-    ImageDataProperties dataset2 = new ImageDataProperties();
-    List<ImageDataProperties> imageList = Arrays.asList(this.dataset1, this.dataset2);
+    private final GdalUtilityTest.ImageDataProperties dataset1 = new GdalUtilityTest.ImageDataProperties();
+    private final GdalUtilityTest.ImageDataProperties dataset2 = new  GdalUtilityTest.ImageDataProperties();
+    private final List<GdalUtilityTest.ImageDataProperties> imageList = Arrays.asList(this.dataset1, this.dataset2);
 
     @Before
     public void setUp()
@@ -74,11 +75,11 @@ public class GdalUtilityTest
         // Register GDAL for use
         gdal.AllRegister();
         // URL dir_url = ;
-        this.initializeDataset(this.dataset1, "testRasterCompressed.tif", false, new EllipsoidalMercatorCrsProfile(), new BoundingBox(-15049605.452, 8551661.071, -15048423.068, 8552583.832));//Retrieved bounding box from cmdline gdalinfo <filename?
-        this.initializeDataset(this.dataset2, "testRasterv2-3857WithAlpha.tif", true, new SphericalMercatorCrsProfile(), new BoundingBox(-15042794.840, 8589662.396, -15042426.875, 8590031.386));
+        initializeDataset(this.dataset1, "testRasterCompressed.tif", false, new EllipsoidalMercatorCrsProfile(), new BoundingBox(-15049605.452, 8551661.071, -15048423.068, 8552583.832));//Retrieved bounding box from cmdline gdalinfo <filename?
+        initializeDataset(this.dataset2, "testRasterv2-3857WithAlpha.tif", true, new SphericalMercatorCrsProfile(), new BoundingBox(-15042794.840, 8589662.396, -15042426.875, 8590031.386));
     }
 
-    private void initializeDataset(final ImageDataProperties datasetProperties,final String fileName, final boolean hasAlpha, final CrsProfile profile, final BoundingBox bounds)
+    private static void initializeDataset(final GdalUtilityTest.ImageDataProperties datasetProperties,final String fileName, final boolean hasAlpha, final CrsProfile profile, final BoundingBox bounds)
     {
         datasetProperties.imageFile   = new File(ClassLoader.getSystemResource(fileName).getFile());
         datasetProperties.dataset     = gdal.Open(datasetProperties.imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
@@ -93,7 +94,7 @@ public class GdalUtilityTest
      * it fails to throw an Exception
      */
     @Test(expected = RuntimeException.class)
-    public void verifyOpenException() throws RuntimeException
+    public void verifyOpenException()
     {
         final File testFile = new File("test.tiff");
         try
@@ -116,11 +117,11 @@ public class GdalUtilityTest
     @Test
     public void verifyOpen()
     {
-        for(final ImageDataProperties image: this.imageList)
+        for(final GdalUtilityTest.ImageDataProperties image: this.imageList)
         {
             final Dataset datasetReturned = GdalUtility.open(image.imageFile);
             assertTrue("GdalUtility method open(File) did not open and return the data file correctly.",
-                       this.datasetsEqual(image.dataset, datasetReturned));
+                       this.areDatasetsEqual(image.dataset, datasetReturned));
         }
     }
 //TODO: this test is currently failing! Come back once easier methods have been tested
@@ -142,7 +143,7 @@ public class GdalUtilityTest
     @Test
     public void verifyGetName()
     {
-        for(final ImageDataProperties imageData: this.imageList)
+        for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
             final String srsNameReturned = GdalUtility.getName(imageData.srs);
             assertEquals(String.format("GdalUtility method getName(Spatial reference returned %s when expected %s",
@@ -170,13 +171,14 @@ public class GdalUtilityTest
     @Test
     public void verifyHasAlphaBand()
     {
-        for(final ImageDataProperties imageData: this.imageList)
+        for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
             final boolean hasAlpha = GdalUtility.hasAlpha(imageData.dataset);
-            assertTrue(String.format("GdalUtility method hasAlpha(DatasetO returned %s when expected %s.",
-                                     hasAlpha,
-                                     imageData.hasAlpha),
-                       hasAlpha == imageData.hasAlpha);
+            assertEquals(String.format("GdalUtility method hasAlpha(DatasetO returned %s when expected %s.",
+                                       hasAlpha,
+                                       imageData.hasAlpha),
+                         hasAlpha,
+                         imageData.hasAlpha);
         }
     }
 
@@ -198,7 +200,7 @@ public class GdalUtilityTest
     @Test
     public void verifyGetDatasetSpatialReferenceFromDataset1()
     {
-        for (final ImageDataProperties imageData : this.imageList)
+        for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList)
         {
             final SpatialReference srsReturned = GdalUtility.getSpatialReference(imageData.dataset);
             this.assertSRS(imageData.srs, srsReturned);
@@ -247,7 +249,7 @@ public class GdalUtilityTest
     @Test
     public void verifyGetDatasetSpatailReferenceFromFile()
     {
-        for(final ImageDataProperties imageData: this.imageList)
+        for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
             final SpatialReference srsReturned = GdalUtility.getSpatialReference(imageData.imageFile);
             this.assertSRS(imageData.srs, srsReturned);
@@ -272,7 +274,7 @@ public class GdalUtilityTest
     @Test
     public void verifyGetSpatialReferencFromCrs()
     {
-        for(final ImageDataProperties imageData: this.imageList)
+        for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
             final CoordinateReferenceSystem crs         = imageData.crsProfile.getCoordinateReferenceSystem();
             final SpatialReference          srsReturned = GdalUtility.getSpatialReference(crs);
@@ -298,7 +300,7 @@ public class GdalUtilityTest
     @Test
     public void verifyGetSpatialReferencFromCrsProfile()
     {
-        for(final ImageDataProperties imageData: this.imageList)
+        for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
             final CrsProfile       profile     = imageData.crsProfile;
             final SpatialReference srsReturned = GdalUtility.getSpatialReference(profile);
@@ -324,7 +326,7 @@ public class GdalUtilityTest
     @Test
     public void verifyDatasetHasGeoReference1()
     {
-        for(final ImageDataProperties imageData: this.imageList)
+        for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
             assertTrue("Did not detect that images have a GeoReference.",
                        GdalUtility.hasGeoReference(imageData.dataset));
@@ -338,7 +340,7 @@ public class GdalUtilityTest
     public void verifyDatasetHasGeoReference2()
     {
         final File testFile = new File("NonGeo.tif");
-        final Dataset rawData = gdal.Open(testFile.getPath().toString());
+        final Dataset rawData = gdal.Open(testFile.getPath());
 
         try
         {
@@ -359,7 +361,7 @@ public class GdalUtilityTest
     public void verifyDatasetHasGeoReference3()
     {
         final File testFile = new File("NonGeo.tif");
-        final Dataset rawData = gdal.Open(testFile.getPath().toString(), gdalconst.GA_Update);
+        final Dataset rawData = gdal.Open(testFile.getPath(), gdalconstConstants.GA_Update);
 
         final double[] original = rawData.GetGeoTransform();
         final double[] geoTransform = { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
@@ -400,7 +402,7 @@ public class GdalUtilityTest
         final File rawData = new File("NonGeo.tif");
         final double[] argins = { 0.0, 1.0, 3.0, 0.0, 4.0, 1.0 };
 
-        final Dataset testData = gdal.Open(rawData.getPath().toString(), gdalconst.GA_Update );
+        final Dataset testData = gdal.Open(rawData.getPath(), gdalconstConstants.GA_Update );
 
         final double[] original = testData.GetGeoTransform();
         testData.SetGeoTransform(argins);
@@ -423,23 +425,25 @@ public class GdalUtilityTest
     public void verifyGetBoundsForDataset() throws DataFormatException
     {
         final BoundingBox boundingBoxReturned = GdalUtility.getBounds(this.dataset1.dataset);
-        assertTrue(String.format("BoundingBoxes aren't equal.\nExpected: %s\nActual: %s",
-                        this.dataset1.boundingBox.toString(),
-                        boundingBoxReturned.toString()),
-                   this.dataset1.boundingBox.equals(boundingBoxReturned));//TODO why is there more precision when Utility returns the boundingbox than using cmd line gdalinfo <tif> bounds
+        assertEquals(String.format("BoundingBoxes aren't equal.\nExpected: %s\nActual: %s",
+                                   this.dataset1.boundingBox.toString(),
+                                   boundingBoxReturned.toString()),
+                     boundingBoxReturned,
+                     this.dataset1.boundingBox);//TODO why is there more precision when Utility returns the boundingbox than using cmd line gdalinfo <tif> bounds
     }
 
 
     /* Private helper methods */
+    @SuppressWarnings("MethodMayBeStatic")
     private void assertSRS(final SpatialReference expectedSrs, final SpatialReference srsReturned)
     {
-        assertTrue(String.format("The getDatasetSpatialReference method did not return the expected SpatialReference object."),
+        assertTrue("The getDatasetSpatialReference method did not return the expected SpatialReference object.",
                    expectedSrs.IsSame(srsReturned)        == 1 &&
                    expectedSrs.IsSameGeogCS(srsReturned)  == 1);/* &&
                    expectedSrs.IsSameVertCS(srsReturned) == 1);*/ //TODO: what does this method do??
     }
-
-    private boolean datasetsEqual(final Dataset expected, final Dataset returned)
+    @SuppressWarnings("MethodMayBeStatic")
+    private boolean areDatasetsEqual(final Dataset expected, final Dataset returned)
     {
         return expected.getRasterXSize() == returned.getRasterXSize() &&
                expected.getRasterYSize() == returned.getRasterYSize() &&
