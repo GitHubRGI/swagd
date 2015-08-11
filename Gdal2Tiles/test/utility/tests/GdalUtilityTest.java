@@ -33,6 +33,7 @@ import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsPro
 import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
+import com.rgi.g2t.RawImageTileReader;
 import com.rgi.g2t.TilingException;
 import com.rgi.store.tiles.TileStoreException;
 import org.gdal.gdal.Band;
@@ -49,10 +50,7 @@ import utility.GdalUtility;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.DataFormatException;
 
 import static org.junit.Assert.*;
@@ -156,14 +154,27 @@ public class GdalUtilityTest
     /**
      * Tests doesDatasetMatchCrs
      */
-    //TODO: better way to compare crs's?? or change somewhere else
     @Test
     public void verifyDoesDataSetMatchCRS1()
     {
         for (final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
             assertTrue("GdalUtility method doesDataSetMatchCRS did not returned false when true was expected.",
-                       GdalUtility.doesDataSetMatchCRS(imageData.dataset, imageData.crsProfile.getCoordinateReferenceSystem()));
+                    GdalUtility.doesDataSetMatchCRS(imageData.dataset, imageData.crsProfile.getCoordinateReferenceSystem()));
+        }
+    }
+
+    /**
+     * Tests doesDatasetMatchCrs
+     */
+    @Test
+    public void verifyDoesDataSetMatchCRS2()
+    {
+        final CoordinateReferenceSystem crs = new CoordinateReferenceSystem("EPSG", 4326);
+        for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList)
+        {
+            assertFalse("GdalUtility method doesDataSetMatchCRS did not returned false when true was expected.",
+                    GdalUtility.doesDataSetMatchCRS(imageData.dataset, crs));
         }
     }
 
@@ -481,16 +492,13 @@ public class GdalUtilityTest
      * Test getBounds(dataset)
      */
     @Test
-    public void verifyGetBoundsForDataset() throws DataFormatException
-    {
+    public void verifyGetBoundsForDataset() throws DataFormatException {
         final BoundingBox boundingBoxReturned = GdalUtility.getBounds(this.dataset1.dataset);
         assertTrue(String.format("BoundingBoxes aren't equal.\nExpected: %s\nActual: %s",
-                                 this.dataset1.boundingBox.toString(),
-                                 boundingBoxReturned.toString()),
-                   this.areBoxesEqual(this.dataset1.boundingBox, boundingBoxReturned));//TODO why is there more precision when Utility returns the boundingbox than using cmd line gdalinfo <tif> bounds
+                        this.dataset1.boundingBox.toString(),
+                        boundingBoxReturned.toString()),
+                this.areBoxesEqual(this.dataset1.boundingBox, boundingBoxReturned));
     }
-
-
 
     /**
      * Tests getCoordinateReferenceSystem(SpatialReference)
@@ -805,9 +813,8 @@ public class GdalUtilityTest
      * Tests getMinimalZoom(Dataset) throws an
      * IllegalArgumentException
      */
-    //TODO: how to determine what zoom level should be returned
     @Test
-    public void verifyGetMinimalZoom1()
+    public void verifyGetMinimalZoom1() throws TileStoreException
     {
         final TileOrigin tileOrigin = TileOrigin.LowerLeft;
         final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
@@ -821,7 +828,14 @@ public class GdalUtilityTest
                                                                                                         imageData.crsProfile,
                                                                                                         tileOrigin);
 
-            GdalUtility.getMinimalZoom(imageData.dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+            final int min = GdalUtility.getMinimalZoom(imageData.dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+
+            try (final RawImageTileReader reader = new RawImageTileReader(imageData.imageFile, imageData.dataset, tileSize, null, null))
+            {
+                final long tiles = reader.stream(min).count();
+                assertTrue("GdalUtility method getMinimalZoom did not return a valid minimal zoom.",
+                        tiles == 1 || tiles == 2);
+            }
         }
     }
     /**
@@ -959,7 +973,6 @@ public class GdalUtilityTest
      * Tests getMinimalZoom(Dataset) throws an
      * IllegalArgumentException
      */
-    //TODO: how to determine what zoom level should be returned
     @Test
     public void verifyGetMaximalZoom1() throws TileStoreException
     {
@@ -975,7 +988,10 @@ public class GdalUtilityTest
                                                                                                         imageData.crsProfile,
                                                                                                         tileOrigin);
 
-            GdalUtility.getMaximalZoom(imageData.dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+            final int max = GdalUtility.getMaximalZoom(imageData.dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+
+            assertTrue("GdalUtility method getMaximalZoom did not return a valid maximal zoom.",
+                       max >= 0 && max < 32);
         }
     }
 
@@ -1033,9 +1049,19 @@ public class GdalUtilityTest
     /**
      * Tests getZoomLevels
      */
-    public void verifyGetZoomLevels1()
+    @Test
+    public void verifyGetZoomLevels() throws TileStoreException
     {
-        //TODO: get zoom levels with valid data
+        final TileOrigin tileOrigin = TileOrigin.LowerLeft;
+        final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
+
+        for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
+        {
+            final Set<Integer> zooms = GdalUtility.getZoomLevels(imageData.dataset, tileOrigin, tileSize);
+
+            assertTrue("GdalUtility method getZoomLevels did not return a valid set of zoom levels",
+                       zooms.parallelStream().noneMatch(zoom -> zoom < 0 || zoom > 32));
+        }
     }
     /**
      * Tests zoomLevelForPixelSize throws
