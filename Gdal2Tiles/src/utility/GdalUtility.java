@@ -164,7 +164,15 @@ public final class GdalUtility
 
     public static boolean doesDataSetMatchCRS(final Dataset d1, final CoordinateReferenceSystem crs)
     {
-        return GdalUtility.getSpatialReference(d1).equals(GdalUtility.getSpatialReference(crs));
+        if (!GdalUtility.getSpatialReference(d1).equals(GdalUtility.getSpatialReference(crs)))
+        {
+            final SpatialReference fromSrs = GdalUtility.getSpatialReference(d1);
+            final SpatialReference toSrs = GdalUtility.getSpatialReference(crs);
+
+            return fromSrs.GetAttrValue("AUTHORITY").equals(toSrs.GetAttrValue("AUTHORITY")) &&
+               fromSrs.GetAttrValue("PROJCS").equals(toSrs.GetAttrValue("PROJCS"));
+        }
+        return true;
     }
 
     /**
