@@ -23,54 +23,45 @@
 
 package com.rgi.geopackage.extensions.routing;
 
+import com.rgi.geopackage.extensions.network.Node;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * @author Luke Lambert
  *
  */
 public class AStarVertex
 {
-    private AStarVertex previous; // Parent node
-
-    private final int nodeIdentifier;
-
-    private double costFromStart = Double.MAX_VALUE;
-    private double costToEnd     = Double.MAX_VALUE;
-
-    protected AStarVertex(final int nodeIdentifier)
+    protected AStarVertex(final Node node)
     {
-        this.nodeIdentifier = nodeIdentifier;
+        this.node = node;
     }
 
-    protected AStarVertex(final int nodeIdentifier, final double costFromStart, final double costToEnd)
+    protected AStarVertex(final Node   node,
+                          final double costFromStart,
+                          final double estimatedCostToEnd)
     {
-        this(nodeIdentifier);
+        this(node);
 
-        this.costFromStart = costFromStart;
-        this.costToEnd     = costToEnd;
+        this.costFromStart      = costFromStart;
+        this.estimatedCostToEnd = estimatedCostToEnd;
     }
 
     @Override
     public boolean equals(final Object obj)
     {
         return obj == this ||
-               !(obj == null || this.getClass() != obj.getClass()) && this.nodeIdentifier == ((AStarVertex)obj).nodeIdentifier;
+               !(obj == null || this.getClass() != obj.getClass()) && this.node == ((AStarVertex)obj).node;
 
     }
 
     @Override
     public int hashCode()
     {
-        return this.nodeIdentifier;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("%d (%f, %f, %d)",
-                             this.nodeIdentifier,
-                             this.costFromStart,
-                             this.costToEnd,
-                             this.previous.nodeIdentifier);
+        return this.node.getIdentifier();
     }
 
     /**
@@ -82,37 +73,11 @@ public class AStarVertex
     }
 
     /**
-     * @param costFromStart the costFromStart to set
+     * @return the estimatedCostToEnd
      */
-    public void setCostFromStart(final double costFromStart)
+    public double getEstimatedCostToEnd()
     {
-        if(costFromStart < 0.0)
-        {
-            throw new IllegalArgumentException("Distance from start may not be less than 0");
-        }
-
-        this.costFromStart = costFromStart;
-    }
-
-    /**
-     * @return the costToEnd
-     */
-    public double getCostToEnd()
-    {
-        return this.costToEnd;
-    }
-
-    /**
-     * @param costToEnd the costToEnd to set
-     */
-    public void setCostToEnd(final double costToEnd)
-    {
-        if(costToEnd < 0.0)
-        {
-            throw new IllegalArgumentException("Distance from end may not be less than 0");
-        }
-
-        this.costToEnd = costToEnd;
+        return this.estimatedCostToEnd;
     }
 
     /**
@@ -123,19 +88,52 @@ public class AStarVertex
         return this.previous;
     }
 
-    /**
-     * @param previous the previous to set
-     */
-    public void setPrevious(final AStarVertex previous)
+    public double getEdgeCost()
     {
-        this.previous = previous;
+        return this.edgeCost;
+    }
+
+    public Collection<Object> getEdgeAttributes()
+    {
+        return Collections.unmodifiableCollection(this.edgeAttributes);
+    }
+
+    public void update(final double             costFromStart,
+                       final double             estimatedCostToEnd,
+                       final AStarVertex        previous,
+                       final Collection<Object> edgeAttributes,
+                       final double             edgeCost)
+    {
+        if(costFromStart < 0.0)
+        {
+            throw new IllegalArgumentException("Distance from start may not be less than 0");
+        }
+
+        if(estimatedCostToEnd < 0.0)
+        {
+            throw new IllegalArgumentException("Distance from end may not be less than 0");
+        }
+
+        this.costFromStart      = costFromStart;
+        this.estimatedCostToEnd = estimatedCostToEnd;
+        this.previous           = previous;
+        this.edgeAttributes     = edgeAttributes;
+        this.edgeCost           = edgeCost;
     }
 
     /**
-     * @return the nodeIdentifier
+     * @return the node
      */
-    public int getNodeIdentifier()
+    public Node getNode()
     {
-        return this.nodeIdentifier;
+        return this.node;
     }
+
+    private final Node node;
+
+    private double             costFromStart      = Double.MAX_VALUE;
+    private double             estimatedCostToEnd = Double.MAX_VALUE;
+    private AStarVertex        previous;       // Parent node
+    private Collection<Object> edgeAttributes; // Attributes of edge with the edge being parent to this one
+    private double             edgeCost;       // Aalculated cost of parent node to this one
 }

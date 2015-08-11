@@ -21,66 +21,46 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.extensions.network;
+package com.rgi.common;
 
-import com.rgi.geopackage.GeoPackage;
-
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 /**
- * Representation of a <b>directional</b> edge from a {@link GeoPackage}
- * "rgi_network" network
+ * Functional memoization strategy, based on <a
+ * href="https://stackoverflow.com/a/3624099/16434">this example</a>.
  *
  * @author Luke Lambert
- *
  */
-public class Edge
+public class Memoize2<P1, P2, R>
 {
-    /**
-     * Constructor
-     *
-     * @param identifier
-     *             Unique identifier
-     * @param from
-     *             The origin node of an edge
-     * @param to
-     *             The destination node of an edge
-     */
-    protected Edge(final int identifier,
-                   final int from,
-                   final int to)
+    public Memoize2(final BiFunction<P1, P2, R> evaluator)
     {
-        this.identifier = identifier;
-        this.from       = from;
-        this.to         = to;
+        if(evaluator == null)
+        {
+            throw new IllegalArgumentException("Evaluator may not be null");
+        }
+
+        this.evaluator = evaluator;
     }
 
-    /**
-     * @return the identifier
-     */
-    public int getIdentifier()
+    public R get(final P1 parameter1, final P2 parameter2)
     {
-        return this.identifier;
+        final Pair<P1, P2> pair = Pair.of(parameter1, parameter2);
+
+        if(this.values.containsKey(pair))
+        {
+            return this.values.get(pair);
+        }
+        else
+        {
+            final R value = this.evaluator.apply(parameter1, parameter2);
+            this.values.put(pair, value);
+            return value;
+        }
     }
 
-    /**
-     * @return the from
-     */
-    public int getFrom()
-    {
-        return this.from;
-    }
-
-    /**
-     * @return the to
-     */
-    public int getTo()
-    {
-        return this.to;
-    }
-
-    private final int identifier;
-    private final int from;
-    private final int to;
+    private final Map<Pair<P1, P2>, R>  values = new HashMap<>();   // TODO maybe use a hash as a key
+    private final BiFunction<P1, P2, R> evaluator;
 }

@@ -1,5 +1,6 @@
 package com.rgi.geopackage.extensions.routing;
 
+import com.rgi.common.Memoize2;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.GeoPackageCore;
@@ -10,9 +11,9 @@ import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
 import com.rgi.geopackage.extensions.network.AttributeDescription;
 import com.rgi.geopackage.extensions.network.AttributedType;
-import com.rgi.geopackage.extensions.network.Edge;
 import com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension;
 import com.rgi.geopackage.extensions.network.Network;
+import com.rgi.geopackage.extensions.network.Node;
 import com.rgi.geopackage.utility.DatabaseUtility;
 
 import java.sql.Connection;
@@ -24,7 +25,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -126,9 +126,10 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
             return null;
         }
 
-        final String routingNetworkDescriptionQuery = String.format("SELECT %s, %s, %s FROM %s WHERE %s = ?;",
+        final String routingNetworkDescriptionQuery = String.format("SELECT %s, %s, %s, %s FROM %s WHERE %s = ?;",
                                                                     "longitude_attribute",
                                                                     "latitude_attribute",
+                                                                    "elevation_attribute",
                                                                     "distance_attribute",
                                                                     RoutingNetworkDescriptionsTableName,
                                                                     "table_name");
@@ -136,17 +137,20 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         return JdbcUtility.selectOne(this.databaseConnection,
                                      routingNetworkDescriptionQuery,
                                      preparedStatement -> preparedStatement.setString(1, networkTableName),
-                                     resultSet -> { final Network network = this.networkExtension.getNetwork(networkTableName);
+                                     resultSet -> {
+                                         final Network network = this.networkExtension.getNetwork(networkTableName);
 
-                                                    final AttributeDescription longitudeDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(1), AttributedType.Node);
-                                                    final AttributeDescription  latitudeDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(2), AttributedType.Node);
-                                                    final AttributeDescription  distanceDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(3), AttributedType.Edge);
+                                         final AttributeDescription longitudeDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(1), AttributedType.Node);
+                                         final AttributeDescription latitudeDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(2), AttributedType.Node);
+                                         final AttributeDescription elevationDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(3), AttributedType.Node);
+                                         final AttributeDescription distanceDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(4), AttributedType.Edge);
 
-                                                    return new RoutingNetworkDescription(network,
-                                                                                         longitudeDescription,
-                                                                                         latitudeDescription,
-                                                                                         distanceDescription);
-                                                  });
+                                         return new RoutingNetworkDescription(network,
+                                                                              longitudeDescription,
+                                                                              latitudeDescription,
+                                                                              elevationDescription,
+                                                                              distanceDescription);
+                                     });
     }
 
     /**
@@ -164,10 +168,11 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
             return Collections.emptyList();
         }
 
-        final String routingNetworkDescriptionQuery = String.format("SELECT %s, %s, %s, %s FROM %s;",
+        final String routingNetworkDescriptionQuery = String.format("SELECT %s, %s, %s, %s, %s FROM %s;",
                                                                     "table_name",
                                                                     "longitude_attribute",
                                                                     "latitude_attribute",
+                                                                    "elevation_attribute",
                                                                     "distance_attribute",
                                                                     RoutingNetworkDescriptionsTableName);
 
@@ -178,11 +183,13 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
 
                                                  final AttributeDescription longitudeDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(2), AttributedType.Node);
                                                  final AttributeDescription  latitudeDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(3), AttributedType.Node);
-                                                 final AttributeDescription  distanceDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(4), AttributedType.Edge);
+                                                 final AttributeDescription elevationDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(4), AttributedType.Node);
+                                                 final AttributeDescription  distanceDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(5), AttributedType.Edge);
 
                                                  return new RoutingNetworkDescription(network,
                                                                                       longitudeDescription,
                                                                                       latitudeDescription,
+                                                                                      elevationDescription,
                                                                                       distanceDescription);
                                                });
     }
@@ -198,6 +205,10 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
      * @param latitudeDescription
      *             Routing network attribute description for the vertical
      *             portion of a node's coordinate
+     * @param elevationDescription
+     *             Routing network attribute description for the elevation
+     *             portion of a node's coordinate. This value may be null if
+     *             the network is only in two dimensions
      * @param distanceDescription
      *             Routing network attribute description for the distance
      *             between an edge's two nodes
@@ -208,6 +219,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
     public RoutingNetworkDescription addRoutingNetworkDescription(final Network              network,
                                                                   final AttributeDescription longitudeDescription,
                                                                   final AttributeDescription latitudeDescription,
+                                                                  final AttributeDescription elevationDescription,
                                                                   final AttributeDescription distanceDescription) throws SQLException
     {
         if(network == null)
@@ -229,6 +241,13 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Latitude description may not be null, it must refer to a node, and must refer to the supplied network");
         }
 
+        if(elevationDescription != null &&
+           (elevationDescription.getAttributedType() != AttributedType.Node ||
+            !elevationDescription.getNetworkTableName().equals(network.getTableName())))
+        {
+            throw new IllegalArgumentException("If the elevation description is not null, it must refer to a node, and must refer to the supplied network");
+        }
+
         if(distanceDescription == null                                    ||
            distanceDescription.getAttributedType() != AttributedType.Edge ||
            !distanceDescription.getNetworkTableName().equals(network.getTableName()))
@@ -245,16 +264,20 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
 
 
             JdbcUtility.update(this.databaseConnection,
-                               String.format("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
+                               String.format("INSERT INTO %s (%s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?)",
                                              GeoPackageRoutingExtension.RoutingNetworkDescriptionsTableName,
                                              "table_name",
                                              "longitude_attribute",
                                              "latitude_attribute",
+                                             "elevation_attribute",
                                              "distance_attribute"),
-                               preparedStatement -> { preparedStatement.setString(1, network.getTableName());
+                               preparedStatement -> { final String elevationDescriptionName = elevationDescription == null ? null : elevationDescription.getName();
+
+                                                      preparedStatement.setString(1, network.getTableName());
                                                       preparedStatement.setString(2, longitudeDescription.getName());
                                                       preparedStatement.setString(3, latitudeDescription. getName());
-                                                      preparedStatement.setString(4, distanceDescription. getName());
+                                                      preparedStatement.setString(4, elevationDescriptionName);
+                                                      preparedStatement.setString(5, distanceDescription. getName());
                                                     });
 
             this.databaseConnection.commit();
@@ -262,6 +285,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
             final RoutingNetworkDescription routingNetwork = new RoutingNetworkDescription(network,
                                                                                            longitudeDescription,
                                                                                            latitudeDescription,
+                                                                                           elevationDescription,
                                                                                            distanceDescription);
 
             this.addExtensionEntry();
@@ -331,7 +355,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                                         final double                    centerX,
                                         final double                    centerY,
                                         final double                    radius,
-                                        final Consumer<Edge>            visitor) throws SQLException
+                                        final Consumer<Integer>         visitor) throws SQLException
     {
         if(routingNetwork == null)
         {
@@ -349,7 +373,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         final String latitudeName                   = routingNetwork.getLatitudeDescription() .getName();
         final String distanceName                   = routingNetwork.getDistanceDescription() .getName();
 
-        final String edgeQuery = String.format("SELECT id, from_node, to_node " +
+        final String edgeQuery = String.format("SELECT id " +
                                                "FROM %1$s "+
                                                "WHERE  EXISTS "+
                                                       "(SELECT NULL "+
@@ -368,9 +392,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         JdbcUtility.forEach(this.databaseConnection,
                             edgeQuery,
                             null,
-                            resultSet -> visitor.accept(GeoPackageNetworkExtension.createEdge(resultSet.getInt(1),
-                                                                                              resultSet.getInt(2),
-                                                                                              resultSet.getInt(3))));
+                            resultSet -> visitor.accept(resultSet.getInt(1)));
     }
 
     /**
@@ -393,7 +415,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                                    final double                    centerX,
                                    final double                    centerY,
                                    final double                    radius,
-                                   final Consumer<Edge>            visitor) throws SQLException
+                                   final Consumer<Integer>         visitor) throws SQLException
     {
         if(routingNetwork == null)
         {
@@ -466,22 +488,22 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
 
         // I apologize for how disgusting the whole thing ends up looking.
 
-        final String edgeQuery = String.format("SELECT id, from_node, to_node\n" +
+        final String edgeQuery = String.format("SELECT id\n" +
                                                // Compute "param"
-                                               "FROM (SELECT id, from_node, to_node, x1, y1, x2, y2, c, d,\n" +
+                                               "FROM (SELECT id, x1, y1, x2, y2, c, d,\n" +
                                                             // "switch" to determine the value of "param"
                                                             "CASE WHEN x1 = x2 AND y1 = y2\n" +              // points 1 and 2 are the same, so the distance/length between them is 0. don't divide by 0.
                                                                  "THEN -1\n" +
                                                                  "ELSE (a * c + b * d) / (c * c + d * d)\n" + // dot / length squared
                                                                  "END AS param\n" +
                                                      // Compute a, b, c, d and pass along other properties
-                                                     "FROM (SELECT id, from_node, to_node, x1, y1, x2, y2,\n" +
+                                                     "FROM (SELECT id, x1, y1, x2, y2,\n" +
                                                                   "(%1$f - x1) AS a,\n" +
                                                                   "(%2$f - y1) AS b,\n" +
                                                                   "(  x2 - x1) AS c,\n" +
                                                                   "(  y2 - y1) AS d\n" +
                                                            // Select the edge (id, and from/to nodes) as well as the x/y of the from/to nodes
-                                                           "FROM (SELECT id, from_node, to_node,\n" +
+                                                           "FROM (SELECT id\n" +
                                                                         "a1.%3$s AS x1,\n" +
                                                                         "a1.%4$s AS y1,\n" +
                                                                         "a2.%3$s AS x2,\n" +
@@ -508,9 +530,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         JdbcUtility.forEach(this.databaseConnection,
                             edgeQuery,
                             null,
-                            resultSet -> visitor.accept(GeoPackageNetworkExtension.createEdge(resultSet.getInt(1),
-                                                                                              resultSet.getInt(2),
-                                                                                              resultSet.getInt(3))));
+                            resultSet -> visitor.accept(resultSet.getInt(1)));
     }
 
     /**
@@ -566,9 +586,9 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
      *
      * @param routingNetwork
      *            network on which to route between a start and end node
-     * @param start
+     * @param startNodeIdentifier
      *            starting node
-     * @param end
+     * @param endNodeIdentifier
      *            ending node
      * @param edgeCostEvaluator
      *            cost function for each edge in the path
@@ -578,13 +598,15 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
      * @throws SQLException
      *             if there is a database error
      */
-    public List<Integer> aStar(final RoutingNetworkDescription                routingNetwork,
-                               final int                                      start,
-                               final int                                      end,
-                               final List<AttributeDescription>               nodeAttributes,
-                               final List<AttributeDescription>               edgeAttributes,
-                               final Function<List<Objects>, Double>          edgeCostEvaluator,
-                               final BiFunction<List<Objects>, List<Objects>, Double> heuristic) throws SQLException
+    public List<Integer> aStar(final RoutingNetworkDescription                  routingNetwork,
+                               final int                                        startNodeIdentifier,
+                               final int                                        endNodeIdentifier,
+                               final Collection<AttributeDescription>           nodeAttributes,
+                               final Collection<AttributeDescription>           edgeAttributes,
+                               final Function<EdgeEvaluationParameters, Double> edgeCostEvaluator,
+                               final BiFunction<Node, Node, Double>             heuristic
+                               /* final restricted node ids */
+                               /* final restricted edges ids */) throws SQLException
     {
         if(routingNetwork == null)
         {
@@ -601,86 +623,84 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Heuristic function may not be null");
         }
 
+        final Memoize2<Node, Node, Double> cachedHeuristic = new Memoize2<>(heuristic);
+
         // changed comparator -> change back to distance from end
-        final PriorityQueue<AStarVertex> openList = new PriorityQueue<>((vertex1, vertex2) -> Double.compare((vertex1.getCostToEnd() + vertex1.getCostFromStart()),
-                                                                                                             (vertex2.getCostToEnd() + vertex2.getCostFromStart())));
+        final PriorityQueue<AStarVertex> openList = new PriorityQueue<>((vertex1, vertex2) -> Double.compare((vertex1.getEstimatedCostToEnd() + vertex1.getCostFromStart()),
+                                                                                                             (vertex2.getEstimatedCostToEnd() + vertex2.getCostFromStart())));
         final Collection<Integer> closedList = new HashSet<>();
 
         final Map<Integer, AStarVertex> nodeMap = new HashMap<>();
 
-        final List<Object> startNodeAttributes = this.networkExtension.getNodeAttributes(start, nodeAttributes.toArray(AttributeDescription[]::new));
+        final Node startNode = this.networkExtension.getNode(startNodeIdentifier, nodeAttributes);
+        final Node endNode   = this.networkExtension.getNode(endNodeIdentifier,   nodeAttributes);
 
         // Starting Vertex
-        final AStarVertex startVertex = new AStarVertex(start,
+        final AStarVertex startVertex = new AStarVertex(startNode,
                                                         0.0,
-                                                        heuristic.apply(start, end));
+                                                        cachedHeuristic.get(startNode, endNode));
 
         openList.add(startVertex);
-        nodeMap.put(start, startVertex);
+        nodeMap.put(startNodeIdentifier, startVertex);
 
         while(!openList.isEmpty())
         {
             final AStarVertex currentVertex = openList.poll(); // Get the Vertex closest to the end
 
             // If current vertex is the target then we are done
-            if(currentVertex.getNodeIdentifier() == end)
+            if(currentVertex.getNode().getIdentifier() == endNodeIdentifier)
             {
-                return getAStarPath(end, nodeMap);
+                return getAStarPath(endNodeIdentifier, nodeMap);
             }
 
-            closedList.add(currentVertex.getNodeIdentifier()); // Put it in "done" pile
+            closedList.add(currentVertex.getNode().getIdentifier()); // Put it in "done" pile
 
-            // For each reachable Vertex
-            for(final Edge edge : this.networkExtension.getExits(routingNetwork.getNetwork(), currentVertex.getNodeIdentifier()))
+            for(final int adjacentNodeIdentifier : this.networkExtension.getExits(routingNetwork.getNetwork(), currentVertex.getNode().getIdentifier())) // For each node adjacent to the current node
             {
-                final int adjacentNode = edge.getTo();
-
-                AStarVertex reachableVertex = nodeMap.get(adjacentNode);
+                AStarVertex reachableVertex = nodeMap.get(adjacentNodeIdentifier);
 
                 if(reachableVertex == null)
                 {
-                    reachableVertex = new AStarVertex(adjacentNode);
-                    nodeMap.put(adjacentNode, reachableVertex);
+                    reachableVertex = new AStarVertex(this.networkExtension.getNode(adjacentNodeIdentifier, nodeAttributes));
+                    nodeMap.put(adjacentNodeIdentifier, reachableVertex);
                 }
 
                 // If the closed list already searched this vertex, skip it
-                if(!closedList.contains(reachableVertex.getNodeIdentifier()))
+                if(!closedList.contains(reachableVertex.getNode().getIdentifier()))
                 {
-                    final double edgeCost = edgeCostEvaluator.apply(edge);
+                    final double edgeCost = edgeCostEvaluator.apply(new EdgeEvaluationParameters(currentVertex.getNode(),
+                                                                                                 reachableVertex.getNode(),
+                                                                                                 this.networkExtension.getEdgeAttributes(currentVertex  .getNode().getIdentifier(),
+                                                                                                                                         reachableVertex.getNode().getIdentifier(),
+                                                                                                                                         edgeAttributes)));
 
                     if(edgeCost <= 0.0)    // Are positive values that are extremely close to 0 going to be a problem?
                     {
                         throw new RuntimeException("The A* algorithm is only valid for edge costs greater than 0");
                     }
 
-                    final double distanceFromStart = currentVertex.getCostFromStart() + edgeCost;
+                    final double costFromStart = currentVertex.getCostFromStart() + edgeCost;
 
-                    if(!openList.contains(reachableVertex))         // If we don't have it, add it
+                    final boolean isShorterPath = costFromStart < reachableVertex.getCostFromStart();
+
+                    if(!openList.contains(reachableVertex) || isShorterPath)
                     {
-                        final double distanceFromEnd = heuristic.apply(reachableVertex.getNodeIdentifier(), end);
+                        reachableVertex.update(costFromStart,
+                                               cachedHeuristic.get(reachableVertex.getNode(), endNode), // Estimated cost to the end node
+                                               currentVertex);
 
-                        reachableVertex.setCostFromStart(distanceFromStart);
-                        reachableVertex.setCostToEnd(distanceFromEnd);
-                        reachableVertex.setPrevious         (currentVertex);
+                        if(isShorterPath)
+                        {
+                            openList.remove(reachableVertex);   // Re-add to trigger the reprioritization of this vertex
+                        }
 
-                        openList.add(reachableVertex);
-                    }
-                    else if(distanceFromStart < reachableVertex.getCostFromStart()) // If this is better then update the values and parent Vertex (previous)
-                    {
-                        final double distanceFromEnd = heuristic.apply(reachableVertex.getNodeIdentifier(), end);
-
-                        reachableVertex.setCostFromStart(distanceFromStart);
-                        reachableVertex.setCostToEnd(distanceFromEnd);
-                        reachableVertex.setPrevious(currentVertex);
-
-                        openList.remove(reachableVertex);   // Re-add to trigger the reprioritization of this vertex
                         openList.add(reachableVertex);
                     }
                 }
             }
         }
 
-        throw new RuntimeException("Didnt find correct path"); // TODO, clean this up
+        return null;    // No path between the start and end nodes
     }
 
     private static List<Integer> getAStarPath(final Integer end, final Map<Integer, AStarVertex> nodeMap)
@@ -689,7 +709,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
 
         for(AStarVertex backTrackVertex = nodeMap.get(end); backTrackVertex != null; backTrackVertex = backTrackVertex.getPrevious())
         {
-            path.addLast(backTrackVertex.getNodeIdentifier());
+            path.addLast(backTrackVertex.getNode().getIdentifier());
         }
 
         return path;
@@ -701,6 +721,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                "(table_name          TEXT PRIMARY KEY NOT NULL, -- Name of network table\n"                 +
                " longitude_attribute TEXT NOT NULL,             -- Name of horizontal (x) node attribute\n" +
                " latitude_attribute  TEXT NOT NULL,             -- Name of vertical (y) node attribute\n"   +
+               " elevation_attribute TEXT DEFAULT NULL,         -- Name of elevation (z) node attribute\n"   +
                " distance_attribute  TEXT NOT NULL,             -- Name of distance edge attribute\n"       +
                " CONSTRAINT fk_rntn_table_name FOREIGN KEY (table_name) REFERENCES gpkg_contents(table_name));";
     }

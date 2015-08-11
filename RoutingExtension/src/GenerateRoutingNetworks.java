@@ -44,6 +44,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -191,6 +192,7 @@ public final class GenerateRoutingNetworks
             routingExtension.addRoutingNetworkDescription(network,
                                                           longitudeAttribute,
                                                           latitudeAttribute,
+                                                          elevationAttribute,
                                                           distanceAttribute);
 
         }
@@ -222,6 +224,13 @@ public final class GenerateRoutingNetworks
                                                                                                 "latitude",
                                                                                                 AttributedType.Node);
 
+        final AttributeDescription elevationAttribute = networkExtension.addAttributeDescription(network,
+                                                                                                 "elevation",
+                                                                                                 "meters",
+                                                                                                 DataType.Real,
+                                                                                                 "elevation",
+                                                                                                 AttributedType.Node);
+
         final AttributeDescription distanceAttribute = networkExtension.addAttributeDescription(network,
                                                                                                 "distance",
                                                                                                 "degrees",
@@ -235,7 +244,8 @@ public final class GenerateRoutingNetworks
                            nodeFile,
                            network,
                            longitudeAttribute,
-                           latitudeAttribute);
+                           latitudeAttribute,
+                           elevationAttribute);
 
         final File edgeFile = new File("data/contour.1/contour.1.edge");
 
@@ -247,11 +257,13 @@ public final class GenerateRoutingNetworks
                               network,
                               distanceAttribute,
                               longitudeAttribute,
-                              latitudeAttribute);
+                              latitudeAttribute,
+                              elevationAttribute);
 
         routingExtension.addRoutingNetworkDescription(network,
                                                       longitudeAttribute,
                                                       latitudeAttribute,
+                                                      elevationAttribute,
                                                       distanceAttribute);
     }
 
@@ -259,21 +271,30 @@ public final class GenerateRoutingNetworks
                                               final Network                    network,
                                               final AttributeDescription       distanceDescription,
                                               final AttributeDescription       longitudeDescription,
-                                              final AttributeDescription       latitudeDescription) throws SQLException
+                                              final AttributeDescription       latitudeDescription,
+                                              final AttributeDescription       elevationDescription) throws SQLException
     {
         networkExtension.visitEdges(network, edge -> { try
                                                        {
-                                                           final List<List<Object>> values = networkExtension.getNodeAttributes(Arrays.asList(edge.getFrom(), edge.getTo()), longitudeDescription, latitudeDescription);
+                                                           final List<List<Object>> values = networkExtension.getNodeAttributes(Arrays.asList(edge.getFrom(), edge.getTo()),
+                                                                                                                                longitudeDescription,
+                                                                                                                                latitudeDescription,
+                                                                                                                                elevationDescription);
 
                                                            final List<Object> startCoordinate = values.get(0);
-                                                           final List<Object> endCoordinate = values.get(1);
+                                                           final List<Object> endCoordinate   = values.get(1);
 
                                                            final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
                                                            final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
+                                                           final double elevation = (Double)endCoordinate.get(2) - (Double)startCoordinate.get(2);
 
-                                                           final double distance = Math.sqrt(latitude * latitude + longitude * longitude);
+                                                           final double distance = Math.sqrt(latitude  * latitude  +
+                                                                                             longitude * longitude +
+                                                                                             elevation * elevation);
 
-                                                           networkExtension.updateEdgeAttributes(edge, Arrays.asList(distance), distanceDescription);
+                                                           networkExtension.updateEdgeAttributes(edge,
+                                                                                                 Arrays.asList(distance),
+                                                                                                 distanceDescription);
                                                        }
                                                        catch(final Exception ex)
                                                        {
@@ -399,7 +420,7 @@ public final class GenerateRoutingNetworks
                                             final Network                    network,
                                             final AttributeDescription...    attributeDescriptions) throws SQLException
     {
-        final List<Pair<Pair<Integer, Integer>, List<Object>>> edges = new ArrayList<>();
+        final Collection<Pair<Pair<Integer, Integer>, List<Object>>> edges = new ArrayList<>();
 
         while(resultSet.next())
         {

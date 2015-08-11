@@ -21,66 +21,44 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.extensions.network;
+package com.rgi.geopackage.extensions.routing;
 
-import com.rgi.geopackage.GeoPackage;
+import com.rgi.geopackage.extensions.network.Node;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Representation of a <b>directional</b> edge from a {@link GeoPackage}
- * "rgi_network" network
- *
- * @author Luke Lambert
- *
+ * @author  Luke Lambert
  */
-public class Edge
+public class EdgeEvaluationParameters
 {
-    /**
-     * Constructor
-     *
-     * @param identifier
-     *             Unique identifier
-     * @param from
-     *             The origin node of an edge
-     * @param to
-     *             The destination node of an edge
-     */
-    protected Edge(final int identifier,
-                   final int from,
-                   final int to)
+    public EdgeEvaluationParameters(final Node         from,
+                                    final Node         to,
+                                    final List<Object> edgeAttributes)
     {
-        this.identifier = identifier;
-        this.from       = from;
-        this.to         = to;
+        this.from           = from;
+        this.to             = to;
+        this.edgeAttributes = new ArrayList<>(edgeAttributes);
     }
 
-    /**
-     * @return the identifier
-     */
-    public int getIdentifier()
-    {
-        return this.identifier;
-    }
-
-    /**
-     * @return the from
-     */
-    public int getFrom()
+    public Node getFrom()
     {
         return this.from;
     }
 
-    /**
-     * @return the to
-     */
-    public int getTo()
+    public Node getTo()
     {
         return this.to;
     }
 
-    private final int identifier;
-    private final int from;
-    private final int to;
+    public List<Object> getEdgeAttributes()
+    {
+        return Collections.unmodifiableList(this.edgeAttributes);
+    }
+
+    private final Node         from;
+    private final Node         to;
+    private final List<Object> edgeAttributes;
 }

@@ -21,7 +21,6 @@
  * SOFTWARE.
  */
 
-import com.rgi.common.util.functional.ThrowingFunction;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.extensions.network.AttributeDescription;
@@ -36,9 +35,8 @@ import com.rgi.geopackage.verification.ConformanceException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.stream.IntStream;
 
@@ -97,7 +95,7 @@ public final class RouteTests
 
         final AttributeDescription costAttribute = routingExtension.getNetworkExtension()
                                                                    .getAttributeDescription(routingNetwork.getNetwork(),
-                                                                                            "distance",
+                                                                                            "cost_pandolf",
                                                                                             AttributedType.Edge);
 
         if(costAttribute == null)
@@ -125,53 +123,26 @@ public final class RouteTests
 
     private static void runRoute(final GeoPackageRoutingExtension routingExtension,
                                  final RoutingNetworkDescription  routingNetwork,
-                                 final List<AttributeDescription> edgeAttributes,
-                                 final int                        startNode,
-                                 final int                        endNode) throws SQLException
+                                 final AttributeDescription       edgeAttribute,
+                                 final int                        startNodeIdentifier,
+                                 final int                        endNodeIdentifier) throws SQLException
     {
         final GeoPackageNetworkExtension networkExtension = routingExtension.getNetworkExtension();
 
         final AttributeDescription longitudeAttibute = routingNetwork.getLongitudeDescription();
         final AttributeDescription latitudeAttibute  = routingNetwork.getLatitudeDescription();
 
-        final Map<Integer, Double> heuristicCache = new HashMap<>();
-        final Map<Integer, Double> distanceCache  = new HashMap<>();
-
         routingExtension.aStar(routingNetwork,
-                               startNode,
-                               endNode,
-                               (ThrowingFunction<Edge, Double>)edge -> { final int key = edge.getIdentifier();
+                               startNodeIdentifier,
+                               endNodeIdentifier,
+                               Arrays.asList(longitudeAttibute, latitudeAttibute), // TODO NEED ELEVATION
+                               Arrays.asList(edgeAttribute),
+                               params -> (Double)params.getEdgeAttributes().get(0),
+                               (startNode, endNode) -> { final double longitude = (Double)endNode.getAttribute(0) - (Double)startNode.getAttribute(0);
+                                                         final double latitude  = (Double)endNode.getAttribute(1) - (Double)startNode.getAttribute(1);
 
-                                                                         if(distanceCache.containsKey(key))
-                                                                         {
-                                                                             return distanceCache.get(key);
-                                                                         }
-                                                                         final Double cost = networkExtension.getEdgeAttribute(edge, edgeAttribute);
-                                                                         distanceCache.put(key, cost);
-                                                                         return cost;
-                                                                       },
-                               (startIdentifier, endIdentifier) -> { try
-                                                                     {
-                                                                         final int key = ((startIdentifier + endIdentifier)*(startIdentifier + endIdentifier + 1)/2) + endIdentifier;
-                                                                         if(heuristicCache.containsKey(key))
-                                                                         {
-                                                                             return heuristicCache.get(key);
-                                                                         }
-                                                                         final List<Object> startCoordinate = networkExtension.getNodeAttributes(startIdentifier, longitudeAttibute, latitudeAttibute);
-                                                                         final List<Object> endCoordinate   = networkExtension.getNodeAttributes(endIdentifier,   longitudeAttibute, latitudeAttibute);
-
-                                                                         final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
-                                                                         final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
-
-                                                                         final double distance = Math.sqrt(latitude*latitude + longitude*longitude);
-                                                                         heuristicCache.put(key, distance);
-                                                                         return distance;
-                                                                     }
-                                                                     catch(final SQLException ex)
-                                                                     {
-                                                                         throw new RuntimeException(ex);
-                                                                     }
-                                                                   });
+                                                         return Math.sqrt(latitude*latitude + longitude*longitude);
+                                                       });
     }
 
     private static void printPath(final GeoPackageNetworkExtension networkExtension,

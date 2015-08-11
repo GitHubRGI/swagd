@@ -21,6 +21,10 @@ public class RoutingNetworkDescription
      * @param latitudeDescription
      *             Routing network attribute description for the vertical
      *             portion of a node's coordinate
+     * @param elevationDescription
+     *             Routing network attribute description for the elevation
+     *             portion of a node's coordinate. This value may be null if
+     *             the network is only in two dimensions
      * @param distanceDescription
      *             Routing network attribute description for the distance
      *             between an edge's two nodes
@@ -28,6 +32,7 @@ public class RoutingNetworkDescription
     public RoutingNetworkDescription(final Network              network,
                                      final AttributeDescription longitudeDescription,
                                      final AttributeDescription latitudeDescription,
+                                     final AttributeDescription elevationDescription,
                                      final AttributeDescription distanceDescription)
     {
         if(network == null)
@@ -60,6 +65,11 @@ public class RoutingNetworkDescription
             throw new IllegalArgumentException("The latitude attribute description must refer to a node");
         }
 
+        if(elevationDescription != null && elevationDescription.getAttributedType() != AttributedType.Node)
+        {
+            throw new IllegalArgumentException("The latitude attribute description must refer to a node");
+        }
+
         if(distanceDescription.getAttributedType() != AttributedType.Edge)
         {
             throw new IllegalArgumentException("The distance attribute description must refer to an edge");
@@ -68,6 +78,7 @@ public class RoutingNetworkDescription
         this.network              = network;
         this.longitudeDescription = longitudeDescription;
         this.latitudeDescription  = latitudeDescription;
+        this.elevationDescription = elevationDescription;
         this.distanceDescription  = distanceDescription;
     }
 
@@ -96,6 +107,14 @@ public class RoutingNetworkDescription
     }
 
     /**
+     * @return the elevationDescription
+     */
+    public AttributeDescription getElevationDescription()
+    {
+        return this.elevationDescription;
+    }
+
+    /**
      * @return the distanceDescription
      */
     public AttributeDescription getDistanceDescription()
@@ -112,5 +131,6 @@ public class RoutingNetworkDescription
     private final Network              network;
     private final AttributeDescription longitudeDescription;
     private final AttributeDescription latitudeDescription;
+    private final AttributeDescription elevationDescription;
     private final AttributeDescription distanceDescription;
 }

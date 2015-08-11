@@ -21,66 +21,47 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.extensions.network;
+package com.rgi.geopackage.extensions.routing;
 
-import com.rgi.geopackage.GeoPackage;
-
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
- * Representation of a <b>directional</b> edge from a {@link GeoPackage}
- * "rgi_network" network
- *
  * @author Luke Lambert
- *
  */
-public class Edge
+public class Route
 {
-    /**
-     * Constructor
-     *
-     * @param identifier
-     *             Unique identifier
-     * @param from
-     *             The origin node of an edge
-     * @param to
-     *             The destination node of an edge
-     */
-    protected Edge(final int identifier,
-                   final int from,
-                   final int to)
+
+    public Route(final Collection<Collection<Object>> nodesAttributes,
+                 final Collection<Collection<Object>> edgesAttributes,
+                 final Collection<Double>             edgeCosts)
     {
-        this.identifier = identifier;
-        this.from       = from;
-        this.to         = to;
+        this.nodesAttributes = nodesAttributes;
+        this.edgesAttributes = edgesAttributes;
+        this.edgeCosts       = edgeCosts;
     }
 
-    /**
-     * @return the identifier
-     */
-    public int getIdentifier()
+    public Collection<Collection<Object>> getNodesAttributes()
     {
-        return this.identifier;
+        return Collections.unmodifiableCollection(this.nodesAttributes);
     }
 
-    /**
-     * @return the from
-     */
-    public int getFrom()
+    public Collection<Collection<Object>> getEdgesAttributes()
     {
-        return this.from;
+        return Collections.unmodifiableCollection(this.edgesAttributes);
     }
 
-    /**
-     * @return the to
-     */
-    public int getTo()
+    public Collection<Double> getEdgeCosts()
     {
-        return this.to;
+        return Collections.unmodifiableCollection(this.edgeCosts);
     }
 
-    private final int identifier;
-    private final int from;
-    private final int to;
+    public double getTotalCost()
+    {
+        return this.edgeCosts.stream().reduce(0.0, Double::sum);
+    }
+
+    private final Collection<Collection<Object>> nodesAttributes;
+    private final Collection<Collection<Object>> edgesAttributes;
+    private final Collection<Double>             edgeCosts;
 }

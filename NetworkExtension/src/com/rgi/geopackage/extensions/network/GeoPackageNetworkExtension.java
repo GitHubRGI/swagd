@@ -23,6 +23,20 @@
 
 package com.rgi.geopackage.extensions.network;
 
+import com.rgi.common.BoundingBox;
+import com.rgi.common.Pair;
+import com.rgi.common.util.jdbc.JdbcUtility;
+import com.rgi.geopackage.GeoPackage;
+import com.rgi.geopackage.core.ContentFactory;
+import com.rgi.geopackage.core.GeoPackageCore;
+import com.rgi.geopackage.core.SpatialReferenceSystem;
+import com.rgi.geopackage.extensions.Extension;
+import com.rgi.geopackage.extensions.GeoPackageExtensions;
+import com.rgi.geopackage.extensions.Scope;
+import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
+import com.rgi.geopackage.extensions.implementation.ImplementsExtension;
+import com.rgi.geopackage.utility.DatabaseUtility;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,23 +48,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import com.rgi.common.BoundingBox;
-import com.rgi.common.Pair;
-import com.rgi.common.util.jdbc.JdbcUtility;
-import com.rgi.geopackage.GeoPackage;
-import com.rgi.geopackage.core.GeoPackageCore;
-import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.extensions.Extension;
-import com.rgi.geopackage.extensions.GeoPackageExtensions;
-import com.rgi.geopackage.extensions.Scope;
-import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
-import com.rgi.geopackage.extensions.implementation.ImplementsExtension;
-import com.rgi.geopackage.utility.DatabaseUtility;
 
 /**
  * Implementation of the RGI Network GeoPackage extension
@@ -102,7 +101,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     @Override
     public String getDefinition()
     {
-        return ExtensionDefinition;
+        return "definition"; // TODO
     }
 
     @Override
@@ -164,10 +163,16 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         final String query = String.format("SELECT COUNT(*) FROM %s;",
                                            network.getTableName());
 
-        return JdbcUtility.selectOne(this.databaseConnection,
-                                     query,
-                                     null,
-                                     results -> results.getInt(1));
+        final Integer count = JdbcUtility.selectOne(this.databaseConnection,
+                                                    query,
+                                                    null,
+                                                    results -> results.getInt(1));
+        if(count == null)
+        {
+            throw new SQLException("Edge count query failed to return a result");
+        }
+
+        return count;
     }
 
     /**
@@ -190,10 +195,17 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                            network.getTableName(),
                                            network.getTableName());
 
-        return JdbcUtility.selectOne(this.databaseConnection,
-                                     query,
-                                     null,
-                                     results -> results.getInt(1));
+        final Integer count = JdbcUtility.selectOne(this.databaseConnection,
+                                                    query,
+                                                    null,
+                                                    results -> results.getInt(1));
+
+        if(count == null)
+        {
+            throw new SQLException("Node count query failed to return a result");
+        }
+
+        return count;
     }
 
     /**
@@ -235,7 +247,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      *             supplied table name
      * @throws SQLException
      *             throws if the method
-     *             {@link GeoPackageCore#getContent(String, com.rgi.geopackage.core.ContentFactory, SpatialReferenceSystem)}
+     *             {@link GeoPackageCore#getContent(String, ContentFactory, SpatialReferenceSystem)}
      *             throws an SQLException
      */
     public Network getNetwork(final String networkTableName) throws SQLException
@@ -311,14 +323,14 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         {
             if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, AttributeDescriptionTableName))
             {
-                JdbcUtility.update(this.databaseConnection, this.getAttributeDescriptionCreationSql());
+                JdbcUtility.update(this.databaseConnection, GeoPackageNetworkExtension.getAttributeDescriptionCreationSql());
             }
 
             // Create the network table
-            JdbcUtility.update(this.databaseConnection, this.getNetworkCreationSql(tableName));
+            JdbcUtility.update(this.databaseConnection, GeoPackageNetworkExtension.getNetworkCreationSql(tableName));
 
             // Create the network's attributes table
-            JdbcUtility.update(this.databaseConnection, this.getNodeAttributeTableCreationSql(nodeAttributesTableName));
+            JdbcUtility.update(this.databaseConnection, getNodeAttributeTableCreationSql(nodeAttributesTableName));
 
             // Add the network to the content table
             this.geoPackageCore.addContent(tableName,
@@ -371,13 +383,14 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                "to_node");
 
         final Edge edge = JdbcUtility.selectOne(this.databaseConnection,
-                                          edgeQuery,
-                                          preparedStatement -> { preparedStatement.setInt(1, from);
-                                                                preparedStatement.setInt(2, to);
-                                                               },
-                                          results -> new Edge(results.getInt(1), // identifier
-                                                              from,              // attribute name
-                                                              to));              // attributed type
+                                                edgeQuery,
+                                                preparedStatement -> {
+                                                    preparedStatement.setInt(1, from);
+                                                    preparedStatement.setInt(2, to);
+                                                },
+                                                results -> new Edge(results.getInt(1), // identifier
+                                                                    from,              // attribute name
+                                                                    to));              // attributed type
 
         if(edge == null)
         {
@@ -430,15 +443,14 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * @throws SQLException
      *             if there is a database error
      */
-    public List<Edge> getExits(final Network network, final int node) throws SQLException
+    public List<Integer> getExits(final Network network, final int node) throws SQLException
     {
         if(network == null)
         {
             throw new IllegalArgumentException("Network may not be null");
         }
 
-        final String edgeQuery = String.format("SELECT %s, %s FROM %s WHERE %s = ?;",
-                                               "id",
+        final String edgeQuery = String.format("SELECT %s FROM %s WHERE %s = ?;",
                                                "to_node",
                                                network.getTableName(),
                                                "from_node");
@@ -446,9 +458,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         return JdbcUtility.select(this.databaseConnection,
                                   edgeQuery,
                                   preparedStatement -> preparedStatement.setInt(1, node),
-                                  resultSet -> new Edge(resultSet.getInt(1),
-                                                        node,
-                                                        resultSet.getInt(2)));
+                                  resultSet -> resultSet.getInt(1));
     }
 
     /**
@@ -486,6 +496,22 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                             resultSet -> consumer.accept(new Edge(resultSet.getInt(1),
                                                                   resultSet.getInt(2),
                                                                   resultSet.getInt(3))));
+    }
+
+    public Node getNode(final int                              nodeIdentifier,
+                        final Collection<AttributeDescription> attributeDescriptions) throws SQLException
+    {
+        return new Node(nodeIdentifier,
+                        this.getNodeAttributes(nodeIdentifier, attributeDescriptions.toArray(new AttributeDescription[0])));
+
+    }
+
+    public Node getNode(final int                     nodeIdentifier,
+                        final AttributeDescription... attributeDescriptions) throws SQLException
+    {
+        return new Node(nodeIdentifier,
+                        this.getNodeAttributes(nodeIdentifier, attributeDescriptions));
+
     }
 
     /**
@@ -531,63 +557,6 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     }
 
     /**
-     * Performs an accumulation operation on all nodes.
-     *
-     * @param network
-     *             Network table reference
-     * @param initialValue
-     *             A starting value for the accumulation
-     * @param nodeEvaluator
-     *             Maps a node identifier and a list of attributes (in order of
-     *             request) to an instance of T
-     * @param combiner
-     *             Combines two instances of T
-     * @param attributeDescriptions
-     *             Indicates which attributes to make available to the node
-     *             evaluator
-     * @return the accumulation of all results
-     * @throws SQLException
-     *             if there is a database error
-     */
-    public <T> T accumulateNodes(final Network                              network,
-                                 final T                                    initialValue,
-                                 final BiFunction<Integer, List<Object>, T> nodeEvaluator,
-                                 final BinaryOperator<T>                    combiner,
-                                 final AttributeDescription...              attributeDescriptions) throws SQLException
-    {
-        if(network == null)
-        {
-            throw new IllegalArgumentException("Network may not be null");
-        }
-
-        if(nodeEvaluator == null)
-        {
-            throw new IllegalArgumentException("Node evaluator may not be null");
-        }
-
-        if(combiner == null)
-        {
-            throw new IllegalArgumentException("Combiner may not be null");
-        }
-
-        final List<String> columnNames = getColumnNames(AttributedType.Node, attributeDescriptions);
-
-        columnNames.add(0, "node_id");
-
-        final String nodeQuery = String.format("SELECT %s FROM %s;",
-                                               String.join(", ", columnNames),
-                                               getNodeAttributesTableName(network));
-
-        return JdbcUtility.accumulate(this.databaseConnection,
-                                      nodeQuery,
-                                      null,
-                                      initialValue,
-                                      resultSet -> nodeEvaluator.apply(resultSet.getInt(1),
-                                                                       JdbcUtility.getObjects(resultSet, 2, columnNames.size())),
-                                      combiner);
-    }
-
-    /**
      * Adds an edge to a {@link Network}
      *
      * @param network
@@ -614,9 +583,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         final int identifier = JdbcUtility.update(this.databaseConnection,
                                                   insert,
-                                                  preparedStatement -> { preparedStatement.setInt(1, from);
-                                                                         preparedStatement.setInt(2, to);
-                                                                       },
+                                                  preparedStatement -> {
+                                                      preparedStatement.setInt(1, from);
+                                                      preparedStatement.setInt(2, to);
+                                                  },
                                                   resultSet -> resultSet.getInt(1));
 
         this.databaseConnection.commit();
@@ -671,8 +641,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * @throws SQLException
      *             if there is a database error
      */
-    public void addAttributedEdges(final List<Pair<Pair<Integer, Integer>, List<Object>>> attributedEdges,
-                                   final AttributeDescription...                          attributeDescriptions) throws SQLException
+    public void addAttributedEdges(final Collection<Pair<Pair<Integer, Integer>, List<Object>>> attributedEdges,
+                                   final AttributeDescription...                                attributeDescriptions) throws SQLException
     {
         if(attributedEdges == null || attributedEdges.isEmpty())
         {
@@ -733,7 +703,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      *             if there is a database error
      */
     public void updateEdgeAttributes(final Edge                    edge,
-                                     final List<Object>            values,
+                                     final Collection<Object>      values,
                                      final AttributeDescription... attributeDescriptions) throws SQLException
     {
         if(edge == null)
@@ -817,16 +787,17 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         return JdbcUtility.select(this.databaseConnection,
                                   attributeDescriptionQuery,
-                                  preparedStatement -> { preparedStatement.setString(1, network.getTableName());
-                                                         preparedStatement.setString(2, attributedType.toString());
-                                                       },
+                                  preparedStatement -> {
+                                      preparedStatement.setString(1, network.getTableName());
+                                      preparedStatement.setString(2, attributedType.toString());
+                                  },
                                   resultSet -> new AttributeDescription(resultSet.getInt(1),                      // attribute unique identifier
-                                                                          network.getTableName(),                   // network table name
-                                                                          resultSet.getString(2),                   // attribute name
-                                                                          resultSet.getString(3),                   // attribute units
-                                                                          DataType.valueOf(resultSet.getString(4)), // attribute data type
-                                                                          resultSet.getString(5),                   // attribute description
-                                                                          attributedType));                          // attributed type
+                                                                        network.getTableName(),                   // network table name
+                                                                        resultSet.getString(2),                   // attribute name
+                                                                        resultSet.getString(3),                   // attribute units
+                                                                        DataType.valueOf(resultSet.getString(4)), // attribute data type
+                                                                        resultSet.getString(5),                   // attribute description
+                                                                        attributedType));                          // attributed type
     }
 
     /**
@@ -874,10 +845,11 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         return JdbcUtility.selectOne(this.databaseConnection,
                                      attributeDescriptionQuery,
-                                     preparedStatement -> { preparedStatement.setString(1, network.getTableName());
-                                                            preparedStatement.setString(2, attributedType.toString());
-                                                            preparedStatement.setString(3, name);
-                                                          },
+                                     preparedStatement -> {
+                                         preparedStatement.setString(1, network.getTableName());
+                                         preparedStatement.setString(2, attributedType.toString());
+                                         preparedStatement.setString(3, name);
+                                     },
                                      resultSet -> new AttributeDescription(resultSet.getInt(1),                      // attribute unique identifier
                                                                            network.getTableName(),                   // network table name
                                                                            name,                                     // attribute name
@@ -1094,6 +1066,53 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     /**
      * Get multiple attribute values from an edge
      *
+     * @param fromNodeIdentifier
+     *             Node identifier that's the "from" point of the edge
+     * @param toNodeIdentifier
+     *             Node identifier that's the "to" point of the edge
+     * @param attributeDescriptions
+     *             Collection of which attributes should be retrieved
+     * @return the edge's attribute values in the same order as the specified attribute descriptions
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public List<Object> getEdgeAttributes(final int                              fromNodeIdentifier,
+                                          final int                              toNodeIdentifier,
+                                          final Collection<AttributeDescription> attributeDescriptions) throws SQLException
+    {
+        if(attributeDescriptions == null || attributeDescriptions.isEmpty())
+        {
+            throw new IllegalArgumentException("Attribute description collection may not be null or empty");
+        }
+
+        final Pair<String, List<String>> schema = getSchema(AttributedType.Edge, attributeDescriptions.toArray(new AttributeDescription[0])); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
+
+        final String       networkTableName = schema.getLeft();
+        final List<String> columnNames      = schema.getRight();
+
+        final String attributeQuery = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ? LIMIT 1",
+                                                    String.join(", ", columnNames),
+                                                    networkTableName,
+                                                    "from_node",
+                                                    "to_node");
+
+        final List<Object> attributes =  JdbcUtility.selectOne(this.databaseConnection,
+                                                               attributeQuery,
+                                                               preparedStatement -> { preparedStatement.setInt(1, fromNodeIdentifier);
+                                                                                      preparedStatement.setInt(2, toNodeIdentifier);
+                                                                                    },
+                                                               resultSet -> JdbcUtility.getObjects(resultSet, 1, attributeDescriptions.size()));
+        if(attributes == null)
+        {
+            throw new IllegalArgumentException("The given edge is not in the table");
+        }
+
+        return attributes;
+    }
+
+    /**
+     * Get multiple attribute values from an edge
+     *
      * @param nodeIdentifier
      *             Unique node identifier
      * @param attributeDescriptions
@@ -1119,7 +1138,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * @throws SQLException
      *             if there is a database error
      */
-    public List<List<Object>> getNodeAttributes(final List<Integer>           nodeIdentifiers,
+    public List<List<Object>> getNodeAttributes(final Collection<Integer>     nodeIdentifiers,
                                                 final AttributeDescription... attributeDescriptions) throws SQLException
     {
         if(nodeIdentifiers == null || nodeIdentifiers.isEmpty())
@@ -1289,24 +1308,6 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         this.databaseConnection.commit();
     }
 
-    /**
-     * Exposes the Edge constructor to subclasses of this class
-     *
-     * @param identifier
-     *             Unique identifier
-     * @param from
-     *             The origin node of an edge
-     * @param to
-     *             The destination node of an edge
-     * @return a new edge
-     */
-    public static Edge createEdge(final int identifier, final int from, final int to)
-    {
-        return new Edge(identifier,
-                        from,
-                        to);
-    }
-
     private static Pair<String, List<String>> getSchema(final AttributedType          attributedType,
                                                         final AttributeDescription... attributeDescriptions)
     {
@@ -1325,18 +1326,19 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         return Pair.of(firstNetworkTableName,
                        Arrays.asList(attributeDescriptions)
                              .stream()
-                             .map(description -> { if(!description.getNetworkTableName().equals(firstNetworkTableName))
-                                                   {
-                                                       throw new IllegalArgumentException("Attribute descriptions must all refer to the same network table");
-                                                   }
+                             .map(description -> {
+                                 if(!description.getNetworkTableName().equals(firstNetworkTableName))
+                                 {
+                                     throw new IllegalArgumentException("Attribute descriptions must all refer to the same network table");
+                                 }
 
-                                                   if(!description.getAttributedType().equals(attributedType))
-                                                   {
-                                                       throw new IllegalArgumentException("Attribute descriptions must all refer exclusively to nodes or exclusively to edges");
-                                                   }
+                                 if(description.getAttributedType() != attributedType)
+                                 {
+                                     throw new IllegalArgumentException("Attribute descriptions must all refer exclusively to nodes or exclusively to edges");
+                                 }
 
-                                                   return description.getName();
-                                                 })
+                                 return description.getName();
+                             })
                              .collect(Collectors.toList()));
     }
 
@@ -1362,7 +1364,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                throw new IllegalArgumentException("Attribute descriptions must all refer to the same network table");
                                            }
 
-                                           if(!description.getAttributedType().equals(attributedType))
+                                           if(description.getAttributedType() != attributedType)
                                            {
                                                throw new IllegalArgumentException("Attribute descriptions must all refer exclusively to nodes or exclusively to edges");
                                            }
@@ -1372,20 +1374,18 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                      .collect(Collectors.toList());
     }
 
-    @SuppressWarnings("static-method")
-    protected String getNetworkCreationSql(final String networkTableName)
+    protected static String getNetworkCreationSql(final String networkTableName)
     {
-        return "CREATE TABLE " + networkTableName + "\n" +
+        return "CREATE TABLE " + networkTableName + '\n' +
                "(id        INTEGER PRIMARY KEY AUTOINCREMENT, -- Autoincrement primary key\n" +
                " from_node INTEGER NOT NULL,                  -- Starting point of an edge\n" +
                " to_node   INTEGER NOT NULL,                  -- End of an edge\n"            +
                " UNIQUE (from_node, to_node));";
     }
 
-    @SuppressWarnings("static-method")
-    protected String getAttributeDescriptionCreationSql()
+    protected static String getAttributeDescriptionCreationSql()
     {
-        return "CREATE TABLE " + AttributeDescriptionTableName + "\n" +
+        return "CREATE TABLE " + AttributeDescriptionTableName + '\n' +
                "(id              INTEGER PRIMARY KEY AUTOINCREMENT, -- Autoincrement primary key\n"            +
                " table_name      TEXT NOT NULL,                     -- Name of network table\n"                +
                " name            TEXT NOT NULL,                     -- Name of attribute\n"                    +
@@ -1397,16 +1397,14 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                " CONSTRAINT fk_natd_table_name FOREIGN KEY (table_name) REFERENCES gpkg_contents(table_name));";
     }
 
-    @SuppressWarnings("static-method")
-    protected String getNodeAttributeTableCreationSql(final String nodeAttributeTableName)
+    protected static String getNodeAttributeTableCreationSql(final String nodeAttributeTableName)
     {
-        return "CREATE TABLE " + nodeAttributeTableName + "\n"      +
+        return "CREATE TABLE " + nodeAttributeTableName + '\n'      +
                "(node_id INTEGER PRIMARY KEY, -- Node identifier\n" +
                " UNIQUE (node_id));";   // An index wasn't being automatically created for "node_id"
     }
 
     private static final String ExtensionName             = "rgi_network";
-    private static final String ExtensionDefinition       = "definition"; // TODO
     private static final String NodeAttributesTableSuffix = "_node_attributes";
 
     /**

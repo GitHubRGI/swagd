@@ -25,62 +25,53 @@ package com.rgi.geopackage.extensions.network;
 
 import com.rgi.geopackage.GeoPackage;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Representation of a <b>directional</b> edge from a {@link GeoPackage}
- * "rgi_network" network
+ * Representation of a node from a {@link GeoPackage} "rgi_network" network
  *
  * @author Luke Lambert
  *
  */
-public class Edge
+public class Node
 {
-    /**
-     * Constructor
-     *
-     * @param identifier
-     *             Unique identifier
-     * @param from
-     *             The origin node of an edge
-     * @param to
-     *             The destination node of an edge
-     */
-    protected Edge(final int identifier,
-                   final int from,
-                   final int to)
+    protected Node(final int identifier)
     {
-        this.identifier = identifier;
-        this.from       = from;
-        this.to         = to;
+        this(identifier, Collections.emptyList());
     }
 
-    /**
-     * @return the identifier
-     */
+    protected Node(final int       identifier,
+                   final Object... attributeValues)
+    {
+        this(identifier, Arrays.asList(attributeValues));
+    }
+
+    protected Node(final int                identifier,
+                   final Collection<Object> attributeValues)
+    {
+        if(attributeValues == null)
+        {
+            throw new IllegalArgumentException("Attribute values collection may not be null");
+        }
+
+        this.identifier      = identifier;
+        this.attributeValues = new ArrayList<>(attributeValues);
+    }
+
     public int getIdentifier()
     {
         return this.identifier;
     }
 
-    /**
-     * @return the from
-     */
-    public int getFrom()
+    public Object getAttribute(final int attributeIndex)
     {
-        return this.from;
+        return this.attributeValues.get(attributeIndex);
     }
 
-    /**
-     * @return the to
-     */
-    public int getTo()
-    {
-        return this.to;
-    }
-
-    private final int identifier;
-    private final int from;
-    private final int to;
+    private final int          identifier;
+    private final List<Object> attributeValues; // TODO This should be Map<AttributeDescription, Object>, but I'm concerned about performance.  Once we're happy with performance numbers in routing, we should make this change and see what, if any, performance impact it has.
 }

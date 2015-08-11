@@ -73,6 +73,36 @@ public class Pair<L, R>
         return this.right;
     }
 
+    @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        final Pair<?, ?> pair = (Pair<?, ?>)o;
+
+        if(this.getLeft() != null ? !this.getLeft().equals(pair.getLeft()) : pair.getLeft() != null)
+        {
+            return false;
+        }
+        return !(getRight() != null ? !getRight().equals(pair.getRight()) : pair.getRight() != null);
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = this.getLeft() != null ? this.getLeft().hashCode() : 0;
+        result = 31 * result + (this.getRight() != null ? this.getRight().hashCode() : 0);
+        return result;
+    }
+
     private final L left;
     private final R right;
 }
