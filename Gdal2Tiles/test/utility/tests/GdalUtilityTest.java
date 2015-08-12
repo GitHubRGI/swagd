@@ -51,11 +51,13 @@ import utility.GdalUtility;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 import java.util.zip.DataFormatException;
 
 import static org.junit.Assert.*;
@@ -1864,7 +1866,7 @@ public class GdalUtilityTest
         final Dataset dataset = this.dataset1.dataset;
 
         GdalUtility.readRaster(gdalRasterParameters, dataset);
-        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset) to throw an IllegalArgumentException.");
     }
 
     /**
@@ -1878,7 +1880,35 @@ public class GdalUtilityTest
         final Dataset dataset = null;
 
         GdalUtility.readRaster(gdalRasterParameters, dataset);
-        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset) to throw an IllegalArgumentException.");
+    }
+
+    /**
+     * Tests readRaster(GdalRasterParams, Dataset)
+     * throws an IOException
+     */
+    @Test (expected = IOException.class)
+    public void verifyReadRasterException3() throws IOException, TilingException
+    {
+        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(0, 0, -100, 100, new Dimensions<>(0, 0), this.dataset1.dataset);
+        final Dataset dataset = this.dataset1.dataset;
+
+        GdalUtility.readRaster(gdalRasterParameters, dataset);
+        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset) to throw an IOException.");
+    }
+
+    /**
+     * Tests readRaster(GdalRasterParams, Dataset)
+     * throws an IOException
+     */
+    @Test (expected = IOException.class)
+    public void verifyReadRasterException4() throws IOException, TilingException
+    {
+        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(0, 0, 0, 0, new Dimensions<>(-10, -12), this.dataset1.dataset);
+        final Dataset dataset = this.dataset1.dataset;
+
+        GdalUtility.readRaster(gdalRasterParameters, dataset);
+        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset) to throw an IOException.");
     }
 
     /**
@@ -1901,6 +1931,7 @@ public class GdalUtilityTest
                        bytes.length > 0);
         }
     }
+
     /**
      * Tests readRasterDirect(GdalRasterParams, Dataset)
      * throws an IllegalArgumentException
@@ -1928,6 +1959,157 @@ public class GdalUtilityTest
         GdalUtility.readRasterDirect(gdalRasterParameters, dataset);
         fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset to throw an IllegalArgumentException.");
     }
+
+    /**
+     * Tests readRaster(GdalRasterParams, Dataset)
+     * throws a TilingException
+     */
+    @Test (expected = TilingException.class)
+    public void verifyReadRasterDirectException3() throws IOException, TilingException
+    {
+        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(0, 0, -100, 100, new Dimensions<>(0, 0), this.dataset1.dataset);
+        final Dataset dataset = this.dataset1.dataset;
+
+        GdalUtility.readRasterDirect(gdalRasterParameters, dataset);
+        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset) to throw an IllegalArgumentException.");
+    }
+
+    /**
+     * Tests readRaster(GdalRasterParams, Dataset)
+     */
+    @Test
+    public void verifyReadRasterDirect1() throws IOException, TilingException
+    {
+        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
+        for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList)
+        {
+            final GdalUtility.GdalRasterParameters params = GdalUtility.getGdalRasterParameters(imageData.dataset.GetGeoTransform(),
+                                                                                                imageData.boundingBox,
+                                                                                                dimensions,
+                                                                                                imageData.dataset);
+
+            final ByteBuffer buffer = GdalUtility.readRasterDirect(params, imageData.dataset);
+
+            final byte[] bytes  = GdalUtility.readRaster(params, imageData.dataset);
+            final ByteBuffer expected = ByteBuffer.wrap(bytes);
+
+            assertTrue("GdalUtility method readRaster(GdalRasterParameters, Dataset) did not return a valid byte array.",
+                       buffer != null &&
+                       buffer.equals(expected));
+        }
+    }
+
+    /**
+     * Tests writeRaster throws
+     * an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void verifyWriteRasterException1() throws TilingException
+    {
+        final GdalUtility.GdalRasterParameters params = null;
+        final byte[] imageData = new byte[10];
+        final int bandCount = 3;
+
+        GdalUtility.writeRaster(params, imageData, bandCount);
+        fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException.");
+    }
+
+    /**
+     * Tests writeRaster throws
+     * an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void verifyWriteRasterException2() throws TilingException
+    {
+        final GdalUtility.GdalRasterParameters params = null;
+        final byte[] imageData = new byte[0];
+        final int bandCount = 3;
+
+        GdalUtility.writeRaster(params, imageData, bandCount);
+        fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException.");
+    }
+
+    /**
+     * Tests writeRaster
+     * throws a TilingException
+     */
+    @Test (expected = TilingException.class)
+    public void verifyWriteRasterException3() throws IOException, TilingException
+    {
+        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(0, 0, 100, 100, new Dimensions<>(256, 256), this.dataset1.dataset);
+        final byte[] imageData = new byte[10];
+        final int bandCount = 3;
+
+        GdalUtility.writeRaster(gdalRasterParameters, imageData, bandCount);
+        fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException.");
+    }
+
+//    /**
+//     * Tests writeRaster
+//     */
+//    @Test
+//    public void verifyWriteRaster1() throws IOException, TilingException
+//    {
+//        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
+//        final byte[] data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+//        final int bandCount = 4;
+//        for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList)
+//        {
+//            final GdalUtility.GdalRasterParameters params = GdalUtility.getGdalRasterParameters(imageData.dataset.GetGeoTransform(),
+//                                                                                                imageData.boundingBox,
+//                                                                                                dimensions,
+//                                                                                                imageData.dataset);
+//            final Dataset dataset = GdalUtility.writeRaster(params, data, bandCount);
+//
+//            assertTrue("GdalUtility method writeRaster did not correctly write to and return a dataset",
+//                        dataset != null);
+//        }
+//    }
+
+    /**
+     * Tests writeRasterDirect throws
+     * an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void verifyWriteRasterDirectException1() throws TilingException
+    {
+        final GdalUtility.GdalRasterParameters params = null;
+        final ByteBuffer imageData = ByteBuffer.wrap(new byte[3]);
+        final int bandCount = 3;
+
+        GdalUtility.writeRasterDirect(params, imageData, bandCount);
+        fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException.");
+    }
+
+    /**
+     * Tests writeRasterDirect throws
+     * an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void verifyWriteRasterDirectException2() throws TilingException
+    {
+        final GdalUtility.GdalRasterParameters params = null;
+        final ByteBuffer imageData = null;
+        final int bandCount = 3;
+
+        GdalUtility.writeRasterDirect(params, imageData, bandCount);
+        fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException.");
+    }
+
+//    /**
+//     * Tests writeRasterDirect
+//     * throws a TilingException
+//     */
+//    @Test (expected = TilingException.class)
+//    public void verifyWriteRasterDirectException3() throws IOException, TilingException
+//    {
+//        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(0, 0, 100, 100, new Dimensions<>(256, 256), this.dataset1.dataset);
+//        final ByteBuffer imageData = ByteBuffer.wrap(new byte[10]);
+//        final int bandCount = 3;
+//
+//        GdalUtility.writeRasterDirect(gdalRasterParameters, imageData, bandCount);
+//        fail("Expected GdalUtility method writeRasterDirect to throw an IllegalArgumentException.");
+//    }
 
     /**
      * Tests the GdalRasterParameters construcotr
