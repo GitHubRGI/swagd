@@ -20,7 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-// @formatter: off
 package utility.tests;
 
 import com.rgi.common.BoundingBox;
@@ -75,14 +74,11 @@ public class GdalUtilityTest
         boolean           hasAlpha;
         CrsProfile        crsProfile;
         BoundingBox       boundingBox;
-        Double[]          noDataValue;
     }
 
     private final GdalUtilityTest.ImageDataProperties dataset1 = new GdalUtilityTest.ImageDataProperties();
     private final GdalUtilityTest.ImageDataProperties dataset2 = new  GdalUtilityTest.ImageDataProperties();
     private final List<GdalUtilityTest.ImageDataProperties> imageList = Arrays.asList(this.dataset1, this.dataset2);
-    private final Double[] noDataValues = {0.0, 0.0, 0.0, 0.0};
-
 
     @Before
     public void setUp()
@@ -91,11 +87,11 @@ public class GdalUtilityTest
         // Register GDAL for use
         gdal.AllRegister();
         // URL dir_url = ;
-        initializeDataset(this.dataset1, "testRasterCompressed.tif", false, new EllipsoidalMercatorCrsProfile(), new BoundingBox(-15049605.452, 8551661.071, -15048423.068, 8552583.832), new Double[0]);//Retrieved bounding box from cmdline gdalinfo <filename?
-        initializeDataset(this.dataset2, "testRasterv2-3857WithAlpha.tif", true, new SphericalMercatorCrsProfile(), new BoundingBox(-15042794.840, 8589662.396, -15042426.875, 8590031.386), this.noDataValues);
+        initializeDataset(this.dataset1, "testRasterCompressed.tif", false, new EllipsoidalMercatorCrsProfile(), new BoundingBox(-15049605.452, 8551661.071, -15048423.068, 8552583.832));//Retrieved bounding box from cmdline gdalinfo <filename?
+        initializeDataset(this.dataset2, "testRasterv2-3857WithAlpha.tif", true, new SphericalMercatorCrsProfile(), new BoundingBox(-15042794.840, 8589662.396, -15042426.875, 8590031.386));
     }
 
-    private static void initializeDataset(final GdalUtilityTest.ImageDataProperties datasetProperties,final String fileName, final boolean hasAlpha, final CrsProfile profile, final BoundingBox bounds, final Double[] noData)
+    private static void initializeDataset(final GdalUtilityTest.ImageDataProperties datasetProperties,final String fileName, final boolean hasAlpha, final CrsProfile profile, final BoundingBox bounds)
     {
         datasetProperties.imageFile   = new File(ClassLoader.getSystemResource(fileName).getFile());
         datasetProperties.dataset     = gdal.Open(datasetProperties.imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
@@ -103,7 +99,6 @@ public class GdalUtilityTest
         datasetProperties.crsProfile  = profile;
         datasetProperties.boundingBox = bounds;
         datasetProperties.hasAlpha    = hasAlpha;
-        datasetProperties.noDataValue = noData;
     }
 
     /**
@@ -143,9 +138,9 @@ public class GdalUtilityTest
     }
     //TODO: this test is currently failing! Possibly due to small differences in wkt
     // failing because the two geotransform arrays are different
-//    /**
-//     * Tests open(File, CoordinateReferenceSystem)
-//     */
+    /**
+     * Tests open(File, CoordinateReferenceSystem)
+     */
 //    @Test
 //    public void verifyOpen2()
 //    {
@@ -179,7 +174,7 @@ public class GdalUtilityTest
         for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList)
         {
             assertFalse("GdalUtility method doesDataSetMatchCRS did not returned false when true was expected.",
-                        GdalUtility.doesDataSetMatchCRS(imageData.dataset, crs));
+                    GdalUtility.doesDataSetMatchCRS(imageData.dataset, crs));
         }
     }
 
@@ -500,9 +495,9 @@ public class GdalUtilityTest
     public void verifyGetBoundsForDataset() throws DataFormatException {
         final BoundingBox boundingBoxReturned = GdalUtility.getBounds(this.dataset1.dataset);
         assertTrue(String.format("BoundingBoxes aren't equal.\nExpected: %s\nActual: %s",
-                                 this.dataset1.boundingBox.toString(),
-                                 boundingBoxReturned.toString()),
-                   this.areBoxesEqual(this.dataset1.boundingBox, boundingBoxReturned));
+                        this.dataset1.boundingBox.toString(),
+                        boundingBoxReturned.toString()),
+                this.areBoxesEqual(this.dataset1.boundingBox, boundingBoxReturned));
     }
 
     /**
@@ -679,8 +674,8 @@ public class GdalUtilityTest
 
         final Map<Integer, Range<Coordinate<Integer>>> map = GdalUtility.calculateTileRanges(tileScheme, datasetBounds, tileMatrixBounds, crsProfile, origin);
         assertEquals("GdalUtility method calculateTileRanges did not return the correct map of zoom levels to tileCoordinates",
-                     32,
-                     map.size());
+                32,
+                map.size());
     }
 
     /**
@@ -1217,92 +1212,20 @@ public class GdalUtilityTest
         fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException.");
     }
 
-
-    /**
-     * Tests verifyZoomLevelForPixelSize throws
-     * a TileStoreException when cannot find a zoomLevel
-     */
-    @Test(expected = TileStoreException.class)
-    public void verifyZoomLevelForPixelSizeException8() throws TileStoreException
-    {
-        final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
-        final TileOrigin tileOrigin = TileOrigin.LowerLeft;
-        final Dimensions<Integer> tileSize = new Dimensions<>(0, 0);
-        for (final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
-        {
-            final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
-                                                                                                        imageData.boundingBox,
-                                                                                                        imageData.crsProfile.getBounds(),
-                                                                                                        imageData.crsProfile,
-                                                                                                        tileOrigin);
-
-            GdalUtility.zoomLevelForPixelSize(1.0, tileRanges, imageData.dataset, imageData.crsProfile, tileScheme, tileOrigin, tileSize);
-
-            fail("Expected GdalUtility method zoomeLevelForPixelSize to throw a TileStoreException.");
-        }
-    }
-
-    /**
-     * Tests verifyZoomLevelForPixelSize returns a
-     * valid zoom level
-     */
-    @Test
-    public void verifyZoomLevelForPixelSize1() throws TileStoreException
-    {
-        final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
-        final TileOrigin tileOrigin = TileOrigin.LowerLeft;
-        final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
-        for (final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
-        {
-            final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
-                                                                                                        imageData.boundingBox,
-                                                                                                        imageData.crsProfile.getBounds(),
-                                                                                                        imageData.crsProfile,
-                                                                                                        tileOrigin);
-
-            final int zoom = GdalUtility.zoomLevelForPixelSize(1.0, tileRanges, imageData.dataset, imageData.crsProfile, tileScheme, tileOrigin, tileSize);
-
-            final Set<Integer> zoomLevels = GdalUtility.getZoomLevels(imageData.dataset, tileOrigin, tileSize);
-
-            assertTrue("GdalUtility method zoomLevelForPIxelSize did not return a valid zoom level.",
-                       zoom >= 0 &&
-                       zoom < 32 &&
-                       zoomLevels.contains(zoom));
-        }
-    }
-
     /**
      * Tests verifyZoomLevelForPixelSize properly returns
      * the pixel size
      */
     @Test
-    public void verifyZoomLevelForPixelSize2() throws TileStoreException {
-        final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
-        final TileOrigin tileOrigin = TileOrigin.LowerLeft;
-        final Dimensions<Integer> tileSize = new Dimensions<>(256, 512);
-        for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList)
-        {
-            final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
-                                                                                                        imageData.boundingBox,
-                                                                                                        imageData.crsProfile.getBounds(),
-                                                                                                        imageData.crsProfile,
-                                                                                                        tileOrigin);
-
-            final int zoom = GdalUtility.zoomLevelForPixelSize(1.0, tileRanges, imageData.dataset, imageData.crsProfile, tileScheme, tileOrigin, tileSize);
-
-            final Set<Integer> zoomLevels = GdalUtility.getZoomLevels(imageData.dataset, tileOrigin, tileSize);
-
-            assertTrue("GdalUtility method zoomLevelForPIxelSize did not return a valid zoom level.",
-                       zoom >= 0 &&
-                       zoom < 32 &&
-                       zoomLevels.contains(zoom));
-        }
+    public void verifyZoomLevelForPixelSize1()
+    {
+        //TODO: finish testing for valid parameters
     }
 
-        /**
-         * Tests warpDatasetToSrs throws
-         * an IllegalArgumentException
-         */
+    /**
+     * Tests warpDatasetToSrs throws
+     * an IllegalArgumentException
+     */
     @Test(expected = IllegalArgumentException.class)
     public void verifyWarpDatasetToSrsException1()
     {
@@ -1506,9 +1429,9 @@ public class GdalUtilityTest
             final Dataset returned = GdalUtility.scaleQueryToTileSize(imageData.dataset, dimensions);
 
             assertTrue("GdalUtility method scaleQueryToTileSize(Dataset, Dimensions) did not correctly downsize the dataset",
-                       returned.getRasterXSize() == 256 &&
-                       returned.getRasterYSize() == 234 &&
-                       returned.getRasterCount() == imageData.dataset.getRasterCount());
+                        returned.getRasterXSize() == 256 &&
+                        returned.getRasterYSize() == 234 &&
+                        returned.getRasterCount() == imageData.dataset.getRasterCount());
             returned.delete();
         }
     }
@@ -1535,10 +1458,7 @@ public class GdalUtilityTest
     {
         for (final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
-            final Double[] noData = GdalUtility.getNoDataValues(imageData.dataset);
-            assertTrue("GdalUtility method getNoDataValues(Dataset) returned no data values for a dataset that does not have NODATA",
-                        Arrays.equals(noData, imageData.noDataValue));
-
+            //TODO: test getNoDataValues with actual data
         }
     }
 
@@ -1575,9 +1495,9 @@ public class GdalUtilityTest
     @Test
     public void verifyGetRasterBandCount1() throws TileStoreException
     {
-//        final Dataset dataset = this.dataset2.dataset;
-//        final int index = GdalUtility.getAlphaBandIndex(dataset);
-//        final Band alphaBand = dataset.GetRasterBand(index);
+        final Dataset dataset = this.dataset2.dataset;
+        final int index = GdalUtility.getAlphaBandIndex(dataset);
+        final Band alphaBand = dataset.GetRasterBand(index);
 //  TODO: determine what the expected count should be
 //        final int returnedCount = GdalUtility.getRasterBandCount(dataset, alphaBand);
 //        final int expectedCount = ?;
@@ -1620,8 +1540,8 @@ public class GdalUtilityTest
         final int expected = 4; // determined using gdalinfo cmdline tool
 
         assertEquals("GdalUtility method getAlphaBandIndex did not return the correct number of bands.",
-                     expected,
-                     returned);
+                expected,
+                returned);
     }
 
     /**
@@ -1646,10 +1566,10 @@ public class GdalUtilityTest
         {
             final boolean hasAlpha = GdalUtility.hasAlpha(imageData.dataset);
             assertEquals(String.format("GdalUtility method hasAlpha(Dataset) returned %s when expected %s.",
-                                       hasAlpha,
-                                       imageData.hasAlpha),
-                         hasAlpha,
-                         imageData.hasAlpha);
+                            hasAlpha,
+                            imageData.hasAlpha),
+                    hasAlpha,
+                    imageData.hasAlpha);
         }
     }
 

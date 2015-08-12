@@ -1174,7 +1174,7 @@ public final class GdalUtility
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
         // Initialize a new double array of size 3
-        final Double[] noDataValues = new Double[4];
+        final Double[] noDataValues = new Double[3];
         // Get the nodata value for each band
         IntStream.rangeClosed(1,  dataset.GetRasterCount())
                  .forEach(band -> {
@@ -1197,7 +1197,6 @@ public final class GdalUtility
         {
             noDataValues[1] = noDataValues[0];
             noDataValues[2] = noDataValues[0];
-            noDataValues[3] = noDataValues[0];
         }
         return noDataValues;
     }
