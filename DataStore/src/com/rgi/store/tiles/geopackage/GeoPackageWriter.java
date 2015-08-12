@@ -101,13 +101,6 @@ public class GeoPackageWriter implements TileStoreWriter
                             final MimeType                  imageOutputFormat,
                             final ImageWriteParam           imageWriteOptions) throws TileStoreException
     {
-        if(!geoPackageFile.getParentFile().isDirectory())
-        {
-            if(!geoPackageFile.getParentFile().mkdirs())
-            {
-                throw new RuntimeException("Unable to create file: " + geoPackageFile.getAbsolutePath());
-            }
-        }
 
         if(coordinateReferenceSystem == null)
         {
