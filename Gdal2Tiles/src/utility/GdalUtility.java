@@ -169,8 +169,8 @@ public final class GdalUtility
             final SpatialReference fromSrs = GdalUtility.getSpatialReference(d1);
             final SpatialReference toSrs = GdalUtility.getSpatialReference(crs);
 
-            return fromSrs.GetAttrValue("AUTHORITY").equals(toSrs.GetAttrValue("AUTHORITY")) &&
-               fromSrs.GetAttrValue("PROJCS").equals(toSrs.GetAttrValue("PROJCS"));
+            return fromSrs.GetAttrValue("AUTHORITY", 0).equals(toSrs.GetAttrValue("AUTHORITY", 0)) &&
+               fromSrs.GetAttrValue("AUTHORITY", 1).equals(toSrs.GetAttrValue("AUTHORITY", 1));
         }
         return true;
     }
