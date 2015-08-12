@@ -51,7 +51,11 @@ import utility.GdalUtility;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.DataFormatException;
 
 import static org.junit.Assert.*;
@@ -132,7 +136,7 @@ public class GdalUtilityTest
      * Tests open(File)
      */
     @Test
-    public void verifyOpen()
+    public void verifyOpen1()
     {
         for(final GdalUtilityTest.ImageDataProperties image: this.imageList)
         {
@@ -157,6 +161,22 @@ public class GdalUtilityTest
 //    }
 
     /**
+     * Tests open(File, CoordinateReferenceSystem)
+     */
+    @Test
+    public void verifyOpen3()
+    {
+        final CoordinateReferenceSystem crs = new CoordinateReferenceSystem("EPSG", 4326);
+        for(final GdalUtilityTest.ImageDataProperties image: this.imageList)
+        {
+            final Dataset datasetReturned = GdalUtility.open(image.imageFile, crs);
+            assertTrue("GdalUtility method open(File) did not open and return the data file correctly.",
+                       GdalUtility.doesDataSetMatchCRS(datasetReturned, crs));
+
+            datasetReturned.delete();
+        }
+    }
+    /**
      * Tests doesDatasetMatchCrs
      */
     @Test
@@ -165,7 +185,7 @@ public class GdalUtilityTest
         for (final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
             assertTrue("GdalUtility method doesDataSetMatchCRS did not returned false when true was expected.",
-                    GdalUtility.doesDataSetMatchCRS(imageData.dataset, imageData.crsProfile.getCoordinateReferenceSystem()));
+                       GdalUtility.doesDataSetMatchCRS(imageData.dataset, imageData.crsProfile.getCoordinateReferenceSystem()));
         }
     }
 
@@ -196,6 +216,18 @@ public class GdalUtilityTest
     }
 
     /**
+     * Tests convert(Dataset) throws an
+     *  RuntimeException
+     */
+    @Test(expected = RuntimeException.class)
+    public void verifyConvertException2()
+    {
+        final Dataset dataset = gdal.GetDriverByName("MEM").Create("prueba", 100, 100, 0);
+        GdalUtility.convert(dataset);
+        fail("Expected GdalUtility method convert(Dataset) to throw a RuntimeException when the dataset has no bands");
+    }
+
+    /**
      * Tests convert(Dataset)
      */
     @Test
@@ -203,11 +235,28 @@ public class GdalUtilityTest
     {
         for (final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
-            // TODO: find way to read Tiff as buffered image
-            imageData.dataset.GetGCPCount();
+            final Dataset dataset = imageData.dataset;
+            final BufferedImage bufferedImage = GdalUtility.convert(dataset);
+            assertTrue("GdalUtility method convert(Dataset) did not return a valid BufferedImage.",
+                       bufferedImage != null &&
+                       bufferedImage.isAlphaPremultiplied() == imageData.hasAlpha &&
+                       bufferedImage.getWidth() == dataset.getRasterXSize() &&
+                       bufferedImage.getHeight() == dataset.getRasterYSize());
         }
     }
 
+    /**
+     * Tests convert(Dataset)
+     */
+    @Test
+    public void verifyConvert2() throws IOException
+    {
+        final Dataset dataset = gdal.GetDriverByName("MEM").Create("prueba", 100, 100, 1);
+        final BufferedImage bufferedImage = GdalUtility.convert(dataset);
+        assertTrue("GdalUtility method convert(Dataset) did not return a valid BufferedImage.",
+                   bufferedImage != null &&
+                   !bufferedImage.isAlphaPremultiplied());
+    }
     /**
      * Tests getSpatialReference(Dataset) throws an
      * IllegalArgumentException when the Dataset is null
@@ -665,7 +714,6 @@ public class GdalUtilityTest
      * Tests calculateTileRanges throws
      * an IllegalArgumentException
      */
-    //TODO: better way to test this method
     @Test
     public void verifyCalculateTileRanges() throws DataFormatException
     {
@@ -678,9 +726,16 @@ public class GdalUtilityTest
         final TileOrigin origin = TileOrigin.LowerLeft;
 
         final Map<Integer, Range<Coordinate<Integer>>> map = GdalUtility.calculateTileRanges(tileScheme, datasetBounds, tileMatrixBounds, crsProfile, origin);
-        assertEquals("GdalUtility method calculateTileRanges did not return the correct map of zoom levels to tileCoordinates",
-                     32,
-                     map.size());
+
+        final int minZoom = GdalUtility.getMinimalZoom(imageData.dataset, map, origin, tileScheme, new Dimensions<>(256, 256));
+        final Range<Coordinate<Integer>> range = map.get(minZoom);
+        final Coordinate<Integer> left = range.getMinimum();
+        final Coordinate<Integer> right = range.getMaximum();
+
+        assertTrue("GdalUtility method calculateTileRanges did not return the correct map of zoom levels to tileCoordinates",
+                   map.size() == 32 &&
+                   Math.abs(right.getX() - left.getX()) < 2 &&
+                   Math.abs(right.getY() - left.getY()) < 2);
     }
 
     /**
@@ -1575,16 +1630,15 @@ public class GdalUtilityTest
     @Test
     public void verifyGetRasterBandCount1() throws TileStoreException
     {
-//        final Dataset dataset = this.dataset2.dataset;
-//        final int index = GdalUtility.getAlphaBandIndex(dataset);
-//        final Band alphaBand = dataset.GetRasterBand(index);
-//  TODO: determine what the expected count should be
-//        final int returnedCount = GdalUtility.getRasterBandCount(dataset, alphaBand);
-//        final int expectedCount = ?;
-//
-//        assertEquals("GdalUtility method getRasterBandCount(Dataset, Band) did not return the correct number of bands",
-//                     expectedCount,
-//                     returnedCount);
+        final Dataset dataset = this.dataset2.dataset;
+        final int index = GdalUtility.getAlphaBandIndex(dataset);
+        final Band alphaBand = dataset.GetRasterBand(index);
+        final int returnedCount = GdalUtility.getRasterBandCount(dataset, alphaBand);
+        final int expectedCount = 3;
+
+        assertEquals("GdalUtility method getRasterBandCount(Dataset, Band) did not return the correct number of bands",
+                     expectedCount,
+                     returnedCount);
     }
 
     /**
@@ -1622,6 +1676,49 @@ public class GdalUtilityTest
         assertEquals("GdalUtility method getAlphaBandIndex did not return the correct number of bands.",
                      expected,
                      returned);
+    }
+    /**
+     * Tests correctNoDataSimple
+     * throws an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void verifyCorrectNoDataSimpleException()
+    {
+        final Dataset dataset = null;
+        GdalUtility.correctNoDataSimple(dataset);
+        fail("Expected GdalUtility method correctNoDataSimple(Dataset) to throw an IllegalArgumentException.");
+    }
+// TODO: fix correctNoDataSimple in GdalUtility
+//    /**
+//     * Tests correctNoDataSimple with
+//     * a dataset that has no alpha band
+//     */
+//    @Test(expected = IllegalArgumentException.class)
+//    public void verifyCorrectNoDataSimple1()
+//    {
+//        final Dataset dataset = this.dataset1.dataset; //Dataset with no alpha band
+//        final Dataset virtualDataset = gdal.AutoCreateWarpedVRT(dataset);
+//
+//        final Dataset returned = GdalUtility.correctNoDataSimple(virtualDataset);
+//
+//        assertTrue("GdalUtility method correctNoDataSimple(Dataset) did not return the correct dataset.",
+//                   Arrays.equals(GdalUtility.getNoDataValues(dataset), new Double[0]));
+//    }
+
+    /**
+     * Tests correctNoDataSimple with
+     * a dataset that has no alpha band
+     */
+    @Test
+    public void verifyCorrectNoDataSimple2()
+    {
+        final Dataset dataset = this.dataset2.dataset; //Dataset with alpha band
+
+        final Dataset returned = GdalUtility.correctNoDataSimple(dataset);
+
+        assertTrue("GdalUtility method correctNoDataSimple(Dataset) did not return the correct dataset.",
+                   this.areDatasetsEqual(dataset, returned) &&
+                   Arrays.equals(GdalUtility.getNoDataValues(dataset), this.dataset2.noDataValue));
     }
 
     /**
@@ -1717,11 +1814,121 @@ public class GdalUtilityTest
         fail("Expected GdalUtility method getGdalRasterParameters to throw an IllegalArgumentException.");
     }
 
+    /**
+     * Tests that getGdalRasterParameters
+     */
     @Test
     public void verifyGetGdalRasterParameters()
     {
-        //TODO: best way to test this method
+        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
+        for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList)
+        {
+            final double[] geoTransform = imageData.dataset.GetGeoTransform();
+            final BoundingBox boundingBox = imageData.boundingBox;
+
+            final GdalUtility.GdalRasterParameters params = GdalUtility.getGdalRasterParameters(geoTransform,
+                                                                                                boundingBox,
+                                                                                                dimensions,
+                                                                                                imageData.dataset);
+            /* Created Expected GdalRasterParameters */
+            final int readX = (int)((boundingBox.getMinX() - geoTransform[0]) / geoTransform[1] + 0.001);
+            final int readY = (int)((boundingBox.getMaxY() - geoTransform[3]) / geoTransform[5] + 0.001);
+
+            final int readXSize = (int)(boundingBox.getWidth()  /  geoTransform[1] + 0.5);
+            final int readYSize = (int)(boundingBox.getHeight() / -geoTransform[5] + 0.5);
+
+            final GdalUtility.GdalRasterParameters expected = new GdalUtility.GdalRasterParameters(readX, readY, readXSize, readYSize, dimensions, imageData.dataset);
+
+            assertTrue("GdalUtility method getGdalRasterParameters did not return the GdalRasterParametesr object correctly.",
+                       expected.getReadX() == params.getReadX() &&
+                       expected.getReadY() == params.getReadY() &&
+                       expected.getReadXSize() == params.getReadXSize() &&
+                       expected.getReadYSize() == params.getReadYSize() &&
+                       expected.getQueryXSize() == params.getQueryXSize() &&
+                       expected.getQueryYSize() == params.getQueryYSize() &&
+                       expected.getWriteX() == params.getWriteX() &&
+                       expected.getWriteY() == params.getWriteY() &&
+                       expected.getWriteXSize() == params.getWriteXSize() &&
+                       expected.getWriteYSize() == params.getWriteYSize());
+        }
     }
+
+    /**
+     * Tests readRaster(GdalRasterParams, Dataset)
+     * throws an IllegalArgumentException
+     */
+    @Test (expected = IllegalArgumentException.class)
+    public void verifyReadRasterException1() throws IOException, TilingException
+    {
+        final GdalUtility.GdalRasterParameters gdalRasterParameters = null;
+        final Dataset dataset = this.dataset1.dataset;
+
+        GdalUtility.readRaster(gdalRasterParameters, dataset);
+        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset to throw an IllegalArgumentException.");
+    }
+
+    /**
+     * Tests readRaster(GdalRasterParams, Dataset)
+     * throws an IllegalArgumentException
+     */
+    @Test (expected = IllegalArgumentException.class)
+    public void verifyReadRasterException2() throws IOException, TilingException
+    {
+        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(0, 0, 0, 0, new Dimensions<>(0, 0), this.dataset1.dataset);
+        final Dataset dataset = null;
+
+        GdalUtility.readRaster(gdalRasterParameters, dataset);
+        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset to throw an IllegalArgumentException.");
+    }
+
+    /**
+     * Tests readRaster(GdalRasterParams, Dataset)
+     */
+    @Test
+    public void verifyReadRaster1() throws IOException, TilingException
+    {
+        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
+        for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList)
+        {
+            final GdalUtility.GdalRasterParameters params = GdalUtility.getGdalRasterParameters(imageData.dataset.GetGeoTransform(),
+                                                                                                imageData.boundingBox,
+                                                                                                dimensions,
+                                                                                                imageData.dataset);
+
+            final byte[] bytes = GdalUtility.readRaster(params, imageData.dataset);
+
+            assertTrue("GdalUtility method readRaster(GdalRasterParameters, Dataset) did not return a valid byte array.",
+                       bytes.length > 0);
+        }
+    }
+    /**
+     * Tests readRasterDirect(GdalRasterParams, Dataset)
+     * throws an IllegalArgumentException
+     */
+    @Test (expected = IllegalArgumentException.class)
+    public void verifyReadRasterDirectException1() throws IOException, TilingException
+    {
+        final GdalUtility.GdalRasterParameters gdalRasterParameters = null;
+        final Dataset dataset = this.dataset1.dataset;
+
+        GdalUtility.readRasterDirect(gdalRasterParameters, dataset);
+        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset to throw an IllegalArgumentException.");
+    }
+
+    /**
+     * Tests readRasterDirect(GdalRasterParams, Dataset)
+     * throws an IllegalArgumentException
+     */
+    @Test (expected = IllegalArgumentException.class)
+    public void verifyReadRasterDirectException2() throws IOException, TilingException
+    {
+        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(0, 0, 0, 0, new Dimensions<>(0, 0), this.dataset1.dataset);
+        final Dataset dataset = null;
+
+        GdalUtility.readRasterDirect(gdalRasterParameters, dataset);
+        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset to throw an IllegalArgumentException.");
+    }
+
     /**
      * Tests the GdalRasterParameters construcotr
      * throws an IllehalArgumentException
@@ -1772,16 +1979,16 @@ public class GdalUtilityTest
         final int writeYSize = 48;
 
         assertTrue("GdalRasterParameters did not correctly create a GdalRasterParameter object.",
-                params.getReadX() == 0 &&
-                        params.getReadY() == 1 &&
-                        params.getReadXSize() == 2 &&
-                        params.getReadYSize() == 3 &&
-                        params.getWriteX() == writeX &&
-                        params.getWriteY() == writeY &&
-                        params.getQueryXSize() == queryXSize &&
-                        params.getQueryYSize() == queryYSize &&
-                        params.getWriteXSize() == writeXSize &&
-                        params.getWriteYSize() == writeYSize);
+                   params.getReadX() == 0 &&
+                   params.getReadY() == 1 &&
+                   params.getReadXSize() == 2 &&
+                   params.getReadYSize() == 3 &&
+                   params.getWriteX() == writeX &&
+                   params.getWriteY() == writeY &&
+                   params.getQueryXSize() == queryXSize &&
+                   params.getQueryYSize() == queryYSize &&
+                   params.getWriteXSize() == writeXSize &&
+                   params.getWriteYSize() == writeYSize);
     }
 
     /**
@@ -1952,9 +2159,9 @@ public class GdalUtilityTest
     private void assertSRS(final SpatialReference expectedSrs, final SpatialReference srsReturned)
     {
         assertTrue("The getDatasetSpatialReference method did not return the expected SpatialReference object.",
-                expectedSrs.IsSame(srsReturned) == 1 &&
-                expectedSrs.IsSameGeogCS(srsReturned) == 1);/* &&
-                   expectedSrs.IsSameVertCS(srsReturned) == 1);*/ //TODO: what does this method do??
+                   expectedSrs.IsSame(srsReturned) == 1 &&
+                   expectedSrs.IsSameGeogCS(srsReturned) == 1); /*&&
+                expectedSrs.IsSameVertCS(srsReturned) == 1);*/ // 5 tests that use this method give SpatialReferences that do not have VertCS's
     }
 
     @SuppressWarnings("MethodMayBeStatic")
