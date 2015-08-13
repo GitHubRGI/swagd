@@ -598,15 +598,15 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
      * @throws SQLException
      *             if there is a database error
      */
-    public List<Integer> aStar(final RoutingNetworkDescription                  routingNetwork,
-                               final int                                        startNodeIdentifier,
-                               final int                                        endNodeIdentifier,
-                               final Collection<AttributeDescription>           nodeAttributes,
-                               final Collection<AttributeDescription>           edgeAttributes,
-                               final Function<EdgeEvaluationParameters, Double> edgeCostEvaluator,
-                               final BiFunction<Node, Node, Double>             heuristic
-                               /* final restricted node ids */
-                               /* final restricted edges ids */) throws SQLException
+    public Route aStar(final RoutingNetworkDescription                  routingNetwork,
+                       final int                                        startNodeIdentifier,
+                       final int                                        endNodeIdentifier,
+                       final Collection<AttributeDescription>           nodeAttributes,
+                       final Collection<AttributeDescription>           edgeAttributes,
+                       final Function<EdgeEvaluationParameters, Double> edgeCostEvaluator,
+                       final BiFunction<Node, Node, Double>             heuristic
+                       /* final restricted node ids */
+                       /* final restricted edges ids */) throws SQLException
     {
         if(routingNetwork == null)
         {
@@ -668,11 +668,13 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                 // If the closed list already searched this vertex, skip it
                 if(!closedList.contains(reachableVertex.getNode().getIdentifier()))
                 {
+                    final List<Object> edgeAttributeValues = this.networkExtension.getEdgeAttributes(currentVertex  .getNode().getIdentifier(),
+                                                                                                     reachableVertex.getNode().getIdentifier(),
+                                                                                                     edgeAttributes);
+
                     final double edgeCost = edgeCostEvaluator.apply(new EdgeEvaluationParameters(currentVertex.getNode(),
                                                                                                  reachableVertex.getNode(),
-                                                                                                 this.networkExtension.getEdgeAttributes(currentVertex  .getNode().getIdentifier(),
-                                                                                                                                         reachableVertex.getNode().getIdentifier(),
-                                                                                                                                         edgeAttributes)));
+                                                                                                 edgeAttributeValues));
 
                     if(edgeCost <= 0.0)    // Are positive values that are extremely close to 0 going to be a problem?
                     {
@@ -687,7 +689,9 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                     {
                         reachableVertex.update(costFromStart,
                                                cachedHeuristic.get(reachableVertex.getNode(), endNode), // Estimated cost to the end node
-                                               currentVertex);
+                                               currentVertex,
+                                               edgeAttributeValues,
+                                               edgeCost);
 
                         if(isShorterPath)
                         {
@@ -703,16 +707,26 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         return null;    // No path between the start and end nodes
     }
 
-    private static List<Integer> getAStarPath(final Integer end, final Map<Integer, AStarVertex> nodeMap)
+    private static Route getAStarPath(final Integer end, final Map<Integer, AStarVertex> nodeMap)
     {
-        final LinkedList<Integer> path = new LinkedList<>();
+        final LinkedList<List<Object>> nodesAttributes = new LinkedList<>();
+        final LinkedList<List<Object>> edgesAttributes = new LinkedList<>();
+        final LinkedList<Double>       edgeCost        = new LinkedList<>();
 
-        for(AStarVertex backTrackVertex = nodeMap.get(end); backTrackVertex != null; backTrackVertex = backTrackVertex.getPrevious())
+        for(AStarVertex vertex = nodeMap.get(end); vertex != null; vertex = vertex.getPrevious())
         {
-            path.addLast(backTrackVertex.getNode().getIdentifier());
+            nodesAttributes.addLast(vertex.getNode().getAttributes());
+
+            if(vertex.getPrevious() != null)
+            {
+                edgesAttributes.addLast(vertex.getEdgeAttributes());
+                edgeCost       .addLast(vertex.getEdgeCost());
+            }
         }
 
-        return path;
+        return new Route(nodesAttributes,
+                         edgesAttributes,
+                         edgeCost);
     }
 
     private static String getRoutingNetworkDescriptionCreationSql()

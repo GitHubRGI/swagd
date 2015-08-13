@@ -67,6 +67,11 @@ public class Node
         return this.identifier;
     }
 
+    public List<Object> getAttributes()
+    {
+        return Collections.unmodifiableList(this.attributeValues);
+    }
+
     public Object getAttribute(final int attributeIndex)
     {
         return this.attributeValues.get(attributeIndex);

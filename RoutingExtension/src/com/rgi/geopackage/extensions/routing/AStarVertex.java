@@ -25,9 +25,8 @@ package com.rgi.geopackage.extensions.routing;
 
 import com.rgi.geopackage.extensions.network.Node;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Luke Lambert
@@ -93,16 +92,16 @@ public class AStarVertex
         return this.edgeCost;
     }
 
-    public Collection<Object> getEdgeAttributes()
+    public List<Object> getEdgeAttributes()
     {
-        return Collections.unmodifiableCollection(this.edgeAttributes);
+        return Collections.unmodifiableList(this.edgeAttributes);
     }
 
-    public void update(final double             costFromStart,
-                       final double             estimatedCostToEnd,
-                       final AStarVertex        previous,
-                       final Collection<Object> edgeAttributes,
-                       final double             edgeCost)
+    public void update(final double       costFromStart,
+                       final double       estimatedCostToEnd,
+                       final AStarVertex  previous,
+                       final List<Object> edgeAttributes,
+                       final double       edgeCost)
     {
         if(costFromStart < 0.0)
         {
@@ -131,9 +130,9 @@ public class AStarVertex
 
     private final Node node;
 
-    private double             costFromStart      = Double.MAX_VALUE;
-    private double             estimatedCostToEnd = Double.MAX_VALUE;
-    private AStarVertex        previous;       // Parent node
-    private Collection<Object> edgeAttributes; // Attributes of edge with the edge being parent to this one
-    private double             edgeCost;       // Aalculated cost of parent node to this one
+    private double       costFromStart      = Double.MAX_VALUE;
+    private double       estimatedCostToEnd = Double.MAX_VALUE;
+    private AStarVertex  previous;       // Parent node
+    private List<Object> edgeAttributes; // Attributes of edge with the edge being parent to this one
+    private double       edgeCost;       // Aalculated cost of parent node to this one
 }

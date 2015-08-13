@@ -129,19 +129,23 @@ public final class RouteTests
     {
         final GeoPackageNetworkExtension networkExtension = routingExtension.getNetworkExtension();
 
-        final AttributeDescription longitudeAttibute = routingNetwork.getLongitudeDescription();
-        final AttributeDescription latitudeAttibute  = routingNetwork.getLatitudeDescription();
+        final AttributeDescription longitudeAttribute = routingNetwork.getLongitudeDescription();
+        final AttributeDescription latitudeAttribute  = routingNetwork.getLatitudeDescription();
+        final AttributeDescription elevationAttribute = routingNetwork.getElevationDescription();
 
         routingExtension.aStar(routingNetwork,
                                startNodeIdentifier,
                                endNodeIdentifier,
-                               Arrays.asList(longitudeAttibute, latitudeAttibute), // TODO NEED ELEVATION
+                               Arrays.asList(longitudeAttribute,
+                                             latitudeAttribute,
+                                             elevationAttribute),
                                Arrays.asList(edgeAttribute),
                                params -> (Double)params.getEdgeAttributes().get(0),
                                (startNode, endNode) -> { final double longitude = (Double)endNode.getAttribute(0) - (Double)startNode.getAttribute(0);
                                                          final double latitude  = (Double)endNode.getAttribute(1) - (Double)startNode.getAttribute(1);
+                                                         final double elevation = (Double)endNode.getAttribute(2) - (Double)startNode.getAttribute(2);
 
-                                                         return Math.sqrt(latitude*latitude + longitude*longitude);
+                                                         return Math.sqrt(latitude*latitude + longitude*longitude + elevation*elevation);
                                                        });
     }
 

@@ -23,8 +23,8 @@
 
 package com.rgi.geopackage.extensions.routing;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Luke Lambert
@@ -32,28 +32,28 @@ import java.util.Collections;
 public class Route
 {
 
-    public Route(final Collection<Collection<Object>> nodesAttributes,
-                 final Collection<Collection<Object>> edgesAttributes,
-                 final Collection<Double>             edgeCosts)
+    public Route(final List<List<Object>> nodesAttributes,
+                 final List<List<Object>> edgesAttributes,
+                 final List<Double>       edgeCosts)
     {
         this.nodesAttributes = nodesAttributes;
         this.edgesAttributes = edgesAttributes;
         this.edgeCosts       = edgeCosts;
     }
 
-    public Collection<Collection<Object>> getNodesAttributes()
+    public List<List<Object>> getNodesAttributes()
     {
-        return Collections.unmodifiableCollection(this.nodesAttributes);
+        return Collections.unmodifiableList(this.nodesAttributes);
     }
 
-    public Collection<Collection<Object>> getEdgesAttributes()
+    public List<List<Object>> getEdgesAttributes()
     {
-        return Collections.unmodifiableCollection(this.edgesAttributes);
+        return Collections.unmodifiableList(this.edgesAttributes);
     }
 
-    public Collection<Double> getEdgeCosts()
+    public List<Double> getEdgeCosts()
     {
-        return Collections.unmodifiableCollection(this.edgeCosts);
+        return Collections.unmodifiableList(this.edgeCosts);
     }
 
     public double getTotalCost()
@@ -61,7 +61,7 @@ public class Route
         return this.edgeCosts.stream().reduce(0.0, Double::sum);
     }
 
-    private final Collection<Collection<Object>> nodesAttributes;
-    private final Collection<Collection<Object>> edgesAttributes;
-    private final Collection<Double>             edgeCosts;
+    private final List<List<Object>> nodesAttributes;
+    private final List<List<Object>> edgesAttributes;
+    private final List<Double>             edgeCosts;
 }
