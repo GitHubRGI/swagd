@@ -48,8 +48,8 @@ public class TilingExceptionTest
         final Exception exception =  new TilingException("test");
 
         assertSame("TilingException constructor did not make an exception of the correct type.",
-                TilingException.class,
-                exception.getClass());
+                   TilingException.class,
+                   exception.getClass());
     }
 
     /**
@@ -100,6 +100,4 @@ public class TilingExceptionTest
                      cause,
                      exception.getCause());
     }
-
-
 }

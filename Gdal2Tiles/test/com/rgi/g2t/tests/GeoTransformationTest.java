@@ -45,8 +45,7 @@ public class GeoTransformationTest
     @Test(expected = IllegalArgumentException.class)
     public void constructorIllegalArgumentException1()
     {
-        @SuppressWarnings("unused")
-        final GeoTransformation geoTransformation = new GeoTransformation(null);
+        new GeoTransformation(null);
 
         fail("Expected GeoTransformation constructor to throw an IllegalArgumentException when the given array is null.");
     }
@@ -60,8 +59,8 @@ public class GeoTransformationTest
     public void constructorIllegalArgumentExcpetion2()
     {
         final double[] affineTransform = new double[3];
-        @SuppressWarnings("unused")
-        final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
+
+        new GeoTransformation(affineTransform);
 
         fail("Expected GeoTransformation constructor to throw an IllegalArgumentException when the given array's length is not 6.");
     }
@@ -78,11 +77,11 @@ public class GeoTransformationTest
         final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
 
         assertTrue("GeoTransformation constructor did not properly set the affine transformation array",
-                Arrays.equals(affineTransform, geoTransformation.getAffineTransform()));
+                   Arrays.equals(affineTransform, geoTransformation.getAffineTransform()));
 
         assertEquals("GeoTransformation constructor did not properly set the top left coordinate.",
-                new Coordinate<>(0.0, 3.0),
-                geoTransformation.getTopLeft());
+                     new Coordinate<>(0.0, 3.0),
+                     geoTransformation.getTopLeft());
 
         assertTrue("GeoTransformation constructor did not properly set the pixel resolution.",
                    geoTransformation.getPixelResolution().getHeight().equals(-5.0) &&
@@ -142,7 +141,7 @@ public class GeoTransformationTest
         final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
 
         assertTrue("GeoTransformation method isNorthUp returned true instead of false.",
-                geoTransformation.isNorthUp());
+                   geoTransformation.isNorthUp());
     }
 
     @SuppressWarnings({"static-method", "MagicNumber"})
@@ -165,6 +164,5 @@ public class GeoTransformationTest
         {
             data.delete();
         }
-
     }
 }

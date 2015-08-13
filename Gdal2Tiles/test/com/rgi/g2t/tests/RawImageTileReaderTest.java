@@ -318,7 +318,6 @@ public class RawImageTileReaderTest
         }
     }
 
-
     /**
      * Tests that getTile(int, int, int) throws an Exception
      */
@@ -701,7 +700,7 @@ public class RawImageTileReaderTest
         }
     }
 
-        /**
+    /**
      * Tests RawImageTileHandle getImage when
      * the image needs to be read from cached tiles
      */
@@ -781,7 +780,6 @@ public class RawImageTileReaderTest
                          returned);
         }
     }
-
 
     /**
      * Compares two BufferedImages and determines if they are equal
