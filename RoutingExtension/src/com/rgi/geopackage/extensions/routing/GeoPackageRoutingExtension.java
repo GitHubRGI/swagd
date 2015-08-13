@@ -141,9 +141,9 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                                          final Network network = this.networkExtension.getNetwork(networkTableName);
 
                                          final AttributeDescription longitudeDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(1), AttributedType.Node);
-                                         final AttributeDescription latitudeDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(2), AttributedType.Node);
+                                         final AttributeDescription latitudeDescription  = this.networkExtension.getAttributeDescription(network, resultSet.getString(2), AttributedType.Node);
                                          final AttributeDescription elevationDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(3), AttributedType.Node);
-                                         final AttributeDescription distanceDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(4), AttributedType.Edge);
+                                         final AttributeDescription distanceDescription  = this.networkExtension.getAttributeDescription(network, resultSet.getString(4), AttributedType.Edge);
 
                                          return new RoutingNetworkDescription(network,
                                                                               longitudeDescription,
@@ -551,11 +551,11 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
      * @throws SQLException
      *             if there is a database error
      */
-    public List<Integer> getNodesInBoundingBox(final RoutingNetworkDescription routingNetwork,
-                                               final double                    minimumX,
-                                               final double                    minimumY,
-                                               final double                    maximumX,
-                                               final double                    maximumY) throws SQLException
+    public List<Integer> getNodesInBoundingBox(final RoutingNetworkDescription        routingNetwork,
+                                               final double                           minimumX,
+                                               final double                           minimumY,
+                                               final double                           maximumX,
+                                               final double                           maximumY) throws SQLException
     {
         if(routingNetwork == null)
         {

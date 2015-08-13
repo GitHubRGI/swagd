@@ -668,7 +668,9 @@
     <inspection_tool class="LoopWithImplicitTerminationCondition" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="MagicCharacter" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="MagicConstant" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="MagicNumber" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="MagicNumber" enabled="true" level="ERROR" enabled_by_default="true">
+      <scope name="Tests" level="ERROR" enabled="false" />
+    </inspection_tool>
     <inspection_tool class="MalformedFormatString" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="MalformedRegex" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="MalformedXPath" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -1073,7 +1075,9 @@
     <inspection_tool class="SimplifiableAnnotation" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="SimplifiableConditionalExpression" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="SimplifiableEqualsExpression" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="SimplifiableIfStatement" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="SimplifiableIfStatement" enabled="true" level="WARNING" enabled_by_default="false">
+      <scope name="Problems" level="WARNING" enabled="true" />
+    </inspection_tool>
     <inspection_tool class="SimplifiableJUnitAssertion" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="Since15" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="SingleCharacterStartsWith" enabled="false" level="ERROR" enabled_by_default="false" />
@@ -1102,7 +1106,7 @@
     <inspection_tool class="StaticInheritance" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="StaticMethodNamingConvention" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="m_regex" value="[a-z][A-Za-z\d]*" />
-      <option name="m_minLength" value="4" />
+      <option name="m_minLength" value="2" />
       <option name="m_maxLength" value="999" />
     </inspection_tool>
     <inspection_tool class="StaticMethodOnlyUsedInOneClass" enabled="false" level="ERROR" enabled_by_default="false" />
@@ -1255,7 +1259,7 @@
     </inspection_tool>
     <inspection_tool class="ThrowablePrintedToSystemOut" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ThrowableResultOfMethodCallIgnored" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="ThrownExceptionsPerMethod" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="ThrownExceptionsPerMethod" enabled="false" level="ERROR" enabled_by_default="false">
       <option name="m_limit" value="3" />
     </inspection_tool>
     <inspection_tool class="ThrowsRuntimeException" enabled="true" level="ERROR" enabled_by_default="true" />
