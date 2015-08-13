@@ -68,7 +68,7 @@ import static org.junit.Assert.*;
  *
  *
  */
-@SuppressWarnings({"MagicNumber", "JUnitTestMethodWithNoAssertions"})
+@SuppressWarnings("MagicNumber")
 public class GdalUtilityTest
 {
     @SuppressWarnings({"PublicInnerClass", "PackageVisibleField"})
@@ -112,7 +112,7 @@ public class GdalUtilityTest
     }
 
     /**
-     * Tests open throws an Exception when
+     * Tests open throws a RuntimeException when
      * it fails to open the dataset
      */
     @Test(expected = RuntimeException.class)
@@ -146,6 +146,7 @@ public class GdalUtilityTest
                        this.areDatasetsEqual(image.dataset, datasetReturned));
         }
     }
+
     //TODO: this test is currently failing! Possibly due to small differences in wkt
     // failing because the two geotransform arrays are different
 //    /**
@@ -177,8 +178,10 @@ public class GdalUtilityTest
             datasetReturned.delete();
         }
     }
+
     /**
-     * Tests doesDatasetMatchCrs
+     * Tests doesDatasetMatchCrs returns true
+     * when the dataset matches the CoordinateReferenceSystem
      */
     @Test
     public void verifyDoesDataSetMatchCRS1()
@@ -191,7 +194,8 @@ public class GdalUtilityTest
     }
 
     /**
-     * Tests doesDatasetMatchCrs
+     * Tests doesDatasetMatchCrs returns false when
+     * the dataset does not match the CoordinateReferenceSystem
      */
     @Test
     public void verifyDoesDataSetMatchCRS2()
@@ -206,7 +210,7 @@ public class GdalUtilityTest
 
     /**
      * Tests convert(Dataset) throws an
-     *  IllegalArgumentException
+     * IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
     public void verifyConvertException1()
@@ -217,7 +221,7 @@ public class GdalUtilityTest
     }
 
     /**
-     * Tests convert(Dataset) throws an
+     * Tests convert(Dataset) throws a
      *  RuntimeException
      */
     @Test(expected = RuntimeException.class)
@@ -258,12 +262,13 @@ public class GdalUtilityTest
                    bufferedImage != null &&
                    !bufferedImage.isAlphaPremultiplied());
     }
+
     /**
      * Tests getSpatialReference(Dataset) throws an
      * IllegalArgumentException when the Dataset is null
      */
     @Test(expected = IllegalArgumentException.class)
-    public void verifyGetDatasetSpatialReferenceFromDatasetException()
+    public void verifyGetSpatialReferenceFromDatasetException()
     {
         final Dataset data = null;
         GdalUtility.getSpatialReference(data);
@@ -273,8 +278,9 @@ public class GdalUtilityTest
     /**
      * Tests getSpatialReference(Dataset)
      */
+    @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     @Test
-    public void verifyGetDatasetSpatialReferenceFromDataset1()
+    public void verifyGetSpatialReferenceFromDataset1()
     {
         for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList)
         {
@@ -287,8 +293,9 @@ public class GdalUtilityTest
      * Tests getSpatialReference(Dataset) when
      * the dataset projection is empty
      */
+    @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     @Test
-    public void verifyGetDatasetSpatialReferenceFromDataset2() {
+    public void verifyGetSpatialReferenceFromDataset2() {
         final GCP[] testData = new GCP[1];
         testData[0] = new GCP(0, 0, 0, 0);
 
@@ -308,12 +315,13 @@ public class GdalUtilityTest
             dataset.delete();
         }
     }
+
     /**
      * Tests getSpatialReference(File) throws an
      * IllegalArgumentException when the File is null
      */
     @Test(expected = IllegalArgumentException.class)
-    public void verifyGetDatasetSpatialReferenceFromFileException1()
+    public void verifyGetSpatialReferenceFromFileException1()
     {
         final File file = null;
         GdalUtility.getSpatialReference(file);
@@ -325,7 +333,7 @@ public class GdalUtilityTest
      * IllegalArgumentException when the File is not readable
      */
     @Test(expected = IllegalArgumentException.class)
-    public void verifyGetDatasetSpatialReferenceFromFileException2()
+    public void verifyGetSpatialReferenceFromFileException2()
     {
         final File file = new File("test.txt");
         file.setReadable(false);
@@ -347,8 +355,9 @@ public class GdalUtilityTest
     /**
      * Tests getSpatialReference(File)
      */
+    @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     @Test
-    public void verifyGetDatasetSpatailReferenceFromFile()
+    public void verifyGetSpatailReferenceFromFile()
     {
         for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
@@ -362,7 +371,7 @@ public class GdalUtilityTest
      * IllegalArgumentException when the CoordinateReferenceSystem is null
      */
     @Test(expected = IllegalArgumentException.class)
-    public void verifyGetDatasetSpatialReferenceFromCrsException()
+    public void verifyGetSpatialReferenceFromCrsException()
     {
         final CoordinateReferenceSystem crs = null;
         GdalUtility.getSpatialReference(crs);
@@ -372,13 +381,14 @@ public class GdalUtilityTest
     /**
      * Tests getSpatialReference(CoordinateReferenceSystem)
      */
+    @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     @Test
     public void verifyGetSpatialReferencFromCrs()
     {
         for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
             final CoordinateReferenceSystem crs         = imageData.crsProfile.getCoordinateReferenceSystem();
-            final SpatialReference          srsReturned = GdalUtility.getSpatialReference(crs);
+            final SpatialReference srsReturned = GdalUtility.getSpatialReference(crs);
             this.assertSRS(imageData.srs, srsReturned);
         }
     }
@@ -390,7 +400,7 @@ public class GdalUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void verifyGetSpatialReferenceFromCrsProfileException()
     {
-        final CrsProfile       profile     = null;
+        final CrsProfile profile = null;
         GdalUtility.getSpatialReference(profile);
         fail("Expected GdalUtility method getSpatialReference(CrsProfile) to throw an IllegalArgumentException.");
     }
@@ -398,12 +408,13 @@ public class GdalUtilityTest
     /**
      * Tests getSpatialReference(CrsProfile)
      */
+    @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     @Test
     public void verifyGetSpatialReferencFromCrsProfile()
     {
         for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
-            final CrsProfile       profile     = imageData.crsProfile;
+            final CrsProfile profile = imageData.crsProfile;
             final SpatialReference srsReturned = GdalUtility.getSpatialReference(profile);
             this.assertSRS(imageData.srs, srsReturned);
         }
@@ -435,7 +446,8 @@ public class GdalUtilityTest
     }
 
     /**
-     * Tests hasGeoReference(Dataset)
+     * Tests hasGeoReference(Dataset) with
+     * dataset that has no georeference
      */
     @Test
     public void verifyDatasetHasGeoReference2()
@@ -451,7 +463,6 @@ public class GdalUtilityTest
         finally
         {
             rawData.delete();
-            //testData.delete();
         }
     }
 
@@ -543,6 +554,7 @@ public class GdalUtilityTest
             testData.delete();
         }
     }
+
     /**
      * Test getBounds(dataset)
      */
@@ -553,7 +565,7 @@ public class GdalUtilityTest
         assertTrue(String.format("BoundingBoxes aren't equal.\nExpected: %s\nActual: %s",
                                  this.dataset1.boundingBox.toString(),
                                  boundingBoxReturned.toString()),
-                                 this.areBoxesEqual(this.dataset1.boundingBox, boundingBoxReturned));
+                   this.areBoxesEqual(this.dataset1.boundingBox, boundingBoxReturned));
     }
 
     /**
@@ -569,10 +581,10 @@ public class GdalUtilityTest
     }
 
     /**
-     * tests getCoordinateReferenceSystem(SpatialReference)
+     * Tests getCoordinateReferenceSystem(SpatialReference)
      */
     @Test
-    public void verifyGetCoordinateReferenceSystem()
+    public void verifyGetCoordinateReferenceSystem1()
     {
         for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
@@ -593,25 +605,38 @@ public class GdalUtilityTest
     public void verifyGetNameException()
     {
         GdalUtility.getName(null);
-        fail("Expected GdalUtility method getName to throw an IllegalArgumentException when given a null SpatialReferenceSystem.");
+        fail("Expected GdalUtility method getName(SpatialReference) to throw an IllegalArgumentException when given a null SpatialReferenceSystem.");
     }
+
     /**
      * Tests getName(SpatialReference)
      */
     @Test
-    public void verifyGetName()
+    public void verifyGetName1()
     {
         for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
             final String srsNameReturned = GdalUtility.getName(imageData.srs);
-            assertEquals(String.format("GdalUtility method getName(Spatial reference returned %s when expected %s",
-                            srsNameReturned,
-                            imageData.srs.GetAttrValue("PROJCS")),
-                    imageData.srs.GetAttrValue("PROJCS"),
-                    srsNameReturned);
+            assertEquals(String.format("GdalUtility method getName(SpatialReference) returned %s when expected %s",
+                                       srsNameReturned,
+                                       imageData.srs.GetAttrValue("PROJCS")),
+                         imageData.srs.GetAttrValue("PROJCS"),
+                         srsNameReturned);
         }
     }
 
+    /**
+     * Tests getName(SpatialReference)
+     * returns null when the SpatialReference is empty
+     */
+    @Test
+    public void verifyGetName2()
+    {
+        final SpatialReference srs = new SpatialReference();
+
+        assertNull("Expected GdalUtility method getName(SpatialReference) to return null.",
+                   GdalUtility.getName(srs));
+    }
     /**
      * Tests getCrsProfile(Dataset) throws an
      * IllegalArgumentException
@@ -634,12 +659,13 @@ public class GdalUtilityTest
         {
             final CrsProfile image = imageData.crsProfile;
             final CrsProfile profile = GdalUtility.getCrsProfile(imageData.dataset);
-            assertTrue("blah",
-                    image.getDescription().equals(profile.getDescription()) &&
-                            image.getName().equals(profile.getName()) &&
-                            image.getWellKnownText().equals(profile.getWellKnownText()) &&
-                            image.getPrecision() == profile.getPrecision() &&
-                            image.getCoordinateReferenceSystem().equals(profile.getCoordinateReferenceSystem()));
+
+            assertTrue("GdalUtility method getCrsProfile(Dataset) did not return the correct CrsProfile",
+                       image.getDescription().equals(profile.getDescription()) &&
+                       image.getName().equals(profile.getName()) &&
+                       image.getWellKnownText().equals(profile.getWellKnownText()) &&
+                       image.getPrecision() == profile.getPrecision() &&
+                       image.getCoordinateReferenceSystem().equals(profile.getCoordinateReferenceSystem()));
         }
     }
 
@@ -652,7 +678,7 @@ public class GdalUtilityTest
     {
         final TileScheme tileScheme = new ZoomTimesTwo(0, 5, 16, 16);
         final BoundingBox datasetBounds = null;
-        final BoundingBox tileMatrixBounds = new BoundingBox(0,0,0,0);
+        final BoundingBox tileMatrixBounds = new BoundingBox(0, 0, 0, 0);
         final CrsProfile crsProfile =  new SphericalMercatorCrsProfile();
         final TileOrigin origin = TileOrigin.LowerLeft;
 
@@ -674,7 +700,7 @@ public class GdalUtilityTest
         final TileOrigin origin = TileOrigin.LowerLeft;
 
         GdalUtility.calculateTileRanges(tileScheme, datasetBounds, tileMatrixBounds, crsProfile, origin);
-        fail("Expected GdalUtility method calculateTileRanges to throw an IllegalArgumentException when the datasetBounds is null.");
+        fail("Expected GdalUtility method calculateTileRanges to throw an IllegalArgumentException when the CrsProfile is null.");
     }
 
 
@@ -692,7 +718,7 @@ public class GdalUtilityTest
         final TileOrigin origin = TileOrigin.LowerLeft;
 
         GdalUtility.calculateTileRanges(tileScheme, datasetBounds, tileMatrixBounds, crsProfile, origin);
-        fail("Expected GdalUtility method calculateTileRanges to throw an IllegalArgumentException when the datasetBounds is null.");
+        fail("Expected GdalUtility method calculateTileRanges to throw an IllegalArgumentException when the TileScheme is null.");
     }
 
     /**
@@ -709,12 +735,11 @@ public class GdalUtilityTest
         final TileOrigin origin = null;
 
         GdalUtility.calculateTileRanges(tileScheme, datasetBounds, tileMatrixBounds, crsProfile, origin);
-        fail("Expected GdalUtility method calculateTileRanges to throw an IllegalArgumentException when the datasetBounds is null.");
+        fail("Expected GdalUtility method calculateTileRanges to throw an IllegalArgumentException when the TileOrigin is null.");
     }
 
     /**
-     * Tests calculateTileRanges throws
-     * an IllegalArgumentException
+     * Tests calculateTileRanges
      */
     @Test
     public void verifyCalculateTileRanges() throws DataFormatException
@@ -722,7 +747,7 @@ public class GdalUtilityTest
         final GdalUtilityTest.ImageDataProperties imageData = this.imageList.get(0);
 
         final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
-        final BoundingBox datasetBounds = GdalUtility.getBounds(imageData.dataset);
+        final BoundingBox datasetBounds = imageData.boundingBox;
         final BoundingBox tileMatrixBounds = imageData.crsProfile.getBounds();
         final CrsProfile crsProfile =  imageData.crsProfile;
         final TileOrigin origin = TileOrigin.LowerLeft;
@@ -741,7 +766,7 @@ public class GdalUtilityTest
     }
 
     /**
-     * Tests getMinimalZoom(Dataset) throws an
+     * Tests getMinimalZoom throws an
      * IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
@@ -754,11 +779,11 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
 
         GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the Dataset is null.");
     }
 
     /**
-     * Tests getMinimalZoom(Dataset) throws an
+     * Tests getMinimalZoom throws an
      * IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
@@ -773,13 +798,13 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
 
         GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when Map of tile ranges is null.");
 
         dataset.delete();
     }
 
     /**
-     * Tests getMinimalZoom(Dataset) throws an
+     * Tests getMinimalZoom throws an
      * IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
@@ -794,13 +819,13 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
 
         GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the Map of tile ranges is empty.");
 
         dataset.delete();
     }
 
     /**
-     * Tests getMinimalZoom(Dataset) throws an
+     * Tests getMinimalZoom throws an
      * IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
@@ -818,13 +843,13 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
 
         GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the TileOrigin is null.");
 
         dataset.delete();
     }
 
     /**
-     * Tests getMinimalZoom(Dataset) throws an
+     * Tests getMinimalZoom throws an
      * IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
@@ -842,13 +867,13 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
 
         GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the TileScheme is null.");
 
         dataset.delete();
     }
 
     /**
-     * Tests getMinimalZoom(Dataset) throws an
+     * Tests getMinimalZoom throws an
      * IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
@@ -866,14 +891,13 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = null;
 
         GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the Dimensions are null.");
 
         dataset.delete();
     }
 
     /**
-     * Tests getMinimalZoom(Dataset) throws an
-     * IllegalArgumentException
+     * Tests getMinimalZoom
      */
     @Test
     public void verifyGetMinimalZoom1() throws TileStoreException
@@ -896,12 +920,40 @@ public class GdalUtilityTest
             {
                 final long tiles = reader.stream(min).count();
                 assertTrue("GdalUtility method getMinimalZoom did not return a valid minimal zoom.",
-                        tiles == 1 || tiles == 2);
+                           tiles == 1 || tiles == 2);
             }
         }
     }
+
     /**
-     * Tests getMinimalZoom(Dataset) throws an
+     * Tests getMinimalZoom
+     */
+    @Test
+    public void verifyGetMinimalZoom2() throws TileStoreException
+    {
+        final TileOrigin tileOrigin = TileOrigin.LowerLeft;
+        final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
+        final Dimensions<Integer> tileSize = new Dimensions<>(512, 256);
+
+        for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList) {
+            final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
+                                                                                                        imageData.boundingBox,
+                                                                                                        imageData.crsProfile.getBounds(),
+                                                                                                        imageData.crsProfile,
+                                                                                                        tileOrigin);
+
+            final int min = GdalUtility.getMinimalZoom(imageData.dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+
+            try (final RawImageTileReader reader = new RawImageTileReader(imageData.imageFile, imageData.dataset, tileSize, null, null)) {
+                final long tiles = reader.stream(min).count();
+                assertTrue("GdalUtility method getMinimalZoom did not return a valid minimal zoom.",
+                           tiles == 1 || tiles == 2);
+            }
+        }
+    }
+
+    /**
+     * Tests getMaximalZoom throws an
      * IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
@@ -914,11 +966,11 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
 
         GdalUtility.getMaximalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMaximalZoom to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getMaximalZoom to throw an IllegalArgumentException when the Dataset is null.");
     }
 
     /**
-     * Tests getMinimalZoom(Dataset) throws an
+     * Tests getMaximalZoom throws an
      * IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
@@ -933,13 +985,13 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
 
         GdalUtility.getMaximalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMaximalZoom to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getMaximalZoom to throw an IllegalArgumentException when the Map of tile ranges is null.");
 
         dataset.delete();
     }
 
     /**
-     * Tests getMinimalZoom(Dataset) throws an
+     * Tests getMaximalZoom throws an
      * IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
@@ -954,13 +1006,13 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
 
         GdalUtility.getMaximalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMaximalZoom to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getMaximalZoom to throw an IllegalArgumentException when the Map of tile ranges is empty.");
 
         dataset.delete();
     }
 
     /**
-     * Tests getMinimalZoom(Dataset) throws an
+     * Tests getMaximalZoom throws an
      * IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
@@ -978,13 +1030,13 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
 
         GdalUtility.getMaximalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMaximalZoom to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getMaximalZoom to throw an IllegalArgumentException when the TileOrigin is null.");
 
         dataset.delete();
     }
 
     /**
-     * Tests getMinimalZoom(Dataset) throws an
+     * Tests getMaximalZoom throws an
      * IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
@@ -1002,7 +1054,7 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
 
         GdalUtility.getMaximalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMaximalZoom to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getMaximalZoom to throw an IllegalArgumentException when the TileScheme is null.");
 
         dataset.delete();
     }
@@ -1032,7 +1084,32 @@ public class GdalUtilityTest
     }
 
     /**
-     * Tests getMinimalZoom(Dataset) throws an
+     * Tests getMaximalZoom throws an
+     * IllegalArgumentException
+     */
+    @Test (expected = TileStoreException.class)
+    public void verifyGetMaximalZoomException7() throws TileStoreException
+    {
+        final TileOrigin tileOrigin = TileOrigin.LowerLeft;
+        final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
+        final Dimensions<Integer> tileSize = new Dimensions<>(0, 0);
+
+        for (final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
+        {
+            final Map<Integer, Range<Coordinate<Integer>>> tileRanges = GdalUtility.calculateTileRanges(tileScheme,
+                                                                                                        imageData.boundingBox,
+                                                                                                        imageData.crsProfile.getBounds(),
+                                                                                                        imageData.crsProfile,
+                                                                                                        tileOrigin);
+
+            GdalUtility.getMaximalZoom(imageData.dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+
+            fail("Expected GdalUtility method getMaximalZoom to throw a TileStoreException.");
+        }
+    }
+
+    /**
+     * Tests getMaximalZoom throws an
      * IllegalArgumentException
      */
     @Test
@@ -1053,7 +1130,8 @@ public class GdalUtilityTest
             final int max = GdalUtility.getMaximalZoom(imageData.dataset, tileRanges, tileOrigin, tileScheme, tileSize);
 
             assertTrue("GdalUtility method getMaximalZoom did not return a valid maximal zoom.",
-                       max >= 0 && max < 32);
+                       max >= 0 &&
+                       max < 32);
         }
     }
 
@@ -1111,6 +1189,22 @@ public class GdalUtilityTest
     /**
      * Tests getZoomLevels
      */
+    @Test(expected = TileStoreException.class)
+    public void verifyGetZoomLevelsException4() throws TileStoreException
+    {
+        final TileOrigin tileOrigin = TileOrigin.LowerLeft;
+        final Dimensions<Integer> tileSize = new Dimensions<>(0, 0);
+
+        for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
+        {
+            GdalUtility.getZoomLevels(imageData.dataset, tileOrigin, tileSize);
+            fail("Expected GdalUtility method getZoomLevels to throw a TileStoreException.");
+        }
+    }
+
+    /**
+     * Tests getZoomLevels
+     */
     @Test
     public void verifyGetZoomLevels() throws TileStoreException
     {
@@ -1125,6 +1219,7 @@ public class GdalUtilityTest
                        zooms.parallelStream().noneMatch(zoom -> zoom < 0 || zoom > 32));
         }
     }
+
     /**
      * Tests zoomLevelForPixelSize throws
      * an IllegalArgumentException
@@ -1140,7 +1235,7 @@ public class GdalUtilityTest
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
 
         GdalUtility.zoomLevelForPixelSize(1.0, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
-        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException when Map is null.");
     }
 
     /**
@@ -1158,7 +1253,7 @@ public class GdalUtilityTest
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
 
         GdalUtility.zoomLevelForPixelSize(1.0, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
-        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException when the Map is empty.");
     }
 
     /**
@@ -1179,7 +1274,7 @@ public class GdalUtilityTest
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
 
         GdalUtility.zoomLevelForPixelSize(1.0, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
-        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException when the dataset is null.");
     }
 
     /**
@@ -1202,7 +1297,7 @@ public class GdalUtilityTest
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
 
         GdalUtility.zoomLevelForPixelSize(1.0, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
-        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException when the CrsProfile is null.");
     }
 
     /**
@@ -1225,7 +1320,7 @@ public class GdalUtilityTest
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
 
         GdalUtility.zoomLevelForPixelSize(1.0, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
-        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException when the TileScheme is null.");
     }
 
     /**
@@ -1248,7 +1343,7 @@ public class GdalUtilityTest
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
 
         GdalUtility.zoomLevelForPixelSize(1.0, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
-        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException when the TileOrigin is null.");
     }
 
     /**
@@ -1271,7 +1366,7 @@ public class GdalUtilityTest
         final Dimensions<Integer> tileSize = null;
 
         GdalUtility.zoomLevelForPixelSize(1.0, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
-        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method zoomLevelForPixelSize to throw an IllegalArgumentException when the TileSize is null.");
     }
 
 
@@ -1368,7 +1463,7 @@ public class GdalUtilityTest
         final SpatialReference toSrs = GdalUtility.getSpatialReference(new CoordinateReferenceSystem("EPSG", 3857));
 
         GdalUtility.warpDatasetToSrs(dataset, fromSrs, toSrs);
-        fail("Expected GdalUtility method warpDatasetToSrs to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method warpDatasetToSrs to throw an IllegalArgumentException when the dataset is null.");
     }
 
     /**
@@ -1385,7 +1480,7 @@ public class GdalUtilityTest
         final SpatialReference toSrs = GdalUtility.getSpatialReference(new CoordinateReferenceSystem("EPSG", 3857));
 
         GdalUtility.warpDatasetToSrs(dataset, fromSrs, toSrs);
-        fail("Expected GdalUtility method warpDatasetToSrs to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method warpDatasetToSrs to throw an IllegalArgumentException when the from SpatialReference is null.");
         dataset.delete();
     }
 
@@ -1404,7 +1499,7 @@ public class GdalUtilityTest
         final SpatialReference toSrs = null;
 
         GdalUtility.warpDatasetToSrs(dataset, fromSrs, toSrs);
-        fail("Expected GdalUtility method warpDatasetToSrs to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method warpDatasetToSrs to throw an IllegalArgumentException when the To SpatialReference is null.");
         dataset.delete();
     }
 
@@ -1462,7 +1557,7 @@ public class GdalUtilityTest
         final SpatialReference toSrs = GdalUtility.getSpatialReference(new CoordinateReferenceSystem("EPSG", 3857));
 
         GdalUtility.reprojectDatasetToSrs(dataset, fromSrs, toSrs);
-        fail("Expected GdalUtility method reprojectDatasetToSrs to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method reprojectDatasetToSrs to throw an IllegalArgumentException when the dataset is null.");
     }
 
     /**
@@ -1479,7 +1574,7 @@ public class GdalUtilityTest
         final SpatialReference toSrs = GdalUtility.getSpatialReference(new CoordinateReferenceSystem("EPSG", 3857));
 
         GdalUtility.reprojectDatasetToSrs(dataset, fromSrs, toSrs);
-        fail("Expected GdalUtility method reprojectDatasetToSrs to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method reprojectDatasetToSrs to throw an IllegalArgumentException when the From SpatialReference is null.");
         dataset.delete();
     }
 
@@ -1497,7 +1592,7 @@ public class GdalUtilityTest
         final SpatialReference toSrs = null;
 
         GdalUtility.reprojectDatasetToSrs(dataset, fromSrs, toSrs);
-        fail("Expected GdalUtility method reprojectDatasetToSrs to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method reprojectDatasetToSrs to throw an IllegalArgumentException when to To SpatialReference is null.");
         dataset.delete();
     }
 
@@ -1521,7 +1616,7 @@ public class GdalUtilityTest
     }
 
     /**
-     * Tests that scaleQueryToTileSize
+     * Tests that scaleQueryToTileSize(Dataset, Dimensions)
      * throws an IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
@@ -1531,11 +1626,11 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = new Dimensions<>(1024, 1024);
 
         GdalUtility.scaleQueryToTileSize(dataset, dimensions);
-        fail("Expected GdalUtility method to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method scaleQueryToTileSize(Dataset, Dimensions) to throw an IllegalArgumentException when the Dataset is null.");
     }
 
     /**s
-     * Tests that scaleQueryToTileSize
+     * Tests that scaleQueryToTileSize(Dataset, Dimensions)
      * throws an IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
@@ -1547,7 +1642,7 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = null;
 
         GdalUtility.scaleQueryToTileSize(dataset, dimensions);
-        fail("Expected GdalUtility method to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method scaleQueryToTileSize(Dataset, Dimensions) to throw an IllegalArgumentException when the Dimensions are null.");
         dataset.delete();
     }
 
@@ -1580,11 +1675,11 @@ public class GdalUtilityTest
         final Dataset dataset = null;
 
         GdalUtility.getNoDataValues(dataset);
-        fail("Expected GdalUtility method getNoDataValues(Dataset) to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getNoDataValues(Dataset) to throw an IllegalArgumentException when the Dataset is null.");
     }
 
     /**
-     * Test getNoDataValues correctly returns
+     * Test getNoDataValues(Dataset) correctly returns
      * the noDataValues (if any)
      */
     @Test
@@ -1600,7 +1695,7 @@ public class GdalUtilityTest
     }
 
     /**
-     * Tests getRasterBandCount throws an
+     * Tests getRasterBandCount(Dataset, Band) throws an
      * IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
@@ -1610,10 +1705,11 @@ public class GdalUtilityTest
         final Band alphaBand = this.dataset1.dataset.GetRasterBand(0);
 
         GdalUtility.getRasterBandCount(dataset, alphaBand);
+        fail("Expected GdalUtility method getRasterBandCount(Dataset, Band) to throw an IllegalArgumentException when the Dataset is null");
     }
 
     /**
-     * Tests getRasterBandCount throws an
+     * Tests getRasterBandCount(Dataset, Band) throws an
      * IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
@@ -1623,10 +1719,11 @@ public class GdalUtilityTest
         final Band alphaBand = null;
 
         GdalUtility.getRasterBandCount(dataset, alphaBand);
+        fail("Expected GdalUtility method getRasterBandCount(Dataset, Band) to throw an IllegalArgumentException when the Band is null");
     }
 
     /**
-     * Tests getRasterBandCount correctly
+     * Tests getRasterBandCount(Dataset, Band) correctly
      * returns the rasterBand count
      */
     @Test
@@ -1644,24 +1741,25 @@ public class GdalUtilityTest
     }
 
     /**
-     * Tests getAlphaBandIndex throws
+     * Tests getAlphaBandIndex(Dataset) throws
      * an IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
     public void verifyGetAlphaBandIndexException1() throws TileStoreException
     {
         GdalUtility.getAlphaBandIndex(null);
+        fail("Expected GdalUtility method getAlphaBandIndex(Dataset) to throw an IllegalArgumentException when the Dataset is null.");
     }
 
     /**
-     * Tests getAlphaBandIndex throws
-     * an IllegalArgumentException
+     * Tests getAlphaBandIndex(Dataset) throws
+     * a TileStoreException
      */
     @Test(expected = TileStoreException.class)
     public void verifyGetAlphaBandIndexException2() throws TileStoreException
     {
         GdalUtility.getAlphaBandIndex(this.dataset1.dataset);
-        fail("Expected GdalUtility method getAlphaBandIndex to thrown a TileStoreException.");
+        fail("Expected GdalUtility method getAlphaBandIndex(Dataset) to throw a TileStoreException when the Dataset has no AlphaBand.");
     }
 
     /**
@@ -1679,8 +1777,9 @@ public class GdalUtilityTest
                      expected,
                      returned);
     }
+
     /**
-     * Tests correctNoDataSimple
+     * Tests correctNoDataSimple(Dataset)
      * throws an IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
@@ -1688,8 +1787,9 @@ public class GdalUtilityTest
     {
         final Dataset dataset = null;
         GdalUtility.correctNoDataSimple(dataset);
-        fail("Expected GdalUtility method correctNoDataSimple(Dataset) to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method correctNoDataSimple(Dataset) to throw an IllegalArgumentException when the Dataset is null.");
     }
+
 // TODO: fix correctNoDataSimple in GdalUtility
 //    /**
 //     * Tests correctNoDataSimple with
@@ -1727,7 +1827,6 @@ public class GdalUtilityTest
      * Tests hasAlpha(Dataset) throws an Exception
      * when the Dataset is null
      */
-
     @Test(expected = IllegalArgumentException.class)
     public void verifyHasAlphaException()
     {
@@ -1765,7 +1864,7 @@ public class GdalUtilityTest
         final Dataset dataset = this.dataset1.dataset;
 
         GdalUtility.getGdalRasterParameters(geoTransform, boundingBox, dimensions, dataset);
-        fail("Expected GdalUtility method getGdalRasterParameters to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getGdalRasterParameters to throw an IllegalArgumentException when the array has length 0.");
     }
 
     /**
@@ -1781,7 +1880,7 @@ public class GdalUtilityTest
         final Dataset dataset = this.dataset1.dataset;
 
         GdalUtility.getGdalRasterParameters(geoTransform, boundingBox, dimensions, dataset);
-        fail("Expected GdalUtility method getGdalRasterParameters to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getGdalRasterParameters to throw an IllegalArgumentException when the BoundingBox is null.");
     }
 
     /**
@@ -1797,7 +1896,7 @@ public class GdalUtilityTest
         final Dataset dataset = this.dataset1.dataset;
 
         GdalUtility.getGdalRasterParameters(geoTransform, boundingBox, dimensions, dataset);
-        fail("Expected GdalUtility method getGdalRasterParameters to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getGdalRasterParameters to throw an IllegalArgumentException when the Dimensions are null.");
     }
 
     /**
@@ -1813,7 +1912,7 @@ public class GdalUtilityTest
         final Dataset dataset = null;
 
         GdalUtility.getGdalRasterParameters(geoTransform, boundingBox, dimensions, dataset);
-        fail("Expected GdalUtility method getGdalRasterParameters to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method getGdalRasterParameters to throw an IllegalArgumentException when the Dataset is null.");
     }
 
     /**
@@ -1839,7 +1938,12 @@ public class GdalUtilityTest
             final int readXSize = (int)(boundingBox.getWidth()  /  geoTransform[1] + 0.5);
             final int readYSize = (int)(boundingBox.getHeight() / -geoTransform[5] + 0.5);
 
-            final GdalUtility.GdalRasterParameters expected = new GdalUtility.GdalRasterParameters(readX, readY, readXSize, readYSize, dimensions, imageData.dataset);
+            final GdalUtility.GdalRasterParameters expected = new GdalUtility.GdalRasterParameters(readX,
+                                                                                                   readY,
+                                                                                                   readXSize,
+                                                                                                   readYSize,
+                                                                                                   dimensions,
+                                                                                                   imageData.dataset);
 
             assertTrue("GdalUtility method getGdalRasterParameters did not return the GdalRasterParametesr object correctly.",
                        expected.getReadX() == params.getReadX() &&
@@ -1866,7 +1970,7 @@ public class GdalUtilityTest
         final Dataset dataset = this.dataset1.dataset;
 
         GdalUtility.readRaster(gdalRasterParameters, dataset);
-        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset) to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset) to throw an IllegalArgumentException when the GdalRasterParameters are null.");
     }
 
     /**
@@ -1876,11 +1980,16 @@ public class GdalUtilityTest
     @Test (expected = IllegalArgumentException.class)
     public void verifyReadRasterException2() throws IOException, TilingException
     {
-        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(0, 0, 0, 0, new Dimensions<>(0, 0), this.dataset1.dataset);
+        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(0,
+                                                                                                           0,
+                                                                                                           0,
+                                                                                                           0,
+                                                                                                           new Dimensions<>(0, 0),
+                                                                                                           this.dataset1.dataset);
         final Dataset dataset = null;
 
         GdalUtility.readRaster(gdalRasterParameters, dataset);
-        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset) to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset) to throw an IllegalArgumentException when the Dataset is null.");
     }
 
     /**
@@ -1943,7 +2052,7 @@ public class GdalUtilityTest
         final Dataset dataset = this.dataset1.dataset;
 
         GdalUtility.readRasterDirect(gdalRasterParameters, dataset);
-        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method readRasterDirect(GdalRasterParameters, Dataset) to throw an IllegalArgumentException.");
     }
 
     /**
@@ -1957,11 +2066,11 @@ public class GdalUtilityTest
         final Dataset dataset = null;
 
         GdalUtility.readRasterDirect(gdalRasterParameters, dataset);
-        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method readRasterDirect(GdalRasterParameters, Dataset) to throw an IllegalArgumentException when the Dataset is null.");
     }
 
     /**
-     * Tests readRaster(GdalRasterParams, Dataset)
+     * Tests readRasterDirect(GdalRasterParams, Dataset)
      * throws a TilingException
      */
     @Test (expected = TilingException.class)
@@ -1971,11 +2080,11 @@ public class GdalUtilityTest
         final Dataset dataset = this.dataset1.dataset;
 
         GdalUtility.readRasterDirect(gdalRasterParameters, dataset);
-        fail("Expected GdalUtility method readRaster(GdalRasterParameters, Dataset) to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method readRasterDirect(GdalRasterParameters, Dataset) to throw an IllegalArgumentException.");
     }
 
     /**
-     * Tests readRaster(GdalRasterParams, Dataset)
+     * Tests readRasterDirect(GdalRasterParams, Dataset)
      */
     @Test
     public void verifyReadRasterDirect1() throws IOException, TilingException
@@ -1993,7 +2102,7 @@ public class GdalUtilityTest
             final byte[] bytes  = GdalUtility.readRaster(params, imageData.dataset);
             final ByteBuffer expected = ByteBuffer.wrap(bytes);
 
-            assertTrue("GdalUtility method readRaster(GdalRasterParameters, Dataset) did not return a valid byte array.",
+            assertTrue("GdalUtility method readRasterDirect(GdalRasterParameters, Dataset) did not return the correct ByteBuffer.",
                        buffer != null &&
                        buffer.equals(expected));
         }
@@ -2011,7 +2120,7 @@ public class GdalUtilityTest
         final int bandCount = 3;
 
         GdalUtility.writeRaster(params, imageData, bandCount);
-        fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException when the GdalRasterParameters are null.");
     }
 
     /**
@@ -2027,7 +2136,7 @@ public class GdalUtilityTest
         final int bandCount = 3;
 
         GdalUtility.writeRaster(params, imageData, bandCount);
-        fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException when the byte array is null.");
     }
 
     /**
@@ -2037,12 +2146,17 @@ public class GdalUtilityTest
     @Test (expected = TilingException.class)
     public void verifyWriteRasterException3() throws IOException, TilingException
     {
-        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(0, 0, 100, 100, new Dimensions<>(256, 256), this.dataset1.dataset);
+        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(0,
+                                                                                                           0,
+                                                                                                           100,
+                                                                                                           100,
+                                                                                                           new Dimensions<>(256, 256),
+                                                                                                           this.dataset1.dataset);
         final byte[] imageData = new byte[10];
         final int bandCount = 3;
 
         GdalUtility.writeRaster(gdalRasterParameters, imageData, bandCount);
-        fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method writeRaster to throw a TilingException when it fails to write the tile data to an output Dataset.");
     }
 
     /**
@@ -2061,6 +2175,7 @@ public class GdalUtilityTest
 
             final byte[] readData = GdalUtility.readRaster(params, imageData.dataset);
             final byte[] writeData = new byte[readData.length];
+
             final Dataset dataset = GdalUtility.writeRaster(params, writeData, imageData.dataset.getRasterCount());
             dataset.SetGeoTransform(imageData.dataset.GetGeoTransform());
 
@@ -2086,7 +2201,7 @@ public class GdalUtilityTest
         final int bandCount = 3;
 
         GdalUtility.writeRasterDirect(params, imageData, bandCount);
-        fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method writeRasterDirect to throw an IllegalArgumentException when the GdalRasterParameters are null.");
     }
 
     /**
@@ -2102,7 +2217,7 @@ public class GdalUtilityTest
         final int bandCount = 3;
 
         GdalUtility.writeRasterDirect(params, imageData, bandCount);
-        fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException.");
+        fail("Expected GdalUtility method writeRasterDirect to throw an IllegalArgumentException when the ByteBuffer is null.");
     }
 
     /**
@@ -2118,7 +2233,7 @@ public class GdalUtilityTest
         final int bandCount = 3;
 
         GdalUtility.writeRasterDirect(gdalRasterParameters, imageData, bandCount);
-        fail("Expected GdalUtility method writeRasterDirect to throw a TilingException.");
+        fail("Expected GdalUtility method writeRasterDirect to throw a TilingException when it fails to write the ByteBuffer data to a Dataset.");
     }
 
     /**
@@ -2147,14 +2262,14 @@ public class GdalUtilityTest
                                                                                                      dimensions,
                                                                                                      dataset);
 
-            assertEquals("GdalUtility method writeRaster did not correctly write to and return a dataset",
+            assertEquals("GdalUtility method writeRasterDirect did not correctly write to and return a dataset",
                          writeData,
                          GdalUtility.readRasterDirect(writeParams, dataset));
         }
     }
 
     /**
-     * Tests the GdalRasterParameters construcotr
+     * Tests the GdalRasterParameters constructor
      * throws an IllehalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
@@ -2166,12 +2281,12 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = null;
 
         new GdalUtility.GdalRasterParameters(0, 0, 0, 0, dimensions, dataset);
-        fail("Expected GdalRasterParameters constructor to throw an IllegalArgumentException.");
+        fail("Expected GdalRasterParameters constructor to throw an IllegalArgumentException when the Dimensions are null.");
         dataset.delete();
     }
 
     /**
-     * Tests the GdalRasterParameters construcotr
+     * Tests the GdalRasterParameters constructor
      * throws an IllehalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
@@ -2181,7 +2296,7 @@ public class GdalUtilityTest
         final Dimensions<Integer> dimensions = new Dimensions<>(10, 10);
 
         new GdalUtility.GdalRasterParameters(0, 1, 2, 3, dimensions, dataset);
-        fail("Expected GdalRasterParameters constructor to throw an IllegalArgumentException.");
+        fail("Expected GdalRasterParameters constructor to throw an IllegalArgumentException when the Dataset is null.");
     }
 
     /**
