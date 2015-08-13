@@ -57,7 +57,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.IntStream;
 import java.util.zip.DataFormatException;
 
 import static org.junit.Assert.*;
@@ -548,12 +547,13 @@ public class GdalUtilityTest
      * Test getBounds(dataset)
      */
     @Test
-    public void verifyGetBoundsForDataset() throws DataFormatException {
+    public void verifyGetBoundsForDataset() throws DataFormatException
+    {
         final BoundingBox boundingBoxReturned = GdalUtility.getBounds(this.dataset1.dataset);
         assertTrue(String.format("BoundingBoxes aren't equal.\nExpected: %s\nActual: %s",
                                  this.dataset1.boundingBox.toString(),
                                  boundingBoxReturned.toString()),
-                   this.areBoxesEqual(this.dataset1.boundingBox, boundingBoxReturned));
+                                 this.areBoxesEqual(this.dataset1.boundingBox, boundingBoxReturned));
     }
 
     /**
@@ -2021,7 +2021,8 @@ public class GdalUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void verifyWriteRasterException2() throws TilingException
     {
-        final GdalUtility.GdalRasterParameters params = null;
+        final Dataset dataset = this.dataset1.dataset;
+        final GdalUtility.GdalRasterParameters params = new GdalUtility.GdalRasterParameters(0, 0, 0, 0, new Dimensions<>(0,0), dataset);
         final byte[] imageData = new byte[0];
         final int bandCount = 3;
 
@@ -2044,27 +2045,34 @@ public class GdalUtilityTest
         fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException.");
     }
 
-//    /**
-//     * Tests writeRaster
-//     */
-//    @Test
-//    public void verifyWriteRaster1() throws IOException, TilingException
-//    {
-//        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
-//        final byte[] data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-//        final int bandCount = 4;
-//        for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList)
-//        {
-//            final GdalUtility.GdalRasterParameters params = GdalUtility.getGdalRasterParameters(imageData.dataset.GetGeoTransform(),
-//                                                                                                imageData.boundingBox,
-//                                                                                                dimensions,
-//                                                                                                imageData.dataset);
-//            final Dataset dataset = GdalUtility.writeRaster(params, data, bandCount);
-//
-//            assertTrue("GdalUtility method writeRaster did not correctly write to and return a dataset",
-//                        dataset != null);
-//        }
-//    }
+    /**
+     * Tests writeRaster
+     */
+    @Test
+    public void verifyWriteRaster() throws IOException, TilingException, DataFormatException
+    {
+        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
+        for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList)
+        {
+            final GdalUtility.GdalRasterParameters params = GdalUtility.getGdalRasterParameters(imageData.dataset.GetGeoTransform(),
+                                                                                                imageData.boundingBox,
+                                                                                                dimensions,
+                                                                                                imageData.dataset);
+
+            final byte[] readData = GdalUtility.readRaster(params, imageData.dataset);
+            final byte[] writeData = new byte[readData.length];
+            final Dataset dataset = GdalUtility.writeRaster(params, writeData, imageData.dataset.getRasterCount());
+            dataset.SetGeoTransform(imageData.dataset.GetGeoTransform());
+
+            final GdalUtility.GdalRasterParameters writeParams = GdalUtility.getGdalRasterParameters(dataset.GetGeoTransform(),
+                                                                                                     GdalUtility.getBounds(dataset),
+                                                                                                     dimensions,
+                                                                                                     dataset);
+
+            assertTrue("GdalUtility method writeRaster did not correctly write to and return a dataset",
+                       Arrays.equals(writeData, GdalUtility.readRaster(writeParams, dataset)));
+        }
+    }
 
     /**
      * Tests writeRasterDirect throws
@@ -2088,7 +2096,8 @@ public class GdalUtilityTest
     @Test(expected = IllegalArgumentException.class)
     public void verifyWriteRasterDirectException2() throws TilingException
     {
-        final GdalUtility.GdalRasterParameters params = null;
+        final Dataset dataset = this.dataset1.dataset;
+        final GdalUtility.GdalRasterParameters params = new GdalUtility.GdalRasterParameters(0, 0, 0, 0, new Dimensions<>(0, 0), dataset);
         final ByteBuffer imageData = null;
         final int bandCount = 3;
 
@@ -2096,20 +2105,53 @@ public class GdalUtilityTest
         fail("Expected GdalUtility method writeRaster to throw an IllegalArgumentException.");
     }
 
-//    /**
-//     * Tests writeRasterDirect
-//     * throws a TilingException
-//     */
-//    @Test (expected = TilingException.class)
-//    public void verifyWriteRasterDirectException3() throws IOException, TilingException
-//    {
-//        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(0, 0, 100, 100, new Dimensions<>(256, 256), this.dataset1.dataset);
-//        final ByteBuffer imageData = ByteBuffer.wrap(new byte[10]);
-//        final int bandCount = 3;
-//
-//        GdalUtility.writeRasterDirect(gdalRasterParameters, imageData, bandCount);
-//        fail("Expected GdalUtility method writeRasterDirect to throw an IllegalArgumentException.");
-//    }
+    /**
+     * Tests writeRasterDirect
+     * throws a TilingException
+     */
+    @Test (expected = TilingException.class)
+    public void verifyWriteRasterDirectException3() throws IOException, TilingException
+    {
+        final Dataset dataset = this.dataset1.dataset;
+        final GdalUtility.GdalRasterParameters gdalRasterParameters = new GdalUtility.GdalRasterParameters(-10, -10, 100, 100, new Dimensions<>(10, 10), dataset);
+        final ByteBuffer imageData = ByteBuffer.allocateDirect(10);
+        final int bandCount = 3;
+
+        GdalUtility.writeRasterDirect(gdalRasterParameters, imageData, bandCount);
+        fail("Expected GdalUtility method writeRasterDirect to throw a TilingException.");
+    }
+
+    /**
+     * Tests writeRasterDirect
+     */
+    @Test
+    public void verifyWriteRasterDirect() throws IOException, TilingException, DataFormatException
+    {
+        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
+        for (final GdalUtilityTest.ImageDataProperties imageData : this.imageList)
+        {
+            final GdalUtility.GdalRasterParameters params = GdalUtility.getGdalRasterParameters(imageData.dataset.GetGeoTransform(),
+                                                                                                imageData.boundingBox,
+                                                                                                dimensions,
+                                                                                                imageData.dataset);
+
+            final ByteBuffer readData = GdalUtility.readRasterDirect(params, imageData.dataset);
+            final ByteBuffer writeData = ByteBuffer.allocateDirect(readData.capacity());
+
+
+            final Dataset dataset = GdalUtility.writeRasterDirect(params, writeData, imageData.dataset.getRasterCount());
+            dataset.SetGeoTransform(imageData.dataset.GetGeoTransform());
+
+            final GdalUtility.GdalRasterParameters writeParams = GdalUtility.getGdalRasterParameters(dataset.GetGeoTransform(),
+                                                                                                     GdalUtility.getBounds(dataset),
+                                                                                                     dimensions,
+                                                                                                     dataset);
+
+            assertEquals("GdalUtility method writeRaster did not correctly write to and return a dataset",
+                         writeData,
+                         GdalUtility.readRasterDirect(writeParams, dataset));
+        }
+    }
 
     /**
      * Tests the GdalRasterParameters construcotr
@@ -2336,6 +2378,7 @@ public class GdalUtilityTest
                    params.getWriteXSize() == writeXSize &&
                    params.getWriteYSize() == writeYSize);
     }
+
     /* Private helper methods */
     @SuppressWarnings("MethodMayBeStatic")
     private void assertSRS(final SpatialReference expectedSrs, final SpatialReference srsReturned)
@@ -2355,6 +2398,7 @@ public class GdalUtilityTest
                expected.GetRasterCount() == returned.getRasterCount();
     }
 
+    @SuppressWarnings("MethodMayBeStatic")
     private boolean areBoxesEqual(final BoundingBox b1, final BoundingBox b2)
     {
         final double epsilon = 0.001;
@@ -2362,33 +2406,6 @@ public class GdalUtilityTest
                (b1.getMaxY() == b2.getMaxY() || Math.abs(b1.getMaxY() - b2.getMaxY()) < epsilon) &&
                (b1.getMinX() == b2.getMinX() || Math.abs(b1.getMinX() - b2.getMinX()) < epsilon) &&
                (b1.getMinY() == b2.getMinY() || Math.abs(b1.getMinY() - b2.getMinY()) < epsilon);
-    }
-    /**
-     * Compares two BufferedImages and determines if they are equal
-     *
-     * @param img1 the first buffered image
-     * @param img2 the second buffered image
-     * @return true if the two BufferedImages are equal
-     */
-    private static boolean bufferedImagesEqual(final BufferedImage img1, final BufferedImage img2)
-    {
-        if(img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight())
-        {
-            return false;
-        }
-
-        for(int xCoord = 0; xCoord < img1.getWidth(); xCoord++)
-        {
-            for(int yCoord = 0; yCoord < img1.getHeight(); yCoord++)
-            {
-                if(img1.getRGB(xCoord, yCoord) != img2.getRGB(xCoord, yCoord))
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
 }
