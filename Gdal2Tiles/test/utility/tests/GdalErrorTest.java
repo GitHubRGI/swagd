@@ -23,7 +23,7 @@ public class GdalErrorTest
         final GdalError error = new GdalError();
 
         assertEquals("GdalError constructor did not correctly set the GdalError message.",
-                message, error.getMessage());
+                     message, error.getMessage());
 
         assertEquals("GdalError constructor did not correctly set the GdalError number",
                      errorCode,
@@ -66,8 +66,8 @@ public class GdalErrorTest
         final String returned = GdalError.lastError();
 
         assertEquals("GdalError toString method did not return the correct String",
-                expected,
-                returned);
+                     expected,
+                     returned);
     }
     /**
      * Tests gdalErrorNumberToString
@@ -80,10 +80,10 @@ public class GdalErrorTest
         final String expected = "Application Defined";
 
         assertEquals(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
-                        returned,
-                        expected),
-                expected,
-                returned);
+                                   returned,
+                                   expected),
+                     expected,
+                     returned);
     }
 
 
@@ -268,10 +268,10 @@ public class GdalErrorTest
         final String expected = "Debug";
 
         assertEquals(String.format("gdalErrorNumberToString returned %s, but %s was expected.",
-                        returned,
-                        expected),
-                expected,
-                returned);
+                                   returned,
+                                   expected),
+                     expected,
+                     returned);
     }
 
     /**
