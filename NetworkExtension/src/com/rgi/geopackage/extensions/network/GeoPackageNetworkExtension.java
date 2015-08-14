@@ -583,10 +583,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         final int identifier = JdbcUtility.update(this.databaseConnection,
                                                   insert,
-                                                  preparedStatement -> {
-                                                      preparedStatement.setInt(1, from);
-                                                      preparedStatement.setInt(2, to);
-                                                  },
+                                                  preparedStatement -> { preparedStatement.setInt(1, from);
+                                                                         preparedStatement.setInt(2, to);
+                                                                       },
                                                   resultSet -> resultSet.getInt(1));
 
         this.databaseConnection.commit();
@@ -633,11 +632,11 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
     /**
      * Adds edges to a {@link Network} along with each edge's attributes
+     *
      * @param attributedEdges
      *             Collection of edge/attribute pairs, where the edges are each a pair of nodes
      * @param attributeDescriptions
      *             Collection of {@link AttributeDescription}s
-     *
      * @throws SQLException
      *             if there is a database error
      */
@@ -787,17 +786,16 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         return JdbcUtility.select(this.databaseConnection,
                                   attributeDescriptionQuery,
-                                  preparedStatement -> {
-                                      preparedStatement.setString(1, network.getTableName());
-                                      preparedStatement.setString(2, attributedType.toString());
-                                  },
+                                  preparedStatement -> { preparedStatement.setString(1, network.getTableName());
+                                                         preparedStatement.setString(2, attributedType.toString());
+                                                       },
                                   resultSet -> new AttributeDescription(resultSet.getInt(1),                      // attribute unique identifier
                                                                         network.getTableName(),                   // network table name
                                                                         resultSet.getString(2),                   // attribute name
                                                                         resultSet.getString(3),                   // attribute units
                                                                         DataType.valueOf(resultSet.getString(4)), // attribute data type
                                                                         resultSet.getString(5),                   // attribute description
-                                                                        attributedType));                          // attributed type
+                                                                        attributedType));                         // attributed type
     }
 
     /**
@@ -845,11 +843,10 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
 
         return JdbcUtility.selectOne(this.databaseConnection,
                                      attributeDescriptionQuery,
-                                     preparedStatement -> {
-                                         preparedStatement.setString(1, network.getTableName());
-                                         preparedStatement.setString(2, attributedType.toString());
-                                         preparedStatement.setString(3, name);
-                                     },
+                                     preparedStatement -> { preparedStatement.setString(1, network.getTableName());
+                                                            preparedStatement.setString(2, attributedType.toString());
+                                                            preparedStatement.setString(3, name);
+                                                          },
                                      resultSet -> new AttributeDescription(resultSet.getInt(1),                      // attribute unique identifier
                                                                            network.getTableName(),                   // network table name
                                                                            name,                                     // attribute name
@@ -1326,19 +1323,18 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         return Pair.of(firstNetworkTableName,
                        Arrays.asList(attributeDescriptions)
                              .stream()
-                             .map(description -> {
-                                 if(!description.getNetworkTableName().equals(firstNetworkTableName))
-                                 {
-                                     throw new IllegalArgumentException("Attribute descriptions must all refer to the same network table");
-                                 }
+                             .map(description -> { if(!description.getNetworkTableName().equals(firstNetworkTableName))
+                                                   {
+                                                       throw new IllegalArgumentException("Attribute descriptions must all refer to the same network table");
+                                                   }
 
-                                 if(description.getAttributedType() != attributedType)
-                                 {
-                                     throw new IllegalArgumentException("Attribute descriptions must all refer exclusively to nodes or exclusively to edges");
-                                 }
+                                                   if(description.getAttributedType() != attributedType)
+                                                   {
+                                                       throw new IllegalArgumentException("Attribute descriptions must all refer exclusively to nodes or exclusively to edges");
+                                                   }
 
-                                 return description.getName();
-                             })
+                                                   return description.getName();
+                                                 })
                              .collect(Collectors.toList()));
     }
 
