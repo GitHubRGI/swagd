@@ -126,7 +126,7 @@
       <option name="ignoreBooleanMethods" value="false" />
       <option name="ignoreInAnnotationInterface" value="true" />
       <option name="onlyWarnOnBaseMethods" value="true" />
-      <option name="questionString" value="is,can,has,should,could,will,shall,check,contains,equals,add,put,remove,startsWith,endsWith" />
+      <option name="questionString" value="is,can,has,should,could,will,shall,check,contains,equals,add,put,remove,startsWith,endsWith,are" />
     </inspection_tool>
     <inspection_tool class="BooleanParameter" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="BooleanVariableAlwaysNegated" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -849,7 +849,7 @@
     <inspection_tool class="NumericOverflow" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="NumericToString" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="ObjectAllocationInLoop" enabled="true" level="ERROR" enabled_by_default="false">
-      <scope name="Problems" level="WEAK WARNING" enabled="true" />
+      <scope name="Problems" level="INFO" enabled="true" />
     </inspection_tool>
     <inspection_tool class="ObjectEquality" enabled="true" level="ERROR" enabled_by_default="true">
       <option name="m_ignoreEnums" value="true" />
