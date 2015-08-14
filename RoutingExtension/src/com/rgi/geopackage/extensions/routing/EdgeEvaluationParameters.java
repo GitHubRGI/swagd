@@ -21,23 +21,44 @@
  * SOFTWARE.
  */
 
-package com.rgi.common.util.functional;
+package com.rgi.geopackage.extensions.routing;
+
+import com.rgi.geopackage.extensions.network.Node;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * @author Luke Lambert
- *
- * @param <I> the type of the input to the operation
- * @param <O> the type of the output to the operation
+ * @author  Luke Lambert
  */
-public interface Function<I, O>
+public class EdgeEvaluationParameters
 {
-    /**
-     * Returns output type that maps from the input type given
-     *
-     * @param input
-     *      the type of input to the operation
-     * @return
-     *      the type of output to the operation based on this input
-     */
-    public O apply(final I input);
+    public EdgeEvaluationParameters(final Node         from,
+                                    final Node         to,
+                                    final List<Object> edgeAttributes)
+    {
+        this.from           = from;
+        this.to             = to;
+        this.edgeAttributes = new ArrayList<>(edgeAttributes);
+    }
+
+    public Node getFrom()
+    {
+        return this.from;
+    }
+
+    public Node getTo()
+    {
+        return this.to;
+    }
+
+    public List<Object> getEdgeAttributes()
+    {
+        return Collections.unmodifiableList(this.edgeAttributes);
+    }
+
+    private final Node         from;
+    private final Node         to;
+    private final List<Object> edgeAttributes;
 }

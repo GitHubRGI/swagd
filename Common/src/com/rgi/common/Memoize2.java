@@ -21,23 +21,46 @@
  * SOFTWARE.
  */
 
-package com.rgi.common.util.functional;
+package com.rgi.common;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 /**
- * @author Luke Lambert
+ * Functional memoization strategy, based on <a
+ * href="https://stackoverflow.com/a/3624099/16434">this example</a>.
  *
- * @param <I> the type of the input to the operation
- * @param <O> the type of the output to the operation
+ * @author Luke Lambert
  */
-public interface Function<I, O>
+public class Memoize2<P1, P2, R>
 {
-    /**
-     * Returns output type that maps from the input type given
-     *
-     * @param input
-     *      the type of input to the operation
-     * @return
-     *      the type of output to the operation based on this input
-     */
-    public O apply(final I input);
+    public Memoize2(final BiFunction<P1, P2, R> evaluator)
+    {
+        if(evaluator == null)
+        {
+            throw new IllegalArgumentException("Evaluator may not be null");
+        }
+
+        this.evaluator = evaluator;
+    }
+
+    public R get(final P1 parameter1, final P2 parameter2)
+    {
+        final Pair<P1, P2> pair = Pair.of(parameter1, parameter2);
+
+        if(this.values.containsKey(pair))
+        {
+            return this.values.get(pair);
+        }
+        else
+        {
+            final R value = this.evaluator.apply(parameter1, parameter2);
+            this.values.put(pair, value);
+            return value;
+        }
+    }
+
+    private final Map<Pair<P1, P2>, R>  values = new HashMap<>();   // TODO maybe use a hash as a key
+    private final BiFunction<P1, P2, R> evaluator;
 }

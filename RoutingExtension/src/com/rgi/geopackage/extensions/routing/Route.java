@@ -21,23 +21,47 @@
  * SOFTWARE.
  */
 
-package com.rgi.common.util.functional;
+package com.rgi.geopackage.extensions.routing;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Luke Lambert
- *
- * @param <I> the type of the input to the operation
- * @param <O> the type of the output to the operation
  */
-public interface Function<I, O>
+public class Route
 {
-    /**
-     * Returns output type that maps from the input type given
-     *
-     * @param input
-     *      the type of input to the operation
-     * @return
-     *      the type of output to the operation based on this input
-     */
-    public O apply(final I input);
+
+    public Route(final List<List<Object>> nodesAttributes,
+                 final List<List<Object>> edgesAttributes,
+                 final List<Double>       edgeCosts)
+    {
+        this.nodesAttributes = nodesAttributes;
+        this.edgesAttributes = edgesAttributes;
+        this.edgeCosts       = edgeCosts;
+    }
+
+    public List<List<Object>> getNodesAttributes()
+    {
+        return Collections.unmodifiableList(this.nodesAttributes);
+    }
+
+    public List<List<Object>> getEdgesAttributes()
+    {
+        return Collections.unmodifiableList(this.edgesAttributes);
+    }
+
+    public List<Double> getEdgeCosts()
+    {
+        return Collections.unmodifiableList(this.edgeCosts);
+    }
+
+    public double getTotalCost()
+    {
+        return this.edgeCosts.stream().reduce(0.0, Double::sum);
+    }
+
+    private final List<List<Object>> nodesAttributes;
+    private final List<List<Object>> edgesAttributes;
+    private final List<Double>             edgeCosts;
 }

@@ -50,7 +50,7 @@ public class Pair<L, R>
      *             "Left" member of the pair
      * @param right
      *             "Right" member of the pair
-     * @return a {@link Pair} constructed with the left and right parameters
+     * @return a Pair constructed with the left and right parameters
      */
     public static <L, R> Pair<L, R> of(final L left, final R right)
     {
@@ -71,6 +71,36 @@ public class Pair<L, R>
     public R getRight()
     {
         return this.right;
+    }
+
+    @Override
+    public boolean equals(final Object obj)
+    {
+        if(this == obj)
+        {
+            return true;
+        }
+        if(obj == null || this.getClass() != obj.getClass())
+        {
+            return false;
+        }
+
+        final Pair<?, ?> pair = (Pair<?, ?>)obj;
+
+        if(this.left != null ? !this.left.equals(pair.left) : pair.left != null)
+        {
+            return false;
+        }
+
+        return this.right != null ? this.right.equals(pair.right) : pair.right == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = this.left != null ? this.left.hashCode() : 0;
+        result = 31 * result + (this.right != null ? this.right.hashCode() : 0);
+        return result;
     }
 
     private final L left;

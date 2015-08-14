@@ -55,7 +55,7 @@ RGISuite/settings.txt
 VerifierTool/.project
 WiX/CustomAction3/CustomAction3/obj/
 *.cache
-NetworkExtension/data/
+data/
 
 Android/gen
 
@@ -65,6 +65,7 @@ Android/gen
 .idea/.name
 .idea/copyright/
 .idea/libraries/
+.idea/dictionaries/
 settings.txt
 out/
 
