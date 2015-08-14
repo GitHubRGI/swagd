@@ -25,9 +25,6 @@ package com.rgi.geopackage.extensions.network;
 
 import com.rgi.geopackage.GeoPackage;
 
-import java.util.Collections;
-import java.util.List;
-
 /**
  * Representation of a <b>directional</b> edge from a {@link GeoPackage}
  * "rgi_network" network
