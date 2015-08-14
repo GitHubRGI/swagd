@@ -2,6 +2,8 @@ package com.rgi.suite.cli;
 
 import com.rgi.suite.cli.tilestoreadapter.HeadlessTileStoreAdapter;
 import org.gdal.osr.SpatialReference;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 import javax.activation.MimeType;
@@ -19,13 +21,13 @@ import java.util.logging.Logger;
  * -c (--compression) <jpeg               : Compression type for image tiling,default is jpeg
  * -d (--description) <text description>  : Tile set description
  * -f (--format) <image/png or image/jpg> : Image format for tiling operations,default is png (options are png,jpeg,etc.)
- * -h (--height) <Height>                 : Tile height in pixels; default is 256
+ * -H (--height) <Height: 1-10000>        : Tile height in pixels; default is 256
  * -i (-in) <Input File Path>             : REQUIRED! Input source for tiling/Packaging operation
- * -ti (--intileset, --intilesetname) <text>   : Tile Set name for GeoPackages (input), default is short name of output geopackage.
- * -to (--outtileset, --outtilesetname)    :Tile set name for geopackage output
+ * -ti (--intileset, --intilesetname)     : Tile Set name for GeoPackages (input), default is short name of output geopackage.
+ * -to (--outtileset, --outtilesetname)   :Tile set name for geopackage output
  * -o (-out) <Output File Path>           : Full output path for tiling/Packaging operation
- * -q (--compressionQuality) <1-100>                 : Compression compressionQuality for jpeg compression, between 0-100
- * -w (--width) <1-MAGIC_MAX_VALUE>                 : Tile width in pixels; default is 256
+ * -q (--compressionQuality) <1-100>      : Compression compressionQuality for jpeg compression, between 0-100
+ * -W (--width) <1-10000>                 : Tile width in pixels; default is 256
  *
  * @author matthew.moran
  */
@@ -38,6 +40,7 @@ public class HeadlessOptions
 
 	// set to true when isValid is called
 	private HeadlessOptionsValidator validator;
+	private boolean                  showHelp;
 	private boolean                  isValid;
 	// variables to hold command line arguments
 	private File                     inputFile;
@@ -92,6 +95,17 @@ public class HeadlessOptions
 		{
 			throw new IllegalArgumentException(String.format("FilePath: %s does not exist, input files must exist!",
 															 filePath));
+		}
+	}
+
+	@Option(required = false, help = true, name = "-h", aliases = "--help", usage = "Show Help")
+	public void showHelp(final boolean show) throws CmdLineException
+	{
+		this.showHelp = show;
+		if(show)
+		{
+			final CmdLineParser parser = new CmdLineParser(this);
+			parser.printUsage(System.out);
 		}
 	}
 
@@ -226,7 +240,7 @@ public class HeadlessOptions
 	 * @param width - tile width
 	 * @throws IllegalArgumentException value must be between 1 - MAGIC_MAX_VALUE
 	 */
-	@Option(name = "-w", aliases = "--width", metaVar = "<1-9999>", usage = "Tile width in pixels; default is 256")
+	@Option(name = "-W", aliases = "--width", metaVar = "<1-9999>", usage = "Tile width in pixels; default is 256")
 	public void setTileWidth(final int width)
 	{
 		if(width > 0 && width < HeadlessOptions.MAGIC_MAX_VALUE)
@@ -248,7 +262,7 @@ public class HeadlessOptions
 	 * @param height - tile height
 	 * @throws IllegalArgumentException - value must be between 1 and MAGIC_MAX_VALUE
 	 */
-	@Option(name = "-h", aliases = "--height", metaVar = "<1-9999>", usage = "Tile height in pixels; default is 256")
+	@Option(name = "-H", aliases = "--height", metaVar = "<1-9999>", usage = "Tile height in pixels; default is 256")
 	public void setTileHeight(final int height)
 	{
 		if(height > 0 && height < HeadlessOptions.MAGIC_MAX_VALUE)
@@ -345,6 +359,7 @@ public class HeadlessOptions
 		return this.imageFormat;
 	}
 
+	public boolean getShowHelp() { return this.showHelp; }
 	/**
 	 * returns the tilestore adaptor for input
 	 *
@@ -411,6 +426,7 @@ public class HeadlessOptions
 		{
 			this.validator = new HeadlessOptionsValidator(this, this.logger);
 		}
+
 		return this.validator.isValid();
 	}
 
