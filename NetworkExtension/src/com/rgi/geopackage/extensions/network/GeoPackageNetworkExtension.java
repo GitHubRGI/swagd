@@ -443,14 +443,15 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * @throws SQLException
      *             if there is a database error
      */
-    public List<Integer> getExits(final Network network, final int node) throws SQLException
+    public List<Edge> getExits(final Network network, final int node) throws SQLException
     {
         if(network == null)
         {
             throw new IllegalArgumentException("Network may not be null");
         }
 
-        final String edgeQuery = String.format("SELECT %s FROM %s WHERE %s = ?;",
+        final String edgeQuery = String.format("SELECT %s, %s FROM %s WHERE %s = ?;",
+                                               "id",
                                                "to_node",
                                                network.getTableName(),
                                                "from_node");
@@ -458,7 +459,9 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
         return JdbcUtility.select(this.databaseConnection,
                                   edgeQuery,
                                   preparedStatement -> preparedStatement.setInt(1, node),
-                                  resultSet -> resultSet.getInt(1));
+                                  resultSet -> new Edge(resultSet.getInt(1),
+                                                        node,
+                                                        resultSet.getInt(2)));
     }
 
     /**

@@ -577,11 +577,11 @@
     <inspection_tool class="JUnit4MethodNamingConvention" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="JUnitDatapoint" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="JUnitRule" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="JavaDoc" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="JavaDoc" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="TOP_LEVEL_CLASS_OPTIONS">
         <value>
-          <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="none" />
-          <option name="REQUIRED_TAGS" value="" />
+          <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="public" />
+          <option name="REQUIRED_TAGS" value="@author@param" />
         </value>
       </option>
       <option name="INNER_CLASS_OPTIONS">
@@ -592,13 +592,13 @@
       </option>
       <option name="METHOD_OPTIONS">
         <value>
-          <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="none" />
+          <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="public" />
           <option name="REQUIRED_TAGS" value="@return@param@throws or @exception" />
         </value>
       </option>
       <option name="FIELD_OPTIONS">
         <value>
-          <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="none" />
+          <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="public" />
           <option name="REQUIRED_TAGS" value="" />
         </value>
       </option>
@@ -771,8 +771,8 @@
     <inspection_tool class="NestedSwitchStatement" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="NestedSynchronizedStatement" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="NestedTryStatement" enabled="false" level="ERROR" enabled_by_default="false" />
-    <inspection_tool class="NestingDepth" enabled="true" level="ERROR" enabled_by_default="true">
-      <option name="m_limit" value="5" />
+    <inspection_tool class="NestingDepth" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="m_limit" value="10" />
     </inspection_tool>
     <inspection_tool class="NewExceptionWithoutArguments" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="NewStringBufferWithCharArgument" enabled="true" level="ERROR" enabled_by_default="true" />
