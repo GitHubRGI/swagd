@@ -59,7 +59,7 @@ import static org.junit.Assert.fail;
  * @author Mary Carome
  *
  */
-@SuppressWarnings("static-method")
+@SuppressWarnings("JavaDoc")
 public class GeoPackageNetworkExtensionTest
 {
     /**
@@ -899,16 +899,16 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addEdge(network, 12, 44);
             networkExtension.addEdge(network, 54, 354);
 
-            final List<Integer> list = networkExtension.getExits(network, 12);
+            final List<Edge> list = networkExtension.getExits(network, 12);
 
             assertEquals("Expected GeoPackageNetworkExtension method getExits(Network, int) to return an nonempty list of size 3.",
                          3,
                          list.size());
 
             assertTrue("GeoPackageNetworkExtension method getExits did not return the correct list of Edges",
-                        list.get(0) == 10 &&
-                        list.get(1) == 15 &&
-                        list.get(2) == 44);
+                        list.get(0).getTo() == 10 &&
+                        list.get(1).getTo() == 15 &&
+                        list.get(2).getTo() == 44);
         }
         finally
         {

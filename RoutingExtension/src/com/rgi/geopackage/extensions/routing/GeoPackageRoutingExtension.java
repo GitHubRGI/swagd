@@ -34,6 +34,7 @@ import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
 import com.rgi.geopackage.extensions.network.AttributeDescription;
 import com.rgi.geopackage.extensions.network.AttributedType;
+import com.rgi.geopackage.extensions.network.Edge;
 import com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension;
 import com.rgi.geopackage.extensions.network.Network;
 import com.rgi.geopackage.extensions.network.Node;
@@ -607,15 +608,32 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
      * node to the ending node
      *
      * @param routingNetwork
-     *            network on which to route between a start and end node
+     *            Network on which to route between a start and end node
      * @param startNodeIdentifier
-     *            starting node
+     *            Starting node
      * @param endNodeIdentifier
-     *            ending node
+     *            Ending node
+     * @param nodeAttributes
+     *            Attributes of each network node to query for. These
+     *            attributes will be passed to the edge cost evaluator via
+     *            {@link Node#getAttributes()} as an array of {@link Object}s
+     *            in the <i>in the order in which the {@link
+     *            AttributeDescription}s are specified</i>.
+     * @param edgeAttributes
+     *            Attributes of each network edge to query for. These
+     *            attributes will be passed to the edge cost evaluator via
+     *            {@link EdgeEvaluationParameters#getEdgeAttributes()} as an
+     *            array of {@link Object}s in the <i>in the order in which the
+     *            {@link AttributeDescription}s are specified</i>.
      * @param edgeCostEvaluator
-     *            cost function for each edge in the path
+     *            Cost function for each edge in the path
      * @param heuristic
-     *            heuristic function for two nodes in the network
+     *            Cost heuristic function to be applied between a intermediate
+     *            and end node to determine the search order of A*
+     * @param restrictedNodeIdentifiers
+     *            Collection of nodes to not consider in routing
+     * @param restrictedEdgeIdentifiers
+     *            Collection of edges to not consider in routing
      * @return Optimal path from the start node to the end node
      * @throws SQLException
      *             if there is a database error
@@ -626,9 +644,9 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                        final Collection<AttributeDescription>           nodeAttributes,
                        final Collection<AttributeDescription>           edgeAttributes,
                        final Function<EdgeEvaluationParameters, Double> edgeCostEvaluator,
-                       final BiFunction<Node, Node, Double>             heuristic
-                       /* final restricted node ids */
-                       /* final restricted edges ids */) throws SQLException
+                       final BiFunction<Node, Node, Double>             heuristic,
+                       final Collection<Integer>                        restrictedNodeIdentifiers,
+                       final Collection<Integer>                        restrictedEdgeIdentifiers) throws SQLException
     {
         if(routingNetwork == null)
         {
@@ -645,12 +663,14 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Heuristic function may not be null");
         }
 
+        final Collection<Integer> ignoredEdges = new HashSet<>((restrictedEdgeIdentifiers == null) ?  Collections.emptySet() : restrictedEdgeIdentifiers);
+
         final Memoize2<Node, Node, Double> cachedHeuristic = new Memoize2<>(heuristic);
 
         // changed comparator -> change back to distance from end
         final PriorityQueue<AStarVertex> openList = new PriorityQueue<>((vertex1, vertex2) -> Double.compare((vertex1.getEstimatedCostToEnd() + vertex1.getCostFromStart()),
                                                                                                              (vertex2.getEstimatedCostToEnd() + vertex2.getCostFromStart())));
-        final Collection<Integer> closedList = new HashSet<>();
+        final Collection<Integer> closedList = new HashSet<>((restrictedNodeIdentifiers == null) ?  Collections.emptySet() : restrictedNodeIdentifiers);
 
         final Map<Integer, AStarVertex> nodeMap = new HashMap<>();
 
@@ -677,50 +697,56 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
 
             closedList.add(currentVertex.getNode().getIdentifier()); // Put it in "done" pile
 
-            for(final int adjacentNodeIdentifier : this.networkExtension.getExits(routingNetwork.getNetwork(), currentVertex.getNode().getIdentifier())) // For each node adjacent to the current node
+            for(final Edge exit : this.networkExtension.getExits(routingNetwork.getNetwork(), currentVertex.getNode().getIdentifier())) // For each node adjacent to the current node
             {
-                AStarVertex reachableVertex = nodeMap.get(adjacentNodeIdentifier);
-
-                if(reachableVertex == null)
+                // Ignore restricted edges
+                if(!ignoredEdges.contains(exit.getIdentifier()))
                 {
-                    reachableVertex = new AStarVertex(this.networkExtension.getNode(adjacentNodeIdentifier, nodeAttributes));
-                    nodeMap.put(adjacentNodeIdentifier, reachableVertex);
-                }
+                    final int adjacentNodeIdentifier = exit.getTo();
 
-                // If the closed list already searched this vertex, skip it
-                if(!closedList.contains(reachableVertex.getNode().getIdentifier()))
-                {
-                    final List<Object> edgeAttributeValues = this.networkExtension.getEdgeAttributes(currentVertex  .getNode().getIdentifier(),
-                                                                                                     reachableVertex.getNode().getIdentifier(),
-                                                                                                     edgeAttributes);
+                    AStarVertex reachableVertex = nodeMap.get(adjacentNodeIdentifier);
 
-                    final double edgeCost = edgeCostEvaluator.apply(new EdgeEvaluationParameters(currentVertex.getNode(),
-                                                                                                 reachableVertex.getNode(),
-                                                                                                 edgeAttributeValues));
-
-                    if(edgeCost <= 0.0)    // Are positive values that are extremely close to 0 going to be a problem?
+                    if(reachableVertex == null)
                     {
-                        throw new RuntimeException("The A* algorithm is only valid for edge costs greater than 0");
+                        reachableVertex = new AStarVertex(this.networkExtension.getNode(adjacentNodeIdentifier, nodeAttributes));
+                        nodeMap.put(adjacentNodeIdentifier, reachableVertex);
                     }
 
-                    final double costFromStart = currentVertex.getCostFromStart() + edgeCost;
-
-                    final boolean isShorterPath = costFromStart < reachableVertex.getCostFromStart();
-
-                    if(!openList.contains(reachableVertex) || isShorterPath)
+                    // If the closed list already searched this vertex, skip it
+                    if(!closedList.contains(reachableVertex.getNode().getIdentifier()))
                     {
-                        reachableVertex.update(costFromStart,
-                                               cachedHeuristic.get(reachableVertex.getNode(), endNode), // Estimated cost to the end node
-                                               currentVertex,
-                                               edgeAttributeValues,
-                                               edgeCost);
+                        final List<Object> edgeAttributeValues = this.networkExtension.getEdgeAttributes(currentVertex  .getNode().getIdentifier(),
+                                                                                                         reachableVertex.getNode().getIdentifier(),
+                                                                                                         edgeAttributes);
 
-                        if(isShorterPath)
+                        final double edgeCost = edgeCostEvaluator.apply(new EdgeEvaluationParameters(currentVertex.getNode(),
+                                                                                                     reachableVertex.getNode(),
+                                                                                                     edgeAttributeValues));
+
+                        if(edgeCost <= 0.0)    // Are positive values that are extremely close to 0 going to be a problem?
                         {
-                            openList.remove(reachableVertex);   // Re-add to trigger the reprioritization of this vertex
+                            throw new RuntimeException("The A* algorithm is only valid for edge costs greater than 0");
                         }
 
-                        openList.add(reachableVertex);
+                        final double costFromStart = currentVertex.getCostFromStart() + edgeCost;
+
+                        final boolean isShorterPath = costFromStart < reachableVertex.getCostFromStart();
+
+                        if(!openList.contains(reachableVertex) || isShorterPath)
+                        {
+                            reachableVertex.update(costFromStart,
+                                                   cachedHeuristic.get(reachableVertex.getNode(), endNode), // Estimated cost to the end node
+                                                   currentVertex,
+                                                   edgeAttributeValues,
+                                                   edgeCost);
+
+                            if(isShorterPath)
+                            {
+                                openList.remove(reachableVertex);   // Re-add to trigger the reprioritization of this vertex
+                            }
+
+                            openList.add(reachableVertex);
+                        }
                     }
                 }
             }

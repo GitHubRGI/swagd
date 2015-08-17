@@ -146,7 +146,9 @@ public final class RouteTests
                                                          final double elevation = (Double)endNode.getAttribute(2) - (Double)startNode.getAttribute(2);
 
                                                          return Math.sqrt(latitude*latitude + longitude*longitude + elevation*elevation);
-                                                       });
+                                                       },
+                               null,
+                               null);
     }
 
     private static void printPath(final GeoPackageNetworkExtension networkExtension,
