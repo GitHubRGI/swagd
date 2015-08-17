@@ -670,7 +670,8 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         // changed comparator -> change back to distance from end
         final PriorityQueue<AStarVertex> openList = new PriorityQueue<>((vertex1, vertex2) -> Double.compare((vertex1.getEstimatedCostToEnd() + vertex1.getCostFromStart()),
                                                                                                              (vertex2.getEstimatedCostToEnd() + vertex2.getCostFromStart())));
-        final Collection<Integer> closedList = new HashSet<>((restrictedNodeIdentifiers == null) ?  Collections.emptySet() : restrictedNodeIdentifiers);
+
+        final Collection<Integer> closedList = new HashSet<>((restrictedNodeIdentifiers == null) ? Collections.emptySet() : restrictedNodeIdentifiers);
 
         final Map<Integer, AStarVertex> nodeMap = new HashMap<>();
 
