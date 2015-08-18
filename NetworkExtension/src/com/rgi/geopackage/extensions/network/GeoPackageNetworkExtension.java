@@ -504,8 +504,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     public Node getNode(final int                              nodeIdentifier,
                         final Collection<AttributeDescription> attributeDescriptions) throws SQLException
     {
-        return new Node(nodeIdentifier,
-                        this.getNodeAttributes(nodeIdentifier, attributeDescriptions.toArray(new AttributeDescription[0])));
+        return this.getNode(nodeIdentifier, attributeDescriptions.toArray(new AttributeDescription[0]));
 
     }
 
@@ -513,7 +512,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                         final AttributeDescription... attributeDescriptions) throws SQLException
     {
         return new Node(nodeIdentifier,
-                        this.getNodeAttributes(nodeIdentifier, attributeDescriptions));
+                        attributeDescriptions.length == 0 ? Collections.emptyList()
+                                                          : this.getNodeAttributes(nodeIdentifier, attributeDescriptions));
 
     }
 
