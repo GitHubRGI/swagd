@@ -382,22 +382,35 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                "from_node",
                                                "to_node");
 
-        final Edge edge = JdbcUtility.selectOne(this.databaseConnection,
-                                                edgeQuery,
-                                                preparedStatement -> {
-                                                    preparedStatement.setInt(1, from);
-                                                    preparedStatement.setInt(2, to);
-                                                },
-                                                results -> new Edge(results.getInt(1), // identifier
-                                                                    from,              // attribute name
-                                                                    to));              // attributed type
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     edgeQuery,
+                                     preparedStatement -> { preparedStatement.setInt(1, from);
+                                                            preparedStatement.setInt(2, to);
+                                                          },
+                                     results -> new Edge(results.getInt(1),
+                                                         from,
+                                                         to));
+    }
 
-        if(edge == null)
+    public Edge getEdge(final Network network, final int edgeIdentifier) throws SQLException
+    {
+        if(network == null)
         {
-            throw new IllegalArgumentException("The given edge is not in the given network");
+            throw new IllegalArgumentException("Network may not be null");
         }
 
-        return edge;
+        final String edgeQuery = String.format("Select %s, %s FROM %s WHERE %s = ? LIMIT 1;",
+                                               "from_node",
+                                               "to_node",
+                                               network.getTableName(),
+                                               "id");
+
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     edgeQuery,
+                                     preparedStatement -> preparedStatement.setInt(1, edgeIdentifier),
+                                     results -> new Edge(edgeIdentifier,
+                                                         results.getInt(1),
+                                                         results.getInt(2)));
     }
 
     /**
