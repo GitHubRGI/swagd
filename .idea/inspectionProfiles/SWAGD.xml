@@ -280,9 +280,9 @@
     <inspection_tool class="ConstantNamingConvention" enabled="true" level="WARNING" enabled_by_default="false">
       <scope name="Problems" level="WARNING" enabled="true">
         <option name="onlyCheckImmutables" value="false" />
-        <option name="m_regex" value="[A-Z][A-Z_\d]*" />
-        <option name="m_minLength" value="5" />
-        <option name="m_maxLength" value="32" />
+        <option name="m_regex" value="[A-Z][A-Za-z_\d]*" />
+        <option name="m_minLength" value="2" />
+        <option name="m_maxLength" value="999" />
       </scope>
       <option name="onlyCheckImmutables" value="false" />
       <option name="m_regex" value="[A-Z][A-Za-z\d]*" />

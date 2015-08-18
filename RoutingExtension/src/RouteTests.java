@@ -150,31 +150,4 @@ public final class RouteTests
                                null,
                                null);
     }
-
-    private static void printPath(final GeoPackageNetworkExtension networkExtension,
-                                  final Network                    network,
-                                  final List<Integer>              path,
-                                  final AttributeDescription       distanceAttribute)
-    {
-        final double totalWeight = IntStream.range(0, path.size() - 1)
-                                            .mapToDouble(index -> { final int firstNode = path.get(index);
-                                                                    final int secondNode = path.get(index + 1);
-
-                                                                    try
-                                                                    {
-                                                                        final Edge edge = networkExtension.getEdge(network, firstNode, secondNode);
-                                                                        final double cost = networkExtension.getEdgeAttribute(edge, distanceAttribute);
-
-                                                                        System.out.printf("%f->(%d)-", cost, secondNode);
-
-                                                                        return cost;
-                                                                    }
-                                                                    catch(final SQLException e)
-                                                                    {
-                                                                        throw new RuntimeException(e);
-                                                                    }
-                                                                  }).sum();
-
-        System.out.println(String.format("\nTotal distance = %f", totalWeight));
-    }
 }

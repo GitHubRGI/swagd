@@ -716,9 +716,10 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                     // If the closed list already searched this vertex, skip it
                     if(!closedList.contains(reachableVertex.getNode().getIdentifier()))
                     {
-                        final List<Object> edgeAttributeValues = this.networkExtension.getEdgeAttributes(currentVertex  .getNode().getIdentifier(),
-                                                                                                         reachableVertex.getNode().getIdentifier(),
-                                                                                                         edgeAttributes);
+                        final List<Object> edgeAttributeValues = edgeAttributes.isEmpty() ? Collections.emptyList()
+                                                                                          : this.networkExtension.getEdgeAttributes(currentVertex  .getNode().getIdentifier(),
+                                                                                                                                    reachableVertex.getNode().getIdentifier(),
+                                                                                                                                    edgeAttributes);
 
                         final double edgeCost = edgeCostEvaluator.apply(new EdgeEvaluationParameters(currentVertex.getNode(),
                                                                                                      reachableVertex.getNode(),
