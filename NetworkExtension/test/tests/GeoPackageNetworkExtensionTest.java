@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -674,7 +675,7 @@ public class GeoPackageNetworkExtensionTest
      * Tests getEdge throws an IllegalArgumentException when
      * the edge is not in the network
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testGetEdgeException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -688,8 +689,8 @@ public class GeoPackageNetworkExtensionTest
                                                                 new BoundingBox(0,0,0,0),
                                                                 gpkg.core().getSpatialReferenceSystem(-1));
 
-            networkExtension.getEdge(network, 0, 12);
-            fail("Expected GeoPackageNetworkExtension method getEdge to throw an IllegalArgumentException when the edge is not in the network");
+            assertNull("Expected GeoPackageNetworkExtension method getEdge(Network, int) to return null when queried for a bad edge identifier",
+                       networkExtension.getEdge(network, 0, 12));
         }
         finally
         {
