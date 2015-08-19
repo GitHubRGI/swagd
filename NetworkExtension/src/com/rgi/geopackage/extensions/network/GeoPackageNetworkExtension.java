@@ -356,7 +356,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     }
 
     /**
-     * Get an edge based on its identifier
+     * Get an edge based on its 'from' and 'to' node identifiers
      *
      * @param network
      *             Network table reference
@@ -392,6 +392,18 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                          to));
     }
 
+    /**
+     * Get an edge based on its identifier
+     *
+     * @param network
+     *             Network table reference
+     * @param edgeIdentifier
+     *             Unique identifier for a network edge
+     * @return an {@link Edge} entry in the supplied {@link Network}, or null
+     *             if no matching edge exists
+     * @throws SQLException
+     *             if there is a database error
+     */
     public Edge getEdge(final Network network, final int edgeIdentifier) throws SQLException
     {
         if(network == null)
@@ -411,6 +423,46 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                      results -> new Edge(edgeIdentifier,
                                                          results.getInt(1),
                                                          results.getInt(2)));
+    }
+
+    /**
+     * Retrieves an edge's 'from' and 'to' nodes, as well as attributes for
+     * both the nodes, and the edge itself
+     *
+     * @param fromNodeIdentifier
+     *             Node identifier that's the "from" point of the edge
+     * @param toNodeIdentifier
+     *             Node identifier that's the "to" point of the edge
+     * @param nodeAttributes
+     *            Attributes of each network node to query for. These
+     *            attributes will be passed to the edge cost evaluator via
+     *            {@link Node#getAttributes()} as an array of {@link Object}s
+     *            in the <i>in the order in which the {@link
+     *            AttributeDescription}s are specified</i>.
+     * @param edgeAttributes
+     *            Attributes of each network edge to query for. These
+     *            attributes will be passed to the edge cost evaluator via
+     *            {@link EdgeEvaluationParameters#getEdgeAttributes()} as an
+     *            array of {@link Object}s in the <i>in the order in which the
+     *            {@link AttributeDescription}s are specified</i>.
+     * @return An edge's 'from' and 'to' node, as well as attributes of the
+     *            nodes and the edge itself via an {@link EdgeEvaluationParameters}
+     * @throws SQLException
+     *             Throws if there's an SQL error
+     */
+    public EdgeEvaluationParameters getEdgeEvaluationParameters(final int                              fromNodeIdentifier,
+                                                                final int                              toNodeIdentifier,
+                                                                final Collection<AttributeDescription> nodeAttributes,
+                                                                final Collection<AttributeDescription> edgeAttributes) throws SQLException
+    {
+        // TODO check that nodeAttributes / edgeAttributes (if not null/empty) all refer to the same table, and refer to nodes and edges respectively
+
+        return new EdgeEvaluationParameters(this.getNode(fromNodeIdentifier, nodeAttributes),
+                                            this.getNode(toNodeIdentifier,   nodeAttributes),
+                                            (edgeAttributes == null || edgeAttributes.isEmpty()) ? Collections.emptyList()
+                                                                                                 : this.getEdgeAttributes(fromNodeIdentifier,
+                                                                                                                          toNodeIdentifier,
+                                                                                                                          edgeAttributes));
     }
 
     /**
@@ -514,13 +566,35 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                                   resultSet.getInt(3))));
     }
 
+    /**
+     * Gets a {@link Node} object based on a node identifier
+     *
+     * @param nodeIdentifier
+     *             Unique identifier of a node in a network
+     * @param attributeDescriptions
+     *             Attributes to gather for the node
+     * @return {@link Node} object based on a node identifier
+     * @throws SQLException
+     *             if there is a database error
+     */
     public Node getNode(final int                              nodeIdentifier,
                         final Collection<AttributeDescription> attributeDescriptions) throws SQLException
     {
-        return this.getNode(nodeIdentifier, attributeDescriptions.toArray(new AttributeDescription[0]));
+        return this.getNode(nodeIdentifier, attributeDescriptions.toArray(new AttributeDescription[attributeDescriptions.size()]));
 
     }
 
+    /**
+     * Gets a {@link Node} object based on a node identifier
+     *
+     * @param nodeIdentifier
+     *             Unique identifier of a node in a network
+     * @param attributeDescriptions
+     *             Attributes to gather for the node
+     * @return {@link Node} object based on a node identifier
+     * @throws SQLException
+     *             if there is a database error
+     */
     public Node getNode(final int                     nodeIdentifier,
                         final AttributeDescription... attributeDescriptions) throws SQLException
     {
@@ -1098,7 +1172,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
             throw new IllegalArgumentException("Attribute description collection may not be null or empty");
         }
 
-        final Pair<String, List<String>> schema = getSchema(AttributedType.Edge, attributeDescriptions.toArray(new AttributeDescription[0])); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
+        final Pair<String, List<String>> schema = getSchema(AttributedType.Edge, attributeDescriptions.toArray(new AttributeDescription[attributeDescriptions.size()])); // Checks attribute description collection for null/empty/all referencing the same network table, and attributed type
 
         final String       networkTableName = schema.getLeft();
         final List<String> columnNames      = schema.getRight();
@@ -1137,7 +1211,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
     public List<Object> getNodeAttributes(final int                     nodeIdentifier,
                                           final AttributeDescription... attributeDescriptions) throws SQLException
     {
-        return this.getNodeAttributes(Arrays.asList(nodeIdentifier), attributeDescriptions).get(0);
+        return this.getNodeAttributes(Collections.singletonList(nodeIdentifier), attributeDescriptions).get(0);
     }
 
     /**

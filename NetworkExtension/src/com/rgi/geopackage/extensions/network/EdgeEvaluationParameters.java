@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.extensions.routing;
+package com.rgi.geopackage.extensions.network;
 
 import com.rgi.geopackage.extensions.network.Node;
 
