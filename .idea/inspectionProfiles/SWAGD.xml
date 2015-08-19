@@ -606,7 +606,9 @@
       <option name="IGNORE_JAVADOC_PERIOD" value="true" />
       <option name="IGNORE_DUPLICATED_THROWS" value="false" />
       <option name="IGNORE_POINT_TO_ITSELF" value="false" />
-      <option name="myAdditionalJavadocTags" value="@return" />
+      <option name="myAdditionalJavadocTags" value="" />
+      <IGNORE_ACCESSORS value="true" />
+      <IGNORE_DUPLICATED_THROWS_TAGS value="false" />
     </inspection_tool>
     <inspection_tool class="JavaFxDefaultTag" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="JavaFxUnresolvedFxIdReference" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -1434,7 +1436,7 @@
       <scope name="Problems" level="INFO" enabled="true">
         <option name="LOCAL_VARIABLE" value="true" />
         <option name="FIELD" value="true" />
-        <option name="METHOD" value="true" />
+        <option name="METHOD" value="false" />
         <option name="CLASS" value="true" />
         <option name="PARAMETER" value="true" />
         <option name="REPORT_PARAMETER_FOR_PUBLIC_METHODS" value="true" />
