@@ -35,6 +35,7 @@ import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
 import com.rgi.geopackage.extensions.network.AttributeDescription;
 import com.rgi.geopackage.extensions.network.AttributedType;
 import com.rgi.geopackage.extensions.network.Edge;
+import com.rgi.geopackage.extensions.network.EdgeEvaluationParameters;
 import com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension;
 import com.rgi.geopackage.extensions.network.Network;
 import com.rgi.geopackage.extensions.network.Node;
@@ -369,16 +370,30 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
      *             y coordinate for the center of the circle bounds
      * @param radius
      *             the radius for the circle bounds
+     * @param nodeAttributes
+     *            Attributes of each network node to query for. These
+     *            attributes will be passed to the edge cost evaluator via
+     *            {@link Node#getAttributes()} as an array of {@link Object}s
+     *            in the <i>in the order in which the {@link
+     *            AttributeDescription}s are specified</i>.
+     * @param edgeAttributes
+     *            Attributes of each network edge to query for. These
+     *            attributes will be passed to the edge cost evaluator via
+     *            {@link EdgeEvaluationParameters#getEdgeAttributes()} as an
+     *            array of {@link Object}s in the <i>in the order in which the
+     *            {@link AttributeDescription}s are specified</i>.
      * @param visitor
      *             Callback applied to each edge
      * @throws SQLException
      *             if there is a database error
      */
-    public void visitEdgesCloseToCircle(final RoutingNetworkDescription routingNetwork,
-                                        final double                    centerX,
-                                        final double                    centerY,
-                                        final double                    radius,
-                                        final Consumer<Integer>         visitor) throws SQLException
+    public void visitEdgesCloseToCircle(final RoutingNetworkDescription          routingNetwork,
+                                        final double                             centerX,
+                                        final double                             centerY,
+                                        final double                             radius,
+                                        final Collection<AttributeDescription>   nodeAttributes,
+                                        final Collection<AttributeDescription>   edgeAttributes,
+                                        final Consumer<EdgeEvaluationParameters> visitor) throws SQLException
     {
         if(routingNetwork == null)
         {
@@ -396,7 +411,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         final String latitudeName                   = routingNetwork.getLatitudeDescription() .getName();
         final String distanceName                   = routingNetwork.getDistanceDescription() .getName();
 
-        final String edgeQuery = String.format("SELECT id " +
+        final String edgeQuery = String.format("SELECT from_node, to_node " +
                                                "FROM %1$s "+
                                                "WHERE  EXISTS "+
                                                       "(SELECT NULL "+
@@ -415,7 +430,10 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         JdbcUtility.forEach(this.databaseConnection,
                             edgeQuery,
                             null,
-                            resultSet -> visitor.accept(resultSet.getInt(1)));
+                            resultSet -> visitor.accept(this.networkExtension.getEdgeEvaluationParameters(resultSet.getInt(1),
+                                                                                                          resultSet.getInt(2),
+                                                                                                          nodeAttributes,
+                                                                                                          edgeAttributes)));
     }
 
     /**
@@ -717,7 +735,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                     if(!closedList.contains(reachableVertex.getNode().getIdentifier()))
                     {
                         final List<Object> edgeAttributeValues = edgeAttributes.isEmpty() ? Collections.emptyList()
-                                                                                          : this.networkExtension.getEdgeAttributes(currentVertex  .getNode().getIdentifier(),
+                                                                                          : this.networkExtension.getEdgeAttributes(currentVertex.getNode().getIdentifier(),
                                                                                                                                     reachableVertex.getNode().getIdentifier(),
                                                                                                                                     edgeAttributes);
 
