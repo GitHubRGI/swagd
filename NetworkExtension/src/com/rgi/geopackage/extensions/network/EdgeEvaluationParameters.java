@@ -23,8 +23,6 @@
 
 package com.rgi.geopackage.extensions.network;
 
-import com.rgi.geopackage.extensions.network.Node;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,13 +32,52 @@ import java.util.List;
  */
 public class EdgeEvaluationParameters
 {
-    public EdgeEvaluationParameters(final Node         from,
-                                    final Node         to,
-                                    final List<Object> edgeAttributes)
+    /**
+     * Constructor
+     *
+     * @param edgeIdentifier
+     *             Unique edge identifier
+     * @param edgeAttributes
+     *             All or a subset of this edge's attributes
+     * @param from
+     *             'from' node
+     * @param to
+     *             'to' node
+     */
+    public EdgeEvaluationParameters(final int          edgeIdentifier,
+                                    final List<Object> edgeAttributes,
+                                    final Node         from,
+                                    final Node         to)
     {
+        if(edgeAttributes == null)
+        {
+            throw new IllegalArgumentException("Edge attributes may not be null");
+        }
+
+        if(from == null)
+        {
+            throw new IllegalArgumentException("From node may not be null");
+        }
+
+        if(to == null)
+        {
+            throw new IllegalArgumentException("To node may not be null");
+        }
+
+        this.edgeIdentifier = edgeIdentifier;
+        this.edgeAttributes = new ArrayList<>(edgeAttributes);
         this.from           = from;
         this.to             = to;
-        this.edgeAttributes = new ArrayList<>(edgeAttributes);
+    }
+
+    public int getEdgeIdentifier()
+    {
+        return this.edgeIdentifier;
+    }
+
+    public List<Object> getEdgeAttributes()
+    {
+        return Collections.unmodifiableList(this.edgeAttributes);
     }
 
     public Node getFrom()
@@ -53,12 +90,8 @@ public class EdgeEvaluationParameters
         return this.to;
     }
 
-    public List<Object> getEdgeAttributes()
-    {
-        return Collections.unmodifiableList(this.edgeAttributes);
-    }
-
+    private final int          edgeIdentifier;
+    private final List<Object> edgeAttributes;
     private final Node         from;
     private final Node         to;
-    private final List<Object> edgeAttributes;
 }

@@ -429,6 +429,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * Retrieves an edge's 'from' and 'to' nodes, as well as attributes for
      * both the nodes, and the edge itself
      *
+     * @param edgeIdentifier
+     *             Unique identifier for a network edge
      * @param fromNodeIdentifier
      *             Node identifier that's the "from" point of the edge
      * @param toNodeIdentifier
@@ -450,19 +452,21 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
      * @throws SQLException
      *             Throws if there's an SQL error
      */
-    public EdgeEvaluationParameters getEdgeEvaluationParameters(final int                              fromNodeIdentifier,
+    public EdgeEvaluationParameters getEdgeEvaluationParameters(final int                              edgeIdentifier,
+                                                                final int                              fromNodeIdentifier,
                                                                 final int                              toNodeIdentifier,
                                                                 final Collection<AttributeDescription> nodeAttributes,
                                                                 final Collection<AttributeDescription> edgeAttributes) throws SQLException
     {
         // TODO check that nodeAttributes / edgeAttributes (if not null/empty) all refer to the same table, and refer to nodes and edges respectively
 
-        return new EdgeEvaluationParameters(this.getNode(fromNodeIdentifier, nodeAttributes),
-                                            this.getNode(toNodeIdentifier,   nodeAttributes),
+        return new EdgeEvaluationParameters(edgeIdentifier,
                                             (edgeAttributes == null || edgeAttributes.isEmpty()) ? Collections.emptyList()
                                                                                                  : this.getEdgeAttributes(fromNodeIdentifier,
                                                                                                                           toNodeIdentifier,
-                                                                                                                          edgeAttributes));
+                                                                                                                          edgeAttributes),
+                                            this.getNode(fromNodeIdentifier, nodeAttributes),
+                                            this.getNode(toNodeIdentifier,   nodeAttributes));
     }
 
     /**

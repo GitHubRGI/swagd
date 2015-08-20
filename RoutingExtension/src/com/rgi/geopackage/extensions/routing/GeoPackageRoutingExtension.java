@@ -411,7 +411,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         final String latitudeName                   = routingNetwork.getLatitudeDescription() .getName();
         final String distanceName                   = routingNetwork.getDistanceDescription() .getName();
 
-        final String edgeQuery = String.format("SELECT from_node, to_node " +
+        final String edgeQuery = String.format("SELECT id, from_node, to_node " +
                                                "FROM %1$s "+
                                                "WHERE  EXISTS "+
                                                       "(SELECT NULL "+
@@ -432,6 +432,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                             null,
                             resultSet -> visitor.accept(this.networkExtension.getEdgeEvaluationParameters(resultSet.getInt(1),
                                                                                                           resultSet.getInt(2),
+                                                                                                          resultSet.getInt(3),
                                                                                                           nodeAttributes,
                                                                                                           edgeAttributes)));
     }
@@ -739,9 +740,10 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                                                                                                                                     reachableVertex.getNode().getIdentifier(),
                                                                                                                                     edgeAttributes);
 
-                        final double edgeCost = edgeCostEvaluator.apply(new EdgeEvaluationParameters(currentVertex.getNode(),
-                                                                                                     reachableVertex.getNode(),
-                                                                                                     edgeAttributeValues));
+                        final double edgeCost = edgeCostEvaluator.apply(new EdgeEvaluationParameters(exit.getIdentifier(),
+                                                                                                     edgeAttributeValues,
+                                                                                                     currentVertex.getNode(),
+                                                                                                     reachableVertex.getNode()));
 
                         if(edgeCost <= 0.0)    // Are positive values that are extremely close to 0 going to be a problem?
                         {
