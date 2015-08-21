@@ -789,8 +789,8 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
 
             if(vertex.getPrevious() != null)
             {
-                edgesAttributes.addLast(vertex.getEdgeAttributes());
-                edgeCost       .addLast(vertex.getEdgeCost());
+                edgesAttributes.addFirst(vertex.getEdgeAttributes());
+                edgeCost       .addFirst(vertex.getEdgeCost());
             }
         }
 

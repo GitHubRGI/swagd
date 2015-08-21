@@ -67,7 +67,10 @@ public final class GenerateRoutingNetworks
 
         if(geoPackageFile.exists())
         {
-            geoPackageFile.delete();
+            if(!geoPackageFile.delete())
+            {
+                System.err.format("Unable to replace %s, aborting.", geoPackageFile.getAbsoluteFile());
+            }
         }
 
         try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, VerificationLevel.None, GeoPackage.OpenMode.Create))

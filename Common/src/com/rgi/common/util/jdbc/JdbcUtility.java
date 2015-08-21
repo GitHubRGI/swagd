@@ -39,8 +39,16 @@ import java.util.function.Supplier;
  * @author Luke Lambert
  *
  */
-public class JdbcUtility
+public final class JdbcUtility
 {
+    /**
+     * Disabled constructor
+     */
+    private JdbcUtility()
+    {
+
+    }
+
     /**
      * Selects and returns one result.  Null is returned if the query returns
      * no result.
@@ -147,7 +155,7 @@ public class JdbcUtility
 
             try(final ResultSet resultSet = preparedStatement.executeQuery())
             {
-                final ArrayList<T> results = new ArrayList<>();
+                final List<T> results = new ArrayList<>();
 
                 while(resultSet.next())
                 {
