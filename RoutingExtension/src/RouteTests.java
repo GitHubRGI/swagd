@@ -47,7 +47,7 @@ import java.util.Random;
 public final class RouteTests
 {
     private static final int    seed            = 123456789;
-    private static final int    routeIterations = 100;
+    private static final int    routeIterations = 1;
     private static final double nanoToSecond    = 1.0e9;
 
     private static final double load = 40.0;
@@ -120,8 +120,8 @@ public final class RouteTests
 
                                                         System.out.format("%s finished %d routes in %f seconds\n",
                                                                           routingNetwork.getNetwork().getTableName(),
-                                                                routeIterations,
-                                                                seconds);
+                                                                          routeIterations,
+                                                                          seconds);
                                                     } catch(final SQLException e)
                                                     {
                                                         e.printStackTrace();
@@ -232,13 +232,13 @@ public final class RouteTests
      *     G[CFConstant1]         +   (G + 6)^2[CFConstant2]   + CFConstant3
      *
      *
-     * @param nodeTo end node
-     * @param nodeFrom start node
+     * @param fromNode start node
+     * @param toNode end node
      * @return caloric cost to traverse between those two nodes
      */
-    private static double getCaloricCost(final Node nodeTo, final Node nodeFrom)
+    private static double getCaloricCost(final Node fromNode, final Node toNode)
     {
-        final double grade = RouteTests.getGrade(nodeTo, nodeFrom);
+        final double grade = RouteTests.getGrade(fromNode, toNode);
         final double pandolfEquation = RouteTests.PECONSTANT1 + RouteTests.PECONSTANT2 * (grade * RouteTests.load + grade * RouteTests.weight);
         double correctionFactor = 0.0;
         //if downhill
@@ -249,29 +249,29 @@ public final class RouteTests
 
         final double metabolicRate  = pandolfEquation-correctionFactor;//watts
 
-        return metabolicRate * RouteTests.getDistance(nodeTo, nodeFrom)/4184.0/ RouteTests.velocity;
+        return metabolicRate * RouteTests.getDistance(fromNode, toNode)/4184.0/ RouteTests.velocity;
     }
 
     /**
      * Returns the percentage of grade traversing between two nodes
-     * @param nodeTo the node traveling to
-     * @param nodeFrom the node traveling from
+     * @param fromNode the node traveling from
+     * @param toNode the node traveling to
      * @return percentage of grade traversing two nodes
      */
-    private static double getGrade(final Node nodeTo, final Node nodeFrom)
+    private static double getGrade(final Node fromNode, final Node toNode)
     {
-        final double longitude = (Double)nodeTo.getAttribute(0) - (Double)nodeFrom.getAttribute(0);
-        final double latitude  = (Double)nodeTo.getAttribute(1) - (Double)nodeFrom.getAttribute(1);
-        final double elevation = (Double)nodeTo.getAttribute(2) - (Double)nodeFrom.getAttribute(2);
+        final double longitude = (Double)toNode.getAttribute(0) - (Double)fromNode.getAttribute(0);
+        final double latitude  = (Double)toNode.getAttribute(1) - (Double)fromNode.getAttribute(1);
+        final double elevation = (Double)toNode.getAttribute(2) - (Double)fromNode.getAttribute(2);
 
         return 100.0 * elevation/(Math.sqrt(longitude*longitude + latitude*latitude));
     }
 
-    private static double getDistance(final Node nodeTo, final Node nodeFrom)
+    private static double getDistance(final Node fromNode, final Node toNode)
     {
-        final double longitude = (Double)nodeTo.getAttribute(0) - (Double)nodeFrom.getAttribute(0);
-        final double latitude  = (Double)nodeTo.getAttribute(1) - (Double)nodeFrom.getAttribute(1);
-        final double elevation = (Double)nodeTo.getAttribute(2) - (Double)nodeFrom.getAttribute(2);
+        final double longitude = (Double)toNode.getAttribute(0) - (Double)fromNode.getAttribute(0);
+        final double latitude  = (Double)toNode.getAttribute(1) - (Double)fromNode.getAttribute(1);
+        final double elevation = (Double)toNode.getAttribute(2) - (Double)fromNode.getAttribute(2);
 
         return Math.sqrt(latitude * latitude + longitude * longitude + elevation * elevation);
     }

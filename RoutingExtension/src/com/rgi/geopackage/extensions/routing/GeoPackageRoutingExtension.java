@@ -705,13 +705,17 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         openList.add(startVertex);
         nodeMap.put(startNodeIdentifier, startVertex);
 
+        int count = 0;
+
         while(!openList.isEmpty())
         {
+            ++count;
             final AStarVertex currentVertex = openList.poll(); // Get the Vertex closest to the end
 
             // If current vertex is the target then we are done
             if(currentVertex.getNode().getIdentifier() == endNodeIdentifier)
             {
+                System.out.println(count);
                 return getAStarPath(endNodeIdentifier, nodeMap);
             }
 
