@@ -331,7 +331,7 @@ public class GeoPackageTileStoreTest
             try(GeoPackageReader reader = new GeoPackageReader(testFile, tileSet.getTableName()))
             {
                 final BufferedImage tile = reader.getTile(0, 0, 0);
-                assertTrue("Expected getTile to return null when the tile does not exist at that coordinate.",tile == null);
+                assertTrue("Expected getTile to return null when the tile does not exist at that coordinate.", tile == null);
             }
         }
         finally
@@ -502,7 +502,7 @@ public class GeoPackageTileStoreTest
             gpkg.tiles().addTileSet(tableName,
                                     "identifier",
                                     "description",
-                                    new BoundingBox(0.0,0.0,60.0,30.0),
+                                    new BoundingBox(0.0, 0.0, 60.0, 30.0),
                                     gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
@@ -587,7 +587,7 @@ public class GeoPackageTileStoreTest
             {
                 final CrsCoordinate coordinate = new CrsCoordinate(0, 2, "EPSG", 3857);
                 final BufferedImage tile = gpkgReader.getTile(coordinate, 4);
-                assertTrue("Expected the reader to return null if the tile doesn't exist.",tile == null);
+                assertTrue("Expected the reader to return null if the tile doesn't exist.", tile == null);
             }
         }
         finally
@@ -629,7 +629,7 @@ public class GeoPackageTileStoreTest
                                                 spatialReferenceSystem.getOrganization(),
                                                 spatialReferenceSystem.getIdentifier()),
                                   coordinateReferenceSystemReturned.getAuthority().equalsIgnoreCase(spatialReferenceSystem.getOrganization()) &&
-                                  coordinateReferenceSystemReturned.getIdentifier() ==              spatialReferenceSystem.getOrganizationSrsId());
+                                  coordinateReferenceSystemReturned.getIdentifier() == spatialReferenceSystem.getOrganizationSrsId());
             }
         }
         finally
@@ -680,7 +680,7 @@ public class GeoPackageTileStoreTest
             final TileScheme tileScheme = new ZoomTimesTwo(2, 20, 1, 1);
             addTileMatricesToGpkg(zoomLevelsExpected, tileSet, gpkg, tileScheme, tileWidth, tileHeight);
 
-            gpkg.tiles().addTileMatrix(tileSet2,  7, 2, 2, tileWidth, tileHeight, bBox.getWidth() / 2 / tileWidth, bBox.getHeight() / 2 / tileHeight); //this one is not included in zooms because it is a different tileset
+            gpkg.tiles().addTileMatrix(tileSet2, 7, 2, 2, tileWidth, tileHeight, bBox.getWidth() / 2 / tileWidth, bBox.getHeight() / 2 / tileHeight); //this one is not included in zooms because it is a different tileset
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
@@ -882,12 +882,12 @@ public class GeoPackageTileStoreTest
                                                                 .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
                                                                                           tileMatrix -> tileMatrix));
 
-              final List<Integer[]> tileCoordinates = Arrays.asList(new Integer[]{ 2, 1, 1},
-                                                                    new Integer[]{ 4, 2, 3},
-                                                                    new Integer[]{ 7, 5, 6},
+              final List<Integer[]> tileCoordinates = Arrays.asList(new Integer[]{2, 1, 1},
+                                                                    new Integer[]{4, 2, 3},
+                                                                    new Integer[]{7, 5, 6},
                                                                     new Integer[]{10, 9, 8},
-                                                                    new Integer[]{ 5, 2, 6},
-                                                                    new Integer[]{ 1, 0, 1});
+                                                                    new Integer[]{5, 2, 6},
+                                                                    new Integer[]{1, 0, 1});
 
               final List<Tile> tiles = tileCoordinates.stream()
                                                       .map(tileCoordinate -> { try
@@ -1240,7 +1240,7 @@ public class GeoPackageTileStoreTest
                 final boolean dimensionsEqual = tileHandleMatrix.getHeight() == tileMatrix.getMatrixHeight() &&
                                           tileHandleMatrix.getWidth()  == tileMatrix.getMatrixWidth();
 
-                assertTrue("The TileMatrixDimensions from the tileHandle did not return the expected values.",dimensionsEqual);
+                assertTrue("The TileMatrixDimensions from the tileHandle did not return the expected values.", dimensionsEqual);
             }
         }
         finally
@@ -1777,6 +1777,58 @@ public class GeoPackageTileStoreTest
         finally
         {
             deleteFile(testFile);
+        }
+    }
+
+
+    /**
+     * Tests if GeoPackageWriter create a new directory when
+     * passed a File that contains a nonexisting directory in
+     * its path
+     * @throws FileAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws FileNotFoundException
+     * @throws SQLException
+     * @throws ConformanceException
+     * @throws MimeTypeParseException
+     * @throws TileStoreException
+     */
+    @Test
+    public void geoPackageWriterCreatesDirectory() throws ClassNotFoundException, SQLException, ConformanceException, IOException, MimeTypeParseException, TileStoreException
+    {
+        final File writerFile = this.getRandomFile(13);
+        final File testFile = new File("fake_folder/" + writerFile);
+        testFile.setWritable(false);
+
+        final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
+        final BoundingBox bBox =  new BoundingBox(0.0,0.0,90.0,180.0);
+
+        try(GeoPackageWriter writer = new GeoPackageWriter(testFile,
+                                                           coordinateReferenceSystem,
+                                                           "tileSetTableName",
+                                                           "tileSetIdentifier",
+                                                           "tileSetDescription",
+                                                           bBox,
+                                                           new ZoomTimesTwo(1, 10, 2, 3),
+                                                           new MimeType("image/png"),
+                                                           null))
+        {
+            assertTrue("GeoPackageWriter did not create the directory containing the new GeoPackage",
+                       testFile.exists() &&
+                       testFile.getParentFile().isDirectory());
+        }
+        finally
+        {
+            final File parent = testFile.getParentFile();
+
+            if (testFile.exists())
+            {
+                testFile.delete();
+            }
+            if(parent.exists())
+            {
+                parent.delete();
+            }
         }
     }
 
