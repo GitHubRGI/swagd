@@ -432,7 +432,16 @@ public class RawImageTileReaderTest
         try(final RawImageTileReader reader = new RawImageTileReader(this.rawData, tileSize, Color.BLACK))
         {
             final AtomicLong count = new AtomicLong(0);
-            reader.getZoomLevels().stream().forEach(zoom -> count.addAndGet(reader.stream(zoom).count()));
+            reader.getZoomLevels().stream().forEach(zoom -> {
+                try
+                {
+                    count.addAndGet(reader.stream(zoom).count());
+                }
+                catch(TileStoreException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            });
             assertEquals("RawImageTileReader method stream() did not return the correct stream",
                          reader.stream().count(),
                          reader.countTiles());
