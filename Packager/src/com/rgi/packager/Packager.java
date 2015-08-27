@@ -23,6 +23,7 @@
 package com.rgi.packager;
 
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.rgi.common.TaskMonitor;
 import com.rgi.store.tiles.TileHandle;
@@ -71,34 +72,33 @@ public class Packager
      */
     public void execute() throws TileStoreException
     {
-        int tileCount = 0;
-
         this.taskMonitor.setMaximum((int)this.tileStoreReader.countTiles());
 
-        for(final TileHandle tileHandle : (Iterable<TileHandle>)this.tileStoreReader.stream()::iterator)
+        final AtomicInteger tileCount = new AtomicInteger(0);
+        this.tileStoreReader.stream().forEach(tileHandle ->
         {
-        	if(cancel)
-        	{
-        		throw new CancellationException("Cancelled");
-        	}
+            if(cancel)
+            {
+                throw new CancellationException("Cancelled");
+            }
             try
             {
                 this.tileStoreWriter.addTile(tileHandle.getCrsCoordinate(this.tileStoreWriter.getTileOrigin()),
-                                             tileHandle.getZoomLevel(),
-                                             tileHandle.getImage());
+                        tileHandle.getZoomLevel(),
+                        tileHandle.getImage());
 
-                this.taskMonitor.setProgress(++tileCount);
+                this.taskMonitor.setProgress(tileCount.incrementAndGet());
             }
             catch(final TileStoreException | IllegalArgumentException ex)
             {
                 // TODO: report this somewhere else?
                 System.err.printf("Tile z: %d, x: %d, y: %d failed to get copied into the package: %s\n",
-                                  tileHandle.getZoomLevel(),
-                                  tileHandle.getColumn(),
-                                  tileHandle.getRow(),
-                                  ex.getMessage());
+                        tileHandle.getZoomLevel(),
+                        tileHandle.getColumn(),
+                        tileHandle.getRow(),
+                        ex.getMessage());
             }
-        }
+        });
     }
 
     /**
