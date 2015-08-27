@@ -84,8 +84,8 @@ public class Packager
             try
             {
                 this.tileStoreWriter.addTile(tileHandle.getCrsCoordinate(this.tileStoreWriter.getTileOrigin()),
-                        tileHandle.getZoomLevel(),
-                        tileHandle.getImage());
+                                             tileHandle.getZoomLevel(),
+                                             tileHandle.getImage());
 
                 this.taskMonitor.setProgress(tileCount.incrementAndGet());
             }
@@ -93,10 +93,10 @@ public class Packager
             {
                 // TODO: report this somewhere else?
                 System.err.printf("Tile z: %d, x: %d, y: %d failed to get copied into the package: %s\n",
-                        tileHandle.getZoomLevel(),
-                        tileHandle.getColumn(),
-                        tileHandle.getRow(),
-                        ex.getMessage());
+                                  tileHandle.getZoomLevel(),
+                                  tileHandle.getColumn(),
+                                  tileHandle.getRow(),
+                                  ex.getMessage());
             }
         });
     }

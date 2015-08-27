@@ -870,9 +870,9 @@ public class RawImageTileReader implements TileStoreReader
     }
 
     private CrsCoordinate tileToCrsCoordinate(final int                  column,
-                                                final int                  row,
-                                                final TileMatrixDimensions tileMatrixDimensions,
-                                                final TileOrigin           corner)
+                                              final int                  row,
+                                              final TileMatrixDimensions tileMatrixDimensions,
+                                              final TileOrigin           corner)
     {
         if(corner == null)
         {
@@ -887,8 +887,8 @@ public class RawImageTileReader implements TileStoreReader
     }
 
     private BoundingBox getTileBoundingBox(final int                  column,
-                                             final int                  row,
-                                             final TileMatrixDimensions tileMatrixDimensions)
+                                           final int                  row,
+                                           final TileMatrixDimensions tileMatrixDimensions)
     {
         return this.profile.getTileBounds(column,
                                           row,
