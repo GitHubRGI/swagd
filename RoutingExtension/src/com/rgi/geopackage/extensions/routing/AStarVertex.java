@@ -134,5 +134,5 @@ public class AStarVertex
     private double       estimatedCostToEnd = Double.MAX_VALUE;
     private AStarVertex  previous;       // Parent node
     private List<Object> edgeAttributes; // Attributes of edge with the edge being parent to this one
-    private double       edgeCost;       // Aalculated cost of parent node to this one
+    private double       edgeCost;       // Calculated cost of parent node to this one
 }

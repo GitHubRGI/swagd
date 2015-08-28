@@ -47,15 +47,15 @@ import java.util.Random;
 public final class RouteTests
 {
     private static final int    seed            = 123456789;
-    private static final int    routeIterations = 1;
+    private static final int    routeIterations = 100;
     private static final double nanoToSecond    = 1.0e9;
 
     private static final double load = 40.0;
     private static final double weight = 85.0;
     private static final double velocity = 0.7;
     private static final double terrainFactor = 1.0;
-    private static final double PECONSTANT1 =  1.5 * RouteTests.weight + 2.0*(RouteTests.weight + RouteTests.load)*(1.0 / RouteTests.weight)*(1.0 / RouteTests.weight) + 1.5* RouteTests.velocity * RouteTests.velocity * RouteTests.terrainFactor * RouteTests.weight + 1.5* RouteTests.velocity * RouteTests.velocity * RouteTests.terrainFactor * RouteTests.load;
-    private static final double PECONSTANT2  =  0.35* RouteTests.velocity * RouteTests.terrainFactor;
+    private static final double PECONSTANT1 = 1.5 * RouteTests.weight + 2.0*(RouteTests.weight + RouteTests.load)*(RouteTests.load / RouteTests.weight)*(RouteTests.load / RouteTests.weight) + 1.5* RouteTests.velocity * RouteTests.velocity * RouteTests.terrainFactor * RouteTests.weight + 1.5* RouteTests.velocity * RouteTests.velocity * RouteTests.terrainFactor * RouteTests.load;
+    private static final double PECONSTANT2 = 0.35* RouteTests.velocity * RouteTests.terrainFactor;
 
     private static final double CFConstant1 = (RouteTests.velocity * RouteTests.terrainFactor *(RouteTests.weight + RouteTests.load))/3.5;
     private static final double CFConstant2 = (RouteTests.terrainFactor *(RouteTests.weight + RouteTests.load))/ RouteTests.weight;
@@ -122,7 +122,8 @@ public final class RouteTests
                                                                           routingNetwork.getNetwork().getTableName(),
                                                                           routeIterations,
                                                                           seconds);
-                                                    } catch(final SQLException e)
+                                                    }
+                                                    catch(final SQLException e)
                                                     {
                                                         e.printStackTrace();
                                                     }

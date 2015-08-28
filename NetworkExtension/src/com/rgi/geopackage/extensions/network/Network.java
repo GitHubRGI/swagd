@@ -52,7 +52,7 @@ public class Network extends Content
      *             current time
      * @param boundingBox
      *             Bounding box for all content in tableName
-     * @param spatialReferenceSystem
+     * @param spatialReferenceSystemIdentifier
      *             Spatial Reference System (SRS) identifier
      */
     protected Network(final String      tableName,

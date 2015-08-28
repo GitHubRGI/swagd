@@ -920,7 +920,9 @@
     <inspection_tool class="ParameterOfConcreteClass" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="ParameterTypePreventsOverriding" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ParameterizedParametersStaticCollection" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="ParametersPerConstructor" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="ParametersPerConstructor" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="m_limit" value="10" />
+    </inspection_tool>
     <inspection_tool class="ParametersPerMethod" enabled="true" level="ERROR" enabled_by_default="false">
       <scope name="Problems" level="WEAK WARNING" enabled="true">
         <option name="m_limit" value="10" />
