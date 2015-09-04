@@ -23,7 +23,10 @@
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.geopackage.GeoPackage;
+import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.extensions.network.AttributeDescription;
 import com.rgi.geopackage.extensions.network.AttributedType;
@@ -115,11 +118,19 @@ public final class GenerateRoutingNetworks
         {
             final File nodesFile = new File("data/" + name + "_node_geometries.txt");
 
+            final CrsProfile sphericalMercatorCrsProfile = new SphericalMercatorCrsProfile();
+
+            final SpatialReferenceSystem spatialReferenceSystem = geoPackage.core().addSpatialReferenceSystem(sphericalMercatorCrsProfile.getName(),
+                                                                                                              sphericalMercatorCrsProfile.getCoordinateReferenceSystem().getAuthority(),
+                                                                                                              sphericalMercatorCrsProfile.getCoordinateReferenceSystem().getIdentifier(),
+                                                                                                              sphericalMercatorCrsProfile.getWellKnownText(),
+                                                                                                              sphericalMercatorCrsProfile.getDescription());
+
             final Network network = networkExtension.addNetwork(name,
-                                                                  name,
-                                                                  name + " dataset provided by Matt Renner of AGC",
-                                                                  getBoundingBox(nodesFile, 2, 3),
-                                                                  geoPackage.core().getSpatialReferenceSystem(-1));
+                                                                name,
+                                                                name + " dataset provided by Matt Renner of AGC",
+                                                                getBoundingBox(nodesFile, 2, 3),
+                                                                spatialReferenceSystem);
 
             final AttributeDescription slopeAttribute = networkExtension.addAttributeDescription(network,
                                                                                                  "slope",
@@ -207,11 +218,19 @@ public final class GenerateRoutingNetworks
     {
         final File nodeFile = new File("data/contour.1/contour.1.node");
 
+        final CrsProfile sphericalMercatorCrsProfile = new SphericalMercatorCrsProfile();
+
+        final SpatialReferenceSystem spatialReferenceSystem = geoPackage.core().addSpatialReferenceSystem(sphericalMercatorCrsProfile.getName(),
+                                                                                                          sphericalMercatorCrsProfile.getCoordinateReferenceSystem().getAuthority(),
+                                                                                                          sphericalMercatorCrsProfile.getCoordinateReferenceSystem().getIdentifier(),
+                                                                                                          sphericalMercatorCrsProfile.getWellKnownText(),
+                                                                                                          sphericalMercatorCrsProfile.getDescription());
+
         final Network network = networkExtension.addNetwork("contour_1",
                                                             "contour_1",
                                                             "contour.1 dataset provided by Matt Renner of AGC",
                                                             getBoundingBox(nodeFile, 1, 2),
-                                                            geoPackage.core().getSpatialReferenceSystem(-1));
+                                                            spatialReferenceSystem);
 
         final AttributeDescription longitudeAttribute = networkExtension.addAttributeDescription(network,
                                                                                                  "longitude",

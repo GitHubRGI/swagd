@@ -35,7 +35,6 @@ import com.rgi.geopackage.extensions.implementation.ExtensionImplementation;
 import com.rgi.geopackage.extensions.network.AttributeDescription;
 import com.rgi.geopackage.extensions.network.AttributedType;
 import com.rgi.geopackage.extensions.network.Edge;
-import com.rgi.geopackage.extensions.network.EdgeEvaluationParameters;
 import com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension;
 import com.rgi.geopackage.extensions.network.Network;
 import com.rgi.geopackage.extensions.network.Node;

@@ -71,6 +71,12 @@ public class Network extends Content
               spatialReferenceSystemIdentifier);
     }
 
+    @Override
+    public String toString()
+    {
+        return this.getIdentifier();
+    }
+
     /**
      * The "rgi_network" GeoPackage extension network data type for all
      * network tables
