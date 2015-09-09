@@ -24,8 +24,8 @@
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.extensions.network.AttributeDescription;
+import com.rgi.geopackage.extensions.network.AttributedNode;
 import com.rgi.geopackage.extensions.network.AttributedType;
-import com.rgi.geopackage.extensions.network.Node;
 import com.rgi.geopackage.extensions.routing.GeoPackageRoutingExtension;
 import com.rgi.geopackage.extensions.routing.RoutingNetworkDescription;
 import com.rgi.geopackage.verification.ConformanceException;
@@ -167,7 +167,7 @@ public final class RouteTests
                                    rand.nextInt(maxNodeIdentifier),
                                    nodeAttributes,
                                    Collections.emptyList(),
-                                   params -> RouteTests.getCaloricCost(params.getFrom(), params.getTo()),
+                                   attributedEdge -> RouteTests.getCaloricCost(attributedEdge.getFromNode(), attributedEdge.getToNode()),
                                    RouteTests::getCaloricCost,
                                    null,
                                    null);
@@ -237,7 +237,7 @@ public final class RouteTests
      * @param toNode end node
      * @return caloric cost to traverse between those two nodes
      */
-    private static double getCaloricCost(final Node fromNode, final Node toNode)
+    private static double getCaloricCost(final AttributedNode fromNode, final AttributedNode toNode)
     {
         final double grade = RouteTests.getGrade(fromNode, toNode);
         final double pandolfEquation = RouteTests.PECONSTANT1 + RouteTests.PECONSTANT2 * (grade * RouteTests.load + grade * RouteTests.weight);
@@ -259,7 +259,7 @@ public final class RouteTests
      * @param toNode the node traveling to
      * @return percentage of grade traversing two nodes
      */
-    private static double getGrade(final Node fromNode, final Node toNode)
+    private static double getGrade(final AttributedNode fromNode, final AttributedNode toNode)
     {
         final double longitude = (Double)toNode.getAttribute(0) - (Double)fromNode.getAttribute(0);
         final double latitude  = (Double)toNode.getAttribute(1) - (Double)fromNode.getAttribute(1);
@@ -268,7 +268,7 @@ public final class RouteTests
         return 100.0 * elevation/(Math.sqrt(longitude*longitude + latitude*latitude));
     }
 
-    private static double getDistance(final Node fromNode, final Node toNode)
+    private static double getDistance(final AttributedNode fromNode, final AttributedNode toNode)
     {
         final double longitude = (Double)toNode.getAttribute(0) - (Double)fromNode.getAttribute(0);
         final double latitude  = (Double)toNode.getAttribute(1) - (Double)fromNode.getAttribute(1);
