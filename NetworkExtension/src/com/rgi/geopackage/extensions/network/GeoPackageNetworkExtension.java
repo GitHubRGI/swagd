@@ -1093,7 +1093,8 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                                                           throw new IllegalArgumentException("Value does not match the data type specified by the attribute description");
                                                       }
 
-                                                      preparedStatement.setObject(valueIndex++, value);
+                                                      preparedStatement.setObject(valueIndex+1, value);
+                                                      ++valueIndex;
                                                   }
 
                                                   preparedStatement.setInt(size+1, nodeIdentifier);

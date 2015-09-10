@@ -374,7 +374,7 @@ public class GeoPackageNetworkExtensionTest
      * Tests getNetwork throws an IllegalArgumentException
      * when passed a null networkTableName
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testGetNetworkException() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(3);
@@ -599,7 +599,7 @@ public class GeoPackageNetworkExtensionTest
     /**
      * Tests addNetwork throws an IllegalArgumentException
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddNetworkException7() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -654,7 +654,7 @@ public class GeoPackageNetworkExtensionTest
      * Tests getEdge throws an IllegalArgumentException
      * when the Network is null
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -674,7 +674,7 @@ public class GeoPackageNetworkExtensionTest
      * Tests getEdge throws an IllegalArgumentException when
      * the edge is not in the network
      */
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -736,7 +736,7 @@ public class GeoPackageNetworkExtensionTest
      * Tests that getEntries throws an
      * Exception when passed a null network
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testGetEntriesException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -887,7 +887,7 @@ public class GeoPackageNetworkExtensionTest
      * Tests visitEdges throws an
      * Exception when given a null Network
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testVisitEdgesException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -908,7 +908,7 @@ public class GeoPackageNetworkExtensionTest
      * Tests visitEdges throws an
      * Exception when given a null Network
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testVisitEdgesException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -1279,7 +1279,7 @@ public class GeoPackageNetworkExtensionTest
     /**
      * Tests getAttributeDescriptions throws an IllegalArgumentException
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testGetAttributeDescriptionsException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -1826,7 +1826,7 @@ public class GeoPackageNetworkExtensionTest
     /**
      * Tests getEdgeAttribute throws an IllegalArgumetnException
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeAttributeException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -1854,7 +1854,7 @@ public class GeoPackageNetworkExtensionTest
     /**
      * Tests getEdgeAttribute throws an IllegalArgumentException
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeAttributeException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -1909,7 +1909,7 @@ public class GeoPackageNetworkExtensionTest
                                                                                                        AttributedType.Edge);
             final int edge = networkExtension.addEdge(network, 0, 1);
             assertNull("Expected GeoPackageNetworkExtension method getEdgeAttribute to return null.",
-                       networkExtension.getEdgeAttributes(edge, Collections.singletonList(attributeDescription)));
+                       networkExtension.getEdgeAttributes(edge, Collections.singletonList(attributeDescription)).get(0));
         }
         finally
         {
@@ -2275,7 +2275,7 @@ public class GeoPackageNetworkExtensionTest
     /**
      * Tests that addNodeAttributes throws an IllegalArgumentException
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddNodeAttributesException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -2315,7 +2315,7 @@ public class GeoPackageNetworkExtensionTest
     /**
      * Tests that addNodeAttributes throws an IllegalArgumentException
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddNodeAttributesException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -2391,13 +2391,15 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addNodes(nodeAttributePairs, attributeDescriptions);
 
             networkExtension.addNodeAttributes(1,
-                                               Arrays.asList((Object)555,
-                                                             (Object)444),
+                                               Arrays.asList((Object) 555,
+                                                             (Object) 444),
                                                attributeDescriptions);
 
+            final List<Object> attributes = networkExtension.getNodeAttributes(1, attributeDescriptions);
+
             assertTrue("GeoPackageNetworkExtension method addNodeAttributes did not correctly update the node's attribute",
-                       (Integer)networkExtension.getNodeAttributes(1, attributeDescriptions).get(0) == 555 &&
-                       (Integer)networkExtension.getNodeAttributes(1, attributeDescriptions).get(1) == 444);
+                       (Integer)attributes.get(0) == 555 &&
+                       (Integer)attributes.get(1) == 444);
         }
         finally
         {
@@ -2408,7 +2410,7 @@ public class GeoPackageNetworkExtensionTest
     /**
      * Tests addNodes throws an IllegalArgumentException
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddNodesException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -2429,7 +2431,7 @@ public class GeoPackageNetworkExtensionTest
     /**
      * Tests addNodes throws an IllegalArgumentException
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddNodesException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -2462,7 +2464,7 @@ public class GeoPackageNetworkExtensionTest
     /**
      * Tests addNodes throws an IllegalArgumentException
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddNodesException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
@@ -2497,7 +2499,7 @@ public class GeoPackageNetworkExtensionTest
     /**
      * Tests addNodes throws an IllegalArgumentException
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddNodesException4() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
         final File testFile = TestUtility.getRandomFile(5);
