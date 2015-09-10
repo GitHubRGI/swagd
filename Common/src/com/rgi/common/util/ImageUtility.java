@@ -23,6 +23,8 @@
 
 package com.rgi.common.util;
 
+import com.sun.imageio.plugins.jpeg.JPEGImageWriter;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -80,7 +82,19 @@ public class ImageUtility
         {
             imageWriter.setOutput(memoryCacheImage);
 
-            imageWriter.write(null, new IIOImage(bufferedImage, null, null), imageWriteParameter);
+            // Check for JPEG conversion.  The incoming buffered image needs to be re-written to an RGB
+            // colorspace prior to imageio performing the conversion.  This avoids a pink hue in the resulting
+            // jpeg tiles.
+            if(imageWriteParameter != null && bufferedImage.getType() == BufferedImage.TYPE_4BYTE_ABGR)
+            {
+                final BufferedImage rgbImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+                rgbImage.getGraphics().drawImage(bufferedImage, 0, 0, null);
+                imageWriter.write(null, new IIOImage(rgbImage, null, null), imageWriteParameter);
+            }
+            else
+            {
+                imageWriter.write(null, new IIOImage(bufferedImage, null, null), imageWriteParameter);
+            }
 
             outputStream.flush();
 

@@ -435,7 +435,7 @@
       <option name="m_ignoreFinalFields" value="false" />
     </inspection_tool>
     <inspection_tool class="FinalClass" enabled="false" level="ERROR" enabled_by_default="false" />
-    <inspection_tool class="FinalMethod" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="FinalMethod" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="FinalMethodInFinalClass" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="FinalPrivateMethod" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="FinalStaticMethod" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -746,7 +746,7 @@
     </inspection_tool>
     <inspection_tool class="MultipleTopLevelClassesInFile" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="MultipleTypedDeclaration" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="MultiplyOrDivideByPowerOfTwo" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="MultiplyOrDivideByPowerOfTwo" enabled="false" level="ERROR" enabled_by_default="false">
       <option name="checkDivision" value="false" />
     </inspection_tool>
     <inspection_tool class="NakedNotify" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -857,7 +857,7 @@
     </inspection_tool>
     <inspection_tool class="OctalAndDecimalIntegersMixed" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="OctalLiteral" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="OnDemandImport" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="OnDemandImport" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="OverloadedMethodsWithSameNumberOfParameters" enabled="false" level="ERROR" enabled_by_default="false">
       <option name="ignoreInconvertibleTypes" value="true" />
     </inspection_tool>
@@ -942,7 +942,7 @@
     <inspection_tool class="PointlessIndexOfComparison" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="PointlessNullCheck" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="PrimitiveArrayArgumentToVariableArgMethod" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="PrivateMemberAccessBetweenOuterAndInnerClass" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="PrivateMemberAccessBetweenOuterAndInnerClass" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="ProblematicVarargsMethodOverride" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="PropertyValueSetToItself" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ProtectedField" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -1167,7 +1167,7 @@
       </option>
     </inspection_tool>
     <inspection_tool class="SuspiciousArrayCast" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="SuspiciousGetterSetter" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="SuspiciousGetterSetter" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="SuspiciousIndentAfterControlStatement" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="SuspiciousMethodCalls" enabled="true" level="ERROR" enabled_by_default="true">
       <option name="REPORT_CONVERTIBLE_METHOD_CALLS" value="true" />
@@ -1245,7 +1245,7 @@
       <option name="ignoreInAssert" value="false" />
     </inspection_tool>
     <inspection_tool class="ThrowCaughtLocally" enabled="true" level="ERROR" enabled_by_default="true">
-      <option name="ignoreRethrownExceptions" value="false" />
+      <option name="ignoreRethrownExceptions" value="true" />
     </inspection_tool>
     <inspection_tool class="ThrowFromFinallyBlock" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ThrowableInstanceNeverThrown" enabled="true" level="ERROR" enabled_by_default="true" />

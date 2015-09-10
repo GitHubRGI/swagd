@@ -155,8 +155,8 @@ public class TileStoreLoader implements TileLoader
                                         this.tileStore.getTileOrigin());
     }
 
-    private final static TileOrigin Origin     = TileOrigin.UpperLeft;           // Tile Origin for JMapViewer
-    private final static TileScheme TileScheme = new ZoomTimesTwo(0, 31, 1, 1);  // Tile scheme for JMapViewer: http://wiki.openstreetmap.org/wiki/Slippy_Map
+    private static final TileOrigin Origin     = TileOrigin.UpperLeft;           // Tile Origin for JMapViewer
+    private static final TileScheme TileScheme = new ZoomTimesTwo(0, 31, 1, 1);  // Tile scheme for JMapViewer: http://wiki.openstreetmap.org/wiki/Slippy_Map
 
     private final TileLoaderListener listener;
     private final TileStoreReader    tileStore;

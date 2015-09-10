@@ -101,6 +101,10 @@ public class GeoPackageWriter implements TileStoreWriter
                             final MimeType                  imageOutputFormat,
                             final ImageWriteParam           imageWriteOptions) throws TileStoreException
     {
+        if(geoPackageFile == null)
+        {
+            throw new IllegalArgumentException("GeoPackageFile cannot be null.");
+        }
 
         if(coordinateReferenceSystem == null)
         {
@@ -120,6 +124,14 @@ public class GeoPackageWriter implements TileStoreWriter
                                                                              .stream()
                                                                              .map(mimeType -> mimeType.toString())
                                                                              .collect(Collectors.joining(", ", "'", "'"))));
+        }
+
+        if(geoPackageFile.getParentFile() != null && !geoPackageFile.getParentFile().isDirectory())
+        {
+            if(!geoPackageFile.getParentFile().mkdirs())
+            {
+                throw new RuntimeException("Unable to create file: " + geoPackageFile.getAbsolutePath());
+            }
         }
 
         try

@@ -53,7 +53,7 @@ public interface TileStoreReader extends AutoCloseable
      * @throws TileStoreException
      *             Wraps errors thrown by the tile store reader implementation
      */
-    public BoundingBox getBounds() throws TileStoreException;
+    BoundingBox getBounds() throws TileStoreException;
 
     /**
      * Count the number of tiles in this tile store.
@@ -62,7 +62,7 @@ public interface TileStoreReader extends AutoCloseable
      * @throws TileStoreException
      *             Wraps errors thrown by the tile store reader implementation
      */
-    public long countTiles() throws TileStoreException;
+    long countTiles() throws TileStoreException;
 
     /**
      * Return the size of the tile store in bytes
@@ -71,7 +71,7 @@ public interface TileStoreReader extends AutoCloseable
      * @throws TileStoreException
      *             Wraps errors thrown by the tile store reader implementation
      */
-    public long getByteSize() throws TileStoreException;
+    long getByteSize() throws TileStoreException;
 
     /**
      * Get a tile at a specified zoom, column (x) and row (y)
@@ -86,7 +86,7 @@ public interface TileStoreReader extends AutoCloseable
      * @throws TileStoreException
      *             Wraps errors thrown by the tile store reader implementation
      */
-    public BufferedImage getTile(final int column, final int row, final int zoomLevel) throws TileStoreException;
+    BufferedImage getTile(final int column, final int row, final int zoomLevel) throws TileStoreException;
 
     /**
      * Get a tile at a specified zoom, and geographic coordinate.
@@ -99,7 +99,7 @@ public interface TileStoreReader extends AutoCloseable
      * @throws TileStoreException
      *             Wraps errors thrown by the tile store reader implementation
      */
-    public BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException;
+    BufferedImage getTile(final CrsCoordinate coordinate, final int zoomLevel) throws TileStoreException;
 
     /**
      * Gets the set of zoom levels that are valid for this tile store
@@ -108,7 +108,7 @@ public interface TileStoreReader extends AutoCloseable
      * @throws TileStoreException
      *             Wraps errors thrown by the tile store reader implementation
      */
-    public Set<Integer> getZoomLevels() throws TileStoreException;
+    Set<Integer> getZoomLevels() throws TileStoreException;
 
     /**
      * Gets a stream of every tile in the tile store. Tile stores need not
@@ -119,7 +119,7 @@ public interface TileStoreReader extends AutoCloseable
      * @throws TileStoreException
      *             Wraps errors thrown by the tile store reader implementation
      */
-    public Stream<TileHandle> stream() throws TileStoreException;
+    Stream<TileHandle> stream() throws TileStoreException;
 
     /**
      * Gets a stream of every tile in the tile store for a given zoom level. The
@@ -133,21 +133,21 @@ public interface TileStoreReader extends AutoCloseable
      * @throws TileStoreException
      *             Wraps errors thrown by the tile store reader implementation
      */
-    public Stream<TileHandle> stream(final int zoomLevel) throws TileStoreException;
+    Stream<TileHandle> stream(final int zoomLevel) throws TileStoreException;
 
     /**
      * @return returns the tile store's coordinate reference system
      * @throws TileStoreException
      *                Wraps errors thrown by the tile store reader implementation
      */
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() throws TileStoreException;
+    CoordinateReferenceSystem getCoordinateReferenceSystem() throws TileStoreException;
 
     /**
      * Tile source name
      *
      * @return returns a human readable identifier for this tile store
      */
-    public String getName();
+    String getName();
 
     /**
      * @return Returns the best guess for the image type (a MimeType subtype).
@@ -158,7 +158,7 @@ public interface TileStoreReader extends AutoCloseable
      * @throws TileStoreException
      *             Wraps errors thrown by the tile store reader implementation
      */
-    public String getImageType() throws TileStoreException;
+    String getImageType() throws TileStoreException;
 
     /**
      * @return Returns the best guess for the pixel dimensions of the tile
@@ -170,17 +170,17 @@ public interface TileStoreReader extends AutoCloseable
      *             Wraps errors thrown by the tile store reader implementation
      *
      */
-    public Dimensions<Integer> getImageDimensions() throws TileStoreException;
+    Dimensions<Integer> getImageDimensions() throws TileStoreException;
 
     /**
      * @return the Tile Scheme which can calculate the number of tiles at a particular zoom level
      * @throws TileStoreException
      *               Wraps errors thrown by the tile store reader implementation
      */
-    public TileScheme getTileScheme() throws TileStoreException;
+    TileScheme getTileScheme() throws TileStoreException;
 
     /**
      * @return Returns the tile origin
      */
-    public TileOrigin getTileOrigin();
+    TileOrigin getTileOrigin();
 }

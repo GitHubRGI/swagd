@@ -164,7 +164,15 @@ public final class GdalUtility
 
     public static boolean doesDataSetMatchCRS(final Dataset d1, final CoordinateReferenceSystem crs)
     {
-        return GdalUtility.getSpatialReference(d1).equals(GdalUtility.getSpatialReference(crs));
+        if (!GdalUtility.getSpatialReference(d1).equals(GdalUtility.getSpatialReference(crs)))
+        {
+            final SpatialReference fromSrs = GdalUtility.getSpatialReference(d1);
+            final SpatialReference toSrs = GdalUtility.getSpatialReference(crs);
+
+            return fromSrs.GetAttrValue("AUTHORITY", 0).equals(toSrs.GetAttrValue("AUTHORITY", 0)) &&
+                   fromSrs.GetAttrValue("AUTHORITY", 1).equals(toSrs.GetAttrValue("AUTHORITY", 1));
+        }
+        return true;
     }
 
     /**
@@ -1166,7 +1174,7 @@ public final class GdalUtility
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
         // Initialize a new double array of size 3
-        final Double[] noDataValues = new Double[3];
+        final Double[] noDataValues = new Double[4];
         // Get the nodata value for each band
         IntStream.rangeClosed(1,  dataset.GetRasterCount())
                  .forEach(band -> {
@@ -1189,6 +1197,7 @@ public final class GdalUtility
         {
             noDataValues[1] = noDataValues[0];
             noDataValues[2] = noDataValues[0];
+            noDataValues[3] = noDataValues[0];
         }
         return noDataValues;
     }

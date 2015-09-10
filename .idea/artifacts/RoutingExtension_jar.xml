@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="RoutingExtension:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/RoutingExtension_jar</output-path>
+    <root id="archive" name="RoutingExtension.jar">
+      <element id="module-output" name="RoutingExtension" />
+      <element id="module-output" name="NetworkExtension" />
+      <element id="module-output" name="GeoPackage" />
+      <element id="module-output" name="Common" />
+    </root>
+  </artifact>
+</component>

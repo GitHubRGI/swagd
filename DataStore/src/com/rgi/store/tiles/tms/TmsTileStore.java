@@ -67,7 +67,7 @@ abstract class TmsTileStore
 
         if(!location.toFile().isDirectory())
         {
-            if(!location.toFile().mkdir())
+            if(!location.toFile().mkdirs())
             {
                 throw new RuntimeException("Unable to create directory: " + location.toFile().getAbsolutePath());
             }
