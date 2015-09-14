@@ -159,8 +159,6 @@
                     <format>xml</format>
                     <maxmem>256m</maxmem>
                     <aggregate>true</aggregate>
-                    <serviceName>travis-pro</serviceName>
-                    <repoToken>D2hjjqELJcAAyA8sv1WgOZ1GENG27WXoR</repoToken>
                 </configuration>
             </plugin>
         </plugins>
