@@ -275,10 +275,10 @@ public final class GenerateRoutingNetworks
                                               final int  longitudeIndex,
                                               final int  latitudeIndex) throws IOException
     {
-        final double[] bbox = { Double.MAX_VALUE, // x min
-                                Double.MAX_VALUE, // y min
-                                Double.MIN_VALUE, // x max
-                                Double.MIN_VALUE  // y max
+        final double[] bbox = {  Double.MAX_VALUE, // x min
+                                 Double.MAX_VALUE, // y min
+                                -Double.MAX_VALUE, // x max
+                                -Double.MAX_VALUE  // y max
                               };
 
         Files.lines(triangleFormatNodes.toPath())
