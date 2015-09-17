@@ -21,9 +21,9 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.extensions.routing;
+package com.rgi.geopackage.extensions.routing.router.astar;
 
-import com.rgi.geopackage.extensions.network.Node;
+import com.rgi.geopackage.extensions.network.AttributedNode;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,16 +32,16 @@ import java.util.List;
  * @author Luke Lambert
  *
  */
-public class AStarVertex
+class Vertex
 {
-    protected AStarVertex(final Node node)
+    Vertex(final AttributedNode node)
     {
         this.node = node;
     }
 
-    protected AStarVertex(final Node   node,
-                          final double costFromStart,
-                          final double estimatedCostToEnd)
+    Vertex(final AttributedNode node,
+           final double costFromStart,
+           final double estimatedCostToEnd)
     {
         this(node);
 
@@ -53,7 +53,7 @@ public class AStarVertex
     public boolean equals(final Object obj)
     {
         return obj == this ||
-               !(obj == null || this.getClass() != obj.getClass()) && this.node == ((AStarVertex)obj).node;
+               !(obj == null || this.getClass() != obj.getClass()) && this.node == ((Vertex)obj).node;
 
     }
 
@@ -64,9 +64,17 @@ public class AStarVertex
     }
 
     /**
+     * @return the node
+     */
+    AttributedNode getNode()
+    {
+        return this.node;
+    }
+
+    /**
      * @return the costFromStart
      */
-    public double getCostFromStart()
+    double getCostFromStart()
     {
         return this.costFromStart;
     }
@@ -74,7 +82,7 @@ public class AStarVertex
     /**
      * @return the estimatedCostToEnd
      */
-    public double getEstimatedCostToEnd()
+    double getEstimatedCostToEnd()
     {
         return this.estimatedCostToEnd;
     }
@@ -82,26 +90,33 @@ public class AStarVertex
     /**
      * @return the previous
      */
-    public AStarVertex getPrevious()
+    Vertex getPrevious()
     {
         return this.previous;
     }
 
-    public double getEdgeCost()
+    double getEdgeCost()
     {
         return this.edgeCost;
     }
 
-    public List<Object> getEdgeAttributes()
+    int getEdgeIdentifier()
+    {
+        return this.edgeIdentifier;
+    }
+
+    List<Object> getEdgeAttributes()
     {
         return Collections.unmodifiableList(this.edgeAttributes);
     }
 
-    public void update(final double       costFromStart,
-                       final double       estimatedCostToEnd,
-                       final AStarVertex  previous,
-                       final List<Object> edgeAttributes,
-                       final double       edgeCost)
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
+    void update(final double       costFromStart,
+                final double       estimatedCostToEnd,
+                final Vertex       previous,
+                final int          edgeIdentifier,
+                final List<Object> edgeAttributes,
+                final double       edgeCost)
     {
         if(costFromStart < 0.0)
         {
@@ -116,23 +131,17 @@ public class AStarVertex
         this.costFromStart      = costFromStart;
         this.estimatedCostToEnd = estimatedCostToEnd;
         this.previous           = previous;
+        this.edgeIdentifier     = edgeIdentifier;
         this.edgeAttributes     = edgeAttributes;
         this.edgeCost           = edgeCost;
     }
 
-    /**
-     * @return the node
-     */
-    public Node getNode()
-    {
-        return this.node;
-    }
-
-    private final Node node;
+    private final AttributedNode node;
 
     private double       costFromStart      = Double.MAX_VALUE;
     private double       estimatedCostToEnd = Double.MAX_VALUE;
-    private AStarVertex  previous;       // Parent node
-    private List<Object> edgeAttributes; // Attributes of edge with the edge being parent to this one
-    private double       edgeCost;       // Aalculated cost of parent node to this one
+    private Vertex       previous;                              // Parent node
+    private int          edgeIdentifier;                        // Unique identifier of the edge taken to get to this node
+    private List<Object> edgeAttributes;                        // Attributes of edge with the edge being parent to this one
+    private double       edgeCost;                              // Calculated cost of parent node to this one
 }

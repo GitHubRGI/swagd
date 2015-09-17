@@ -31,19 +31,25 @@ import java.util.List;
  */
 public class Route
 {
-
     public Route(final List<List<Object>> nodesAttributes,
                  final List<List<Object>> edgesAttributes,
+                 final List<Integer>      edgeIdentifiers,
                  final List<Double>       edgeCosts)
     {
         this.nodesAttributes = nodesAttributes;
         this.edgesAttributes = edgesAttributes;
+        this.edgeIdentifiers = edgeIdentifiers;
         this.edgeCosts       = edgeCosts;
     }
 
     public List<List<Object>> getNodesAttributes()
     {
         return Collections.unmodifiableList(this.nodesAttributes);
+    }
+
+    public List<Integer> getEdgeIdentifiers()
+    {
+        return Collections.unmodifiableList(this.edgeIdentifiers);
     }
 
     public List<List<Object>> getEdgesAttributes()
@@ -58,10 +64,11 @@ public class Route
 
     public double getTotalCost()
     {
-        return this.edgeCosts.stream().reduce(0.0, Double::sum);
+        return this.edgeCosts.stream().mapToDouble(Double::doubleValue).sum();
     }
 
     private final List<List<Object>> nodesAttributes;
+    private final List<Integer>      edgeIdentifiers;
     private final List<List<Object>> edgesAttributes;
-    private final List<Double>             edgeCosts;
+    private final List<Double>       edgeCosts;
 }

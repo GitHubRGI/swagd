@@ -23,14 +23,13 @@
 
 package com.rgi.geopackage.extensions.network;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * @author  Luke Lambert
+ * @author Luke Lambert
  */
-public class EdgeEvaluationParameters
+public class AttributedEdge
 {
     /**
      * Constructor
@@ -39,35 +38,21 @@ public class EdgeEvaluationParameters
      *             Unique edge identifier
      * @param edgeAttributes
      *             All or a subset of this edge's attributes
-     * @param from
-     *             'from' node
-     * @param to
-     *             'to' node
+     * @param fromNode
+     *             Unique 'from' node identifier, and attributes
+     * @param toNode
+     *             Unique 'to' node identifier, and attributes
      */
-    public EdgeEvaluationParameters(final int          edgeIdentifier,
-                                    final List<Object> edgeAttributes,
-                                    final Node         from,
-                                    final Node         to)
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")    // Suppress this warning for routing performance reasons. *Many* of these objects are created while routing so constantly recopying the arrays seems like a bad idea.
+    public AttributedEdge(final int edgeIdentifier,
+                          final List<Object> edgeAttributes,
+                          final AttributedNode fromNode,
+                          final AttributedNode toNode)
     {
-        if(edgeAttributes == null)
-        {
-            throw new IllegalArgumentException("Edge attributes may not be null");
-        }
-
-        if(from == null)
-        {
-            throw new IllegalArgumentException("From node may not be null");
-        }
-
-        if(to == null)
-        {
-            throw new IllegalArgumentException("To node may not be null");
-        }
-
         this.edgeIdentifier = edgeIdentifier;
-        this.edgeAttributes = new ArrayList<>(edgeAttributes);
-        this.from           = from;
-        this.to             = to;
+        this.edgeAttributes = edgeAttributes == null ? Collections.emptyList() : edgeAttributes;
+        this.fromNode       = fromNode;
+        this.toNode         = toNode;
     }
 
     public int getEdgeIdentifier()
@@ -80,18 +65,18 @@ public class EdgeEvaluationParameters
         return Collections.unmodifiableList(this.edgeAttributes);
     }
 
-    public Node getFrom()
+    public AttributedNode getFromNode()
     {
-        return this.from;
+        return this.fromNode;
     }
 
-    public Node getTo()
+    public AttributedNode getToNode()
     {
-        return this.to;
+        return this.toNode;
     }
 
-    private final int          edgeIdentifier;
-    private final List<Object> edgeAttributes;
-    private final Node         from;
-    private final Node         to;
+    private final int            edgeIdentifier;
+    private final List<Object>   edgeAttributes;
+    private final AttributedNode fromNode;
+    private final AttributedNode toNode;
 }

@@ -1,3 +1,26 @@
+/* The MIT License (MIT)
+ *
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.rgi.geopackage.extensions.routing;
 
 import com.rgi.geopackage.extensions.network.AttributeDescription;
@@ -25,15 +48,11 @@ public class RoutingNetworkDescription
      *             Routing network attribute description for the elevation
      *             portion of a node's coordinate. This value may be null if
      *             the network is only in two dimensions
-     * @param distanceDescription
-     *             Routing network attribute description for the distance
-     *             between an edge's two nodes
      */
     public RoutingNetworkDescription(final Network              network,
                                      final AttributeDescription longitudeDescription,
                                      final AttributeDescription latitudeDescription,
-                                     final AttributeDescription elevationDescription,
-                                     final AttributeDescription distanceDescription)
+                                     final AttributeDescription elevationDescription)
     {
         if(network == null)
         {
@@ -48,11 +67,6 @@ public class RoutingNetworkDescription
         if(latitudeDescription == null)
         {
             throw new IllegalArgumentException("Latitude attribute description may not be null");
-        }
-
-        if(distanceDescription == null)
-        {
-            throw new IllegalArgumentException("Distance attribute description may not be null");
         }
 
         if(longitudeDescription.getAttributedType() != AttributedType.Node)
@@ -70,16 +84,10 @@ public class RoutingNetworkDescription
             throw new IllegalArgumentException("The latitude attribute description must refer to a node");
         }
 
-        if(distanceDescription.getAttributedType() != AttributedType.Edge)
-        {
-            throw new IllegalArgumentException("The distance attribute description must refer to an edge");
-        }
-
         this.network              = network;
         this.longitudeDescription = longitudeDescription;
         this.latitudeDescription  = latitudeDescription;
         this.elevationDescription = elevationDescription;
-        this.distanceDescription  = distanceDescription;
     }
 
     /**
@@ -114,14 +122,6 @@ public class RoutingNetworkDescription
         return this.elevationDescription;
     }
 
-    /**
-     * @return the distanceDescription
-     */
-    public AttributeDescription getDistanceDescription()
-    {
-        return this.distanceDescription;
-    }
-
     @Override
     public String toString()
     {
@@ -132,5 +132,4 @@ public class RoutingNetworkDescription
     private final AttributeDescription longitudeDescription;
     private final AttributeDescription latitudeDescription;
     private final AttributeDescription elevationDescription;
-    private final AttributeDescription distanceDescription;
 }

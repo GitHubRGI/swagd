@@ -25,9 +25,6 @@ package com.rgi.geopackage.extensions.network;
 
 import com.rgi.geopackage.GeoPackage;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,29 +34,21 @@ import java.util.List;
  * @author Luke Lambert
  *
  */
-public class Node
+public class AttributedNode
 {
-    protected Node(final int identifier)
+    /**
+     * Constructor
+     *
+     * @param identifier
+     *             Unique node identifier
+     * @param attributeValues
+     *             Some or all of the nodes attributes
+     */
+    public AttributedNode(final int identifier,
+                          final List<Object> attributeValues)
     {
-        this(identifier, Collections.emptyList());
-    }
-
-    protected Node(final int       identifier,
-                   final Object... attributeValues)
-    {
-        this(identifier, Arrays.asList(attributeValues));
-    }
-
-    protected Node(final int                identifier,
-                   final Collection<Object> attributeValues)
-    {
-        if(attributeValues == null)
-        {
-            throw new IllegalArgumentException("Attribute values collection may not be null");
-        }
-
         this.identifier      = identifier;
-        this.attributeValues = new ArrayList<>(attributeValues);
+        this.attributeValues = attributeValues == null ? Collections.emptyList() : attributeValues;
     }
 
     public int getIdentifier()
@@ -72,6 +61,14 @@ public class Node
         return Collections.unmodifiableList(this.attributeValues);
     }
 
+    /**
+     * Gets the node's attribute as described by the supplied index
+     *
+     * @param attributeIndex
+     *             Index of the attribute to retrieve. These values correspond
+     *             to order in which the attributes were requested.
+     * @return value at the specified index
+     */
     public Object getAttribute(final int attributeIndex)
     {
         return this.attributeValues.get(attributeIndex);

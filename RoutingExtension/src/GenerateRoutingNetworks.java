@@ -23,7 +23,10 @@
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
+import com.rgi.common.coordinate.referencesystem.profile.CrsProfile;
+import com.rgi.common.coordinate.referencesystem.profile.SphericalMercatorCrsProfile;
 import com.rgi.geopackage.GeoPackage;
+import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.extensions.network.AttributeDescription;
 import com.rgi.geopackage.extensions.network.AttributedType;
@@ -67,7 +70,10 @@ public final class GenerateRoutingNetworks
 
         if(geoPackageFile.exists())
         {
-            geoPackageFile.delete();
+            if(!geoPackageFile.delete())
+            {
+                System.err.format("Unable to replace %s, aborting.", geoPackageFile.getAbsoluteFile());
+            }
         }
 
         try(final GeoPackage gpkg = new GeoPackage(geoPackageFile, VerificationLevel.None, GeoPackage.OpenMode.Create))
@@ -112,11 +118,19 @@ public final class GenerateRoutingNetworks
         {
             final File nodesFile = new File("data/" + name + "_node_geometries.txt");
 
+            final CrsProfile sphericalMercatorCrsProfile = new SphericalMercatorCrsProfile();
+
+            final SpatialReferenceSystem spatialReferenceSystem = geoPackage.core().addSpatialReferenceSystem(sphericalMercatorCrsProfile.getName(),
+                                                                                                              sphericalMercatorCrsProfile.getCoordinateReferenceSystem().getAuthority(),
+                                                                                                              sphericalMercatorCrsProfile.getCoordinateReferenceSystem().getIdentifier(),
+                                                                                                              sphericalMercatorCrsProfile.getWellKnownText(),
+                                                                                                              sphericalMercatorCrsProfile.getDescription());
+
             final Network network = networkExtension.addNetwork(name,
-                                                                  name,
-                                                                  name + " dataset provided by Matt Renner of AGC",
-                                                                  getBoundingBox(nodesFile, 2, 3),
-                                                                  geoPackage.core().getSpatialReferenceSystem(-1));
+                                                                name,
+                                                                name + " dataset provided by Matt Renner of AGC",
+                                                                getBoundingBox(nodesFile, 2, 3),
+                                                                spatialReferenceSystem);
 
             final AttributeDescription slopeAttribute = networkExtension.addAttributeDescription(network,
                                                                                                  "slope",
@@ -175,9 +189,9 @@ public final class GenerateRoutingNetworks
                     loadAttributedEdges(networkExtension,
                                         results,
                                         network,
-                                        slopeAttribute,
-                                        distanceAttribute,
-                                        pandolfCostAttribute);
+                                        Arrays.asList(slopeAttribute,
+                                                      distanceAttribute,
+                                                      pandolfCostAttribute));
                 }
             }
 
@@ -185,15 +199,14 @@ public final class GenerateRoutingNetworks
             loadNodeAttributes(networkExtension,
                                nodesFile,
                                network,
-                               elevationAttribute,
-                               longitudeAttribute,
-                               latitudeAttribute);
+                               Arrays.asList(elevationAttribute,
+                                             longitudeAttribute,
+                                             latitudeAttribute));
 
             routingExtension.addRoutingNetworkDescription(network,
                                                           longitudeAttribute,
                                                           latitudeAttribute,
-                                                          elevationAttribute,
-                                                          distanceAttribute);
+                                                          elevationAttribute);
 
         }
     }
@@ -204,11 +217,19 @@ public final class GenerateRoutingNetworks
     {
         final File nodeFile = new File("data/contour.1/contour.1.node");
 
+        final CrsProfile sphericalMercatorCrsProfile = new SphericalMercatorCrsProfile();
+
+        final SpatialReferenceSystem spatialReferenceSystem = geoPackage.core().addSpatialReferenceSystem(sphericalMercatorCrsProfile.getName(),
+                                                                                                          sphericalMercatorCrsProfile.getCoordinateReferenceSystem().getAuthority(),
+                                                                                                          sphericalMercatorCrsProfile.getCoordinateReferenceSystem().getIdentifier(),
+                                                                                                          sphericalMercatorCrsProfile.getWellKnownText(),
+                                                                                                          sphericalMercatorCrsProfile.getDescription());
+
         final Network network = networkExtension.addNetwork("contour_1",
                                                             "contour_1",
                                                             "contour.1 dataset provided by Matt Renner of AGC",
                                                             getBoundingBox(nodeFile, 1, 2),
-                                                            geoPackage.core().getSpatialReferenceSystem(-1));
+                                                            spatialReferenceSystem);
 
         final AttributeDescription longitudeAttribute = networkExtension.addAttributeDescription(network,
                                                                                                  "longitude",
@@ -231,21 +252,12 @@ public final class GenerateRoutingNetworks
                                                                                                  "elevation",
                                                                                                  AttributedType.Node);
 
-        final AttributeDescription distanceAttribute = networkExtension.addAttributeDescription(network,
-                                                                                                "distance",
-                                                                                                "degrees",
-                                                                                                DataType.Real,
-                                                                                                "distance",
-                                                                                                AttributedType.Edge);
-
-
-
         loadNodeAttributes(networkExtension,
                            nodeFile,
                            network,
-                           longitudeAttribute,
-                           latitudeAttribute,
-                           elevationAttribute);
+                           Arrays.asList(longitudeAttribute,
+                                         latitudeAttribute,
+                                         elevationAttribute));
 
         final File edgeFile = new File("data/contour.1/contour.1.edge");
 
@@ -253,54 +265,10 @@ public final class GenerateRoutingNetworks
                   edgeFile,
                   network);
 
-        calculateDistanceCost(networkExtension,
-                              network,
-                              distanceAttribute,
-                              longitudeAttribute,
-                              latitudeAttribute,
-                              elevationAttribute);
-
         routingExtension.addRoutingNetworkDescription(network,
                                                       longitudeAttribute,
                                                       latitudeAttribute,
-                                                      elevationAttribute,
-                                                      distanceAttribute);
-    }
-
-    private static void calculateDistanceCost(final GeoPackageNetworkExtension networkExtension,
-                                              final Network                    network,
-                                              final AttributeDescription       distanceDescription,
-                                              final AttributeDescription       longitudeDescription,
-                                              final AttributeDescription       latitudeDescription,
-                                              final AttributeDescription       elevationDescription) throws SQLException
-    {
-        networkExtension.visitEdges(network, edge -> { try
-                                                       {
-                                                           final List<List<Object>> values = networkExtension.getNodeAttributes(Arrays.asList(edge.getFrom(), edge.getTo()),
-                                                                                                                                longitudeDescription,
-                                                                                                                                latitudeDescription,
-                                                                                                                                elevationDescription);
-
-                                                           final List<Object> startCoordinate = values.get(0);
-                                                           final List<Object> endCoordinate   = values.get(1);
-
-                                                           final double longitude = (Double)endCoordinate.get(0) - (Double)startCoordinate.get(0);
-                                                           final double latitude  = (Double)endCoordinate.get(1) - (Double)startCoordinate.get(1);
-                                                           final double elevation = (Double)endCoordinate.get(2) - (Double)startCoordinate.get(2);
-
-                                                           final double distance = Math.sqrt(latitude  * latitude  +
-                                                                                             longitude * longitude +
-                                                                                             elevation * elevation);
-
-                                                           networkExtension.updateEdgeAttributes(edge,
-                                                                                                 Arrays.asList(distance),
-                                                                                                 distanceDescription);
-                                                       }
-                                                       catch(final Exception ex)
-                                                       {
-                                                           ex.printStackTrace();
-                                                       }
-                                                     });
+                                                      elevationAttribute);
     }
 
     private static BoundingBox getBoundingBox(final File triangleFormatNodes,
@@ -352,10 +320,10 @@ public final class GenerateRoutingNetworks
      * Puts a file in the Triangle utility node format
      * (https://www.cs.cmu.edu/~quake/triangle.node.html) into a network
      */
-    private static void loadNodeAttributes(final GeoPackageNetworkExtension networkExtension,
-                                           final File                       triangleFormatNodes,
-                                           final Network                    network,
-                                           final AttributeDescription...    attributeDescriptions) throws SQLException, IOException
+    private static void loadNodeAttributes(final GeoPackageNetworkExtension       networkExtension,
+                                           final File                             triangleFormatNodes,
+                                           final Network                          network,
+                                           final Collection<AttributeDescription> attributeDescriptions) throws SQLException, IOException
     {
         final Function<String, Pair<Integer, List<Object>>> lineToPair = line -> { final String[] pieces = SpacePattern.split(line.trim());
 
@@ -363,7 +331,7 @@ public final class GenerateRoutingNetworks
                                                                                                      Arrays.asList(pieces)
                                                                                                            .stream()
                                                                                                            .skip(1L)    // Skip the first element, the vertex number/node id
-                                                                                                           .limit(attributeDescriptions.length)
+                                                                                                           .limit(attributeDescriptions.size())
                                                                                                            .map(Double::valueOf)
                                                                                                            .collect(Collectors.toList()));
                                                                                  };
@@ -415,20 +383,20 @@ public final class GenerateRoutingNetworks
         }
     }
 
-    private static void loadAttributedEdges(final GeoPackageNetworkExtension networkExtension,
-                                            final ResultSet                  resultSet,
-                                            final Network                    network,
-                                            final AttributeDescription...    attributeDescriptions) throws SQLException
+    private static void loadAttributedEdges(final GeoPackageNetworkExtension       networkExtension,
+                                            final ResultSet                        resultSet,
+                                            final Network                          network,
+                                            final Collection<AttributeDescription> attributeDescriptions) throws SQLException
     {
         final Collection<Pair<Pair<Integer, Integer>, List<Object>>> edges = new ArrayList<>();
 
         while(resultSet.next())
         {
-            edges.add(Pair.of(Pair.of(resultSet.getInt(1),  // from node
-                                      resultSet.getInt(2)), // to node
-                              Arrays.asList(resultSet.getDouble(3),        // slope
-                                            resultSet.getDouble(4),        // distance
-                                            resultSet.getDouble(5))));     // pandolf cost
+            edges.add(Pair.of(Pair.of(resultSet.getInt(1),             // from node
+                                      resultSet.getInt(2)),            // to node
+                              Arrays.asList(resultSet.getDouble(3),    // slope
+                                            resultSet.getDouble(4),    // distance
+                                            resultSet.getDouble(5)))); // pandolf cost
         }
 
         networkExtension.addAttributedEdges(edges, attributeDescriptions);

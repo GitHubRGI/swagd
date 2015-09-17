@@ -21,7 +21,9 @@
  * SOFTWARE.
  */
 
-package com.rgi.common;
+package com.rgi.common.util;
+
+import com.rgi.common.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +32,10 @@ import java.util.function.BiFunction;
 /**
  * Functional memoization strategy, based on <a
  * href="https://stackoverflow.com/a/3624099/16434">this example</a>.
+ *
+ * @param <P1> Type of first parameter
+ * @param <P2> Type of second parameter
+ * @param <R> Type of object returned
  *
  * @author Luke Lambert
  */
@@ -61,6 +67,6 @@ public class Memoize2<P1, P2, R>
         }
     }
 
-    private final Map<Pair<P1, P2>, R>  values = new HashMap<>();   // TODO maybe use a hash as a key
+    private final Map<Pair<P1, P2>, R> values = new HashMap<Pair<P1, P2>, R>();   // TODO maybe use a hash as a key
     private final BiFunction<P1, P2, R> evaluator;
 }
