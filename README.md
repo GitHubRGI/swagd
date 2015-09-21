@@ -28,11 +28,17 @@ A Java-based application for converting geospatial images into tiles, packaging 
   * _Dependency_: Common
 * __GeoViewer__: Workflow code for the JMapViewer-based map canvas viewer for GeoPackages
   * _Dependencies_: Common, GeoPackage, JMapViewer (refer to build environment wiki)
+* __LeafletViewer__: A JavaFX implementation of the SWAGD GUI
+  * _Dependencies__: Common, DataStore, GeoPackage
 * __NetworkExtension__: Networking and routing capability as a GeoPackage extension
   * _Dependency_: Nothing
 * __Packager__: Workflow code that will use the Geopackage library to create Geopackage data products
   * _Dependencies_: Common, GeoPackage
 * __RGISuite__: Main project and workflow aggregation
   * _Dependencies_: Common, Gdal2Tiles, Geopackage, GeoViewer, Packager
+* __RoutingExtension__: Routing implementation of NetworkExtension
+  * _Dependencies_: Common, GeoPackage, NetworkExtension
 * __VerifierTool__: Verify GeoPackages against the OGC GeoPackage Specification
   * _Dependencies_: Common, GeoPackage
+* __WiX__: Installer project for Windows environments
+  * _Dependencies_: Windows environment
