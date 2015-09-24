@@ -1461,9 +1461,9 @@ public class GlobalGeodeticCrsProfileTest {
         final int row = 5;
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(17, 5);
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
-        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinX()/3,
+        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinX()/6,
                                                         globalCrs.getBounds().getMinY()/4,
-                                                        globalCrs.getBounds().getMaxX()/7,
+                                                        globalCrs.getBounds().getMaxX()/5,
                                                         globalCrs.getBounds().getMaxY());
 
         final TileOrigin origin = TileOrigin.LowerRight;
