@@ -185,11 +185,11 @@ public abstract class ProportionalCrsProfile implements CrsProfile
                                                                         row,
                                                                         dimensions);
 
-        final Coordinate<Double> boundsCorner = bounds.getBottomLeft();
+        final CrsCoordinate crsCoordinate = this.tileToCrsCoordinate(tileCoordinate.getX(), tileCoordinate.getY(), bounds, dimensions, TileOrigin.LowerLeft);
 
-        return new BoundingBox(boundsCorner.getX() + (tileCoordinate.getX() +     tileOrigin.getHorizontal()) * (tileCrsWidth),
-                               boundsCorner.getY() + (tileCoordinate.getY() +     tileOrigin.getVertical())   * (tileCrsHeight),
-                               boundsCorner.getX() + (tileCoordinate.getX() + 1 + tileOrigin.getHorizontal()) * (tileCrsWidth),
-                               boundsCorner.getY() + (tileCoordinate.getY() + 1 + tileOrigin.getVertical())   * (tileCrsHeight));
+        return new BoundingBox(crsCoordinate.getX(),
+                               crsCoordinate.getY(),
+                               crsCoordinate.getX() + tileCrsWidth,
+                               crsCoordinate.getY() + tileCrsHeight);
     }
 }
