@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.rgi.common.test.TestUtility;
 import org.junit.Test;
 
 import com.rgi.common.BoundingBox;
@@ -42,6 +43,8 @@ import com.rgi.common.tile.scheme.TileMatrixDimensions;
  */
 @SuppressWarnings("static-method")
 public class GlobalGeodeticCrsProfileTest {
+    private static final double EPSILON = 1/Math.pow(10,new GlobalGeodeticCrsProfile().getPrecision());
+
     /**
      * Tests if GlobalGeodeticCrsProfile will throw an IllegalArgumentException
      * when null is passed as one of the parameters to the method
@@ -1424,7 +1427,7 @@ public class GlobalGeodeticCrsProfileTest {
                                                            lowerLeftCoordinate.getX() + crsTileWidth,
                                                            lowerLeftCoordinate.getY() + crsTileHeight);
 
-        assertEquals("ProportionalCrsProfile.getTileBounds did not return the expected values", boundsExpected, globalCrs.getTileBounds(column, row, boundingBox, dimensions, origin));
+        assertTrue("ProportionalCrsProfile.getTileBounds did not return the expected values", TestUtility.boundingBoxesEqual(boundsExpected, globalCrs.getTileBounds(column, row, boundingBox, dimensions, origin), EPSILON));
     }
 
       @Test
@@ -1451,7 +1454,7 @@ public class GlobalGeodeticCrsProfileTest {
                                                            upperRightCoordinate.getX(),
                                                            upperRightCoordinate.getY());
 
-        assertEquals("ProportionalCrsProfile.getTileBounds did not return the expected values", boundsExpected, globalCrs.getTileBounds(column, row, boundingBox, dimensions, origin));
+        assertTrue("ProportionalCrsProfile.getTileBounds did not return the expected values", TestUtility.boundingBoxesEqual(boundsExpected, globalCrs.getTileBounds(column, row, boundingBox, dimensions, origin), EPSILON));
     }
 
     @Test
@@ -1478,7 +1481,7 @@ public class GlobalGeodeticCrsProfileTest {
                                                            lowerRightCoordinate.getX(),
                                                            lowerRightCoordinate.getY() + crsTileHeight);
 
-        assertEquals("ProportionalCrsProfile.getTileBounds did not return the expected values", boundsExpected, globalCrs.getTileBounds(column, row, boundingBox, dimensions, origin));
+        assertTrue("ProportionalCrsProfile.getTileBounds did not return the expected values", TestUtility.boundingBoxesEqual(boundsExpected, globalCrs.getTileBounds(column, row, boundingBox, dimensions, origin), EPSILON));
     }
 
 
@@ -1506,7 +1509,7 @@ public class GlobalGeodeticCrsProfileTest {
                                                            upperLeftCoordinate.getX() + crsTileWidth,
                                                            upperLeftCoordinate.getY());
 
-        assertEquals("ProportionalCrsProfile.getTileBounds did not return the expected values", boundsExpected, globalCrs.getTileBounds(column, row, boundingBox, dimensions, origin));
+        assertTrue("ProportionalCrsProfile.getTileBounds did not return the expected values", TestUtility.boundingBoxesEqual(boundsExpected, globalCrs.getTileBounds(column, row, boundingBox, dimensions, origin), EPSILON));
     }
 
     /**
