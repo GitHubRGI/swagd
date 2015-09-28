@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.rgi.common.test.TestUtility;
 import org.junit.Test;
 
 import com.rgi.common.BoundingBox;
@@ -42,6 +43,8 @@ import com.rgi.common.tile.scheme.TileMatrixDimensions;
  */
 @SuppressWarnings("static-method")
 public class GlobalGeodeticCrsProfileTest {
+    private static final double EPSILON = 1/Math.pow(10,new GlobalGeodeticCrsProfile().getPrecision());
+
     /**
      * Tests if GlobalGeodeticCrsProfile will throw an IllegalArgumentException
      * when null is passed as one of the parameters to the method
@@ -184,9 +187,9 @@ public class GlobalGeodeticCrsProfileTest {
 
         final Coordinate<Double> returnedCoordinate = (new GlobalGeodeticCrsProfile())
                 .toGlobalGeodetic(expectedCoordinate);
-        assertEquals(
-                "The method toGlobalGeodetic did not return the expected coordinate.",
-                expectedCoordinate, returnedCoordinate);
+        assertEquals("The method toGlobalGeodetic did not return the expected coordinate.",
+                     expectedCoordinate,
+                     returnedCoordinate);
     }
 
     /**
@@ -208,8 +211,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 4 y: 2",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 4 && newCoordinate.getY() == 2);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 4 && newCoordinate.getY() == 2);
     }
 
     /**
@@ -278,8 +282,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 0",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 0 && newCoordinate.getY() == 0);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 0 && newCoordinate.getY() == 0);
     }
 
     /**
@@ -330,8 +335,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 4 y: 5",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 4 && newCoordinate.getY() == 5);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 4 && newCoordinate.getY() == 5);
     }
 
     /**
@@ -359,8 +365,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 2 y: 3",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 2 && newCoordinate.getY() == 3);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 2 && newCoordinate.getY() == 3);
     }
 
     /**
@@ -387,8 +394,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 7 y: 5",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 7 && newCoordinate.getY() == 5);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 7 && newCoordinate.getY() == 5);
     }
 
     /**
@@ -410,8 +418,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 8 y: 1",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 8 && newCoordinate.getY() == 1);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 8 && newCoordinate.getY() == 1);
     }
 
     /**
@@ -457,8 +466,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 0",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 0 && newCoordinate.getY() == 0);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 0 && newCoordinate.getY() == 0);
     }
 
     /**
@@ -532,8 +542,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 7 y: 5",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 7 && newCoordinate.getY() == 5);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 7 && newCoordinate.getY() == 5);
     }
 
     /**
@@ -561,8 +572,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 7 y: 5",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 7 && newCoordinate.getY() == 5);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 7 && newCoordinate.getY() == 5);
     }
 
     /**
@@ -589,8 +601,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 7 y: 5",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 7 && newCoordinate.getY() == 5);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 7 && newCoordinate.getY() == 5);
     }
 
     /**
@@ -612,8 +625,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 1 y: 6",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 1 && newCoordinate.getY() == 6);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 1 && newCoordinate.getY() == 6);
     }
 
     /**
@@ -636,8 +650,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 0",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 0 && newCoordinate.getY() == 0);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 0 && newCoordinate.getY() == 0);
     }
 
     /**
@@ -734,8 +749,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 8 y: 2",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 8 && newCoordinate.getY() == 2);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 8 && newCoordinate.getY() == 2);
     }
 
     /**
@@ -763,8 +779,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 1 y: 5",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 1 && newCoordinate.getY() == 5);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 1 && newCoordinate.getY() == 5);
     }
 
     /**
@@ -791,8 +808,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 7 y: 5",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 7 && newCoordinate.getY() == 5);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 7 && newCoordinate.getY() == 5);
     }
 
     /**
@@ -814,8 +832,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 1 y: 0",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 1 && newCoordinate.getY() == 0);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 1 && newCoordinate.getY() == 0);
     }
 
     /**
@@ -907,8 +926,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 0",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 0 && newCoordinate.getY() == 0);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 0 && newCoordinate.getY() == 0);
     }
 
     /**
@@ -936,8 +956,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 1 y: 2",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 1 && newCoordinate.getY() == 2);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 1 && newCoordinate.getY() == 2);
     }
 
     /**
@@ -965,8 +986,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 3 y: 4",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 3 && newCoordinate.getY() == 4);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 3 && newCoordinate.getY() == 4);
     }
 
     /**
@@ -993,8 +1015,9 @@ public class GlobalGeodeticCrsProfileTest {
                         dimensions, tileOrigin);
 
         assertTrue(String.format("Actual: x: %d y: %d\nExpected: x: 0 y: 4",
-                newCoordinate.getX(), newCoordinate.getY()),
-                newCoordinate.getX() == 0 && newCoordinate.getY() == 4);
+                                 newCoordinate.getX(),
+                                 newCoordinate.getY()),
+                   newCoordinate.getX() == 0 && newCoordinate.getY() == 4);
     }
 
     /**
@@ -1401,37 +1424,112 @@ public class GlobalGeodeticCrsProfileTest {
      * BoundingBox when all parameters are valid
      */
     @Test
-    public void testGetTileBounds() {
+    public void testGetTileBoundsLowerLeft()
+    {
         final int column = 3;
-        final int row = 7;
+        final int row = 5;
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(15, 19);
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
-        final TileMatrixDimensions dimensions = new TileMatrixDimensions(10, 10);
-        final BoundingBox box = new BoundingBox(0, 10, 0, 10);
+        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinX()/3,
+                                                        globalCrs.getBounds().getMinY()/4,
+                                                        globalCrs.getBounds().getMaxX()/2,
+                                                        globalCrs.getBounds().getMaxY());
+
         final TileOrigin origin = TileOrigin.LowerLeft;
 
-        final BoundingBox returnedBox = globalCrs.getTileBounds(column, row, box,
-                dimensions, origin);
+        final double crsTileWidth = boundingBox.getWidth()/dimensions.getWidth();
+        final double crsTileHeight = boundingBox.getHeight()/dimensions.getHeight();
 
-        /*
-         * Create the BoundingBox getTileBounds should return
-         */
-        final double tileCrsWidth = box.getWidth() / dimensions.getWidth();
-        final double tileCrsHeight = box.getHeight() / dimensions.getHeight();
-        final Coordinate<Integer> tileCoordinate = origin.transform(
-                TileOrigin.LowerLeft, column, row, dimensions);
+        final CrsCoordinate lowerLeftCoordinate = globalCrs.tileToCrsCoordinate(column, row, boundingBox, dimensions, origin);
 
-        final Coordinate<Double> boundsCorner = box.getBottomLeft();
-        final BoundingBox expected = new BoundingBox(boundsCorner.getX()
-                + (tileCoordinate.getX() + origin.getHorizontal())
-                * (tileCrsWidth), boundsCorner.getY()
-                + (tileCoordinate.getY() + origin.getVertical())
-                * (tileCrsHeight), boundsCorner.getX()
-                + (tileCoordinate.getX() + 1 + origin.getHorizontal())
-                * (tileCrsWidth), boundsCorner.getY()
-                + (tileCoordinate.getY() + 1 + origin.getVertical())
-                * (tileCrsHeight));
+        final BoundingBox boundsExpected = new BoundingBox(lowerLeftCoordinate.getX(),
+                                                           lowerLeftCoordinate.getY(),
+                                                           lowerLeftCoordinate.getX() + crsTileWidth,
+                                                           lowerLeftCoordinate.getY() + crsTileHeight);
 
-        assertTrue("GlobalGeodeticCrsProfile method getTileBounds did not return the expected BoundingBox", expected.equals(returnedBox));
+        assertTrue("ProportionalCrsProfile.getTileBounds did not return the expected values", TestUtility.boundingBoxesEqual(boundsExpected, globalCrs.getTileBounds(column, row, boundingBox, dimensions, origin), EPSILON));
+    }
+
+      @Test
+    public void testGetTileBoundsUpperRight()
+    {
+        final int column = 3;
+        final int row = 5;
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(15, 19);
+        final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
+        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinX()/3,
+                                                        globalCrs.getBounds().getMinY()/4,
+                                                        globalCrs.getBounds().getMaxX()/2,
+                                                        globalCrs.getBounds().getMaxY());
+
+        final TileOrigin origin = TileOrigin.UpperRight;
+
+        final double crsTileWidth = boundingBox.getWidth()/dimensions.getWidth();
+        final double crsTileHeight = boundingBox.getHeight()/dimensions.getHeight();
+
+        final CrsCoordinate upperRightCoordinate = globalCrs.tileToCrsCoordinate(column, row, boundingBox, dimensions, origin);
+
+        final BoundingBox boundsExpected = new BoundingBox(upperRightCoordinate.getX() - crsTileWidth,
+                                                           upperRightCoordinate.getY() - crsTileHeight,
+                                                           upperRightCoordinate.getX(),
+                                                           upperRightCoordinate.getY());
+
+        assertTrue("ProportionalCrsProfile.getTileBounds did not return the expected values", TestUtility.boundingBoxesEqual(boundsExpected, globalCrs.getTileBounds(column, row, boundingBox, dimensions, origin), EPSILON));
+    }
+
+    @Test
+    public void testGetTileBoundsLowerRight()
+    {
+        final int column = 3;
+        final int row = 5;
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(17, 5);
+        final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
+        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinX()/6,
+                                                        globalCrs.getBounds().getMinY()/4,
+                                                        globalCrs.getBounds().getMaxX()/5,
+                                                        globalCrs.getBounds().getMaxY());
+
+        final TileOrigin origin = TileOrigin.LowerRight;
+
+        final double crsTileWidth = boundingBox.getWidth()/dimensions.getWidth();
+        final double crsTileHeight = boundingBox.getHeight()/dimensions.getHeight();
+
+        final CrsCoordinate lowerRightCoordinate = globalCrs.tileToCrsCoordinate(column, row, boundingBox, dimensions, origin);
+
+        final BoundingBox boundsExpected = new BoundingBox(lowerRightCoordinate.getX() - crsTileWidth,
+                                                           lowerRightCoordinate.getY(),
+                                                           lowerRightCoordinate.getX(),
+                                                           lowerRightCoordinate.getY() + crsTileHeight);
+
+        assertTrue("ProportionalCrsProfile.getTileBounds did not return the expected values", TestUtility.boundingBoxesEqual(boundsExpected, globalCrs.getTileBounds(column, row, boundingBox, dimensions, origin), EPSILON));
+    }
+
+
+    @Test
+    public void testGetTileBoundsUpperLeft()
+    {
+        final int column = 3;
+        final int row = 5;
+        final TileMatrixDimensions dimensions = new TileMatrixDimensions(16, 8);
+        final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
+        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinX()/2,
+                                                        globalCrs.getBounds().getMinY()/4,
+                                                        globalCrs.getBounds().getMaxX()/6,
+                                                        globalCrs.getBounds().getMaxY());
+
+        final TileOrigin origin = TileOrigin.UpperLeft;
+
+        final double crsTileWidth = boundingBox.getWidth()/dimensions.getWidth();
+        final double crsTileHeight = boundingBox.getHeight()/dimensions.getHeight();
+
+        final CrsCoordinate upperLeftCoordinate = globalCrs.tileToCrsCoordinate(column, row, boundingBox, dimensions, origin);
+
+        final BoundingBox boundsExpected = new BoundingBox(upperLeftCoordinate.getX(),
+                                                           upperLeftCoordinate.getY() - crsTileHeight,
+                                                           upperLeftCoordinate.getX() + crsTileWidth,
+                                                           upperLeftCoordinate.getY());
+
+        assertTrue("ProportionalCrsProfile.getTileBounds did not return the expected values", TestUtility.boundingBoxesEqual(boundsExpected, globalCrs.getTileBounds(column, row, boundingBox, dimensions, origin), EPSILON));
     }
 
     /**
