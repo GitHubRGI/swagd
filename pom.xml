@@ -78,15 +78,37 @@
                         <aggregate>true</aggregate>
                         <instrumentation>
                             <excludes>
-                                <!-- ignore these areas in final report -->
+                                <!-- Ignore JMapViewer code -->
                                 <excludes>org/openstreetmap/**/*.class</excludes>
+
+                                <!-- Ignore RGISuite GUI code -->
                                 <excludes>com/rgi/suite/**/*.class</excludes>
+                                <excludes>com/rgi/res/rgisuite*.properties</excludes>
+                                <excludes>com/rgi/res/icons/*</excludes>
+                                <excludes>utility/PropertiesAction*.class</excludes>
+                                <excludes>utility/SimpleGridBagConstraints*.class</excludes>
+                                <excludes>utility/TileStoreUtility*.class</excludes>
+
+                                <!-- Ignore functional interfaces -->
                                 <excludes>com/rgi/common/util/functional/**/*.class</excludes>
+
+                                <!-- Ignore GeoViewer GUI code -->
                                 <excludes>com/rgi/view/**/*.class</excludes>
-                                <excludes>com/rgi/packager/**/*.class</excludes>
+
+                                <!-- Ignore the verifier app -->
                                 <excludes>com/rgi/verifiertool/**/*.class</excludes>
+
+                                <!-- Ignore tile cluster code -->
                                 <excludes>com/rgi/store/tiles/tilecluster/**/*.class</excludes>
+
+                                <!-- Ignore extension exception and interface -->
+                                <excludes>com/rgi/geopackage/extensions/implementation/BadImplementationException*.class</excludes>
+                                <excludes>com/rgi/geopackage/extensions/implementation/ImplementsExtension*.class</excludes>
+
+                                <!-- Ignore schema verifiers -->
                                 <excludes>com/rgi/geopackage/extensions/ExtensionsVerifier*.class</excludes>
+                                <excludes>com/rgi/geopackage/metadata/MetadataVerifier*.class</excludes>
+                                <excludes>com/rgi/geopackage/schema/SchemaVerifier*.class</excludes>
                             </excludes>
                         </instrumentation>
                     </configuration>

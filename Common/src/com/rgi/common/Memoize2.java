@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.common.util;
+package com.rgi.common;
 
 import com.rgi.common.Pair;
 
