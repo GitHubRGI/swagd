@@ -86,6 +86,8 @@
                                 <excludes>com/rgi/packager/**/*.class</excludes>
                                 <excludes>com/rgi/verifiertool/**/*.class</excludes>
                                 <excludes>com/rgi/store/tiles/tilecluster/**/*.class</excludes>
+                                <excludes>com/rgi/geopackage/extensions/implementation/BadImplementationException*.class</excludes>
+                                <excludes>com/rgi/geopackage/extensions/implementation/ImplementsExtension*.class</excludes>
                                 <excludes>com/rgi/geopackage/extensions/ExtensionsVerifier*.class</excludes>
                                 <excludes>com/rgi/geopackage/metadata/MetadataVerifier*.class</excludes>
                                 <excludes>com/rgi/geopackage/schema/SchemaVerifier*.class</excludes>
