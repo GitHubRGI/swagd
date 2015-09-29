@@ -98,9 +98,6 @@
                                 <!-- Ignore the verifier app -->
                                 <excludes>com/rgi/verifiertool/**/*.class</excludes>
 
-                                <!-- Ignore tile cluster code -->
-                                <excludes>com/rgi/store/tiles/tilecluster/**/*.class</excludes>
-
                                 <!-- Ignore extension exception and interface -->
                                 <excludes>com/rgi/geopackage/extensions/implementation/BadImplementationException*.class</excludes>
                                 <excludes>com/rgi/geopackage/extensions/implementation/ImplementsExtension*.class</excludes>
