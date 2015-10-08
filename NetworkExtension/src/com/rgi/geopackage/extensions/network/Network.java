@@ -27,7 +27,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.core.Content;
 
 /**
- * An object representation of an "rgi_network" GeoPackage extension network
+ * An object representation of an "SWAGD_network" GeoPackage extension network
  * table
  *
  * @author Luke Lambert
@@ -78,7 +78,7 @@ public class Network extends Content
     }
 
     /**
-     * The "rgi_network" GeoPackage extension network data type for all
+     * The "SWAGD_network" GeoPackage extension network data type for all
      * network tables
      */
     public static final String NetworkContentType = "network";

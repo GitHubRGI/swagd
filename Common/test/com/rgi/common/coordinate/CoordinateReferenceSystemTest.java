@@ -79,7 +79,7 @@ public class CoordinateReferenceSystemTest
     public void testToString()
     {
         final String name = "bob";
-        final String authority = "RGI";
+        final String authority = "SWAGD";
         final int id = 123;
         final CoordinateReferenceSystem crs = new CoordinateReferenceSystem(name, authority, id);
         assertTrue("CoordinateReferenceSysemt method toString() did not return expected string",crs.toString().equals(String.format("%s:%d - %s", authority, id, name)));
