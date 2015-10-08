@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Representation of a node from a {@link GeoPackage} "rgi_network" network
+ * Representation of a node from a {@link GeoPackage} "SWAGD_network" network
  *
  * @author Luke Lambert
  *

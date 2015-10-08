@@ -27,7 +27,7 @@ import com.rgi.geopackage.GeoPackage;
 
 /**
  * Representation of a <b>directional</b> edge from a {@link GeoPackage}
- * "rgi_network" network
+ * "SWAGD_network" network
  *
  * @author Luke Lambert
  *
