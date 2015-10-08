@@ -183,8 +183,8 @@ public class VerifierMainWindow extends Application
 
     private static void setIcon(final Stage stage)
     {
-        final Image rgiIcon = new Image(VerifierMainWindow.class.getResourceAsStream("RGI_Logo.png"));
-        stage.getIcons().add(rgiIcon);
+        final Image geopkgIcon = new Image(VerifierMainWindow.class.getResourceAsStream("geopkg.png"));
+        stage.getIcons().add(geopkgIcon);
     }
 
     private static void showApplicationInformation()
@@ -208,12 +208,14 @@ public class VerifierMainWindow extends Application
         about.setFont(Font.font(Style.getMainFont(), FontWeight.THIN, 14));
 
         final Stage infoStage = new Stage();
+        infoStage.setTitle(title.getText());
         final TextFlow text   = new TextFlow(title, company, about);
         final Scene infoScene = new Scene(text, 400, 220);
 
         text.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
 
         setIcon(infoStage);
+
         infoStage.setResizable(false);
         infoStage.setScene(infoScene);
         infoStage.show();
