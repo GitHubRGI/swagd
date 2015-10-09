@@ -62,7 +62,7 @@ public class CrsProfileFactoryTest
     @Test(expected = RuntimeException.class)
     public void runtimeException()
     {
-        final CoordinateReferenceSystem unsupportedCrs = new CoordinateReferenceSystem("Rgi-Authority", 1337);
+        final CoordinateReferenceSystem unsupportedCrs = new CoordinateReferenceSystem("SWAGD-Authority", 1337);
         CrsProfileFactory.create(unsupportedCrs);
         fail("Expected a runtime exception when trying to create a CrsProfile from a coordinate reference system that is not supported.");
     }

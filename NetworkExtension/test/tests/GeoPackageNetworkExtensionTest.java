@@ -71,7 +71,7 @@ public class GeoPackageNetworkExtensionTest
         final File testFile = TestUtility.getRandomFile(10);
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            final String networkName = "rgi_network";
+            final String networkName = "SWAGD_network";
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
             assertEquals(String.format("GeopackageNetworkExtensionName method getExtensionName returns %s instead of %s",
                                        networkExtension.getExtensionName(),

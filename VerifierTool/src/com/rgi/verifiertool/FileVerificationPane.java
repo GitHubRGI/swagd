@@ -187,7 +187,7 @@ public class FileVerificationPane extends TitledPane
 
     private String getVerificationIssues()
     {
-        final String header = String.format("RGi\u00AE GeoPackage Verifier Tool Version %s.\nGeoPackage Encoding Standard Specification Version %s.\nFile: %s\n\n\n",
+        final String header = String.format("SWAGD GeoPackage Verifier Tool Version %s.\nGeoPackage Encoding Standard Specification Version %s.\nFile: %s\n\n\n",
                                       VerifierMainWindow.rgiToolVersionNumber,
                                       VerifierMainWindow.geoPackageSpecificationVersionNumber,
                                       this.getText());

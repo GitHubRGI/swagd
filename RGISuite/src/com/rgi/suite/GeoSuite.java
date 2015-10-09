@@ -102,7 +102,7 @@ public final class GeoSuite
 		}
 		catch(final IllegalArgumentException | IOException exception)
 		{
-			JOptionPane.showMessageDialog(null, "RGI Suite", "Unable to load properties", JOptionPane.OK_OPTION);
+			JOptionPane.showMessageDialog(null, "SWAGD Suite", "Unable to load properties", JOptionPane.OK_OPTION);
 			System.out.println(exception.getMessage());
 		}
 
@@ -112,7 +112,7 @@ public final class GeoSuite
 		c.add(contentPanel, BorderLayout.CENTER);
 		c.add(navPanel, BorderLayout.SOUTH);
 
-		suiteWindow.setTitle("RGI Tiling and Packaging Suite");
+		suiteWindow.setTitle("SWAGD Tiling and Packaging Suite");
 		suiteWindow.setSize(540, 240);
 		suiteWindow.setResizable(false);
 		suiteWindow.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);

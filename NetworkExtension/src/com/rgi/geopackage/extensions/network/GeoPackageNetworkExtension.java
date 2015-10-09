@@ -47,12 +47,12 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of the RGI Network GeoPackage extension
+ * Implementation of the SWAGD Network GeoPackage extension
  *
  * @author Luke Lambert
  *
  */
-@ImplementsExtension(name = "rgi_network")
+@ImplementsExtension(name = "SWAGD_network")
 public class GeoPackageNetworkExtension extends ExtensionImplementation
 {
     /**
@@ -1262,7 +1262,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                " UNIQUE (node_id));";   // An index wasn't being automatically created for "node_id"
     }
 
-    private static final String ExtensionName             = "rgi_network";
+    private static final String ExtensionName             = "SWAGD_network";
     private static final String NodeAttributesTableSuffix = "_node_attributes";
 
     /**
