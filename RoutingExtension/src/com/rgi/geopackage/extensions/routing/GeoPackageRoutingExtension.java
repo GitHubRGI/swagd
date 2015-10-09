@@ -51,7 +51,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Implementation of the RGI Routing GeoPackage extension
+ * Implementation of the SWAGD Routing GeoPackage extension
  *
  * @author Luke Lambert
  *
@@ -100,7 +100,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
     @Override
     public String getExtensionName()
     {
-        return "rgi_routing";
+        return "SWAGD_routing";
     }
 
     @Override
