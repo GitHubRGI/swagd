@@ -177,7 +177,7 @@ public class PackagerWindow extends NavigationWindow
     {
         this.inputPanel.removeAll();
 
-        this.inputPanel.add(new JLabel("File:"),      new SimpleGridBagConstraints(0, 0, false));
+        this.inputPanel.add(new JLabel("Select Tile Source:"),      new SimpleGridBagConstraints(0, 0, false));
         this.inputPanel.add(this.inputFileName,       new SimpleGridBagConstraints(1, 0, true));
         this.inputPanel.add(this.inputFileNameButton, new SimpleGridBagConstraints(2, 0, false));
 
