@@ -98,8 +98,9 @@
                                 <!-- Ignore the verifier app -->
                                 <excludes>com/rgi/verifiertool/**/*.class</excludes>
 
-                                <!-- Ignore extension exception and interface -->
+                                <!-- Ignore extension exception, abstract class, and interface -->
                                 <excludes>com/rgi/geopackage/extensions/implementation/BadImplementationException*.class</excludes>
+                                <excludes>com/rgi/geopackage/extensions/implementation/ExtensionImplementation*.class</excludes>
                                 <excludes>com/rgi/geopackage/extensions/implementation/ImplementsExtension*.class</excludes>
 
                                 <!-- Ignore schema verifiers -->
