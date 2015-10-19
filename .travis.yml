@@ -3,7 +3,7 @@ jdk:
     - oraclejdk8
 before_install:
     - bash gdal_1.11.1_jni.sh
-    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/swig/java/
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/lib/swig/java/
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
     - export GDAL_DATA=$GDAL_DATA:/usr/local/share/gdal/
 install:
