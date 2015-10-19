@@ -2,11 +2,16 @@
 set -e
 # check to see if the gdal_1.11.1_jni folder is empty
 if [ ! -d "$HOME/gdal/lib" ]; then
+    # get gdal from osgeo
     wget http://download.osgeo.org/gdal/1.11.1/gdal-1.11.1.tar.gz;
+    # untar the source quietly
     tar xzf gdal-1.11.1.tar.gz;
-    ls -al $HOME/gdal;
-#    cd gdal-1.11.1 && ./configure --prefix=$HOME/gdal && make && make install;
-#    cd $HOME/gdal/lib/swig/java && make;
+    # configure and make/install gdal
+    cd gdal-1.11.1 && ./configure --prefix=$HOME/gdal && make && make install;
+    # make the java bindings
+    cd swig/java && make;
+    # export the java bindings to $HOME/gdal
+    cd .. && mkdir -p $HOME/gdal/swig && cp -r java $HOME/gdal/swig;
 else
     echo 'Using cached directory.';
 fi
