@@ -5,7 +5,7 @@ if [ -d "$HOME/gdal/lib/swig/java" ]; then
     echo "swig dir found"
 else
     echo "swig dir not found"
-    ll $HOME/gdal
+    ls -al $HOME/gdal
 fi
 
 #if [ ! -d "$HOME/gdal/lib" ]; then
