@@ -1,12 +1,10 @@
-package utility.tests;
+package utility;
 
 import static org.junit.Assert.assertEquals;
 
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.junit.Test;
-
-import utility.GdalError;
 
 public class GdalErrorTest
 {

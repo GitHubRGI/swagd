@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 //@formatter:off
-package com.rgi.g2t.tests;
+package com.rgi.g2t;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
