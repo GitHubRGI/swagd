@@ -2,7 +2,10 @@ language: java
 jdk:
     - oraclejdk8
 before_install:
-    - sudo apt-get install gdal-bin
+    - bash gdal_1.11.1_jni.sh
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/swig/java/
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
+    - export GDAL_DATA=$GDAL_DATA:/usr/local/share/gdal/
 install:
     - ./install-deps-linux.sh
     - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
@@ -13,3 +16,4 @@ after_success:
 cache:
     directories:
         - $HOME/.m2
+        - $HOME/gdal
