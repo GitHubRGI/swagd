@@ -1,6 +1,8 @@
 language: java
 jdk:
     - oraclejdk8
+before_install:
+    - sudo apt-get install gdal-bin
 install:
     - ./install-deps-linux.sh
     - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
