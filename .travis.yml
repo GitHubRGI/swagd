@@ -1,8 +1,4 @@
 language: java
-addons:
-    apt:
-        packages:
-            - swig2.0
 jdk:
     - oraclejdk8
 before_install:
