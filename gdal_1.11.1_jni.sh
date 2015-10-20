@@ -7,9 +7,17 @@ if [ ! -d "$HOME/gdal/lib" ]; then
     # untar the source quietly
     tar xzf gdal-1.11.1.tar.gz;
     # configure and make/install gdal
+    echo 'Making GDAL...';
     cd gdal-1.11.1 && ./configure --prefix=$HOME/gdal && make && make install;
     # make the java bindings
+    echo 'Making SWIG bindings for Java...';
+    # Set java env vars
+    echo $JAVA_INCLUDE
+    locate jni.h
+    export JAVA_INCLUDE=-I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux;
     cd swig/java && make;
+    echo $JAVA_INCLUDE
+    echo $JAVA_HOME
     # export the java bindings to $HOME/gdal
     cd .. && mkdir -p $HOME/gdal/swig && cp -r java $HOME/gdal/swig;
 else
