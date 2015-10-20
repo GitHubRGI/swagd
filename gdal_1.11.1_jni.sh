@@ -8,15 +8,11 @@ if [ ! -d "$HOME/gdal/lib" ]; then
     tar xzf gdal-1.11.1.tar.gz;
     # configure and make/install gdal
     echo 'Making GDAL...';
-    cp java.opt gdal-1.11.1/swig/java
     cd gdal-1.11.1 && ./configure --prefix=$HOME/gdal && make && make install;
     # make the java bindings
     echo 'Making SWIG bindings for Java...';
     # Set java env vars
-    export JAVA_HOME=/usr/lib/jvm/java-8-oracle
-    export JAVA_INCLUDE=-I$JAVA_HOME/include:$JAVA_INCLUDE;
-    export JAVA_INCLUDE=-I$JAVA_HOME/include/linux:$JAVA_INCLUDE;
-    cd swig/java && make;
+    cd swig/java && make -I/usr/lib/jvm/java-8-oracle/include -I/usr/lib/jvm/java-8-oracle/include/linux;
     # export the java bindings to $HOME/gdal
     cd .. && mkdir -p $HOME/gdal/swig && cp -r java $HOME/gdal/swig;
 else
