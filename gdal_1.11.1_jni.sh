@@ -13,7 +13,6 @@ if [ ! -d "$HOME/gdal/lib" ]; then
     echo 'Making SWIG bindings for Java...';
     # Set java env vars
     echo $JAVA_INCLUDE
-    locate jni.h
     export JAVA_INCLUDE=-I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux;
     cd swig/java && make;
     echo $JAVA_INCLUDE
