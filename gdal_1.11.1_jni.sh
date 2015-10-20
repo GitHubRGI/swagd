@@ -1,5 +1,8 @@
 #!/bin/sh
 set -e
+if [ ! -e "/usr/lib/jvm/java-8-oracle/include/jni.h" ]; then
+    exit 1
+fi
 # check to see if the gdal_1.11.1_jni folder is empty
 if [ ! -d "$HOME/gdal/lib" ]; then
     # get gdal from osgeo
