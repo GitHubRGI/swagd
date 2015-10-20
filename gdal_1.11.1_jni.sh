@@ -12,7 +12,6 @@ if [ ! -d "$HOME/gdal/lib" ]; then
     # make the java bindings
     echo 'Making SWIG bindings for Java...';
     # Set java env vars
-    jdk_switcher use oraclejdk8
     export JAVA_HOME=/usr/lib/jvm/java-8-oracle
     export JAVA_INCLUDE=-I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux;
     cd swig/java && make;
