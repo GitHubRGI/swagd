@@ -1,8 +1,5 @@
 #!/bin/sh
 set -e
-if [ ! -e "/usr/lib/jvm/java-8-oracle/include/jni.h" ]; then
-    exit 1
-fi
 # check to see if the gdal_1.11.1_jni folder is empty
 if [ ! -d "$HOME/gdal/lib" ]; then
     # get gdal from osgeo
@@ -11,6 +8,7 @@ if [ ! -d "$HOME/gdal/lib" ]; then
     tar xzf gdal-1.11.1.tar.gz;
     # configure and make/install gdal
     echo 'Making GDAL...';
+    cp java.opt gdal-1.11.1/swig/java
     cd gdal-1.11.1 && ./configure --prefix=$HOME/gdal && make && make install;
     # make the java bindings
     echo 'Making SWIG bindings for Java...';
