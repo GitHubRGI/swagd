@@ -11,6 +11,7 @@ before_install:
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
     - export GDAL_DATA=$GDAL_DATA:/usr/local/share/gdal
     - export PATH=$PATH:RGISuite/lib
+    - export PATH=$PATH:$HOME/gdal
 install:
     - ./install-deps-linux.sh
     - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
