@@ -23,7 +23,7 @@
 
 package com.rgi.geopackage.extensions.routing.router.astar;
 
-import com.rgi.common.util.Memoize2;
+import com.rgi.common.Memoize2;
 import com.rgi.geopackage.extensions.network.AttributeDescription;
 import com.rgi.geopackage.extensions.network.AttributedEdge;
 import com.rgi.geopackage.extensions.network.AttributedNode;
