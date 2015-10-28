@@ -3,17 +3,14 @@ addons:
     apt:
         packages:
             - swig
-            - tree
 jdk:
     - oraclejdk8
 before_install:
     - bash gdal_1.11.1_jni.sh
-    - tree $HOME/gdal
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:RGISuite/lib
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/lib
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/swig/java
-    - ls $HOME/gdal/data
-    - export GDAL_DATA=$GDAL_DATA:$HOME/gdal/data
+    - export GDAL_DATA=$GDAL_DATA:$HOME/gdal/share/gdal
     - export PATH=$PATH:RGISuite/lib
     - export PATH=$PATH:$HOME/gdal/lib
 install:
