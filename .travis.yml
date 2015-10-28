@@ -1,6 +1,15 @@
 language: java
+addons:
+    apt:
+        packages:
+            - swig
 jdk:
     - oraclejdk8
+before_install:
+    - bash gdal_1.11.1_jni.sh
+    - export LD_LIBRARY_PATH=RGISuite/lib:$HOME/gdal/lib:$HOME/gdal/swig/java
+    - export GDAL_DATA=$HOME/gdal/share/gdal
+    - export PATH=$PATH:RGISuite/lib:$HOME/gdal/lib
 install:
     - ./install-deps-linux.sh
     - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
@@ -11,3 +20,4 @@ after_success:
 cache:
     directories:
         - $HOME/.m2
+        - $HOME/gdal

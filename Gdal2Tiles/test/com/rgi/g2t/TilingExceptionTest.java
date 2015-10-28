@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.g2t.tests;
+package com.rgi.g2t;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;

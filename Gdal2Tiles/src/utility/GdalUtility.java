@@ -139,11 +139,13 @@ public final class GdalUtility
 
         try
         {
-            final Dataset openDataset = GdalUtility.doesDataSetMatchCRS(dataset, coordinateReferenceSystem) ? GdalUtility.warpDatasetToSrs(dataset,
-                    GdalUtility.getSpatialReference(dataset),
-                    GdalUtility.getSpatialReference(coordinateReferenceSystem)) : GdalUtility.reprojectDatasetToSrs(dataset,
-                    GdalUtility.getSpatialReference(dataset),
-                    GdalUtility.getSpatialReference(coordinateReferenceSystem));
+            final Dataset openDataset = GdalUtility.doesDataSetMatchCRS(dataset, coordinateReferenceSystem)
+                    ? GdalUtility.warpDatasetToSrs(dataset,
+                                                   GdalUtility.getSpatialReference(dataset),
+                                                   GdalUtility.getSpatialReference(coordinateReferenceSystem))
+                    : GdalUtility.reprojectDatasetToSrs(dataset,
+                                                        GdalUtility.getSpatialReference(dataset),
+                                                        GdalUtility.getSpatialReference(coordinateReferenceSystem));
 
             if(openDataset == null)
             {
@@ -1089,6 +1091,11 @@ public final class GdalUtility
                                                       fromSrs.ExportToWkt(),
                                                       toSrs.ExportToWkt(),
                                                       gdalconstConstants.GRA_Average);
+
+        if(temp == null)
+        {
+            throw new RuntimeException(new GdalError().getMessage());
+        }
 
         output.SetGeoTransform(temp.GetGeoTransform());
         temp.delete();

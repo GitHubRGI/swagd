@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 // @formatter: off
-package utility.tests;
+package utility;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
@@ -46,7 +46,6 @@ import org.gdal.osr.SpatialReference;
 import org.gdal.osr.osr;
 import org.junit.Before;
 import org.junit.Test;
-import utility.GdalUtility;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -2517,10 +2516,10 @@ public class GdalUtilityTest
     private boolean areBoxesEqual(final BoundingBox b1, final BoundingBox b2)
     {
         final double epsilon = 0.001;
-        return (b1.getMaxX() == b2.getMaxX() || Math.abs(b1.getMaxX() - b2.getMaxX()) < epsilon) &&
-               (b1.getMaxY() == b2.getMaxY() || Math.abs(b1.getMaxY() - b2.getMaxY()) < epsilon) &&
-               (b1.getMinX() == b2.getMinX() || Math.abs(b1.getMinX() - b2.getMinX()) < epsilon) &&
-               (b1.getMinY() == b2.getMinY() || Math.abs(b1.getMinY() - b2.getMinY()) < epsilon);
+        return (b1.getMaxX() == b2.getMaxX() || StrictMath.abs(b1.getMaxX() - b2.getMaxX()) < epsilon) &&
+               (b1.getMaxY() == b2.getMaxY() || StrictMath.abs(b1.getMaxY() - b2.getMaxY()) < epsilon) &&
+               (b1.getMinX() == b2.getMinX() || StrictMath.abs(b1.getMinX() - b2.getMinX()) < epsilon) &&
+               (b1.getMinY() == b2.getMinY() || StrictMath.abs(b1.getMinY() - b2.getMinY()) < epsilon);
     }
 
 }

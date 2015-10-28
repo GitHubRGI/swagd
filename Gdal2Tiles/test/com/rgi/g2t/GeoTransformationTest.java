@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.g2t.tests;
+package com.rgi.g2t;
 
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
