@@ -3,6 +3,8 @@ addons:
     apt:
         packages:
             - swig
+            - proj-bin
+            - proj-data
 jdk:
     - oraclejdk8
 before_install:
