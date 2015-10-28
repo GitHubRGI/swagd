@@ -36,6 +36,13 @@ import java.util.function.BiFunction;
  */
 public class Memoize2Test
 {
+    @Test(expected=IllegalArgumentException.class)
+    public void testMemoizeNull()
+    {
+        final Memoize2<String, String, Integer> stringAddMemoizer = new Memoize2<>(null);
+        fail("Null object should not be passed into Memoize.");
+    }
+
     @Test
     public void testMemoizeGetOnce()
     {
