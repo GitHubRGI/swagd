@@ -5,6 +5,7 @@ addons:
             - swig
             - proj-bin
             - proj-data
+            - libproj-dev
 jdk:
     - oraclejdk8
 before_install:
