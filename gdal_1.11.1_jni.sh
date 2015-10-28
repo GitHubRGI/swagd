@@ -6,7 +6,6 @@ if [ ! -d "$HOME/gdal/lib" ]; then
     wget http://download.osgeo.org/gdal/1.11.1/gdal-1.11.1.tar.gz;
     # untar the source quietly
     tar xzf gdal-1.11.1.tar.gz;
-    cp java.opt gdal-1.11.1/swig/java
     # configure and make/install gdal
     echo 'Making GDAL...';
     cd gdal-1.11.1 && ./configure --prefix=$HOME/gdal --without-libtool && make && make install;
