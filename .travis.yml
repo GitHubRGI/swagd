@@ -10,7 +10,7 @@ before_install:
     - bash gdal_1.11.1_jni.sh
     - ls -al $HOME/gdal/swig/java
     - ls -al $HOME/gdal/lib
-    - tree /usr | grep libproj
+    - tree /usr
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:RGISuite/lib
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/lib
