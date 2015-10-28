@@ -78,6 +78,10 @@
                         <aggregate>true</aggregate>
                         <instrumentation>
                             <excludes>
+                                <!-- Ignore some exceptions -->
+                                <excludes>com/rgi/store/tiles/TileStoreException*.class</excludes>
+                                <excludes>com/rgi/g2t/TilingException*.class</excludes>
+
                                 <!-- Ignore JMapViewer code -->
                                 <excludes>org/openstreetmap/**/*.class</excludes>
 
