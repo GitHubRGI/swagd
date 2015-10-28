@@ -7,13 +7,9 @@ jdk:
     - oraclejdk8
 before_install:
     - bash gdal_1.11.1_jni.sh
-    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:RGISuite/lib
-    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/lib
-    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/swig/java
+    - export LD_LIBRARY_PATH=RGISuite/lib:$HOME/gdal/lib:$HOME/gdal/swig/java
     - export GDAL_DATA=$HOME/gdal/share/gdal
-    - ls $GDAL_DATA
-    - export PATH=$PATH:RGISuite/lib
-    - export PATH=$PATH:$HOME/gdal/lib
+    - export PATH=$PATH:RGISuite/lib:$HOME/gdal/lib
 install:
     - ./install-deps-linux.sh
     - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
