@@ -8,9 +8,7 @@ jdk:
     - oraclejdk8
 before_install:
     - bash gdal_1.11.1_jni.sh
-    - ls -al $HOME/gdal/swig/java
-    - ls -al $HOME/gdal/lib
-    - whereis libproj.so.0
+    - ln -s /usr/lib/libproj.so.0 $HOME/gdal/lib/libproj.so 
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:RGISuite/lib
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/lib
