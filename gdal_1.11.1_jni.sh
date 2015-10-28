@@ -16,7 +16,7 @@ if [ ! -d "$HOME/gdal/lib" ]; then
     cd swig/java && make -I/usr/lib/jvm/java-8-oracle/include -I/usr/lib/jvm/java-8-oracle/include/linux;
     # export the java bindings to $HOME/gdal
     cd .. && mkdir -p $HOME/gdal/swig && cp -r java $HOME/gdal/swig;
-    ln -s /usr/lib/libproj.so.0 $HOME/gdal/lib/libproj.so
+    ln -s /usr/lib/libproj.so.0.7.0 $HOME/gdal/lib/libproj.so
 else
     echo 'Using cached directory.';
 fi
