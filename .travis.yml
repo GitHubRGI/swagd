@@ -12,7 +12,7 @@ before_install:
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:RGISuite/lib
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/lib
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/swig/java
-    - export GDAL_DATA=$GDAL_DATA:/usr/local/share/gdal
+    - export GDAL_DATA=$GDAL_DATA:$HOME/gdal/data
     - export PATH=$PATH:RGISuite/lib
     - export PATH=$PATH:$HOME/gdal/lib
 install:
