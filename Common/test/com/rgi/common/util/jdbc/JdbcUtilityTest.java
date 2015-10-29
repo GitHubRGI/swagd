@@ -1,8 +1,7 @@
 package com.rgi.common.util.jdbc;
 
-import junit.framework.Assert;
+import com.mockrunner.mock.jdbc.MockConnection;
 import org.junit.Test;
-import org.junit.internal.runners.statements.Fail;
 
 import java.io.File;
 import java.nio.file.FileSystems;
@@ -13,7 +12,10 @@ import java.util.Random;
 
 import static org.junit.Assert.fail;
 
+
+
 /**
+ *
  * Created by justin.rhee on 10/29/2015.
  */
 public class JdbcUtilityTest {
@@ -22,7 +24,6 @@ public class JdbcUtilityTest {
 
     private final Random randomGenerator = new Random();
 
-    private final File testFile = this.getRandomFile(5);
 
 
     @Test(expected = IllegalArgumentException.class)
@@ -36,12 +37,13 @@ public class JdbcUtilityTest {
     }
 
 
-
-    //TODO find out what to put for database connection
     @Test(expected = IllegalArgumentException.class)
     public void selectOneNullStringTest() throws Exception
     {
-        final Connection con = getConnection(this.testFile.getAbsolutePath());
+        final File testFile = this.getRandomFile(4);
+        testFile.createNewFile();
+
+        final Connection con = new MockConnection();
         final boolean result = JdbcUtility.selectOne(con,
                 null,
                 preparedStatement -> preparedStatement.setString(1, "tiles"),
@@ -55,7 +57,7 @@ public class JdbcUtilityTest {
 
         do
         {
-            testFile = new File(String.format(FileSystems.getDefault().getPath(this.getRandomString(length)).toString() + ".gpkg"));
+            testFile = new File(String.format(FileSystems.getDefault().getPath(this.getRandomString(length)) + ".gpkg"));
         }
         while (testFile.exists());
 
@@ -73,13 +75,12 @@ public class JdbcUtilityTest {
         return new String(text);
     }
 
-    private static Connection getConnection(final String filePath) throws Exception
+    private Connection getConnection(final String filePath) throws Exception
     {
         Class.forName("org.sqlite.JDBC"); // Register the driver
 
         return DriverManager.getConnection("jdbc:sqlite:" + filePath);
     }
-
 
 
 }
