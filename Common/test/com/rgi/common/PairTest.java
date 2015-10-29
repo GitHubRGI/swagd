@@ -33,6 +33,7 @@ public class PairTest
         assertEquals("Get left should return left value.", 2, (int)integerPair.getRight());
     }
 
+    @SuppressWarnings("EqualsWithItself")
     @Test
     public void testEqualsBranchOne()
     {
@@ -40,6 +41,7 @@ public class PairTest
         assertTrue("Pairs should be equal.", stringIntegerPair.equals(stringIntegerPair));
     }
 
+    @SuppressWarnings("EqualsBetweenInconvertibleTypes")
     @Test
     public void testEqualsBranchTwo()
     {
@@ -48,6 +50,7 @@ public class PairTest
         assertFalse("Pairs should be equal.", stringIntegerPair.equals(notEqualObject));
     }
 
+    @SuppressWarnings("ObjectEqualsNull")
     @Test
     public void testEqualsBranchThree()
     {
