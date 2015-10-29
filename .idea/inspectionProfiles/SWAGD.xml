@@ -1073,7 +1073,7 @@
     <inspection_tool class="SimplifiableIfStatement" enabled="true" level="WARNING" enabled_by_default="false">
       <scope name="Problems" level="WARNING" enabled="true" />
     </inspection_tool>
-    <inspection_tool class="SimplifiableJUnitAssertion" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="SimplifiableJUnitAssertion" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="Since15" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="SingleCharacterStartsWith" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="SingleClassImport" enabled="false" level="ERROR" enabled_by_default="false" />
