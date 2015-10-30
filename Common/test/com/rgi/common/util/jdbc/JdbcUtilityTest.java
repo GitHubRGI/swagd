@@ -7,9 +7,11 @@ import java.io.File;
 import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
@@ -24,11 +26,8 @@ public class JdbcUtilityTest {
 
     private final Random randomGenerator = new Random();
 
-
-
     @Test(expected = IllegalArgumentException.class)
-    public void selectOneNullConectionTest() throws SQLException
-    {
+    public void selectOneNullConectionTest() throws SQLException {
         final boolean result = JdbcUtility.selectOne(null,
                 "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;",
                 preparedStatement -> preparedStatement.setString(1, "tiles"),
@@ -38,8 +37,7 @@ public class JdbcUtilityTest {
 
 
     @Test(expected = IllegalArgumentException.class)
-    public void selectOneNullStringTest() throws Exception
-    {
+    public void selectOneNullStringTest() throws Exception {
         final File testFile = this.getRandomFile(4);
         testFile.createNewFile();
 
@@ -51,13 +49,66 @@ public class JdbcUtilityTest {
         fail("selectOne should have thrown an IllegalArgumentException for a null or empty String.");
     }
 
+    @SuppressWarnings("ConstantConditions")
+    @Test(expected = IllegalArgumentException.class)
+    public void selectOneNullResultSetFunctionTest() throws Exception {
+        final File testFile = this.getRandomFile(2);
+        testFile.createNewFile();
+
+        final Connection con = new MockConnection();
+
+        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
+
+        final boolean result = JdbcUtility.selectOne(con, str,
+                preparedStatement -> preparedStatement.setString(1, "tiles"),
+                null);
+        fail("selectOne should have thrown an IllegalArgumentException for a null resultMapper.");
+    }
+
+
+    //TODO fix the tests for preparedStatement section
+//    @SuppressWarnings("ConstantConditions")
+//    @Test
+//    public void selectOnePreparedStatementTest() throws Exception {
+//        final File testFile = this.getRandomFile(6);
+//        testFile.createNewFile();
+//
+//        final Connection con = new MockConnection();
+//
+//        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
+//
+//        final boolean result = JdbcUtility.selectOne(con, str,
+//                preparedStatement -> preparedStatement.setString(1, "tiles"),
+//                resultSet -> resultSet.getInt(1)) > 0;
+//
+//        fail("selectOne should have thrown an IllegalArgumentException for a null resultMapper.");
+//
+//    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private File getRandomFile(final int length)
     {
         File testFile;
 
         do
         {
-            testFile = new File(String.format(FileSystems.getDefault().getPath(this.getRandomString(length)) + ".gpkg"));
+            testFile = new File(FileSystems.getDefault().getPath(this.getRandomString(length)) + ".gpkg");
         }
         while (testFile.exists());
 
@@ -74,13 +125,5 @@ public class JdbcUtilityTest {
         }
         return new String(text);
     }
-
-    private Connection getConnection(final String filePath) throws Exception
-    {
-        Class.forName("org.sqlite.JDBC"); // Register the driver
-
-        return DriverManager.getConnection("jdbc:sqlite:" + filePath);
-    }
-
 
 }
