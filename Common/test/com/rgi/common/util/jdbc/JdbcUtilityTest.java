@@ -1,19 +1,17 @@
 package com.rgi.common.util.jdbc;
 
 import com.mockrunner.mock.jdbc.MockConnection;
+import com.rgi.common.Pair;
+import com.sun.org.apache.xalan.internal.utils.XMLSecurityManager;
 import org.junit.Test;
 
 import java.io.File;
 import java.nio.file.FileSystems;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Arrays;
 import java.util.Random;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import static org.junit.Assert.*;
 
 
 /**
@@ -65,42 +63,62 @@ public class JdbcUtilityTest {
         fail("selectOne should have thrown an IllegalArgumentException for a null resultMapper.");
     }
 
+    //This portion tests the first update function block
+    @Test(expected = IllegalArgumentException.class)
+    public void update1NullDatabaseConnectionTest() throws Exception
+    {
+        final File testFile = this.getRandomFile(2);
+        testFile.createNewFile();
 
-    //TODO fix the tests for preparedStatement section
-//    @SuppressWarnings("ConstantConditions")
-//    @Test
-//    public void selectOnePreparedStatementTest() throws Exception {
-//        final File testFile = this.getRandomFile(6);
-//        testFile.createNewFile();
+        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
+
+        JdbcUtility.update(null, str);
+        fail("update should have thrown an IllegalArgumentException for a null connection");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void update1NullStringTest() throws Exception
+    {
+        final File testFile = this.getRandomFile(5);
+        testFile.createNewFile();
+
+        final Connection con = new MockConnection();
+
+        JdbcUtility.update(con, null);
+        fail("update should have thrown an IllegalArgumentException for a null string");
+    }
+
+
+
+    @Test(expected = AssertionError.class)
+    public void updatePreparedStatementCatchTest() throws Exception
+    {
+        final File testFile = this.getRandomFile(4);
+        testFile.createNewFile();
+        final Connection con = new MockConnection();
+
+        final String str = "Hello! what is up my mans.";
+
+        JdbcUtility.update(con, str);
+        fail("update should return a sql string");
+    }
 //
+//    @Test(expected = IllegalArgumentException.class)
+//    public void tryExecuteUpdateTest() throws Exception
+//    {
+//        final File testFile = this.getRandomFile(7);
+//        testFile.createNewFile();
 //        final Connection con = new MockConnection();
 //
 //        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
 //
-//        final boolean result = JdbcUtility.selectOne(con, str,
-//                preparedStatement -> preparedStatement.setString(1, "tiles"),
-//                resultSet -> resultSet.getInt(1)) > 0;
-//
-//        fail("selectOne should have thrown an IllegalArgumentException for a null resultMapper.");
+//        try(final Statement statement = con.createStatement())
+//        {
+//            statement.executeUpdate(str);
+//        }
 //
 //    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//
 
     private File getRandomFile(final int length)
     {
@@ -127,3 +145,27 @@ public class JdbcUtilityTest {
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
