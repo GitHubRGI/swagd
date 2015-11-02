@@ -356,7 +356,7 @@ public class GdalUtilityTest
      */
     @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     @Test
-    public void verifyGetSpatailReferenceFromFile()
+    public void verifyGetSpatialReferenceFromFile()
     {
         for(final GdalUtilityTest.ImageDataProperties imageData: this.imageList)
         {
