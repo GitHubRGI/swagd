@@ -69,7 +69,7 @@ public class NodeExitGetterTest
         }
     }
 
-    @Test
+    /*@Test
     public void testProcessResult()
     {
         final Supplier<String> sqlSupplier = () ->
@@ -86,7 +86,7 @@ public class NodeExitGetterTest
         {
             fail("Could not create a new node exit getter.");
         }
-    }
+    }*/
 
     private GeoPackageNetworkExtension networkExtension;
     private Connection connection;
