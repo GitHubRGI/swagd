@@ -99,7 +99,7 @@ public class VerifierMainWindow extends Application
         bottomGrid.setStyle(String.format("-fx-background-color: %s;", Style.greyBlue.getHex()));
         layout.setStyle(String.format("-fx-background-color: %s;", Style.brightBlue.getHex()));
 
-        primaryStage.setTitle("RGi GeoPackage Verifier Tool");
+        primaryStage.setTitle("SWAGD GeoPackage Verifier Tool");
 
         setIcon(primaryStage);
 
@@ -183,20 +183,20 @@ public class VerifierMainWindow extends Application
 
     private static void setIcon(final Stage stage)
     {
-        final Image rgiIcon = new Image(VerifierMainWindow.class.getResourceAsStream("RGI_Logo.png"));
-        stage.getIcons().add(rgiIcon);
+        final Image geopkgIcon = new Image(VerifierMainWindow.class.getResourceAsStream("geopkg.png"));
+        stage.getIcons().add(geopkgIcon);
     }
 
     private static void showApplicationInformation()
     {
         //create title and set font
-        final Text title  = new Text("RGi\u00AE GeoPackage Verifier Tool\n");
+        final Text title  = new Text("SWAGD GeoPackage Verifier Tool\n");
         title.setFill(Style.brightBlue.toColor());
         title.setFont(Font.font(Style.getMainFont(), FontWeight.EXTRA_BOLD, 20));
         title.setTextAlignment(TextAlignment.CENTER);
 
         //set company name and font
-        final Text company = new Text("Reinventing Geospatial Inc.\u00AE\n\n");
+        final Text company = new Text("SWAGD\n\n");
         company.setFont(Font.font(Style.getMainFont(), FontWeight.BOLD, 18));
         company.setFill(Style.darkAquaBlue.toColor());
 
@@ -204,16 +204,18 @@ public class VerifierMainWindow extends Application
         final Text about = new Text(String.format("This application will verify GeoPackages with Raster Tile data for the GeoPackage Encoding Standard Version 1.0.  "
                                   + "This Verification Tool will test the GeoPackage Core, GeoPackage Tiles, GeoPackage Extensions, GeoPackage Schema, "
                                   + "and GeoPackage Metadata requirements.  This will test a GeoPackage file against the Requirements referenced in the GeoPackage Encoding Standard.   "
-                                  + "This will not verify GeoPackages with Feature data. RGi\u00AE GeoPackage Verifier Tool Version %s", rgiToolVersionNumber));
+                                  + "This will not verify GeoPackages with Feature data. SWAGD GeoPackage Verifier Tool Version %s", rgiToolVersionNumber));
         about.setFont(Font.font(Style.getMainFont(), FontWeight.THIN, 14));
 
         final Stage infoStage = new Stage();
+        infoStage.setTitle(title.getText());
         final TextFlow text   = new TextFlow(title, company, about);
         final Scene infoScene = new Scene(text, 400, 220);
 
         text.setStyle(String.format("-fx-background-color: %s;", Style.white.getHex()));
 
         setIcon(infoStage);
+
         infoStage.setResizable(false);
         infoStage.setScene(infoScene);
         infoStage.show();

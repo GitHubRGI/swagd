@@ -26,7 +26,9 @@ package tms;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
+import com.rgi.store.tiles.TileHandle;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -219,8 +221,11 @@ public class TmsReaderTest
 
         try(final TmsReader reader = new TmsReader(crs, tmsDir))
         {
-            final BoundingBox bounds = reader.stream(0).findFirst().get().getBounds();
-            assertTrue(CrsProfileFactory.create(crs).getBounds().equals(bounds));
+            try(final Stream<TileHandle> stream = reader.stream(0))
+            {
+                final BoundingBox bounds = stream.findFirst().get().getBounds();
+                assertTrue(CrsProfileFactory.create(crs).getBounds().equals(bounds));
+            }
         }
     }
 }

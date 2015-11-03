@@ -37,6 +37,8 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -74,7 +76,7 @@ import com.rgi.store.tiles.TileStoreException;
  * @author Luke D. Lambert
  * @author Steven D. Lander
  */
-public class GdalUtility
+public final class GdalUtility
 {
     static
     {
@@ -92,6 +94,11 @@ public class GdalUtility
 
         osr.UseExceptions();
         gdal.AllRegister(); // Register GDAL extensions
+    }
+
+    private GdalUtility()
+    {
+        // Empty constructor for private class
     }
 
     /**
@@ -132,21 +139,42 @@ public class GdalUtility
 
         try
         {
-            final SpatialReference inputSrs = GdalUtility.getSpatialReference(dataset);
+            final Dataset openDataset = GdalUtility.doesDataSetMatchCRS(dataset, coordinateReferenceSystem)
+                    ? GdalUtility.warpDatasetToSrs(dataset,
+                                                   GdalUtility.getSpatialReference(dataset),
+                                                   GdalUtility.getSpatialReference(coordinateReferenceSystem))
+                    : GdalUtility.reprojectDatasetToSrs(dataset,
+                                                        GdalUtility.getSpatialReference(dataset),
+                                                        GdalUtility.getSpatialReference(coordinateReferenceSystem));
 
-            final Dataset warpedDataset = GdalUtility.warpDatasetToSrs(dataset, inputSrs, GdalUtility.getSpatialReference(coordinateReferenceSystem));
-
-            if(warpedDataset == null)
+            if(openDataset == null)
             {
                 throw new RuntimeException(new GdalError().getMessage());
             }
 
-            return warpedDataset;
+            return openDataset;
+        }
+        catch (IOException | TilingException exception)
+        {
+            throw new RuntimeException(exception);
         }
         finally
         {
             dataset.delete();
         }
+    }
+
+    public static boolean doesDataSetMatchCRS(final Dataset d1, final CoordinateReferenceSystem crs)
+    {
+        if (!GdalUtility.getSpatialReference(d1).equals(GdalUtility.getSpatialReference(crs)))
+        {
+            final SpatialReference fromSrs = GdalUtility.getSpatialReference(d1);
+            final SpatialReference toSrs = GdalUtility.getSpatialReference(crs);
+
+            return fromSrs.GetAttrValue("AUTHORITY", 0).equals(toSrs.GetAttrValue("AUTHORITY", 0)) &&
+                   fromSrs.GetAttrValue("AUTHORITY", 1).equals(toSrs.GetAttrValue("AUTHORITY", 1));
+        }
+        return true;
     }
 
     /**
@@ -1020,6 +1048,80 @@ public class GdalUtility
     }
 
     /**
+     * Reproject an input {@link Dataset} into a different spatial reference system. Does
+     * not correct for NODATA values.
+     *
+     * @param dataset
+     *             An input {@link Dataset}
+     * @param fromSrs
+     *             Original spatial reference system of the <code>dataset</code>
+     * @param toSrs
+     *             Spatial reference system to warp the <code>dataset</code> to
+     * @return A {@link Dataset} in the input {@link SpatialReference} requested
+     * @throws IOException
+     * @throws TilingException
+     */
+    public static Dataset reprojectDatasetToSrs(final Dataset          dataset,
+                                                final SpatialReference fromSrs,
+                                                final SpatialReference toSrs) throws IOException, TilingException
+    {
+        if(dataset == null)
+        {
+            throw new IllegalArgumentException("Input dataset cannot be null.");
+        }
+
+        if(fromSrs == null)
+        {
+            throw new IllegalArgumentException("From-Srs cannot be null.");
+        }
+
+        if(toSrs == null)
+        {
+            throw new IllegalArgumentException("To-Srs cannot be null.");
+        }
+
+        final Path path = File.createTempFile("Reprojection", ".tiff").toPath();
+
+
+        final Dataset output = gdal.GetDriverByName("GTiff").Create(path.toString(), dataset.getRasterXSize(), dataset.getRasterYSize(), dataset.getRasterCount());
+
+        output.SetProjection(toSrs.ExportToWkt());
+
+        final Dataset temp = gdal.AutoCreateWarpedVRT(dataset,
+                                                      fromSrs.ExportToWkt(),
+                                                      toSrs.ExportToWkt(),
+                                                      gdalconstConstants.GRA_Average);
+
+        if(temp == null)
+        {
+            throw new RuntimeException(new GdalError().getMessage());
+        }
+
+        output.SetGeoTransform(temp.GetGeoTransform());
+        temp.delete();
+
+        final int result = gdal.ReprojectImage(dataset, output, fromSrs.ExportToWkt(), toSrs.ExportToWkt());
+        if(result != gdalconstConstants.CE_None)
+        {
+            //remove database on error
+            output.delete();
+            Files.delete(path);
+
+            if(result == gdalconstConstants.CE_Failure)
+            {
+                throw new IOException("Tile call outside of raster bounds.");
+            }
+
+            if(result == gdalconstConstants.CE_Fatal)
+            {
+                throw new TilingException("Fatal error detected from GDAL readRaster.");
+            }
+        }
+
+        return output;
+    }
+
+    /**
      * Scale a Dataset down into a smaller-sized Dataset using the average algorithm.
      *
      * @param queryDataset A {@link Dataset} that needs to be scaled down to a smaller size
@@ -1079,7 +1181,7 @@ public class GdalUtility
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
         // Initialize a new double array of size 3
-        final Double[] noDataValues = new Double[3];
+        final Double[] noDataValues = new Double[4];
         // Get the nodata value for each band
         IntStream.rangeClosed(1,  dataset.GetRasterCount())
                  .forEach(band -> {
@@ -1102,6 +1204,7 @@ public class GdalUtility
         {
             noDataValues[1] = noDataValues[0];
             noDataValues[2] = noDataValues[0];
+            noDataValues[3] = noDataValues[0];
         }
         return noDataValues;
     }

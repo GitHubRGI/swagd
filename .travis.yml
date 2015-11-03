@@ -1,20 +1,23 @@
 language: java
-env:
-  global:
-   - secure: "WIAl49jT9jhp+1COTf7PAkn9SLsdKufzSqV5xDO4UiOHYpSJVunoPNWI2H/UdsWzznrHlQeZBpftrJ2ygZRMi0USt2mEUrA4V8s1teYKdxRUzWAzx2IePAwcwLVuAR/3/qYy7bpGeoyLHOsOw3dcP3A+gFdJaXeHeWh7bU02zG0="
+addons:
+    apt:
+        packages:
+            - swig
 jdk:
     - oraclejdk8
+before_install:
+    - bash gdal_1.11.1_jni.sh
+    - export LD_LIBRARY_PATH=RGISuite/lib:$HOME/gdal/lib:$HOME/gdal/swig/java
+    - export GDAL_DATA=$HOME/gdal/share/gdal
+    - export PATH=$PATH:RGISuite/lib:$HOME/gdal/lib
 install:
     - ./install-deps-linux.sh
-script: mvn test
+    - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+script:
+    - mvn test
 after_success:
-    - mvn jacoco:report coveralls:report
-addons:
-  coverity_scan:
-    project:
-      name: "GitHubRGI/swagd"
-      description: "Build submitted via Travis CI"
-    notification_email: build@rgi-corp.com
-    build_command_prepend: "mvn clean"
-    build_command:   "mvn -DskipTests=true compile"
-    branch_pattern: coverity_scan
+    - mvn clean cobertura:cobertura coveralls:report
+cache:
+    directories:
+        - $HOME/.m2
+        - $HOME/gdal

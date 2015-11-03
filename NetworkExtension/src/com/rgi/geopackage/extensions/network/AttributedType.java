@@ -40,5 +40,5 @@ public enum AttributedType
     /**
      * Network edge
      */
-    Edge;
+    Edge
 }

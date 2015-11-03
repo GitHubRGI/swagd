@@ -49,5 +49,5 @@ public enum DataType
     /**
      * Equivalent to {@link String}
      */
-    Text;
+    Text
 }

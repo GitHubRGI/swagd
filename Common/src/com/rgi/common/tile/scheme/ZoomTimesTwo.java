@@ -37,6 +37,9 @@ import java.util.stream.IntStream;
  */
 public class ZoomTimesTwo implements TileScheme
 {
+
+    public static final double BASE_TWO = 2.0;
+
     /**
      * Constructor
      *
@@ -79,12 +82,13 @@ public class ZoomTimesTwo implements TileScheme
             throw new IllegalArgumentException("Minimum zoom level must be less than or equal to the maximum");
         }
 
-        if(Integer.MAX_VALUE < baseZoomLevelTileMatrixHeight * Math.pow(2.0, maximumZoomLevel) - 1)
+        //if(Integer.MAX_VALUE < baseZoomLevelTileMatrixHeight * Math.pow(2.0, maximumZoomLevel) - 1)
+        if(baseZoomLevelTileMatrixHeight * StrictMath.pow(BASE_TWO, maximumZoomLevel) - 1 > Integer.MAX_VALUE)
         {
             throw new IllegalArgumentException("This combination of initial height and maximum zoom level will cause an integer overflow for tile numbering");
         }
 
-        if(Integer.MAX_VALUE < baseZoomLevelTileMatrixWidth * Math.pow(2.0, maximumZoomLevel) - 1)
+        if(baseZoomLevelTileMatrixWidth * StrictMath.pow(BASE_TWO, maximumZoomLevel) - 1 > Integer.MAX_VALUE)
         {
             throw new IllegalArgumentException("This combination of initial width and maximum zoom level will cause an integer overflow for tile numbering");
         }
@@ -94,13 +98,13 @@ public class ZoomTimesTwo implements TileScheme
 
         this.zoomLevelDimensions = new TileMatrixDimensions[maximumZoomLevel - minimumZoomLevel + 1];
 
-        for(int zoomLevel = minimumZoomLevel; zoomLevel <= maximumZoomLevel; ++zoomLevel)
+        IntStream.rangeClosed(minimumZoomLevel, maximumZoomLevel).forEach(zoomLevel ->
         {
             final int zoom = zoomLevel - minimumZoomLevel;
-            final int twoToTheZoomPower = (int)Math.pow(2.0, zoom);
+            final int twoToTheZoomPower = (int) StrictMath.pow(BASE_TWO, zoom);
             this.zoomLevelDimensions[zoom] = new TileMatrixDimensions(baseZoomLevelTileMatrixWidth  * twoToTheZoomPower,
-                                                                      baseZoomLevelTileMatrixHeight * twoToTheZoomPower);
-        }
+                    baseZoomLevelTileMatrixHeight * twoToTheZoomPower);
+        });
     }
 
     @Override

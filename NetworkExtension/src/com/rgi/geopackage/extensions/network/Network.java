@@ -27,7 +27,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.core.Content;
 
 /**
- * An object representation of an "rgi_network" GeoPackage extension network
+ * An object representation of an "SWAGD_network" GeoPackage extension network
  * table
  *
  * @author Luke Lambert
@@ -52,7 +52,7 @@ public class Network extends Content
      *             current time
      * @param boundingBox
      *             Bounding box for all content in tableName
-     * @param spatialReferenceSystem
+     * @param spatialReferenceSystemIdentifier
      *             Spatial Reference System (SRS) identifier
      */
     protected Network(final String      tableName,
@@ -71,8 +71,14 @@ public class Network extends Content
               spatialReferenceSystemIdentifier);
     }
 
+    @Override
+    public String toString()
+    {
+        return this.getIdentifier();
+    }
+
     /**
-     * The "rgi_network" GeoPackage extension network data type for all
+     * The "SWAGD_network" GeoPackage extension network data type for all
      * network tables
      */
     public static final String NetworkContentType = "network";

@@ -31,6 +31,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -38,8 +39,16 @@ import java.util.function.Supplier;
  * @author Luke Lambert
  *
  */
-public class JdbcUtility
+public final class JdbcUtility
 {
+    /**
+     * Disabled constructor
+     */
+    private JdbcUtility()
+    {
+
+    }
+
     /**
      * Selects and returns one result.  Null is returned if the query returns
      * no result.
@@ -146,7 +155,7 @@ public class JdbcUtility
 
             try(final ResultSet resultSet = preparedStatement.executeQuery())
             {
-                final ArrayList<T> results = new ArrayList<>();
+                final List<T> results = new ArrayList<>();
 
                 while(resultSet.next())
                 {
@@ -400,6 +409,75 @@ public class JdbcUtility
         {
             databaseConnection.rollback();
             throw th;
+        }
+    }
+
+    /**
+     * Accumulates results from a query.
+     *
+     * @param databaseConnection
+     *             Connection to the database
+     * @param sql
+     *             SQL query
+     * @param parameterSetter
+     *             Callback that sets parameters of the {@link PreparedStatement}
+     * @param initialValue
+     *             A starting value for the accumulation
+     * @param resultFunction
+     *             Maps a result set to an instance of T
+     * @param combiner
+     *             Combines two instances of T
+     * @return the accumulation of all results
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public static <T> T accumulate(final Connection                databaseConnection,
+                                   final String                    sql,
+                                   final PreparedStatementConsumer parameterSetter,
+                                   final T                         initialValue,
+                                   final ResultSetFunction<T>      resultFunction,
+                                   final BinaryOperator<T>         combiner) throws SQLException
+    {
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException("Database connection may not be null");
+        }
+
+        if(sql == null || sql.isEmpty())
+        {
+            throw new IllegalArgumentException("Query statement may not be null or empty");
+        }
+
+        if(resultFunction == null)
+        {
+            throw new IllegalArgumentException("Result function may not be null");
+        }
+
+        if(combiner == null)
+        {
+            throw new IllegalArgumentException("Combiner may not be null");
+        }
+
+        try(final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql))
+        {
+            if(parameterSetter != null)
+            {
+                parameterSetter.accept(preparedStatement);
+            }
+
+            try(final ResultSet resultSet = preparedStatement.executeQuery())
+            {
+                T value = initialValue;
+
+                while(resultSet.next())
+                {
+                    final T currentValue = resultFunction.apply(resultSet);
+
+                    value = combiner.apply(value, currentValue);
+                }
+
+                return value;
+            }
         }
     }
 

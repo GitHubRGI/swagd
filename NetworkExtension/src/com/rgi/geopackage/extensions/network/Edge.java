@@ -26,8 +26,8 @@ package com.rgi.geopackage.extensions.network;
 import com.rgi.geopackage.GeoPackage;
 
 /**
- * Representation of an <b>directional</b> edge in "rgi_network" network edge
- * in a {@link GeoPackage}
+ * Representation of a <b>directional</b> edge from a {@link GeoPackage}
+ * "SWAGD_network" network
  *
  * @author Luke Lambert
  *
@@ -44,7 +44,9 @@ public class Edge
      * @param to
      *             The destination node of an edge
      */
-    protected Edge(final int identifier, final int from, final int to)
+    protected Edge(final int identifier,
+                   final int from,
+                   final int to)
     {
         this.identifier = identifier;
         this.from       = from;
