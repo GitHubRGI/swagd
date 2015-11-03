@@ -98,7 +98,6 @@ public class NodeExitGetterTest
             final GeoPackageNetworkExtension networkExtension = NodeExitGetterTest.getNetworkExtension(gpkg);
             final Network network = NodeExitGetterTest.getNetwork(networkExtension);
 
-            edgeAttributeDescriptions.add(networkExtension.getAttributeDescription(network, "alaska2", AttributedType.Edge));
             final NodeExitGetter nge = new NodeExitGetter(connection,
                                                           network,
                                                           networkExtension.getAttributeDescriptions(network, AttributedType.Node),
