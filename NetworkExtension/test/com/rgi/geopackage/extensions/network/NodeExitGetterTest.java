@@ -10,6 +10,8 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -41,6 +43,24 @@ public class NodeExitGetterTest
     }
 
     @Test
+    public void testOpen()
+    {
+        final Collection<AttributeDescription> nodeAttributeDescriptions = Collections.emptyList();
+        final Collection<AttributeDescription> edgeAttributeDescriptions = Collections.emptyList();
+        try
+        {
+            // There should be 3 exits from node 1 in the network
+            nodeAttributeDescriptions.add(this.networkExtension.getAttributeDescription(this.network, "alaska2", AttributedType.Node));
+            edgeAttributeDescriptions.add(this.networkExtension.getAttributeDescription(this.network, "alaska2", AttributedType.Edge));
+            final NodeExitGetter nge = new NodeExitGetter(this.connection, this.network, nodeAttributeDescriptions, edgeAttributeDescriptions);
+        }
+        catch(final SQLException ignored)
+        {
+            fail("Failed to open the node exit getter.");
+        }
+    }
+
+    @Test
     public void testOpenGetExitsOne()
     {
         try(final NodeExitGetter nge = new NodeExitGetter(this.connection, this.network, null, null))
@@ -50,7 +70,7 @@ public class NodeExitGetterTest
         }
         catch(final SQLException ignored)
         {
-            fail("Could not create a new node exit getter.");
+            fail("Get exits returned an invalid number of exits.");
         }
     }
 
@@ -65,7 +85,7 @@ public class NodeExitGetterTest
         }
         catch(final SQLException ignored)
         {
-            fail("Could not create a new node exit getter.");
+            fail("An invalid exit identifier produced non-null results.");
         }
     }
 
