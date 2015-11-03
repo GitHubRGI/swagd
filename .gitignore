@@ -48,7 +48,6 @@ local.properties
 .settings/
 *.gpkg
 *.gpkg-journal
-
 # Ignore coverity scan folder
 cov-int
 
@@ -56,6 +55,23 @@ RGISuite/settings.txt
 VerifierTool/.project
 WiX/CustomAction3/CustomAction3/obj/
 *.cache
-NetworkExtension/data/
+data/
 
 Android/gen
+
+# IntelliJ files
+.idea/compiler.xml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/.name
+.idea/copyright/
+.idea/libraries/
+.idea/dictionaries/
+settings.txt
+out/
+
+#Wix files
+*.wixpdb
+*.msi
+*.wixobj
+*.exe
