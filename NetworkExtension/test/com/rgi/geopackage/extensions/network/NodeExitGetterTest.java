@@ -5,14 +5,14 @@ import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.verification.ConformanceException;
 import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.Node;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -145,29 +145,6 @@ public class NodeExitGetterTest
             fail("An invalid exit identifier produced non-null results.");
         }
     }
-
-    /*@Test
-    public void testProcessResult()
-    {
-        final Supplier<String> sqlSupplier = () ->
-                "SELECT id, to_node from alaska2 where id = 8 or id = 40;";
-
-        try(final GeoPackage gpkg = new GeoPackage(this.gpkgFile, GeoPackage.OpenMode.Open);
-            final Connection connection = NodeExitGetterTest.getConnection(this.gpkgFile);
-            final PreparedStatement preparedStatement = connection.prepareStatement(sqlSupplier.get());
-            final ResultSet resultSet = preparedStatement.executeQuery())
-        {
-            final Network network = NodeExitGetterTest.getNetwork(NodeExitGetterTest.getNetworkExtension(gpkg));
-            final GeoPackageNetworkExtension networkExtension = NodeExitGetterTest.getNetworkExtension(gpkg);
-            final NodeExitGetter nge = new NodeExitGetter(connection, network, networkExtension.getAttributeDescriptions(network, AttributedType.Node), null);
-
-            final List<AttributedEdge> edges = nge.execute();
-        }
-        catch(final IOException | ClassNotFoundException | ConformanceException | SQLException ignored)
-        {
-            fail("An invalid exit identifier produced non-null results.");
-        }
-    }*/
 
     private final File gpkgFile = new File(ClassLoader.getSystemResource("testNetwork.gpkg").getFile());
     private GeoPackageNetworkExtension networkExtension;
