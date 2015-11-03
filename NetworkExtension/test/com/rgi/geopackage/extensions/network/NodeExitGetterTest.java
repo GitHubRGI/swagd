@@ -101,7 +101,7 @@ public class NodeExitGetterTest
             final NodeExitGetter nge = new NodeExitGetter(connection,
                                                           network,
                                                           networkExtension.getAttributeDescriptions(network, AttributedType.Node),
-                                                          networkExtension.getAttributeDescriptions(network, AttributedType.Edge));
+                                                          null);
         }
         catch(final IOException | ClassNotFoundException | ConformanceException | SQLException ignored)
         {
@@ -117,7 +117,9 @@ public class NodeExitGetterTest
         {
             final Network network = NodeExitGetterTest.getNetwork(NodeExitGetterTest.getNetworkExtension(gpkg));
             final NodeExitGetter nge = new NodeExitGetter(connection, network, null, null);
-            nge.close();
+
+            // There should be 3 exits from node 1 in the network
+            assertEquals("Exits from node 1 should be 3.", 3, nge.getExits(1).size());
         }
         catch(final IOException | ClassNotFoundException | ConformanceException | SQLException ignored)
         {
@@ -148,18 +150,22 @@ public class NodeExitGetterTest
     public void testProcessResult()
     {
         final Supplier<String> sqlSupplier = () ->
-        {
-            return "SELECT count(id) from alaska2_node_attributes;";
-        };
-        try(final NodeExitGetter nge = new NodeExitGetter(this.connection, this.network, null, null);
-            final PreparedStatement preparedStatement = this.connection.prepareStatement(sqlSupplier.get());
+                "SELECT id, to_node from alaska2 where id = 8 or id = 40;";
+
+        try(final GeoPackage gpkg = new GeoPackage(this.gpkgFile, GeoPackage.OpenMode.Open);
+            final Connection connection = NodeExitGetterTest.getConnection(this.gpkgFile);
+            final PreparedStatement preparedStatement = connection.prepareStatement(sqlSupplier.get());
             final ResultSet resultSet = preparedStatement.executeQuery())
         {
+            final Network network = NodeExitGetterTest.getNetwork(NodeExitGetterTest.getNetworkExtension(gpkg));
+            final GeoPackageNetworkExtension networkExtension = NodeExitGetterTest.getNetworkExtension(gpkg);
+            final NodeExitGetter nge = new NodeExitGetter(connection, network, networkExtension.getAttributeDescriptions(network, AttributedType.Node), null);
 
+            final List<AttributedEdge> edges = nge.execute();
         }
-        catch(final SQLException ignored)
+        catch(final IOException | ClassNotFoundException | ConformanceException | SQLException ignored)
         {
-            fail("Could not create a new node exit getter.");
+            fail("An invalid exit identifier produced non-null results.");
         }
     }*/
 
