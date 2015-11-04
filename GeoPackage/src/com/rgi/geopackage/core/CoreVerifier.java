@@ -23,9 +23,16 @@
 
 package com.rgi.geopackage.core;
 
-import static com.rgi.geopackage.verification.Assert.assertArrayEquals;
-import static com.rgi.geopackage.verification.Assert.assertTrue;
-import static com.rgi.geopackage.verification.Assert.fail;
+import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.utility.DatabaseUtility;
+import com.rgi.geopackage.verification.AssertionError;
+import com.rgi.geopackage.verification.ColumnDefinition;
+import com.rgi.geopackage.verification.ForeignKeyDefinition;
+import com.rgi.geopackage.verification.Requirement;
+import com.rgi.geopackage.verification.Severity;
+import com.rgi.geopackage.verification.TableDefinition;
+import com.rgi.geopackage.verification.VerificationLevel;
+import com.rgi.geopackage.verification.Verifier;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,16 +55,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.rgi.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.utility.DatabaseUtility;
-import com.rgi.geopackage.verification.AssertionError;
-import com.rgi.geopackage.verification.ColumnDefinition;
-import com.rgi.geopackage.verification.ForeignKeyDefinition;
-import com.rgi.geopackage.verification.Requirement;
-import com.rgi.geopackage.verification.Severity;
-import com.rgi.geopackage.verification.TableDefinition;
-import com.rgi.geopackage.verification.VerificationLevel;
-import com.rgi.geopackage.verification.Verifier;
+import static com.rgi.geopackage.verification.Assert.assertArrayEquals;
+import static com.rgi.geopackage.verification.Assert.assertTrue;
+import static com.rgi.geopackage.verification.Assert.fail;
 
 /**
  * @author Luke Lambert
@@ -93,7 +93,7 @@ public class CoreVerifier extends Verifier
         {
             this.hasContentsTable = this.tableExists(GeoPackageCore.ContentsTableName);
         }
-        catch(final SQLException ex)
+        catch(final SQLException ignored)
         {
             this.hasContentsTable = false;
         }
@@ -102,7 +102,7 @@ public class CoreVerifier extends Verifier
         {
             this.hasSpatialReferenceSystemTable = this.tableExists(GeoPackageCore.SpatialRefSysTableName);
         }
-        catch(final SQLException ex)
+        catch(final SQLException ignored)
         {
             this.hasSpatialReferenceSystemTable = false;
         }
@@ -129,7 +129,7 @@ public class CoreVerifier extends Verifier
 
         final byte[] data = new byte[header.length];
 
-        try(FileInputStream fileInputStream = new FileInputStream(this.file))
+        try(final FileInputStream fileInputStream = new FileInputStream(this.file))
         {
             assertTrue("The header information of the file does not contain enough bytes to include necessary information",
                        fileInputStream.read(data, 0, header.length) == header.length,
@@ -157,21 +157,11 @@ public class CoreVerifier extends Verifier
     public void Requirement2() throws AssertionError
     {
         final int  sizeOfInt = 4;
-        final long applicationIdByteOffset = 68;
-
         final byte[] data = new byte[sizeOfInt];    // 4 bytes in an int
-
-        // application id
-        // http://www.sqlite.org/fileformat2.html
-        // http://www.geopackage.org/spec/#_sqlite_container
-        // A GeoPackage SHALL contain 0x47503130 ("GP10" in ASCII) in the
-        // application id field of the SQLite database header to indicate a
-        // GeoPackage version 1.0 file.
-        // The bytes 'G', 'P', '1', '0' are equivalent to 0x47503130
-        final int expectedAppId = 0x47503130;
 
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(this.file, "r"))
         {
+            final long applicationIdByteOffset = 68;
             randomAccessFile.seek(applicationIdByteOffset);
             assertTrue("The file does not have enough bytes to contain a GeoPackage.",
                        randomAccessFile.read(data, 0, sizeOfInt) == sizeOfInt,
@@ -181,6 +171,15 @@ public class CoreVerifier extends Verifier
         {
             throw new AssertionError(ex, Severity.Error);
         }
+
+        // application id
+        // http://www.sqlite.org/fileformat2.html
+        // http://www.geopackage.org/spec/#_sqlite_container
+        // A GeoPackage SHALL contain 0x47503130 ("GP10" in ASCII) in the
+        // application id field of the SQLite database header to indicate a
+        // GeoPackage version 1.0 file.
+        // The bytes 'G', 'P', '1', '0' are equivalent to 0x47503130
+        final int expectedAppId = 0x47503130;
 
         final int applicationId = ByteBuffer.wrap(data).asIntBuffer().get();
 
@@ -201,12 +200,8 @@ public class CoreVerifier extends Verifier
                  text      = "A GeoPackage SHALL have the file extension name '.gpkg'")
     public void Requirement3() throws AssertionError
     {
-        final String fileName          = this.file.getName();
-        final String extension         = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length());
-        final String expectedExtension = "gpkg";
-
-        assertTrue(String.format("Not a GeoPackage File: %s \nExpected a file with the extension: %s", fileName, expectedExtension),
-                   extension.equals(expectedExtension),
+        assertTrue("Expected a file with the extension: '.gpkg'",
+                   this.file.getName().endsWith(".gpkg"),
                    Severity.Warning);
     }
 
@@ -247,18 +242,18 @@ public class CoreVerifier extends Verifier
         {
             final String query = String.format("SELECT table_name FROM %s;", GeoPackageCore.ContentsTableName);
 
-            try (Statement stmt       = this.getSqliteConnection().createStatement();
-                 ResultSet tableName  = stmt.executeQuery(query);)
+            try(final Statement stmt      = this.getSqliteConnection().createStatement();
+                final ResultSet resultSet = stmt.executeQuery(query))
             {
-                while (tableName.next())
+                while(resultSet.next())
                 {
-                    final String table_name = tableName.getString("table_name");
+                    final String tableName = resultSet.getString("table_name");
 
-                    if (DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), table_name))
+                    if (DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), tableName))
                     {
 
-                        try (PreparedStatement stmt2           = this.getSqliteConnection().prepareStatement(String.format("PRAGMA table_info('%s');", table_name));
-                             ResultSet         pragmaTableinfo = stmt2.executeQuery())
+                        try(final PreparedStatement stmt2           = this.getSqliteConnection().prepareStatement(String.format("PRAGMA table_info('%s');", tableName));
+                            final ResultSet         pragmaTableinfo = stmt2.executeQuery())
                         {
                             while (pragmaTableinfo.next())
                             {
@@ -267,7 +262,7 @@ public class CoreVerifier extends Verifier
 
                                 assertTrue(String.format("Incorrect data type encountered: %s  From table: %s",
                                                          dataType,
-                                                         table_name),
+                                                         tableName),
                                            correctDataType,
                                            Severity.Error);
                             }
@@ -298,13 +293,12 @@ public class CoreVerifier extends Verifier
 
         final String query = "PRAGMA integrity_check;";
 
-        try(Statement stmt           = this.getSqliteConnection().createStatement();
-            ResultSet integrityCheck = stmt.executeQuery(query);)
+        try(final Statement stmt           = this.getSqliteConnection().createStatement();
+            final ResultSet integrityCheck = stmt.executeQuery(query))
         {
             integrityCheck.next();
-            final String integrity_check = integrityCheck.getString("integrity_check");
             assertTrue("PRAGMA integrity_check failed.",
-                       integrity_check.toLowerCase().equals("ok"),
+                       integrityCheck.getString("integrity_check").toLowerCase().equals("ok"),
                        Severity.Error);
         }
     }
@@ -324,12 +318,11 @@ public class CoreVerifier extends Verifier
     {
         final String query = "PRAGMA foreign_key_check;";
 
-        try(Statement stmt         = this.getSqliteConnection().createStatement();
-            ResultSet foreignCheck = stmt.executeQuery(query);)
+        try(final Statement stmt         = this.getSqliteConnection().createStatement();
+            final ResultSet foreignCheck = stmt.executeQuery(query))
         {
-            final boolean badfk = foreignCheck.next();
             assertTrue("PRAGMA foreign_key_check failed.",
-                       badfk != true,
+                       !foreignCheck.next(),
                        Severity.Error);
         }
     }
@@ -346,17 +339,19 @@ public class CoreVerifier extends Verifier
                  text      = " A GeoPackage SQLite Configuration SHALL provide SQL access to GeoPackage contents via software APIs.")
     public void Requirement8() throws AssertionError
     {
-        final String query = "SELECT * FROM sqlite_master;";
         try(final Statement stmt   = this.getSqliteConnection().createStatement();
-            final ResultSet result = stmt.executeQuery(query))
+            final ResultSet result = stmt.executeQuery("SELECT * FROM sqlite_master;"))
         {
             // If the statement can execute it has implemented the SQLite SQL API interface
+            return;
         }
-        catch(final SQLException e)
+        catch(final SQLException ignored)
         {
-            fail("GeoPackage needs to provide the SQLite SQL API interface.",
-                 Severity.Error);
+            // fall through to failure
         }
+
+        fail("GeoPackage needs to provide the SQLite SQL API interface.",
+             Severity.Error);
     }
 
     /**
@@ -374,15 +369,13 @@ public class CoreVerifier extends Verifier
                  text      = "Every GeoPackage SQLite Configuration SHALL have the SQLite library compile and run time options specified in table http://www.geopackage.org/spec/#every_gpkg_sqlite_config_table.")
     public void Requirement9() throws SQLException, AssertionError
     {
-        final String query2 = "SELECT sqlite_compileoption_used('SQLITE_OMIT_*')";
-
-        try(Statement stmt     = this.getSqliteConnection().createStatement();
-            ResultSet omitUsed = stmt.executeQuery(query2);)
+        try(final Statement stmt     = this.getSqliteConnection().createStatement();
+            final ResultSet omitUsed = stmt.executeQuery("SELECT sqlite_compileoption_used('SQLITE_OMIT_*')"))
         {
-            final int result = omitUsed.getInt("sqlite_compileoption_used('SQLITE_OMIT_*')");
+            final int result = omitUsed.getInt(1);
 
             assertTrue("SQLite library compilations shall not include any OMIT options.",
-                       result != 1,
+                       result == 0,
                        Severity.Warning);
         }
     }
@@ -391,7 +384,7 @@ public class CoreVerifier extends Verifier
      * Requirement 10
      *
      * <blockquote>
-     * A GeoPackage SHALL include a <code>gpkg_spatial_ref_sys</code> table per clause 1.1.2.1.1
+     * A GeoPackage SHALL include a {@code gpkg_spatial_ref_sys} table per clause 1.1.2.1.1
      * <a href="http://www.geopackage.org/spec/#spatial_ref_sys_data_table_definition">Table Definition</a>,
      * Table <a href="http://www.geopackage.org/spec/#gpkg_spatial_ref_sys_cols">Spatial Ref Sys Table Definition</a> and Table
      * <a href="http://www.geopackage.org/spec/#gpkg_spatial_ref_sys_sql">gpkg_spatial_ref_sys Table Definition SQL</a>.
@@ -418,17 +411,17 @@ public class CoreVerifier extends Verifier
     /**
      * Requirement 11
      *
-     * <blockquote>The <code>gpkg_spatial_ref_sys</code> table in a GeoPackage SHALL contain a record for
+     * <blockquote>The {@code gpkg_spatial_ref_sys} table in a GeoPackage SHALL contain a record for
      * organization <a href="http://www.epsg.org/Geodetic.html">EPSG</a> or epsg</a>
-     * and <code>organization_coordsys_id</code>
+     * and {@code organization_coordsys_id}
      * <a
      * href="http://www.epsg-registry.org/report.htm?type=selection&amp;entity=urn:ogc:def:crs:EPSG::4326&amp;reportDetail=long&amp;title=WGS%2084&amp;style=urn:uuid:report-style:default-with-code&amp;style_name=OGP%20Default%20With%20Code"
      * >4326</a> for <a href="http://www.google.com/search?as_q=WGS-84">WGS-84
-     * </a>, a record with an <code>srs_id</code> of -1, an organization of
-     * "NONE", an <code>organization_coordsys_id</code> of -1, and definition
+     * </a>, a record with an {@code srs_id} of -1, an organization of
+     * "NONE", an {@code organization_coordsys_id} of -1, and definition
      * "undefined" for undefined Cartesian coordinate reference systems, and a
-     * record with an <code>srs_id</code> of 0, an organization of "NONE", an
-     * <code>organization_coordsys_id</code> of 0, and definition "undefined"
+     * record with an {@code srs_id} of 0, an organization of "NONE", an
+     * {@code organization_coordsys_id} of 0, and definition "undefined"
      * for undefined geographic coordinate reference systems.
      * </blockquote>
      * @throws SQLException throws if SQLException occurs
