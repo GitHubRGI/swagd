@@ -412,74 +412,6 @@ public final class JdbcUtility
         }
     }
 
-    /**
-     * Accumulates results from a query.
-     *
-     * @param databaseConnection
-     *             Connection to the database
-     * @param sql
-     *             SQL query
-     * @param parameterSetter
-     *             Callback that sets parameters of the {@link PreparedStatement}
-     * @param initialValue
-     *             A starting value for the accumulation
-     * @param resultFunction
-     *             Maps a result set to an instance of T
-     * @param combiner
-     *             Combines two instances of T
-     * @return the accumulation of all results
-     * @throws SQLException
-     *             if there is a database error
-     */
-    public static <T> T accumulate(final Connection                databaseConnection,
-                                   final String                    sql,
-                                   final PreparedStatementConsumer parameterSetter,
-                                   final T                         initialValue,
-                                   final ResultSetFunction<T>      resultFunction,
-                                   final BinaryOperator<T>         combiner) throws SQLException
-    {
-        if(databaseConnection == null)
-        {
-            throw new IllegalArgumentException("Database connection may not be null");
-        }
-
-        if(sql == null || sql.isEmpty())
-        {
-            throw new IllegalArgumentException("Query statement may not be null or empty");
-        }
-
-        if(resultFunction == null)
-        {
-            throw new IllegalArgumentException("Result function may not be null");
-        }
-
-        if(combiner == null)
-        {
-            throw new IllegalArgumentException("Combiner may not be null");
-        }
-
-        try(final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql))
-        {
-            if(parameterSetter != null)
-            {
-                parameterSetter.accept(preparedStatement);
-            }
-
-            try(final ResultSet resultSet = preparedStatement.executeQuery())
-            {
-                T value = initialValue;
-
-                while(resultSet.next())
-                {
-                    final T currentValue = resultFunction.apply(resultSet);
-
-                    value = combiner.apply(value, currentValue);
-                }
-
-                return value;
-            }
-        }
-    }
 
     /**
      * Returns {@link ArrayList} of the type of the input consisting of the
@@ -607,38 +539,7 @@ public final class JdbcUtility
         return collection;
     }
 
-    /**
-     *  Returns {@link ArrayList} of the type of the input consisting of the results of applying the
-     *  operations in {@link ResultSetFunction} on the given {@link ResultSet}
-     *
-     * @param resultSet
-     *      The result set consisting of the elements
-     * @param resultSetFunction
-     *      Maps the given {@link ResultSet} element to another type
-     * @return
-     *      An {@link ArrayList} of the type of the input that are the results of the mapping the elements in the given {@link ResultSet}
-     * @throws SQLException
-     *      throws if an SQLException occurs
-     */
-    public static <T> T mapOne(final ResultSet resultSet, final ResultSetFunction<T> resultSetFunction) throws SQLException
-    {
-        if(resultSet == null || resultSet.isClosed())
-        {
-            throw new IllegalArgumentException("Result set may not be null or closed");
-        }
 
-        if(resultSetFunction == null)
-        {
-            throw new IllegalArgumentException("Result set function may not be null");
-        }
-
-        if(resultSet.isBeforeFirst())
-        {
-            return resultSetFunction.apply(resultSet);
-        }
-
-        return null;
-    }
 
     /**
      * Create list of {@link Object}s by repeatedly calling
