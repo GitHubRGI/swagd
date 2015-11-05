@@ -9,10 +9,7 @@ import org.junit.Test;
 import java.io.File;
 import java.nio.file.FileSystems;
 import java.sql.*;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Random;
+import java.util.*;
 import java.util.function.BinaryOperator;
 
 import static org.junit.Assert.*;
@@ -86,6 +83,22 @@ public class JdbcUtilityTest {
         fail("selectOne should have a sql command in the String str");
     }
 
+    @SuppressWarnings("ConstantConditions")
+    @Test(expected = AssertionError.class)
+    public void selectOneTryStatementPassTest() throws Exception {
+        final File testFile = this.getRandomFile(2);
+        testFile.createNewFile();
+
+        final Connection con = new MockConnection();
+
+        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
+
+        JdbcUtility.selectOne(con, str,
+                preparedStatement -> preparedStatement.setString(1, "tiles"),
+                resultSet -> resultSet.getInt(1));
+
+        fail("selectOne should have a sql command in the String str");
+    }
 
 
 
@@ -381,23 +394,15 @@ public class JdbcUtilityTest {
         fail("update should have thrown an illegalArgumentException for a null Iterable");
     }
 
-    
-    
-    
 
-//   // this portion tests the accumulate function block
-//    @Test(expected = IllegalArgumentException.class)
-//    public void accumulateNullConnectionTest() throws SQLException {
-//        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-//
-//        final boolean initialValue = true;
-//
-//
-//
-//        final boolean result = JdbcUtility.accumulate(null, str, preparedStatement -> preparedStatement.setString(1, "tiles"), initialValue,
-//                resultSet -> resultSet.getInt(1), true);
-//        fail("selectOne should have thrown an IllegalArgumentException for a null Connection.");
-//    }
+
+
+
+
+
+
+
+
 
     //This portion tests the first map function block
     @Test(expected = IllegalArgumentException.class)
@@ -514,7 +519,7 @@ public class JdbcUtilityTest {
                     pyramidName -> JdbcUtilityTest.tableOrViewExists(con, pyramidName),
                     HashSet<String>::new);
 
-            fail("mapFIlter should have thrown an IllegalArgumentException for a null funciton");
+            fail("mapFilter should have thrown an IllegalArgumentException for a null funciton");
         }
     }
 
@@ -532,20 +537,37 @@ public class JdbcUtilityTest {
                     null,
                     HashSet<String>::new);
 
-            fail("mapFIlter should have thrown an IllegalArgumentException for a null predicate");
+            fail("mapFilter should have thrown an IllegalArgumentException for a null predicate");
         }
     }
 
-    //@TODO find out a way to test getObjects
-////    this portion tests the getObjects function block
-//    @Test(expected = IllegalArgumentException.class)
-//    public void getObjectsNullResultSetTest() throws SQLException
-//    {
-//        final Connection con = new MockConnection();
-//
-//            JdbcUtility.getObjects(null, 1, this.attributeDescriptions.size());
-//            fail("getObjects should have thrown an IllegalArgumentException for a null ResultSet");
-//    }
+
+
+
+
+    //    this portion tests the getObjects function block
+    @Test(expected = IllegalArgumentException.class)
+    public void getObjectsNullResultSetTest() throws SQLException
+    {
+        final Connection con = new MockConnection();
+
+
+            JdbcUtility.getObjects(null, 1, 3);
+            fail("getObjects should have thrown an IllegalArgumentException for a null ResultSet");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getObjectsEndLessThanStartTest() throws SQLException
+    {
+        final String str = "SELECT tile_data FROM tileSetName WHERE zoom_level = 2 AND tile_column = 0 AND tile_row =0;";
+        try(final Connection con = new MockConnection();
+            final Statement stmt = con.createStatement();
+            final ResultSet tileData = stmt.executeQuery(str))
+        {
+            JdbcUtility.getObjects(tileData, 3, 1);
+            fail("getObjects should have thrown an IllegalArgumentException where endColumn is greater than startIndex");
+        }
+    }
 
 
     private static final class ExtensionData
