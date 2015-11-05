@@ -22,38 +22,6 @@
  */
 package utility;
 
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
-import java.awt.image.BandedSampleModel;
-import java.awt.image.BufferedImage;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferInt;
-import java.awt.image.DataBufferShort;
-import java.awt.image.Raster;
-import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.zip.DataFormatException;
-
-import org.gdal.gdal.Band;
-import org.gdal.gdal.Dataset;
-import org.gdal.gdal.gdal;
-import org.gdal.gdalconst.gdalconstConstants;
-import org.gdal.osr.SpatialReference;
-import org.gdal.osr.osr;
-
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
 import com.rgi.common.Range;
@@ -69,6 +37,28 @@ import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.g2t.GeoTransformation;
 import com.rgi.g2t.TilingException;
 import com.rgi.store.tiles.TileStoreException;
+import org.gdal.gdal.Band;
+import org.gdal.gdal.Dataset;
+import org.gdal.gdal.gdal;
+import org.gdal.gdalconst.gdalconstConstants;
+import org.gdal.osr.SpatialReference;
+import org.gdal.osr.osr;
+
+import java.awt.*;
+import java.awt.color.ColorSpace;
+import java.awt.image.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.zip.DataFormatException;
 
 /**
  * Common functionality of the GDAL library made into helper functions
@@ -627,80 +617,27 @@ public final class GdalUtility
     }
 
     /**
-     * Get the lowest-integer zoom level for the input {@link Dataset}
+     * Returns the highest numeric Zoom level in which the entire dataset can be viewed as a single tile.
      *
-     * @param dataset
-     *             An input {@link Dataset}
      * @param tileRanges
      *             The calculated list of tile numbers and zooms
-     * @param tileOrigin
-     *             The {@link TileOrigin} of the tile grid
-     * @param tileScheme
-     *             The {@link TileScheme} of the tile grid
-     * @param tileSize
-     *             A {@link Dimensions} Integer object that describes what the tiles should look like
      * @return The zoom level for this dataset that produces only one tile.
      *            Defaults to 0 if an error occurs.
      */
-    public static int getMinimalZoom(final Dataset                                  dataset,
-                                     final Map<Integer, Range<Coordinate<Integer>>> tileRanges,
-                                     final TileOrigin                               tileOrigin,
-                                     final TileScheme                               tileScheme,
-                                     final Dimensions<Integer>                      tileSize)
+    public static int getMinimalZoom(final Map<Integer, Range<Coordinate<Integer>>> tileRanges)
     {
-        if(dataset == null)
+        try{
+            return tileRanges.entrySet()
+                             .stream()
+                             .filter(entry-> entry.getValue().getMinimum().equals(entry.getValue().getMaximum())) //if its 1 tile
+                             .reduce((previous,current)->current).get().getKey(); //get the last entry.
+        }
+        catch(final NullPointerException ignored)
         {
-            throw new IllegalArgumentException("Input dataset cannot be null");
+            //if there are no single tile levels, return 0, this should never happen.
+            return 0;
         }
 
-        if(tileRanges == null || tileRanges.isEmpty())
-        {
-            throw new IllegalArgumentException("Tile range list cannot be null or empty.");
-        }
-
-        if(tileOrigin == null)
-        {
-            throw new IllegalArgumentException("Tile origin cannot be null.");
-        }
-
-        if(tileScheme == null)
-        {
-            throw new IllegalArgumentException("Tile scheme cannot be null.");
-        }
-
-        if(tileSize == null)
-        {
-            throw new IllegalArgumentException("Tile size cannot be null");
-        }
-
-        final Dimensions<Double> datasetPixelResolution = new GeoTransformation(dataset.GetGeoTransform()).getPixelResolution();
-        final double zoomPixelSize;
-
-        if(tileSize.getWidth() > tileSize.getHeight())
-        {
-            zoomPixelSize = (datasetPixelResolution.getWidth()  * dataset.GetRasterXSize()) / tileSize.getWidth();
-        }
-        else
-        {
-            zoomPixelSize = (datasetPixelResolution.getHeight() * dataset.GetRasterYSize()) / tileSize.getHeight();
-        }
-
-        try
-        {
-            final CrsProfile crsProfile = GdalUtility.getCrsProfile(dataset);
-            final int zoom = GdalUtility.zoomLevelForPixelSize(zoomPixelSize, tileRanges, dataset, crsProfile, tileScheme, tileOrigin, tileSize);
-            // TODO: We could probably come up with a better way of doing this
-            // The resolution returned ensures that a raster could exist within a single tile, but that raster could still produce
-            // 4 tiles at the lowest-integer-zoom if it was on tile boundaries.  Scale up *2* levels to ensure this does not happen.
-            return zoom == 0 || zoom == 1 ? 0 : zoom - 2;
-        }
-        catch(final TileStoreException e)
-        {
-            System.out.println("Could not determine minimal zoom, defaulting to 0.");
-        }
-
-        // Worst case scenario, return zoom level 0
-        return 0;
     }
 
     /**
@@ -811,7 +748,7 @@ public final class GdalUtility
                                                                                                         crsProfile,
                                                                                                         tileOrigin);
 
-            final int minZoom = GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+            final int minZoom = GdalUtility.getMinimalZoom(tileRanges);
             final int maxZoom = GdalUtility.getMaximalZoom(dataset, tileRanges, tileOrigin, tileScheme, tileSize);
 
             return IntStream.rangeClosed(minZoom, maxZoom)
