@@ -62,7 +62,6 @@ import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
-import com.rgi.g2t.RawImageTileReader;
 import com.rgi.store.tiles.TileHandle;
 import com.rgi.store.tiles.TileStoreException;
 
@@ -234,7 +233,7 @@ public class RawImageTileReaderTest
                                                                                                     profile,
                                                                                                     TileOrigin.LowerLeft);
 
-        final int minimumZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+        final int minimumZoom = GdalUtility.getMinimalZoom(tileRanges);
         final Coordinate<Integer> minTile = tileRanges.get(minimumZoom).getMinimum();
 
         final BoundingBox box = profile.getTileBounds(minTile.getX(),
@@ -275,7 +274,7 @@ public class RawImageTileReaderTest
                                                                     profile,
                                                                     TileOrigin.LowerLeft);
 
-        final int minZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+        final int minZoom = GdalUtility.getMinimalZoom(tileRanges);
         final int maxZoom = GdalUtility.getMaximalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
 
         final int tileCount  =   IntStream.rangeClosed(minZoom, maxZoom)
@@ -382,7 +381,7 @@ public class RawImageTileReaderTest
                                                                                                     profile,
                                                                                                     TileOrigin.LowerLeft);
 
-        final int minZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+        final int minZoom = GdalUtility.getMinimalZoom(tileRanges);
         final int maxZoom = GdalUtility.getMaximalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
 
         final Set<Integer> zooms = IntStream.rangeClosed(minZoom, maxZoom).boxed().collect(Collectors.toSet());
@@ -544,7 +543,7 @@ public class RawImageTileReaderTest
                                                                                                     profile,
                                                                                                     TileOrigin.LowerLeft);
 
-        final int minimumZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+        final int minimumZoom = GdalUtility.getMinimalZoom(tileRanges);
 
         final TileMatrixDimensions expectedDimensions = tileScheme.dimensions(minimumZoom);
 
@@ -578,7 +577,7 @@ public class RawImageTileReaderTest
                                                                                                     profile,
                                                                                                     TileOrigin.LowerLeft);
 
-        final int minimumZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+        final int minimumZoom = GdalUtility.getMinimalZoom(tileRanges);
         final Coordinate<Integer> minTile = tileRanges.get(minimumZoom).getMinimum();
 
         final CrsCoordinate coordinate = profile.tileToCrsCoordinate(minTile.getX() + TileOrigin.LowerLeft.getHorizontal(),
@@ -621,7 +620,7 @@ public class RawImageTileReaderTest
                                                                                                     profile,
                                                                                                     TileOrigin.LowerLeft);
 
-        final int minimumZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+        final int minimumZoom = GdalUtility.getMinimalZoom( tileRanges);
         final Coordinate<Integer> minTile = tileRanges.get(minimumZoom).getMinimum();
 
         final CrsCoordinate coordinate = profile.tileToCrsCoordinate(minTile.getX() + TileOrigin.UpperRight.getHorizontal(),
@@ -664,7 +663,7 @@ public class RawImageTileReaderTest
                                                                                                     profile,
                                                                                                     TileOrigin.LowerLeft);
 
-        final int minimumZoom = GdalUtility.getMinimalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
+        final int minimumZoom = GdalUtility.getMinimalZoom(tileRanges);
         final Coordinate<Integer> minTile = tileRanges.get(minimumZoom).getMinimum();
 
         final TileMatrixDimensions dimensions = tileScheme.dimensions(minimumZoom);
