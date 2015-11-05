@@ -634,6 +634,15 @@ public final class GdalUtility
      */
     public static int getMinimalZoom(final Map<Integer, Range<Coordinate<Integer>>> tileRanges)
     {
+        if(tileRanges == null || tileRanges.isEmpty())
+        {
+            throw new IllegalArgumentException("Tile Range Map cannot be null or Empty");
+        }
+        final Range<Coordinate<Integer>> levelZero = tileRanges.get(0);
+        if(!levelZero.getMinimum().equals(levelZero.getMaximum()))
+        {
+            throw new IllegalArgumentException("Level Zero of the tileRange must be 1 tile");
+        }
         try{
             return tileRanges.entrySet()
                              .stream()
@@ -642,7 +651,7 @@ public final class GdalUtility
         }
         catch(final NullPointerException ignored)
         {
-            //if there are no single tile levels, return 0, this should never happen.
+            //if something crazy gets passed in.
             return 0;
         }
 

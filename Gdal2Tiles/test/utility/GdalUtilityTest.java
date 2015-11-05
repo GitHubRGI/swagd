@@ -753,7 +753,7 @@ public class GdalUtilityTest
 
         final Map<Integer, Range<Coordinate<Integer>>> map = GdalUtility.calculateTileRanges(tileScheme, datasetBounds, tileMatrixBounds, crsProfile, origin);
 
-        final int minZoom = GdalUtility.getMinimalZoom(imageData.dataset, map, origin, tileScheme, new Dimensions<>(256, 256));
+        final int minZoom = GdalUtility.getMinimalZoom( map);
         final Range<Coordinate<Integer>> range = map.get(minZoom);
         final Coordinate<Integer> left = range.getMinimum();
         final Coordinate<Integer> right = range.getMaximum();
@@ -771,14 +771,8 @@ public class GdalUtilityTest
     @Test (expected = IllegalArgumentException.class)
     public void verifyGetMinimalZoomException1()
     {
-        final Dataset dataset = null;
-        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
-        final TileOrigin tileOrigin = TileOrigin.LowerLeft;
-        final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
-        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
-
-        GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the Dataset is null.");
+        GdalUtility.getMinimalZoom(null);
+        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the TileRange is null.");
     }
 
     /**
@@ -788,18 +782,9 @@ public class GdalUtilityTest
     @Test (expected = IllegalArgumentException.class)
     public void verifyGetMinimalZoomException2()
     {
-        final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
-
-        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = null;
-        final TileOrigin tileOrigin = TileOrigin.LowerLeft;
-        final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
-        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
-
-        GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when Map of tile ranges is null.");
-
-        dataset.delete();
+        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
+        GdalUtility.getMinimalZoom(tileRanges );
+        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the TileRange is empty.");
     }
 
     /**
@@ -807,92 +792,16 @@ public class GdalUtilityTest
      * IllegalArgumentException
      */
     @Test (expected = IllegalArgumentException.class)
-    public void verifyGetMinimalZoomException3()
+    public void verifyGetMinimalZoomNoSingleTile()
     {
-        final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
-
         final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
-        final TileOrigin tileOrigin = TileOrigin.LowerLeft;
-        final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
-        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
+        final Coordinate<Integer>                      topLeft    = new Coordinate<>(0, 2);
+        final Coordinate<Integer>                      lowerRight = new Coordinate<>(2, 0);
+        final Range<Coordinate<Integer>>               range      = new Range<>(topLeft, lowerRight);
+        tileRanges.put(0,range);
+        GdalUtility.getMinimalZoom(tileRanges);
 
-        GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the Map of tile ranges is empty.");
-
-        dataset.delete();
-    }
-
-    /**
-     * Tests getMinimalZoom throws an
-     * IllegalArgumentException
-     */
-    @Test (expected = IllegalArgumentException.class)
-    public void verifyGetMinimalZoomException4()
-    {
-        final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
-
-        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
-        final Coordinate<Integer> coordinate = new Coordinate<>(0,0);
-        tileRanges.put(0,new Range<>(coordinate, coordinate));
-
-        final TileOrigin tileOrigin = null;
-        final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
-        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
-
-        GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the TileOrigin is null.");
-
-        dataset.delete();
-    }
-
-    /**
-     * Tests getMinimalZoom throws an
-     * IllegalArgumentException
-     */
-    @Test (expected = IllegalArgumentException.class)
-    public void verifyGetMinimalZoomException5()
-    {
-        final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
-
-        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
-        final Coordinate<Integer> coordinate = new Coordinate<>(0,0);
-        tileRanges.put(0,new Range<>(coordinate, coordinate));
-
-        final TileOrigin tileOrigin = TileOrigin.LowerLeft;
-        final TileScheme tileScheme = null;
-        final Dimensions<Integer> dimensions = new Dimensions<>(256, 256);
-
-        GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the TileScheme is null.");
-
-        dataset.delete();
-    }
-
-    /**
-     * Tests getMinimalZoom throws an
-     * IllegalArgumentException
-     */
-    @Test (expected = IllegalArgumentException.class)
-    public void verifyGetMinimalZoomException6()
-    {
-        final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
-
-        final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
-        final Coordinate<Integer> coordinate = new Coordinate<>(0,0);
-        tileRanges.put(0,new Range<>(coordinate, coordinate));
-
-        final TileOrigin tileOrigin = TileOrigin.LowerLeft;
-        final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
-        final Dimensions<Integer> dimensions = null;
-
-        GdalUtility.getMinimalZoom(dataset, tileRanges, tileOrigin, tileScheme, dimensions);
-        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the Dimensions are null.");
-
-        dataset.delete();
+        fail("Expected GdalUtility method getMinimalZoom to throw an IllegalArgumentException when the Tile Range at level 0 is more than 1 tile.");
     }
 
     /**
@@ -913,7 +822,7 @@ public class GdalUtilityTest
                                                                                                         imageData.crsProfile,
                                                                                                         tileOrigin);
 
-            final int min = GdalUtility.getMinimalZoom(imageData.dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+            final int min = GdalUtility.getMinimalZoom(tileRanges);
 
             try (final RawImageTileReader reader = new RawImageTileReader(imageData.imageFile, imageData.dataset, tileSize, null, null))
             {
@@ -941,7 +850,7 @@ public class GdalUtilityTest
                                                                                                         imageData.crsProfile,
                                                                                                         tileOrigin);
 
-            final int min = GdalUtility.getMinimalZoom(imageData.dataset, tileRanges, tileOrigin, tileScheme, tileSize);
+            final int min = GdalUtility.getMinimalZoom( tileRanges);
 
             try (final RawImageTileReader reader = new RawImageTileReader(imageData.imageFile, imageData.dataset, tileSize, null, null)) {
                 final long tiles = reader.stream(min).count();
