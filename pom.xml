@@ -112,6 +112,7 @@
                                 <excludes>com/rgi/geopackage/extensions/ExtensionsVerifier*.class</excludes>
                                 <excludes>com/rgi/geopackage/metadata/MetadataVerifier*.class</excludes>
                                 <excludes>com/rgi/geopackage/schema/SchemaVerifier*.class</excludes>
+                                <excludes>com/rgi/geopackage/tiles/TilesVerifier*.class</excludes>
                             </excludes>
                         </instrumentation>
                     </configuration>
