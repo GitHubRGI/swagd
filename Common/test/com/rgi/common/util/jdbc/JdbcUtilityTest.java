@@ -4,13 +4,20 @@ import com.mockrunner.mock.jdbc.MockConnection;
 import com.rgi.common.Pair;
 import com.sun.org.apache.xalan.internal.utils.XMLSecurityManager;
 import com.sun.org.omg.CORBA.AttributeDescription;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.FileSystems;
-import java.sql.*;
-import java.util.*;
-import java.util.function.BinaryOperator;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 
@@ -22,9 +29,35 @@ import static org.junit.Assert.*;
 public class JdbcUtilityTest {
 
     private static final String TEST_TABLE_NAME = "tiles";
-
+    private final File gpkgFile = new File(ClassLoader.getSystemResource("testNetwork.gpkg").getFile());
     private final Random randomGenerator = new Random();
 
+    @Before
+    public void setUp() throws IOException
+    {
+        try
+        {
+            Class.forName("org.sqlite.JDBC");
+        }
+        catch(final ClassNotFoundException exception)
+        {
+            // Could not register driver
+            throw new IOException(exception);
+        }
+    }
+
+    public static Connection getConnection(final File gpkgFile) throws IOException
+    {
+        try
+        {
+            return DriverManager.getConnection("jdbc:sqlite:" + gpkgFile.getAbsolutePath());
+        }
+        catch(final SQLException exception)
+        {
+            System.out.println("Could not get DB instance.");
+            throw new IOException(exception);
+        }
+    }
     //This portion tests the first SelectOne function block
     @Test(expected = IllegalArgumentException.class)
     public void selectOneNullConectionTest() throws SQLException {
@@ -84,21 +117,32 @@ public class JdbcUtilityTest {
     }
 
     @SuppressWarnings("ConstantConditions")
-    @Test(expected = AssertionError.class)
     public void selectOneTryStatementPassTest() throws Exception {
-        final File testFile = this.getRandomFile(2);
-        testFile.createNewFile();
-
-        final Connection con = new MockConnection();
+        final Connection con = getConnection(this.gpkgFile);
 
         final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
 
-        JdbcUtility.selectOne(con, str,
+        final String result = JdbcUtility.selectOne(con, str,
                 preparedStatement -> preparedStatement.setString(1, "tiles"),
-                resultSet -> resultSet.getInt(1));
+                resultSet -> resultSet.getString(1));
 
-        fail("selectOne should have a sql command in the String str");
+        assertNotNull("Result returned null when it should have returned a value",result);
     }
+
+
+    @SuppressWarnings("ConstantConditions")
+    public void selectOneTryStatementNullTest() throws Exception {
+        final Connection con = new MockConnection();
+        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
+
+        final String result = JdbcUtility.selectOne(con, str,
+                preparedStatement -> preparedStatement.setString(1, "tiles"),
+                resultSet -> resultSet.getString(1));
+
+        assertNull("Result should return null", result);
+//        fail("should have returned null");
+    }
+
 
 
 
