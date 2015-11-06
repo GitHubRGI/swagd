@@ -421,16 +421,22 @@ public class JdbcUtilityTest {
     @SuppressWarnings("ConstantConditions")
     @Test
     public void update3TryStatementPassTest() throws Exception {
-        final Connection con = getConnection(this.gpkgFile);
-        // this was moved below setting the pragmas because is starts a transaction and causes setPragmaSynchronousOff to throw an exception
-        con.setAutoCommit(false);
 
         final FileSystem system = FileSystems.getDefault();
-        final File file = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").getFile());
-        final File copyfile = new File(ClassLoader.getSystemResource("testNetwork_origCopy.gpkg").getFile());
+        File toReplace = new File(ClassLoader.getSystemResource("testNetwork.gpkg").getFile());
+        File Original = new File(ClassLoader.getSystemResource("testNetwork.orig.gpkg").getFile());
+        final Path file = toReplace.toPath();
+        final Path originalFile = Original.toPath();
+
+
+        Connection con = null;
         try
         {
-            Files.copy(file.toPath(), copyfile.toPath(), REPLACE_EXISTING);
+
+            Files.copy(originalFile, file, REPLACE_EXISTING);
+            con = getConnection(this.gpkgFile);
+            // this was moved below setting the pragmas because is starts a transaction and causes setPragmaSynchronousOff to throw an exception
+            con.setAutoCommit(false);
 
             final String insert = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
                     "alaska2",
@@ -452,7 +458,11 @@ public class JdbcUtilityTest {
         }
         finally
         {
-            Files.copy(copyfile.toPath(), file.toPath(), REPLACE_EXISTING);
+            if (con != null)
+            {
+                con.close();
+            }
+            Files.copy(originalFile, file, REPLACE_EXISTING);
         }
 
     }
