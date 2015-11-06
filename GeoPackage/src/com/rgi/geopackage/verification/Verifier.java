@@ -91,7 +91,7 @@ public class Verifier
 
                                                        final Throwable cause = ex.getCause();
 
-                                                       if(cause != null && cause instanceof AssertionError)
+                                                       if(cause instanceof AssertionError)
                                                        {
                                                            final AssertionError assertionError = (AssertionError)cause;
 
