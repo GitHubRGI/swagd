@@ -3,6 +3,7 @@ package com.rgi.common.util.jdbc;
 import com.mockrunner.mock.jdbc.MockConnection;
 import com.rgi.common.Pair;
 import com.sun.xml.internal.bind.api.impl.NameConverter;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.sqlite.SQLiteConnection;
@@ -121,6 +122,7 @@ public class JdbcUtilityTest {
                 preparedStatement -> preparedStatement.setString(1, "tiles"),
                 resultSet -> resultSet.getString(1));
 
+        con.close();
         assertNotNull("Result returned null when it should have returned a value", result);
     }
 
@@ -190,6 +192,7 @@ public class JdbcUtilityTest {
                 preparedStatement -> preparedStatement.setString(1, "tiles"),
                 resultSet -> resultSet.getString(1));
 
+        con.close();
         assertEquals("result should return a size of 1", 1, result.size());
 
     }
@@ -256,6 +259,7 @@ public class JdbcUtilityTest {
         final boolean result = runConsumer(list, list::add);
 
         assertTrue("Result List should have items in it after running the forEach method", result);
+
     }
 
     private boolean runConsumer(List<Integer> list, Consumer<Integer> consumer) throws Exception {
@@ -266,6 +270,7 @@ public class JdbcUtilityTest {
         JdbcUtility.forEach(con, str,
                 preparedStatement -> preparedStatement.setString(1, "tiles"),
                 resultSet -> consumer.accept(resultSet.getInt(1)));
+        con.close();
         return !list.isEmpty();
     }
 
@@ -326,7 +331,6 @@ public class JdbcUtilityTest {
     }
 
 
-
     //this portion tests the second update funciton block
     @Test(expected = IllegalArgumentException.class)
     public void update2NullConnectionTest() throws Exception {
@@ -358,16 +362,18 @@ public class JdbcUtilityTest {
 //        final List<Integer> list = new ArrayList<>();
 //        final boolean result = runConsumerUpdate2(list, list::add);
 //
-//        assertFalse("Result List should have items in it after running the forEach method", result);
+//        assertNotNull("the Query returns result in update", result);
 //    }
 //
 //    private boolean runConsumerUpdate2(List<Integer> list, Consumer<Integer> consumer) throws Exception
 //    {
 //        final Connection con = getConnection(this.gpkgFile);
+//        con.setAutoCommit(false);
 //
 //        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
 //
 //        JdbcUtility.update(con, str, preparedStatement -> preparedStatement.setString(1, "tiles"));
+//        con.close();
 //        return !list.isEmpty();
 //    }
 //
@@ -424,7 +430,8 @@ public class JdbcUtilityTest {
 
         final FileSystem system = FileSystems.getDefault();
         File toReplace = new File(ClassLoader.getSystemResource("testNetwork.gpkg").getFile());
-        File Original = new File(ClassLoader.getSystemResource("testNetwork.orig.gpkg").getFile());
+        File Original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").getFile());
+
         final Path file = toReplace.toPath();
         final Path originalFile = Original.toPath();
 
@@ -449,6 +456,7 @@ public class JdbcUtilityTest {
                         preparedStatement.setInt(2, 2);
                     },
                     resultSet -> resultSet.getInt(1));
+
 
             assertTrue("Result should be a non negative, non-zero integer", identifier > 0);
         }
@@ -480,25 +488,25 @@ public class JdbcUtilityTest {
 
         assertNull("Result should return null", result);
     }
-//    @Test
-//    public void update3tryStatementTest() throws Exception {
-//
-//        final List<Integer> list = new ArrayList<>();
-//        final boolean result = runConsumerUpdate3(list, list::add);
-//
-//        assertFalse("Result List should have items in it after running the forEach method", result);
-//    }
-//
-//    private boolean runConsumerUpdate3(List<Integer> list, Consumer<Integer> consumer) throws Exception
-//    {
-//        final Connection con = getConnection(this.gpkgFile);
-//
-//        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
-//
-//        JdbcUtility.update(con, str, preparedStatement -> preparedStatement.setString(1, "tiles"),
-//                resultSet -> resultSet.getInt(1));
-//        return !list.isEmpty();
-//    }
+    @Test
+    public void update3tryStatementTest() throws Exception {
+
+        final List<Integer> list = new ArrayList<>();
+        final boolean result = runConsumerUpdate3(list, list::add);
+
+        assertFalse("Result List should have items in it after running the forEach method", result);
+    }
+
+    private boolean runConsumerUpdate3(List<Integer> list, Consumer<Integer> consumer) throws Exception
+    {
+        final Connection con = getConnection(this.gpkgFile);
+
+        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
+
+        JdbcUtility.update(con, str, preparedStatement -> preparedStatement.setString(1, "tiles"),
+                resultSet -> resultSet.getInt(1));
+        return !list.isEmpty();
+    }
 
 
 
@@ -551,21 +559,75 @@ public class JdbcUtilityTest {
         fail("update should have thrown an illegalArgumentException for a null Iterable");
     }
 
+
+    @Test
+    public void update4NullTryStatementTest() throws SQLException, IOException {
+        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
+        final Connection con = getConnection(this.gpkgFile);
+        con.setAutoCommit(false);
+
+        final Iterable<Pair<Integer, Integer>> edges = Arrays.asList(
+                new Pair<>(12, 23),
+                new Pair<>(12, 42),
+                new Pair<>(34, 56));
+
+        JdbcUtility.update(con, str, edges,
+                (preparedStatement, edge) -> { preparedStatement.setInt(1, edge.getLeft());
+                                               preparedStatement.setInt(2, edge.getRight());
+                });
+
+    }
+
+//    @SuppressWarnings("ConstantConditions")
 //    @Test
-//    public void update4NullTryStatementTest() throws SQLException, IOException {
-//        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-//        final Connection con = getConnection(this.gpkgFile);
+//    public void update4TryStatementPassTest() throws Exception {
+//
+//        final FileSystem system = FileSystems.getDefault();
+//        File toReplace = new File(ClassLoader.getSystemResource("testNetwork.gpkg").getFile());
+//        File Original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").getFile());
+//
+//        final Path file = toReplace.toPath();
+//        final Path originalFile = Original.toPath();
 //
 //        final Iterable<Pair<Integer, Integer>> edges = Arrays.asList(
 //                new Pair<>(12, 23),
 //                new Pair<>(12, 42),
 //                new Pair<>(34, 56));
 //
-//        JdbcUtility.update(con, str, edges,
-//                (preparedStatement, edge) -> { preparedStatement.setInt(1, Integer.parseInt("tiles"));
-//                                               preparedStatement.setInt(2, Integer.parseInt("tiles"));
-//                });
-//        fail("update should have thrown an illegalArgumentException for a null Iterable");
+//        Connection con = null;
+//        try
+//        {
+//
+//            Files.copy(originalFile, file, REPLACE_EXISTING);
+//            con = getConnection(this.gpkgFile);
+//            // this was moved below setting the pragmas because is starts a transaction and causes setPragmaSynchronousOff to throw an exception
+//            con.setAutoCommit(false);
+//
+//            final String insert = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+//                    "alaska2",
+//                    "from_node",
+//                    "to_node");
+//            JdbcUtility.update(con, insert, edges,
+//                    (preparedStatement, edge) -> {
+//                        preparedStatement.setInt(1, Integer.parseInt("set"));
+//                        preparedStatement.setInt(2, Integer.parseInt("table"));
+//                    });
+//
+//            assertTrue("Result should be a non negative, non-zero integer", identifier > 0);
+//        }
+//        catch(Exception ex)
+//        {
+//            ex.printStackTrace();
+//        }
+//        finally
+//        {
+//            if (con != null)
+//            {
+//                con.close();
+//            }
+//            Files.copy(originalFile, file, REPLACE_EXISTING);
+//        }
+//
 //    }
 
 
@@ -600,6 +662,9 @@ public class JdbcUtilityTest {
             fail("map should have thrown an IllegalArgumentException for a null resultSetFunction");
         }
     }
+
+
+
 
 
     //This portion tests the Collection map function block
