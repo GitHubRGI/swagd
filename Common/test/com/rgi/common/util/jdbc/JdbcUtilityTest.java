@@ -7,6 +7,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.sqlite.SQLiteConnection;
+import sun.reflect.annotation.ExceptionProxy;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,8 +68,6 @@ public class JdbcUtilityTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void selectOneNullStringTest() throws Exception {
-        final File testFile = this.getRandomFile(4);
-        testFile.createNewFile();
 
         final Connection con = new MockConnection();
         final boolean result = JdbcUtility.selectOne(con,
@@ -81,8 +80,6 @@ public class JdbcUtilityTest {
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void selectOneNullResultSetFunctionTest() throws Exception {
-        final File testFile = this.getRandomFile(2);
-        testFile.createNewFile();
 
         final Connection con = new MockConnection();
 
@@ -97,8 +94,6 @@ public class JdbcUtilityTest {
     @SuppressWarnings("ConstantConditions")
     @Test(expected = AssertionError.class)
     public void selectOneTryStatementTest() throws Exception {
-        final File testFile = this.getRandomFile(2);
-        testFile.createNewFile();
 
         final Connection con = new MockConnection();
 
@@ -154,9 +149,6 @@ public class JdbcUtilityTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void selectNullStringTest() throws Exception {
-        final File testFile = this.getRandomFile(4);
-        testFile.createNewFile();
-
         final Connection con = new MockConnection();
 
         JdbcUtility.select(con, null,
@@ -168,8 +160,6 @@ public class JdbcUtilityTest {
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void selectNullResultSetFunctionTest() throws Exception {
-        final File testFile = this.getRandomFile(2);
-        testFile.createNewFile();
 
         final Connection con = new MockConnection();
 
@@ -224,8 +214,6 @@ public class JdbcUtilityTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void forEachNullStringTest() throws Exception {
-        final File testFile = this.getRandomFile(3);
-        testFile.createNewFile();
 
         final Connection con = new MockConnection();
 
@@ -239,9 +227,6 @@ public class JdbcUtilityTest {
     @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
     public void forEachNullResultSetConsumerFunctionTest() throws Exception {
-        final File testFile = this.getRandomFile(8);
-        testFile.createNewFile();
-
         final Connection con = new MockConnection();
         final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
 
@@ -278,9 +263,6 @@ public class JdbcUtilityTest {
     //This portion tests the first update function block
     @Test(expected = IllegalArgumentException.class)
     public void update1NullDatabaseConnectionTest() throws Exception {
-        final File testFile = this.getRandomFile(2);
-        testFile.createNewFile();
-
         final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
 
         JdbcUtility.update(null, str);
@@ -289,9 +271,6 @@ public class JdbcUtilityTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void update1NullStringTest() throws Exception {
-        final File testFile = this.getRandomFile(5);
-        testFile.createNewFile();
-
         final Connection con = new MockConnection();
 
         JdbcUtility.update(con, null);
@@ -301,8 +280,6 @@ public class JdbcUtilityTest {
 
     @Test(expected = AssertionError.class)
     public void update1PreparedStatementCatchTest() throws Exception {
-        final File testFile = this.getRandomFile(4);
-        testFile.createNewFile();
         final Connection con = new MockConnection();
 
         final String str = "Hello! what is up my mans.";
@@ -334,9 +311,6 @@ public class JdbcUtilityTest {
     //this portion tests the second update funciton block
     @Test(expected = IllegalArgumentException.class)
     public void update2NullConnectionTest() throws Exception {
-        final File testFile = this.getRandomFile(5);
-        testFile.createNewFile();
-
         final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
 
         JdbcUtility.update(null, str,
@@ -346,9 +320,6 @@ public class JdbcUtilityTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void update2NullStringTest() throws Exception {
-        final File testFile = this.getRandomFile(7);
-        testFile.createNewFile();
-
         final Connection con = new MockConnection();
 
         JdbcUtility.update(con, null,
@@ -356,27 +327,80 @@ public class JdbcUtilityTest {
         fail("update should have thrown an IllegalArgumentException for a null String");
     }
 
-//    @Test
-//    public void update2tryStatementTest() throws Exception {
-//
-//        final List<Integer> list = new ArrayList<>();
-//        final boolean result = runConsumerUpdate2(list, list::add);
-//
-//        assertNotNull("the Query returns result in update", result);
-//    }
-//
-//    private boolean runConsumerUpdate2(List<Integer> list, Consumer<Integer> consumer) throws Exception
-//    {
-//        final Connection con = getConnection(this.gpkgFile);
-//        con.setAutoCommit(false);
-//
-//        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
-//
-//        JdbcUtility.update(con, str, preparedStatement -> preparedStatement.setString(1, "tiles"));
-//        con.close();
-//        return !list.isEmpty();
-//    }
-//
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    public void update2TryStatementPassTest() throws Exception {
+
+        final FileSystem system = FileSystems.getDefault();
+        File toReplace = this.getRandomFile(8);
+        File Original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").getFile());
+
+        final Path file = toReplace.toPath();
+        final Path originalFile = Original.toPath();
+
+        Connection con = null;
+        try
+        {
+
+            Files.copy(originalFile, file, REPLACE_EXISTING);
+            con = getConnection(this.gpkgFile);
+            // this was moved below setting the pragmas because is starts a transaction and causes setPragmaSynchronousOff to throw an exception
+            con.setAutoCommit(false);
+
+            final String insert = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+                    "alaska2",
+                    "from_node",
+                    "to_node");
+
+            JdbcUtility.update(con, insert,
+                    preparedStatement -> {
+                        preparedStatement.setInt(1, 1);
+                        preparedStatement.setInt(2, 2);
+                    });
+
+//            assertTrue("Result should be a non negative, non-zero integer", result);
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        finally
+        {
+            if (con != null)
+            {
+                con.close();
+            }
+            Files.copy(originalFile, file, REPLACE_EXISTING);
+            toReplace.delete();
+        }
+
+    }
+
+
+    @Test
+    public void update2tryStatementTest() throws Exception {
+
+        final List<Integer> list = new ArrayList<>();
+        final boolean result = runConsumerUpdate2(list, list::add);
+
+        assertTrue("the Query returns result in update", result);
+    }
+
+    private boolean runConsumerUpdate2(List<Integer> list, Consumer<Integer> consumer) throws Exception
+    {
+        final Connection con = getConnection(this.gpkgFile);
+        con.setAutoCommit(false);
+
+        final String str = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+                "alaska2",
+                "from_node",
+                "to_node");
+
+        JdbcUtility.update(con, str, preparedStatement -> preparedStatement.setString(1, "tiles"));
+        con.close();
+        return !list.isEmpty();
+    }
+
 
 
 
@@ -384,8 +408,6 @@ public class JdbcUtilityTest {
     //this portion tests the third update function block
     @Test(expected = IllegalArgumentException.class)
     public void update3NullConnectionTest() throws Exception {
-        final File testFile = this.getRandomFile(4);
-        testFile.createNewFile();
 
         final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
 
@@ -398,9 +420,6 @@ public class JdbcUtilityTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void update3NullStringTest() throws Exception {
-        final File testFile = this.getRandomFile(4);
-        testFile.createNewFile();
-
         final Connection con = new MockConnection();
 
         final boolean result = JdbcUtility.update(con, null,
@@ -411,9 +430,6 @@ public class JdbcUtilityTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void update3NullKeyMapperTest() throws Exception {
-        final File testFile = this.getRandomFile(8);
-        testFile.createNewFile();
-
         final Connection con = new MockConnection();
         final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
 
@@ -429,7 +445,7 @@ public class JdbcUtilityTest {
     public void update3TryStatementPassTest() throws Exception {
 
         final FileSystem system = FileSystems.getDefault();
-        File toReplace = new File(ClassLoader.getSystemResource("testNetwork.gpkg").getFile());
+        File toReplace = this.getRandomFile(8);
         File Original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").getFile());
 
         final Path file = toReplace.toPath();
@@ -471,13 +487,14 @@ public class JdbcUtilityTest {
                 con.close();
             }
             Files.copy(originalFile, file, REPLACE_EXISTING);
+            toReplace.delete();
         }
 
     }
 
 
     @SuppressWarnings("ConstantConditions")
-    @Test
+    @Test(expected = SQLException.class)
     public void update3TryStatementNullTest() throws Exception {
         final Connection con = new MockConnection();
         final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
@@ -488,18 +505,20 @@ public class JdbcUtilityTest {
 
         assertNull("Result should return null", result);
     }
-    @Test
+
+    @Test(expected = SQLException.class)
     public void update3tryStatementTest() throws Exception {
 
         final List<Integer> list = new ArrayList<>();
         final boolean result = runConsumerUpdate3(list, list::add);
 
-        assertFalse("Result List should have items in it after running the forEach method", result);
+        assertNotNull("Result List should have items in it after running the forEach method", result);
     }
 
-    private boolean runConsumerUpdate3(List<Integer> list, Consumer<Integer> consumer) throws Exception
+    private boolean runConsumerUpdate3(final List<Integer> list, final Consumer<Integer> consumer) throws Exception
     {
         final Connection con = getConnection(this.gpkgFile);
+        con.setAutoCommit(false);
 
         final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
 
@@ -633,8 +652,8 @@ public class JdbcUtilityTest {
 
     //This portion tests the first map function block
     @Test(expected = IllegalArgumentException.class)
-    public void map1NullResultSetTest() throws Exception {
-
+    public void map1NullResultSetTest() throws Exception
+    {
         final Connection con = getConnection(this.gpkgFile);
         final String query = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
         try (Statement statement = con.createStatement();
@@ -646,9 +665,10 @@ public class JdbcUtilityTest {
         }
     }
 
-    //This portion tests arrayList map function block
+
     @Test(expected = IllegalArgumentException.class)
-    public void map1NullResultSetFunctionTest() throws Exception {
+    public void map1NullResultSetFunctionTest() throws Exception
+    {
         final Connection con = getConnection(this.gpkgFile);
         final String query = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
 
@@ -662,6 +682,8 @@ public class JdbcUtilityTest {
             fail("map should have thrown an IllegalArgumentException for a null resultSetFunction");
         }
     }
+
+
 
 
 
@@ -708,6 +730,23 @@ public class JdbcUtilityTest {
                     resultSet -> resultSet.getString("table_name"),
                     null);
             fail("map should have thrown an IllegalArgumentException for a null collectionFactory");
+
+        }
+    }
+
+    @Test
+    public void map2ResultSetPassTest() throws Exception
+    {
+        final String str = "SELECT table_name FROM %s WHERE data_type = 'tiles';";
+
+        final Connection con = getConnection(this.gpkgFile);
+
+        try (final Statement createStmt2 = con.createStatement();
+             final ResultSet contentsPyramidTables = createStmt2.executeQuery(str))
+        {
+            this.pyramidTablesInContents = JdbcUtility.map(contentsPyramidTables,
+                    resultSet -> resultSet.getString("table_name"),
+                    HashSet<String>::new);
 
         }
     }
@@ -780,6 +819,8 @@ public class JdbcUtilityTest {
             fail("getObjects should have thrown an IllegalArgumentException where endColumn is greater than startIndex");
         }
     }
+
+    private Set<String> pyramidTablesInContents;
 
 
     private static final class ExtensionData {
