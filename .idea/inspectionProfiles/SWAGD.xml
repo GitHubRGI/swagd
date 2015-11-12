@@ -1095,7 +1095,7 @@
     </inspection_tool>
     <inspection_tool class="StaticFieldReferenceOnSubclass" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="StaticGuardedByInstance" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="StaticImport" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="StaticImport" enabled="false" level="ERROR" enabled_by_default="false">
       <scope name="Tests" level="ERROR" enabled="false" />
     </inspection_tool>
     <inspection_tool class="StaticInheritance" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -1116,7 +1116,7 @@
       <option name="m_minLength" value="5" />
       <option name="m_maxLength" value="999" />
     </inspection_tool>
-    <inspection_tool class="StaticVariableOfConcreteClass" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="StaticVariableOfConcreteClass" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="StaticVariableUninitializedUse" enabled="true" level="ERROR" enabled_by_default="true">
       <option name="m_ignorePrimitives" value="false" />
     </inspection_tool>
