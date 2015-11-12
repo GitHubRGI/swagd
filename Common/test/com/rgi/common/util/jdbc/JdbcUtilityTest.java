@@ -2,12 +2,8 @@ package com.rgi.common.util.jdbc;
 
 import com.mockrunner.mock.jdbc.MockConnection;
 import com.rgi.common.Pair;
-import com.sun.xml.internal.bind.api.impl.NameConverter;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.sqlite.SQLiteConnection;
-import sun.reflect.annotation.ExceptionProxy;
 
 import java.io.File;
 import java.io.IOException;
@@ -473,7 +469,7 @@ public class JdbcUtilityTest {
                         preparedStatement.setInt(2, 2);
                     });
 
-
+            assertNotNull("runs the function properly", file);
         }
         catch(Exception ex)
         {
