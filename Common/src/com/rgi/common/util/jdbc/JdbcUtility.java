@@ -470,7 +470,7 @@ public final class JdbcUtility
 
         if(collectionFactory == null)
         {
-            throw new IllegalArgumentException("Collection factory may not be null");
+            throw new IllegalArgumentException("Collection factoryfmay not be null");
         }
 
         final C collection = collectionFactory.get();

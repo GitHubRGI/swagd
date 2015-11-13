@@ -74,8 +74,6 @@ public class JdbcUtilityTest {
     }
 
 
-    //This portion tests the first SelectOne function block
-
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the databaseConnection is null
@@ -762,7 +760,7 @@ public class JdbcUtilityTest {
 //    public void map1ResultSetTest() throws Exception
 //    {
 //        final Connection con = getConnection(this.gpkgFile);
-//        final String query = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+//        final String query = String.format("INSERT INTO %s (%s, %s) VALUES (0, 3)",
 //                "alaska2",
 //                "from_node",
 //                "to_node");
@@ -774,12 +772,11 @@ public class JdbcUtilityTest {
 //                    resultSet -> resultSet.getString("table_name"),
 //                    HashSet<String>::new);
 //
-//            assertNotNull("should return an object", this.gpkgExtensionsDataAndColumnName);
+//            assertNull("should return an object", this.pyramidTablesInContents);
 //        }
 //    }
 
 
-    //This portion tests the Collection map function block
 
     /**
      * Tests if an IllegalArgumentException is thrown
@@ -849,7 +846,7 @@ public class JdbcUtilityTest {
 //    {
 //        final Connection con = getConnection(this.gpkgFile);
 //
-//        final String str = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+//        final String str = String.format("INSERT INTO %s (%s, %s) VALUES (0, 1)",
 //                "alaska2",
 //                "from_node",
 //                "to_node");
@@ -858,7 +855,7 @@ public class JdbcUtilityTest {
 //             final ResultSet contentsPyramidTables = createStmt2.executeQuery(str))
 //        {
 //            this.pyramidTablesInContents = JdbcUtility.map(contentsPyramidTables,
-//                        resultSet -> resultSet.getString("alaska2"),
+//                        resultSet -> resultSet.getString("table_name"),
 //                        HashSet<String>::new);
 //            assertNotNull("function returns a collection", this.pyramidTablesInContents);
 //        }
@@ -964,7 +961,6 @@ public class JdbcUtilityTest {
         }
     }
 
-    //    this portion tests the getObjects function block
 
     /**
      * Tests if an IllegalArgumentException is thrown
