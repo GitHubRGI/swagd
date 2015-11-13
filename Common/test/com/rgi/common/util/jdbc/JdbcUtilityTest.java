@@ -748,46 +748,35 @@ public class JdbcUtilityTest {
                     preparedStatement.setInt(2, edge.getRight());
                 });
         con.close();
+        toReplace.delete();
         return !list.isEmpty();
     }
 
-
-    /**
-     * Tests if an IllegalArgumentException is thrown
-     * when the ResultSet is null
-     * @throws Exception
-     */
-    @Test
-    public void map1ResultSetTest() throws Exception
-    {
-        final FileSystem system = FileSystems.getDefault();
-        File toReplace = this.getRandomFile(8);
-        File Original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").getFile());
-
-        final Path file = toReplace.toPath();
-        final Path originalFile = Original.toPath();
-
-        Connection con = null;
-        Files.copy(originalFile, file, REPLACE_EXISTING);
-        con = getConnection(this.gpkgFile);
-        // this was moved below setting the pragmas because is starts a transaction and causes setPragmaSynchronousOff to throw an exception
-        con.setAutoCommit(false);
-
-        final String query = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
-                "alaska2",
-                "from_node",
-                "to_node");
-
-        try (Statement statement = con.createStatement();
-             ResultSet tableNameColumnNameRS = statement.executeQuery(query))
-        {
-            this.pyramidTablesInContents = JdbcUtility.map(tableNameColumnNameRS,
-                    resultSet -> resultSet.getString("table_name"),
-                    HashSet<String>::new);
-
-            assertNotNull("should return an object", this.gpkgExtensionsDataAndColumnName);
-        }
-    }
+//TODO test what map returns
+//    /**
+//     * Tests if an IllegalArgumentException is thrown
+//     * when the ResultSet is null
+//     * @throws Exception
+//     */
+//    @Test
+//    public void map1ResultSetTest() throws Exception
+//    {
+//        final Connection con = getConnection(this.gpkgFile);
+//        final String query = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+//                "alaska2",
+//                "from_node",
+//                "to_node");
+//
+//        try (Statement statement = con.createStatement();
+//             ResultSet tableNameColumnNameRS = statement.executeQuery(query))
+//        {
+//            this.pyramidTablesInContents = JdbcUtility.map(tableNameColumnNameRS,
+//                    resultSet -> resultSet.getString("table_name"),
+//                    HashSet<String>::new);
+//
+//            assertNotNull("should return an object", this.gpkgExtensionsDataAndColumnName);
+//        }
+//    }
 
 
     //This portion tests the Collection map function block
@@ -849,28 +838,31 @@ public class JdbcUtilityTest {
         }
     }
 
-    /**
-     *
-     * @throws Exception
-     */
-    @Test
-    public void map2ResultSetPassTest() throws Exception
-    {
-        final String str = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
-                "alaska2",
-                "from_node",
-                "to_node");
-        final Connection con = getConnection(this.gpkgFile);
-
-        try (final Statement createStmt2 = con.createStatement();
-             final ResultSet contentsPyramidTables = createStmt2.executeQuery(str))
-        {
-            this.pyramidTablesInContents = JdbcUtility.map(contentsPyramidTables,
-                        resultSet -> resultSet.getString("alaska2"),
-                        HashSet<String>::new);
-            assertNotNull("function returns a collection", this.pyramidTablesInContents);
-        }
-    }
+    //TODO test return value on map
+//    /**
+//     * Tests if the map function will return an object
+//     * given a sql string
+//     * @throws Exception
+//     */
+//    @Test
+//    public void map2ResultSetPassTest() throws Exception
+//    {
+//        final Connection con = getConnection(this.gpkgFile);
+//
+//        final String str = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+//                "alaska2",
+//                "from_node",
+//                "to_node");
+//
+//        try (final Statement createStmt2 = con.createStatement();
+//             final ResultSet contentsPyramidTables = createStmt2.executeQuery(str))
+//        {
+//            this.pyramidTablesInContents = JdbcUtility.map(contentsPyramidTables,
+//                        resultSet -> resultSet.getString("alaska2"),
+//                        HashSet<String>::new);
+//            assertNotNull("function returns a collection", this.pyramidTablesInContents);
+//        }
+//    }
 
 
     //This portion tests the mapFilter function block
