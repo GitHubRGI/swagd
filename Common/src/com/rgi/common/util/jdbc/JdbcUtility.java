@@ -539,8 +539,6 @@ public final class JdbcUtility
         return collection;
     }
 
-
-
     /**
      * Create list of {@link Object}s by repeatedly calling
      * {@link ResultSet#getObject(int)}

@@ -1,3 +1,26 @@
+/* The MIT License (MIT)
+ *
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.rgi.common.util.jdbc;
 
 import com.mockrunner.mock.jdbc.MockConnection;
@@ -29,6 +52,7 @@ public class JdbcUtilityTest {
     private static final String TEST_TABLE_NAME = "tiles";
     private final File gpkgFile = new File(ClassLoader.getSystemResource("testNetwork.gpkg").getFile());
     private final Random randomGenerator = new Random();
+    private List<ExtensionData> gpkgExtensionsDataAndColumnName;
 
     @Before
     public void setUp() throws IOException {
@@ -706,7 +730,10 @@ public class JdbcUtilityTest {
         final Path file = toReplace.toPath();
         final Path originalFile = Original.toPath();
 
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
+        final String str = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+                "alaska2",
+                "from_node",
+                "to_node");
         final Connection con = getConnection(this.gpkgFile);
         con.setAutoCommit(false);
 
@@ -717,58 +744,13 @@ public class JdbcUtilityTest {
 
         JdbcUtility.update(con, str, edges,
                 (preparedStatement, edge) -> {
-                    preparedStatement.setInt(1, 1);
-                    preparedStatement.setInt(2, 2);
+                    preparedStatement.setInt(1, edge.getLeft());
+                    preparedStatement.setInt(2, edge.getRight());
                 });
         con.close();
         return !list.isEmpty();
     }
 
-
-
-
-    //This portion tests the first map function block
-
-    /**
-     * Tests if an IllegalArgumentException is thrown
-     * when the ResultSet is null
-     * @throws Exception
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void map1NullResultSetTest() throws Exception
-    {
-        final Connection con = getConnection(this.gpkgFile);
-        final String query = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-        try (Statement statement = con.createStatement();
-             ResultSet tableNameColumnNameRS = statement.executeQuery(query)) {
-            JdbcUtility.map(tableNameColumnNameRS,
-                    null);
-
-            fail("map should have thrown an IllegalArgumentException for a null resultSet");
-        }
-    }
-
-    /**
-     * Tests if an IllegalArgumentException is thrown
-     * when the ResultSetFunction is null
-     * @throws Exception
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void map1NullResultSetFunctionTest() throws Exception
-    {
-        final Connection con = getConnection(this.gpkgFile);
-        final String query = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-
-        try (Statement statement = con.createStatement();
-             ResultSet tableNameColumnNameRS = statement.executeQuery(query)) {
-            JdbcUtility.map(null,
-                    resultSet -> new JdbcUtilityTest.ExtensionData(tableNameColumnNameRS.getString("table_name"),
-                            tableNameColumnNameRS.getString("column_name"),
-                            tableNameColumnNameRS.getString("extension_name")));
-
-            fail("map should have thrown an IllegalArgumentException for a null resultSetFunction");
-        }
-    }
 
     /**
      * Tests if an IllegalArgumentException is thrown
@@ -778,22 +760,34 @@ public class JdbcUtilityTest {
     @Test
     public void map1ResultSetTest() throws Exception
     {
-        final Connection con = getConnection(this.gpkgFile);
-        final String query = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
+        final FileSystem system = FileSystems.getDefault();
+        File toReplace = this.getRandomFile(8);
+        File Original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").getFile());
+
+        final Path file = toReplace.toPath();
+        final Path originalFile = Original.toPath();
+
+        Connection con = null;
+        Files.copy(originalFile, file, REPLACE_EXISTING);
+        con = getConnection(this.gpkgFile);
+        // this was moved below setting the pragmas because is starts a transaction and causes setPragmaSynchronousOff to throw an exception
+        con.setAutoCommit(false);
+
+        final String query = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+                "alaska2",
+                "from_node",
+                "to_node");
+
         try (Statement statement = con.createStatement();
-             ResultSet tableNameColumnNameRS = statement.executeQuery(query)) {
-            JdbcUtility.map(tableNameColumnNameRS,
-                    resultSet -> new JdbcUtilityTest.ExtensionData(tableNameColumnNameRS.getString("table_name"),
-                            tableNameColumnNameRS.getString("column_name"),
-                            tableNameColumnNameRS.getString("extension_name")));
+             ResultSet tableNameColumnNameRS = statement.executeQuery(query))
+        {
+            this.pyramidTablesInContents = JdbcUtility.map(tableNameColumnNameRS,
+                    resultSet -> resultSet.getString("table_name"),
+                    HashSet<String>::new);
 
-
-
+            assertNotNull("should return an object", this.gpkgExtensionsDataAndColumnName);
         }
     }
-
-
-
 
 
     //This portion tests the Collection map function block
@@ -862,15 +856,18 @@ public class JdbcUtilityTest {
     @Test
     public void map2ResultSetPassTest() throws Exception
     {
-        final String str = "SELECT table_name FROM %s WHERE data_type = 'tiles';";
+        final String str = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+                "alaska2",
+                "from_node",
+                "to_node");
         final Connection con = getConnection(this.gpkgFile);
 
         try (final Statement createStmt2 = con.createStatement();
              final ResultSet contentsPyramidTables = createStmt2.executeQuery(str))
         {
             this.pyramidTablesInContents = JdbcUtility.map(contentsPyramidTables,
-                    resultSet -> resultSet.getString("alaska2"),
-                    HashSet<String>::new);
+                        resultSet -> resultSet.getString("alaska2"),
+                        HashSet<String>::new);
             assertNotNull("function returns a collection", this.pyramidTablesInContents);
         }
     }
@@ -902,7 +899,7 @@ public class JdbcUtilityTest {
      * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void mapFilterNullFunctionTest() throws SQLException {
+    public void mapFilterResultSetTest() throws SQLException {
         final String str = "SELECT DISTINCT table_name FROM %s;";
         final Connection con = new MockConnection();
 
@@ -916,7 +913,6 @@ public class JdbcUtilityTest {
             fail("mapFilter should have thrown an IllegalArgumentException for a null funciton");
         }
     }
-
 
 
     @SuppressWarnings("ConstantConditions")
@@ -955,6 +951,26 @@ public class JdbcUtilityTest {
         }
     }
 
+    /**
+     * Tests if an the function returns a collection after
+     * executing with a proper string
+     * @throws SQLException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void mapFilterFunctionTest() throws SQLException {
+        final String str = "SELECT DISTINCT table_name FROM %s;";
+        final Connection con = new MockConnection();
+
+        try (Statement createStmt3 = con.createStatement();
+             ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(str)) {
+            final Set<String> pyramidTablesinTileMatrix = JdbcUtility.mapFilter(tileMatrixPyramidTables,
+                    resultSet -> resultSet.getString("table_name"),
+                    pyramidName -> JdbcUtilityTest.tableOrViewExists(con, pyramidName),
+                    HashSet<String>::new);
+
+            assertNotNull("mapFilter should have a set", pyramidTablesinTileMatrix);
+        }
+    }
 
     //    this portion tests the getObjects function block
 
@@ -989,6 +1005,7 @@ public class JdbcUtilityTest {
     }
 
     private Set<String> pyramidTablesInContents;
+
 
 
     private static final class ExtensionData {
