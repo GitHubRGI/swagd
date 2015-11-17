@@ -1116,7 +1116,7 @@
       <option name="m_minLength" value="5" />
       <option name="m_maxLength" value="999" />
     </inspection_tool>
-    <inspection_tool class="StaticVariableOfConcreteClass" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="StaticVariableOfConcreteClass" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="StaticVariableUninitializedUse" enabled="true" level="ERROR" enabled_by_default="true">
       <option name="m_ignorePrimitives" value="false" />
     </inspection_tool>

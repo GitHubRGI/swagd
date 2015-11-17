@@ -191,7 +191,8 @@ public class RawImageTileReader implements TileStoreReader
                                                               this.profile,
                                                               RawImageTileReader.Origin);
 
-            final int minimumZoom = GdalUtility.getMinimalZoom(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
+            //final int minimumZoom = GdalUtility.getMinimalZoom(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
+            final int minimumZoom = GdalUtility.getMinimalZoom(this.tileRanges);
             final int maximumZoom = GdalUtility.getMaximalZoom(this.dataset, this.tileRanges, Origin, this.tileScheme, tileSize);
 
             // The bounds of the dataset is **almost never** the bounds of the

@@ -98,6 +98,7 @@
 
                                 <!-- Ignore GeoViewer GUI code -->
                                 <excludes>com/rgi/view/**/*.class</excludes>
+                                <excludes>com/rgi/packager/Packager*.class</excludes>
 
                                 <!-- Ignore the verifier app -->
                                 <excludes>com/rgi/verifiertool/**/*.class</excludes>
@@ -111,6 +112,7 @@
                                 <excludes>com/rgi/geopackage/extensions/ExtensionsVerifier*.class</excludes>
                                 <excludes>com/rgi/geopackage/metadata/MetadataVerifier*.class</excludes>
                                 <excludes>com/rgi/geopackage/schema/SchemaVerifier*.class</excludes>
+                                <excludes>com/rgi/geopackage/tiles/TilesVerifier*.class</excludes>
                             </excludes>
                         </instrumentation>
                     </configuration>
