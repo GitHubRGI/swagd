@@ -23,6 +23,9 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.BinaryHeader;
+import com.rgi.geopackage.features.GeometryType;
+
 /**
  * A restricted form of MultiCurve where each Curve in the collection must be
  * of type LineString.
@@ -34,5 +37,22 @@ package com.rgi.geopackage.features.geometry;
  */
 public class MultiLineString extends MultiCurve
 {
+    public MultiLineString(final BinaryHeader header)
+    {
+        super(header);
+    }
 
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public int getTypeCode()
+    {
+        return GeometryType.MultiLineString.getCode();
+    }
+
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public String getGeometryTypeName()
+    {
+        return GeometryType.MultiLineString.toString();
+    }
 }

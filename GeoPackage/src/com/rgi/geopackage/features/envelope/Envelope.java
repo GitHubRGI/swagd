@@ -21,36 +21,34 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.envelope;
 
 /**
- * @see "http://www.geopackage.org/spec/#gpb_format"
- *
- * @author LukeLambert
- *
+ * @author Luke Lambert
  */
-public enum GeoPackageGeometryBinaryType
+public interface Envelope
 {
-    Standard(0),
-    Extended(0b00100000); // TODO check to make sure I've got the endianness right
+    Double getMinimumX();
+    Double getMaximumX();
+    Double getMinimumY();
+    Double getMaximumY();
+    Double getMinimumZ();
+    Double getMaximumZ();
+    Double getMinimumM();
+    Double getMaximumM();
 
-    /**
-     * @return the bitMask
-     */
-    public int getBitMask()
-    {
-        return this.bitMask;
-    }
+    boolean isEmpty();
+    boolean hasX();
+    boolean hasY();
+    boolean hasZ();
+    boolean hasM();
 
-    public static GeoPackageGeometryBinaryType type(final byte flags)
-    {
-        return ((flags >> 5) & 1) == 0 ? Standard : Extended;   // Check to see if the 5th bit is unset. unset -> Standard, set -> Extended
-    }
+    int getContentsIndicatorCode(); // 0: no evelope
+                                    // 1: X, Y
+                                    // 2: X, Y, Z
+                                    // 3: X, Y, M
+                                    // 4: X, Y, Z, M
+                                    // Less than 0, or greater than 4: invalid
 
-    private GeoPackageGeometryBinaryType(final int bitMask)
-    {
-        this.bitMask = bitMask;
-    }
-
-    private final int bitMask;
+    double[] getArray();
 }

@@ -23,6 +23,9 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.BinaryHeader;
+import com.rgi.geopackage.features.GeometryType;
+
 /**
  * A restricted form of CurvePolygon where each ring is defined as a simple,
  * closed LineString.
@@ -34,5 +37,22 @@ package com.rgi.geopackage.features.geometry;
  */
 public class Polygon extends CurvePolygon
 {
+    public Polygon(final BinaryHeader header)
+    {
+        super(header);
+    }
 
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public int getTypeCode()
+    {
+        return GeometryType.CurvePolygon.getCode();
+    }
+
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public String getGeometryTypeName()
+    {
+        return GeometryType.CurvePolygon.toString();
+    }
 }

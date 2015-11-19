@@ -23,6 +23,12 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.BinaryHeader;
+import com.rgi.geopackage.features.GeometryType;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 /**
  * A collection of zero or more Geometry instances.
  * <br>
@@ -45,5 +51,26 @@ package com.rgi.geopackage.features.geometry;
  */
 public class GeometryCollection extends Geometry
 {
+    public GeometryCollection(final BinaryHeader header)
+    {
+        super(header);
+    }
 
+    @Override
+    public int getTypeCode()
+    {
+        return GeometryType.GeometryCollection.getCode();
+    }
+
+    @Override
+    public String getGeometryTypeName()
+    {
+        return GeometryType.GeometryCollection.toString();
+    }
+
+    @Override
+    protected void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    {
+        throw new UnsupportedOperationException("pending implementaiton");
+    }
 }

@@ -23,6 +23,8 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.BinaryHeader;
+
 /**
  * The base type for all 1-dimensional geometry types. A 1-dimensional geometry
  * is a geometry that has a length, but no area. A curve is considered simple
@@ -37,5 +39,8 @@ package com.rgi.geopackage.features.geometry;
  */
 public abstract class Curve extends Geometry
 {
-
+    protected Curve(final BinaryHeader header)
+    {
+        super(header);
+    }
 }

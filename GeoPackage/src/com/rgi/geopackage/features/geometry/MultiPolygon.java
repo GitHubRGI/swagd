@@ -23,6 +23,9 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.BinaryHeader;
+import com.rgi.geopackage.features.GeometryType;
+
 /**
  * A restricted form of MultiSurface where each Surface in the collection must
  * be of type Polygon.
@@ -34,5 +37,22 @@ package com.rgi.geopackage.features.geometry;
  */
 public class MultiPolygon extends MultiSurface
 {
+    public MultiPolygon(final BinaryHeader header)
+    {
+        super(header);
+    }
 
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public int getTypeCode()
+    {
+        return GeometryType.MultiPolygon.getCode();
+    }
+
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public String getGeometryTypeName()
+    {
+        return GeometryType.MultiPolygon.toString();
+    }
 }

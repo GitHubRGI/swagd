@@ -23,6 +23,8 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.BinaryHeader;
+
 /**
  * A restricted form of GeometryCollection where each Geometry in the
  * collection must be of type Surface.
@@ -32,7 +34,11 @@ package com.rgi.geopackage.features.geometry;
  * @author Luke Lambert
  *
  */
+@SuppressWarnings("AbstractClassExtendsConcreteClass")
 public abstract class MultiSurface extends GeometryCollection
 {
-
+    protected MultiSurface(final BinaryHeader header)
+    {
+        super(header);
+    }
 }

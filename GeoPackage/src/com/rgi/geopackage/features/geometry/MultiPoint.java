@@ -23,6 +23,9 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.BinaryHeader;
+import com.rgi.geopackage.features.GeometryType;
+
 /**
  * A restricted form of GeometryCollection where each Geometry in the
  * collection must be of type Point.
@@ -34,5 +37,22 @@ package com.rgi.geopackage.features.geometry;
  */
 public class MultiPoint extends GeometryCollection
 {
+    public MultiPoint(final BinaryHeader header)
+    {
+        super(header);
+    }
 
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public int getTypeCode()
+    {
+        return GeometryType.MultiPoint.getCode();
+    }
+
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public String getGeometryTypeName()
+    {
+        return GeometryType.MultiPoint.toString();
+    }
 }

@@ -21,45 +21,102 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
-
-import com.rgi.geopackage.features.BinaryHeader;
-import com.rgi.geopackage.features.GeometryType;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+package com.rgi.geopackage.features.envelope;
 
 /**
- * A single location in space. Each point has an X and Y coordinate. A point
- * MAY optionally also have a Z and/or an M value.
- *
- * @see "http://www.geopackage.org/spec/#sfsql_intro"
- *
  * @author Luke Lambert
- *
  */
-public class Point extends Geometry
+public class EmptyEnvelope implements Envelope
 {
-    public Point(final BinaryHeader header)
+    @Override
+    public Double getMinimumX()
     {
-        super(header);
+        return null;
     }
 
     @Override
-    public int getTypeCode()
+    public Double getMaximumX()
     {
-        return GeometryType.Point.getCode();
+        return null;
     }
 
     @Override
-    public String getGeometryTypeName()
+    public Double getMinimumY()
     {
-        return GeometryType.Point.toString();
+        return null;
     }
 
     @Override
-    protected void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    public Double getMaximumY()
     {
-        throw new UnsupportedOperationException("pending implementaiton");
+        return null;
     }
+
+    @Override
+    public Double getMinimumZ()
+    {
+        return null;
+    }
+
+    @Override
+    public Double getMaximumZ()
+    {
+        return null;
+    }
+
+    @Override
+    public Double getMinimumM()
+    {
+        return null;
+    }
+
+    @Override
+    public Double getMaximumM()
+    {
+        return null;
+    }
+
+    @Override
+    public boolean isEmpty()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean hasX()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean hasY()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean hasZ()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean hasM()
+    {
+        return false;
+    }
+
+    @Override
+    public int getContentsIndicatorCode()
+    {
+        return 0;
+    }
+
+    @Override
+    public double[] getArray()
+    {
+        return emptyEnvelope;
+    }
+
+    private static final double[] emptyEnvelope = {};
 }

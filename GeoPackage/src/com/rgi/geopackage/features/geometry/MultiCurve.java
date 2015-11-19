@@ -23,6 +23,8 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.BinaryHeader;
+
 /**
  * A restricted form of GeometryCollection where each Geometry in the
  * collection must be of type Curve.
@@ -32,7 +34,11 @@ package com.rgi.geopackage.features.geometry;
  * @author Luke Lambert
  *
  */
-public class MultiCurve extends GeometryCollection
+@SuppressWarnings("AbstractClassExtendsConcreteClass")
+public abstract class MultiCurve extends GeometryCollection
 {
-
+    protected MultiCurve(final BinaryHeader header)
+    {
+        super(header);
+    }
 }

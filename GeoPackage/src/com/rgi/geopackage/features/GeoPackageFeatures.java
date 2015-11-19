@@ -23,6 +23,19 @@
 
 package com.rgi.geopackage.features;
 
+import com.rgi.common.BoundingBox;
+import com.rgi.common.Pair;
+import com.rgi.common.util.jdbc.JdbcUtility;
+import com.rgi.geopackage.core.ContentFactory;
+import com.rgi.geopackage.core.GeoPackageCore;
+import com.rgi.geopackage.core.SpatialReferenceSystem;
+import com.rgi.geopackage.features.geometry.Geometry;
+import com.rgi.geopackage.utility.DatabaseUtility;
+import com.rgi.geopackage.verification.VerificationIssue;
+import com.rgi.geopackage.verification.VerificationLevel;
+
+import javax.sql.rowset.serial.SerialBlob;
+import java.io.IOException;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -36,19 +49,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import javax.sql.rowset.serial.SerialBlob;
-
-import com.rgi.common.BoundingBox;
-import com.rgi.common.Pair;
-import com.rgi.common.util.jdbc.JdbcUtility;
-import com.rgi.geopackage.core.ContentFactory;
-import com.rgi.geopackage.core.GeoPackageCore;
-import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.features.geometry.Geometry;
-import com.rgi.geopackage.utility.DatabaseUtility;
-import com.rgi.geopackage.verification.VerificationIssue;
-import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
@@ -99,7 +99,9 @@ public class GeoPackageFeatures
      * @param spatialReferenceSystem
      *            Spatial Reference System (SRS)
      * @param geometryColumn
+     *            Geometry column definition
      * @param columnDefinitions
+     *            Definitions of non-geometry columns
      * @return Returns a newly created user defined features table
      * @throws SQLException
      *             throws if the method {@link #getFeatureSet(String)
@@ -254,9 +256,13 @@ public class GeoPackageFeatures
     }
 
     /**
+     * Retrieves the geometry column for a given feature set
+     *
      * @param featureSet
-     * @return
+     *             Feature set to query
+     * @return The {@link GeometryColumn} of the given feature set
      * @throws SQLException
+     *             if there is a database a database error
      */
     public GeometryColumn getGeometryColumn(final FeatureSet featureSet) throws SQLException
     {
@@ -285,6 +291,17 @@ public class GeoPackageFeatures
                                                                      resultSet.getInt   (5)));
     }
 
+    /**
+     * Gets a {@link Feature} given a geometry column and feature identifier
+     *
+     * @param geometryColumn
+     *             Geometry column definition
+     * @param featureIdentifier
+     *             Identifier for a feature
+     * @return a {@link Feature}
+     * @throws SQLException
+     *             if there is a database error
+     */
     public Feature getFeature(final GeometryColumn geometryColumn,
                               final int            featureIdentifier) throws SQLException
     {
@@ -302,22 +319,38 @@ public class GeoPackageFeatures
                                                   GeoPackageFeatures.GeometryColumnsTableName,
                                                   "id");
 
-        return JdbcUtility.selectOne(this.databaseConnection,
-                                     featureQuery,
-                                     preparedStatement -> preparedStatement.setInt(1, featureIdentifier),
-                                     resultSet -> { final Map<String, Object> attributes = new HashMap<>();
+        final Feature feature = JdbcUtility.selectOne(this.databaseConnection,
+                                                      featureQuery,
+                                                      preparedStatement -> preparedStatement.setInt(1, featureIdentifier),
+                                                      resultSet -> { final Map<String, Object> attributes = new HashMap<>();
 
-                                                    schema.remove(0); // Ignore the geometry column
+                                                                     schema.remove(0); // Ignore the geometry column
 
-                                                    for(final String columnName : schema)
-                                                    {
-                                                        attributes.put(columnName, resultSet.getObject(columnName));
-                                                    }
+                                                                     for(final String columnName : schema)
+                                                                     {
+                                                                         attributes.put(columnName, resultSet.getObject(columnName));
+                                                                     }
 
-                                                    return new Feature(featureIdentifier,
-                                                                       getGeometry(resultSet.getBlob(geometryColumn.getColumnName())),
-                                                                       attributes);
-                                                  });
+                                                                     try
+                                                                     {
+                                                                        return new Feature(featureIdentifier,
+                                                                                           getGeometry(resultSet.getBlob(geometryColumn.getColumnName())),
+                                                                                           attributes);
+                                                                     }
+                                                                     catch(final IOException ex)
+                                                                     {
+                                                                         throw new RuntimeException(ex);
+                                                                     }
+                                                                   });
+        if(feature == null)
+        {
+            throw new IllegalArgumentException(String.format("No feature exists for geometry column %s.%s and identifier %d",
+                                                             geometryColumn.getTableName(),
+                                                             geometryColumn.getColumnName(),
+                                                             featureIdentifier));
+        }
+
+        return feature;
     }
 
     public List<Feature> getFeatures(final GeometryColumn geometryColumn) throws SQLException
@@ -346,9 +379,16 @@ public class GeoPackageFeatures
                                                      attributes.put(columnName, resultSet.getObject(columnName));
                                                  }
 
-                                                 return new Feature(resultSet.getInt("id"),
-                                                                    getGeometry(resultSet.getBlob(geometryColumn.getColumnName())),
-                                                                    attributes);
+                                                 try
+                                                 {
+                                                     return new Feature(resultSet.getInt("id"),
+                                                                        getGeometry(resultSet.getBlob(geometryColumn.getColumnName())),
+                                                                        attributes);
+                                                 }
+                                                 catch(final IOException ex)
+                                                 {
+                                                     throw new RuntimeException(ex);
+                                                 }
                                                });
     }
 
@@ -383,9 +423,16 @@ public class GeoPackageFeatures
                                                attributes.put(columnName, resultSet.getObject(columnName));
                                            }
 
-                                           featureConsumer.accept(new Feature(resultSet.getInt("id"),
-                                                                              getGeometry(resultSet.getBlob(geometryColumn.getColumnName())),
-                                                                              attributes));
+                                           try
+                                           {
+                                               featureConsumer.accept(new Feature(resultSet.getInt("id"),
+                                                                                  getGeometry(resultSet.getBlob(geometryColumn.getColumnName())),
+                                                                                  attributes));
+                                           }
+                                           catch(final IOException ex)
+                                           {
+                                               throw new RuntimeException(ex);
+                                           }
                                          });
     }
 
@@ -420,7 +467,15 @@ public class GeoPackageFeatures
         final int identifier = JdbcUtility.update(this.databaseConnection,
                                                   insertFeatureSql,
                                                   preparedStatement -> { int parameterIndex = 1;
-                                                                         preparedStatement.setBlob(parameterIndex++, new SerialBlob(geometry.getStandardBinary()));
+
+                                                                         try
+                                                                         {
+                                                                             preparedStatement.setBlob(parameterIndex++, new SerialBlob(geometry.getStandardBinary()));
+                                                                         }
+                                                                         catch(final IOException e)
+                                                                         {
+                                                                             throw new RuntimeException(e);
+                                                                         }
 
                                                                          columnNames.remove(0);    // Skip the geometry column
 
@@ -438,9 +493,9 @@ public class GeoPackageFeatures
                            attributes);
     }
 
-    public void addFeatures(final GeometryColumn                     geometryColumn,
-                            final Set<String>                        columns,
-                            final List<Pair<Geometry, List<Object>>> features) throws SQLException
+    public void addFeatures(final GeometryColumn                         geometryColumn,
+                            final Set<String>                            columns,
+                            final Iterable<Pair<Geometry, List<Object>>> features) throws SQLException
     {
         if(geometryColumn == null)
         {
@@ -474,7 +529,14 @@ public class GeoPackageFeatures
                            (preparedStatement, feature) -> { final Geometry     geometry   = feature.getLeft();
                                                              final List<Object> attributes = feature.getRight();
 
-                                                             preparedStatement.setBlob(1, new SerialBlob(geometry.getStandardBinary()));
+                                                             try
+                                                             {
+                                                                 preparedStatement.setBlob(1, new SerialBlob(geometry.getStandardBinary()));
+                                                             }
+                                                             catch(final IOException ex)
+                                                             {
+                                                                 throw new RuntimeException(ex);
+                                                             }
 
                                                              for(int parameterIndex = 2; parameterIndex <= columnCount; ++parameterIndex)
                                                              {
@@ -500,7 +562,7 @@ public class GeoPackageFeatures
         // Create the geometry column table or view
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageFeatures.GeometryColumnsTableName))
         {
-            JdbcUtility.update(this.databaseConnection, this.getGeometryColumnsCreationSql());
+            JdbcUtility.update(this.databaseConnection, getGeometryColumnsCreationSql());
         }
     }
 
@@ -515,7 +577,7 @@ public class GeoPackageFeatures
      * @param tableName
      *            The name of the features table
 
-     * @param spatialReferenceSystemidentifier
+     * @param spatialReferenceSystemIdentifier
      *            Spatial Reference System (SRS)
      * @throws SQLException
      */
@@ -570,7 +632,7 @@ public class GeoPackageFeatures
         return columns;
     }
 
-    private static Geometry getGeometry(final Blob blob) throws SQLException
+    private static Geometry getGeometry(final Blob blob) throws SQLException, IOException
     {
         final Geometry geometry = Geometry.fromBytes(blob.getBytes(1L, (int)blob.length()));
 
@@ -608,12 +670,11 @@ public class GeoPackageFeatures
         JdbcUtility.update(this.databaseConnection, createTableSql);
     }
 
-    @SuppressWarnings("static-method")
-    protected String getGeometryColumnsCreationSql()
+    protected static String getGeometryColumnsCreationSql()
     {
         // http://www.geopackage.org/spec/#gpkg_geometry_columns_cols
         // http://www.geopackage.org/spec/#gpkg_geometry_columns_sql
-        return "CREATE TABLE " + GeoPackageFeatures.GeometryColumnsTableName  + "\n" +
+        return "CREATE TABLE " + GeoPackageFeatures.GeometryColumnsTableName  + '\n' +
                "(table_name         TEXT    NOT NULL, -- Name of the table containing the geometry column\n"                                                      +
                " column_name        TEXT    NOT NULL, -- Name of a column in the feature table that is a Geometry Column\n"                                       +
                " geometry_type_name TEXT    NOT NULL, -- Name from Geometry Type Codes (Core) or Geometry Type Codes (Extension) in Geometry Types (Normative)\n" +
@@ -641,7 +702,7 @@ public class GeoPackageFeatures
                                matchingSpatialReferenceSystem);
     }
 
-    public final static String GeometryColumnsTableName = "gpkg_geometry_columns";
+    public static final String GeometryColumnsTableName = "gpkg_geometry_columns";
 
     private final Connection     databaseConnection;
     private final GeoPackageCore core;

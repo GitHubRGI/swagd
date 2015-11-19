@@ -21,45 +21,23 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
-
-import com.rgi.geopackage.features.BinaryHeader;
-import com.rgi.geopackage.features.GeometryType;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+package com.rgi.geopackage.features;
 
 /**
- * A single location in space. Each point has an X and Y coordinate. A point
- * MAY optionally also have a Z and/or an M value.
- *
- * @see "http://www.geopackage.org/spec/#sfsql_intro"
+ * It's considered bad practice to boolean parameters. This enumeration will
+ * act as a flag to indicate whether or not a GeoPackageGeometry is empty.
  *
  * @author Luke Lambert
- *
  */
-public class Point extends Geometry
+public enum Contents
 {
-    public Point(final BinaryHeader header)
-    {
-        super(header);
-    }
+    /**
+     * This indicates a non-empty GeoPackage geometry
+     */
+    NotEmpty,
 
-    @Override
-    public int getTypeCode()
-    {
-        return GeometryType.Point.getCode();
-    }
-
-    @Override
-    public String getGeometryTypeName()
-    {
-        return GeometryType.Point.toString();
-    }
-
-    @Override
-    protected void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
-    {
-        throw new UnsupportedOperationException("pending implementaiton");
-    }
+    /**
+     * This indicates an empty GeoPackage geometry
+     */
+    Empty
 }

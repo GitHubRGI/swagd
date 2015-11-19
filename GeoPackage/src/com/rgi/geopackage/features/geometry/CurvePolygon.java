@@ -23,6 +23,12 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.BinaryHeader;
+import com.rgi.geopackage.features.GeometryType;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 /**
  * A planar surface defined by an exterior ring and zero or more interior ring.
  * Each ring is defined by a Curve instance.
@@ -34,5 +40,26 @@ package com.rgi.geopackage.features.geometry;
  */
 public class CurvePolygon extends Surface
 {
+    public CurvePolygon(final BinaryHeader header)
+    {
+        super(header);
+    }
 
+    @Override
+    public int getTypeCode()
+    {
+        return GeometryType.CurvePolygon.getCode();
+    }
+
+    @Override
+    public String getGeometryTypeName()
+    {
+        return GeometryType.CurvePolygon.toString();
+    }
+
+    @Override
+    protected void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    {
+        throw new UnsupportedOperationException("pending implementaiton");
+    }
 }

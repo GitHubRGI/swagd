@@ -23,10 +23,11 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import com.rgi.geopackage.features.GeoPackageGeometryBinaryHeader;
+import com.rgi.geopackage.features.BinaryHeader;
 
 /**
  * The root of the geometry type hierarchy.
@@ -38,14 +39,13 @@ import com.rgi.geopackage.features.GeoPackageGeometryBinaryHeader;
  */
 public abstract class Geometry
 {
-    protected Geometry(final GeoPackageGeometryBinaryHeader header)
+    protected Geometry(final BinaryHeader header)
     {
-
+        this.header = header;
     }
 
-    abstract public byte[] getStandardBinary();
-
-    public abstract String getGeometryType();
+    public abstract int    getTypeCode();
+    public abstract String getGeometryTypeName();
 
     public static Geometry fromBytes(final byte[] bytes) throws IOException
     {
@@ -55,7 +55,24 @@ public abstract class Geometry
         }
 
         final ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+//
+//        byteBuffer.
 
-        byteBuffer.
+        return null;
     }
+
+    public byte[] getStandardBinary() throws IOException
+    {
+        try(final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream())
+        {
+            this.header.writeBytes(byteArrayOutputStream);
+            this.writeWkbGeometry(byteArrayOutputStream);
+
+            return byteArrayOutputStream.toByteArray();
+        }
+    }
+
+    protected abstract void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException;
+
+    protected final BinaryHeader header;
 }

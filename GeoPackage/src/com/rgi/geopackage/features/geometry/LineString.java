@@ -23,6 +23,12 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.BinaryHeader;
+import com.rgi.geopackage.features.GeometryType;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 /**
  * A Curve that connects two or more points in space.
  *
@@ -33,5 +39,26 @@ package com.rgi.geopackage.features.geometry;
  */
 public class LineString extends Curve
 {
+    public LineString(final BinaryHeader header)
+    {
+        super(header);
+    }
 
+    @Override
+    public int getTypeCode()
+    {
+        return GeometryType.LineString.getCode();
+    }
+
+    @Override
+    public String getGeometryTypeName()
+    {
+        return GeometryType.LineString.toString();
+    }
+
+    @Override
+    protected void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    {
+        throw new UnsupportedOperationException("pending implementaiton");
+    }
 }

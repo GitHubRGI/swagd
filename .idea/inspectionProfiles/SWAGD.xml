@@ -10,8 +10,8 @@
       <option name="m_maxLength" value="100" />
     </inspection_tool>
     <inspection_tool class="AbstractClassNeverImplemented" enabled="false" level="ERROR" enabled_by_default="false" />
-    <inspection_tool class="AbstractClassWithOnlyOneDirectInheritor" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="AbstractClassWithoutAbstractMethods" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="AbstractClassWithOnlyOneDirectInheritor" enabled="false" level="ERROR" enabled_by_default="false" />
+    <inspection_tool class="AbstractClassWithoutAbstractMethods" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="AbstractMethodCallInConstructor" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="AbstractMethodOverridesAbstractMethod" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="AbstractMethodOverridesConcreteMethod" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -183,7 +183,7 @@
     </inspection_tool>
     <inspection_tool class="ClassIndependentOfModule" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ClassInheritanceDepth" enabled="true" level="ERROR" enabled_by_default="true">
-      <option name="m_limit" value="2" />
+      <option name="m_limit" value="10" />
     </inspection_tool>
     <inspection_tool class="ClassInitializer" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ClassInitializerMayBeStatic" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -381,7 +381,7 @@
       <option name="m_maxLength" value="999" />
     </inspection_tool>
     <inspection_tool class="EnumeratedConstantNamingConvention" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="m_regex" value="[A-Z][A-Z_\d]*" />
+      <option name="m_regex" value="[A-Z][A-Za-z_\d]*" />
       <option name="m_minLength" value="2" />
       <option name="m_maxLength" value="999" />
     </inspection_tool>

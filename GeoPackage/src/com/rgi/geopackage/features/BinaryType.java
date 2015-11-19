@@ -29,10 +29,10 @@ package com.rgi.geopackage.features;
  * @author LukeLambert
  *
  */
-public enum GeoPackageGeometryBinaryEndian
+public enum BinaryType
 {
-    Big(0),
-    Little(1);
+    Standard(0),
+    Extended(0b00100000); // TODO check to make sure I've got the endianness right
 
     /**
      * @return the bitMask
@@ -42,7 +42,12 @@ public enum GeoPackageGeometryBinaryEndian
         return this.bitMask;
     }
 
-    private GeoPackageGeometryBinaryEndian(final int bitMask)
+    public static BinaryType type(final byte flags)
+    {
+        return ((flags >> 5) & 1) == 0 ? Standard : Extended;   // Check to see if the 5th bit is unset. unset -> Standard, set -> Extended
+    }
+
+    BinaryType(final int bitMask)
     {
         this.bitMask = bitMask;
     }
