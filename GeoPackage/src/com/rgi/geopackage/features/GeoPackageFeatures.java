@@ -42,6 +42,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -214,12 +215,12 @@ public class GeoPackageFeatures
                                      description,
                                      lastChange,
                                      boundingBox,
-                                     spatialReferenceSystem) -> new FeatureSet(tableName,
-                                                                               identifier,
-                                                                               description,
-                                                                               lastChange,
-                                                                               boundingBox,
-                                                                               spatialReferenceSystem));
+                                     spatialReferenceSystemIdentifier) -> new FeatureSet(tableName,
+                                                                                         identifier,
+                                                                                         description,
+                                                                                         lastChange,
+                                                                                         boundingBox,
+                                                                                         spatialReferenceSystemIdentifier));
     }
 
     /**
@@ -650,24 +651,52 @@ public class GeoPackageFeatures
 
         final List<AbstractColumnDefinition> columns = new LinkedList<>(Arrays.asList(columnDefinitions));
 
-        columns.add(0, geometryColumn);
+        columns.add(0,
+                    new ColumnDefinition("id",
+                                         "INTEGER",
+                                         EnumSet.of(ColumnFlag.PrimaryKey, ColumnFlag.AutoIncrement, ColumnFlag.NotNull),   // Specifying unique is unnecessary as primary keys are assumed to be unique
+                                         null,
+                                         null,
+                                         "Autoincrement primary key"));
+        columns.add(1, geometryColumn);
 
-        final String userColumns = String.join("\n",
-                                               columns.stream()
-                                                      .map(column -> String.format("%s %s %s %s -- %s",
-                                                                                   column.getName(),
-                                                                                   column.getType(),
-                                                                                   column.isNullable() ? "" : "NOT NULL",
-                                                                                   column.isUnique()   ? "UNIQUE" : "",
-                                                                                   column.getComment()))
-                                                      .collect(Collectors.toList()));
+        final StringBuilder createTableSql = new StringBuilder();
+        createTableSql.append("CREATE TABLE ");
+        createTableSql.append(featureTableName);
+        createTableSql.append("\n(\n");
 
+        for(int columnIndex = 0; columnIndex < columns.size(); ++columnIndex)
+        {
+            final AbstractColumnDefinition column = columns.get(columnIndex);
 
-        final String createTableSql = String.format("CREATE TABLE %s\n(id INTEGER PRIMARY KEY AUTOINCREMENT, -- Autoincrement primary key\n%s);",
-                                                    featureTableName,
-                                                    userColumns);
+            final String comment = column.getComment();
 
-        JdbcUtility.update(this.databaseConnection, createTableSql);
+            createTableSql.append('\t');
+
+            createTableSql.append(String.join(' ')
+
+            createTableSql.append('\n');
+
+                    String.format("\t%s %s %s%s%s%s%s %s%s%s\n",
+                                                column.getName(),   // Verified by AbstractColumnDefinition to not contain SQL injection
+                                                column.getType(),   // Verified by AbstractColumnDefinition to not contain SQL injection
+                                                column.hasFlag(ColumnFlag.PrimaryKey)    ? "PRIMARY KEY "   : "",
+                                                column.hasFlag(ColumnFlag.AutoIncrement) ? "AUTOINCREMENT " : "",
+                                                column.hasFlag(ColumnFlag.NotNull)       ? "NOT NULL "      : "",
+                                                column.hasFlag(ColumnFlag.Unique)        ? "UNIQUE"         : "",
+                                                columnIndex == columns.size()-1 ? "" : ",",
+                                                comment     == null             ? "" : " -- " + comment )); // Verified by AbstractColumnDefinition not to have any line breaks (\n, at least...)
+        }
+
+        createTableSql.append("\n);");
+
+//
+//
+//         = String.format("CREATE TABLE %s\n(id INTEGER PRIMARY KEY AUTOINCREMENT, -- \n%s);",
+//                                                    featureTableName,
+//                                                    userColumns);
+
+        JdbcUtility.update(this.databaseConnection, createTableSql.toString());
     }
 
     protected static String getGeometryColumnsCreationSql()

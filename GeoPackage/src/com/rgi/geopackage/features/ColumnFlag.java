@@ -24,20 +24,28 @@
 package com.rgi.geopackage.features;
 
 /**
- * It's considered bad practice to have boolean parameters. This enumeration
- * will act as a flag to indicate whether or not a GeoPackageGeometry is empty.
- *
  * @author Luke Lambert
  */
-public enum Contents
+public enum ColumnFlag
 {
     /**
-     * This indicates a non-empty GeoPackage geometry
+     * Column may not be null
      */
-    NotEmpty,
+    NotNull,
 
     /**
-     * This indicates an empty GeoPackage geometry
+     * Column is, or is part of the primary key
      */
-    Empty
+    PrimaryKey,
+
+    /**
+     * Numeric value should be automatically generated as 1 + the previous
+     * value
+     */
+    AutoIncrement,
+
+    /**
+     * Column value must be unique
+     */
+    Unique
 }

@@ -23,6 +23,8 @@
 
 package com.rgi.geopackage.features;
 
+import java.util.EnumSet;
+
 /**
  * @author Luke Lambert
  *
@@ -30,19 +32,38 @@ package com.rgi.geopackage.features;
 public class ColumnDefinition extends AbstractColumnDefinition
 {
     /**
+     * Constructor
+     *
      * @param name
+     *             Column name
      * @param type
-     * @param nullable
-     * @param unique
+     *             Column type
+     * @param checkExpression
+     *             SQLite "check" expression. Ignored if null.  Each time a new
+     *             row is inserted into the table or an existing row is
+     *             updated, the expression associated with each CHECK
+     *             constraint is evaluated and cast to a NUMERIC value in the
+     *             same way as a CAST expression. If the result is zero
+     *             (integer value 0 or real value 0.0), then a constraint
+     *             violation has occurred. If the CHECK expression evaluates
+     *             to NULL, or any other non-zero value, it is not a constraint
+     *             violation. The expression of a CHECK constraint may not
+     *             contain a subquery.
+     * @param flags
+     *             Column constraint flags
      * @param defaultValue
+     *             Column default value. Ignored if null.
      * @param comment
+     *             Comment to be added to the table definition. Ignored if
+     *             null.
      */
-    public ColumnDefinition(final String  name,
-                            final String  type,
-                            final boolean nullable,
-                            final boolean unique,
-                            final String  comment)
+    public ColumnDefinition(final String              name,
+                            final String              type,
+                            final EnumSet<ColumnFlag> flags,
+                            final String              checkExpression,
+                            final ColumnDefault       defaultValue,
+                            final String              comment)
     {
-        super(name, type, nullable, unique, comment);
+        super(name, type, flags, checkExpression, defaultValue, comment);
     }
 }

@@ -45,19 +45,20 @@ public class GeometryColumnDefinition extends AbstractColumnDefinition
      *            Restrictions on the presence of a 'z' value
      * @param mRequirement
      *            Restrictions on the presence of an 'm' value
-     * @param nullable
-     * @param unique
      * @param comment
      */
     public GeometryColumnDefinition(final String           name,
                                     final String           geometryType,
                                     final ValueRequirement zRequirement,
                                     final ValueRequirement mRequirement,
-                                    final boolean          nullable,
-                                    final boolean          unique,
                                     final String           comment)
     {
-        super(name, geometryType, nullable, unique, comment);
+        super(name,
+              geometryType,
+              null,              // no additional flags
+              null,              // no checks - values are binaries of the form 'StandardGeoPackageBinary'. Writing a check against them would be really complicated without custom SQLite functions
+              ColumnDefault.None,
+              comment);
 
         if(zRequirement == null)
         {
