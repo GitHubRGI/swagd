@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * @author Luke Lambert
@@ -86,23 +85,23 @@ public class GeoPackageFeatures
      * the content table
      *
      * @param tableName
-     *            The name of the features table. The table name must begin
-     *            with a letter (A..Z, a..z) or an underscore (_) and may only
-     *            be followed by letters, underscores, or numbers, and may not
-     *            begin with the prefix "gpkg_"
+     *             The name of the features table. The table name must begin
+     *             with a letter (A..Z, a..z) or an underscore (_) and may only
+     *             be followed by letters, underscores, or numbers, and may not
+     *             begin with the prefix "gpkg_"
      * @param identifier
-     *            A human-readable identifier (e.g. short name) for the
-     *            tableName content
+     *             A human-readable identifier (e.g. short name) for the
+     *             tableName content
      * @param description
-     *            A human-readable description for the tableName content
+     *             A human-readable description for the tableName content
      * @param boundingBox
-     *            Bounding box for all content in tableName
+     *             Bounding box for all content in tableName
      * @param spatialReferenceSystem
-     *            Spatial Reference System (SRS)
+     *             Spatial Reference System (SRS)
      * @param geometryColumn
-     *            Geometry column definition
+     *             Geometry column definition
      * @param columnDefinitions
-     *            Definitions of non-geometry columns
+     *             Definitions of non-geometry columns
      * @return Returns a newly created user defined features table
      * @throws SQLException
      *             throws if the method {@link #getFeatureSet(String)
@@ -119,6 +118,54 @@ public class GeoPackageFeatures
                                     final SpatialReferenceSystem   spatialReferenceSystem,
                                     final GeometryColumnDefinition geometryColumn,
                                     final ColumnDefinition...      columnDefinitions) throws SQLException
+    {
+        return this.addFeatureSet(tableName,
+                                  identifier,
+                                  description,
+                                  boundingBox,
+                                  spatialReferenceSystem,
+                                  geometryColumn,
+                                  Arrays.asList(columnDefinitions));
+    }
+
+    /**
+     * Creates a user defined features table, and adds a corresponding entry to
+     * the content table
+     *
+     * @param tableName
+     *             The name of the features table. The table name must begin
+     *             with a letter (A..Z, a..z) or an underscore (_) and may only
+     *             be followed by letters, underscores, or numbers, and may not
+     *             begin with the prefix "gpkg_"
+     * @param identifier
+     *             A human-readable identifier (e.g. short name) for the
+     *             tableName content
+     * @param description
+     *             A human-readable description for the tableName content
+     * @param boundingBox
+     *             Bounding box for all content in tableName
+     * @param spatialReferenceSystem
+     *             Spatial Reference System (SRS)
+     * @param geometryColumn
+     *             Geometry column definition
+     * @param columnDefinitions
+     *             Definitions of non-geometry columns
+     * @return Returns a newly created user defined features table
+     * @throws SQLException
+     *             throws if the method {@link #getFeatureSet(String)
+     *             getFeatureSet} or the method {@link
+     *             DatabaseUtility#tableOrViewExists(Connection, String)
+     *             tableOrViewExists} or if the database cannot roll back the
+     *             changes after a different exception throws will throw an
+     *             SQLException
+     */
+    public FeatureSet addFeatureSet(final String                       tableName,
+                                    final String                       identifier,
+                                    final String                       description,
+                                    final BoundingBox                  boundingBox,
+                                    final SpatialReferenceSystem       spatialReferenceSystem,
+                                    final GeometryColumnDefinition     geometryColumn,
+                                    final Collection<ColumnDefinition> columnDefinitions) throws SQLException
     {
         GeoPackageCore.validateNewContentTableName(tableName);
 
@@ -577,7 +624,6 @@ public class GeoPackageFeatures
      *
      * @param tableName
      *            The name of the features table
-
      * @param spatialReferenceSystemIdentifier
      *            Spatial Reference System (SRS)
      * @throws SQLException
@@ -642,14 +688,14 @@ public class GeoPackageFeatures
         return geometry;
     }
 
-    private void addFeatureTableNoCommit(final String                   featureTableName,
-                                         final GeometryColumnDefinition geometryColumn,
-                                         final ColumnDefinition...      columnDefinitions) throws SQLException
+    private void addFeatureTableNoCommit(final String                       featureTableName,
+                                         final GeometryColumnDefinition     geometryColumn,
+                                         final Collection<ColumnDefinition> columnDefinitions) throws SQLException
     {
         // http://www.geopackage.org/spec/#feature_user_tables
         // http://www.geopackage.org/spec/#example_feature_table_sql
 
-        final List<AbstractColumnDefinition> columns = new LinkedList<>(Arrays.asList(columnDefinitions));
+        final List<AbstractColumnDefinition> columns = new LinkedList<>(columnDefinitions);
 
         columns.add(0,
                     new ColumnDefinition("id",
@@ -663,7 +709,7 @@ public class GeoPackageFeatures
         final StringBuilder createTableSql = new StringBuilder();
         createTableSql.append("CREATE TABLE ");
         createTableSql.append(featureTableName);
-        createTableSql.append("\n(\n");
+        createTableSql.append("\n(");
 
         for(int columnIndex = 0; columnIndex < columns.size(); ++columnIndex)
         {
@@ -671,30 +717,20 @@ public class GeoPackageFeatures
 
             final String comment = column.getComment();
 
-            createTableSql.append('\t');
+            createTableSql.append("\n\t");
 
-            createTableSql.append(String.join(' ')
-
-            createTableSql.append('\n');
-
-                    String.format("\t%s %s %s%s%s%s%s %s%s%s\n",
-                                                column.getName(),   // Verified by AbstractColumnDefinition to not contain SQL injection
-                                                column.getType(),   // Verified by AbstractColumnDefinition to not contain SQL injection
-                                                column.hasFlag(ColumnFlag.PrimaryKey)    ? "PRIMARY KEY "   : "",
-                                                column.hasFlag(ColumnFlag.AutoIncrement) ? "AUTOINCREMENT " : "",
-                                                column.hasFlag(ColumnFlag.NotNull)       ? "NOT NULL "      : "",
-                                                column.hasFlag(ColumnFlag.Unique)        ? "UNIQUE"         : "",
-                                                columnIndex == columns.size()-1 ? "" : ",",
-                                                comment     == null             ? "" : " -- " + comment )); // Verified by AbstractColumnDefinition not to have any line breaks (\n, at least...)
+            createTableSql.append(column.getName());  // Verified by AbstractColumnDefinition to not contain SQL injection
+            createTableSql.append(' ');
+            createTableSql.append(column.getType());  // Verified by AbstractColumnDefinition to not contain SQL injection
+            createTableSql.append(column.hasFlag(ColumnFlag.PrimaryKey)    ? " PRIMARY KEY"   : "");
+            createTableSql.append(column.hasFlag(ColumnFlag.AutoIncrement) ? " AUTOINCREMENT" : "");
+            createTableSql.append(column.hasFlag(ColumnFlag.NotNull)       ? " NOT NULL"      : "");
+            createTableSql.append(column.hasFlag(ColumnFlag.Unique)        ? " UNIQUE"        : "");
+            createTableSql.append(columnIndex == columns.size()-1          ? ""               : ",");
+            createTableSql.append(comment     == null                      ? ""               : " -- " + comment);  // Verified by AbstractColumnDefinition to not contain newlines, which I think is the only way injection could work here
         }
 
         createTableSql.append("\n);");
-
-//
-//
-//         = String.format("CREATE TABLE %s\n(id INTEGER PRIMARY KEY AUTOINCREMENT, -- \n%s);",
-//                                                    featureTableName,
-//                                                    userColumns);
 
         JdbcUtility.update(this.databaseConnection, createTableSql.toString());
     }
