@@ -21,23 +21,20 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
-
-import com.rgi.geopackage.features.BinaryHeader;
-import com.rgi.geopackage.features.GeometryType;
+package com.rgi.geopackage.features;
 
 /**
- * A restricted form of GeometryCollection where each Geometry in the
- * collection must be of type Point.
+ * A restricted form of MultiSurface where each Surface in the collection must
+ * be of type Polygon.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class MultiPoint extends GeometryCollection
+public class MultiPolygon extends MultiSurface
 {
-    public MultiPoint(final BinaryHeader header)
+    public MultiPolygon(final BinaryHeader header)
     {
         super(header);
     }
@@ -46,13 +43,13 @@ public class MultiPoint extends GeometryCollection
     @SuppressWarnings("RefusedBequest")
     public int getTypeCode()
     {
-        return GeometryType.MultiPoint.getCode();
+        return GeometryType.MultiPolygon.getCode();
     }
 
     @Override
     @SuppressWarnings("RefusedBequest")
     public String getGeometryTypeName()
     {
-        return GeometryType.MultiPoint.toString();
+        return GeometryType.MultiPolygon.toString();
     }
 }

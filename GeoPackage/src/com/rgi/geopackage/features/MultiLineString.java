@@ -21,45 +21,35 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
-
-import com.rgi.geopackage.features.BinaryHeader;
-import com.rgi.geopackage.features.GeometryType;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+package com.rgi.geopackage.features;
 
 /**
- * A planar surface defined by an exterior ring and zero or more interior ring.
- * Each ring is defined by a Curve instance.
+ * A restricted form of MultiCurve where each Curve in the collection must be
+ * of type LineString.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class CurvePolygon extends Surface
+public class MultiLineString extends MultiCurve
 {
-    public CurvePolygon(final BinaryHeader header)
+    public MultiLineString(final BinaryHeader header)
     {
         super(header);
     }
 
     @Override
+    @SuppressWarnings("RefusedBequest")
     public int getTypeCode()
     {
-        return GeometryType.CurvePolygon.getCode();
+        return GeometryType.MultiLineString.getCode();
     }
 
     @Override
+    @SuppressWarnings("RefusedBequest")
     public String getGeometryTypeName()
     {
-        return GeometryType.CurvePolygon.toString();
-    }
-
-    @Override
-    protected void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
-    {
-        throw new UnsupportedOperationException("pending implementaiton");
+        return GeometryType.MultiLineString.toString();
     }
 }

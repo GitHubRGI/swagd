@@ -21,37 +21,22 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
-
-import com.rgi.geopackage.features.BinaryHeader;
-import com.rgi.geopackage.features.GeometryType;
+package com.rgi.geopackage.features;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
- * A collection of zero or more Geometry instances.
- * <br>
- * <br>
- * GeometryCollection is a generic term for the ST_GeomCollection type defined
- * in <a href="http://www.geopackage.org/spec/#12">ISO/IEC 13249-3:2011</a>,
- * which uses it for the definition of Well Known Text (WKT) and Well Known
- * Binary (WKB) encodings. The SQL type name GEOMCOLLECTION defined in <a
- * href="http://www.geopackage.org/spec/#10">OGC 06-104r4</a> and used in
- * <a href="spatial_ref_sys_data_table_definition">GeoPackage Specification
- * Clause 1.1.2.1.1</a> and <a href=
- * "http://www.geopackage.org/spec/#geometry_types">Annex E of the GeoPackage
- * Specification</a> refers to the SQL BLOB encoding of a GeometryCollection.
+ * A Curve that connects two or more points in space.
  *
- * @see "http://www.geopackage.org/spec/#_footnote_7"
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class GeometryCollection extends Geometry
+public class LineString extends Curve
 {
-    public GeometryCollection(final BinaryHeader header)
+    public LineString(final BinaryHeader header)
     {
         super(header);
     }
@@ -59,13 +44,13 @@ public class GeometryCollection extends Geometry
     @Override
     public int getTypeCode()
     {
-        return GeometryType.GeometryCollection.getCode();
+        return GeometryType.LineString.getCode();
     }
 
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.GeometryCollection.toString();
+        return GeometryType.LineString.toString();
     }
 
     @Override

@@ -21,58 +21,53 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
+package com.rgi.geopackage.features;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-
-import com.rgi.geopackage.features.BinaryHeader;
 
 /**
- * The root of the geometry type hierarchy.
+ * A collection of zero or more Geometry instances.
+ * <br>
+ * <br>
+ * GeometryCollection is a generic term for the ST_GeomCollection type defined
+ * in <a href="http://www.geopackage.org/spec/#12">ISO/IEC 13249-3:2011</a>,
+ * which uses it for the definition of Well Known Text (WKT) and Well Known
+ * Binary (WKB) encodings. The SQL type name GEOMCOLLECTION defined in <a
+ * href="http://www.geopackage.org/spec/#10">OGC 06-104r4</a> and used in
+ * <a href="spatial_ref_sys_data_table_definition">GeoPackage Specification
+ * Clause 1.1.2.1.1</a> and <a href=
+ * "http://www.geopackage.org/spec/#geometry_types">Annex E of the GeoPackage
+ * Specification</a> refers to the SQL BLOB encoding of a GeometryCollection.
  *
+ * @see "http://www.geopackage.org/spec/#_footnote_7"
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public abstract class Geometry
+public class GeometryCollection extends Geometry
 {
-    protected Geometry(final BinaryHeader header)
+    public GeometryCollection(final BinaryHeader header)
     {
-        this.header = header;
+        super(header);
     }
 
-    public abstract int    getTypeCode();
-    public abstract String getGeometryTypeName();
-
-    public static Geometry fromBytes(final byte[] bytes) throws IOException
+    @Override
+    public int getTypeCode()
     {
-        if(bytes == null)
-        {
-            throw new IllegalArgumentException("Byte buffer may not be null");
-        }
-
-        final ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-//
-//        byteBuffer.
-
-        return null;
+        return GeometryType.GeometryCollection.getCode();
     }
 
-    public byte[] getStandardBinary() throws IOException
+    @Override
+    public String getGeometryTypeName()
     {
-        try(final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream())
-        {
-            this.header.writeBytes(byteArrayOutputStream);
-            this.writeWkbGeometry(byteArrayOutputStream);
-
-            return byteArrayOutputStream.toByteArray();
-        }
+        return GeometryType.GeometryCollection.toString();
     }
 
-    protected abstract void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException;
-
-    protected final BinaryHeader header;
+    @Override
+    protected void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    {
+        throw new UnsupportedOperationException("pending implementaiton");
+    }
 }

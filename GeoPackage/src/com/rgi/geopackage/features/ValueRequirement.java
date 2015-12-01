@@ -39,5 +39,18 @@ public enum ValueRequirement
         return this.value;
     }
 
+    public static ValueRequirement fromInt(final int value)
+    {
+        //noinspection SwitchStatement
+        switch(value)
+        {
+            case 0: return Prohibited;
+            case 1: return Mandatory;
+            case 2: return Optional;
+
+            default: throw new IllegalArgumentException("Value requirement must be 0, 1, or 2");
+        }
+    }
+
     private final int value;
 }

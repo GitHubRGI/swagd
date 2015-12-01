@@ -21,24 +21,35 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
-
-import com.rgi.geopackage.features.BinaryHeader;
+package com.rgi.geopackage.features;
 
 /**
- * A restricted form of GeometryCollection where each Geometry in the
- * collection must be of type Surface.
+ * A restricted form of CurvePolygon where each ring is defined as a simple,
+ * closed LineString.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-@SuppressWarnings("AbstractClassExtendsConcreteClass")
-public abstract class MultiSurface extends GeometryCollection
+public class Polygon extends CurvePolygon
 {
-    protected MultiSurface(final BinaryHeader header)
+    public Polygon(final BinaryHeader header)
     {
         super(header);
+    }
+
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public int getTypeCode()
+    {
+        return GeometryType.CurvePolygon.getCode();
+    }
+
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public String getGeometryTypeName()
+    {
+        return GeometryType.CurvePolygon.toString();
     }
 }

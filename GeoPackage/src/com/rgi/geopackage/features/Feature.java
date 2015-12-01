@@ -25,8 +25,6 @@ package com.rgi.geopackage.features;
 
 import java.util.Map;
 
-import com.rgi.geopackage.features.geometry.Geometry;
-
 /**
  * @author Luke Lambert
  *

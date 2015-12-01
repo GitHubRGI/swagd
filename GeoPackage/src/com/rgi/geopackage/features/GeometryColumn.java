@@ -48,12 +48,12 @@ public class GeometryColumn
      * @param mRequirement
      *            Restrictions on the presence of an 'm' value
      */
-    protected GeometryColumn(final String tableName,
-                             final String columnName,
-                             final String geometryType,
-                             final int    spatialReferenceSystemIdentifier,
-                             final int    zRequirement,
-                             final int    mRequirement)
+    protected GeometryColumn(final String           tableName,
+                             final String           columnName,
+                             final String           geometryType,
+                             final int              spatialReferenceSystemIdentifier,
+                             final ValueRequirement zRequirement,
+                             final ValueRequirement mRequirement)
     {
         this.tableName                        = tableName;
         this.columnName                       = columnName;
@@ -98,7 +98,7 @@ public class GeometryColumn
     /**
      * @return the zRequirement
      */
-    public int getZRequirement()
+    public ValueRequirement getZRequirement()
     {
         return this.zRequirement;
     }
@@ -106,15 +106,15 @@ public class GeometryColumn
     /**
      * @return the mRequirement
      */
-    public int getMRequirement()
+    public ValueRequirement getMRequirement()
     {
         return this.mRequirement;
     }
 
-    final String tableName;
-    final String columnName;
-    final String geometryType;
-    final int    spatialReferenceSystemIdentifier;
-    final int    zRequirement;
-    final int    mRequirement;
+    private final String           tableName;
+    private final String           columnName;
+    private final String           geometryType;
+    private final int              spatialReferenceSystemIdentifier;
+    private final ValueRequirement zRequirement;
+    private final ValueRequirement mRequirement;
 }

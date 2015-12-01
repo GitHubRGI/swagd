@@ -21,45 +21,24 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
-
-import com.rgi.geopackage.features.BinaryHeader;
-import com.rgi.geopackage.features.GeometryType;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+package com.rgi.geopackage.features;
 
 /**
- * A single location in space. Each point has an X and Y coordinate. A point
- * MAY optionally also have a Z and/or an M value.
+ * The base type for all 1-dimensional geometry types. A 1-dimensional geometry
+ * is a geometry that has a length, but no area. A curve is considered simple
+ * if it does not intersect itself (except at the start and end point). A curve
+ * is considered closed its start and end point are coincident. A simple,
+ * closed curve is called a ring.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class Point extends Geometry
+public abstract class Curve extends Geometry
 {
-    public Point(final BinaryHeader header)
+    protected Curve(final BinaryHeader header)
     {
         super(header);
-    }
-
-    @Override
-    public int getTypeCode()
-    {
-        return GeometryType.Point.getCode();
-    }
-
-    @Override
-    public String getGeometryTypeName()
-    {
-        return GeometryType.Point.toString();
-    }
-
-    @Override
-    protected void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
-    {
-        throw new UnsupportedOperationException("pending implementaiton");
     }
 }

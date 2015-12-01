@@ -21,24 +21,35 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
-
-import com.rgi.geopackage.features.BinaryHeader;
+package com.rgi.geopackage.features;
 
 /**
  * A restricted form of GeometryCollection where each Geometry in the
- * collection must be of type Curve.
+ * collection must be of type Point.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-@SuppressWarnings("AbstractClassExtendsConcreteClass")
-public abstract class MultiCurve extends GeometryCollection
+public class MultiPoint extends GeometryCollection
 {
-    protected MultiCurve(final BinaryHeader header)
+    public MultiPoint(final BinaryHeader header)
     {
         super(header);
+    }
+
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public int getTypeCode()
+    {
+        return GeometryType.MultiPoint.getCode();
+    }
+
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public String getGeometryTypeName()
+    {
+        return GeometryType.MultiPoint.toString();
     }
 }

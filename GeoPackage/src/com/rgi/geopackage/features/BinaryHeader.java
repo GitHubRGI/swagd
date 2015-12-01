@@ -71,7 +71,7 @@ public class BinaryHeader
 
         // read flags
         this.binaryType = BinaryType.type(bytes[3]);
-        this.isEmpty    = ((bytes[3] << 4) & 1) == 1;
+        this.empty = ((bytes[3] << 4) & 1) == 1;
 
         this.byteOrder  = ((this.flags & 1) == 0) ? ByteOrder.BIG_ENDIAN
                                                   : ByteOrder.LITTLE_ENDIAN;
@@ -123,6 +123,27 @@ public class BinaryHeader
              envelope);
     }
 
+    /**
+     * Convenience constructor for creating a default, non-empty geometry
+     * header
+     *
+     * @param binaryType
+     * @param spatialReferenceSystemIdentifier
+     * @param envelope
+     */
+    public BinaryHeader(final BinaryType binaryType,
+                        final Contents   contents,
+                        final int        spatialReferenceSystemIdentifier,
+                        final Envelope   envelope)
+    {
+        this(defaultVersion,
+             binaryType,
+             contents,
+             defaultByteOrder,
+             spatialReferenceSystemIdentifier,
+             envelope);
+    }
+
     public BinaryHeader(final byte       version,
                         final BinaryType binaryType,
                         final Contents   contents,
@@ -147,12 +168,12 @@ public class BinaryHeader
 
         this.version                          = version;
         this.binaryType                       = binaryType;
-        this.isEmpty                          = contents == Contents.Empty;
+        this.empty                            = contents == Contents.Empty;
         this.byteOrder                        = byteOrder;
         this.spatialReferenceSystemIdentifier = spatialReferenceSystemIdentifier;
         this.envelope                         = envelope;
 
-        final int isEmptyMask          = this.isEmpty ? (1 << 4) : 0;
+        final int isEmptyMask          = this.empty ? (1 << 4) : 0; // TODO make this part of the Contents enum like BinaryType?
         final int envelopeContentsMask = (byte)(envelope.getContentsIndicatorCode() << 1);
 
         this.flags = // 0                         |
@@ -160,6 +181,16 @@ public class BinaryHeader
                      isEmptyMask                  |
                      envelopeContentsMask         |
                      (byteOrder.equals(ByteOrder.BIG_ENDIAN) ? 0 : 1);
+    }
+
+    public int getSpatialReferenceSystemIdentifier()
+    {
+        return this.spatialReferenceSystemIdentifier;
+    }
+
+    public boolean isEmpty()
+    {
+        return this.empty;
     }
 
     public void writeBytes(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
@@ -229,7 +260,7 @@ public class BinaryHeader
         return envelope;
     }
 
-    private static final byte      defaultVersion = (byte)0;              // Confusingly, 0 = "version 1", see: http://www.geopackage.org/spec/#gpb_spec
+    private static final byte      defaultVersion = (byte)0;                // Confusingly, 0 = "version 1", see: http://www.geopackage.org/spec/#gpb_spec
     private static final ByteOrder defaultByteOrder = ByteOrder.BIG_ENDIAN; // Java default (?), also the network byte order
 
     private static final byte[] magic = {(byte)71,// 'G'
@@ -238,7 +269,7 @@ public class BinaryHeader
 
     private final byte       version; // This is an *unsigned* value, regardless of Java's interpretation
     private final BinaryType binaryType;
-    private final boolean    isEmpty;
+    private final boolean    empty;
     private final ByteOrder  byteOrder;
     private final int        spatialReferenceSystemIdentifier;
     private final Envelope   envelope;

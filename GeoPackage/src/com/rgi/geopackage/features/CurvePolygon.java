@@ -21,26 +21,42 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
+package com.rgi.geopackage.features;
 
-import com.rgi.geopackage.features.BinaryHeader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
- * The base type for all 1-dimensional geometry types. A 1-dimensional geometry
- * is a geometry that has a length, but no area. A curve is considered simple
- * if it does not intersect itself (except at the start and end point). A curve
- * is considered closed its start and end point are coincident. A simple,
- * closed curve is called a ring.
+ * A planar surface defined by an exterior ring and zero or more interior ring.
+ * Each ring is defined by a Curve instance.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public abstract class Curve extends Geometry
+public class CurvePolygon extends Surface
 {
-    protected Curve(final BinaryHeader header)
+    public CurvePolygon(final BinaryHeader header)
     {
         super(header);
+    }
+
+    @Override
+    public int getTypeCode()
+    {
+        return GeometryType.CurvePolygon.getCode();
+    }
+
+    @Override
+    public String getGeometryTypeName()
+    {
+        return GeometryType.CurvePolygon.toString();
+    }
+
+    @Override
+    protected void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    {
+        throw new UnsupportedOperationException("pending implementaiton");
     }
 }

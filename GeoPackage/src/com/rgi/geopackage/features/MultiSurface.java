@@ -21,38 +21,22 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
-
-import com.rgi.geopackage.features.BinaryHeader;
-import com.rgi.geopackage.features.GeometryType;
+package com.rgi.geopackage.features;
 
 /**
- * A restricted form of MultiSurface where each Surface in the collection must
- * be of type Polygon.
+ * A restricted form of GeometryCollection where each Geometry in the
+ * collection must be of type Surface.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class MultiPolygon extends MultiSurface
+@SuppressWarnings("AbstractClassExtendsConcreteClass")
+public abstract class MultiSurface extends GeometryCollection
 {
-    public MultiPolygon(final BinaryHeader header)
+    protected MultiSurface(final BinaryHeader header)
     {
         super(header);
-    }
-
-    @Override
-    @SuppressWarnings("RefusedBequest")
-    public int getTypeCode()
-    {
-        return GeometryType.MultiPolygon.getCode();
-    }
-
-    @Override
-    @SuppressWarnings("RefusedBequest")
-    public String getGeometryTypeName()
-    {
-        return GeometryType.MultiPolygon.toString();
     }
 }

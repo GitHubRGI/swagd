@@ -166,10 +166,10 @@
       <option name="m_limit" value="64" />
     </inspection_tool>
     <inspection_tool class="CheckedExceptionClass" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="ClassCoupling" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="ClassCoupling" enabled="false" level="ERROR" enabled_by_default="false">
       <option name="m_includeJavaClasses" value="false" />
       <option name="m_includeLibraryClasses" value="false" />
-      <option name="m_limit" value="15" />
+      <option name="m_limit" value="20" />
     </inspection_tool>
     <inspection_tool class="ClassEscapesItsScope" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ClassHasNoToStringMethod" enabled="false" level="ERROR" enabled_by_default="false">

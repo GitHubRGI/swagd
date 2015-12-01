@@ -24,12 +24,16 @@
 package com.rgi.geopackage.features;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.Pair;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.core.ContentFactory;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.features.geometry.Geometry;
+import com.rgi.geopackage.features.envelope.EmptyEnvelope;
+import com.rgi.geopackage.features.envelope.Envelope;
+import com.rgi.geopackage.features.envelope.XyEnvelope;
+import com.rgi.geopackage.features.envelope.XymEnvelope;
+import com.rgi.geopackage.features.envelope.XyzEnvelope;
+import com.rgi.geopackage.features.envelope.XyzmEnvelope;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
@@ -47,7 +51,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -335,8 +338,8 @@ public class GeoPackageFeatures
                                                                      resultSet.getString(1),
                                                                      resultSet.getString(2),
                                                                      resultSet.getInt   (3),
-                                                                     resultSet.getInt   (4),
-                                                                     resultSet.getInt   (5)));
+                                                                     ValueRequirement.fromInt(resultSet.getInt(4)),
+                                                                     ValueRequirement.fromInt(resultSet.getInt(5))));
     }
 
     /**
@@ -484,116 +487,87 @@ public class GeoPackageFeatures
                                          });
     }
 
-    public Feature addFeature(final GeometryColumn      geometryColumn,
-                              final Geometry            geometry,
-                              final Map<String, Object> attributes) throws SQLException
+    public Feature addPointFeature(final GeometryColumn      geometryColumn,
+                                   final Coordinate          coordinate,
+                                   final Map<String, Object> attributes) throws SQLException
     {
-        if(geometryColumn == null)
+        if(!geometryColumn.getGeometryType().toUpperCase().equals(GeometryType.Point.toString()))
         {
-            throw new IllegalArgumentException("Geometry column may not be null");
+            throw new IllegalArgumentException("Geometry column may only contain geometries of type " + geometryColumn.getGeometryType().toUpperCase());
         }
 
-        if(geometry == null)
-        {
-            throw new IllegalArgumentException("Geometry may not be null");
-        }
+        verifyValueRequirements(geometryColumn, Arrays.asList(coordinate));
 
-        if(attributes == null)
-        {
-            throw new IllegalAccessError("Attributes may not be null");
-        }
+        final Contents contents = coordinate.getContents();
 
-        final List<String> columnNames = new LinkedList<>(attributes.keySet());
+        final Envelope envelop = contents == Contents.Empty ? new EmptyEnvelope()
+                                                            : getEnvelope(geometryColumn, Arrays.asList(coordinate));
 
-        columnNames.add(0, geometryColumn.getColumnName());
+        final Point point = new Point(new BinaryHeader(BinaryType.Standard,
+                                                       contents,
+                                                       geometryColumn.getSpatialReferenceSystemIdentifier(),
+                                                       envelop), //envelope,
+                                      coordinate);
 
-        final String insertFeatureSql = String.format("INSERT INTO %s (%s) VALUES (%s)",
-                                                      geometryColumn.getTableName(),
-                                                      String.join(", ", columnNames),
-                                                      String.join(", ", Collections.nCopies(columnNames.size(), "?")));
+        return this.addFeature(geometryColumn,
+                               point,
+                               attributes);
 
-        final int identifier = JdbcUtility.update(this.databaseConnection,
-                                                  insertFeatureSql,
-                                                  preparedStatement -> { int parameterIndex = 1;
-
-                                                                         try
-                                                                         {
-                                                                             preparedStatement.setBlob(parameterIndex++, new SerialBlob(geometry.getStandardBinary()));
-                                                                         }
-                                                                         catch(final IOException e)
-                                                                         {
-                                                                             throw new RuntimeException(e);
-                                                                         }
-
-                                                                         columnNames.remove(0);    // Skip the geometry column
-
-                                                                         for(final String columnName : columnNames)
-                                                                         {
-                                                                             preparedStatement.setObject(parameterIndex++, attributes.get(columnName)); // TODO Map index instead of iterating over the KVPs due to order iteration concerns. Looking up values might be slow.
-                                                                         }
-                                                                        },
-                                                  resultSet -> resultSet.getInt(1));    // New feature identifier
-
-        this.databaseConnection.commit();
-
-        return new Feature(identifier,
-                           geometry,
-                           attributes);
     }
 
-    public void addFeatures(final GeometryColumn                         geometryColumn,
-                            final Set<String>                            columns,
-                            final Iterable<Pair<Geometry, List<Object>>> features) throws SQLException
-    {
-        if(geometryColumn == null)
-        {
-            throw new IllegalArgumentException("Geometry column may not be null");
-        }
-
-        if(columns == null)
-        {
-            throw new IllegalArgumentException("Columns may not be null");
-        }
-
-        if(features == null)
-        {
-            throw new IllegalArgumentException("Values may not be null");
-        }
-
-        final List<String> columnNames = new LinkedList<>(columns);
-
-        columnNames.add(0, geometryColumn.getColumnName());
-
-        final int columnCount = columnNames.size();
-
-        final String insertFeatureSql = String.format("INSERT INTO %s (%s) VALUES (%s)",
-                                                      geometryColumn.getTableName(),
-                                                      String.join(", ", columnNames),
-                                                      String.join(", ", Collections.nCopies(columnNames.size(), "?")));
-
-        JdbcUtility.update(this.databaseConnection,
-                           insertFeatureSql,
-                           features,
-                           (preparedStatement, feature) -> { final Geometry     geometry   = feature.getLeft();
-                                                             final List<Object> attributes = feature.getRight();
-
-                                                             try
-                                                             {
-                                                                 preparedStatement.setBlob(1, new SerialBlob(geometry.getStandardBinary()));
-                                                             }
-                                                             catch(final IOException ex)
-                                                             {
-                                                                 throw new RuntimeException(ex);
-                                                             }
-
-                                                             for(int parameterIndex = 2; parameterIndex <= columnCount; ++parameterIndex)
-                                                             {
-                                                                 preparedStatement.setObject(parameterIndex, attributes.get(parameterIndex-1));
-                                                             }
-                                                           });
-
-        this.databaseConnection.commit();
-    }
+//    public void addFeatures(final GeometryColumn                         geometryColumn,
+//                            final Set<String>                            columns,
+//                            final Iterable<Pair<Geometry, List<Object>>> features) throws SQLException
+//    {
+//        if(geometryColumn == null)
+//        {
+//            throw new IllegalArgumentException("Geometry column may not be null");
+//        }
+//
+//        if(columns == null)
+//        {
+//            throw new IllegalArgumentException("Columns may not be null");
+//        }
+//
+//        if(features == null)
+//        {
+//            throw new IllegalArgumentException("Values may not be null");
+//        }
+//
+//        final List<String> columnNames = new LinkedList<>(columns);
+//
+//        columnNames.add(0, geometryColumn.getColumnName());
+//
+//        final int columnCount = columnNames.size();
+//
+//        final String insertFeatureSql = String.format("INSERT INTO %s (%s) VALUES (%s)",
+//                                                      geometryColumn.getTableName(),
+//                                                      String.join(", ", columnNames),
+//                                                      String.join(", ", Collections.nCopies(columnNames.size(), "?")));
+//
+//        JdbcUtility.update(this.databaseConnection,
+//                           insertFeatureSql,
+//                           features,
+//                           (preparedStatement, feature) -> { final Geometry     geometry   = feature.getLeft();
+//                                                             final List<Object> attributes = feature.getRight();
+//
+//                                                             try
+//                                                             {
+//                                                                 preparedStatement.setBlob(1, new SerialBlob(geometry.getStandardBinary()));
+//                                                             }
+//                                                             catch(final IOException ex)
+//                                                             {
+//                                                                 throw new RuntimeException(ex);
+//                                                             }
+//
+//                                                             for(int parameterIndex = 2; parameterIndex <= columnCount; ++parameterIndex)
+//                                                             {
+//                                                                 preparedStatement.setObject(parameterIndex, attributes.get(parameterIndex-1));
+//                                                             }
+//                                                           });
+//
+//        this.databaseConnection.commit();
+//    }
 
     /**
      * Creates the Geometry Column table
@@ -654,6 +628,181 @@ public class GeoPackageFeatures
                                                 });
     }
 
+    private static void verifyValueRequirements(final GeometryColumn geometryColumn, final Iterable<Coordinate> coordinates)
+    {
+        final ValueRequirement zRequirement = geometryColumn.getZRequirement();
+        final ValueRequirement mRequirement = geometryColumn.getMRequirement();
+
+        for(final Coordinate coordinate : coordinates)
+        {
+            if(coordinate == null)
+            {
+                throw new IllegalArgumentException("Coordinate may not be null");
+            }
+
+            final boolean hasZ = coordinate.hasZ();
+            final boolean hasM = coordinate.hasM();
+
+            if((zRequirement == ValueRequirement.Prohibited &&  hasZ) ||
+               (zRequirement == ValueRequirement.Mandatory  && !hasZ) ||
+               (mRequirement == ValueRequirement.Prohibited &&  hasM) ||
+               (mRequirement == ValueRequirement.Mandatory  && !hasM))
+            {
+                throw new IllegalArgumentException(String.format("Coordinate %s (x, y, z, m) is incompatible with the requirements Z %s, M %s",
+                                                                 coordinate.toString(),
+                                                                 zRequirement.toString().toLowerCase(),
+                                                                 mRequirement.toString().toLowerCase()));
+            }
+        }
+    }
+
+    /**
+     * It's assumed that verifyValueRequirements() has been called first to do
+     * appropriate value and null checking. It's also assumed not to be an
+     * "empty" geometry.
+     *
+     * @param geometryColumn
+     * @param coordinates
+     * @return
+     */
+    private static Envelope getEnvelope(final GeometryColumn geometryColumn, final Iterable<Coordinate> coordinates)
+    {
+        final ValueRequirement zRequirement = geometryColumn.getZRequirement();
+        final ValueRequirement mRequirement = geometryColumn.getMRequirement();
+
+        double maximumX = -Double.MAX_VALUE;
+        double minimumX =  Double.MAX_VALUE;
+        double maximumY = -Double.MAX_VALUE;
+        double minimumY =  Double.MAX_VALUE;
+        double maximumZ = -Double.MAX_VALUE;
+        double minimumZ =  Double.MAX_VALUE;
+        double maximumM = -Double.MAX_VALUE;
+        double minimumM =  Double.MAX_VALUE;
+
+        for(final Coordinate coordinate : coordinates)
+        {
+            final double x = coordinate.getX();
+            final double y = coordinate.getY();
+
+            if(maximumX < x) { maximumX = x; }
+            if(minimumX > x) { minimumX = x; }
+            if(maximumY < y) { maximumY = y; }
+            if(minimumY > y) { minimumY = y; }
+
+            if(coordinate.hasZ())
+            {
+                final Double z = coordinate.getZ();
+                if(maximumZ < z) { maximumZ = z; }
+                if(minimumZ > z) { minimumZ = z; }
+            }
+
+            if(coordinate.hasM())
+            {
+                final double m = coordinate.getM();
+                if(maximumM < m) { maximumM = m; }
+                if(minimumM > m) { minimumM = m; }
+            }
+        }
+
+        if(zRequirement != ValueRequirement.Prohibited &&
+           mRequirement != ValueRequirement.Prohibited)
+        {
+            return new XyzmEnvelope(new double[]{ maximumX,
+                                                  minimumX,
+                                                  maximumY,
+                                                  minimumY,
+                                                  maximumZ,
+                                                  minimumZ,
+                                                  maximumM,
+                                                  minimumM
+                                                });
+        }
+
+        if(zRequirement != ValueRequirement.Prohibited)
+        {
+            return new XyzEnvelope(new double[]{ maximumX,
+                                                 minimumX,
+                                                 maximumY,
+                                                 minimumY,
+                                                 maximumZ,
+                                                 minimumZ
+                                               });
+        }
+
+        if(mRequirement != ValueRequirement.Prohibited)
+        {
+            return new XymEnvelope(new double[]{ maximumX,
+                                                 minimumX,
+                                                 maximumY,
+                                                 minimumY,
+                                                 maximumM,
+                                                 minimumM
+                                               });
+        }
+
+        return new XyEnvelope(new double[]{ maximumX,
+                                            minimumX,
+                                            maximumY,
+                                            minimumY,
+                                          });
+    }
+
+    private Feature addFeature(final GeometryColumn      geometryColumn,
+                               final Geometry            geometry,
+                               final Map<String, Object> attributes) throws SQLException
+    {
+        if(geometryColumn == null)
+        {
+            throw new IllegalArgumentException("Geometry column may not be null");
+        }
+
+        if(geometry == null)
+        {
+            throw new IllegalArgumentException("Geometry may not be null");
+        }
+
+        if(attributes == null)
+        {
+            throw new IllegalAccessError("Attributes may not be null");
+        }
+
+        final List<String> columnNames = new LinkedList<>(attributes.keySet());
+
+        columnNames.add(0, geometryColumn.getColumnName());
+
+        final String insertFeatureSql = String.format("INSERT INTO %s (%s) VALUES (%s)",
+                                                      geometryColumn.getTableName(),
+                                                      String.join(", ", columnNames),
+                                                      String.join(", ", Collections.nCopies(columnNames.size(), "?")));
+
+        final int identifier = JdbcUtility.update(this.databaseConnection,
+                                                  insertFeatureSql,
+                                                  preparedStatement -> { int parameterIndex = 1;
+
+                                                                         try
+                                                                         {
+                                                                             preparedStatement.setBlob(parameterIndex++, new SerialBlob(geometry.getStandardBinary()));
+                                                                         }
+                                                                         catch(final IOException e)
+                                                                         {
+                                                                             throw new RuntimeException(e);
+                                                                         }
+
+                                                                         columnNames.remove(0);    // Skip the geometry column
+
+                                                                         for(final String columnName : columnNames)
+                                                                         {
+                                                                             preparedStatement.setObject(parameterIndex++, attributes.get(columnName)); // TODO Map index instead of iterating over the KVPs due to order iteration concerns. Looking up values might be slow.
+                                                                         }
+                                                                        },
+                                                  resultSet -> resultSet.getInt(1));    // New feature identifier
+
+        this.databaseConnection.commit();
+
+        return new Feature(identifier,
+                           geometry,
+                           attributes);
+    }
 
     /**
      * Returns the column names of a feature table, but reorders them so that

@@ -21,44 +21,21 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
-
-import com.rgi.geopackage.features.BinaryHeader;
-import com.rgi.geopackage.features.GeometryType;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+package com.rgi.geopackage.features;
 
 /**
- * A Curve that connects two or more points in space.
+ * The base type for all 2-dimensional geometry types. A 2-dimensional geometry
+ * is a geometry that has an area.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class LineString extends Curve
+public abstract class Surface extends Geometry
 {
-    public LineString(final BinaryHeader header)
+    protected Surface(final BinaryHeader header)
     {
         super(header);
-    }
-
-    @Override
-    public int getTypeCode()
-    {
-        return GeometryType.LineString.getCode();
-    }
-
-    @Override
-    public String getGeometryTypeName()
-    {
-        return GeometryType.LineString.toString();
-    }
-
-    @Override
-    protected void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
-    {
-        throw new UnsupportedOperationException("pending implementaiton");
     }
 }
