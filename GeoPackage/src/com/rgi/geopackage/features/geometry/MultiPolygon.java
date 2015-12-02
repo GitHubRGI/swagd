@@ -21,42 +21,61 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry;
+
+import com.rgi.geopackage.features.BinaryHeader;
+import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
- * A planar surface defined by an exterior ring and zero or more interior ring.
- * Each ring is defined by a Curve instance.
+ * A restricted form of MultiSurface where each Surface in the collection must
+ * be of type Polygon.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class CurvePolygon extends Surface
+public class MultiPolygon extends MultiSurface<Polygon>
 {
-    public CurvePolygon(final BinaryHeader header)
+    public MultiPolygon(final Polygon... polygons)
     {
-        super(header);
+        this(Arrays.asList(polygons));
+    }
+
+    public MultiPolygon(final Collection<Polygon> polygons)
+    {
+        super(polygons);
     }
 
     @Override
+    @SuppressWarnings("RefusedBequest")
     public int getTypeCode()
     {
-        return GeometryType.CurvePolygon.getCode();
+        return GeometryType.MultiPolygon.getCode();
     }
 
     @Override
+    @SuppressWarnings("RefusedBequest")
     public String getGeometryTypeName()
     {
-        return GeometryType.CurvePolygon.toString();
+        return GeometryType.MultiPolygon.toString();
     }
 
     @Override
-    protected void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    @SuppressWarnings("RefusedBequest")
+    public void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
     {
         throw new UnsupportedOperationException("pending implementaiton");
+    }
+
+    public List<Polygon> getPolygons()
+    {
+        return this.getGeometries();
     }
 }

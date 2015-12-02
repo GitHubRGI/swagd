@@ -21,7 +21,10 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry;
+
+import com.rgi.geopackage.features.Coordinate;
+import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,20 +40,11 @@ import java.io.IOException;
  */
 public class Point extends Geometry
 {
-    protected Point(final BinaryHeader header,
-                    final Coordinate   coordinate)
+    protected Point(final Coordinate coordinate)
     {
-        super(header);
-
-        if(this.header.isEmpty())
+        if(coordinate == null)
         {
-            if(!Double.isNaN(coordinate.getX()) ||
-               !Double.isNaN(coordinate.getY()) ||
-               (coordinate.getZ() != null && !Double.isNaN(coordinate.getZ())) ||
-               (coordinate.getM() != null && !Double.isNaN(coordinate.getM())))
-            {
-                throw new IllegalArgumentException("Empty points may not have coordinate values other than NaN");
-            }
+            throw new IllegalArgumentException("Coordinate may not be null");
         }
 
         this.coordinate = coordinate;
@@ -81,6 +75,15 @@ public class Point extends Geometry
     }
 
     @Override
+    public boolean isEmpty()
+    {
+        return Double.isNaN(this.coordinate.getX()) &&
+               Double.isNaN(this.coordinate.getY()) &&
+               (!this.coordinate.hasZ() || Double.isNaN(this.coordinate.getZ())) &&
+               (!this.coordinate.hasM() || Double.isNaN(this.coordinate.getM()));
+    }
+
+    @Override
     public void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
     {
         throw new UnsupportedOperationException("pending implementaiton");
@@ -93,17 +96,17 @@ public class Point extends Geometry
 
     public double getY()
     {
-        return this.coordinate.getX();
+        return this.coordinate.getY();
     }
 
-    public double getZ()
+    public Double getZ()
     {
-        return this.coordinate.getX();
+        return this.coordinate.getZ();
     }
 
-    public double getM()
+    public Double getM()
     {
-        return this.coordinate.getX();
+        return this.coordinate.getM();
     }
 
     private final Coordinate coordinate;

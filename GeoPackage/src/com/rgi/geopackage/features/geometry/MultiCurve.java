@@ -21,7 +21,11 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry;
+
+import com.rgi.geopackage.features.GeometryType;
+
+import java.util.Collection;
 
 /**
  * A restricted form of GeometryCollection where each Geometry in the
@@ -33,10 +37,24 @@ package com.rgi.geopackage.features;
  *
  */
 @SuppressWarnings("AbstractClassExtendsConcreteClass")
-public abstract class MultiCurve extends GeometryCollection
+public abstract class MultiCurve<T extends Curve> extends GeometryCollection<T>
 {
-    protected MultiCurve(final BinaryHeader header)
+    protected MultiCurve(final Collection<T> curves)
     {
-        super(header);
+        super(curves);
+    }
+
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public int getTypeCode()
+    {
+        return GeometryType.MultiCurve.getCode();
+    }
+
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public String getGeometryTypeName()
+    {
+        return GeometryType.MultiCurve.toString();
     }
 }

@@ -34,6 +34,8 @@ import com.rgi.geopackage.features.envelope.XyEnvelope;
 import com.rgi.geopackage.features.envelope.XymEnvelope;
 import com.rgi.geopackage.features.envelope.XyzEnvelope;
 import com.rgi.geopackage.features.envelope.XyzmEnvelope;
+import com.rgi.geopackage.features.geometry.Geometry;
+import com.rgi.geopackage.features.geometry.Point;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
@@ -487,16 +489,33 @@ public class GeoPackageFeatures
                                          });
     }
 
-    public Feature addPointFeature(final GeometryColumn      geometryColumn,
-                                   final Coordinate          coordinate,
-                                   final Map<String, Object> attributes) throws SQLException
+    public Feature addFeature(final GeometryColumn      geometryColumn,
+                              final Geometry            geometry,
+                              final Map<String, Object> attributes) throws SQLException
     {
-        if(!geometryColumn.getGeometryType().toUpperCase().equals(GeometryType.Point.toString()))
+        if(geometryColumn == null)
+        {
+            throw new IllegalArgumentException("Geometry column may not be null");
+        }
+
+        if(geometry == null)
+        {
+            throw new IllegalArgumentException("Geometry may not be null");
+        }
+
+        if(attributes == null)
+        {
+            throw new IllegalAccessError("Attributes may not be null");
+        }
+
+        if(!geometryColumn.getGeometryType()
+                          .toUpperCase()
+                          .equals(geometry.getGeometryTypeName()))
         {
             throw new IllegalArgumentException("Geometry column may only contain geometries of type " + geometryColumn.getGeometryType().toUpperCase());
         }
 
-        verifyValueRequirements(geometryColumn, Arrays.asList(coordinate));
+        verifyValueRequirements(geometryColumn, geometry);
 
         final Contents contents = coordinate.getContents();
 
@@ -506,13 +525,46 @@ public class GeoPackageFeatures
         final Point point = new Point(new BinaryHeader(BinaryType.Standard,
                                                        contents,
                                                        geometryColumn.getSpatialReferenceSystemIdentifier(),
-                                                       envelop), //envelope,
+                                                       envelop),
                                       coordinate);
 
-        return this.addFeature(geometryColumn,
-                               point,
-                               attributes);
 
+        final List<String> columnNames = new LinkedList<>(attributes.keySet());
+
+        columnNames.add(0, geometryColumn.getColumnName());
+
+        final String insertFeatureSql = String.format("INSERT INTO %s (%s) VALUES (%s)",
+                                                      geometryColumn.getTableName(),
+                                                      String.join(", ", columnNames),
+                                                      String.join(", ", Collections.nCopies(columnNames.size(), "?")));
+
+        final int identifier = JdbcUtility.update(this.databaseConnection,
+                                                  insertFeatureSql,
+                                                  preparedStatement -> { int parameterIndex = 1;
+
+                                                                         try
+                                                                         {
+                                                                             preparedStatement.setBlob(parameterIndex++, new SerialBlob(geometry.getStandardBinary()));
+                                                                         }
+                                                                         catch(final IOException e)
+                                                                         {
+                                                                             throw new RuntimeException(e);
+                                                                         }
+
+                                                                         columnNames.remove(0);    // Skip the geometry column
+
+                                                                         for(final String columnName : columnNames)
+                                                                         {
+                                                                             preparedStatement.setObject(parameterIndex++, attributes.get(columnName)); // TODO Map index instead of iterating over the KVPs due to order iteration concerns. Looking up values might be slow.
+                                                                         }
+                                                                        },
+                                                  resultSet -> resultSet.getInt(1));    // New feature identifier
+
+        this.databaseConnection.commit();
+
+        return new Feature(identifier,
+                           geometry,
+                           attributes);
     }
 
 //    public void addFeatures(final GeometryColumn                         geometryColumn,
@@ -628,31 +680,27 @@ public class GeoPackageFeatures
                                                 });
     }
 
-    private static void verifyValueRequirements(final GeometryColumn geometryColumn, final Iterable<Coordinate> coordinates)
+    private static void verifyValueRequirements(final GeometryColumn geometryColumn, final Geometry geometry)
     {
         final ValueRequirement zRequirement = geometryColumn.getZRequirement();
         final ValueRequirement mRequirement = geometryColumn.getMRequirement();
 
-        for(final Coordinate coordinate : coordinates)
+        if(geometry == null)
         {
-            if(coordinate == null)
-            {
-                throw new IllegalArgumentException("Coordinate may not be null");
-            }
+            throw new IllegalArgumentException("Geometry may not be null");
+        }
 
-            final boolean hasZ = coordinate.hasZ();
-            final boolean hasM = coordinate.hasM();
+        final boolean hasZ = geometry.hasZ();
+        final boolean hasM = geometry.hasM();
 
-            if((zRequirement == ValueRequirement.Prohibited &&  hasZ) ||
-               (zRequirement == ValueRequirement.Mandatory  && !hasZ) ||
-               (mRequirement == ValueRequirement.Prohibited &&  hasM) ||
-               (mRequirement == ValueRequirement.Mandatory  && !hasM))
-            {
-                throw new IllegalArgumentException(String.format("Coordinate %s (x, y, z, m) is incompatible with the requirements Z %s, M %s",
-                                                                 coordinate.toString(),
-                                                                 zRequirement.toString().toLowerCase(),
-                                                                 mRequirement.toString().toLowerCase()));
-            }
+        if((zRequirement == ValueRequirement.Prohibited &&  hasZ) ||
+           (zRequirement == ValueRequirement.Mandatory  && !hasZ) ||
+           (mRequirement == ValueRequirement.Prohibited &&  hasM) ||
+           (mRequirement == ValueRequirement.Mandatory  && !hasM))
+        {
+            throw new IllegalArgumentException(String.format("Geometry is incompatible with the requirements Z %s, M %s",
+                                                             zRequirement.toString().toLowerCase(),
+                                                             mRequirement.toString().toLowerCase()));
         }
     }
 
@@ -745,63 +793,6 @@ public class GeoPackageFeatures
                                             maximumY,
                                             minimumY,
                                           });
-    }
-
-    private Feature addFeature(final GeometryColumn      geometryColumn,
-                               final Geometry            geometry,
-                               final Map<String, Object> attributes) throws SQLException
-    {
-        if(geometryColumn == null)
-        {
-            throw new IllegalArgumentException("Geometry column may not be null");
-        }
-
-        if(geometry == null)
-        {
-            throw new IllegalArgumentException("Geometry may not be null");
-        }
-
-        if(attributes == null)
-        {
-            throw new IllegalAccessError("Attributes may not be null");
-        }
-
-        final List<String> columnNames = new LinkedList<>(attributes.keySet());
-
-        columnNames.add(0, geometryColumn.getColumnName());
-
-        final String insertFeatureSql = String.format("INSERT INTO %s (%s) VALUES (%s)",
-                                                      geometryColumn.getTableName(),
-                                                      String.join(", ", columnNames),
-                                                      String.join(", ", Collections.nCopies(columnNames.size(), "?")));
-
-        final int identifier = JdbcUtility.update(this.databaseConnection,
-                                                  insertFeatureSql,
-                                                  preparedStatement -> { int parameterIndex = 1;
-
-                                                                         try
-                                                                         {
-                                                                             preparedStatement.setBlob(parameterIndex++, new SerialBlob(geometry.getStandardBinary()));
-                                                                         }
-                                                                         catch(final IOException e)
-                                                                         {
-                                                                             throw new RuntimeException(e);
-                                                                         }
-
-                                                                         columnNames.remove(0);    // Skip the geometry column
-
-                                                                         for(final String columnName : columnNames)
-                                                                         {
-                                                                             preparedStatement.setObject(parameterIndex++, attributes.get(columnName)); // TODO Map index instead of iterating over the KVPs due to order iteration concerns. Looking up values might be slow.
-                                                                         }
-                                                                        },
-                                                  resultSet -> resultSet.getInt(1));    // New feature identifier
-
-        this.databaseConnection.commit();
-
-        return new Feature(identifier,
-                           geometry,
-                           attributes);
     }
 
     /**

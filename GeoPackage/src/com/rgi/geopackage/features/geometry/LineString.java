@@ -21,21 +21,68 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry;
+
+import com.rgi.geopackage.features.GeometryType;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
- * The base type for all 2-dimensional geometry types. A 2-dimensional geometry
- * is a geometry that has an area.
+ * A Curve that connects two or more points in space.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public abstract class Surface extends Geometry
+public class LineString extends Curve
 {
-    protected Surface(final BinaryHeader header)
+    public LineString(final LinearString linearString)
     {
-        super(header);
+        if(linearString == null)
+        {
+            throw new IllegalArgumentException("Linear string may not be null");
+        }
+
+        this.linearString = linearString;
     }
+
+    @Override
+    public int getTypeCode()
+    {
+        return GeometryType.LineString.getCode();
+    }
+
+    @Override
+    public String getGeometryTypeName()
+    {
+        return GeometryType.LineString.toString();
+    }
+
+    @Override
+    public boolean hasZ()
+    {
+        return this.linearString.hasZ();
+    }
+
+    @Override
+    public boolean hasM()
+    {
+        return this.linearString.hasM();
+    }
+
+    @Override
+    public boolean isEmpty()
+    {
+        return this.linearString.isEmpty();
+    }
+
+    @Override
+    public void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    {
+        throw new UnsupportedOperationException("pending implementaiton");
+    }
+
+    private final LinearString linearString;
 }

@@ -21,35 +21,61 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry;
+
+import com.rgi.geopackage.features.GeometryType;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * A restricted form of GeometryCollection where each Geometry in the
- * collection must be of type Point.
+ * A restricted form of MultiCurve where each Curve in the collection must be
+ * of type LineString.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class MultiPoint extends GeometryCollection
+public class MultiLineString extends MultiCurve<LineString>
 {
-    public MultiPoint(final BinaryHeader header)
+    public MultiLineString(final LineString... lineStrings)
     {
-        super(header);
+        this(Arrays.asList(lineStrings));
+    }
+
+    public MultiLineString(final Collection<LineString> lineStrings)
+    {
+        super(lineStrings);
     }
 
     @Override
     @SuppressWarnings("RefusedBequest")
     public int getTypeCode()
     {
-        return GeometryType.MultiPoint.getCode();
+        return GeometryType.MultiLineString.getCode();
     }
 
     @Override
     @SuppressWarnings("RefusedBequest")
     public String getGeometryTypeName()
     {
-        return GeometryType.MultiPoint.toString();
+        return GeometryType.MultiLineString.toString();
+    }
+
+    @Override
+    @SuppressWarnings("RefusedBequest")
+    public void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    {
+        throw new UnsupportedOperationException("pending implementaiton");
+    }
+
+    public List<LineString> getLineStrings()
+    {
+        return this.getGeometries();
     }
 }

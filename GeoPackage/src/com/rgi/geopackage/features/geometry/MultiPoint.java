@@ -21,53 +21,60 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry;
+
+import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
- * A collection of zero or more Geometry instances.
- * <br>
- * <br>
- * GeometryCollection is a generic term for the ST_GeomCollection type defined
- * in <a href="http://www.geopackage.org/spec/#12">ISO/IEC 13249-3:2011</a>,
- * which uses it for the definition of Well Known Text (WKT) and Well Known
- * Binary (WKB) encodings. The SQL type name GEOMCOLLECTION defined in <a
- * href="http://www.geopackage.org/spec/#10">OGC 06-104r4</a> and used in
- * <a href="spatial_ref_sys_data_table_definition">GeoPackage Specification
- * Clause 1.1.2.1.1</a> and <a href=
- * "http://www.geopackage.org/spec/#geometry_types">Annex E of the GeoPackage
- * Specification</a> refers to the SQL BLOB encoding of a GeometryCollection.
+ * A restricted form of GeometryCollection where each Geometry in the
+ * collection must be of type Point.
  *
- * @see "http://www.geopackage.org/spec/#_footnote_7"
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class GeometryCollection extends Geometry
+public class MultiPoint extends GeometryCollection<Point>
 {
-    public GeometryCollection(final BinaryHeader header)
+    public MultiPoint(final Point... points)
     {
-        super(header);
+        this(Arrays.asList(points));
+    }
+
+    public MultiPoint(final Collection<Point> points)
+    {
+        super(points);
     }
 
     @Override
+    @SuppressWarnings("RefusedBequest")
     public int getTypeCode()
     {
-        return GeometryType.GeometryCollection.getCode();
+        return GeometryType.MultiPoint.getCode();
     }
 
     @Override
+    @SuppressWarnings("RefusedBequest")
     public String getGeometryTypeName()
     {
-        return GeometryType.GeometryCollection.toString();
+        return GeometryType.MultiPoint.toString();
     }
 
     @Override
-    protected void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    @SuppressWarnings("RefusedBequest")
+    public void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
     {
         throw new UnsupportedOperationException("pending implementaiton");
+    }
+
+    public List<Point> getPoints()
+    {
+        return this.getGeometries();
     }
 }

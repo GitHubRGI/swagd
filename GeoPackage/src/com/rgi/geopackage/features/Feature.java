@@ -23,6 +23,8 @@
 
 package com.rgi.geopackage.features;
 
+import com.rgi.geopackage.features.geometry.Geometry;
+
 import java.util.Map;
 
 /**
@@ -38,7 +40,7 @@ public class Feature
      * @param attributes
      */
     protected Feature(final int                 identifier,
-                      final Geometry            geometry,
+                      final Geometry geometry,
                       final Map<String, Object> attributes)
     {
         this.identifier = identifier;

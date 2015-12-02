@@ -21,35 +21,20 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry;
+
+import com.rgi.geopackage.features.BinaryHeader;
 
 /**
- * A restricted form of MultiCurve where each Curve in the collection must be
- * of type LineString.
+ * The base type for all 2-dimensional geometry types. A 2-dimensional geometry
+ * is a geometry that has an area.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class MultiLineString extends MultiCurve
+public abstract class Surface extends Geometry
 {
-    public MultiLineString(final BinaryHeader header)
-    {
-        super(header);
-    }
 
-    @Override
-    @SuppressWarnings("RefusedBequest")
-    public int getTypeCode()
-    {
-        return GeometryType.MultiLineString.getCode();
-    }
-
-    @Override
-    @SuppressWarnings("RefusedBequest")
-    public String getGeometryTypeName()
-    {
-        return GeometryType.MultiLineString.toString();
-    }
 }
