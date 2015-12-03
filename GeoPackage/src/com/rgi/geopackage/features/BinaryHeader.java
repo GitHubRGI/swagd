@@ -48,7 +48,7 @@ public class BinaryHeader
      *
      * @param bytes
      */
-    public BinaryHeader(final byte[] bytes)
+    protected BinaryHeader(final byte[] bytes)
     {
         if(bytes == null)
         {
@@ -92,8 +92,8 @@ public class BinaryHeader
      * @param binaryType
      * @param spatialReferenceSystemIdentifier
      */
-    public BinaryHeader(final BinaryType binaryType,
-                        final int        spatialReferenceSystemIdentifier)
+    protected BinaryHeader(final BinaryType binaryType,
+                           final int        spatialReferenceSystemIdentifier)
     {
         this(defaultVersion,
              binaryType,
@@ -111,9 +111,9 @@ public class BinaryHeader
      * @param spatialReferenceSystemIdentifier
      * @param envelope
      */
-    public BinaryHeader(final BinaryType binaryType,
-                        final int        spatialReferenceSystemIdentifier,
-                        final Envelope   envelope)
+    protected BinaryHeader(final BinaryType binaryType,
+                           final int        spatialReferenceSystemIdentifier,
+                           final Envelope   envelope)
     {
         this(defaultVersion,
              binaryType,
@@ -131,10 +131,10 @@ public class BinaryHeader
      * @param spatialReferenceSystemIdentifier
      * @param envelope
      */
-    public BinaryHeader(final BinaryType binaryType,
-                        final Contents   contents,
-                        final int        spatialReferenceSystemIdentifier,
-                        final Envelope   envelope)
+    protected BinaryHeader(final BinaryType binaryType,
+                           final Contents   contents,
+                           final int        spatialReferenceSystemIdentifier,
+                           final Envelope   envelope)
     {
         this(defaultVersion,
              binaryType,
@@ -144,12 +144,12 @@ public class BinaryHeader
              envelope);
     }
 
-    public BinaryHeader(final byte       version,
-                        final BinaryType binaryType,
-                        final Contents   contents,
-                        final ByteOrder  byteOrder,
-                        final int        spatialReferenceSystemIdentifier,
-                        final Envelope   envelope)
+    protected BinaryHeader(final byte       version,
+                           final BinaryType binaryType,
+                           final Contents   contents,
+                           final ByteOrder  byteOrder,
+                           final int        spatialReferenceSystemIdentifier,
+                           final Envelope   envelope)
     {
         if(binaryType == null)
         {

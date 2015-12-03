@@ -78,7 +78,7 @@ public abstract class CurvePolygon extends Surface
 //    }
 //
 //    @Override
-//    public void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+//    public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
 //    {
 //        throw new UnsupportedOperationException("pending implementaiton");
 //    }

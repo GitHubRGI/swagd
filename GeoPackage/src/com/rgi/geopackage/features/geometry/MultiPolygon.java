@@ -23,7 +23,6 @@
 
 package com.rgi.geopackage.features.geometry;
 
-import com.rgi.geopackage.features.BinaryHeader;
 import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
@@ -69,7 +68,7 @@ public class MultiPolygon extends MultiSurface<Polygon>
 
     @Override
     @SuppressWarnings("RefusedBequest")
-    public void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
     {
         throw new UnsupportedOperationException("pending implementaiton");
     }

@@ -23,6 +23,9 @@
 
 package com.rgi.geopackage.features;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @see "http://www.geopackage.org/spec/#gpb_format"
  *
@@ -47,10 +50,27 @@ public enum BinaryType
         return ((flags >> 5) & 1) == 0 ? Standard : Extended;   // Check to see if the 5th bit is unset. unset -> Standard, set -> Extended
     }
 
+    public static BinaryType fromGeometryTypeName(final String geometryTypeName)
+    {
+        return standardGeometryTypes.contains(geometryTypeName.toUpperCase()) ? Standard
+                                                                              : Extended;
+    }
+
     BinaryType(final int bitMask)
     {
         this.bitMask = bitMask;
     }
 
     private final int bitMask;
+
+        // Standard geometry types
+    // http://www.geopackage.org/spec/#geometry_types
+    private static final List<String> standardGeometryTypes = Arrays.asList("GEOMETRY",
+                                                                            "POINT",
+                                                                            "LINESTRING",
+                                                                            "POLYGON",
+                                                                            "MULTIPOINT",
+                                                                            "MULTILINESTRING",
+                                                                            "MULTIPOLYGON",
+                                                                            "GEOMETRYCOLLECTION");
 }

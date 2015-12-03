@@ -43,7 +43,7 @@ public interface Envelope
     boolean hasZ();
     boolean hasM();
 
-    int getContentsIndicatorCode(); // 0: no evelope
+    int getContentsIndicatorCode(); // 0: no envelope
                                     // 1: X, Y
                                     // 2: X, Y, Z
                                     // 3: X, Y, M

@@ -129,7 +129,7 @@ public class GeometryCollection<T extends Geometry> extends Geometry
     }
 
     @Override
-    public void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
     {
         throw new UnsupportedOperationException("pending implementaiton");
     }

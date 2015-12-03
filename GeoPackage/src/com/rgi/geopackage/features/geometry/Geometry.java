@@ -23,13 +23,11 @@
 
 package com.rgi.geopackage.features.geometry;
 
-import com.rgi.geopackage.features.BinaryHeader;
+import com.rgi.geopackage.features.Contents;
+import com.rgi.geopackage.features.envelope.Envelope;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * The root of the geometry type hierarchy.
@@ -47,24 +45,22 @@ public abstract class Geometry
     public abstract boolean hasM();
     public abstract boolean isEmpty();
 
-    public abstract void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException;
+    public abstract void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException;
 
-//    public int getSpatialReferenceIdentifier()
-//    {
-//        return this.header.getSpatialReferenceSystemIdentifier();
-//    }
-//
-//    public boolean isEmpty()
-//    {
-//        return this.header.isEmpty();
-//    }
-//
+    public abstract Envelope createEnvelope();
+
+    public Contents getContents()
+    {
+        return this.isEmpty() ? Contents.Empty
+                              : Contents.NotEmpty;
+    }
+
 //    public byte[] getStandardBinary() throws IOException
 //    {
 //        try(final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream())
 //        {
 //            this.header.writeBytes(byteArrayOutputStream);
-//            this.writeWkbGeometry(byteArrayOutputStream);
+//            this.writeWellKnownBinary(byteArrayOutputStream);
 //
 //            return byteArrayOutputStream.toByteArray();
 //        }
@@ -80,7 +76,7 @@ public abstract class Geometry
 //            FORCE ENDIANNESS
 //
 //            this.header.writeBytes(byteArrayOutputStream);
-//            this.writeWkbGeometry(byteArrayOutputStream);
+//            this.writeWellKnownBinary(byteArrayOutputStream);
 //
 //            return byteArrayOutputStream.toByteArray();
 //        }

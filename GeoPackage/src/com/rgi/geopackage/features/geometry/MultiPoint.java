@@ -68,7 +68,7 @@ public class MultiPoint extends GeometryCollection<Point>
 
     @Override
     @SuppressWarnings("RefusedBequest")
-    public void writeWkbGeometry(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
     {
         throw new UnsupportedOperationException("pending implementaiton");
     }

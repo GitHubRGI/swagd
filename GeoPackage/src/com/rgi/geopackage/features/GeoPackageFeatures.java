@@ -24,6 +24,7 @@
 package com.rgi.geopackage.features;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.Pair;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.core.ContentFactory;
 import com.rgi.geopackage.core.GeoPackageCore;
@@ -35,12 +36,12 @@ import com.rgi.geopackage.features.envelope.XymEnvelope;
 import com.rgi.geopackage.features.envelope.XyzEnvelope;
 import com.rgi.geopackage.features.envelope.XyzmEnvelope;
 import com.rgi.geopackage.features.geometry.Geometry;
-import com.rgi.geopackage.features.geometry.Point;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 import javax.sql.rowset.serial.SerialBlob;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Blob;
 import java.sql.Connection;
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -304,7 +306,18 @@ public class GeoPackageFeatures
     public Collection<FeatureSet> getFeatureSets(final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
     {
         return this.core.getContent(FeatureSet.FeatureContentType,
-                                    (tableName, dataType, identifier, description, lastChange, boundingBox, spatialReferenceSystem) -> new FeatureSet(tableName, identifier, description, lastChange, boundingBox, spatialReferenceSystem),
+                                    (tableName,
+                                     dataType,
+                                     identifier,
+                                     description,
+                                     lastChange,
+                                     boundingBox,
+                                     spatialReferenceSystem) -> new FeatureSet(tableName,
+                                                                               identifier,
+                                                                               description,
+                                                                               lastChange,
+                                                                               boundingBox,
+                                                                               spatialReferenceSystem),
                                     matchingSpatialReferenceSystem);
     }
 
@@ -517,18 +530,6 @@ public class GeoPackageFeatures
 
         verifyValueRequirements(geometryColumn, geometry);
 
-        final Contents contents = coordinate.getContents();
-
-        final Envelope envelop = contents == Contents.Empty ? new EmptyEnvelope()
-                                                            : getEnvelope(geometryColumn, Arrays.asList(coordinate));
-
-        final Point point = new Point(new BinaryHeader(BinaryType.Standard,
-                                                       contents,
-                                                       geometryColumn.getSpatialReferenceSystemIdentifier(),
-                                                       envelop),
-                                      coordinate);
-
-
         final List<String> columnNames = new LinkedList<>(attributes.keySet());
 
         columnNames.add(0, geometryColumn.getColumnName());
@@ -544,7 +545,8 @@ public class GeoPackageFeatures
 
                                                                          try
                                                                          {
-                                                                             preparedStatement.setBlob(parameterIndex++, new SerialBlob(geometry.getStandardBinary()));
+                                                                             final byte[] blob = createBlob(geometry, geometryColumn.getSpatialReferenceSystemIdentifier());
+                                                                             preparedStatement.setBlob(parameterIndex++, new SerialBlob(blob));
                                                                          }
                                                                          catch(final IOException e)
                                                                          {
@@ -567,59 +569,61 @@ public class GeoPackageFeatures
                            attributes);
     }
 
-//    public void addFeatures(final GeometryColumn                         geometryColumn,
-//                            final Set<String>                            columns,
-//                            final Iterable<Pair<Geometry, List<Object>>> features) throws SQLException
-//    {
-//        if(geometryColumn == null)
-//        {
-//            throw new IllegalArgumentException("Geometry column may not be null");
-//        }
-//
-//        if(columns == null)
-//        {
-//            throw new IllegalArgumentException("Columns may not be null");
-//        }
-//
-//        if(features == null)
-//        {
-//            throw new IllegalArgumentException("Values may not be null");
-//        }
-//
-//        final List<String> columnNames = new LinkedList<>(columns);
-//
-//        columnNames.add(0, geometryColumn.getColumnName());
-//
-//        final int columnCount = columnNames.size();
-//
-//        final String insertFeatureSql = String.format("INSERT INTO %s (%s) VALUES (%s)",
-//                                                      geometryColumn.getTableName(),
-//                                                      String.join(", ", columnNames),
-//                                                      String.join(", ", Collections.nCopies(columnNames.size(), "?")));
-//
-//        JdbcUtility.update(this.databaseConnection,
-//                           insertFeatureSql,
-//                           features,
-//                           (preparedStatement, feature) -> { final Geometry     geometry   = feature.getLeft();
-//                                                             final List<Object> attributes = feature.getRight();
-//
-//                                                             try
-//                                                             {
-//                                                                 preparedStatement.setBlob(1, new SerialBlob(geometry.getStandardBinary()));
-//                                                             }
-//                                                             catch(final IOException ex)
-//                                                             {
-//                                                                 throw new RuntimeException(ex);
-//                                                             }
-//
-//                                                             for(int parameterIndex = 2; parameterIndex <= columnCount; ++parameterIndex)
-//                                                             {
-//                                                                 preparedStatement.setObject(parameterIndex, attributes.get(parameterIndex-1));
-//                                                             }
-//                                                           });
-//
-//        this.databaseConnection.commit();
-//    }
+    public void addFeatures(final GeometryColumn                         geometryColumn,
+                            final Set<String>                            columns,
+                            final Iterable<Pair<Geometry, List<Object>>> features) throws SQLException
+    {
+        if(geometryColumn == null)
+        {
+            throw new IllegalArgumentException("Geometry column may not be null");
+        }
+
+        if(columns == null)
+        {
+            throw new IllegalArgumentException("Columns may not be null");
+        }
+
+        if(features == null)
+        {
+            throw new IllegalArgumentException("Values may not be null");
+        }
+
+        add new checks from single version
+
+        final List<String> columnNames = new LinkedList<>(columns);
+
+        columnNames.add(0, geometryColumn.getColumnName());
+
+        final int columnCount = columnNames.size();
+
+        final String insertFeatureSql = String.format("INSERT INTO %s (%s) VALUES (%s)",
+                                                      geometryColumn.getTableName(),
+                                                      String.join(", ", columnNames),
+                                                      String.join(", ", Collections.nCopies(columnNames.size(), "?")));
+
+        JdbcUtility.update(this.databaseConnection,
+                           insertFeatureSql,
+                           features,
+                           (preparedStatement, feature) -> { final Geometry     geometry   = feature.getLeft();
+                                                             final List<Object> attributes = feature.getRight();
+
+                                                             try
+                                                             {
+                                                                 preparedStatement.setBlob(1, new SerialBlob(geometry.getStandardBinary()));
+                                                             }
+                                                             catch(final IOException ex)
+                                                             {
+                                                                 throw new RuntimeException(ex);
+                                                             }
+
+                                                             for(int parameterIndex = 2; parameterIndex <= columnCount; ++parameterIndex)
+                                                             {
+                                                                 preparedStatement.setObject(parameterIndex, attributes.get(parameterIndex-1));
+                                                             }
+                                                           });
+
+        this.databaseConnection.commit();
+    }
 
     /**
      * Creates the Geometry Column table
@@ -678,6 +682,30 @@ public class GeoPackageFeatures
                                                   preparedStatement.setInt   (5, geometryColumn.getZRequirement().getValue());
                                                   preparedStatement.setInt   (6, geometryColumn.getMRequirement().getValue());
                                                 });
+    }
+
+    private static byte[] createBlob(final Geometry geometry, final int spatialReferenceSystemIdentifier) throws IOException
+    {
+        try(final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream())
+        {
+            final Envelope envelop = contents == Contents.Empty ? new EmptyEnvelope()
+                                                                : getEnvelope(geometryColumn, Arrays.asList(coordinate));
+
+            //            TODO HEADER USES OPTIONS:
+            //            FORCE ENVELOPE
+            //            FORCE ENDIANNESS
+
+            new BinaryHeader(BinaryType.fromGeometryTypeName(geometry.getGeometryTypeName()),
+                             geometry.getContents(),
+                             spatialReferenceSystemIdentifier,
+                             envelop).writeBytes(byteArrayOutputStream);
+
+            geometry.writeWellKnownBinary(byteArrayOutputStream);
+
+
+
+            return byteArrayOutputStream.toByteArray();
+        }
     }
 
     private static void verifyValueRequirements(final GeometryColumn geometryColumn, final Geometry geometry)
@@ -890,21 +918,6 @@ public class GeoPackageFeatures
                " CONSTRAINT uk_gc_table_name UNIQUE      (table_name),"                                                                                           +
                " CONSTRAINT fk_gc_tn         FOREIGN KEY (table_name) REFERENCES gpkg_contents        (table_name),"                                              +
                " CONSTRAINT fk_gc_srs        FOREIGN KEY (srs_id)     REFERENCES gpkg_spatial_ref_sys (srs_id));";
-    }
-
-    /**
-     * Gets all entries in the GeoPackage's contents table with the "features" data_type that also match the supplied spatial reference system
-     * @param core the GeoPackage core object
-     *
-     * @param matchingSpatialReferenceSystem Spatial reference system that returned {@link FeatureSet}s much refer to
-     * @return Returns a collection of {@link FeatureSet}s
-     * @throws SQLException throws if an SQLException occurs
-     */
-    public static Collection<FeatureSet> getFeatureSets(final GeoPackageCore core, final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
-    {
-        return core.getContent(FeatureSet.FeatureContentType,
-                               (tableName, dataType, identifier, description, lastChange, boundingBox, spatialReferenceSystem) -> new FeatureSet(tableName, identifier, description, lastChange, boundingBox, spatialReferenceSystem),
-                               matchingSpatialReferenceSystem);
     }
 
     public static final String GeometryColumnsTableName = "gpkg_geometry_columns";
