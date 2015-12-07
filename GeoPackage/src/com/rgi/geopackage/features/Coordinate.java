@@ -96,6 +96,55 @@ public class Coordinate
         return Contents.NotEmpty;
     }
 
+    public Envelope getEnvelope()
+    {
+        if(this.getContents() == Contents.Empty)
+        {
+            return Envelope.Empty;
+        }
+
+        if(this.hasZ() && this.hasM())
+        {
+            return new Envelope(new double[]{ this.x,
+                                              this.x,
+                                              this.y,
+                                              this.y,
+                                              this.z,
+                                              this.z,
+                                              this.m,
+                                              this.m
+                                            });
+        }
+
+        if(this.hasZ())
+        {
+            return new Envelope(new double[]{ this.x,
+                                              this.x,
+                                              this.y,
+                                              this.y,
+                                              this.z,
+                                              this.z
+                                            });
+        }
+
+        if(this.hasM())
+        {
+            return new Envelope(new double[]{ this.x,
+                                              this.x,
+                                              this.y,
+                                              this.y,
+                                              this.m,
+                                              this.m
+                                            });
+        }
+
+        return new Envelope(new double[]{ this.x,
+                                          this.x,
+                                          this.y,
+                                          this.y
+                                        });
+    }
+
     private final double x;
     private final double y;
     private final Double z;

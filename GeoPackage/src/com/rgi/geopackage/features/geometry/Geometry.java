@@ -24,7 +24,8 @@
 package com.rgi.geopackage.features.geometry;
 
 import com.rgi.geopackage.features.Contents;
-import com.rgi.geopackage.features.envelope.Envelope;
+import com.rgi.geopackage.features.Envelope;
+import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -55,49 +56,23 @@ public abstract class Geometry
                               : Contents.NotEmpty;
     }
 
-//    public byte[] getStandardBinary() throws IOException
-//    {
-//        try(final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream())
-//        {
-//            this.header.writeBytes(byteArrayOutputStream);
-//            this.writeWellKnownBinary(byteArrayOutputStream);
-//
-//            return byteArrayOutputStream.toByteArray();
-//        }
-//    }
+    protected EnvelopeContentsIndicator getEnvelopeContentsIndicator()
+    {
+        if(this.hasZ() && this.hasM())
+        {
+            return EnvelopeContentsIndicator.Xyzm;
+        }
 
-    // TODO
-//    public byte[] getStandardBinary(OUTPUT FLAGS) throws IOException
-//    {
-//        try(final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream())
-//        {
-//            HEADER USES OPTIONS:
-//            FORCE ENVELOPE
-//            FORCE ENDIANNESS
-//
-//            this.header.writeBytes(byteArrayOutputStream);
-//            this.writeWellKnownBinary(byteArrayOutputStream);
-//
-//            return byteArrayOutputStream.toByteArray();
-//        }
-//    }
+        if(this.hasZ())
+        {
+            return EnvelopeContentsIndicator.Xyz;
+        }
 
+        if(this.hasM())
+        {
+            return EnvelopeContentsIndicator.Xym;
+        }
 
-
-//    @SuppressWarnings("FinalMethod")
-//    public final boolean isStandard()
-//    {
-//        return standardGeometryTypes.contains(this.getGeometryTypeName().toUpperCase());
-//    }
-//
-//    // Standard geometry types
-//    // http://www.geopackage.org/spec/#geometry_types
-//    private static final List<String> standardGeometryTypes = Arrays.asList("GEOMETRY",
-//                                                                            "POINT",
-//                                                                            "LINESTRING",
-//                                                                            "POLYGON",
-//                                                                            "MULTIPOINT",
-//                                                                            "MULTILINESTRING",
-//                                                                            "MULTIPOLYGON",
-//                                                                            "GEOMETRYCOLLECTION");
+        return EnvelopeContentsIndicator.Xy;
+    }
 }

@@ -29,12 +29,6 @@ import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.core.ContentFactory;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
-import com.rgi.geopackage.features.envelope.EmptyEnvelope;
-import com.rgi.geopackage.features.envelope.Envelope;
-import com.rgi.geopackage.features.envelope.XyEnvelope;
-import com.rgi.geopackage.features.envelope.XymEnvelope;
-import com.rgi.geopackage.features.envelope.XyzEnvelope;
-import com.rgi.geopackage.features.envelope.XyzmEnvelope;
 import com.rgi.geopackage.features.geometry.Geometry;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
@@ -399,9 +393,9 @@ public class GeoPackageFeatures
 
                                                                      try
                                                                      {
-                                                                        return new Feature(featureIdentifier,
-                                                                                           getGeometry(resultSet.getBlob(geometryColumn.getColumnName())),
-                                                                                           attributes);
+                                                                         return new Feature(featureIdentifier,
+                                                                                            createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
+                                                                                            attributes);
                                                                      }
                                                                      catch(final IOException ex)
                                                                      {
@@ -448,7 +442,7 @@ public class GeoPackageFeatures
                                                  try
                                                  {
                                                      return new Feature(resultSet.getInt("id"),
-                                                                        getGeometry(resultSet.getBlob(geometryColumn.getColumnName())),
+                                                                        createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
                                                                         attributes);
                                                  }
                                                  catch(final IOException ex)
@@ -492,7 +486,7 @@ public class GeoPackageFeatures
                                            try
                                            {
                                                featureConsumer.accept(new Feature(resultSet.getInt("id"),
-                                                                                  getGeometry(resultSet.getBlob(geometryColumn.getColumnName())),
+                                                                                  createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
                                                                                   attributes));
                                            }
                                            catch(final IOException ex)
@@ -684,25 +678,26 @@ public class GeoPackageFeatures
                                                 });
     }
 
+    private static Geometry createGeometry(final byte[] blob) throws IOException
+    {
+        final BinaryHeader binaryHeader = new BinaryHeader(blob);
+
+        
+    }
+
     private static byte[] createBlob(final Geometry geometry, final int spatialReferenceSystemIdentifier) throws IOException
     {
         try(final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream())
         {
-            final Envelope envelop = contents == Contents.Empty ? new EmptyEnvelope()
-                                                                : getEnvelope(geometryColumn, Arrays.asList(coordinate));
-
             //            TODO HEADER USES OPTIONS:
             //            FORCE ENVELOPE
             //            FORCE ENDIANNESS
 
-            new BinaryHeader(BinaryType.fromGeometryTypeName(geometry.getGeometryTypeName()),
-                             geometry.getContents(),
-                             spatialReferenceSystemIdentifier,
-                             envelop).writeBytes(byteArrayOutputStream);
+            BinaryHeader.writeBytes(byteArrayOutputStream,
+                                    geometry,
+                                    spatialReferenceSystemIdentifier);
 
             geometry.writeWellKnownBinary(byteArrayOutputStream);
-
-
 
             return byteArrayOutputStream.toByteArray();
         }
@@ -733,97 +728,6 @@ public class GeoPackageFeatures
     }
 
     /**
-     * It's assumed that verifyValueRequirements() has been called first to do
-     * appropriate value and null checking. It's also assumed not to be an
-     * "empty" geometry.
-     *
-     * @param geometryColumn
-     * @param coordinates
-     * @return
-     */
-    private static Envelope getEnvelope(final GeometryColumn geometryColumn, final Iterable<Coordinate> coordinates)
-    {
-        final ValueRequirement zRequirement = geometryColumn.getZRequirement();
-        final ValueRequirement mRequirement = geometryColumn.getMRequirement();
-
-        double maximumX = -Double.MAX_VALUE;
-        double minimumX =  Double.MAX_VALUE;
-        double maximumY = -Double.MAX_VALUE;
-        double minimumY =  Double.MAX_VALUE;
-        double maximumZ = -Double.MAX_VALUE;
-        double minimumZ =  Double.MAX_VALUE;
-        double maximumM = -Double.MAX_VALUE;
-        double minimumM =  Double.MAX_VALUE;
-
-        for(final Coordinate coordinate : coordinates)
-        {
-            final double x = coordinate.getX();
-            final double y = coordinate.getY();
-
-            if(maximumX < x) { maximumX = x; }
-            if(minimumX > x) { minimumX = x; }
-            if(maximumY < y) { maximumY = y; }
-            if(minimumY > y) { minimumY = y; }
-
-            if(coordinate.hasZ())
-            {
-                final Double z = coordinate.getZ();
-                if(maximumZ < z) { maximumZ = z; }
-                if(minimumZ > z) { minimumZ = z; }
-            }
-
-            if(coordinate.hasM())
-            {
-                final double m = coordinate.getM();
-                if(maximumM < m) { maximumM = m; }
-                if(minimumM > m) { minimumM = m; }
-            }
-        }
-
-        if(zRequirement != ValueRequirement.Prohibited &&
-           mRequirement != ValueRequirement.Prohibited)
-        {
-            return new XyzmEnvelope(new double[]{ maximumX,
-                                                  minimumX,
-                                                  maximumY,
-                                                  minimumY,
-                                                  maximumZ,
-                                                  minimumZ,
-                                                  maximumM,
-                                                  minimumM
-                                                });
-        }
-
-        if(zRequirement != ValueRequirement.Prohibited)
-        {
-            return new XyzEnvelope(new double[]{ maximumX,
-                                                 minimumX,
-                                                 maximumY,
-                                                 minimumY,
-                                                 maximumZ,
-                                                 minimumZ
-                                               });
-        }
-
-        if(mRequirement != ValueRequirement.Prohibited)
-        {
-            return new XymEnvelope(new double[]{ maximumX,
-                                                 minimumX,
-                                                 maximumY,
-                                                 minimumY,
-                                                 maximumM,
-                                                 minimumM
-                                               });
-        }
-
-        return new XyEnvelope(new double[]{ maximumX,
-                                            minimumX,
-                                            maximumY,
-                                            minimumY,
-                                          });
-    }
-
-    /**
      * Returns the column names of a feature table, but reorders them so that
      * "id" is first, the geometry column name is second, followed by the rest
      * of the columns in the order returned by the query.
@@ -845,15 +749,6 @@ public class GeoPackageFeatures
         Collections.swap(columns, 1, columns.indexOf(geometryColumn.getColumnName())); // List geometry column second
 
         return columns;
-    }
-
-    private static Geometry getGeometry(final Blob blob) throws SQLException, IOException
-    {
-        final Geometry geometry = Geometry.fromBytes(blob.getBytes(1L, (int)blob.length()));
-
-        blob.free();
-
-        return geometry;
     }
 
     private void addFeatureTableNoCommit(final String                       featureTableName,

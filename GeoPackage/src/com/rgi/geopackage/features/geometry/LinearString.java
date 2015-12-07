@@ -24,6 +24,8 @@
 package com.rgi.geopackage.features.geometry;
 
 import com.rgi.geopackage.features.Coordinate;
+import com.rgi.geopackage.features.Envelope;
+import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,6 +106,43 @@ public class LinearString
     public boolean isEmpty()
     {
         return this.coordinates.isEmpty();
+    }
+
+    public Envelope createEnvelope()
+    {
+        if(this.isEmpty())
+        {
+            return Envelope.Empty;
+        }
+
+        final EnvelopeContentsIndicator envelopeContentsIndicator = this.getEnvelopeContentsIndicator();
+
+        final double[] array = new double[envelopeContentsIndicator.getArraySize()];
+        Arrays.fill(array, Double.NaN);
+
+        this.coordinates.forEach(coordinate -> envelopeContentsIndicator.getComparer().accept(coordinate, array));
+
+        return new Envelope(envelopeContentsIndicator, array);
+    }
+
+    private EnvelopeContentsIndicator getEnvelopeContentsIndicator()
+    {
+        if(this.hasZ() && this.hasM())
+        {
+            return EnvelopeContentsIndicator.Xyzm;
+        }
+
+        if(this.hasZ())
+        {
+            return EnvelopeContentsIndicator.Xyz;
+        }
+
+        if(this.hasM())
+        {
+            return EnvelopeContentsIndicator.Xym;
+        }
+
+        return EnvelopeContentsIndicator.Xy;
     }
 
     private final List<Coordinate> coordinates;

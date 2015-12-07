@@ -23,12 +23,7 @@
 
 package com.rgi.geopackage.features;
 
-import com.rgi.geopackage.features.envelope.EmptyEnvelope;
-import com.rgi.geopackage.features.envelope.Envelope;
-import com.rgi.geopackage.features.envelope.XyEnvelope;
-import com.rgi.geopackage.features.envelope.XymEnvelope;
-import com.rgi.geopackage.features.envelope.XyzEnvelope;
-import com.rgi.geopackage.features.envelope.XyzmEnvelope;
+import com.rgi.geopackage.features.geometry.Geometry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -80,68 +75,13 @@ public class BinaryHeader
         srsIdByteBuffer.order(this.byteOrder);
         this.spatialReferenceSystemIdentifier = srsIdByteBuffer.getInt();
 
-        this.envelope = createEnvelope((this.flags & 0b00001110) >> 1,
-                                       this.byteOrder,
-                                       bytes);
+        final EnvelopeContentsIndicator envelopeContentsIndicator = EnvelopeContentsIndicator.fromCode((this.flags & 0b00001110) >> 1);
 
-    }
+        this.envelope = new Envelope(envelopeContentsIndicator,
+                                     getHeaderEnvelopeDoubles(bytes,
+                                                              this.byteOrder,
+                                                              envelopeContentsIndicator.getArraySize()));
 
-    /**
-     * Convenience constructor for creating a default, empty geometry header
-     *
-     * @param binaryType
-     * @param spatialReferenceSystemIdentifier
-     */
-    protected BinaryHeader(final BinaryType binaryType,
-                           final int        spatialReferenceSystemIdentifier)
-    {
-        this(defaultVersion,
-             binaryType,
-             Contents.Empty,
-             defaultByteOrder,
-             spatialReferenceSystemIdentifier,
-             new EmptyEnvelope());
-    }
-
-    /**
-     * Convenience constructor for creating a default, non-empty geometry
-     * header
-     *
-     * @param binaryType
-     * @param spatialReferenceSystemIdentifier
-     * @param envelope
-     */
-    protected BinaryHeader(final BinaryType binaryType,
-                           final int        spatialReferenceSystemIdentifier,
-                           final Envelope   envelope)
-    {
-        this(defaultVersion,
-             binaryType,
-             Contents.NotEmpty,
-             defaultByteOrder,
-             spatialReferenceSystemIdentifier,
-             envelope);
-    }
-
-    /**
-     * Convenience constructor for creating a default, non-empty geometry
-     * header
-     *
-     * @param binaryType
-     * @param spatialReferenceSystemIdentifier
-     * @param envelope
-     */
-    protected BinaryHeader(final BinaryType binaryType,
-                           final Contents   contents,
-                           final int        spatialReferenceSystemIdentifier,
-                           final Envelope   envelope)
-    {
-        this(defaultVersion,
-             binaryType,
-             contents,
-             defaultByteOrder,
-             spatialReferenceSystemIdentifier,
-             envelope);
     }
 
     protected BinaryHeader(final byte       version,
@@ -174,7 +114,7 @@ public class BinaryHeader
         this.envelope                         = envelope;
 
         final int isEmptyMask          = this.empty ? (1 << 4) : 0; // TODO make this part of the Contents enum like BinaryType?
-        final int envelopeContentsMask = (byte)(envelope.getContentsIndicatorCode() << 1);
+        final int envelopeContentsMask = (byte)(envelope.getContentsIndicator().getCode() << 1);
 
         this.flags = // 0                         |
                      this.binaryType.getBitMask() |
@@ -191,6 +131,15 @@ public class BinaryHeader
     public boolean isEmpty()
     {
         return this.empty;
+    }
+
+    public int getByteSize()
+    {
+        return 2 +  // 2 bytes for the 'magic' header
+               1 +  // 1 byte for version
+               1 +  // 1 byte for flags
+               4 +  // 4 bytes (int32) for the srs id
+               (8 * this.envelope.getContentsIndicator().getArraySize());   // 8 bytes per double, array size number of doubles
     }
 
     public void writeBytes(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
@@ -225,20 +174,17 @@ public class BinaryHeader
         }
     }
 
-    private static Envelope createEnvelope(final int       envelopeContentsIndicatorCode,
-                                           final ByteOrder byteOrder,
-                                           final byte[]    header)
+    public static void writeBytes(final ByteArrayOutputStream byteArrayOutputStream,
+                                  final Geometry              geometry,
+                                  final int                   spatialReferenceSystemIdentifier) throws IOException
     {
-        switch(envelopeContentsIndicatorCode)
-        {
-            case 0: return new EmptyEnvelope();
-            case 1: return new XyEnvelope  (getHeaderEnvelopeDoubles(header, byteOrder, 4));
-            case 2: return new XyzEnvelope (getHeaderEnvelopeDoubles(header, byteOrder, 6));
-            case 3: return new XymEnvelope (getHeaderEnvelopeDoubles(header, byteOrder, 6));
-            case 4: return new XyzmEnvelope(getHeaderEnvelopeDoubles(header, byteOrder, 8));
+        new BinaryHeader(defaultVersion,
+                         BinaryType.fromGeometryTypeName(geometry.getGeometryTypeName()),
+                         geometry.getContents(),
+                         defaultByteOrder,
+                         spatialReferenceSystemIdentifier,
+                         geometry.createEnvelope()).writeBytes(byteArrayOutputStream);
 
-            default: throw new IllegalArgumentException(String.format("Invalid envelope contents idicator code: %d. Code must be 0, 1, 2, 3, or 4", envelopeContentsIndicatorCode));
-        }
     }
 
     private static double[] getHeaderEnvelopeDoubles(final byte[]    header,

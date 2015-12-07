@@ -23,6 +23,8 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.Envelope;
+import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
@@ -132,6 +134,29 @@ public class GeometryCollection<T extends Geometry> extends Geometry
     public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
     {
         throw new UnsupportedOperationException("pending implementaiton");
+    }
+
+    @Override
+    public Envelope createEnvelope()
+    {
+        if(this.geometries.isEmpty())
+        {
+            return Envelope.Empty;
+        }
+
+        final EnvelopeContentsIndicator envelopeContentsIndicator = this.getEnvelopeContentsIndicator();
+
+        final double[] array = new double[envelopeContentsIndicator.getArraySize()];
+        Arrays.fill(array, Double.NaN);
+
+        final Envelope initialEnvelope = new Envelope(envelopeContentsIndicator, array);
+
+        return this.geometries
+                   .stream()
+                   .map(Geometry::createEnvelope)
+                   .reduce(Envelope.combine)
+                   .get();
+
     }
 
     public List<T> getGeometries()

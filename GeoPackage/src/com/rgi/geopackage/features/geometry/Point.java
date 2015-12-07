@@ -24,10 +24,13 @@
 package com.rgi.geopackage.features.geometry;
 
 import com.rgi.geopackage.features.Coordinate;
+import com.rgi.geopackage.features.Envelope;
+import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * A single location in space. Each point has an X and Y coordinate. A point
@@ -87,6 +90,19 @@ public class Point extends Geometry
     public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
     {
         throw new UnsupportedOperationException("pending implementaiton");
+    }
+
+    @Override
+    public Envelope createEnvelope()
+    {
+        final EnvelopeContentsIndicator envelopeContentsIndicator = this.getEnvelopeContentsIndicator();
+
+        final double[] array = new double[envelopeContentsIndicator.getArraySize()];
+        Arrays.fill(array, Double.NaN);
+
+        envelopeContentsIndicator.getComparer().accept(this.coordinate, array);
+
+        return new Envelope(envelopeContentsIndicator, array);
     }
 
     public double getX()

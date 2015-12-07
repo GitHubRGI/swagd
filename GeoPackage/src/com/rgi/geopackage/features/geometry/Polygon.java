@@ -24,6 +24,7 @@
 package com.rgi.geopackage.features.geometry;
 
 import com.rgi.geopackage.features.BinaryHeader;
+import com.rgi.geopackage.features.Envelope;
 import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
@@ -114,6 +115,12 @@ public class Polygon extends CurvePolygon
     public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
     {
         throw new UnsupportedOperationException("pending implementaiton");
+    }
+
+    @Override
+    public Envelope createEnvelope()
+    {
+        return this.exteriorRing.createEnvelope();
     }
 
     public LinearString getExteriorRing()

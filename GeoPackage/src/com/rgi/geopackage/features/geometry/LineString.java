@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.Envelope;
 import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
@@ -82,6 +83,12 @@ public class LineString extends Curve
     public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
     {
         throw new UnsupportedOperationException("pending implementaiton");
+    }
+
+    @Override
+    public Envelope createEnvelope()
+    {
+        return this.linearString.createEnvelope();
     }
 
     private final LinearString linearString;
