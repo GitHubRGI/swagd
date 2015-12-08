@@ -682,7 +682,7 @@ public class GeoPackageFeatures
     {
         final BinaryHeader binaryHeader = new BinaryHeader(blob);
 
-        
+
     }
 
     private static byte[] createBlob(final Geometry geometry, final int spatialReferenceSystemIdentifier) throws IOException
