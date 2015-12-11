@@ -168,8 +168,17 @@ public final class GdalUtility
             final SpatialReference fromSrs = GdalUtility.getSpatialReference(d1);
             final SpatialReference toSrs   = GdalUtility.getSpatialReference(crs);
 
-            return fromSrs.GetAttrValue("AUTHORITY", 0).equals(toSrs.GetAttrValue("AUTHORITY", 0)) &&
-                   fromSrs.GetAttrValue("AUTHORITY", 1).equals(toSrs.GetAttrValue("AUTHORITY", 1));
+            final String fromAuthority0 = fromSrs.GetAttrValue("AUTHORITY", 0);
+            final String toAuthority0 = fromSrs.GetAttrValue("AUTHORITY", 0);
+            final String fromAuthority1 = fromSrs.GetAttrValue("AUTHORITY", 1);
+            final String toAuthority1 = fromSrs.GetAttrValue("AUTHORITY", 1);
+
+            if(fromAuthority0 == null || fromAuthority1 == null)
+            {
+                return false;
+            }
+
+            return fromAuthority0.equals(toAuthority0) && fromAuthority1.equals(toAuthority1);
         }
         return true;
     }
