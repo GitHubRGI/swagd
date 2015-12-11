@@ -77,4 +77,9 @@ public class MultiPoint extends GeometryCollection<Point>
     {
         return this.getGeometries();
     }
+
+    public static MultiPoint readWellKnownBinary(final byte[] bytes)
+    {
+
+    }
 }

@@ -78,4 +78,9 @@ public class MultiLineString extends MultiCurve<LineString>
     {
         return this.getGeometries();
     }
+
+    public static MultiLineString readWellKnownBinary(final byte[] bytes)
+    {
+
+    }
 }

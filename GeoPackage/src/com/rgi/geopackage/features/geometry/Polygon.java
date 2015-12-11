@@ -133,6 +133,11 @@ public class Polygon extends CurvePolygon
         return Collections.unmodifiableList(this.interiorRings);
     }
 
+    public static Polygon readWellKnownBinary(final byte[] bytes)
+    {
+
+    }
+
     private final LinearString       exteriorRing;
     private final List<LinearString> interiorRings;
 }

@@ -91,5 +91,10 @@ public class LineString extends Curve
         return this.linearString.createEnvelope();
     }
 
+    public static LineString readWellKnownBinary(final byte[] bytes)
+    {
+
+    }
+
     private final LinearString linearString;
 }

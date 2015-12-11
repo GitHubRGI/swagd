@@ -164,6 +164,11 @@ public class GeometryCollection<T extends Geometry> extends Geometry
         return Collections.unmodifiableList(this.geometries);
     }
 
+    public static LineString readWellKnownBinary(final byte[] bytes)
+    {
+
+    }
+
     private final List<T> geometries;
     private final boolean hasZ;
     private final boolean hasM;

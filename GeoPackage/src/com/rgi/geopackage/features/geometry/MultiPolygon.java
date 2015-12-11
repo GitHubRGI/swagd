@@ -77,4 +77,9 @@ public class MultiPolygon extends MultiSurface<Polygon>
     {
         return this.getGeometries();
     }
+
+    public static MultiPolygon readWellKnownBinary(final byte[] bytes)
+    {
+
+    }
 }

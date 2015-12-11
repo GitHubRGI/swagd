@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.core;
 
+import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.common.util.jdbc.ResultSetStream;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.AssertionError;
@@ -497,39 +498,24 @@ public class CoreVerifier extends Verifier
             final String query = String.format("SELECT DISTINCT srs_id as srsContents "+
                                                "FROM            %s "+
                                                "WHERE           srsContents " +
-                                               "NOT IN "+
-                                                       "(SELECT  srs_id as srsSpatialRefSys "+
-                                                        "FROM    %s "+
-                                                         "WHERE  srsSpatialRefSys = srsContents);",
+                                               "NOT IN (SELECT srs_id FROM %s);",
                                                GeoPackageCore.ContentsTableName,
                                                GeoPackageCore.SpatialRefSysTableName);
 
 
-            try(final Statement stmt       = this.getSqliteConnection().createStatement();
-                final ResultSet srsDefined = stmt.executeQuery(query))
-            {
-                final List<String> invalidTables = ResultSetStream.getStream(srsDefined)
-                                                                  .map(result-> { try
-                                                                                  {
-                                                                                        return result.getString("srsContents");
-                                                                                  }
-                                                                                  catch(final SQLException ignored)
-                                                                                  {
-                                                                                        return null;
-                                                                                  }
-                                                                                 })
-                                                                  .filter(Objects::nonNull)
-                                                                  .collect(Collectors.toList());
+            final List<Integer> invalidSrsIds = JdbcUtility.select(this.getSqliteConnection(),
+                                                                   query,
+                                                                   null,
+                                                                   resultSet -> resultSet.getInt("srsContents"));
 
-                    assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined. The following srs_id(s) are not in the %s: \n%s",
-                                             GeoPackageCore.SpatialRefSysTableName,
-                                             invalidTables.stream()
-                                                          .map(table-> String.format("%s srs_id: %s",GeoPackageCore.ContentsTableName, table))
-                                                          .collect(Collectors.joining("\n"))),
-                               invalidTables.isEmpty(),
-                               Severity.Error);
 
-            }
+            assertTrue(String.format("Not all srs_id's being used in a GeoPackage are defined. The following srs_id(s) are not in %s: %s",
+                                     GeoPackageCore.SpatialRefSysTableName,
+                                     invalidSrsIds.stream()
+                                                  .map(Object::toString)
+                                                  .collect(Collectors.joining(", "))),
+                       invalidSrsIds.isEmpty(),
+                       Severity.Error);
         }
     }
 

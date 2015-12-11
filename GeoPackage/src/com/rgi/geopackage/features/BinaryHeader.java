@@ -77,6 +77,17 @@ public class BinaryHeader
 
         final EnvelopeContentsIndicator envelopeContentsIndicator = EnvelopeContentsIndicator.fromCode((this.flags & 0b00001110) >> 1);
 
+        this.byteSize = 2 +  // 2 bytes for the 'magic' header
+                        1 +  // 1 byte for version
+                        1 +  // 1 byte for flags
+                        4 +  // 4 bytes (int32) for the srs id
+                        (8 * envelopeContentsIndicator.getArraySize());   // 8 bytes per double, array size number of doubles
+
+        if(bytes.length < this.byteSize)
+        {
+            throw new IllegalArgumentException("Byte array length is shorter than the envelope size would indicate");
+        }
+
         this.envelope = new Envelope(envelopeContentsIndicator,
                                      getHeaderEnvelopeDoubles(bytes,
                                                               this.byteOrder,
@@ -106,6 +117,11 @@ public class BinaryHeader
             throw new IllegalArgumentException("Byte order may not be null");
         }
 
+        if(envelope == null)
+        {
+            throw new IllegalArgumentException("Envelope may not be null. Use Envelope.Empty to represent an empty envelope.");
+        }
+
         this.version                          = version;
         this.binaryType                       = binaryType;
         this.empty                            = contents == Contents.Empty;
@@ -121,6 +137,12 @@ public class BinaryHeader
                      isEmptyMask                  |
                      envelopeContentsMask         |
                      (byteOrder.equals(ByteOrder.BIG_ENDIAN) ? 0 : 1);
+
+        this.byteSize = 2 +  // 2 bytes for the 'magic' header
+                        1 +  // 1 byte for version
+                        1 +  // 1 byte for flags
+                        4 +  // 4 bytes (int32) for the srs id
+                        (8 * this.envelope.getContentsIndicator().getArraySize());   // 8 bytes per double, array size number of doubles
     }
 
     public int getSpatialReferenceSystemIdentifier()
@@ -135,11 +157,7 @@ public class BinaryHeader
 
     public int getByteSize()
     {
-        return 2 +  // 2 bytes for the 'magic' header
-               1 +  // 1 byte for version
-               1 +  // 1 byte for flags
-               4 +  // 4 bytes (int32) for the srs id
-               (8 * this.envelope.getContentsIndicator().getArraySize());   // 8 bytes per double, array size number of doubles
+        return this.byteSize;
     }
 
     public void writeBytes(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
@@ -220,4 +238,5 @@ public class BinaryHeader
     private final int        spatialReferenceSystemIdentifier;
     private final Envelope   envelope;
     private final int        flags;
+    private final int        byteSize;
 }

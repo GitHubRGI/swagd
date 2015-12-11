@@ -30,14 +30,22 @@ import com.rgi.geopackage.core.ContentFactory;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.features.geometry.Geometry;
+import com.rgi.geopackage.features.geometry.GeometryCollection;
+import com.rgi.geopackage.features.geometry.LineString;
+import com.rgi.geopackage.features.geometry.MultiLineString;
+import com.rgi.geopackage.features.geometry.MultiPoint;
+import com.rgi.geopackage.features.geometry.MultiPolygon;
+import com.rgi.geopackage.features.geometry.Point;
+import com.rgi.geopackage.features.geometry.Polygon;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 import javax.sql.rowset.serial.SerialBlob;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.sql.Blob;
+import java.nio.ByteOrder;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -50,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Luke Lambert
@@ -65,10 +74,44 @@ public class GeoPackageFeatures
      * @param core
      *             Access to GeoPackage's "core" methods
      */
+    @SuppressWarnings("MagicNumber")
     public GeoPackageFeatures(final Connection databaseConnection, final GeoPackageCore core)
     {
         this.databaseConnection = databaseConnection;
         this.core               = core;
+
+        this.geometryFactory.put(       GeometryType.Geometry          .getCode(), bytes -> { throw new RuntimeException("Cannot instantiate abstract 'Geometry' type (geometry type code 0)"); } );      // type 0 xy
+        this.geometryFactory.put(1000 + GeometryType.Geometry          .getCode(), bytes -> { throw new RuntimeException("Cannot instantiate abstract 'Geometry' type (geometry type code 1000)"); } );   // type 0 xyz
+        this.geometryFactory.put(2000 + GeometryType.Geometry          .getCode(), bytes -> { throw new RuntimeException("Cannot instantiate abstract 'Geometry' type (geometry type code 2000)"); } );   // type 0 xym
+        this.geometryFactory.put(3000 + GeometryType.Geometry          .getCode(), bytes -> { throw new RuntimeException("Cannot instantiate abstract 'Geometry' type (geometry type code 3000)"); } );   // type 0 xyzm
+        this.geometryFactory.put(       GeometryType.Point             .getCode(), Point             ::readWellKnownBinary);  // type 1 xy
+        this.geometryFactory.put(1000 + GeometryType.Point             .getCode(), Point             ::readWellKnownBinary);  // type 1 xyz
+        this.geometryFactory.put(2000 + GeometryType.Point             .getCode(), Point             ::readWellKnownBinary);  // type 1 xym
+        this.geometryFactory.put(3000 + GeometryType.Point             .getCode(), Point             ::readWellKnownBinary);  // type 1 xyzm
+        this.geometryFactory.put(       GeometryType.LineString        .getCode(), LineString        ::readWellKnownBinary);  // type 2 xy
+        this.geometryFactory.put(1000 + GeometryType.LineString        .getCode(), LineString        ::readWellKnownBinary);  // type 2 xyz
+        this.geometryFactory.put(2000 + GeometryType.LineString        .getCode(), LineString        ::readWellKnownBinary);  // type 2 xym
+        this.geometryFactory.put(3000 + GeometryType.LineString        .getCode(), LineString        ::readWellKnownBinary);  // type 2 xyzm
+        this.geometryFactory.put(       GeometryType.Polygon           .getCode(), Polygon           ::readWellKnownBinary);  // type 3 xy
+        this.geometryFactory.put(1000 + GeometryType.Polygon           .getCode(), Polygon           ::readWellKnownBinary);  // type 3 xyz
+        this.geometryFactory.put(2000 + GeometryType.Polygon           .getCode(), Polygon           ::readWellKnownBinary);  // type 3 xym
+        this.geometryFactory.put(3000 + GeometryType.Polygon           .getCode(), Polygon           ::readWellKnownBinary);  // type 3 xyzm
+        this.geometryFactory.put(       GeometryType.MultiPoint        .getCode(), MultiPoint        ::readWellKnownBinary);  // type 4 xy
+        this.geometryFactory.put(1000 + GeometryType.MultiPoint        .getCode(), MultiPoint        ::readWellKnownBinary);  // type 4 xyz
+        this.geometryFactory.put(2000 + GeometryType.MultiPoint        .getCode(), MultiPoint        ::readWellKnownBinary);  // type 4 xym
+        this.geometryFactory.put(3000 + GeometryType.MultiPoint        .getCode(), MultiPoint        ::readWellKnownBinary);  // type 4 xyzm
+        this.geometryFactory.put(       GeometryType.MultiLineString   .getCode(), MultiLineString   ::readWellKnownBinary);  // type 5 xy
+        this.geometryFactory.put(1000 + GeometryType.MultiLineString   .getCode(), MultiLineString   ::readWellKnownBinary);  // type 5 xyz
+        this.geometryFactory.put(2000 + GeometryType.MultiLineString   .getCode(), MultiLineString   ::readWellKnownBinary);  // type 5 xym
+        this.geometryFactory.put(3000 + GeometryType.MultiLineString   .getCode(), MultiLineString   ::readWellKnownBinary);  // type 5 xyzm
+        this.geometryFactory.put(       GeometryType.MultiPolygon      .getCode(), MultiPolygon      ::readWellKnownBinary);  // type 6 xy
+        this.geometryFactory.put(1000 + GeometryType.MultiPolygon      .getCode(), MultiPolygon      ::readWellKnownBinary);  // type 6 xyz
+        this.geometryFactory.put(2000 + GeometryType.MultiPolygon      .getCode(), MultiPolygon      ::readWellKnownBinary);  // type 6 xym
+        this.geometryFactory.put(3000 + GeometryType.MultiPolygon      .getCode(), MultiPolygon      ::readWellKnownBinary);  // type 6 xyzm
+        this.geometryFactory.put(       GeometryType.GeometryCollection.getCode(), GeometryCollection::readWellKnownBinary);  // type 7 xy
+        this.geometryFactory.put(1000 + GeometryType.GeometryCollection.getCode(), GeometryCollection::readWellKnownBinary);  // type 7 xyz
+        this.geometryFactory.put(2000 + GeometryType.GeometryCollection.getCode(), GeometryCollection::readWellKnownBinary);  // type 7 xym
+        this.geometryFactory.put(3000 + GeometryType.GeometryCollection.getCode(), GeometryCollection::readWellKnownBinary);  // type 7 xyzm
     }
 
     /**
@@ -582,7 +625,17 @@ public class GeoPackageFeatures
             throw new IllegalArgumentException("Values may not be null");
         }
 
-        add new checks from single version
+        features.forEach(feature -> { final Geometry geometry = feature.getLeft();
+
+                                      if(!geometryColumn.getGeometryType()
+                                                        .toUpperCase()
+                                                        .equals(geometry.getGeometryTypeName()))
+                                      {
+                                          throw new IllegalArgumentException("Geometry column may only contain geometries of type " + geometryColumn.getGeometryType().toUpperCase());
+                                      }
+
+                                      verifyValueRequirements(geometryColumn, geometry);
+                                    });
 
         final List<String> columnNames = new LinkedList<>(columns);
 
@@ -603,7 +656,7 @@ public class GeoPackageFeatures
 
                                                              try
                                                              {
-                                                                 preparedStatement.setBlob(1, new SerialBlob(geometry.getStandardBinary()));
+                                                                 preparedStatement.setBytes(1, createBlob(geometry, geometryColumn.getSpatialReferenceSystemIdentifier()));
                                                              }
                                                              catch(final IOException ex)
                                                              {
@@ -680,9 +733,28 @@ public class GeoPackageFeatures
 
     private static Geometry createGeometry(final byte[] blob) throws IOException
     {
-        final BinaryHeader binaryHeader = new BinaryHeader(blob);
+        final BinaryHeader binaryHeader = new BinaryHeader(blob);   // This will throw if the array length is too short to contain a header (or if it's not long enough to contain the envelope type specified)
+
+        final int headerByteLength = binaryHeader.getByteSize();
+
+        if(blob.length < binaryHeader.getByteSize() + 5)    // one byte to indicate byte order, and another 4 (unsigned int) indicating the geometry type
+        {
+            throw new IllegalArgumentException("Well standard GeoPackage binary blob must contain at least 5 bytes beyond the header");
+        }
+
+        final ByteOrder byteOrder = blob[headerByteLength] == 0 ? ByteOrder.BIG_ENDIAN
+                                                                : ByteOrder.LITTLE_ENDIAN;
 
 
+
+        try(final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(blob, headerByteLength, blob.length - headerByteLength))
+        {
+
+
+            byteArrayInputStream.
+
+            this.geometryFactory.get(geometry type)
+        }
     }
 
     private static byte[] createBlob(final Geometry geometry, final int spatialReferenceSystemIdentifier) throws IOException
@@ -819,4 +891,6 @@ public class GeoPackageFeatures
 
     private final Connection     databaseConnection;
     private final GeoPackageCore core;
+
+    private final Map<Integer, Function<byte[], Geometry>> geometryFactory = new HashMap<Integer, Function<byte[], Geometry>>();
 }

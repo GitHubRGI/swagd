@@ -125,5 +125,11 @@ public class Point extends Geometry
         return this.coordinate.getM();
     }
 
+    public static Point readWellKnownBinary(final byte[] bytes)
+    {
+
+    }
+
+
     private final Coordinate coordinate;
 }
