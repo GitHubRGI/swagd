@@ -103,7 +103,7 @@ public class MapViewWindow extends JFrame implements JMapViewerEventListener
             throw new IllegalArgumentException("Tile store reader collection may not be null");
         }
 
-        if(tileStoreReaders.size() == 0)
+        if(tileStoreReaders.isEmpty())
         {
             throw new IllegalArgumentException("There must be at least one Tile Store reader to display.");
         }
