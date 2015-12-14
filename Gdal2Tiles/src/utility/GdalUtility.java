@@ -169,9 +169,9 @@ public final class GdalUtility
             final SpatialReference toSrs   = GdalUtility.getSpatialReference(crs);
 
             final String fromAuthority0 = fromSrs.GetAttrValue("AUTHORITY", 0);
-            final String toAuthority0 = fromSrs.GetAttrValue("AUTHORITY", 0);
+            final String toAuthority0 = toSrs.GetAttrValue("AUTHORITY", 0);
             final String fromAuthority1 = fromSrs.GetAttrValue("AUTHORITY", 1);
-            final String toAuthority1 = fromSrs.GetAttrValue("AUTHORITY", 1);
+            final String toAuthority1 = toSrs.GetAttrValue("AUTHORITY", 1);
 
             if(fromAuthority0 == null || fromAuthority1 == null)
             {
