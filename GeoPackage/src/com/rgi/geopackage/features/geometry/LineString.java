@@ -28,6 +28,7 @@ import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * A Curve that connects two or more points in space.
@@ -50,7 +51,7 @@ public class LineString extends Curve
     }
 
     @Override
-    public int getTypeCode()
+    public long getTypeCode()
     {
         return GeometryType.LineString.getCode();
     }
@@ -91,9 +92,15 @@ public class LineString extends Curve
         return this.linearString.createEnvelope();
     }
 
-    public static LineString readWellKnownBinary(final byte[] bytes)
+    public static LineString readWellKnownBinary(final ByteBuffer byteBuffer)
     {
+        setByteOrder(byteBuffer);   // Also checks byteBuffer for null
 
+        final long geometryTypeCode = readGeometryType(byteBuffer);  // Makes sure the geometry codes match
+
+        geometryTypeCode / 1000
+
+        return new LineString(LinearString.readWellKnownBinary(byteBuffer))
     }
 
     private final LinearString linearString;

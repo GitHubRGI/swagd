@@ -29,6 +29,8 @@ import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * The root of the geometry type hierarchy.
@@ -40,7 +42,12 @@ import java.io.IOException;
  */
 public abstract class Geometry
 {
-    public abstract int     getTypeCode();
+    /**
+     * This represents an *unsigned* 32bit value
+     *
+     * @return
+     */
+    public abstract long    getTypeCode();
     public abstract String  getGeometryTypeName();
     public abstract boolean hasZ();
     public abstract boolean hasM();
@@ -74,5 +81,24 @@ public abstract class Geometry
         }
 
         return EnvelopeContentsIndicator.Xy;
+    }
+
+    protected static void setByteOrder(final ByteBuffer byteBuffer)
+    {
+        if(byteBuffer == null)
+        {
+            throw new IllegalArgumentException("Byte buffer may not be null");
+        }
+
+        final ByteOrder byteOrder = byteBuffer.get() == 0 ? ByteOrder.BIG_ENDIAN
+                                                          : ByteOrder.LITTLE_ENDIAN;
+
+        byteBuffer.order(byteOrder);
+    }
+
+    protected static long readGeometryType(final ByteBuffer byteBuffer)
+    {
+        // Read 4 bytes as an /unsigned/ int
+        return Integer.toUnsignedLong(byteBuffer.getInt());
     }
 }

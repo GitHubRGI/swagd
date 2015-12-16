@@ -23,12 +23,12 @@
 
 package com.rgi.geopackage.features.geometry;
 
-import com.rgi.geopackage.features.BinaryHeader;
 import com.rgi.geopackage.features.Envelope;
 import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -77,7 +77,7 @@ public class Polygon extends CurvePolygon
 
     @Override
     @SuppressWarnings("RefusedBequest")
-    public int getTypeCode()
+    public long getTypeCode()
     {
         return GeometryType.Polygon.getCode();
     }
@@ -133,7 +133,7 @@ public class Polygon extends CurvePolygon
         return Collections.unmodifiableList(this.interiorRings);
     }
 
-    public static Polygon readWellKnownBinary(final byte[] bytes)
+    public static Polygon readWellKnownBinary(final ByteBuffer byteBuffer)
     {
 
     }

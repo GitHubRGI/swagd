@@ -30,6 +30,7 @@ import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
@@ -54,7 +55,7 @@ public class Point extends Geometry
     }
 
     @Override
-    public int getTypeCode()
+    public long getTypeCode()
     {
         return GeometryType.Point.getCode();
     }
@@ -125,11 +126,10 @@ public class Point extends Geometry
         return this.coordinate.getM();
     }
 
-    public static Point readWellKnownBinary(final byte[] bytes)
+    public static Point readWellKnownBinary(final ByteBuffer byteBuffer)
     {
 
     }
-
 
     private final Coordinate coordinate;
 }

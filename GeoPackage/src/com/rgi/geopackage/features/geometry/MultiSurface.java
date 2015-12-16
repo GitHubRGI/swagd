@@ -47,7 +47,7 @@ public abstract class MultiSurface<T extends Surface> extends GeometryCollection
 
     @Override
     @SuppressWarnings("RefusedBequest")
-    public int getTypeCode()
+    public long getTypeCode()
     {
         return GeometryType.MultiSurface.getCode();
     }

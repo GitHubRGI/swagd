@@ -23,8 +23,6 @@
 
 package com.rgi.geopackage.features;
 
-import com.rgi.geopackage.features.Contents;
-
 /**
  * Proxy for member coordinates in GeoPackage geometries
  *
@@ -105,7 +103,8 @@ public class Coordinate
 
         if(this.hasZ() && this.hasM())
         {
-            return new Envelope(new double[]{ this.x,
+            return new Envelope(EnvelopeContentsIndicator.Xyzm,
+                                new double[]{ this.x,
                                               this.x,
                                               this.y,
                                               this.y,
@@ -118,7 +117,8 @@ public class Coordinate
 
         if(this.hasZ())
         {
-            return new Envelope(new double[]{ this.x,
+            return new Envelope(EnvelopeContentsIndicator.Xyz,
+                                new double[]{ this.x,
                                               this.x,
                                               this.y,
                                               this.y,
@@ -129,7 +129,8 @@ public class Coordinate
 
         if(this.hasM())
         {
-            return new Envelope(new double[]{ this.x,
+            return new Envelope(EnvelopeContentsIndicator.Xym,
+                                new double[]{ this.x,
                                               this.x,
                                               this.y,
                                               this.y,
@@ -138,7 +139,8 @@ public class Coordinate
                                             });
         }
 
-        return new Envelope(new double[]{ this.x,
+        return new Envelope(EnvelopeContentsIndicator.Xy,
+                            new double[]{ this.x,
                                           this.x,
                                           this.y,
                                           this.y

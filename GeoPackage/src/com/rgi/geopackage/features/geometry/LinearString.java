@@ -27,6 +27,7 @@ import com.rgi.geopackage.features.Coordinate;
 import com.rgi.geopackage.features.Envelope;
 import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -145,7 +146,14 @@ public class LinearString
         return EnvelopeContentsIndicator.Xy;
     }
 
+    public static LinearString readWellKnownBinary(ByteBuffer byteBuffer)
+    {
+
+    }
+
     private final List<Coordinate> coordinates;
     private final boolean          hasZ;
     private final boolean          hasM;
+
+
 }

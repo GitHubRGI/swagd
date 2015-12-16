@@ -27,6 +27,7 @@ import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -54,7 +55,7 @@ public class MultiPoint extends GeometryCollection<Point>
 
     @Override
     @SuppressWarnings("RefusedBequest")
-    public int getTypeCode()
+    public long getTypeCode()
     {
         return GeometryType.MultiPoint.getCode();
     }
@@ -78,7 +79,7 @@ public class MultiPoint extends GeometryCollection<Point>
         return this.getGeometries();
     }
 
-    public static MultiPoint readWellKnownBinary(final byte[] bytes)
+    public static MultiPoint readWellKnownBinary(final ByteBuffer byteBuffer)
     {
 
     }

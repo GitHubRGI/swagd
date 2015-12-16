@@ -26,15 +26,19 @@ package com.rgi.geopackage.features.geometry;
 import com.rgi.geopackage.features.Envelope;
 import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 import com.rgi.geopackage.features.GeometryType;
+import com.rgi.geopackage.features.WellKnownBinaryFormatException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * A collection of zero or more Geometry instances.
@@ -101,7 +105,7 @@ public class GeometryCollection<T extends Geometry> extends Geometry
     }
 
     @Override
-    public int getTypeCode()
+    public long getTypeCode()
     {
         return GeometryType.GeometryCollection.getCode();
     }
@@ -149,7 +153,7 @@ public class GeometryCollection<T extends Geometry> extends Geometry
         final double[] array = new double[envelopeContentsIndicator.getArraySize()];
         Arrays.fill(array, Double.NaN);
 
-        final Envelope initialEnvelope = new Envelope(envelopeContentsIndicator, array);
+        //final Envelope initialEnvelope = new Envelope(envelopeContentsIndicator, array);
 
         return this.geometries
                    .stream()
@@ -164,9 +168,56 @@ public class GeometryCollection<T extends Geometry> extends Geometry
         return Collections.unmodifiableList(this.geometries);
     }
 
-    public static LineString readWellKnownBinary(final byte[] bytes)
+    public static GeometryCollection<Geometry> readWellKnownBinaryXy(final Function<ByteBuffer, Geometry> geometryFactory,
+                                                                     final ByteBuffer                     byteBuffer) throws WellKnownBinaryFormatException
     {
+        return readWellKnownBinary(geometryFactory,
+                                   byteBuffer,
+                                   GeometryType.GeometryCollection.getCode(),
+                                   false,   // no z
+                                   false);  // no m
+    }
 
+    private static GeometryCollection<Geometry> readWellKnownBinary(final Function<ByteBuffer, Geometry> geometryFactory,
+                                                                    final ByteBuffer                     byteBuffer,
+                                                                    final long                           expectedGeometryType,
+                                                                    final boolean                        hasZ,
+                                                                    final boolean                        hasM) throws WellKnownBinaryFormatException
+    {
+        if(geometryFactory == null)
+        {
+            throw new IllegalArgumentException("Geometry factory may not be null");
+        }
+
+        setByteOrder(byteBuffer);   // Also checks byteBuffer for null
+
+        final long geometryType = readGeometryType(byteBuffer);
+
+        if(geometryType != expectedGeometryType)
+        {
+            throw new IllegalArgumentException(String.format("Unexpected geometry type %d. Expected 7, 1007, 2007 or 3007",
+                                                             geometryType));
+        }
+
+        final long geometryCount = Integer.toUnsignedLong(byteBuffer.getInt());
+
+        final Collection<Geometry> geometries = new LinkedList<>();
+
+        for(long geometryIndex = 0; geometryIndex < geometryCount; ++geometryIndex)
+        {
+            final Geometry geometry = geometryFactory.apply(byteBuffer);
+
+            if(geometry.hasZ() != hasZ ||
+               geometry.hasM() != hasM)
+            {
+                throw new WellKnownBinaryFormatException(String.format("Geometry at index %d is not in dimensionality agreement with its parent geometry collection",
+                                                                       geometryIndex));
+            }
+
+            geometries.add(geometry);
+        }
+
+        return new GeometryCollection<>(geometries);
     }
 
     private final List<T> geometries;

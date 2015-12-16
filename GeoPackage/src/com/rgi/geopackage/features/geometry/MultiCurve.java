@@ -46,7 +46,7 @@ public abstract class MultiCurve<T extends Curve> extends GeometryCollection<T>
 
     @Override
     @SuppressWarnings("RefusedBequest")
-    public int getTypeCode()
+    public long getTypeCode()
     {
         return GeometryType.MultiCurve.getCode();
     }

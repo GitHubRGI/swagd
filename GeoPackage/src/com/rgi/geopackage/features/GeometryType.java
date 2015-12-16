@@ -61,7 +61,7 @@ public enum GeometryType
     /**
      * @return the code
      */
-    public int getCode()
+    public long getCode()
     {
         return this.code;
     }
@@ -80,6 +80,6 @@ public enum GeometryType
         return this.name().toUpperCase();
     }
 
-    private final int     code;
+    private final long    code;
     private final boolean extension;
 }

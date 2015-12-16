@@ -35,6 +35,7 @@ package com.rgi.geopackage.features.geometry;
  * @author Luke Lambert
  *
  */
+@SuppressWarnings("EmptyClass")
 public abstract class Curve extends Geometry
 {
 

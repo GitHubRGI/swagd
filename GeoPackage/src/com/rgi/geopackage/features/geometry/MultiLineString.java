@@ -27,9 +27,9 @@ import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -55,7 +55,7 @@ public class MultiLineString extends MultiCurve<LineString>
 
     @Override
     @SuppressWarnings("RefusedBequest")
-    public int getTypeCode()
+    public long getTypeCode()
     {
         return GeometryType.MultiLineString.getCode();
     }
@@ -79,7 +79,7 @@ public class MultiLineString extends MultiCurve<LineString>
         return this.getGeometries();
     }
 
-    public static MultiLineString readWellKnownBinary(final byte[] bytes)
+    public static MultiLineString readWellKnownBinary(final ByteBuffer byteBuffer)
     {
 
     }

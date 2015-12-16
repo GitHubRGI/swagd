@@ -27,6 +27,7 @@ import com.rgi.geopackage.features.GeometryType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -54,7 +55,7 @@ public class MultiPolygon extends MultiSurface<Polygon>
 
     @Override
     @SuppressWarnings("RefusedBequest")
-    public int getTypeCode()
+    public long getTypeCode()
     {
         return GeometryType.MultiPolygon.getCode();
     }
@@ -78,7 +79,7 @@ public class MultiPolygon extends MultiSurface<Polygon>
         return this.getGeometries();
     }
 
-    public static MultiPolygon readWellKnownBinary(final byte[] bytes)
+    public static MultiPolygon readWellKnownBinary(final ByteBuffer byteBuffer)
     {
 
     }

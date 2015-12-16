@@ -42,9 +42,9 @@ import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 import javax.sql.rowset.serial.SerialBlob;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Luke Lambert
@@ -108,10 +109,11 @@ public class GeoPackageFeatures
         this.geometryFactory.put(1000 + GeometryType.MultiPolygon      .getCode(), MultiPolygon      ::readWellKnownBinary);  // type 6 xyz
         this.geometryFactory.put(2000 + GeometryType.MultiPolygon      .getCode(), MultiPolygon      ::readWellKnownBinary);  // type 6 xym
         this.geometryFactory.put(3000 + GeometryType.MultiPolygon      .getCode(), MultiPolygon      ::readWellKnownBinary);  // type 6 xyzm
-        this.geometryFactory.put(       GeometryType.GeometryCollection.getCode(), GeometryCollection::readWellKnownBinary);  // type 7 xy
-        this.geometryFactory.put(1000 + GeometryType.GeometryCollection.getCode(), GeometryCollection::readWellKnownBinary);  // type 7 xyz
-        this.geometryFactory.put(2000 + GeometryType.GeometryCollection.getCode(), GeometryCollection::readWellKnownBinary);  // type 7 xym
-        this.geometryFactory.put(3000 + GeometryType.GeometryCollection.getCode(), GeometryCollection::readWellKnownBinary);  // type 7 xyzm
+
+        this.geometryFactory.put(       GeometryType.GeometryCollection.getCode(), (byteBuffer) -> GeometryCollection.readWellKnownBinaryXy  (this::createGeometry, byteBuffer));  // type 7 xy
+        this.geometryFactory.put(1000 + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> GeometryCollection.readWellKnownBinaryXyz (this::createGeometry, byteBuffer));  // type 7 xyz
+        this.geometryFactory.put(2000 + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> GeometryCollection.readWellKnownBinaryXym (this::createGeometry, byteBuffer));  // type 7 xym
+        this.geometryFactory.put(3000 + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> GeometryCollection.readWellKnownBinaryXyzm(this::createGeometry, byteBuffer));  // type 7 xyzm
     }
 
     /**
@@ -434,16 +436,9 @@ public class GeoPackageFeatures
                                                                          attributes.put(columnName, resultSet.getObject(columnName));
                                                                      }
 
-                                                                     try
-                                                                     {
-                                                                         return new Feature(featureIdentifier,
-                                                                                            createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
-                                                                                            attributes);
-                                                                     }
-                                                                     catch(final IOException ex)
-                                                                     {
-                                                                         throw new RuntimeException(ex);
-                                                                     }
+                                                                     return new Feature(featureIdentifier,
+                                                                                        this.createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
+                                                                                        attributes);
                                                                    });
         if(feature == null)
         {
@@ -482,17 +477,10 @@ public class GeoPackageFeatures
                                                      attributes.put(columnName, resultSet.getObject(columnName));
                                                  }
 
-                                                 try
-                                                 {
-                                                     return new Feature(resultSet.getInt("id"),
-                                                                        createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
-                                                                        attributes);
-                                                 }
-                                                 catch(final IOException ex)
-                                                 {
-                                                     throw new RuntimeException(ex);
-                                                 }
-                                               });
+                                                 return new Feature(resultSet.getInt("id"),
+                                                                    this.createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
+                                                                    attributes);
+                                                });
     }
 
     public void visitFeatures(final GeometryColumn geometryColumn, final Consumer<Feature> featureConsumer) throws SQLException
@@ -526,16 +514,9 @@ public class GeoPackageFeatures
                                                attributes.put(columnName, resultSet.getObject(columnName));
                                            }
 
-                                           try
-                                           {
-                                               featureConsumer.accept(new Feature(resultSet.getInt("id"),
-                                                                                  createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
-                                                                                  attributes));
-                                           }
-                                           catch(final IOException ex)
-                                           {
-                                               throw new RuntimeException(ex);
-                                           }
+                                           featureConsumer.accept(new Feature(resultSet.getInt("id"),
+                                                                              this.createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
+                                                                              attributes));
                                          });
     }
 
@@ -731,39 +712,55 @@ public class GeoPackageFeatures
                                                 });
     }
 
-    private static Geometry createGeometry(final byte[] blob) throws IOException
+    private Geometry createGeometry(final byte[] blob)
     {
         final BinaryHeader binaryHeader = new BinaryHeader(blob);   // This will throw if the array length is too short to contain a header (or if it's not long enough to contain the envelope type specified)
 
         final int headerByteLength = binaryHeader.getByteSize();
 
-        if(blob.length < binaryHeader.getByteSize() + 5)    // one byte to indicate byte order, and another 4 (unsigned int) indicating the geometry type
+        if(blob.length < headerByteLength + 5)    // one byte to indicate byte order, and another 4 (unsigned int) indicating the geometry type
         {
             throw new IllegalArgumentException("Well standard GeoPackage binary blob must contain at least 5 bytes beyond the header");
         }
 
-        final ByteOrder byteOrder = blob[headerByteLength] == 0 ? ByteOrder.BIG_ENDIAN
-                                                                : ByteOrder.LITTLE_ENDIAN;
+        return this.createGeometry(ByteBuffer.wrap(blob, headerByteLength, blob.length - headerByteLength));
+    }
 
+    private Geometry createGeometry(final ByteBuffer byteBuffer)
+    {
+        final ByteOrder byteOrder = byteBuffer.get() == 0 ? ByteOrder.BIG_ENDIAN
+                                                          : ByteOrder.LITTLE_ENDIAN;
 
+        byteBuffer.order(byteOrder);
 
-        try(final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(blob, headerByteLength, blob.length - headerByteLength))
+        // Read 4 bytes as an /unsigned/ int
+        final long geometryType = Integer.toUnsignedLong(byteBuffer.getInt());
+
+        if(!this.geometryFactory.containsKey(geometryType))
         {
-
-
-            byteArrayInputStream.
-
-            this.geometryFactory.get(geometry type)
+            throw new RuntimeException(String.format("Unrecognized geometry type code %d. Recognized geometry types are: %s. Additional types will require a GeoPackage extention to interact with.",
+                                                     geometryType,
+                                                     this.geometryFactory
+                                                         .keySet()
+                                                         .stream()
+                                                         .map(Object::toString)
+                                                         .collect(Collectors.joining(", "))));
         }
+
+        byteBuffer.rewind();
+
+        return this.geometryFactory
+                   .get(geometryType)
+                   .apply(byteBuffer);
     }
 
     private static byte[] createBlob(final Geometry geometry, final int spatialReferenceSystemIdentifier) throws IOException
     {
         try(final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream())
         {
-            //            TODO HEADER USES OPTIONS:
-            //            FORCE ENVELOPE
-            //            FORCE ENDIANNESS
+            // TODO HEADER USES OPTIONS:
+            // FORCE ENVELOPE
+            // FORCE ENDIANNESS
 
             BinaryHeader.writeBytes(byteArrayOutputStream,
                                     geometry,
@@ -892,5 +889,5 @@ public class GeoPackageFeatures
     private final Connection     databaseConnection;
     private final GeoPackageCore core;
 
-    private final Map<Integer, Function<byte[], Geometry>> geometryFactory = new HashMap<Integer, Function<byte[], Geometry>>();
+    private final Map<Long, Function<ByteBuffer, Geometry>> geometryFactory = new HashMap<>();
 }
