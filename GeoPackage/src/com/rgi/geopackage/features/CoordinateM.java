@@ -21,40 +21,67 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
-
-import com.rgi.geopackage.features.GeometryType;
-
-import java.util.Collection;
+package com.rgi.geopackage.features;
 
 /**
- * A restricted form of GeometryCollection where each Geometry in the
- * collection must be of type Curve.
- *
- * @see "http://www.geopackage.org/spec/#sfsql_intro"
+ * Proxy for member coordinates in GeoPackage geometries
  *
  * @author Luke Lambert
- *
  */
-@SuppressWarnings("AbstractClassExtendsConcreteClass")
-public abstract class MultiCurve<T extends Curve> extends GeometryCollection<T>
+public class CoordinateM
 {
-    protected MultiCurve(final Collection<T> curves)
+    public CoordinateM(final double x,
+                       final double y,
+                       final double m)
     {
-        super(curves);
+        this.x = x;
+        this.y = y;
+        this.m = m;
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
-    public long getTypeCode()
+    public String toString()
     {
-        return GeometryType.MultiCurve.getCode();
+        return String.format("(%f, %f, %fm)",
+                             this.x,
+                             this.y,
+                             this.m);
     }
 
-    @Override
-    @SuppressWarnings("RefusedBequest")
-    public String getGeometryTypeName()
+    public double getX()
     {
-        return GeometryType.MultiCurve.toString();
+        return this.x;
     }
+
+    public double getY()
+    {
+        return this.y;
+    }
+
+    public Double getM()
+    {
+        return this.m;
+    }
+
+    public Contents getContents()
+    {
+        return (Double.isNaN(this.x) &&
+                Double.isNaN(this.y) &&
+                Double.isNaN(this.m)) ? Contents.Empty
+                                      : Contents.NotEmpty;
+    }
+
+    public EnvelopeM getEnvelope()
+    {
+        return new EnvelopeM(this.x,
+                             this.x,
+                             this.y,
+                             this.y,
+                             this.m,
+                             this.m);
+    }
+
+    private final double x;
+    private final double y;
+    private final double m;
 }

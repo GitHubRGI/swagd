@@ -23,18 +23,24 @@
 
 package com.rgi.geopackage.features.geometry;
 
-import com.rgi.geopackage.features.BinaryHeader;
+import com.rgi.geopackage.features.GeometryType;
+
+import java.util.Collection;
 
 /**
- * The base type for all 2-dimensional geometry types. A 2-dimensional geometry
- * is a geometry that has an area.
+ * A restricted form of GeometryCollection where each Geometry in the
+ * collection must be of type Surface.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public abstract class Surface extends Geometry
+@SuppressWarnings("AbstractClassExtendsConcreteClass")
+public abstract class WktMultiSurface<T extends WktSurface> extends WktGeometryCollection<T>
 {
-
+    protected WktMultiSurface(final Collection<T> surfaces)
+    {
+        super(surfaces);
+    }
 }

@@ -23,71 +23,90 @@
 
 package com.rgi.geopackage.features;
 
-import java.util.function.BinaryOperator;
-
 /**
  * @author Luke Lambert
  */
 public class Envelope
 {
-    public Envelope(final EnvelopeContentsIndicator contentsIndicator, final double[] array)
+    public Envelope(final double minimumX,
+                    final double maximumX,
+                    final double minimumY,
+                    final double maximumY)
     {
-        if(array == null)
-        {
-            throw new IllegalArgumentException("Array may not be null");
-        }
+        this.minimumX = minimumX;
+        this.maximumX = maximumX;
+        this.minimumY = minimumY;
+        this.maximumY = maximumY;
+    }
 
-        if(contentsIndicator == null)
-        {
-            throw new IllegalArgumentException("Contents indicator may not be null");
-        }
+    public double[] toArray()
+    {
+        return new double[]{ this.minimumX,
+                             this.maximumX,
+                             this.minimumY,
+                             this.maximumY
+                           };
+    }
 
-        if(array.length != contentsIndicator.getArraySize())
-        {
-            throw new IllegalArgumentException(String.format("Envelop containing parameters %s must correspond to an array with %d elements",
-                                                             contentsIndicator.toString().toUpperCase(),
-                                                             contentsIndicator.getArraySize()));
-        }
+    public double getMinimumX()
+    {
+        return this.minimumX;
+    }
 
-        this.array             = array.clone();
-        this.contentsIndicator = contentsIndicator;
+    public double getMaximumX()
+    {
+        return this.maximumX;
+    }
+
+    public double getMinimumY()
+    {
+        return this.minimumY;
+    }
+
+    public double getMaximumY()
+    {
+        return this.maximumY;
+    }
+
+    public boolean hasZ()
+    {
+        return false;
+    }
+
+    public boolean hasM()
+    {
+        return false;
+    }
+
+    public boolean isEmpty()
+    {
+        return Double.isNaN(this.minimumX) &&
+               Double.isNaN(this.maximumX) &&
+               Double.isNaN(this.minimumY) &&
+               Double.isNaN(this.maximumY);
     }
 
     public EnvelopeContentsIndicator getContentsIndicator()
     {
-        return this.contentsIndicator;
+        return this.isEmpty() ? EnvelopeContentsIndicator.NoEnvelope
+                              : EnvelopeContentsIndicator.Xy;
     }
 
-    public double[] getArray()
+    public static Envelope combine(final Envelope first,
+                                   final Envelope second)
     {
-        return this.array.clone();
+        return new Envelope(nanMinimum(first.minimumX, second.minimumX),
+                            nanMaximum(first.maximumX, second.maximumX),
+                            nanMinimum(first.minimumY, second.minimumY),
+                            nanMaximum(first.maximumY, second.maximumY));
     }
 
-    public static final BinaryOperator<Envelope> combine = (final Envelope first, final Envelope second) ->
-                                                           {
-                                                               if(first.contentsIndicator != second.contentsIndicator)
-                                                               {
-                                                                   throw new IllegalArgumentException("Envelopes must have the same contents indicator");
-                                                               }
+    public static final Envelope Empty = new Envelope(Double.NaN,
+                                                      Double.NaN,
+                                                      Double.NaN,
+                                                      Double.NaN);
 
-                                                               final int arrayLength = first.array.length;
-
-                                                               final double[] newArray = new double[arrayLength];
-
-                                                               for(int index = 0; index < arrayLength; index += 2)
-                                                               {
-                                                                   newArray[index    ] = nanMinimum(first.array[index    ], second.array[index    ]);
-                                                                   newArray[index + 1] = nanMaximum(first.array[index + 1], second.array[index + 1]);
-                                                               }
-
-                                                               return new Envelope(first.contentsIndicator, newArray);
-                                                           };
-
-
-    @SuppressWarnings("StaticVariableOfConcreteClass")
-    public static final Envelope Empty = new Envelope(EnvelopeContentsIndicator.NoEnvelope, new double[]{});
-
-    private static double nanMinimum(final double first, final double second)
+    protected static double nanMinimum(final double first, final double second)
     {
         if(Double.isNaN(first) && Double.isNaN(second))
         {
@@ -107,7 +126,7 @@ public class Envelope
         return Double.min(first, second);
     }
 
-    private static double nanMaximum(final double first, final double second)
+    protected static double nanMaximum(final double first, final double second)
     {
         if(Double.isNaN(first) && Double.isNaN(second))
         {
@@ -127,6 +146,8 @@ public class Envelope
         return Double.max(first, second);
     }
 
-    private final double[]                  array;
-    private final EnvelopeContentsIndicator contentsIndicator;
+    private final double minimumX;
+    private final double maximumX;
+    private final double minimumY;
+    private final double maximumY;
 }

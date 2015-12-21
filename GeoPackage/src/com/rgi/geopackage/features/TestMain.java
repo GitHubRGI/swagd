@@ -2,6 +2,7 @@ package com.rgi.geopackage.features;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.GeoPackage;
+import com.rgi.geopackage.features.geometry.WktPoint;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.VerificationLevel;
 
@@ -44,9 +45,9 @@ public final class TestMain
 
             final GeometryColumn geometryColumn = gpkg.features().getGeometryColumn(featureSet);
 
-            gpkg.features().addPointFeature(geometryColumn,
-                                            new Coordinate(1, 1, 1.0, 1.0),
-                                            Collections.emptyMap());
+            gpkg.features().addFeature(geometryColumn,
+                                       new WktPoint(1.0, 1.0),
+                                       Collections.emptyMap());
         }
         catch(final IOException | SQLException | ConformanceException | ClassNotFoundException ex)
         {

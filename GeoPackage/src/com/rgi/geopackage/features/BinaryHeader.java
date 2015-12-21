@@ -25,7 +25,6 @@ package com.rgi.geopackage.features;
 
 import com.rgi.geopackage.features.geometry.Geometry;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -75,32 +74,32 @@ public class BinaryHeader
         srsIdByteBuffer.order(this.byteOrder);
         this.spatialReferenceSystemIdentifier = srsIdByteBuffer.getInt();
 
-        final EnvelopeContentsIndicator envelopeContentsIndicator = EnvelopeContentsIndicator.fromCode((this.flags & 0b00001110) >> 1);
+        this.envelopeContentsIndicator = EnvelopeContentsIndicator.fromCode((this.flags & 0b00001110) >> 1);
 
         this.byteSize = 2 +  // 2 bytes for the 'magic' header
                         1 +  // 1 byte for version
                         1 +  // 1 byte for flags
                         4 +  // 4 bytes (int32) for the srs id
-                        (8 * envelopeContentsIndicator.getArraySize());   // 8 bytes per double, array size number of doubles
+                        (8 * this.envelopeContentsIndicator.getArraySize());   // 8 bytes per double, array size number of doubles
 
         if(bytes.length < this.byteSize)
         {
             throw new IllegalArgumentException("Byte array length is shorter than the envelope size would indicate");
         }
 
-        this.envelope = new Envelope(envelopeContentsIndicator,
-                                     getHeaderEnvelopeDoubles(bytes,
-                                                              this.byteOrder,
-                                                              envelopeContentsIndicator.getArraySize()));
+        this.envelope = getHeaderEnvelopeDoubles(bytes,
+                                                 this.byteOrder,
+                                                 this.envelopeContentsIndicator.getArraySize());
 
     }
 
-    protected BinaryHeader(final byte       version,
-                           final BinaryType binaryType,
-                           final Contents   contents,
-                           final ByteOrder  byteOrder,
-                           final int        spatialReferenceSystemIdentifier,
-                           final Envelope   envelope)
+    protected BinaryHeader(final byte                      version,
+                           final BinaryType                binaryType,
+                           final Contents                  contents,
+                           final ByteOrder                 byteOrder,
+                           final int                       spatialReferenceSystemIdentifier,
+                           final EnvelopeContentsIndicator envelopeContentsIndicator,
+                           final double[]                  envelope)
     {
         if(binaryType == null)
         {
@@ -117,9 +116,19 @@ public class BinaryHeader
             throw new IllegalArgumentException("Byte order may not be null");
         }
 
+        if(envelopeContentsIndicator == null)
+        {
+            throw new IllegalArgumentException("Envelope contents indicator may not be null");
+        }
+
         if(envelope == null)
         {
             throw new IllegalArgumentException("Envelope may not be null. Use Envelope.Empty to represent an empty envelope.");
+        }
+
+        if(envelope.length != envelopeContentsIndicator.getArraySize())
+        {
+            throw new IllegalArgumentException("Envelope content indicator does not agree with the length of the envelope array");
         }
 
         this.version                          = version;
@@ -127,10 +136,11 @@ public class BinaryHeader
         this.empty                            = contents == Contents.Empty;
         this.byteOrder                        = byteOrder;
         this.spatialReferenceSystemIdentifier = spatialReferenceSystemIdentifier;
+        this.envelopeContentsIndicator        = envelopeContentsIndicator;
         this.envelope                         = envelope;
 
         final int isEmptyMask          = this.empty ? (1 << 4) : 0; // TODO make this part of the Contents enum like BinaryType?
-        final int envelopeContentsMask = (byte)(envelope.getContentsIndicator().getCode() << 1);
+        final int envelopeContentsMask = (byte)(this.envelopeContentsIndicator.getCode() << 1);
 
         this.flags = // 0                         |
                      this.binaryType.getBitMask() |
@@ -142,7 +152,7 @@ public class BinaryHeader
                         1 +  // 1 byte for version
                         1 +  // 1 byte for flags
                         4 +  // 4 bytes (int32) for the srs id
-                        (8 * this.envelope.getContentsIndicator().getArraySize());   // 8 bytes per double, array size number of doubles
+                        (8 * this.envelopeContentsIndicator.getArraySize());   // 8 bytes per double, array size number of doubles
     }
 
     public int getSpatialReferenceSystemIdentifier()
@@ -160,48 +170,36 @@ public class BinaryHeader
         return this.byteSize;
     }
 
-    public void writeBytes(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    public void writeBytes(final ByteBuffer byteBuffer) throws IOException
     {
         // http://www.geopackage.org/spec/#gpb_spec
 
-        // "magic"
-        byteArrayOutputStream.write(ByteBuffer.wrap(BinaryHeader.magic)
-                                              .order(this.byteOrder)
-                                              .array());
+        byteBuffer.order(this.byteOrder);
 
-        // version
-        byteArrayOutputStream.write(this.version);  // https://docs.oracle.com/javase/8/docs/api/java/io/OutputStream.html#write-int-
-                                                    // "Writes the specified byte to this output stream. The general contract for write is that one byte is written to the output stream. The byte to be written is the eight low-order bits of the argument b. The 24 high-order bits of b are ignored."
-                                                    // TODO I /believe/ this correctly also handles the signed int -> unsigned byte version, but it's worth double checking
+        byteBuffer.put   (BinaryHeader.magic);
+        byteBuffer.put   (this.version);
+        byteBuffer.put   ((byte)this.flags);
+        byteBuffer.putInt(this.spatialReferenceSystemIdentifier);
 
-        // flags
-        byteArrayOutputStream.write(this.flags);    // This is also a single byte write
-
-        // spatial reference system id, signed int
-        byteArrayOutputStream.write(ByteBuffer.allocate(4)
-                                              .putInt(this.spatialReferenceSystemIdentifier)
-                                              .order(this.byteOrder)
-                                              .array());
-
-        for(final double envelopeBound : this.envelope.getArray())
+        for(final double envelopeBound : this.envelope)
         {
-            byteArrayOutputStream.write(ByteBuffer.allocate(8)
-                                                  .putDouble(envelopeBound)
-                                                  .order(this.byteOrder)
-                                                  .array());
+            byteBuffer.putDouble(envelopeBound);
         }
     }
 
-    public static void writeBytes(final ByteArrayOutputStream byteArrayOutputStream,
-                                  final Geometry              geometry,
-                                  final int                   spatialReferenceSystemIdentifier) throws IOException
+    public static void writeBytes(final ByteBuffer byteBuffer,
+                                  final Geometry   geometry,
+                                  final int        spatialReferenceSystemIdentifier) throws IOException
     {
+        final Envelope envelope = geometry.createEnvelope();
+
         new BinaryHeader(defaultVersion,
                          BinaryType.fromGeometryTypeName(geometry.getGeometryTypeName()),
                          geometry.getContents(),
                          defaultByteOrder,
                          spatialReferenceSystemIdentifier,
-                         geometry.createEnvelope()).writeBytes(byteArrayOutputStream);
+                         envelope.getContentsIndicator(),
+                         envelope.toArray()).writeBytes(byteBuffer);
 
     }
 
@@ -227,16 +225,17 @@ public class BinaryHeader
     private static final byte      defaultVersion = (byte)0;                // Confusingly, 0 = "version 1", see: http://www.geopackage.org/spec/#gpb_spec
     private static final ByteOrder defaultByteOrder = ByteOrder.BIG_ENDIAN; // Java default (?), also the network byte order
 
-    private static final byte[] magic = {(byte)71,// 'G'
-                                         (byte)80 // 'P'
+    private static final byte[] magic = {(byte)71, // 'G'
+                                         (byte)80  // 'P'
                                         };
 
-    private final byte       version; // This is an *unsigned* value, regardless of Java's interpretation
-    private final BinaryType binaryType;
-    private final boolean    empty;
-    private final ByteOrder  byteOrder;
-    private final int        spatialReferenceSystemIdentifier;
-    private final Envelope   envelope;
-    private final int        flags;
-    private final int        byteSize;
+    private final byte                      version; // This is an *unsigned* value, regardless of Java's interpretation
+    private final BinaryType                binaryType;
+    private final boolean                   empty;
+    private final ByteOrder                 byteOrder;
+    private final int                       spatialReferenceSystemIdentifier;
+    private final EnvelopeContentsIndicator envelopeContentsIndicator;
+    private final double[]                  envelope;
+    private final int                       flags;
+    private final int                       byteSize;
 }

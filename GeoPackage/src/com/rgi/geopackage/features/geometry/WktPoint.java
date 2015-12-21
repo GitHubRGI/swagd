@@ -25,13 +25,9 @@ package com.rgi.geopackage.features.geometry;
 
 import com.rgi.geopackage.features.Coordinate;
 import com.rgi.geopackage.features.Envelope;
-import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 import com.rgi.geopackage.features.GeometryType;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 /**
  * A single location in space. Each point has an X and Y coordinate. A point
@@ -42,9 +38,17 @@ import java.util.Arrays;
  * @author Luke Lambert
  *
  */
-public class Point extends Geometry
+public class WktPoint extends WktGeometry
 {
-    protected Point(final Coordinate coordinate)
+    public static final long TypeCode = 1;
+
+    public WktPoint(final double x,
+                    final double y)
+    {
+        this(new Coordinate(x, y));
+    }
+
+    public WktPoint(final Coordinate coordinate)
     {
         if(coordinate == null)
         {
@@ -57,7 +61,7 @@ public class Point extends Geometry
     @Override
     public long getTypeCode()
     {
-        return GeometryType.Point.getCode();
+        return TypeCode;
     }
 
     @Override
@@ -67,28 +71,13 @@ public class Point extends Geometry
     }
 
     @Override
-    public boolean hasZ()
-    {
-        return this.coordinate.hasZ();
-    }
-
-    @Override
-    public boolean hasM()
-    {
-        return this.coordinate.hasM();
-    }
-
-    @Override
     public boolean isEmpty()
     {
-        return Double.isNaN(this.coordinate.getX()) &&
-               Double.isNaN(this.coordinate.getY()) &&
-               (!this.coordinate.hasZ() || Double.isNaN(this.coordinate.getZ())) &&
-               (!this.coordinate.hasM() || Double.isNaN(this.coordinate.getM()));
+        return this.coordinate.isEmpty();
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
     {
         throw new UnsupportedOperationException("pending implementaiton");
     }
@@ -96,14 +85,15 @@ public class Point extends Geometry
     @Override
     public Envelope createEnvelope()
     {
-        final EnvelopeContentsIndicator envelopeContentsIndicator = this.getEnvelopeContentsIndicator();
+        return this.coordinate.createEnvelope();
+    }
 
-        final double[] array = new double[envelopeContentsIndicator.getArraySize()];
-        Arrays.fill(array, Double.NaN);
+    public static WktPoint readWellKnownBinary(final ByteBuffer byteBuffer)
+    {
+        readWellKnownBinaryHeader(byteBuffer, TypeCode);
 
-        envelopeContentsIndicator.getComparer().accept(this.coordinate, array);
-
-        return new Envelope(envelopeContentsIndicator, array);
+        return new WktPoint(byteBuffer.getDouble(),
+                            byteBuffer.getDouble());
     }
 
     public double getX()
@@ -114,21 +104,6 @@ public class Point extends Geometry
     public double getY()
     {
         return this.coordinate.getY();
-    }
-
-    public Double getZ()
-    {
-        return this.coordinate.getZ();
-    }
-
-    public Double getM()
-    {
-        return this.coordinate.getM();
-    }
-
-    public static Point readWellKnownBinary(final ByteBuffer byteBuffer)
-    {
-
     }
 
     private final Coordinate coordinate;

@@ -23,28 +23,29 @@
 
 package com.rgi.geopackage.features;
 
-import java.nio.ByteBuffer;
-
 /**
  * Proxy for member coordinates in GeoPackage geometries
  *
  * @author Luke Lambert
  */
-public class Coordinate
+public class CoordinateZ
 {
-    public Coordinate(final double x,
-                      final double y)
+    public CoordinateZ(final double x,
+                       final double y,
+                       final double z)
     {
         this.x = x;
         this.y = y;
+        this.z = z;
     }
 
     @Override
     public String toString()
     {
-        return String.format("(%f, %f)",
+        return String.format("(%f, %f, %f z)",
                              this.x,
-                             this.y);
+                             this.y,
+                             this.z);
     }
 
     public double getX()
@@ -57,37 +58,35 @@ public class Coordinate
         return this.y;
     }
 
-    public boolean isEmpty()
+    public Double getZ()
     {
-        return Double.isNaN(this.x) &&
-               Double.isNaN(this.y);
+        return this.z;
     }
 
     public Contents getContents()
     {
-        return this.isEmpty() ? Contents.Empty
-                              : Contents.NotEmpty;
+        return Double.isNaN(this.x) &&
+               Double.isNaN(this.y) &&
+               Double.isNaN(this.z) ? Contents.Empty
+                                    : Contents.NotEmpty;
     }
 
-    public Envelope createEnvelope()
+    public EnvelopeZ getEnvelope()
     {
         if(this.getContents() == Contents.Empty)
         {
-            return Envelope.Empty;
+            return EnvelopeZ.Empty;
         }
 
-        return new Envelope(this.x,
-                            this.x,
-                            this.y,
-                            this.y);
-    }
-
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
-    {
-        byteBuffer.putDouble(this.x);
-        byteBuffer.putDouble(this.y);
+        return new EnvelopeZ(this.x,
+                             this.x,
+                             this.y,
+                             this.y,
+                             this.z,
+                             this.z);
     }
 
     private final double x;
     private final double y;
+    private final double z;
 }

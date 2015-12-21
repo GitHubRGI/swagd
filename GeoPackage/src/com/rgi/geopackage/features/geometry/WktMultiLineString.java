@@ -25,11 +25,10 @@ package com.rgi.geopackage.features.geometry;
 
 import com.rgi.geopackage.features.GeometryType;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -41,46 +40,54 @@ import java.util.List;
  * @author Luke Lambert
  *
  */
-public class MultiLineString extends MultiCurve<LineString>
+public class WktMultiLineString extends WktMultiCurve<WktLineString>
 {
-    public MultiLineString(final LineString... lineStrings)
+    public WktMultiLineString(final WktLineString... lineStrings)
     {
         this(Arrays.asList(lineStrings));
     }
 
-    public MultiLineString(final Collection<LineString> lineStrings)
+    public WktMultiLineString(final Collection<WktLineString> lineStrings)
     {
         super(lineStrings);
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
     public long getTypeCode()
     {
         return GeometryType.MultiLineString.getCode();
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
     public String getGeometryTypeName()
     {
         return GeometryType.MultiLineString.toString();
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
-    public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
     {
         throw new UnsupportedOperationException("pending implementaiton");
     }
 
-    public List<LineString> getLineStrings()
+    public List<WktLineString> getLineStrings()
     {
         return this.getGeometries();
     }
 
-    public static MultiLineString readWellKnownBinary(final ByteBuffer byteBuffer)
+    public static WktMultiLineString readWellKnownBinary(final ByteBuffer byteBuffer)
     {
+        readWellKnownBinaryHeader(byteBuffer, TypeCode);
 
+        final long lineStringCount = Integer.toUnsignedLong(byteBuffer.getInt());
+
+        final Collection<WktLineString> lineStrings = new LinkedList<>();
+
+        for(long lineStringIndex = 0; lineStringIndex < lineStringCount; ++lineStringIndex)
+        {
+            lineStrings.add(WktLineString.readWellKnownBinary(byteBuffer));
+        }
+
+        return new WktMultiLineString(lineStrings);
     }
 }

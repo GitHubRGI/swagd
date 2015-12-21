@@ -8,6 +8,7 @@ import java.sql.SQLException;
  *
  * @param <T> the type of the input to the operation
  */
+@FunctionalInterface
 public interface ResultSetFunction<T>
 {
     /**

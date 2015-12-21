@@ -23,64 +23,18 @@
 
 package com.rgi.geopackage.features.geometry;
 
-import com.rgi.geopackage.features.GeometryType;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import com.rgi.geopackage.features.BinaryHeader;
 
 /**
- * A restricted form of GeometryCollection where each Geometry in the
- * collection must be of type Point.
+ * The base type for all 2-dimensional geometry types. A 2-dimensional geometry
+ * is a geometry that has an area.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class MultiPoint extends GeometryCollection<Point>
+public abstract class WktSurface extends WktGeometry
 {
-    public MultiPoint(final Point... points)
-    {
-        this(Arrays.asList(points));
-    }
 
-    public MultiPoint(final Collection<Point> points)
-    {
-        super(points);
-    }
-
-    @Override
-    @SuppressWarnings("RefusedBequest")
-    public long getTypeCode()
-    {
-        return GeometryType.MultiPoint.getCode();
-    }
-
-    @Override
-    @SuppressWarnings("RefusedBequest")
-    public String getGeometryTypeName()
-    {
-        return GeometryType.MultiPoint.toString();
-    }
-
-    @Override
-    @SuppressWarnings("RefusedBequest")
-    public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
-    {
-        throw new UnsupportedOperationException("pending implementaiton");
-    }
-
-    public List<Point> getPoints()
-    {
-        return this.getGeometries();
-    }
-
-    public static MultiPoint readWellKnownBinary(final ByteBuffer byteBuffer)
-    {
-
-    }
 }

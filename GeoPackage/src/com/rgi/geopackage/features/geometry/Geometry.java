@@ -25,12 +25,10 @@ package com.rgi.geopackage.features.geometry;
 
 import com.rgi.geopackage.features.Contents;
 import com.rgi.geopackage.features.Envelope;
-import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Objects;
 
 /**
  * The root of the geometry type hierarchy.
@@ -53,7 +51,7 @@ public abstract class Geometry
     public abstract boolean hasM();
     public abstract boolean isEmpty();
 
-    public abstract void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException;
+    public abstract void writeWellKnownBinary(final ByteBuffer byteBuffer);
 
     public abstract Envelope createEnvelope();
 
@@ -63,27 +61,7 @@ public abstract class Geometry
                               : Contents.NotEmpty;
     }
 
-    protected EnvelopeContentsIndicator getEnvelopeContentsIndicator()
-    {
-        if(this.hasZ() && this.hasM())
-        {
-            return EnvelopeContentsIndicator.Xyzm;
-        }
-
-        if(this.hasZ())
-        {
-            return EnvelopeContentsIndicator.Xyz;
-        }
-
-        if(this.hasM())
-        {
-            return EnvelopeContentsIndicator.Xym;
-        }
-
-        return EnvelopeContentsIndicator.Xy;
-    }
-
-    protected static void setByteOrder(final ByteBuffer byteBuffer)
+    protected static void readWellKnownBinaryHeader(final ByteBuffer byteBuffer, final long typeCode)
     {
         if(byteBuffer == null)
         {
@@ -94,6 +72,27 @@ public abstract class Geometry
                                                           : ByteOrder.LITTLE_ENDIAN;
 
         byteBuffer.order(byteOrder);
+
+        final long geometryType = readGeometryType(byteBuffer);  // Makes sure the geometry codes match
+
+        if(geometryType != typeCode)
+        {
+            throw new IllegalArgumentException(String.format("Unexpected geometry type %d. Expected %d",
+                                                             geometryType,
+                                                             typeCode));
+        }
+    }
+
+    protected static void writeByteOrder(final ByteBuffer byteBuffer)
+    {
+        if(byteBuffer == null)
+        {
+            throw new IllegalArgumentException("Byte buffer may not be null");
+        }
+
+        final byte byteOrder = byteBuffer.order().equals(ByteOrder.BIG_ENDIAN) ? (byte)0 : (byte)1;
+
+        byteBuffer.put(byteOrder);
     }
 
     protected static long readGeometryType(final ByteBuffer byteBuffer)

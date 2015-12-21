@@ -23,12 +23,12 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.Coordinate;
 import com.rgi.geopackage.features.Envelope;
 import com.rgi.geopackage.features.GeometryType;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 
 /**
  * A Curve that connects two or more points in space.
@@ -38,22 +38,29 @@ import java.nio.ByteBuffer;
  * @author Luke Lambert
  *
  */
-public class LineString extends Curve
+public class WktLineString extends WktCurve
 {
-    public LineString(final LinearString linearString)
-    {
-        if(linearString == null)
-        {
-            throw new IllegalArgumentException("Linear string may not be null");
-        }
+    public static final long TypeCode = 2;
 
+    public WktLineString(final Coordinate... points)
+    {
+        this(new LinearRing(points));
+    }
+
+    public WktLineString(final Collection<Coordinate> points)
+    {
+        this(new LinearRing(points));
+    }
+
+    private WktLineString(final LinearRing linearString)
+    {
         this.linearString = linearString;
     }
 
     @Override
     public long getTypeCode()
     {
-        return GeometryType.LineString.getCode();
+        return TypeCode;
     }
 
     @Override
@@ -63,27 +70,24 @@ public class LineString extends Curve
     }
 
     @Override
-    public boolean hasZ()
-    {
-        return this.linearString.hasZ();
-    }
-
-    @Override
-    public boolean hasM()
-    {
-        return this.linearString.hasM();
-    }
-
-    @Override
     public boolean isEmpty()
     {
         return this.linearString.isEmpty();
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        throw new UnsupportedOperationException("pending implementaiton");
+        if(byteBuffer == null)
+        {
+            throw new IllegalArgumentException("Byte buffer may not be null");
+        }
+
+        writeByteOrder(byteBuffer);
+
+        byteBuffer.putInt((int)TypeCode);
+
+        this.linearString.writeWellKnownBinary(byteBuffer);
     }
 
     @Override
@@ -92,16 +96,12 @@ public class LineString extends Curve
         return this.linearString.createEnvelope();
     }
 
-    public static LineString readWellKnownBinary(final ByteBuffer byteBuffer)
+    public static WktLineString readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        setByteOrder(byteBuffer);   // Also checks byteBuffer for null
+        readWellKnownBinaryHeader(byteBuffer, TypeCode);
 
-        final long geometryTypeCode = readGeometryType(byteBuffer);  // Makes sure the geometry codes match
-
-        geometryTypeCode / 1000
-
-        return new LineString(LinearString.readWellKnownBinary(byteBuffer))
+        return new WktLineString(LinearRing.readWellKnownBinary(byteBuffer));
     }
 
-    private final LinearString linearString;
+    private final LinearRing linearString;
 }

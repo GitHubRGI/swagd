@@ -23,39 +23,73 @@
 
 package com.rgi.geopackage.features.geometry;
 
-import com.rgi.geopackage.features.BinaryHeader;
 import com.rgi.geopackage.features.GeometryType;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * A restricted form of GeometryCollection where each Geometry in the
- * collection must be of type Surface.
+ * A restricted form of MultiSurface where each Surface in the collection must
+ * be of type Polygon.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-@SuppressWarnings("AbstractClassExtendsConcreteClass")
-public abstract class MultiSurface<T extends Surface> extends GeometryCollection<T>
+public class WktMultiPolygon extends WktMultiSurface<WktPolygon>
 {
-    protected MultiSurface(final Collection<T> surfaces)
+    public static final long TypeCode = 6;
+
+    public WktMultiPolygon(final WktPolygon... polygons)
     {
-        super(surfaces);
+        this(Arrays.asList(polygons));
+    }
+
+    public WktMultiPolygon(final Collection<WktPolygon> polygons)
+    {
+        super(polygons);
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
     public long getTypeCode()
     {
-        return GeometryType.MultiSurface.getCode();
+        return TypeCode;
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
     public String getGeometryTypeName()
     {
-        return GeometryType.MultiSurface.toString();
+        return GeometryType.MultiPolygon.toString();
+    }
+
+    @Override
+    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    {
+        throw new UnsupportedOperationException("pending implementaiton");
+    }
+
+    public List<WktPolygon> getPolygons()
+    {
+        return this.getGeometries();
+    }
+
+    public static WktMultiPolygon readWellKnownBinary(final ByteBuffer byteBuffer)
+    {
+        readWellKnownBinaryHeader(byteBuffer, TypeCode);
+
+        final long polygonCount = Integer.toUnsignedLong(byteBuffer.getInt());
+
+        final Collection<WktPolygon> polygons = new LinkedList<>();
+
+        for(long polygonIndex = 0; polygonIndex < polygonCount; ++polygonIndex)
+        {
+            polygons.add(WktPolygon.readWellKnownBinary(byteBuffer));
+        }
+
+        return new WktMultiPolygon(polygons);
     }
 }

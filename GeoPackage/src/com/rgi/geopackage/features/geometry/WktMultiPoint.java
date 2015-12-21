@@ -25,62 +25,71 @@ package com.rgi.geopackage.features.geometry;
 
 import com.rgi.geopackage.features.GeometryType;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
- * A restricted form of MultiSurface where each Surface in the collection must
- * be of type Polygon.
+ * A restricted form of GeometryCollection where each Geometry in the
+ * collection must be of type Point.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class MultiPolygon extends MultiSurface<Polygon>
+public class WktMultiPoint extends WktGeometryCollection<WktPoint>
 {
-    public MultiPolygon(final Polygon... polygons)
+    public static final long TypeCode = 4;
+
+    public WktMultiPoint(final WktPoint... points)
     {
-        this(Arrays.asList(polygons));
+        this(Arrays.asList(points));
     }
 
-    public MultiPolygon(final Collection<Polygon> polygons)
+    public WktMultiPoint(final Collection<WktPoint> points)
     {
-        super(polygons);
+        super(points);
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
     public long getTypeCode()
     {
-        return GeometryType.MultiPolygon.getCode();
+        return TypeCode;
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
     public String getGeometryTypeName()
     {
-        return GeometryType.MultiPolygon.toString();
+        return GeometryType.MultiPoint.toString();
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
-    public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    public void writeWellKnownBinary(final ByteBuffer buffer)
     {
         throw new UnsupportedOperationException("pending implementaiton");
     }
 
-    public List<Polygon> getPolygons()
+    public List<WktPoint> getPoints()
     {
         return this.getGeometries();
     }
 
-    public static MultiPolygon readWellKnownBinary(final ByteBuffer byteBuffer)
+    public static WktMultiPoint readWellKnownBinary(final ByteBuffer byteBuffer)
     {
+        readWellKnownBinaryHeader(byteBuffer, TypeCode);
 
+        final long pointCount = Integer.toUnsignedLong(byteBuffer.getInt());
+
+        final Collection<WktPoint> points = new LinkedList<>();
+
+        for(long pointIndex = 0; pointIndex < pointCount; ++pointIndex)
+        {
+            points.add(WktPoint.readWellKnownBinary(byteBuffer));
+        }
+
+        return new WktMultiPoint(points);
     }
 }

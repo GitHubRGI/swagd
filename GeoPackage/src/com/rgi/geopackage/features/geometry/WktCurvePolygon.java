@@ -23,11 +23,6 @@
 
 package com.rgi.geopackage.features.geometry;
 
-import com.rgi.geopackage.features.GeometryType;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 /**
  * A planar surface defined by an exterior ring and zero or more interior ring.
  * Each ring is defined by a Curve instance.
@@ -42,10 +37,10 @@ import java.io.IOException;
 // - Simple feature access - Part 1: Common architecture) lists CurvePolygon
 // as for "future use". Wikipedia's article says that CurvePolygons are based
 // on CircularString, and the GeoPackage spec says they're based on "Curve". In
-// any event, this type is an GeoPackage extension geometry type. It's only
+// any event, this type is a GeoPackage extension geometry type. It's only
 // included because the spec object diagram and Annex E suggests that Polygon
 // (a core type) is based on CurvePolygon which is additionally confusing.
-public abstract class CurvePolygon extends Surface
+public abstract class WktCurvePolygon extends WktSurface
 {
 //    @Override
 //    public int getTypeCode()

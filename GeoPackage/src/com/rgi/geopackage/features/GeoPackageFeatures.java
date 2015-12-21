@@ -30,24 +30,28 @@ import com.rgi.geopackage.core.ContentFactory;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.features.geometry.Geometry;
-import com.rgi.geopackage.features.geometry.GeometryCollection;
-import com.rgi.geopackage.features.geometry.LineString;
-import com.rgi.geopackage.features.geometry.MultiLineString;
-import com.rgi.geopackage.features.geometry.MultiPoint;
-import com.rgi.geopackage.features.geometry.MultiPolygon;
-import com.rgi.geopackage.features.geometry.Point;
-import com.rgi.geopackage.features.geometry.Polygon;
+import com.rgi.geopackage.features.geometry.GeometryFactory;
+import com.rgi.geopackage.features.geometry.WktGeometryCollection;
+import com.rgi.geopackage.features.geometry.WktLineString;
+import com.rgi.geopackage.features.geometry.WktMultiLineString;
+import com.rgi.geopackage.features.geometry.WktMultiPoint;
+import com.rgi.geopackage.features.geometry.WktMultiPolygon;
+import com.rgi.geopackage.features.geometry.WktPoint;
+import com.rgi.geopackage.features.geometry.WktPolygon;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 import javax.sql.rowset.serial.SerialBlob;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,7 +62,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -81,39 +84,39 @@ public class GeoPackageFeatures
         this.databaseConnection = databaseConnection;
         this.core               = core;
 
-        this.geometryFactory.put(       GeometryType.Geometry          .getCode(), bytes -> { throw new RuntimeException("Cannot instantiate abstract 'Geometry' type (geometry type code 0)"); } );      // type 0 xy
-        this.geometryFactory.put(1000 + GeometryType.Geometry          .getCode(), bytes -> { throw new RuntimeException("Cannot instantiate abstract 'Geometry' type (geometry type code 1000)"); } );   // type 0 xyz
-        this.geometryFactory.put(2000 + GeometryType.Geometry          .getCode(), bytes -> { throw new RuntimeException("Cannot instantiate abstract 'Geometry' type (geometry type code 2000)"); } );   // type 0 xym
-        this.geometryFactory.put(3000 + GeometryType.Geometry          .getCode(), bytes -> { throw new RuntimeException("Cannot instantiate abstract 'Geometry' type (geometry type code 3000)"); } );   // type 0 xyzm
-        this.geometryFactory.put(       GeometryType.Point             .getCode(), Point             ::readWellKnownBinary);  // type 1 xy
-        this.geometryFactory.put(1000 + GeometryType.Point             .getCode(), Point             ::readWellKnownBinary);  // type 1 xyz
-        this.geometryFactory.put(2000 + GeometryType.Point             .getCode(), Point             ::readWellKnownBinary);  // type 1 xym
-        this.geometryFactory.put(3000 + GeometryType.Point             .getCode(), Point             ::readWellKnownBinary);  // type 1 xyzm
-        this.geometryFactory.put(       GeometryType.LineString        .getCode(), LineString        ::readWellKnownBinary);  // type 2 xy
-        this.geometryFactory.put(1000 + GeometryType.LineString        .getCode(), LineString        ::readWellKnownBinary);  // type 2 xyz
-        this.geometryFactory.put(2000 + GeometryType.LineString        .getCode(), LineString        ::readWellKnownBinary);  // type 2 xym
-        this.geometryFactory.put(3000 + GeometryType.LineString        .getCode(), LineString        ::readWellKnownBinary);  // type 2 xyzm
-        this.geometryFactory.put(       GeometryType.Polygon           .getCode(), Polygon           ::readWellKnownBinary);  // type 3 xy
-        this.geometryFactory.put(1000 + GeometryType.Polygon           .getCode(), Polygon           ::readWellKnownBinary);  // type 3 xyz
-        this.geometryFactory.put(2000 + GeometryType.Polygon           .getCode(), Polygon           ::readWellKnownBinary);  // type 3 xym
-        this.geometryFactory.put(3000 + GeometryType.Polygon           .getCode(), Polygon           ::readWellKnownBinary);  // type 3 xyzm
-        this.geometryFactory.put(       GeometryType.MultiPoint        .getCode(), MultiPoint        ::readWellKnownBinary);  // type 4 xy
-        this.geometryFactory.put(1000 + GeometryType.MultiPoint        .getCode(), MultiPoint        ::readWellKnownBinary);  // type 4 xyz
-        this.geometryFactory.put(2000 + GeometryType.MultiPoint        .getCode(), MultiPoint        ::readWellKnownBinary);  // type 4 xym
-        this.geometryFactory.put(3000 + GeometryType.MultiPoint        .getCode(), MultiPoint        ::readWellKnownBinary);  // type 4 xyzm
-        this.geometryFactory.put(       GeometryType.MultiLineString   .getCode(), MultiLineString   ::readWellKnownBinary);  // type 5 xy
-        this.geometryFactory.put(1000 + GeometryType.MultiLineString   .getCode(), MultiLineString   ::readWellKnownBinary);  // type 5 xyz
-        this.geometryFactory.put(2000 + GeometryType.MultiLineString   .getCode(), MultiLineString   ::readWellKnownBinary);  // type 5 xym
-        this.geometryFactory.put(3000 + GeometryType.MultiLineString   .getCode(), MultiLineString   ::readWellKnownBinary);  // type 5 xyzm
-        this.geometryFactory.put(       GeometryType.MultiPolygon      .getCode(), MultiPolygon      ::readWellKnownBinary);  // type 6 xy
-        this.geometryFactory.put(1000 + GeometryType.MultiPolygon      .getCode(), MultiPolygon      ::readWellKnownBinary);  // type 6 xyz
-        this.geometryFactory.put(2000 + GeometryType.MultiPolygon      .getCode(), MultiPolygon      ::readWellKnownBinary);  // type 6 xym
-        this.geometryFactory.put(3000 + GeometryType.MultiPolygon      .getCode(), MultiPolygon      ::readWellKnownBinary);  // type 6 xyzm
+        this.geometryFactories.put(       GeometryType.Geometry       .getCode(), bytes -> { throw new WellKnownBinaryFormatException("Cannot instantiate abstract 'Geometry' type (geometry type code 0)"); } );      // type 0 xy
+        this.geometryFactories.put(1000 + GeometryType.Geometry       .getCode(), bytes -> { throw new WellKnownBinaryFormatException("Cannot instantiate abstract 'Geometry' type (geometry type code 1000)"); } );   // type 0 xyz
+        this.geometryFactories.put(2000 + GeometryType.Geometry       .getCode(), bytes -> { throw new WellKnownBinaryFormatException("Cannot instantiate abstract 'Geometry' type (geometry type code 2000)"); } );   // type 0 xym
+        this.geometryFactories.put(3000 + GeometryType.Geometry       .getCode(), bytes -> { throw new WellKnownBinaryFormatException("Cannot instantiate abstract 'Geometry' type (geometry type code 3000)"); } );   // type 0 xyzm
+        this.geometryFactories.put(GeometryType.Point          .getCode(), WktPoint::readWellKnownBinary);  // type 1 xy
+        //this.geometryFactories.put(1000 + GeometryType.Point          .getCode(), WktPoint::readWellKnownBinary);  // type 1 xyz
+        //this.geometryFactories.put(2000 + GeometryType.Point          .getCode(), WktPoint::readWellKnownBinary);  // type 1 xym
+        //this.geometryFactories.put(3000 + GeometryType.Point          .getCode(), WktPoint::readWellKnownBinary);  // type 1 xyzm
+        this.geometryFactories.put(GeometryType.LineString     .getCode(), WktLineString::readWellKnownBinary);  // type 2 xy
+        //this.geometryFactories.put(1000 + GeometryType.LineString     .getCode(), WktLineString::readWellKnownBinary);  // type 2 xyz
+        //this.geometryFactories.put(2000 + GeometryType.LineString     .getCode(), WktLineString::readWellKnownBinary);  // type 2 xym
+        //this.geometryFactories.put(3000 + GeometryType.LineString     .getCode(), WktLineString::readWellKnownBinary);  // type 2 xyzm
+        this.geometryFactories.put(GeometryType.Polygon        .getCode(), WktPolygon::readWellKnownBinary);  // type 3 xy
+        //this.geometryFactories.put(1000 + GeometryType.Polygon        .getCode(), WktPolygon::readWellKnownBinary);  // type 3 xyz
+        //this.geometryFactories.put(2000 + GeometryType.Polygon        .getCode(), WktPolygon::readWellKnownBinary);  // type 3 xym
+        //this.geometryFactories.put(3000 + GeometryType.Polygon        .getCode(), WktPolygon::readWellKnownBinary);  // type 3 xyzm
+        this.geometryFactories.put(GeometryType.MultiPoint     .getCode(), WktMultiPoint::readWellKnownBinary);  // type 4 xy
+        //this.geometryFactories.put(1000 + GeometryType.MultiPoint     .getCode(), WktMultiPoint::readWellKnownBinary);  // type 4 xyz
+        //this.geometryFactories.put(2000 + GeometryType.MultiPoint     .getCode(), WktMultiPoint::readWellKnownBinary);  // type 4 xym
+        //this.geometryFactories.put(3000 + GeometryType.MultiPoint     .getCode(), WktMultiPoint::readWellKnownBinary);  // type 4 xyzm
+        this.geometryFactories.put(GeometryType.MultiLineString.getCode(), WktMultiLineString::readWellKnownBinary);  // type 5 xy
+        //this.geometryFactories.put(1000 + GeometryType.MultiLineString.getCode(), WktMultiLineString::readWellKnownBinary);  // type 5 xyz
+        //this.geometryFactories.put(2000 + GeometryType.MultiLineString.getCode(), WktMultiLineString::readWellKnownBinary);  // type 5 xym
+        //this.geometryFactories.put(3000 + GeometryType.MultiLineString.getCode(), WktMultiLineString::readWellKnownBinary);  // type 5 xyzm
+        this.geometryFactories.put(GeometryType.MultiPolygon   .getCode(), WktMultiPolygon::readWellKnownBinary);  // type 6 xy
+        //this.geometryFactories.put(1000 + GeometryType.MultiPolygon   .getCode(), WktMultiPolygon::readWellKnownBinary);  // type 6 xyz
+        //this.geometryFactories.put(2000 + GeometryType.MultiPolygon   .getCode(), WktMultiPolygon::readWellKnownBinary);  // type 6 xym
+        //this.geometryFactories.put(3000 + GeometryType.MultiPolygon   .getCode(), WktMultiPolygon::readWellKnownBinary);  // type 6 xyzm
 
-        this.geometryFactory.put(       GeometryType.GeometryCollection.getCode(), (byteBuffer) -> GeometryCollection.readWellKnownBinaryXy  (this::createGeometry, byteBuffer));  // type 7 xy
-        this.geometryFactory.put(1000 + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> GeometryCollection.readWellKnownBinaryXyz (this::createGeometry, byteBuffer));  // type 7 xyz
-        this.geometryFactory.put(2000 + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> GeometryCollection.readWellKnownBinaryXym (this::createGeometry, byteBuffer));  // type 7 xym
-        this.geometryFactory.put(3000 + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> GeometryCollection.readWellKnownBinaryXyzm(this::createGeometry, byteBuffer));  // type 7 xyzm
+        this.geometryFactories.put(GeometryType.GeometryCollection.getCode(), (byteBuffer) -> WktGeometryCollection.readWellKnownBinary(this::createGeometry, byteBuffer));  // type 7 xy
+        //this.geometryFactories.put(1000 + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> WktGeometryCollection.readWellKnownBinary(this::createGeometry, byteBuffer));  // type 7 xyz
+        //this.geometryFactories.put(2000 + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> WktGeometryCollection.readWellKnownBinary(this::createGeometry, byteBuffer));  // type 7 xym
+        //this.geometryFactories.put(3000 + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> WktGeometryCollection.readWellKnownBinary(this::createGeometry, byteBuffer));  // type 7 xyzm
     }
 
     /**
@@ -408,7 +411,7 @@ public class GeoPackageFeatures
      *             if there is a database error
      */
     public Feature getFeature(final GeometryColumn geometryColumn,
-                              final int            featureIdentifier) throws SQLException
+                              final int            featureIdentifier) throws SQLException, WellKnownBinaryFormatException
     {
         if(geometryColumn == null)
         {
@@ -424,22 +427,21 @@ public class GeoPackageFeatures
                                                   GeoPackageFeatures.GeometryColumnsTableName,
                                                   "id");
 
-        final Feature feature = JdbcUtility.selectOne(this.databaseConnection,
-                                                      featureQuery,
-                                                      preparedStatement -> preparedStatement.setInt(1, featureIdentifier),
-                                                      resultSet -> { final Map<String, Object> attributes = new HashMap<>();
+        final Pair<Map<String, Object>, byte[]> feature = JdbcUtility.selectOne(this.databaseConnection,
+                                                                                featureQuery,
+                                                                                preparedStatement -> preparedStatement.setInt(1, featureIdentifier),
+                                                                                resultSet -> { final Map<String, Object> attributes = new HashMap<>();
 
-                                                                     schema.remove(0); // Ignore the geometry column
+                                                                                               schema.remove(0); // Ignore the geometry column
 
-                                                                     for(final String columnName : schema)
-                                                                     {
-                                                                         attributes.put(columnName, resultSet.getObject(columnName));
-                                                                     }
+                                                                                               for(final String columnName : schema)
+                                                                                               {
+                                                                                                   attributes.put(columnName, resultSet.getObject(columnName));
+                                                                                               }
 
-                                                                     return new Feature(featureIdentifier,
-                                                                                        this.createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
-                                                                                        attributes);
-                                                                   });
+                                                                                               return Pair.of(attributes,
+                                                                                                              resultSet.getBytes(geometryColumn.getColumnName()));
+                                                                                             });
         if(feature == null)
         {
             throw new IllegalArgumentException(String.format("No feature exists for geometry column %s.%s and identifier %d",
@@ -448,10 +450,13 @@ public class GeoPackageFeatures
                                                              featureIdentifier));
         }
 
-        return feature;
+
+        return new Feature(featureIdentifier,
+                           this.createGeometry(feature.getRight()),
+                           feature.getLeft());
     }
 
-    public List<Feature> getFeatures(final GeometryColumn geometryColumn) throws SQLException
+    public List<Feature> getFeatures(final GeometryColumn geometryColumn) throws SQLException, WellKnownBinaryFormatException
     {
         if(geometryColumn == null)
         {
@@ -467,23 +472,32 @@ public class GeoPackageFeatures
         schema.remove(0);   // Remove, "id". We'll later refer to it by name.
         schema.remove(0);   // Remove the geometry column name. We'll also refer to it by name.
 
-        return JdbcUtility.select(this.databaseConnection,
-                                  featureQuery,
-                                  null,
-                                  resultSet -> { final Map<String, Object> attributes = new HashMap<>();
+        try(final Statement statement = this.databaseConnection.createStatement())
+        {
+            try(final ResultSet resultSet = statement.executeQuery(featureQuery))
+            {
+                final List<Feature> results = new ArrayList<>();
 
-                                                 for(final String columnName : schema)
-                                                 {
-                                                     attributes.put(columnName, resultSet.getObject(columnName));
-                                                 }
+                while(resultSet.next())
+                {
+                    final Map<String, Object> attributes = new HashMap<>();
 
-                                                 return new Feature(resultSet.getInt("id"),
-                                                                    this.createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
-                                                                    attributes);
-                                                });
+                    for(final String columnName : schema)
+                    {
+                        attributes.put(columnName, resultSet.getObject(columnName));
+                    }
+
+                    results.add(new Feature(resultSet.getInt("id"),
+                                            this.createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
+                                            attributes));
+                }
+
+                return results;
+            }
+        }
     }
 
-    public void visitFeatures(final GeometryColumn geometryColumn, final Consumer<Feature> featureConsumer) throws SQLException
+    public void visitFeatures(final GeometryColumn geometryColumn, final Consumer<Feature> featureConsumer) throws SQLException, WellKnownBinaryFormatException
     {
         if(geometryColumn == null)
         {
@@ -504,20 +518,26 @@ public class GeoPackageFeatures
         schema.remove(0);   // Remove, "id". We'll later refer to it by name.
         schema.remove(0);   // Remove the geometry column name. We'll also refer to it by name.
 
-        JdbcUtility.forEach(this.databaseConnection,
-                            featureQuery,
-                            null,
-                            resultSet -> { final Map<String, Object> attributes = new HashMap<>();
 
-                                           for(final String columnName : schema)
-                                           {
-                                               attributes.put(columnName, resultSet.getObject(columnName));
-                                           }
+        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(featureQuery))
+        {
+            try(final ResultSet resultSet = preparedStatement.executeQuery())
+            {
+                while(resultSet.next())
+                {
+                    final Map<String, Object> attributes = new HashMap<>();
 
-                                           featureConsumer.accept(new Feature(resultSet.getInt("id"),
-                                                                              this.createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
-                                                                              attributes));
-                                         });
+                    for(final String columnName : schema)
+                    {
+                        attributes.put(columnName, resultSet.getObject(columnName));
+                    }
+
+                    featureConsumer.accept(new Feature(resultSet.getInt("id"),
+                                                       this.createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
+                                                       attributes));
+                }
+            }
+        }
     }
 
     public Feature addFeature(final GeometryColumn      geometryColumn,
@@ -712,7 +732,7 @@ public class GeoPackageFeatures
                                                 });
     }
 
-    private Geometry createGeometry(final byte[] blob)
+    private Geometry createGeometry(final byte[] blob) throws WellKnownBinaryFormatException
     {
         final BinaryHeader binaryHeader = new BinaryHeader(blob);   // This will throw if the array length is too short to contain a header (or if it's not long enough to contain the envelope type specified)
 
@@ -726,7 +746,7 @@ public class GeoPackageFeatures
         return this.createGeometry(ByteBuffer.wrap(blob, headerByteLength, blob.length - headerByteLength));
     }
 
-    private Geometry createGeometry(final ByteBuffer byteBuffer)
+    private Geometry createGeometry(final ByteBuffer byteBuffer) throws WellKnownBinaryFormatException
     {
         final ByteOrder byteOrder = byteBuffer.get() == 0 ? ByteOrder.BIG_ENDIAN
                                                           : ByteOrder.LITTLE_ENDIAN;
@@ -736,11 +756,11 @@ public class GeoPackageFeatures
         // Read 4 bytes as an /unsigned/ int
         final long geometryType = Integer.toUnsignedLong(byteBuffer.getInt());
 
-        if(!this.geometryFactory.containsKey(geometryType))
+        if(!this.geometryFactories.containsKey(geometryType))
         {
             throw new RuntimeException(String.format("Unrecognized geometry type code %d. Recognized geometry types are: %s. Additional types will require a GeoPackage extention to interact with.",
                                                      geometryType,
-                                                     this.geometryFactory
+                                                     this.geometryFactories
                                                          .keySet()
                                                          .stream()
                                                          .map(Object::toString)
@@ -749,27 +769,26 @@ public class GeoPackageFeatures
 
         byteBuffer.rewind();
 
-        return this.geometryFactory
+        return this.geometryFactories
                    .get(geometryType)
-                   .apply(byteBuffer);
+                   .create(byteBuffer);
     }
 
     private static byte[] createBlob(final Geometry geometry, final int spatialReferenceSystemIdentifier) throws IOException
     {
-        try(final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream())
-        {
-            // TODO HEADER USES OPTIONS:
-            // FORCE ENVELOPE
-            // FORCE ENDIANNESS
+        final ByteBuffer byteBuffer = ByteBuffer.allocate(100); // TODO can the up-front
 
-            BinaryHeader.writeBytes(byteArrayOutputStream,
-                                    geometry,
-                                    spatialReferenceSystemIdentifier);
+        // TODO HEADER USES OPTIONS:
+        // FORCE ENVELOPE
+        // FORCE ENDIANNESS
 
-            geometry.writeWellKnownBinary(byteArrayOutputStream);
+        BinaryHeader.writeBytes(byteBuffer,
+                                geometry,
+                                spatialReferenceSystemIdentifier);
 
-            return byteArrayOutputStream.toByteArray();
-        }
+        geometry.writeWellKnownBinary(byteBuffer);
+
+        return byteBuffer.array();
     }
 
     private static void verifyValueRequirements(final GeometryColumn geometryColumn, final Geometry geometry)
@@ -889,5 +908,5 @@ public class GeoPackageFeatures
     private final Connection     databaseConnection;
     private final GeoPackageCore core;
 
-    private final Map<Long, Function<ByteBuffer, Geometry>> geometryFactory = new HashMap<>();
+    private final Map<Long, GeometryFactory> geometryFactories = new HashMap<>();
 }

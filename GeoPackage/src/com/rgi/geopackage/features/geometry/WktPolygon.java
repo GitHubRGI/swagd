@@ -26,13 +26,12 @@ package com.rgi.geopackage.features.geometry;
 import com.rgi.geopackage.features.Envelope;
 import com.rgi.geopackage.features.GeometryType;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -44,75 +43,51 @@ import java.util.List;
  * @author Luke Lambert
  *
  */
-public class Polygon extends CurvePolygon
+public class WktPolygon extends WktCurvePolygon
 {
-    public Polygon(final LinearString    exteriorRing,
-                   final LinearString... interiorRings)
+    public static final long TypeCode = 3;
+
+    public WktPolygon(final LinearRing    exteriorRing,
+                      final LinearRing... interiorRings)
     {
         this(exteriorRing,
              Arrays.asList(interiorRings));
     }
 
-    public Polygon(final LinearString             exteriorRing,
-                   final Collection<LinearString> interiorRings)
+    public WktPolygon(final LinearRing             exteriorRing,
+                      final Collection<LinearRing> interiorRings)
     {
         if(exteriorRing == null)
         {
             throw new IllegalArgumentException("The exterior ring may not be null");
         }
 
+        this.exteriorRing = exteriorRing;
+
         this.interiorRings = interiorRings == null ? Collections.emptyList()
                                                    : new ArrayList<>(interiorRings);
-
-        if(this.interiorRings
-               .stream()
-               .anyMatch(interiorRing -> interiorRing.hasZ() != exteriorRing.hasZ() ||
-                                         interiorRing.hasM() != exteriorRing.hasM()))
-        {
-            throw new IllegalArgumentException("The dimensions (has z, has m) of each interior ring must agree with the polygon's exterior ring");
-        }
-
-        this.exteriorRing = exteriorRing;
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
     public long getTypeCode()
     {
-        return GeometryType.Polygon.getCode();
+        return TypeCode;
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
     public String getGeometryTypeName()
     {
         return GeometryType.Polygon.toString();
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
-    public boolean hasZ()
-    {
-        return this.exteriorRing.hasZ();
-    }
-
-    @Override
-    @SuppressWarnings("RefusedBequest")
-    public boolean hasM()
-    {
-        return this.exteriorRing.hasM();
-    }
-
-    @Override
-    @SuppressWarnings("RefusedBequest")
     public boolean isEmpty()
     {
         return this.exteriorRing.isEmpty();
     }
 
     @Override
-    @SuppressWarnings("RefusedBequest")
-    public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
     {
         throw new UnsupportedOperationException("pending implementaiton");
     }
@@ -123,21 +98,39 @@ public class Polygon extends CurvePolygon
         return this.exteriorRing.createEnvelope();
     }
 
-    public LinearString getExteriorRing()
+    public LinearRing getExteriorRing()
     {
         return this.exteriorRing;
     }
 
-    public List<LinearString> getInteriorRings()
+    public List<LinearRing> getInteriorRings()
     {
         return Collections.unmodifiableList(this.interiorRings);
     }
 
-    public static Polygon readWellKnownBinary(final ByteBuffer byteBuffer)
+    public static WktPolygon readWellKnownBinary(final ByteBuffer byteBuffer)
     {
+        readWellKnownBinaryHeader(byteBuffer, TypeCode);
 
+        final long ringCount = Integer.toUnsignedLong(byteBuffer.getInt());
+
+        if(ringCount == 0)
+        {
+            return new WktPolygon(new LinearRing());    // Empty polygon
+        }
+
+        final LinearRing exteriorRing = LinearRing.readWellKnownBinary(byteBuffer);
+
+        final Collection<LinearRing> interiorRings = new LinkedList<>();
+
+        for(long pointIndex = 0; pointIndex < ringCount-1; ++pointIndex)
+        {
+            interiorRings.add(LinearRing.readWellKnownBinary(byteBuffer));
+        }
+
+        return new WktPolygon(exteriorRing, interiorRings);
     }
 
-    private final LinearString       exteriorRing;
-    private final List<LinearString> interiorRings;
+    private final LinearRing       exteriorRing;
+    private final List<LinearRing> interiorRings;
 }
