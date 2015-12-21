@@ -79,7 +79,10 @@ public class WktPoint extends WktGeometry
     @Override
     public void writeWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        throw new UnsupportedOperationException("pending implementaiton");
+        writeByteOrder(byteBuffer);
+        this.writeTypeCode(byteBuffer);
+
+        this.coordinate.writeWellKnownBinary(byteBuffer);
     }
 
     @Override

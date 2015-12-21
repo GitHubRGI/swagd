@@ -73,7 +73,7 @@ public abstract class Geometry
 
         byteBuffer.order(byteOrder);
 
-        final long geometryType = readGeometryType(byteBuffer);  // Makes sure the geometry codes match
+        final long geometryType = readGeometryType(byteBuffer);
 
         if(geometryType != typeCode)
         {
@@ -93,6 +93,16 @@ public abstract class Geometry
         final byte byteOrder = byteBuffer.order().equals(ByteOrder.BIG_ENDIAN) ? (byte)0 : (byte)1;
 
         byteBuffer.put(byteOrder);
+    }
+
+    protected void writeTypeCode(final ByteBuffer byteBuffer)
+    {
+        if(byteBuffer == null)
+        {
+            throw new IllegalArgumentException("Byte buffer may not be null");
+        }
+
+        byteBuffer.putInt((int)this.getTypeCode()); // This long -> int cast should be safe. The long value is used to represent an unsigned value
     }
 
     protected static long readGeometryType(final ByteBuffer byteBuffer)

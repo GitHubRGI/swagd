@@ -42,7 +42,6 @@ import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
-import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -70,6 +69,7 @@ import java.util.stream.Collectors;
  */
 public class GeoPackageFeatures
 {
+
     /**
      * Constructor
      *
@@ -583,8 +583,8 @@ public class GeoPackageFeatures
 
                                                                          try
                                                                          {
-                                                                             final byte[] blob = createBlob(geometry, geometryColumn.getSpatialReferenceSystemIdentifier());
-                                                                             preparedStatement.setBlob(parameterIndex++, new SerialBlob(blob));
+                                                                             final byte[] bytes = createBlob(geometry, geometryColumn.getSpatialReferenceSystemIdentifier());
+                                                                             preparedStatement.setBytes(parameterIndex++, bytes);
                                                                          }
                                                                          catch(final IOException e)
                                                                          {
@@ -671,6 +671,27 @@ public class GeoPackageFeatures
                                                            });
 
         this.databaseConnection.commit();
+    }
+
+    public void registerGeometryFactory(final long            geometryTypeCode,
+                                        final GeometryFactory geometryFactory)
+    {
+        if(geometryTypeCode > maxUnsignedIntValue)
+        {
+            throw new IllegalArgumentException("Type code must be between 0 and 2^32 - 1 (range of a 32 bit unsigned integer)");
+        }
+
+        if(this.geometryFactories.containsKey(geometryTypeCode))    // TODO do we really want to prohibit this?
+        {
+            throw new IllegalArgumentException("A geometry factory already exists for this geometry type code");
+        }
+
+        if(geometryFactory == null)
+        {
+            throw new IllegalArgumentException("Geometry factory may not be null");
+        }
+
+        this.geometryFactories.put(geometryTypeCode, geometryFactory);
     }
 
     /**
@@ -785,6 +806,8 @@ public class GeoPackageFeatures
         BinaryHeader.writeBytes(byteBuffer,
                                 geometry,
                                 spatialReferenceSystemIdentifier);
+
+        byteBuffer.order(ByteOrder.BIG_ENDIAN); // TODO make this an option (?)
 
         geometry.writeWellKnownBinary(byteBuffer);
 
@@ -909,4 +932,6 @@ public class GeoPackageFeatures
     private final GeoPackageCore core;
 
     private final Map<Long, GeometryFactory> geometryFactories = new HashMap<>();
+
+    private static final long maxUnsignedIntValue = 4294967295L; // 2^31 - 1
 }
