@@ -23,14 +23,6 @@
 
 package com.rgi.geopackage.tiles;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import com.rgi.common.BoundingBox;
 import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
@@ -43,6 +35,14 @@ import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * @author Luke Lambert
@@ -130,7 +130,10 @@ public class GeoPackageTiles
                                       TileSet.TileContentType,
                                       identifier,
                                       description,
-                                      boundingBox,
+                                      boundingBox.getMinX(),
+                                      boundingBox.getMaxX(),
+                                      boundingBox.getMinY(),
+                                      boundingBox.getMaxY(),
                                       spatialReferenceSystem.getIdentifier()))
             {
                 return existingContent;
@@ -149,7 +152,7 @@ public class GeoPackageTiles
             this.createTilesTablesNoCommit(); // Create the tile metadata tables
 
             // Create the tile set table
-            JdbcUtility.update(this.databaseConnection, this.getTileSetCreationSql(tableName));
+            JdbcUtility.update(this.databaseConnection, GeoPackageTiles.getTileSetCreationSql(tableName));
 
             // Add tile set to the content table
             this.core.addContent(tableName,
@@ -228,7 +231,24 @@ public class GeoPackageTiles
     public Collection<TileSet> getTileSets(final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
     {
         return this.core.getContent(TileSet.TileContentType,
-                                    (tableName, dataType, identifier, description, lastChange, boundingBox, spatialReferenceSystem) -> new TileSet(tableName, identifier, description, lastChange, boundingBox, spatialReferenceSystem),
+                                    (tableName,
+                                     dataType,
+                                     identifier,
+                                     description,
+                                     lastChange,
+                                     minimumX,
+                                     maximumX,
+                                     minimumY,
+                                     maximumY,
+                                     spatialReferenceSystem) -> new TileSet(tableName,
+                                                                            identifier,
+                                                                            description,
+                                                                            lastChange,
+                                                                            minimumX,
+                                                                            maximumX,
+                                                                            minimumY,
+                                                                            maximumY,
+                                                                            spatialReferenceSystem),
                                     matchingSpatialReferenceSystem);
     }
 
@@ -523,13 +543,13 @@ public class GeoPackageTiles
      *
      * @param tileSet
      *            Handle to the tile set that the requested tiles should belong
-     * @return Returns a {@link Stream} of {@link TileCoordinate}s
+     * @return Returns a {@link Stream} of {@link GeoPackageTiles.TileCoordinate}s
      *         representing every tile that the specific tile set contains.
      * @throws SQLException
      *             when SQLException thrown by automatic close() invocation on
      *             preparedStatement or if other SQLExceptions occur
      */
-    public Stream<TileCoordinate> getTiles(final TileSet tileSet) throws SQLException
+    public Stream<GeoPackageTiles.TileCoordinate> getTiles(final TileSet tileSet) throws SQLException
     {
         if(tileSet == null)
         {
@@ -545,7 +565,7 @@ public class GeoPackageTiles
         return JdbcUtility.select(this.databaseConnection,
                                   tileQuery,
                                   null,
-                                  resultSet -> new TileCoordinate(resultSet.getInt(2),
+                                  resultSet -> new GeoPackageTiles.TileCoordinate(resultSet.getInt(2),
                                                                   resultSet.getInt(3),
                                                                   resultSet.getInt(1)))
                           .stream();
@@ -726,7 +746,24 @@ public class GeoPackageTiles
     public TileSet getTileSet(final String tileSetTableName) throws SQLException
     {
         return this.core.getContent(tileSetTableName,
-                                    (tableName, dataType, identifier, description, lastChange, boundingBox, spatialReferenceSystem) -> new TileSet(tableName, identifier, description, lastChange, boundingBox, spatialReferenceSystem));
+                                    (tableName,
+                                     dataType,
+                                     identifier,
+                                     description,
+                                     lastChange,
+                                     minimumX,
+                                     maximumX,
+                                     minimumY,
+                                     maximumY,
+                                     spatialReferenceSystem) -> new TileSet(tableName,
+                                                                            identifier,
+                                                                            description,
+                                                                            lastChange,
+                                                                            minimumX,
+                                                                            maximumX,
+                                                                            minimumY,
+                                                                            maximumY,
+                                                                            spatialReferenceSystem));
     }
 
     /**
@@ -945,7 +982,7 @@ public class GeoPackageTiles
         final double normalizedSrsTileCoordinateX = Math.abs(crsCoordinate.getX() - boundsCorner.getX());
         final double normalizedSrsTileCoordinateY = Math.abs(crsCoordinate.getY() - boundsCorner.getY());
 
-        final int divisor = 1000000000; // Round to integer extent
+        final double divisor = 1000000000.0; // Round to integer extent
 
         final int tileX = (int)Math.floor(Math.round((normalizedSrsTileCoordinateX / tileWidthInSrs)  * divisor) / divisor);
         final int tileY = (int)Math.floor(Math.round((normalizedSrsTileCoordinateY / tileHeightInSrs) * divisor) / divisor);
@@ -1037,22 +1074,22 @@ public class GeoPackageTiles
         // Create the tile matrix set table or view
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixSetTableName))
         {
-            JdbcUtility.update(this.databaseConnection, this.getTileMatrixSetCreationSql());
+            JdbcUtility.update(this.databaseConnection, GeoPackageTiles.getTileMatrixSetCreationSql());
         }
 
         // Create the tile matrix table or view
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixTableName))
         {
-            JdbcUtility.update(this.databaseConnection, this.getTileMatrixCreationSql());
+            JdbcUtility.update(this.databaseConnection, GeoPackageTiles.getTileMatrixCreationSql());
         }
     }
 
     @SuppressWarnings("static-method")
-    protected String getTileMatrixSetCreationSql()
+    protected static String getTileMatrixSetCreationSql()
     {
         // http://www.geopackage.org/spec/#gpkg_tile_matrix_set_sql
         // http://www.geopackage.org/spec/#_tile_matrix_set
-        return "CREATE TABLE " + GeoPackageTiles.MatrixSetTableName  + "\n" +
+        return "CREATE TABLE " + GeoPackageTiles.MatrixSetTableName  + '\n' +
                "(table_name TEXT    NOT NULL PRIMARY KEY, -- Tile Pyramid User Data Table Name\n"                                       +
                " srs_id     INTEGER NOT NULL,             -- Spatial Reference System ID: gpkg_spatial_ref_sys.srs_id\n"                +
                " min_x      DOUBLE  NOT NULL,             -- Bounding box minimum easting or longitude for all content in table_name\n" +
@@ -1064,11 +1101,11 @@ public class GeoPackageTiles
     }
 
     @SuppressWarnings("static-method")
-    protected String getTileMatrixCreationSql()
+    protected static String getTileMatrixCreationSql()
     {
         // http://www.geopackage.org/spec/#tile_matrix
         // http://www.geopackage.org/spec/#gpkg_tile_matrix_sql
-        return "CREATE TABLE " + GeoPackageTiles.MatrixTableName + "\n" +
+        return "CREATE TABLE " + GeoPackageTiles.MatrixTableName + '\n' +
                 "(table_name    TEXT    NOT NULL, -- Tile Pyramid User Data Table Name\n"                            +
                 " zoom_level    INTEGER NOT NULL, -- 0 <= zoom_level <= max_level for table_name\n"                  +
                 " matrix_width  INTEGER NOT NULL, -- Number of columns (>= 1) in tile matrix at this zoom level\n"   +
@@ -1082,11 +1119,11 @@ public class GeoPackageTiles
     }
 
     @SuppressWarnings("static-method")
-    protected String getTileSetCreationSql(final String tileTableName)
+    protected static String getTileSetCreationSql(final String tileTableName)
     {
         // http://www.geopackage.org/spec/#tiles_user_tables
         // http://www.geopackage.org/spec/#_sample_tile_pyramid_informative
-        return "CREATE TABLE " + tileTableName + "\n" +
+        return "CREATE TABLE " + tileTableName + '\n' +
                "(id          INTEGER PRIMARY KEY AUTOINCREMENT, -- Autoincrement primary key\n"                                                                            +
                " zoom_level  INTEGER NOT NULL,                  -- min(zoom_level) <= zoom_level <= max(zoom_level) for t_table_name\n"                                    +
                " tile_column INTEGER NOT NULL,                  -- 0 to tile_matrix matrix_width - 1\n"                                                                    +
@@ -1106,7 +1143,7 @@ public class GeoPackageTiles
      */
     private static BoundingBox roundBounds(final BoundingBox bounds, final int precision)
     {
-        final double divisor = Math.pow(10, precision);
+        final double divisor = StrictMath.pow(10, precision);
 
         return new BoundingBox(Math.floor(bounds.getMinX()*divisor) / divisor,
                                Math.floor(bounds.getMinY()*divisor) / divisor,
@@ -1116,7 +1153,7 @@ public class GeoPackageTiles
 
     private static boolean compare(final double left, final double right, final int decimalPlaces)
     {
-        final double divisor = Math.pow(10.0, decimalPlaces);
+        final double divisor = StrictMath.pow(10.0, decimalPlaces);
 
         return Math.abs(left - right) < (1/divisor);
     }
@@ -1128,26 +1165,26 @@ public class GeoPackageTiles
      * The TileOrigin for GeoPackage's is UpperLeft
      * http://www.geopackage.org/spec/#clause_tile_matrix_table_data_values
      */
-    public final static TileOrigin Origin = TileOrigin.UpperLeft;   // http://www.geopackage.org/spec/#clause_tile_matrix_table_data_values
+    public static final TileOrigin Origin = TileOrigin.UpperLeft;   // http://www.geopackage.org/spec/#clause_tile_matrix_table_data_values
 
     /**
      * The String name "gpkg_tile_matrix_set" of the database Tiles table
      * containing the Bounding Box information
      * http://www.geopackage.org/spec/#_tile_matrix_set
      */
-    public final static String MatrixSetTableName = "gpkg_tile_matrix_set";
+    public static final String MatrixSetTableName = "gpkg_tile_matrix_set";
     /**
      * The String name "gpkg_tile_matrix" of the database Tiles table containing
      * the pixel x and y values, TileMatrixDimensions at a particular zoom level
      * http://www.geopackage.org/spec/#tile_matrix
      */
-    public final static String MatrixTableName = "gpkg_tile_matrix";
+    public static final String MatrixTableName = "gpkg_tile_matrix";
 
     /**
      * Tile coordinate
      *
      */
-    public class TileCoordinate
+    public static final class TileCoordinate
     {
         /**
          * @param column

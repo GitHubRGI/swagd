@@ -2401,20 +2401,21 @@ public class GeoPackageTileStoreTest
     private static Set<TileMatrixDimensions> addTileMatricesToGpkg(final Set<Integer> zoomLevels, final TileSet tileSet, final GeoPackage gpkg, final TileScheme tileScheme, final int tileWidth, final int tileHeight) throws SQLException
     {
         final Set<TileMatrixDimensions> tileMatrixDimensionsExpected = new HashSet<>();
-        final BoundingBox bBox = tileSet.getBoundingBox();
+
         for(final int zoomLevel : zoomLevels)
         {
             final TileMatrixDimensions dimensions = tileScheme.dimensions(zoomLevel);
 
             tileMatrixDimensionsExpected.add(dimensions);
 
-            final double pixelXSize = bBox.getWidth()  / dimensions.getWidth()  / tileWidth;
-            final double pixelYSize = bBox.getHeight() / dimensions.getHeight() / tileHeight;
+            final double pixelXSize = (tileSet.getMaximumX() - tileSet.getMinimumX()) / dimensions.getWidth()  / tileWidth;
+            final double pixelYSize = (tileSet.getMaximumY() - tileSet.getMinimumY()) / dimensions.getHeight() / tileHeight;
 
             gpkg.tiles().addTileMatrix(tileSet, zoomLevel, dimensions.getWidth(), dimensions.getHeight(), tileWidth, tileHeight, pixelXSize, pixelYSize);
         }
         return tileMatrixDimensionsExpected;
     }
+
     private static TileMatrix createTileSetAndTileMatrix(final GeoPackage gpkg, final BoundingBox bBox, final int zoomLevel, final int matrixWidth, final int matrixHeight) throws SQLException
     {
         return createTileSetAndTileMatrix(gpkg, gpkg.core().getSpatialReferenceSystem("EPSG", 4326), bBox, zoomLevel, matrixWidth, matrixHeight, 256, 256, "tableName");

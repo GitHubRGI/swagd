@@ -1244,7 +1244,7 @@
       <option name="m_ignoreInEquals" value="true" />
       <option name="ignoreInAssert" value="false" />
     </inspection_tool>
-    <inspection_tool class="ThrowCaughtLocally" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="ThrowCaughtLocally" enabled="false" level="ERROR" enabled_by_default="false">
       <option name="ignoreRethrownExceptions" value="true" />
     </inspection_tool>
     <inspection_tool class="ThrowFromFinallyBlock" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -1407,7 +1407,7 @@
       <option name="ignoreClassesWithOnlyMain" value="false" />
     </inspection_tool>
     <inspection_tool class="VarargParameter" enabled="false" level="ERROR" enabled_by_default="false" />
-    <inspection_tool class="VariableNotUsedInsideIf" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="VariableNotUsedInsideIf" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="VolatileArrayField" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="VolatileLongOrDoubleField" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="WaitCalledOnCondition" enabled="true" level="ERROR" enabled_by_default="true" />

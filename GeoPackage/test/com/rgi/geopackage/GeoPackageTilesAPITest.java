@@ -132,8 +132,8 @@ public class GeoPackageTilesAPITest
                                            matrixHeight,
                                            tileWidth,
                                            tileHeight,
-                                           (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                           (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                           ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                           ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
             }
             //Test that the conversion from tileCoordinate-> CrsCoordinate -> tileCoordinate is as expected(original tileCoordinate)
             for(final int zoomLevel: scheme.getZoomLevels())
@@ -195,8 +195,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        tileWidth,
                                        tileHeight,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
         }
 
         final String query = "SELECT table_name FROM gpkg_tile_matrix_set WHERE table_name = 'pyramid';";
@@ -392,8 +392,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        tileWidth,
                                        tileHeight,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
             //open a file with tiles inside and add more tiles
             try(GeoPackage gpkgWithTiles = new GeoPackage(testFile, OpenMode.Open))
@@ -405,8 +405,8 @@ public class GeoPackageTilesAPITest
                                                                        new BoundingBox(0.0, 0.0, 70.0, 50.0),
                                                                        gpkgWithTiles.core().getSpatialReferenceSystem("EPSG", 4326));
 
-                final double pixelXSize =  (tileSetEntry2.getBoundingBox().getWidth()/matrixWidth)/tileWidth;
-                final double pixelYSize =  (tileSetEntry2.getBoundingBox().getHeight()/matrixHeight)/tileHeight;
+                final double pixelXSize = ((tileSetEntry2.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth;
+                final double pixelYSize = ((tileSetEntry2.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight;
 
                 gpkgWithTiles.tiles().addTileMatrix(tileSetEntry2,
                                                     0,
@@ -531,8 +531,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        tileWidth,
                                        tileHeight,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
             final int matrixHeight2 = 4;
             final int matrixWidth2 = 4;
             final int tileHeight2 = 256;
@@ -544,19 +544,22 @@ public class GeoPackageTilesAPITest
                                        matrixHeight2,
                                        tileWidth2,
                                        tileHeight2,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX()) /matrixWidth2)/tileWidth2,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight2)/tileHeight2);
 
             for(final TileSet gpkgEntry : gpkg.tiles().getTileSets())
             {
                 Assert.assertTrue("The tile entry's information in the GeoPackage does not match what was originally given to a GeoPackage",
-                           tileSetContnentEntries.stream()
-                                                 .anyMatch(tileEntry -> tileEntry.getBoundingBox().equals(gpkgEntry.getBoundingBox()) &&
-                                                                        tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
-                                                                        tileEntry.getDescription().equals(gpkgEntry.getDescription()) &&
-                                                                        tileEntry.getIdentifier() .equals(gpkgEntry.getIdentifier())  &&
-                                                                        tileEntry.getTableName()  .equals(gpkgEntry.getTableName())   &&
-                                                                        tileEntry.getSpatialReferenceSystemIdentifier().equals(gpkgEntry.getSpatialReferenceSystemIdentifier())));
+                                  tileSetContnentEntries.stream()
+                                                        .anyMatch(tileEntry -> tileEntry.getMinimumX()   .equals(gpkgEntry.getMinimumX())    &&
+                                                                               tileEntry.getMaximumX()   .equals(gpkgEntry.getMaximumX())    &&
+                                                                               tileEntry.getMinimumY()   .equals(gpkgEntry.getMinimumY())    &&
+                                                                               tileEntry.getMaximumY()   .equals(gpkgEntry.getMaximumY())    &&
+                                                                               tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
+                                                                               tileEntry.getDescription().equals(gpkgEntry.getDescription()) &&
+                                                                               tileEntry.getIdentifier() .equals(gpkgEntry.getIdentifier())  &&
+                                                                               tileEntry.getTableName()  .equals(gpkgEntry.getTableName())   &&
+                                                                               tileEntry.getSpatialReferenceSystemIdentifier().equals(gpkgEntry.getSpatialReferenceSystemIdentifier())));
             }
         }
         finally
@@ -611,12 +614,15 @@ public class GeoPackageTilesAPITest
                                                           srs);
 
             Assert.assertTrue("The GeoPackage did not return the same tile set when trying to add the same tile set twice.",
-                       sameTileSet.equals(tileSet.getTableName(),
-                                             tileSet.getDataType(),
-                                             tileSet.getIdentifier(),
-                                             tileSet.getDescription(),
-                                             tileSet.getBoundingBox(),
-                                             tileSet.getSpatialReferenceSystemIdentifier()));
+                              sameTileSet.equals(tileSet.getTableName(),
+                                                 tileSet.getDataType(),
+                                                 tileSet.getIdentifier(),
+                                                 tileSet.getDescription(),
+                                                 tileSet.getMinimumX(),
+                                                 tileSet.getMaximumX(),
+                                                 tileSet.getMinimumY(),
+                                                 tileSet.getMaximumY(),
+                                                 tileSet.getSpatialReferenceSystemIdentifier()));
         }
         finally
         {
@@ -930,8 +936,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        tileWidth,
                                        tileHeight,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
 
             final int matrixHeight2 = 4;
@@ -943,8 +949,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight2,
                                        tileWidth,
                                        tileHeight,
-                                       (tileSet2.getBoundingBox().getWidth()/matrixWidth2)/tileWidth,
-                                       (tileSet2.getBoundingBox().getHeight()/matrixHeight2)/tileHeight);
+                                       ((tileSet2.getMaximumX() - tileSet2.getMinimumX())/matrixWidth2)/tileWidth,
+                                       ((tileSet2.getMaximumY() - tileSet2.getMaximumY())/matrixHeight2)/tileHeight);
 
             final Collection<TileSet> tileSetsFromGpkg = gpkg.tiles().getTileSets();
 
@@ -954,7 +960,10 @@ public class GeoPackageTilesAPITest
             {
                 Assert.assertTrue("The tile entry's information in the GeoPackage does not match what was originally given to a GeoPackage",
                            tileSetContnentEntries.stream()
-                                                 .anyMatch(tileEntry -> tileEntry.getBoundingBox().equals(gpkgEntry.getBoundingBox()) &&
+                                                 .anyMatch(tileEntry -> tileEntry.getMinimumX()   .equals(gpkgEntry.getMinimumX())    &&
+                                                                        tileEntry.getMaximumX()   .equals(gpkgEntry.getMaximumX())    &&
+                                                                        tileEntry.getMinimumY()   .equals(gpkgEntry.getMinimumY())    &&
+                                                                        tileEntry.getMaximumY()   .equals(gpkgEntry.getMaximumY())    &&
                                                                         tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
                                                                         tileEntry.getDescription().equals(gpkgEntry.getDescription()) &&
                                                                         tileEntry.getIdentifier() .equals(gpkgEntry.getIdentifier())  &&
@@ -1059,13 +1068,16 @@ public class GeoPackageTilesAPITest
             final TileSet returnedTileSet = gpkg.tiles().getTileSet("ttable");
 
             Assert.assertTrue("GeoPackage did not return the same values given to tile set",
-                       tileSet.getBoundingBox().equals(returnedTileSet.getBoundingBox()) &&
-                       tileSet.getDescription().equals(returnedTileSet.getDescription()) &&
-                       tileSet.getDataType()   .equals(returnedTileSet.getDataType())    &&
-                       tileSet.getIdentifier() .equals(returnedTileSet.getIdentifier())  &&
-                       tileSet.getLastChange() .equals(returnedTileSet.getLastChange())  &&
-                       tileSet.getTableName()  .equals(returnedTileSet.getTableName())   &&
-                       tileSet.getSpatialReferenceSystemIdentifier().equals(returnedTileSet.getSpatialReferenceSystemIdentifier()));
+                              tileSet.getMinimumX()   .equals(returnedTileSet.getMinimumX())    &&
+                              tileSet.getMaximumX()   .equals(returnedTileSet.getMaximumX())    &&
+                              tileSet.getMinimumY()   .equals(returnedTileSet.getMinimumY())    &&
+                              tileSet.getMaximumY()   .equals(returnedTileSet.getMaximumY())    &&
+                              tileSet.getDescription().equals(returnedTileSet.getDescription()) &&
+                              tileSet.getDataType()   .equals(returnedTileSet.getDataType())    &&
+                              tileSet.getIdentifier() .equals(returnedTileSet.getIdentifier())  &&
+                              tileSet.getLastChange() .equals(returnedTileSet.getLastChange())  &&
+                              tileSet.getTableName()  .equals(returnedTileSet.getTableName())   &&
+                              tileSet.getSpatialReferenceSystemIdentifier().equals(returnedTileSet.getSpatialReferenceSystemIdentifier()));
         }
         finally
         {
@@ -1346,8 +1358,8 @@ public class GeoPackageTilesAPITest
             final int matrixHeight = 2;
             final int tileWidth = 256;
             final int tileHeight = 256;
-            final double pixelXSize = (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth;
-            final double pixelYSize = (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight;
+            final double pixelXSize = ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth;
+            final double pixelYSize = ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight;
 
             final TileMatrix tileMatrix = gpkg.tiles().addTileMatrix(tileSet,
                                                                zoomLevel,
@@ -1419,8 +1431,8 @@ public class GeoPackageTilesAPITest
                                                                       matrixHeight,
                                                                       tileWidth,
                                                                       tileHeight,
-                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                                                      ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                                                      ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
             gpkg.tiles().addTile(tileSet, tileMatrix, 0, 0, new byte[] {1, 2, 3, 4});
         }
@@ -1491,8 +1503,8 @@ public class GeoPackageTilesAPITest
                                                                     matrixHeight,
                                                                     tileWidth,
                                                                     tileHeight,
-                                                                    (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                                                    (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                                                    ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                                                    ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
             final int column = 1;
             final int row    = 0;
@@ -1689,8 +1701,8 @@ public class GeoPackageTilesAPITest
                                                                       matrixHeight,
                                                                       tileWidth,
                                                                       tileHeight,
-                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                                                      ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                                                      ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
             final int matrixHeight2 = 4;
             final int matrixWidth2 = 8;
@@ -1703,8 +1715,8 @@ public class GeoPackageTilesAPITest
                                                                       matrixHeight2,
                                                                       tileWidth2,
                                                                       tileHeight2,
-                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
-                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
+                                                                      ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth2)/tileWidth2,
+                                                                      ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight2)/tileHeight2);
 
             final Coordinate<Integer> tile1 = new Coordinate<>(3, 0);
             final Coordinate<Integer> tile2 = new Coordinate<>(7, 0);
@@ -1800,8 +1812,8 @@ public class GeoPackageTilesAPITest
                                                                      matrixHeight,
                                                                      tileWidth,
                                                                      tileHeight,
-                                                                     (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                                                     (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                                                     ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                                                     ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
             //Tile coords
 
@@ -1862,8 +1874,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        tileWidth,
                                        tileHeight,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
             Assert.assertTrue("GeoPackage should have returned null for a missing tile.",
                        gpkg.tiles().getTile(tileSet, 0, 0, 0) == null);
@@ -1980,8 +1992,8 @@ public class GeoPackageTilesAPITest
                                       matrixHeight,
                                       tileWidth,
                                       tileHeight,
-                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                      ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                      ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
            gpkg.tiles().addTileMatrix(tileSet,
                                       12,
@@ -1989,8 +2001,8 @@ public class GeoPackageTilesAPITest
                                       matrixHeight,
                                       tileWidth,
                                       tileHeight,
-                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                      ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                      ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
            final Set<Integer> zooms  = gpkg.tiles().getTileZoomLevels(tileSet);
 
@@ -2109,8 +2121,8 @@ public class GeoPackageTilesAPITest
                                                                     matrixHeight,
                                                                     tileWidth,
                                                                     tileHeight,
-                                                                    (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                                                    (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                                                    ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                                                    ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
             final int matrixHeight2 = 4;
             final int matrixWidth2 = 4;
@@ -2121,8 +2133,8 @@ public class GeoPackageTilesAPITest
                                                                       matrixHeight2,
                                                                       tileWidth,
                                                                       tileHeight,
-                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth,
-                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight);
+                                                                      ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth2)/tileWidth,
+                                                                      ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight2)/tileHeight);
             //add two tiles
             gpkg.tiles().addTile(tileSet, tileMatrix2, 0, 0, new byte[] {1, 2, 3, 4});
             gpkg.tiles().addTile(tileSet, tileMatrix1, 0, 0, new byte[] {1, 2, 3, 4});
@@ -2211,8 +2223,8 @@ public class GeoPackageTilesAPITest
                                                                      matrixHeight,
                                                                      tileWidth,
                                                                      tileHeight,
-                                                                     (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                                                     (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                                                     ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                                                     ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
             final int matrixHeight2 = 4;
             final int matrixWidth2 = 8;
@@ -2225,8 +2237,8 @@ public class GeoPackageTilesAPITest
                                                                       matrixHeight2,
                                                                       tileWidth2,
                                                                       tileHeight2,
-                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
-                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
+                                                                      ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth2)/tileWidth2,
+                                                                      ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight2)/tileHeight2);
 
             gpkg.tiles().addTile(tileSet, tileMatrix, 0, 0, GeoPackageTilesAPITest.createImageBytes());
             gpkg.tiles().addTile(tileSet, tileMatrix, 1, 0, GeoPackageTilesAPITest.createImageBytes());
@@ -2589,8 +2601,8 @@ public class GeoPackageTilesAPITest
                                                                       matrixHeight,
                                                                       tileWidth,
                                                                       tileHeight,
-                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                                                      ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                                                      ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
             final TileMatrix tileMatrix2 = gpkg.tiles().addTileMatrix(tileSet,
                                                                       0,
@@ -2598,8 +2610,8 @@ public class GeoPackageTilesAPITest
                                                                       matrixHeight,
                                                                       tileWidth,
                                                                       tileHeight,
-                                                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                                                      ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                                                      ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
            Assert.assertTrue("Expected the GeoPackage to return the existing Tile Matrix.",tileMatrix1.equals(tileMatrix2.getTableName(),
                                                                                                               tileMatrix2.getZoomLevel(),
@@ -2727,8 +2739,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        tileWidth,
                                        tileHeight,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
         }
         //test if information added is accurate
         final int matrixWidth = 4;
@@ -2798,7 +2810,7 @@ public class GeoPackageTilesAPITest
             final int tileWidth = 256;
             final int tileHeight = 512;
             final double pixelXSize = 500.23123;//invalid pixelx size
-            final double pixelYSize = tileSet.getBoundingBox().getHeight()/matrixHeight/tileHeight;
+            final double pixelYSize = (tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight/tileHeight;
             gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
 
             fail("Expected GeoPackageTiles to throw an IllegalArgtumentException when pixelXSize != boundingBoxHeight/matrixHeight/tileHeight.");
@@ -2846,7 +2858,7 @@ public class GeoPackageTilesAPITest
             final int matrixHeight = 11;
             final int tileWidth = 256;
             final int tileHeight = 512;
-            final double pixelXSize = tileSet.getBoundingBox().getWidth()/matrixWidth/tileWidth;
+            final double pixelXSize = (tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth/tileWidth;
             final double pixelYSize = 500.23123;//invalid pixel y size
             gpkg.tiles().addTileMatrix(tileSet, zoomLevel, matrixWidth, matrixHeight, tileWidth, tileHeight, pixelXSize, pixelYSize);
 
@@ -2936,8 +2948,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        tileWidth,
                                        tileHeight,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/tileWidth,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/tileHeight);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
 
             final int matrixHeight2 = 1;
             final int matrixWidth2 = 3;
@@ -2950,8 +2962,8 @@ public class GeoPackageTilesAPITest
                                                                              matrixHeight2,
                                                                              tileWidth2,
                                                                              tileHeight2,
-                                                                             (tileSet.getBoundingBox().getWidth()/matrixWidth2)/tileWidth2,
-                                                                             (tileSet.getBoundingBox().getHeight()/matrixHeight2)/tileHeight2);
+                                                                             ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth2)/tileWidth2,
+                                                                             ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight2)/tileHeight2);
 
             final TileMatrix returnedTileMatrix = gpkg.tiles().getTileMatrix(tileSet, 0);
 
@@ -3166,8 +3178,8 @@ public class GeoPackageTilesAPITest
                        matrixHeight,
                        pixelXSize,
                        pixelYSize,
-                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
@@ -3228,8 +3240,8 @@ public class GeoPackageTilesAPITest
                                       matrixHeight,
                                       pixelXSize,
                                       pixelYSize,
-                                      (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                      (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                      ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                      ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
@@ -3290,8 +3302,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth() /matrixWidth )/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX()) /matrixWidth )/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
@@ -3352,8 +3364,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
@@ -3425,8 +3437,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth() /matrixWidth )/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX()) /matrixWidth )/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord = gpkg.tiles().crsToTileCoordinate(tileSet, crsMercatorCoord, CrsProfileFactory.create(globalMercator).getPrecision(), zoomLevel);
 
@@ -3501,8 +3513,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord = gpkg.tiles().crsToTileCoordinate(tileSet, crsMercatorCoord, CrsProfileFactory.create(globalMercator).getPrecision(), zoomLevel);
 
@@ -3577,8 +3589,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord = gpkg.tiles().crsToTileCoordinate(tileSet, crsMercatorCoord, CrsProfileFactory.create(globalMercator).getPrecision(), zoomLevel);
 
@@ -3652,8 +3664,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord = gpkg.tiles().crsToTileCoordinate(tileSet, crsMercatorCoord, CrsProfileFactory.create(globalMercator).getPrecision(), zoomLevel);
 
@@ -3718,8 +3730,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight1,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth() /matrixWidth1 )/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight1)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX()) /matrixWidth1 )/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight1)/pixelYSize);
 
             final int matrixWidth2  = 4;
             final int matrixHeight2 = 6;
@@ -3731,8 +3743,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight2,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth() /matrixWidth2 )/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight2)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX()) /matrixWidth2 )/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight2)/pixelYSize);
             final int matrixWidth3  = 8;
             final int matrixHeight3 = 12;
             final int zoomLevel3 = 4;
@@ -3742,8 +3754,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight3,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth() /matrixWidth3 )/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight3)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX()) /matrixWidth3 )/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight3)/pixelYSize);
 
 
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
@@ -3805,8 +3817,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
@@ -3867,8 +3879,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
@@ -3928,8 +3940,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
@@ -3991,8 +4003,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
@@ -4052,8 +4064,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
@@ -4113,8 +4125,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
@@ -4174,8 +4186,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             final Coordinate<Integer> relativeCoord  = gpkg.tiles().crsToTileCoordinate(tileSet, coordinate, CrsProfileFactory.create("EPSG", 4326).getPrecision(), zoomLevel);
 
@@ -4318,8 +4330,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 
@@ -4378,8 +4390,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
         }
@@ -4435,8 +4447,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
         }
@@ -4492,8 +4504,8 @@ public class GeoPackageTilesAPITest
                                        matrixHeight,
                                        pixelXSize,
                                        pixelYSize,
-                                       (tileSet.getBoundingBox().getWidth()/matrixWidth)/pixelXSize,
-                                       (tileSet.getBoundingBox().getHeight()/matrixHeight)/pixelYSize);
+                                       ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/pixelXSize,
+                                       ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/pixelYSize);
 
             gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
 

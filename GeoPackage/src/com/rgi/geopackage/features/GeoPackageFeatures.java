@@ -246,7 +246,10 @@ public class GeoPackageFeatures
                                       FeatureSet.FeatureContentType,
                                       identifier,
                                       description,
-                                      boundingBox,
+                                      boundingBox.getMinX(),
+                                      boundingBox.getMaxX(),
+                                      boundingBox.getMinY(),
+                                      boundingBox.getMaxY(),
                                       spatialReferenceSystem.getIdentifier()))
             {
                 return existingContent;
@@ -310,13 +313,19 @@ public class GeoPackageFeatures
                                      identifier,
                                      description,
                                      lastChange,
-                                     boundingBox,
-                                     spatialReferenceSystemIdentifier) -> new FeatureSet(tableName,
-                                                                                         identifier,
-                                                                                         description,
-                                                                                         lastChange,
-                                                                                         boundingBox,
-                                                                                         spatialReferenceSystemIdentifier));
+                                     minimumX,
+                                     maximumX,
+                                     minimumY,
+                                     maximumY,
+                                     spatialReferenceSystem) -> new FeatureSet(tableName,
+                                                                               identifier,
+                                                                               description,
+                                                                               lastChange,
+                                                                               minimumX,
+                                                                               maximumX,
+                                                                               minimumY,
+                                                                               maximumY,
+                                                                               spatialReferenceSystem));
     }
 
     /**
@@ -353,13 +362,19 @@ public class GeoPackageFeatures
                                      identifier,
                                      description,
                                      lastChange,
-                                     boundingBox,
-                                     spatialReferenceSystem) -> new FeatureSet(tableName,
-                                                                               identifier,
-                                                                               description,
-                                                                               lastChange,
-                                                                               boundingBox,
-                                                                               spatialReferenceSystem),
+                                     minimumX,
+                                     maximumX,
+                                     minimumY,
+                                     maximumY,
+                                     spatialReferenceSystemIdentifier) -> new FeatureSet(tableName,
+                                                                                         identifier,
+                                                                                         description,
+                                                                                         lastChange,
+                                                                                         minimumX,
+                                                                                         maximumX,
+                                                                                         minimumY,
+                                                                                         maximumY,
+                                                                                         spatialReferenceSystemIdentifier),
                                     matchingSpatialReferenceSystem);
     }
 
@@ -854,10 +869,17 @@ public class GeoPackageFeatures
      */
     private List<String> getSchema(final GeometryColumn geometryColumn) throws SQLException
     {
-        final List<String> columns = DatabaseUtility.getColumnNames(this.databaseConnection, geometryColumn.getTableName());
+        // In SQL (and by extension, SQLite) identifiers are case insensitive.
+        // It's possible that a geometry column name could be specified in one
+        // case and the table created in another case. We'll do everything in
+        // uppercase to avoid failing to find either column.
+        final List<String> columns = DatabaseUtility.getColumnNames(this.databaseConnection, geometryColumn.getTableName())
+                                                    .stream()
+                                                    .map(String::toUpperCase)
+                                                    .collect(Collectors.toList());
 
-        Collections.swap(columns, 0, columns.indexOf("id"));                           // List "id" first
-        Collections.swap(columns, 1, columns.indexOf(geometryColumn.getColumnName())); // List geometry column second
+        Collections.swap(columns, 0, columns.indexOf("id".toUpperCase()));                           // List "id" first
+        Collections.swap(columns, 1, columns.indexOf(geometryColumn.getColumnName().toUpperCase())); // List geometry column second
 
         return columns;
     }

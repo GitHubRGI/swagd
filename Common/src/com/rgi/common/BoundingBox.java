@@ -78,7 +78,7 @@ public class BoundingBox
     @Override
     public boolean equals(final Object object)
     {
-        if(object == null || !(object instanceof BoundingBox))
+        if(!(object instanceof BoundingBox))
         {
             return false;
         }
@@ -105,7 +105,7 @@ public class BoundingBox
      */
     public double getHeight()
     {
-        return this.getMaxY() - this.getMinY();
+        return this.maxY - this.minY;
     }
 
     /**
@@ -113,7 +113,7 @@ public class BoundingBox
      */
     public double getWidth()
     {
-        return this.getMaxX() - this.getMinX();
+        return this.maxX - this.minX;
     }
 
     /**
@@ -121,8 +121,8 @@ public class BoundingBox
      */
     public Coordinate<Double> getCenter()
     {
-        return new Coordinate<>((this.getMaxX() + this.getMinX()) / 2.0,
-                                (this.getMaxY() + this.getMinY()) / 2.0);
+        return new Coordinate<>((this.maxX + this.minX) / 2.0,
+                                (this.maxY + this.minY) / 2.0);
     }
 
     /**
@@ -228,8 +228,8 @@ public class BoundingBox
                point.getX() <= this.maxX;
     }
 
-    final private double minY;
-    final private double minX;
-    final private double maxY;
-    final private double maxX;
+    private final double minY;
+    private final double minX;
+    private final double maxY;
+    private final double maxX;
 }

@@ -23,7 +23,6 @@
 
 package com.rgi.geopackage.tiles;
 
-import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.core.Content;
 
 /**
@@ -43,24 +42,36 @@ public class TileSet extends Content
      *             A human-readable description for the tableName content
      * @param lastChange
      *             Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
-     * @param boundingBox
-     *             Bounding box for all content in tableName
-     * @param spatialReferenceSystem
+     * @param minimumX
+     *             Bounding box minimum easting or longitude for all content
+     * @param maximumX
+     *             Bounding box minimum northing or latitude for all content
+     * @param minimumY
+     *             Bounding box maximum easting or longitude for all content
+     * @param maximumY
+     *             Bounding box maximum northing or latitude for all content
+     * @param spatialReferenceSystemIdentifier
      *             Spatial Reference System (SRS) identifier
      */
-    protected TileSet(final String      tableName,
-                      final String      identifier,
-                      final String      description,
-                      final String      lastChange,
-                      final BoundingBox boundingBox,
-                      final int         spatialReferenceSystemIdentifier)
+    protected TileSet(final String tableName,
+                      final String identifier,
+                      final String description,
+                      final String lastChange,
+                      final Double minimumX,
+                      final Double maximumX,
+                      final Double minimumY,
+                      final Double maximumY,
+                      final int    spatialReferenceSystemIdentifier)
     {
         super(tableName,
               TileSet.TileContentType,
               identifier,
               description,
               lastChange,
-              boundingBox,
+              minimumX,
+              maximumX,
+              minimumY,
+              maximumY,
               spatialReferenceSystemIdentifier);
     }
 

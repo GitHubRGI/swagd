@@ -29,6 +29,7 @@ import com.rgi.common.BoundingBox;
  *
  * @param <T> Extends {@link Content}
  */
+@FunctionalInterface
 public interface ContentFactory<T extends Content>
 {
     /**
@@ -37,15 +38,25 @@ public interface ContentFactory<T extends Content>
      * @param identifier the identifier
      * @param description the description
      * @param lastChange  the time of the last change
-     * @param boundingBox the bounding box
+     * @param minimumX
+     *             Bounding box minimum easting or longitude for all content
+     * @param maximumX
+     *             Bounding box minimum northing or latitude for all content
+     * @param minimumY
+     *             Bounding box maximum easting or longitude for all content
+     * @param maximumY
+     *             Bounding box maximum northing or latitude for all content
      * @param spatialReferenceSystemIdentifier the spatial reference system version number (otherwise known as identifier)
      * @return a Content object with the following parameters
      */
-    public T create(final String      tableName,
-                    final String      dataType,
-                    final String      identifier,
-                    final String      description,
-                    final String      lastChange,
-                    final BoundingBox boundingBox,
-                    final Integer     spatialReferenceSystemIdentifier);
+    public T create(final String  tableName,
+                    final String  dataType,
+                    final String  identifier,
+                    final String  description,
+                    final String  lastChange,
+                    final Double  minimumX,
+                    final Double  maximumX,
+                    final Double  minimumY,
+                    final Double  maximumY,
+                    final Integer spatialReferenceSystemIdentifier);
 }

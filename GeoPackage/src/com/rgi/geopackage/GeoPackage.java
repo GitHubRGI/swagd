@@ -73,7 +73,7 @@ public class GeoPackage implements AutoCloseable
      */
     public GeoPackage(final File file) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        this(file, VerificationLevel.Fast, OpenMode.OpenOrCreate);
+        this(file, VerificationLevel.Fast, GeoPackage.OpenMode.OpenOrCreate);
     }
 
     /**
@@ -102,7 +102,7 @@ public class GeoPackage implements AutoCloseable
      */
     public GeoPackage(final File file, final VerificationLevel verificationLevel) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        this(file, verificationLevel, OpenMode.OpenOrCreate);
+        this(file, verificationLevel, GeoPackage.OpenMode.OpenOrCreate);
     }
 
     /**
@@ -123,7 +123,7 @@ public class GeoPackage implements AutoCloseable
      * @throws SQLException
      *          in various cases where interaction with the JDBC connection fails
      */
-    public GeoPackage(final File file, final OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
+    public GeoPackage(final File file, final GeoPackage.OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         this(file, VerificationLevel.Fast, openMode);
     }
@@ -162,7 +162,7 @@ public class GeoPackage implements AutoCloseable
      *             in various cases where interaction with the JDBC connection
      *             fails
      */
-    public GeoPackage(final File file, final VerificationLevel verificationLevel, final OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
+    public GeoPackage(final File file, final VerificationLevel verificationLevel, final GeoPackage.OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         if(file == null)
         {
@@ -181,12 +181,12 @@ public class GeoPackage implements AutoCloseable
 
         final boolean isNewFile = !file.exists();
 
-        if(openMode == OpenMode.Create && !isNewFile)
+        if(openMode == GeoPackage.OpenMode.Create && !isNewFile)
         {
             throw new FileAlreadyExistsException(file.getAbsolutePath());
         }
 
-        if(openMode == OpenMode.Open && isNewFile)
+        if(openMode == GeoPackage.OpenMode.Open && isNewFile)
         {
            throw new FileNotFoundException(String.format("%s does not exist", file.getAbsolutePath()));
         }

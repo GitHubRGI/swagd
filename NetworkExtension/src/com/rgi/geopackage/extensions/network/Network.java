@@ -23,7 +23,6 @@
 
 package com.rgi.geopackage.extensions.network;
 
-import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.core.Content;
 
 /**
@@ -50,24 +49,36 @@ public class Network extends Content
      *             Date value in ISO 8601 format as defined by the strftime
      *             function %Y-%m-%dT%H:%M:%fZ format string applied to the
      *             current time
-     * @param boundingBox
-     *             Bounding box for all content in tableName
+     * @param minimumX
+     *             Bounding box minimum easting or longitude for all content
+     * @param maximumX
+     *             Bounding box minimum northing or latitude for all content
+     * @param minimumY
+     *             Bounding box maximum easting or longitude for all content
+     * @param maximumY
+     *             Bounding box maximum northing or latitude for all content
      * @param spatialReferenceSystemIdentifier
      *             Spatial Reference System (SRS) identifier
      */
-    protected Network(final String      tableName,
-                      final String      identifier,
-                      final String      description,
-                      final String      lastChange,
-                      final BoundingBox boundingBox,
-                      final int         spatialReferenceSystemIdentifier)
+    protected Network(final String tableName,
+                      final String identifier,
+                      final String description,
+                      final String lastChange,
+                      final Double minimumX,
+                      final Double maximumX,
+                      final Double minimumY,
+                      final Double maximumY,
+                      final int    spatialReferenceSystemIdentifier)
     {
         super(tableName,
               Network.NetworkContentType,
               identifier,
               description,
               lastChange,
-              boundingBox,
+              minimumX,
+              maximumX,
+              minimumY,
+              maximumY,
               spatialReferenceSystemIdentifier);
     }
 
