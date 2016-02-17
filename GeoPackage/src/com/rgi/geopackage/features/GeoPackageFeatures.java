@@ -307,6 +307,57 @@ public class GeoPackageFeatures
      */
     public FeatureSet getFeatureSet(final String featureSetTableName) throws SQLException
     {
+        final String geometryColumnQuery = String.format("SELECT %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
+                                                         "column_name",
+                                                         "geometry_type_name",
+                                                         "srs_id",
+                                                         "z",
+                                                         "m",
+                                                         GeoPackageFeatures.GeometryColumnsTableName,
+                                                         "table_name");
+
+        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(geometryColumnQuery))
+        {
+            preparedStatement.setString(1, featureSetTableName);
+
+            try(final ResultSet resultSet = preparedStatement.executeQuery())
+            {
+                resultSet.next();
+
+                final String           geometryColumnName  = resultSet.getString(1);
+                final String           geometryColumnType  = resultSet.getString(2);
+                final int              geometryColumnSrsId = resultSet.getInt   (3);
+                final ValueRequirement zValueRequirement   = ValueRequirement.fromInt(resultSet.getInt(4));
+                final ValueRequirement mValueRequirement   = ValueRequirement.fromInt(resultSet.getInt(5));
+
+                try(final Statement statement = GeoPackageFeatures.this.databaseConnection.createStatement())
+                {
+                    try(final ResultSet tableInfo = statement.executeQuery(String.format("PRAGMA table_info(%s)", featureSetTableName)))
+                    {
+                        final List<Column> columns = new ArrayList<>();
+
+                        while(tableInfo.next())
+                        {
+                            final String name = tableInfo.getString("name");
+                            final String type = tableInfo.getString("type");
+
+                            final EnumSet<ColumnFlag> flags = EnumSet.noneOf(ColumnFlag.class);
+
+                            if(tableInfo.getBoolean("notnull"))
+                            {
+                                flags.add(ColumnFlag.NotNull);
+                            }
+
+                            if(tableInfo.getBoolean("pk"))
+                            {
+                                flags.add(ColumnFlag.PrimaryKey);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         return this.core.getContent(featureSetTableName,
                                     (tableName,
                                      dataType,
@@ -376,42 +427,6 @@ public class GeoPackageFeatures
                                                                                          maximumY,
                                                                                          spatialReferenceSystemIdentifier),
                                     matchingSpatialReferenceSystem);
-    }
-
-    /**
-     * Retrieves the geometry column for a given feature set
-     *
-     * @param featureSet
-     *             Feature set to query
-     * @return The {@link GeometryColumn} of the given feature set
-     * @throws SQLException
-     *             if there is a database a database error
-     */
-    public GeometryColumn getGeometryColumn(final FeatureSet featureSet) throws SQLException
-    {
-        if(featureSet == null)
-        {
-            throw new IllegalArgumentException("Feature set may not be null");
-        }
-
-        final String geometryColumnQuery = String.format("SELECT %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
-                                                         "column_name",
-                                                         "geometry_type_name",
-                                                         "srs_id",
-                                                         "z",
-                                                         "m",
-                                                         GeoPackageFeatures.GeometryColumnsTableName,
-                                                         "table_name");
-
-        return JdbcUtility.selectOne(this.databaseConnection,
-                                     geometryColumnQuery,
-                                     preparedStatement -> preparedStatement.setString(1, featureSet.getTableName()),
-                                     resultSet -> new GeometryColumn(featureSet.getTableName(),
-                                                                     resultSet.getString(1),
-                                                                     resultSet.getString(2),
-                                                                     resultSet.getInt   (3),
-                                                                     ValueRequirement.fromInt(resultSet.getInt(4)),
-                                                                     ValueRequirement.fromInt(resultSet.getInt(5))));
     }
 
     /**
@@ -768,6 +783,23 @@ public class GeoPackageFeatures
                                                 });
     }
 
+    protected static String getGeometryColumnsCreationSql()
+    {
+        // http://www.geopackage.org/spec/#gpkg_geometry_columns_cols
+        // http://www.geopackage.org/spec/#gpkg_geometry_columns_sql
+        return "CREATE TABLE " + GeoPackageFeatures.GeometryColumnsTableName  + '\n' +
+               "(table_name         TEXT    NOT NULL, -- Name of the table containing the geometry column\n"                                                      +
+               " column_name        TEXT    NOT NULL, -- Name of a column in the feature table that is a Geometry Column\n"                                       +
+               " geometry_type_name TEXT    NOT NULL, -- Name from Geometry Type Codes (Core) or Geometry Type Codes (Extension) in Geometry Types (Normative)\n" +
+               " srs_id             INTEGER NOT NULL, -- Spatial Reference System ID: gpkg_spatial_ref_sys.srs_id\n"                                              +
+               " z                  TINYINT NOT NULL, -- 0: z values prohibited; 1: z values mandatory; 2: z values optional\n"                                   +
+               " m                  TINYINT NOT NULL, -- 0: m values prohibited; 1: m values mandatory; 2: m values optional\n"                                   +
+               " CONSTRAINT pk_geom_cols     PRIMARY KEY (table_name, column_name),"                                                                              +
+               " CONSTRAINT uk_gc_table_name UNIQUE      (table_name),"                                                                                           +
+               " CONSTRAINT fk_gc_tn         FOREIGN KEY (table_name) REFERENCES gpkg_contents        (table_name),"                                              +
+               " CONSTRAINT fk_gc_srs        FOREIGN KEY (srs_id)     REFERENCES gpkg_spatial_ref_sys (srs_id));";
+    }
+
     private Geometry createGeometry(final byte[] blob) throws WellKnownBinaryFormatException
     {
         final BinaryHeader binaryHeader = new BinaryHeader(blob);   // This will throw if the array length is too short to contain a header (or if it's not long enough to contain the envelope type specified)
@@ -929,23 +961,6 @@ public class GeoPackageFeatures
         createTableSql.append("\n);");
 
         JdbcUtility.update(this.databaseConnection, createTableSql.toString());
-    }
-
-    protected static String getGeometryColumnsCreationSql()
-    {
-        // http://www.geopackage.org/spec/#gpkg_geometry_columns_cols
-        // http://www.geopackage.org/spec/#gpkg_geometry_columns_sql
-        return "CREATE TABLE " + GeoPackageFeatures.GeometryColumnsTableName  + '\n' +
-               "(table_name         TEXT    NOT NULL, -- Name of the table containing the geometry column\n"                                                      +
-               " column_name        TEXT    NOT NULL, -- Name of a column in the feature table that is a Geometry Column\n"                                       +
-               " geometry_type_name TEXT    NOT NULL, -- Name from Geometry Type Codes (Core) or Geometry Type Codes (Extension) in Geometry Types (Normative)\n" +
-               " srs_id             INTEGER NOT NULL, -- Spatial Reference System ID: gpkg_spatial_ref_sys.srs_id\n"                                              +
-               " z                  TINYINT NOT NULL, -- 0: z values prohibited; 1: z values mandatory; 2: z values optional\n"                                   +
-               " m                  TINYINT NOT NULL, -- 0: m values prohibited; 1: m values mandatory; 2: m values optional\n"                                   +
-               " CONSTRAINT pk_geom_cols     PRIMARY KEY (table_name, column_name),"                                                                              +
-               " CONSTRAINT uk_gc_table_name UNIQUE      (table_name),"                                                                                           +
-               " CONSTRAINT fk_gc_tn         FOREIGN KEY (table_name) REFERENCES gpkg_contents        (table_name),"                                              +
-               " CONSTRAINT fk_gc_srs        FOREIGN KEY (srs_id)     REFERENCES gpkg_spatial_ref_sys (srs_id));";
     }
 
     public static final String GeometryColumnsTableName = "gpkg_geometry_columns";

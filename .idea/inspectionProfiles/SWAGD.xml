@@ -298,7 +298,7 @@
       <option name="m_limit" value="5" />
     </inspection_tool>
     <inspection_tool class="ContinueOrBreakFromFinallyBlock" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="ContinueStatement" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="ContinueStatement" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="ContinueStatementWithLabel" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="Contract" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ControlFlowStatementWithoutBraces" enabled="true" level="ERROR" enabled_by_default="true" />

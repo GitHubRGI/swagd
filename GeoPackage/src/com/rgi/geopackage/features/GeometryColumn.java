@@ -31,6 +31,7 @@ public class GeometryColumn
 {
     /**
      * @param tableName
+     *            Name of the associated table
      * @param columnName
      *            Name of a column in the feature table that is a Geometry
      *            Column

@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.verification;
 
+import java.util.AbstractCollection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -111,11 +112,11 @@ public class TableDefinition
         final Set<String> columnNames = columns.keySet();
 
         final Set<String> badForeignKeyFromColumns = foreignKeys.stream()
-                                                                .map(foreignKey -> foreignKey.getFromColumnName())
+                                                                .map(ForeignKeyDefinition::getFromColumnName)
                                                                 .filter(foreignKeyFromColumnName -> !columnNames.contains(foreignKeyFromColumnName))
                                                                 .collect(Collectors.toSet());
 
-        if(badForeignKeyFromColumns.size() > 0)
+        if(!badForeignKeyFromColumns.isEmpty())
         {
             throw new IllegalArgumentException(String.format("Foreign key definitions reference a the following 'from' columns that do not exist in this table: %s",
                                                              String.join(", ", badForeignKeyFromColumns)));
@@ -123,15 +124,15 @@ public class TableDefinition
 
         final Set<String> groupUniqueColumns = groupUniques.stream()
                                                             .collect(HashSet<String>::new,
-                                                                     (set,  groupUnique) -> set.addAll(groupUnique.getColumnNames()),
-                                                                     (set1, set2)        -> set1.addAll(set2));
+                                                                     (set, groupUnique) -> set.addAll(groupUnique.getColumnNames()),
+                                                                     AbstractCollection::addAll);
 
         final Set<String> badGroupUniqueColumns = groupUniqueColumns.stream()
                                                             .filter(columnName -> !columnNames.contains(columnName))
                                                             .collect(Collectors.toSet());
 
 
-        if(badGroupUniqueColumns.size() > 0)
+        if(!badGroupUniqueColumns.isEmpty())
         {
             throw new IllegalArgumentException(String.format("Group unique definitions reference the following columns that do not exist in this table: %s",
                                                              String.join(", ", badGroupUniqueColumns)));
@@ -156,7 +157,7 @@ public class TableDefinition
      */
     public Map<String, ColumnDefinition> getColumns()
     {
-        return this.columns;
+        return Collections.unmodifiableMap(this.columns);
     }
 
     /**
@@ -164,7 +165,7 @@ public class TableDefinition
      */
     public Set<ForeignKeyDefinition> getForeignKeys()
     {
-        return this.foreignKeys;
+        return Collections.unmodifiableSet(this.foreignKeys);
     }
 
     /**
@@ -172,7 +173,7 @@ public class TableDefinition
      */
     protected Set<UniqueDefinition> getGroupUniques()
     {
-        return this.groupUniques;
+        return Collections.unmodifiableSet(this.groupUniques);
     }
 
     private final String                        name;

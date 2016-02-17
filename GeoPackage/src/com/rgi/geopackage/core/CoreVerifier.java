@@ -707,8 +707,8 @@ public class CoreVerifier extends Verifier
         contentColumns.put("table_name",  new ColumnDefinition("TEXT",     true,  true,  true,  null));
         contentColumns.put("data_type",   new ColumnDefinition("TEXT",     true,  false, false, null));
         contentColumns.put("identifier",  new ColumnDefinition("TEXT",     false, false, true,  null));
-        contentColumns.put("description", new ColumnDefinition("TEXT",     false, false, false, "\\s*''\\s*|\\s*\"\"\\s*"));
-        contentColumns.put("last_change", new ColumnDefinition("DATETIME", true,  false, false, "\\s*strftime\\s*\\(\\s*['\"]%Y-%m-%dT%H:%M:%fZ['\"]\\s*,\\s*['\"]now['\"]\\s*\\)\\s*"));
+        contentColumns.put("description", new ColumnDefinition("TEXT",     false, false, false, "''"));
+        contentColumns.put("last_change", new ColumnDefinition("DATETIME", true,  false, false, "strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"));
         contentColumns.put("min_x",       new ColumnDefinition("DOUBLE",   false, false, false, null));
         contentColumns.put("min_y",       new ColumnDefinition("DOUBLE",   false, false, false, null));
         contentColumns.put("max_x",       new ColumnDefinition("DOUBLE",   false, false, false, null));

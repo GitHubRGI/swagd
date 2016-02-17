@@ -52,7 +52,6 @@ import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage;
-import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
 import com.rgi.geopackage.tiles.GeoPackageTiles.TileCoordinate;
@@ -114,7 +113,7 @@ public class GeoPackageReader implements TileStoreReader
 
         try
         {
-            this.geoPackage = new GeoPackage(geoPackageFile, verificationLevel, OpenMode.Open);
+            this.geoPackage = new GeoPackage(geoPackageFile, verificationLevel, GeoPackage.OpenMode.Open);
         }
         catch(final Exception ex)
         {
