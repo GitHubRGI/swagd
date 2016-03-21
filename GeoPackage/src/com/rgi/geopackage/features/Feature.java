@@ -40,7 +40,7 @@ public class Feature
      * @param attributes
      */
     protected Feature(final int                 identifier,
-                      final Geometry geometry,
+                      final Geometry            geometry,
                       final Map<String, Object> attributes)
     {
         this.identifier = identifier;

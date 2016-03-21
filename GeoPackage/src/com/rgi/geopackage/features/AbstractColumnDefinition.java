@@ -93,18 +93,7 @@ public abstract class AbstractColumnDefinition
             throw new IllegalArgumentException("Column name may not be null");
         }
 
-        if(!columnNamePattern.matcher(name).matches())
-        {
-            throw new IllegalArgumentException(String.format("The column '%s' name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers", name));
-        }
-
-        // TODO: unquoted column names that are the same as an SQL keyword
-        // (regardless of case, I believe) will also be an issue. A full list
-        // of reserved words can be found here:
-        // https://www.sqlite.org/lang_keywords.html
-        // By wrapping column names in double quotes, you can get away with
-        // a variety of strange names. This is *strongly* discouraged, but I'm
-        // not sure it's correct to explicitly forbid it.
+        AbstractColumnDefinition.validateColumnName(name);
 
         if(type == null || type.isEmpty())
         {
@@ -167,6 +156,27 @@ public abstract class AbstractColumnDefinition
     public String getComment()
     {
         return this.comment;
+    }
+
+    public static void validateColumnName(final String columnName)
+    {
+        if(columnName == null || columnName.isEmpty())
+        {
+            throw new IllegalArgumentException("Column name may not be null or empty");
+        }
+
+        // TODO: unquoted column names that are the same as an SQL keyword
+        // (regardless of case, I believe) will also be an issue. A full list
+        // of reserved words can be found here:
+        // https://www.sqlite.org/lang_keywords.html
+        // By wrapping column names in double quotes, you can get away with
+        // a variety of strange names. This is *strongly* discouraged, but I'm
+        // not sure it's correct to explicitly forbid it.
+
+        if(!columnNamePattern.matcher(columnName).matches())
+        {
+            throw new IllegalArgumentException(String.format("The column '%s' must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers", columnName)); // This is just a best guess. SQLite doesn't actually have an EBNF diagram for "column-name"
+        }
     }
 
     private final String              name;

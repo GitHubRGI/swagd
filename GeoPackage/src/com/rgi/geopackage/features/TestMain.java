@@ -42,7 +42,7 @@ public final class TestMain
         //                                                                                             ValueRequirement.Prohibited,
         //                                                                                             "who doesn't love points?"));
         //
-        //    final GeometryColumn geometryColumn = gpkg.features().getGeometryColumn(featureSet);
+        //    final GeometryColumn geometryColumn = gpkg.features().getGeometryColumnName(featureSet);
         //
         //    gpkg.features().addFeature(geometryColumn,
         //                               new WktPoint(1.0, 1.0),
@@ -53,30 +53,30 @@ public final class TestMain
 
         try(final GeoPackage gpkg = new GeoPackage(gpkgFile, VerificationLevel.None, GeoPackage.OpenMode.Open))
         {
-//            final Collection<FeatureSet> featureSets = gpkg.features().getFeatureSets();
-//
-//            for(final FeatureSet featureSet : featureSets)
-//            {
-//                final GeometryColumn geometryColumn = gpkg.features().getGeometryColumn(featureSet);
-//
-//                System.out.println(geometryColumn.getGeometryType());
-//
-//                try
-//                {
-//                    gpkg.features().visitFeatures(geometryColumn,
-//                                                  feature -> { final Map<String, Object> attributes = feature.getAttributes();
-//
-//                                                               attributes.forEach((name, value) -> System.out.println(name + " = " + value.toString()));
-//
-//                                                             });
-//                }
-//                catch(WellKnownBinaryFormatException e)
-//                {
-//                    e.printStackTrace();
-//                }
-//
-//                break;
-//            }
+            final Collection<FeatureSet> featureSets = gpkg.features().getFeatureSets();
+
+            for(final FeatureSet featureSet : featureSets)
+            {
+                final GeometryColumn geometryColumn = gpkg.features().getGeometryColumn(featureSet);
+
+                System.out.println(geometryColumn.getGeometryType());
+
+                try
+                {
+                    gpkg.features().visitFeatures(featureSet,
+                                                  feature -> { final Map<String, Object> attributes = feature.getAttributes();
+
+                                                               attributes.forEach((name, value) -> System.out.println(name + " = " + value.toString()));
+
+                                                             });
+                }
+                catch(final WellKnownBinaryFormatException ex)
+                {
+                    ex.printStackTrace();
+                }
+
+                break;
+            }
         }
         catch(final IOException | SQLException | ConformanceException | ClassNotFoundException ex)
         {

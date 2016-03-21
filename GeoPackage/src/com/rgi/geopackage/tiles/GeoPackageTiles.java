@@ -249,7 +249,7 @@ public class GeoPackageTiles
                                                                             minimumY,
                                                                             maximumY,
                                                                             spatialReferenceSystem),
-                                    matchingSpatialReferenceSystem);
+                                     matchingSpatialReferenceSystem);
     }
 
     /**

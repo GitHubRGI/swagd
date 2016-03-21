@@ -580,7 +580,7 @@
     <inspection_tool class="JavaDoc" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="TOP_LEVEL_CLASS_OPTIONS">
         <value>
-          <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="public" />
+          <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="package" />
           <option name="REQUIRED_TAGS" value="@author@param" />
         </value>
       </option>
@@ -592,7 +592,7 @@
       </option>
       <option name="METHOD_OPTIONS">
         <value>
-          <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="public" />
+          <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="protected" />
           <option name="REQUIRED_TAGS" value="@return@param@throws or @exception" />
         </value>
       </option>
@@ -921,7 +921,7 @@
     <inspection_tool class="ParameterTypePreventsOverriding" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ParameterizedParametersStaticCollection" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ParametersPerConstructor" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="m_limit" value="10" />
+      <option name="m_limit" value="15" />
     </inspection_tool>
     <inspection_tool class="ParametersPerMethod" enabled="true" level="ERROR" enabled_by_default="false">
       <scope name="Problems" level="WEAK WARNING" enabled="true">

@@ -25,6 +25,10 @@ package com.rgi.geopackage.features;
 
 import com.rgi.geopackage.core.Content;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * @author Luke Lambert
  *
@@ -54,15 +58,18 @@ public class FeatureSet extends Content
      * @param spatialReferenceSystemIdentifier
      *             Spatial Reference System (SRS)
      */
-    protected FeatureSet(final String tableName,
-                         final String identifier,
-                         final String description,
-                         final String lastChange,
-                         final Double minimumX,
-                         final Double maximumX,
-                         final Double minimumY,
-                         final Double maximumY,
-                         final int    spatialReferenceSystemIdentifier)
+    protected FeatureSet(final String             tableName,
+                         final String             identifier,
+                         final String             description,
+                         final String             lastChange,
+                         final Double             minimumX,
+                         final Double             maximumX,
+                         final Double             minimumY,
+                         final Double             maximumY,
+                         final int                spatialReferenceSystemIdentifier,
+                         final String             primaryKeyColumnName,
+                         final String             geometryColumnName,
+                         final Collection<String> attributeColumnNames)
     {
         super(tableName,
               FeatureSet.FeatureContentType,
@@ -74,10 +81,34 @@ public class FeatureSet extends Content
               minimumY,
               maximumY,
               spatialReferenceSystemIdentifier);
+
+        this.primaryKeyColumnName = primaryKeyColumnName;
+        this.geometryColumnName   = geometryColumnName;
+        this.attributeColumnNames = new ArrayList<>(attributeColumnNames);
+    }
+
+    public String getPrimaryKeyColumnName()
+    {
+        return this.primaryKeyColumnName;
+    }
+
+    public String getGeometryColumnName()
+    {
+        return this.geometryColumnName;
+    }
+
+    public Collection<String> getAttributeColumnNames()
+    {
+        return Collections.unmodifiableCollection(this.attributeColumnNames);
     }
 
     /**
      * The data type "features"
      */
     public static final String FeatureContentType = "features";
+
+    private final String             primaryKeyColumnName;
+    private final String geometryColumnName;
+    private final Collection<String> attributeColumnNames;
+
 }

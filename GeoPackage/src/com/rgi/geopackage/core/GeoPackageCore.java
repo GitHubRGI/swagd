@@ -23,18 +23,20 @@
 
 package com.rgi.geopackage.core;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-
 import com.rgi.common.BoundingBox;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
+
+import java.io.File;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 'Core' subsystem of the {@link GeoPackage} implementation
@@ -115,17 +117,17 @@ public class GeoPackageCore
     {
         if(tableName == null || tableName.isEmpty())
         {
-            throw new IllegalArgumentException("Tile set name may not be null");
+            throw new IllegalArgumentException("Table name may not be null or empty");
         }
 
         if(!tableName.matches("^[_a-zA-Z]\\w*"))
         {
-            throw new IllegalArgumentException("The tile set's name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
+            throw new IllegalArgumentException("The table name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
         }
 
         if(tableName.startsWith("gpkg_"))
         {
-            throw new IllegalArgumentException("The tile set's name may not start with the reserved prefix 'gpkg_'");
+            throw new IllegalArgumentException("The table name may not start with the reserved prefix 'gpkg_'");
         }
     }
 
@@ -454,6 +456,52 @@ public class GeoPackageCore
                                                                      (Double)resultSet.getObject(8),     // max x
                                                                      (Double)resultSet.getObject(9),     // max y
                                                                      (Integer)resultSet.getObject(10))); // srs id
+    }
+
+    public List<String> getContentTableNames(final String                 dataType,
+                                             final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
+    {
+        final Collection<String> whereClauses = new LinkedList<>();
+
+        if(dataType != null)
+        {
+            whereClauses.add("data_type = ?");
+        }
+
+        if(spatialReferenceSystem != null)
+        {
+            whereClauses.add("srs_id = ?");
+        }
+
+        final StringBuilder whereClause = new StringBuilder();
+
+        if(!whereClauses.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+            whereClause.append(String.join(" AND ",
+                                           whereClauses));
+        }
+
+        final String query = String.format("SELECT %s FROM %s%s;",
+                                           "table_name",
+                                           GeoPackageCore.ContentsTableName,
+                                           whereClause.toString());
+
+        return JdbcUtility.select(this.databaseConnection,
+                                  query,
+                                  preparedStatement -> { int index = 1;
+
+                                                         if(dataType != null)
+                                                         {
+                                                             preparedStatement.setString(index++, dataType);
+                                                         }
+
+                                                         if(spatialReferenceSystem != null)
+                                                         {
+                                                             preparedStatement.setInt(index++, spatialReferenceSystem.getIdentifier());
+                                                         }
+                                                       },
+                                  resultSet -> resultSet.getString(1)); // table name
     }
 
     /**

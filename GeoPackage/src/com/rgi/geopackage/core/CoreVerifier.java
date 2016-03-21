@@ -256,13 +256,13 @@ public class CoreVerifier extends Verifier
                 {
                     final String tableName = resultSet.getString("table_name");
 
-                    if (DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), tableName))
+                    if(DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), tableName))
                     {
 
                         try(final PreparedStatement stmt2           = this.getSqliteConnection().prepareStatement(String.format("PRAGMA table_info('%s');", tableName));
                             final ResultSet         pragmaTableinfo = stmt2.executeQuery())
                         {
-                            while (pragmaTableinfo.next())
+                            while(pragmaTableinfo.next())
                             {
                                 final String dataType = pragmaTableinfo.getString("type");
                                 final boolean correctDataType = Verifier.checkDataType(dataType);

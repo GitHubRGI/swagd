@@ -25,6 +25,7 @@ package com.rgi.geopackage.features;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
+import com.rgi.common.util.functional.ThrowingFunction;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.core.ContentFactory;
 import com.rgi.geopackage.core.GeoPackageCore;
@@ -46,7 +47,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -147,6 +147,10 @@ public class GeoPackageFeatures
      *             Bounding box for all content in tableName
      * @param spatialReferenceSystem
      *             Spatial Reference System (SRS)
+     * @param primaryKeyColumnName
+     *             Column name for the primary key. The column name must begin
+     *             with a letter (A..Z, a..z) or an underscore (_) and may
+     *             only be followed by letters, underscores, or numbers
      * @param geometryColumn
      *             Geometry column definition
      * @param columnDefinitions
@@ -165,6 +169,7 @@ public class GeoPackageFeatures
                                     final String                   description,
                                     final BoundingBox              boundingBox,
                                     final SpatialReferenceSystem   spatialReferenceSystem,
+                                    final String                   primaryKeyColumnName,
                                     final GeometryColumnDefinition geometryColumn,
                                     final ColumnDefinition...      columnDefinitions) throws SQLException
     {
@@ -173,6 +178,7 @@ public class GeoPackageFeatures
                                   description,
                                   boundingBox,
                                   spatialReferenceSystem,
+                                  primaryKeyColumnName,
                                   geometryColumn,
                                   Arrays.asList(columnDefinitions));
     }
@@ -195,6 +201,10 @@ public class GeoPackageFeatures
      *             Bounding box for all content in tableName
      * @param spatialReferenceSystem
      *             Spatial Reference System (SRS)
+     * @param primaryKeyColumnName
+     *             Column name for the primary key. The column name must begin
+     *             with a letter (A..Z, a..z) or an underscore (_) and may
+     *             only be followed by letters, underscores, or numbers
      * @param geometryColumn
      *             Geometry column definition
      * @param columnDefinitions
@@ -213,6 +223,7 @@ public class GeoPackageFeatures
                                     final String                       description,
                                     final BoundingBox                  boundingBox,
                                     final SpatialReferenceSystem       spatialReferenceSystem,
+                                    final String                       primaryKeyColumnName,
                                     final GeometryColumnDefinition     geometryColumn,
                                     final Collection<ColumnDefinition> columnDefinitions) throws SQLException
     {
@@ -227,6 +238,8 @@ public class GeoPackageFeatures
         {
             throw new IllegalArgumentException("Spatial reference system may not be null");
         }
+
+        AbstractColumnDefinition.validateColumnName(primaryKeyColumnName);
 
         if(geometryColumn == null)
         {
@@ -267,6 +280,7 @@ public class GeoPackageFeatures
         {
             // Create the feature set table
             this.addFeatureTableNoCommit(tableName,
+                                         primaryKeyColumnName,
                                          geometryColumn,
                                          columnDefinitions);
 
@@ -284,7 +298,7 @@ public class GeoPackageFeatures
 
             this.databaseConnection.commit();
 
-            return this.getFeatureSet(tableName);
+            return this.getFeatureSet(tableName);   // TODO this is a lazy way of doing things (carried on from the tiles implementation). There should be a method in core to query for the only information that can't already be obtained in this function - the last_change
         }
         catch(final Exception ex)
         {
@@ -292,6 +306,86 @@ public class GeoPackageFeatures
             throw ex;
         }
     }
+
+    /**
+     * Gets the geometry column definition for a specified {@link FeatureSet}
+     *
+     * @param featureSet
+     *             Target feature set
+     * @return a {@link GeometryColumn}
+     * @throws SQLException
+     *             When there is a database error
+     */
+    public GeometryColumn getGeometryColumn(final FeatureSet featureSet) throws SQLException
+    {
+        final String geometryColumnQuery = String.format("SELECT %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
+                                                         "column_name",
+                                                         "geometry_type_name",
+                                                         "srs_id",
+                                                         "z",
+                                                         "m",
+                                                         GeoPackageFeatures.GeometryColumnsTableName,
+                                                         "table_name");
+
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     geometryColumnQuery,
+                                     preparedStatement -> preparedStatement.setString(1, featureSet.getTableName()),
+                                     resultSet -> new GeometryColumn(featureSet.getTableName(),
+                                                                     resultSet.getString(1),                          // geometry column name
+                                                                     resultSet.getString(2),                          // geometry column type
+                                                                     resultSet.getInt   (3),                          // geometry column srs id
+                                                                     ValueRequirement.fromInt(resultSet.getInt(4)),   // z value requirement
+                                                                     ValueRequirement.fromInt(resultSet.getInt(5)))); // m value requirement
+    }
+
+
+//    try(final Statement statement = GeoPackageFeatures.this.databaseConnection.createStatement())
+//    {
+//        try(final ResultSet tableInfo = statement.executeQuery(String.format("PRAGMA table_info(%s)", featureSetTableName)))
+//        {
+//            String primaryKeyColumnName = null;
+//
+//            final Collection<String> columns = new ArrayList<>();
+//
+//            while(tableInfo.next())
+//            {
+//                final String name = tableInfo.getString("name");
+//
+//                if(!name.equalsIgnoreCase(geometryColumnName))
+//                {
+//                    if(tableInfo.getBoolean("pk"))
+//                    {
+//                        primaryKeyColumnName = name;
+//                    }
+//                    else // non-primary key columns (there can only be one primary key column according to the spec)
+//                    {
+//                        final String type         = tableInfo.getString("type");
+//                        final String defaultValue = tableInfo.getString("dflt_value");
+//
+//                        final EnumSet<ColumnFlag> flags = EnumSet.noneOf(ColumnFlag.class);
+//
+//                        if(tableInfo.getBoolean("notnull"))
+//                        {
+//                            flags.add(ColumnFlag.NotNull);
+//                        }
+//
+//                        // TODO there are other ColumnFlags that need to be checked here: AutoIncrement, Unique
+//                        // TODO check expression is not being checked for
+//                        // TODO neither those flags nor check expression is available in table_info
+//
+//                        columns.add(new Column(name,
+//                                               type,
+//                                               flags,
+//                                               null,    // see above TODO
+//                                               defaultValue));
+//                    }
+//                }
+//            }
+//
+//            final String finalPrimaryKeyColumnName = primaryKeyColumnName;
+//        }
+//    }
+
 
     /**
      * Gets a feature set object based on its table name
@@ -305,78 +399,70 @@ public class GeoPackageFeatures
      *             {@link GeoPackageCore#getContent(String, ContentFactory, SpatialReferenceSystem)}
      *             throws an SQLException
      */
+    @SuppressWarnings("JDBCExecuteWithNonConstantString")
     public FeatureSet getFeatureSet(final String featureSetTableName) throws SQLException
     {
-        final String geometryColumnQuery = String.format("SELECT %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
+        final String geometryColumnQuery = String.format("SELECT %s FROM %s WHERE %s = ?",
                                                          "column_name",
-                                                         "geometry_type_name",
-                                                         "srs_id",
-                                                         "z",
-                                                         "m",
                                                          GeoPackageFeatures.GeometryColumnsTableName,
                                                          "table_name");
 
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(geometryColumnQuery))
+        final String geometryColumnName = JdbcUtility.selectOne(this.databaseConnection,
+                                                                geometryColumnQuery,
+                                                                preparedStatement -> preparedStatement.setString(1, featureSetTableName),
+                                                                resultSet -> resultSet.getString(1)); // geometry column name
+
+        try(final Statement statement = GeoPackageFeatures.this.databaseConnection.createStatement())
         {
-            preparedStatement.setString(1, featureSetTableName);
-
-            try(final ResultSet resultSet = preparedStatement.executeQuery())
+            try(final ResultSet tableInfo = statement.executeQuery(String.format("PRAGMA table_info(%s)", featureSetTableName)))
             {
-                resultSet.next();
+                String primaryKeyColumnName = null;
 
-                final String           geometryColumnName  = resultSet.getString(1);
-                final String           geometryColumnType  = resultSet.getString(2);
-                final int              geometryColumnSrsId = resultSet.getInt   (3);
-                final ValueRequirement zValueRequirement   = ValueRequirement.fromInt(resultSet.getInt(4));
-                final ValueRequirement mValueRequirement   = ValueRequirement.fromInt(resultSet.getInt(5));
+                final Collection<String> attributeColumnNames = new ArrayList<>();
 
-                try(final Statement statement = GeoPackageFeatures.this.databaseConnection.createStatement())
+                while(tableInfo.next())
                 {
-                    try(final ResultSet tableInfo = statement.executeQuery(String.format("PRAGMA table_info(%s)", featureSetTableName)))
+                    final String name = tableInfo.getString("name");
+
+                    if(!name.equalsIgnoreCase(geometryColumnName))
                     {
-                        final List<Column> columns = new ArrayList<>();
-
-                        while(tableInfo.next())
+                        if(tableInfo.getBoolean("pk"))
                         {
-                            final String name = tableInfo.getString("name");
-                            final String type = tableInfo.getString("type");
-
-                            final EnumSet<ColumnFlag> flags = EnumSet.noneOf(ColumnFlag.class);
-
-                            if(tableInfo.getBoolean("notnull"))
-                            {
-                                flags.add(ColumnFlag.NotNull);
-                            }
-
-                            if(tableInfo.getBoolean("pk"))
-                            {
-                                flags.add(ColumnFlag.PrimaryKey);
-                            }
+                            primaryKeyColumnName = name;
+                        }
+                        else // non-primary key columns (there can only be one primary key column according to the spec)
+                        {
+                            attributeColumnNames.add(name);
                         }
                     }
                 }
+
+                final String finalPrimaryKeyColumnName = primaryKeyColumnName;
+
+                return this.core.getContent(featureSetTableName,
+                                            (tableName,
+                                             dataType,
+                                             identifier,
+                                             description,
+                                             lastChange,
+                                             minimumX,
+                                             maximumX,
+                                             minimumY,
+                                             maximumY,
+                                             spatialReferenceSystem) -> new FeatureSet(tableName,
+                                                                                       identifier,
+                                                                                       description,
+                                                                                       lastChange,
+                                                                                       minimumX,
+                                                                                       maximumX,
+                                                                                       minimumY,
+                                                                                       maximumY,
+                                                                                       spatialReferenceSystem,
+                                                                                       finalPrimaryKeyColumnName,
+                                                                                       geometryColumnName,
+                                                                                       attributeColumnNames));
             }
         }
-
-        return this.core.getContent(featureSetTableName,
-                                    (tableName,
-                                     dataType,
-                                     identifier,
-                                     description,
-                                     lastChange,
-                                     minimumX,
-                                     maximumX,
-                                     minimumY,
-                                     maximumY,
-                                     spatialReferenceSystem) -> new FeatureSet(tableName,
-                                                                               identifier,
-                                                                               description,
-                                                                               lastChange,
-                                                                               minimumX,
-                                                                               maximumX,
-                                                                               minimumY,
-                                                                               maximumY,
-                                                                               spatialReferenceSystem));
     }
 
     /**
@@ -407,100 +493,37 @@ public class GeoPackageFeatures
      */
     public Collection<FeatureSet> getFeatureSets(final SpatialReferenceSystem matchingSpatialReferenceSystem) throws SQLException
     {
-        return this.core.getContent(FeatureSet.FeatureContentType,
-                                    (tableName,
-                                     dataType,
-                                     identifier,
-                                     description,
-                                     lastChange,
-                                     minimumX,
-                                     maximumX,
-                                     minimumY,
-                                     maximumY,
-                                     spatialReferenceSystemIdentifier) -> new FeatureSet(tableName,
-                                                                                         identifier,
-                                                                                         description,
-                                                                                         lastChange,
-                                                                                         minimumX,
-                                                                                         maximumX,
-                                                                                         minimumY,
-                                                                                         maximumY,
-                                                                                         spatialReferenceSystemIdentifier),
-                                    matchingSpatialReferenceSystem);
+        return this.core
+                   .getContentTableNames(FeatureSet.FeatureContentType,
+                                         matchingSpatialReferenceSystem)
+                   .stream()
+                   .map((ThrowingFunction<String, FeatureSet>)(this::getFeatureSet))
+                   .collect(Collectors.toList());
     }
 
     /**
-     * Gets a {@link Feature} given a geometry column and feature identifier
+     * Returns a list of all features that correspond to the given feature set.
+     * If a large set of features is anticipated use {@link #visitFeatures} to
+     * avoid memory issues
      *
-     * @param geometryColumn
-     *             Geometry column definition
-     * @param featureIdentifier
-     *             Identifier for a feature
-     * @return a {@link Feature}
+     * @param featureSet
+     * @return
      * @throws SQLException
-     *             if there is a database error
+     * @throws WellKnownBinaryFormatException
      */
-    public Feature getFeature(final GeometryColumn geometryColumn,
-                              final int            featureIdentifier) throws SQLException, WellKnownBinaryFormatException
+    public List<Feature> getFeatures(final FeatureSet featureSet) throws SQLException, WellKnownBinaryFormatException
     {
-        if(geometryColumn == null)
+        if(featureSet == null)
         {
-            throw new IllegalArgumentException("Geometry column may not be null");
+            throw new IllegalArgumentException("Feature set may not be null");
         }
 
-        final List<String> schema = this.getSchema(geometryColumn); // Feature table's columns name with "id" listed first, the geometry column second, and the rest in the order returned by SQL.
-
-        schema.remove(0);   // Remove "id", we've already got that value
-
-        final String featureQuery = String.format("SELECT %s FROM %s WHERE %s = ?",
-                                                  String.join(", ", schema),
-                                                  GeoPackageFeatures.GeometryColumnsTableName,
-                                                  "id");
-
-        final Pair<Map<String, Object>, byte[]> feature = JdbcUtility.selectOne(this.databaseConnection,
-                                                                                featureQuery,
-                                                                                preparedStatement -> preparedStatement.setInt(1, featureIdentifier),
-                                                                                resultSet -> { final Map<String, Object> attributes = new HashMap<>();
-
-                                                                                               schema.remove(0); // Ignore the geometry column
-
-                                                                                               for(final String columnName : schema)
-                                                                                               {
-                                                                                                   attributes.put(columnName, resultSet.getObject(columnName));
-                                                                                               }
-
-                                                                                               return Pair.of(attributes,
-                                                                                                              resultSet.getBytes(geometryColumn.getColumnName()));
-                                                                                             });
-        if(feature == null)
-        {
-            throw new IllegalArgumentException(String.format("No feature exists for geometry column %s.%s and identifier %d",
-                                                             geometryColumn.getTableName(),
-                                                             geometryColumn.getColumnName(),
-                                                             featureIdentifier));
-        }
-
-
-        return new Feature(featureIdentifier,
-                           this.createGeometry(feature.getRight()),
-                           feature.getLeft());
-    }
-
-    public List<Feature> getFeatures(final GeometryColumn geometryColumn) throws SQLException, WellKnownBinaryFormatException
-    {
-        if(geometryColumn == null)
-        {
-            throw new IllegalArgumentException("Geometry column may not be null");
-        }
-
-        final List<String> schema = this.getSchema(geometryColumn); // Feature table's columns name with "id" listed first, the geometry column second, and the rest in the order returned by SQL.
-
-        final String featureQuery = String.format("SELECT %s FROM %s",
-                                                  String.join(", ", schema),
+        final String featureQuery = String.format("SELECT %s, %s%s FROM %s",
+                                                  featureSet.getPrimaryKeyColumnName(),
+                                                  featureSet.getGeometryColumnName(),
+                                                  featureSet.getAttributeColumnNames().isEmpty() ? ""
+                                                                                                 : ", " + String.join(", ", featureSet.getAttributeColumnNames()),
                                                   GeoPackageFeatures.GeometryColumnsTableName);
-
-        schema.remove(0);   // Remove, "id". We'll later refer to it by name.
-        schema.remove(0);   // Remove the geometry column name. We'll also refer to it by name.
 
         try(final Statement statement = this.databaseConnection.createStatement())
         {
@@ -512,13 +535,13 @@ public class GeoPackageFeatures
                 {
                     final Map<String, Object> attributes = new HashMap<>();
 
-                    for(final String columnName : schema)
+                    for(final String columnName : featureSet.getAttributeColumnNames())
                     {
                         attributes.put(columnName, resultSet.getObject(columnName));
                     }
 
-                    results.add(new Feature(resultSet.getInt("id"),
-                                            this.createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
+                    results.add(new Feature(resultSet.getInt(featureSet.getPrimaryKeyColumnName()),
+                                            this.createGeometry(resultSet.getBytes(featureSet.getGeometryColumnName())),
                                             attributes));
                 }
 
@@ -527,9 +550,62 @@ public class GeoPackageFeatures
         }
     }
 
-    public void visitFeatures(final GeometryColumn geometryColumn, final Consumer<Feature> featureConsumer) throws SQLException, WellKnownBinaryFormatException
+    /**
+     * Gets a {@link Feature} given a geometry column and feature identifier
+     *
+     * @param featureSet
+     *             Feature set containing the requested feature
+     * @param featureIdentifier
+     *             Identifier for a feature
+     * @return a {@link Feature}
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public Feature getFeature(final FeatureSet featureSet,
+                              final int        featureIdentifier) throws SQLException, WellKnownBinaryFormatException
     {
-        if(geometryColumn == null)
+        if(featureSet == null)
+        {
+            throw new IllegalArgumentException("Feature setmay not be null");
+        }
+
+        final String featureQuery = String.format("SELECT %s%s FROM %s WHERE %s = ?",
+                                                  featureSet.getGeometryColumnName(),
+                                                  featureSet.getAttributeColumnNames().isEmpty() ? ""
+                                                                                                 : ", " + String.join(", ", featureSet.getAttributeColumnNames()),
+                                                  GeoPackageFeatures.GeometryColumnsTableName,
+                                                  featureSet.getPrimaryKeyColumnName());
+
+        final Pair<byte[], Map<String, Object>> feature = JdbcUtility.selectOne(this.databaseConnection,
+                                                                                featureQuery,
+                                                                                preparedStatement -> preparedStatement.setInt(1, featureIdentifier),
+                                                                                resultSet -> { final Map<String, Object> attributes = new HashMap<>();
+
+                                                                                               for(final String columnName : featureSet.getAttributeColumnNames())
+                                                                                               {
+                                                                                                   attributes.put(columnName, resultSet.getObject(columnName));
+                                                                                               }
+
+                                                                                               return Pair.of(resultSet.getBytes(featureSet.getGeometryColumnName()),
+                                                                                                              attributes);
+                                                                                             });
+        if(feature == null)
+        {
+            throw new IllegalArgumentException(String.format("No feature exists for geometry column %s.%s and identifier %d",
+                                                             featureSet.getTableName(),
+                                                             featureSet.getGeometryColumnName(),
+                                                             featureIdentifier));
+        }
+
+        return new Feature(featureIdentifier,
+                           this.createGeometry(feature.getLeft()),
+                           feature.getRight());
+    }
+
+    public void visitFeatures(final FeatureSet        featureSet,
+                              final Consumer<Feature> featureConsumer) throws SQLException, WellKnownBinaryFormatException
+    {
+        if(featureSet == null)
         {
             throw new IllegalArgumentException("Geometry column may not be null");
         }
@@ -539,32 +615,29 @@ public class GeoPackageFeatures
             throw new IllegalArgumentException("Feature consumer may not be null");
         }
 
-        final List<String> schema = this.getSchema(geometryColumn); // Feature table's columns name with "id" listed first, the geometry column second, and the rest in the order returned by SQL.
+        final String featureQuery = String.format("SELECT %s, %s%s FROM %s",
+                                                  featureSet.getPrimaryKeyColumnName(),
+                                                  featureSet.getGeometryColumnName(),
+                                                  featureSet.getAttributeColumnNames().isEmpty() ? ""
+                                                                                                 : ", " + String.join(", ", featureSet.getAttributeColumnNames()),
+                                                  featureSet.getTableName());
 
-        final String featureQuery = String.format("SELECT %s FROM %s",
-                                                  String.join(", ", schema),
-                                                  GeoPackageFeatures.GeometryColumnsTableName);
-
-        schema.remove(0);   // Remove, "id". We'll later refer to it by name.
-        schema.remove(0);   // Remove the geometry column name. We'll also refer to it by name.
-
-
-        try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(featureQuery))
+        try(final Statement statement = this.databaseConnection.createStatement())
         {
-            try(final ResultSet resultSet = preparedStatement.executeQuery())
+            try(final ResultSet resultSet = statement.executeQuery(featureQuery))
             {
                 while(resultSet.next())
                 {
                     final Map<String, Object> attributes = new HashMap<>();
 
-                    for(final String columnName : schema)
+                    for(final String columnName : featureSet.getAttributeColumnNames())
                     {
                         attributes.put(columnName, resultSet.getObject(columnName));
                     }
 
-                    featureConsumer.accept(new Feature(resultSet.getInt("id"),
-                                                       this.createGeometry(resultSet.getBytes(geometryColumn.getColumnName())),
-                                                       attributes));
+                    featureConsumer.accept(new Feature(resultSet.getInt(featureSet.getPrimaryKeyColumnName()),
+                                            this.createGeometry(resultSet.getBytes(featureSet.getGeometryColumnName())),
+                                            attributes));
                 }
             }
         }
@@ -816,6 +889,8 @@ public class GeoPackageFeatures
 
     private Geometry createGeometry(final ByteBuffer byteBuffer) throws WellKnownBinaryFormatException
     {
+        this is the first read from the byte buffer. it needs to be reading the header, but for some reason i've jumped straight into reading byte order (?????)'
+
         final ByteOrder byteOrder = byteBuffer.get() == 0 ? ByteOrder.BIG_ENDIAN
                                                           : ByteOrder.LITTLE_ENDIAN;
 
@@ -885,38 +960,40 @@ public class GeoPackageFeatures
         }
     }
 
-    /**
-     * Returns the column names of a feature table, but reorders them so that
-     * "id" is first, the geometry column name is second, followed by the rest
-     * of the columns in the order returned by the query.
-     *
-     * @param geometryColumn
-     *             {@link GeometryColumn}
-     * @return The column names of a feature table, but reorders them so that
-     *             "id" is first, the geometry column name is second, followed
-     *             by the rest of the columns in the order returned by the
-     *             query.
-     * @throws SQLException
-     *             if there is a database error
-     */
-    private List<String> getSchema(final GeometryColumn geometryColumn) throws SQLException
-    {
-        // In SQL (and by extension, SQLite) identifiers are case insensitive.
-        // It's possible that a geometry column name could be specified in one
-        // case and the table created in another case. We'll do everything in
-        // uppercase to avoid failing to find either column.
-        final List<String> columns = DatabaseUtility.getColumnNames(this.databaseConnection, geometryColumn.getTableName())
-                                                    .stream()
-                                                    .map(String::toUpperCase)
-                                                    .collect(Collectors.toList());
-
-        Collections.swap(columns, 0, columns.indexOf("id".toUpperCase()));                           // List "id" first
-        Collections.swap(columns, 1, columns.indexOf(geometryColumn.getColumnName().toUpperCase())); // List geometry column second
-
-        return columns;
-    }
+    // TODO DELETE ME
+//    /**
+//     * Returns the column names of a feature table, but reorders them so that
+//     * "id" is first, the geometry column name is second, followed by the rest
+//     * of the columns in the order returned by the query.
+//     *
+//     * @param geometryColumn
+//     *             {@link GeometryColumn}
+//     * @return The column names of a feature table, but reorders them so that
+//     *             "id" is first, the geometry column name is second, followed
+//     *             by the rest of the columns in the order returned by the
+//     *             query.
+//     * @throws SQLException
+//     *             if there is a database error
+//     */
+//    private List<String> getSchema(final GeometryColumn geometryColumn) throws SQLException
+//    {
+//        // In SQL (and by extension, SQLite) identifiers are case insensitive.
+//        // It's possible that a geometry column name could be specified in one
+//        // case and the table created in another case. We'll do everything in
+//        // uppercase to avoid failing to find either column.
+//        final List<String> columns = DatabaseUtility.getColumnNames(this.databaseConnection, geometryColumn.getTableName())
+//                                                    .stream()
+//                                                    .map(String::toUpperCase)
+//                                                    .collect(Collectors.toList());
+//
+//        Collections.swap(columns, 0, columns.indexOf("id".toUpperCase()));                           // List "id" first
+//        Collections.swap(columns, 1, columns.indexOf(geometryColumn.getColumnName().toUpperCase())); // List geometry column second
+//
+//        return columns;
+//    }
 
     private void addFeatureTableNoCommit(final String                       featureTableName,
+                                         final String                       primaryKeyColumnName,
                                          final GeometryColumnDefinition     geometryColumn,
                                          final Collection<ColumnDefinition> columnDefinitions) throws SQLException
     {
@@ -926,7 +1003,7 @@ public class GeoPackageFeatures
         final List<AbstractColumnDefinition> columns = new LinkedList<>(columnDefinitions);
 
         columns.add(0,
-                    new ColumnDefinition("id",
+                    new ColumnDefinition(primaryKeyColumnName,
                                          "INTEGER",
                                          EnumSet.of(ColumnFlag.PrimaryKey, ColumnFlag.AutoIncrement, ColumnFlag.NotNull),   // Specifying unique is unnecessary as primary keys are assumed to be unique
                                          null,
