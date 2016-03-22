@@ -42,8 +42,6 @@ import java.util.List;
  */
 public class WktMultiPolygon extends WktMultiSurface<WktPolygon>
 {
-    public static final long TypeCode = 6;
-
     public WktMultiPolygon(final WktPolygon... polygons)
     {
         this(Arrays.asList(polygons));
@@ -57,7 +55,7 @@ public class WktMultiPolygon extends WktMultiSurface<WktPolygon>
     @Override
     public long getTypeCode()
     {
-        return TypeCode;
+        return GeometryType.MultiPolygon.getCode();
     }
 
     @Override
@@ -79,7 +77,7 @@ public class WktMultiPolygon extends WktMultiSurface<WktPolygon>
 
     public static WktMultiPolygon readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, TypeCode);
+        readWellKnownBinaryHeader(byteBuffer, GeometryType.MultiPolygon.getCode());
 
         final long polygonCount = Integer.toUnsignedLong(byteBuffer.getInt());
 

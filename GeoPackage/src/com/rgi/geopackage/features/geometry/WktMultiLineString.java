@@ -77,7 +77,7 @@ public class WktMultiLineString extends WktMultiCurve<WktLineString>
 
     public static WktMultiLineString readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, TypeCode);
+        readWellKnownBinaryHeader(byteBuffer, GeometryType.MultiLineString.getCode());
 
         final long lineStringCount = Integer.toUnsignedLong(byteBuffer.getInt());
 

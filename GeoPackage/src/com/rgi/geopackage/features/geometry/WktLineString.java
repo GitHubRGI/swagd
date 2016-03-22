@@ -40,8 +40,6 @@ import java.util.Collection;
  */
 public class WktLineString extends WktCurve
 {
-    public static final long TypeCode = 2;
-
     public WktLineString(final Coordinate... points)
     {
         this(new LinearRing(points));
@@ -60,7 +58,7 @@ public class WktLineString extends WktCurve
     @Override
     public long getTypeCode()
     {
-        return TypeCode;
+        return GeometryType.LineString.getCode();
     }
 
     @Override
@@ -85,7 +83,7 @@ public class WktLineString extends WktCurve
 
         writeByteOrder(byteBuffer);
 
-        byteBuffer.putInt((int)TypeCode);
+        byteBuffer.putInt((int)GeometryType.LineString.getCode());
 
         this.linearString.writeWellKnownBinary(byteBuffer);
     }
@@ -98,7 +96,7 @@ public class WktLineString extends WktCurve
 
     public static WktLineString readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, TypeCode);
+        readWellKnownBinaryHeader(byteBuffer, GeometryType.LineString.getCode());
 
         return new WktLineString(LinearRing.readWellKnownBinary(byteBuffer));
     }

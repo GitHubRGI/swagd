@@ -16,6 +16,11 @@ public class WellKnownBinaryFormatException extends Exception
         super(message);
     }
 
+    public WellKnownBinaryFormatException(final Throwable cause)
+    {
+        super(cause);
+    }
+
     private void writeObject(final ObjectOutputStream stream)
     {
         throw new RuntimeException("Serialization not supported");

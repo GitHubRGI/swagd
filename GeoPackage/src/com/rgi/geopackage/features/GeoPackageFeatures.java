@@ -44,6 +44,7 @@ import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
 import java.io.IOException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Connection;
@@ -873,53 +874,88 @@ public class GeoPackageFeatures
                " CONSTRAINT fk_gc_srs        FOREIGN KEY (srs_id)     REFERENCES gpkg_spatial_ref_sys (srs_id));";
     }
 
-    private Geometry createGeometry(final byte[] blob) throws WellKnownBinaryFormatException
+    private Geometry createGeometry(final byte[] geoPackageBinaryBlob) throws WellKnownBinaryFormatException
     {
-        final BinaryHeader binaryHeader = new BinaryHeader(blob);   // This will throw if the array length is too short to contain a header (or if it's not long enough to contain the envelope type specified)
+        final BinaryHeader binaryHeader = new BinaryHeader(geoPackageBinaryBlob);   // This will throw if the array length is too short to contain a header (or if it's not long enough to contain the envelope type specified)
 
-        final int headerByteLength = binaryHeader.getByteSize();
-
-        if(blob.length < headerByteLength + 5)    // one byte to indicate byte order, and another 4 (unsigned int) indicating the geometry type
+        if(binaryHeader.getBinaryType() == BinaryType.Standard)
         {
-            throw new IllegalArgumentException("Well standard GeoPackage binary blob must contain at least 5 bytes beyond the header");
+            final int headerByteLength = binaryHeader.getByteSize();
+
+            return this.createGeometry(ByteBuffer.wrap(geoPackageBinaryBlob,
+                                                       headerByteLength,
+                                                       geoPackageBinaryBlob.length - headerByteLength)
+                                                 .asReadOnlyBuffer());  // Minor insurance that geometry extension implementations can't change the buffer
         }
 
-        return this.createGeometry(ByteBuffer.wrap(blob, headerByteLength, blob.length - headerByteLength));
+        // else, this is an extended binary type. The next 4 bytes are the "extension_code"
+        // http://www.geopackage.org/spec/#_requirement-70
+        // "... This extension_code SHOULD identify the implementer of the
+        // extension and/or the particular geometry type extension, and SHOULD
+        // be unique."
+
+        // TODO: read the 4 byte extension code, and look it up in a mapping of known extensions codes/parsers (to be registered by extension implementers)
+
+        throw new WellKnownBinaryFormatException("Extensions of GeoPackageBinary geometry encoding are not currently supported");
     }
 
-    private Geometry createGeometry(final ByteBuffer byteBuffer) throws WellKnownBinaryFormatException
+    private Geometry createGeometry(final ByteBuffer wkbByteBuffer) throws WellKnownBinaryFormatException
     {
-        this is the first read from the byte buffer. it needs to be reading the header, but for some reason i've jumped straight into reading byte order (?????)'
-
-        final ByteOrder byteOrder = byteBuffer.get() == 0 ? ByteOrder.BIG_ENDIAN
-                                                          : ByteOrder.LITTLE_ENDIAN;
-
-        byteBuffer.order(byteOrder);
-
-        // Read 4 bytes as an /unsigned/ int
-        final long geometryType = Integer.toUnsignedLong(byteBuffer.getInt());
-
-        if(!this.geometryFactories.containsKey(geometryType))
+        try
         {
-            throw new RuntimeException(String.format("Unrecognized geometry type code %d. Recognized geometry types are: %s. Additional types will require a GeoPackage extention to interact with.",
-                                                     geometryType,
-                                                     this.geometryFactories
-                                                         .keySet()
-                                                         .stream()
-                                                         .map(Object::toString)
-                                                         .collect(Collectors.joining(", "))));
+            if(wkbByteBuffer == null)
+            {
+                throw new IllegalArgumentException("Well known binary byte buffer may not be null");
+            }
+
+            if(wkbByteBuffer.limit() < 5)
+            {
+                throw new WellKnownBinaryFormatException("Well known binary buffer must contain at least 5 bytes - the first being the byte order indicator, followed by a 4 byte unsigned integer describing the geometry type.");
+            }
+
+            // Save the buffer position (.mark()) before we read the well known
+            // binary header (this is *not* the GeoPackage binary header). The
+            // well known binary header will be re-read by the parsers stored
+            // in the geometry factory. This is so the parsers can stand alone,
+            // not relying the ByteBuffer to be positioned after the well known
+            // binary header.
+            wkbByteBuffer.mark();
+
+            final ByteOrder byteOrder = wkbByteBuffer.get() == 0 ? ByteOrder.BIG_ENDIAN
+                                                                 : ByteOrder.LITTLE_ENDIAN;
+
+            wkbByteBuffer.order(byteOrder);
+
+            // Read 4 bytes as an /unsigned/ int
+            final long geometryType = Integer.toUnsignedLong(wkbByteBuffer.getInt());
+
+            if(!this.geometryFactories.containsKey(geometryType))
+            {
+                throw new RuntimeException(String.format("Unrecognized geometry type code %d. Recognized geometry types are: %s. Additional types will require a GeoPackage extention to interact with.",
+                                                         geometryType,
+                                                         this.geometryFactories
+                                                             .keySet()
+                                                             .stream()
+                                                             .map(Object::toString)
+                                                             .collect(Collectors.joining(", "))));
+            }
+
+            wkbByteBuffer.reset(); // This will reset the position to before the well known binary header.
+
+            return this.geometryFactories
+                       .get(geometryType)
+                       .create(wkbByteBuffer);
+        }
+        catch(final BufferUnderflowException bufferUnderflowException)
+        {
+            throw new WellKnownBinaryFormatException(bufferUnderflowException);
         }
 
-        byteBuffer.rewind();
-
-        return this.geometryFactories
-                   .get(geometryType)
-                   .create(byteBuffer);
     }
 
     private static byte[] createBlob(final Geometry geometry, final int spatialReferenceSystemIdentifier) throws IOException
     {
-        final ByteBuffer byteBuffer = ByteBuffer.allocate(100); // TODO can the up-front
+        final ByteBuffer byteBuffer = ByteBuffer.allocate(100); // TODO can the allocation up-front
 
         // TODO HEADER USES OPTIONS:
         // FORCE ENVELOPE
@@ -959,38 +995,6 @@ public class GeoPackageFeatures
                                                              mRequirement.toString().toLowerCase()));
         }
     }
-
-    // TODO DELETE ME
-//    /**
-//     * Returns the column names of a feature table, but reorders them so that
-//     * "id" is first, the geometry column name is second, followed by the rest
-//     * of the columns in the order returned by the query.
-//     *
-//     * @param geometryColumn
-//     *             {@link GeometryColumn}
-//     * @return The column names of a feature table, but reorders them so that
-//     *             "id" is first, the geometry column name is second, followed
-//     *             by the rest of the columns in the order returned by the
-//     *             query.
-//     * @throws SQLException
-//     *             if there is a database error
-//     */
-//    private List<String> getSchema(final GeometryColumn geometryColumn) throws SQLException
-//    {
-//        // In SQL (and by extension, SQLite) identifiers are case insensitive.
-//        // It's possible that a geometry column name could be specified in one
-//        // case and the table created in another case. We'll do everything in
-//        // uppercase to avoid failing to find either column.
-//        final List<String> columns = DatabaseUtility.getColumnNames(this.databaseConnection, geometryColumn.getTableName())
-//                                                    .stream()
-//                                                    .map(String::toUpperCase)
-//                                                    .collect(Collectors.toList());
-//
-//        Collections.swap(columns, 0, columns.indexOf("id".toUpperCase()));                           // List "id" first
-//        Collections.swap(columns, 1, columns.indexOf(geometryColumn.getColumnName().toUpperCase())); // List geometry column second
-//
-//        return columns;
-//    }
 
     private void addFeatureTableNoCommit(final String                       featureTableName,
                                          final String                       primaryKeyColumnName,

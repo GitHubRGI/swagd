@@ -45,8 +45,6 @@ import java.util.List;
  */
 public class WktPolygon extends WktCurvePolygon
 {
-    public static final long TypeCode = 3;
-
     public WktPolygon(final LinearRing    exteriorRing,
                       final LinearRing... interiorRings)
     {
@@ -71,7 +69,7 @@ public class WktPolygon extends WktCurvePolygon
     @Override
     public long getTypeCode()
     {
-        return TypeCode;
+        return GeometryType.Polygon.getCode();
     }
 
     @Override
@@ -110,7 +108,7 @@ public class WktPolygon extends WktCurvePolygon
 
     public static WktPolygon readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, TypeCode);
+        readWellKnownBinaryHeader(byteBuffer, GeometryType.Polygon.getCode());
 
         final long ringCount = Integer.toUnsignedLong(byteBuffer.getInt());
 
@@ -123,7 +121,7 @@ public class WktPolygon extends WktCurvePolygon
 
         final Collection<LinearRing> interiorRings = new LinkedList<>();
 
-        for(long pointIndex = 0; pointIndex < ringCount-1; ++pointIndex)
+        for(long ringIndex = 1; ringIndex < ringCount; ++ringIndex)
         {
             interiorRings.add(LinearRing.readWellKnownBinary(byteBuffer));
         }

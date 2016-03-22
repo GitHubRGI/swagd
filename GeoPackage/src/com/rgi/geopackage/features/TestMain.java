@@ -7,8 +7,11 @@ import com.rgi.geopackage.verification.VerificationLevel;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Luke Lambert
@@ -57,17 +60,71 @@ public final class TestMain
 
             for(final FeatureSet featureSet : featureSets)
             {
+                //final FeatureSet featureSet = gpkg.features().getFeatureSet("streets");
+
+                System.out.format("%s (table: %s)\n",
+                                  featureSet.getIdentifier(),
+                                  featureSet.getTableName());
+
                 final GeometryColumn geometryColumn = gpkg.features().getGeometryColumn(featureSet);
 
-                System.out.println(geometryColumn.getGeometryType());
+                System.out.format("Geometry column: %s, type: %s, z: %s, m: %s\n",
+                                  geometryColumn.getColumnName(),
+                                  geometryColumn.getGeometryType(),
+                                  geometryColumn.getZRequirement().toString(),
+                                  geometryColumn.getMRequirement().toString());
+
+                final StringBuilder tableHeader = new StringBuilder();
+                final StringBuilder rowFormater = new StringBuilder();
+
+                tableHeader.append(featureSet.getPrimaryKeyColumnName());
+
+                rowFormater.append('%');
+                rowFormater.append(featureSet.getPrimaryKeyColumnName().length());
+                rowFormater.append("s\t");
+
+                tableHeader.append('\t');
+                tableHeader.append(featureSet.getGeometryColumnName());
+
+                rowFormater.append('%');
+                rowFormater.append(Math.max(4, featureSet.getGeometryColumnName().length()));
+                rowFormater.append("s\t");
+
+                for(final String attributeColumnName : featureSet.getAttributeColumnNames())
+                {
+                    tableHeader.append('\t');
+                    tableHeader.append(attributeColumnName);
+
+                    rowFormater.append('%');
+                    rowFormater.append(attributeColumnName.length());
+                    rowFormater.append("s\t");
+                }
+
+                rowFormater.append('\n');
+
+                System.out.println(tableHeader);
 
                 try
                 {
                     gpkg.features().visitFeatures(featureSet,
-                                                  feature -> { final Map<String, Object> attributes = feature.getAttributes();
+                                                  feature -> { //feature.getGeometry().getTypeCode()
 
-                                                               attributes.forEach((name, value) -> System.out.println(name + " = " + value.toString()));
+                                                               final Map<String, Object> attributes = feature.getAttributes();
 
+                                                               final List<String> columns = new ArrayList<>(2 + featureSet.getAttributeColumnNames().size());
+
+                                                               columns.add(Integer.toString(feature.getIdentifier()));
+                                                               columns.add(Long.toString(feature.getGeometry().getTypeCode()));
+
+                                                               columns.addAll(featureSet.getAttributeColumnNames()
+                                                                                        .stream()
+                                                                                        .map(attributeColumnName -> attributes.get(attributeColumnName)
+                                                                                                                              .toString())
+                                                                                        .collect(Collectors.toList()));
+
+
+                                                               System.out.format(rowFormater.toString(),
+                                                                                 columns.toArray());
                                                              });
                 }
                 catch(final WellKnownBinaryFormatException ex)
@@ -75,7 +132,7 @@ public final class TestMain
                     ex.printStackTrace();
                 }
 
-                break;
+                System.out.println();
             }
         }
         catch(final IOException | SQLException | ConformanceException | ClassNotFoundException ex)

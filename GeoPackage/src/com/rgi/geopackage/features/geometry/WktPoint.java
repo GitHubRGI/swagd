@@ -40,8 +40,6 @@ import java.nio.ByteBuffer;
  */
 public class WktPoint extends WktGeometry
 {
-    public static final long TypeCode = 1;
-
     public WktPoint(final double x,
                     final double y)
     {
@@ -61,7 +59,7 @@ public class WktPoint extends WktGeometry
     @Override
     public long getTypeCode()
     {
-        return TypeCode;
+        return GeometryType.Point.getCode();
     }
 
     @Override
@@ -93,7 +91,7 @@ public class WktPoint extends WktGeometry
 
     public static WktPoint readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, TypeCode);
+        readWellKnownBinaryHeader(byteBuffer, GeometryType.Point.getCode());
 
         return new WktPoint(byteBuffer.getDouble(),
                             byteBuffer.getDouble());

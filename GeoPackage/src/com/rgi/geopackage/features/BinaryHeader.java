@@ -65,7 +65,7 @@ public class BinaryHeader
 
         // read flags
         this.binaryType = BinaryType.type(bytes[3]);
-        this.empty = ((bytes[3] << 4) & 1) == 1;
+        this.emptyGeometry = ((bytes[3] << 4) & 1) == 1;
 
         this.byteOrder  = ((this.flags & 1) == 0) ? ByteOrder.BIG_ENDIAN
                                                   : ByteOrder.LITTLE_ENDIAN;
@@ -133,13 +133,13 @@ public class BinaryHeader
 
         this.version                          = version;
         this.binaryType                       = binaryType;
-        this.empty                            = contents == Contents.Empty;
+        this.emptyGeometry                    = contents == Contents.Empty;
         this.byteOrder                        = byteOrder;
         this.spatialReferenceSystemIdentifier = spatialReferenceSystemIdentifier;
         this.envelopeContentsIndicator        = envelopeContentsIndicator;
         this.envelope                         = envelope;
 
-        final int isEmptyMask          = this.empty ? (1 << 4) : 0; // TODO make this part of the Contents enum like BinaryType?
+        final int isEmptyMask          = this.emptyGeometry ? (1 << 4) : 0; // TODO make this part of the Contents enum like BinaryType?
         final int envelopeContentsMask = (byte)(this.envelopeContentsIndicator.getCode() << 1);
 
         this.flags = // 0                         |
@@ -160,14 +160,19 @@ public class BinaryHeader
         return this.spatialReferenceSystemIdentifier;
     }
 
-    public boolean isEmpty()
+    public boolean isEmptyGeometry()
     {
-        return this.empty;
+        return this.emptyGeometry;
     }
 
     public int getByteSize()
     {
         return this.byteSize;
+    }
+
+    public BinaryType getBinaryType()
+    {
+        return this.binaryType;
     }
 
     public void writeBytes(final ByteBuffer byteBuffer) throws IOException
@@ -231,8 +236,8 @@ public class BinaryHeader
 
     private final byte                      version; // This is an *unsigned* value, regardless of Java's interpretation
     private final BinaryType                binaryType;
-    private final boolean                   empty;
-    private final ByteOrder                 byteOrder;
+    private final boolean                   emptyGeometry;
+    private final ByteOrder                 byteOrder;  // NOTE: this applies *only* to the bytes of the GeoPackage binary header. The byte order of the well known binary that follows the header is specified by the first byte of its contents: 0 - big endian, 1 - little endian
     private final int                       spatialReferenceSystemIdentifier;
     private final EnvelopeContentsIndicator envelopeContentsIndicator;
     private final double[]                  envelope;

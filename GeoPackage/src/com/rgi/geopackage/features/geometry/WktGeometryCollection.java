@@ -58,8 +58,6 @@ import java.util.Objects;
  */
 public class WktGeometryCollection<T extends WktGeometry> extends WktGeometry
 {
-    public static final long TypeCode = 7;
-
     @SafeVarargs
     public WktGeometryCollection(final T... geometries)
     {
@@ -84,7 +82,7 @@ public class WktGeometryCollection<T extends WktGeometry> extends WktGeometry
     @Override
     public long getTypeCode()
     {
-        return TypeCode;
+        return GeometryType.GeometryCollection.getCode();
     }
 
     @Override
@@ -125,7 +123,7 @@ public class WktGeometryCollection<T extends WktGeometry> extends WktGeometry
     public static WktGeometryCollection<WktGeometry> readWellKnownBinary(final GeometryFactory geometryFactory,
                                                                          final ByteBuffer      byteBuffer) throws WellKnownBinaryFormatException
     {
-        readWellKnownBinaryHeader(byteBuffer, TypeCode);
+        readWellKnownBinaryHeader(byteBuffer, GeometryType.GeometryCollection.getCode());
 
         final long geometryCount = Integer.toUnsignedLong(byteBuffer.getInt());
 

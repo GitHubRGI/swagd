@@ -42,8 +42,6 @@ import java.util.List;
  */
 public class WktMultiPoint extends WktGeometryCollection<WktPoint>
 {
-    public static final long TypeCode = 4;
-
     public WktMultiPoint(final WktPoint... points)
     {
         this(Arrays.asList(points));
@@ -57,7 +55,7 @@ public class WktMultiPoint extends WktGeometryCollection<WktPoint>
     @Override
     public long getTypeCode()
     {
-        return TypeCode;
+        return GeometryType.MultiPoint.getCode();
     }
 
     @Override
@@ -79,7 +77,7 @@ public class WktMultiPoint extends WktGeometryCollection<WktPoint>
 
     public static WktMultiPoint readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, TypeCode);
+        readWellKnownBinaryHeader(byteBuffer, GeometryType.MultiPoint.getCode());
 
         final long pointCount = Integer.toUnsignedLong(byteBuffer.getInt());
 
