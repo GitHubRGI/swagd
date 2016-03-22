@@ -52,7 +52,7 @@ public final class TestMain
         //                               Collections.emptyMap());
         //}
 
-        final File gpkgFile = new File("C:/Users/corp/Desktop/sample data/geometry/ESRI_GeoPackage.gpkg");
+        final File gpkgFile = new File("C:/Users/corp/Desktop/sample data/geometry/usterritories_1.gpkg");
 
         try(final GeoPackage gpkg = new GeoPackage(gpkgFile, VerificationLevel.None, GeoPackage.OpenMode.Open))
         {

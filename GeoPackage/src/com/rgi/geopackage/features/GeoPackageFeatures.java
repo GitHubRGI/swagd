@@ -339,54 +339,48 @@ public class GeoPackageFeatures
                                                                      ValueRequirement.fromInt(resultSet.getInt(5)))); // m value requirement
     }
 
+    public List<Column> getAttributeColumns(final FeatureSet featureSet) throws SQLException
+    {
+        try(final Statement statement = GeoPackageFeatures.this.databaseConnection.createStatement())
+        {
+            try(final ResultSet tableInfo = statement.executeQuery(String.format("PRAGMA table_info(%s)", featureSet.getTableName())))
+            {
+                final List<Column> columns = new ArrayList<>();
 
-//    try(final Statement statement = GeoPackageFeatures.this.databaseConnection.createStatement())
-//    {
-//        try(final ResultSet tableInfo = statement.executeQuery(String.format("PRAGMA table_info(%s)", featureSetTableName)))
-//        {
-//            String primaryKeyColumnName = null;
-//
-//            final Collection<String> columns = new ArrayList<>();
-//
-//            while(tableInfo.next())
-//            {
-//                final String name = tableInfo.getString("name");
-//
-//                if(!name.equalsIgnoreCase(geometryColumnName))
-//                {
-//                    if(tableInfo.getBoolean("pk"))
-//                    {
-//                        primaryKeyColumnName = name;
-//                    }
-//                    else // non-primary key columns (there can only be one primary key column according to the spec)
-//                    {
-//                        final String type         = tableInfo.getString("type");
-//                        final String defaultValue = tableInfo.getString("dflt_value");
-//
-//                        final EnumSet<ColumnFlag> flags = EnumSet.noneOf(ColumnFlag.class);
-//
-//                        if(tableInfo.getBoolean("notnull"))
-//                        {
-//                            flags.add(ColumnFlag.NotNull);
-//                        }
-//
-//                        // TODO there are other ColumnFlags that need to be checked here: AutoIncrement, Unique
-//                        // TODO check expression is not being checked for
-//                        // TODO neither those flags nor check expression is available in table_info
-//
-//                        columns.add(new Column(name,
-//                                               type,
-//                                               flags,
-//                                               null,    // see above TODO
-//                                               defaultValue));
-//                    }
-//                }
-//            }
-//
-//            final String finalPrimaryKeyColumnName = primaryKeyColumnName;
-//        }
-//    }
+                while(tableInfo.next())
+                {
+                    final String name = tableInfo.getString("name");
 
+                    if(!tableInfo.getBoolean("pk") &&                               // We don't want the primary key column
+                       !name.equalsIgnoreCase(featureSet.getGeometryColumnName()))  // We also don't want the geometry column
+                    {
+
+                            final String type         = tableInfo.getString("type");
+                            final String defaultValue = tableInfo.getString("dflt_value");
+
+                            final EnumSet<ColumnFlag> flags = EnumSet.noneOf(ColumnFlag.class);
+
+                            if(tableInfo.getBoolean("notnull"))
+                            {
+                                flags.add(ColumnFlag.NotNull);
+                            }
+
+                            // TODO there are other ColumnFlags that need to be checked here: AutoIncrement, Unique
+                            // TODO the "check" expression is not being read
+                            // TODO neither those flags nor check expression is available in table_info
+
+                            columns.add(new Column(name,
+                                                   type,
+                                                   flags,
+                                                   null,    // see above TODO
+                                                   defaultValue));
+                    }
+                }
+
+                return columns;
+            }
+        }
+    }
 
     /**
      * Gets a feature set object based on its table name
