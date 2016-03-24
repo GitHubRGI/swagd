@@ -10,7 +10,7 @@ public abstract class WkbGeometryZ extends Geometry
     @Override
     public final boolean hasZ()
     {
-        return false;
+        return true;
     }
 
     @Override

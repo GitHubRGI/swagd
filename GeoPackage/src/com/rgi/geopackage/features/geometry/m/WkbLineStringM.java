@@ -21,104 +21,92 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry.z;
+package com.rgi.geopackage.features.geometry.m;
 
 import com.rgi.geopackage.features.GeometryType;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 
 import java.nio.ByteBuffer;
+import java.util.Collection;
 
 /**
- * A single location in space. Each point has an X, Y and Z coordinate.
+ * A Curve that connects two or more points in space.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class WkbPointZ extends WkbGeometryZ
+public class WkbLineStringM extends WkbCurveM
 {
-    public WkbPointZ(final double x,
-                     final double y,
-                     final double z)
+    public WkbLineStringM(final CoordinateM... points)
     {
-        this(new CoordinateZ(x,
-                             y,
-                             z));
+        this(new LinearRingM(points));
     }
 
-    public WkbPointZ(final CoordinateZ coordinate)
+    public WkbLineStringM(final Collection<CoordinateM> points)
     {
-        if(coordinate == null)
-        {
-            throw new IllegalArgumentException("Coordinate may not be null");
-        }
+        this(new LinearRingM(points));
+    }
 
-        this.coordinate = coordinate;
+    private WkbLineStringM(final LinearRingM linearString)
+    {
+        this.linearString = linearString;
     }
 
     @Override
     public long getTypeCode()
     {
-        return WkbGeometryZ.GeometryTypeDimensionalityBase + GeometryType.Point.getCode();
+        return GeometryTypeDimensionalityBase + GeometryType.LineString.getCode();
     }
 
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.Point + "Z";
+        return GeometryType.LineString + "M";
     }
 
     @Override
     public boolean isEmpty()
     {
-        return this.coordinate.isEmpty();
+        return this.linearString.isEmpty();
     }
 
     @Override
     public Envelope createEnvelope()
     {
-        return this.coordinate.createEnvelope();
+        return this.linearString.createEnvelope();
     }
 
     @Override
-    public EnvelopeZ createEnvelopeZ()
+    public EnvelopeM createEnvelopeM()
     {
-        return this.coordinate.createEnvelope();
+        return this.linearString.createEnvelope();
     }
 
     @Override
     public void writeWellKnownBinary(final ByteBuffer byteBuffer)
     {
+        if(byteBuffer == null)
+        {
+            throw new IllegalArgumentException("Byte buffer may not be null");
+        }
+
         writeByteOrder(byteBuffer);
-        this.writeTypeCode(byteBuffer);
 
-        this.coordinate.writeWellKnownBinary(byteBuffer);
+        byteBuffer.putInt((int)GeometryType.LineString.getCode());
+
+        this.linearString.writeWellKnownBinary(byteBuffer);
     }
 
-    public static WkbPointZ readWellKnownBinary(final ByteBuffer byteBuffer)
+
+
+    public static WkbLineStringM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.Point.getCode());
+        readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.LineString.getCode());
 
-        return new WkbPointZ(byteBuffer.getDouble(),
-                             byteBuffer.getDouble(),
-                             byteBuffer.getDouble());
+        return new WkbLineStringM(LinearRingM.readWellKnownBinary(byteBuffer));
     }
 
-    public double getX()
-    {
-        return this.coordinate.getX();
-    }
-
-    public double getY()
-    {
-        return this.coordinate.getY();
-    }
-
-    public double getZ()
-    {
-        return this.coordinate.getZ();
-    }
-
-    private final CoordinateZ coordinate;
+    private final LinearRingM linearString;
 }

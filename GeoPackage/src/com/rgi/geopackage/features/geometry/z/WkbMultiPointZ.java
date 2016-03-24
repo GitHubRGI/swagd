@@ -77,7 +77,7 @@ public class WkbMultiPointZ extends WkbGeometryCollectionZ<WkbPointZ>
 
     public static WkbMultiPointZ readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, GeometryType.MultiPoint.getCode());
+        readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.MultiPoint.getCode());
 
         final long pointCount = Integer.toUnsignedLong(byteBuffer.getInt());
 

@@ -21,30 +21,35 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry.zm;
+
+import com.rgi.geopackage.features.Contents;
 
 /**
  * Proxy for member coordinates in GeoPackage geometries
  *
  * @author Luke Lambert
  */
-public class CoordinateM
+public class CoordinateZM
 {
-    public CoordinateM(final double x,
-                       final double y,
-                       final double m)
+    public CoordinateZM(final double x,
+                        final double y,
+                        final double z,
+                        final double m)
     {
         this.x = x;
         this.y = y;
+        this.z = z;
         this.m = m;
     }
 
     @Override
     public String toString()
     {
-        return String.format("(%f, %f, %fm)",
+        return String.format("(%f, %f, %f, %f)",
                              this.x,
                              this.y,
+                             this.z,
                              this.m);
     }
 
@@ -58,6 +63,11 @@ public class CoordinateM
         return this.y;
     }
 
+    public Double getZ()
+    {
+        return this.z;
+    }
+
     public Double getM()
     {
         return this.m;
@@ -65,23 +75,32 @@ public class CoordinateM
 
     public Contents getContents()
     {
-        return (Double.isNaN(this.x) &&
-                Double.isNaN(this.y) &&
-                Double.isNaN(this.m)) ? Contents.Empty
-                                      : Contents.NotEmpty;
+        return Double.isNaN(this.x) &&
+               Double.isNaN(this.y) &&
+               Double.isNaN(this.z) &&
+               Double.isNaN(this.m) ? Contents.Empty
+                                    : Contents.NotEmpty;
     }
 
-    public EnvelopeM getEnvelope()
+    public EnvelopeZM getEnvelope()
     {
-        return new EnvelopeM(this.x,
-                             this.x,
-                             this.y,
-                             this.y,
-                             this.m,
-                             this.m);
+        if(this.getContents() == Contents.Empty)
+        {
+            return EnvelopeZM.Empty;
+        }
+
+        return new EnvelopeZM(this.x,
+                              this.x,
+                              this.y,
+                              this.y,
+                              this.z,
+                              this.z,
+                              this.m,
+                              this.m);
     }
 
     private final double x;
     private final double y;
+    private final double z;
     private final double m;
 }

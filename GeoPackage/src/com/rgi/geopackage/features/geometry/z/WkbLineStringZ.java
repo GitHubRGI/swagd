@@ -103,7 +103,7 @@ public class WkbLineStringZ extends WkbCurveZ
 
     public static WkbLineStringZ readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, GeometryType.LineString.getCode());
+        readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.LineString.getCode());
 
         return new WkbLineStringZ(LinearRingZ.readWellKnownBinary(byteBuffer));
     }

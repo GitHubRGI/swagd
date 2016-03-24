@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry.z;
+package com.rgi.geopackage.features.geometry.m;
 
 import com.rgi.geopackage.features.GeometryType;
 
@@ -40,14 +40,14 @@ import java.util.List;
  * @author Luke Lambert
  *
  */
-public class WkbMultiPolygonZ extends WkbMultiSurfaceZ<WkbPolygonZ>
+public class WkbMultiPolygonM extends WkbMultiSurfaceM<WkbPolygonM>
 {
-    public WkbMultiPolygonZ(final WkbPolygonZ... polygons)
+    public WkbMultiPolygonM(final WkbPolygonM... polygons)
     {
         this(Arrays.asList(polygons));
     }
 
-    public WkbMultiPolygonZ(final Collection<WkbPolygonZ> polygons)
+    public WkbMultiPolygonM(final Collection<WkbPolygonM> polygons)
     {
         super(polygons);
     }
@@ -55,13 +55,13 @@ public class WkbMultiPolygonZ extends WkbMultiSurfaceZ<WkbPolygonZ>
     @Override
     public long getTypeCode()
     {
-        return WkbGeometryZ.GeometryTypeDimensionalityBase + GeometryType.MultiPolygon.getCode();
+        return GeometryTypeDimensionalityBase + GeometryType.MultiPolygon.getCode();
     }
 
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.MultiPolygon + "Z";
+        return GeometryType.MultiPolygon + "M";
     }
 
     @Override
@@ -70,24 +70,24 @@ public class WkbMultiPolygonZ extends WkbMultiSurfaceZ<WkbPolygonZ>
         throw new UnsupportedOperationException("pending implementaiton");
     }
 
-    public List<WkbPolygonZ> getPolygons()
+    public List<WkbPolygonM> getPolygons()
     {
         return this.getGeometries();
     }
 
-    public static WkbMultiPolygonZ readWellKnownBinary(final ByteBuffer byteBuffer)
+    public static WkbMultiPolygonM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.MultiPolygon.getCode());
 
         final long polygonCount = Integer.toUnsignedLong(byteBuffer.getInt());
 
-        final Collection<WkbPolygonZ> polygons = new LinkedList<>();
+        final Collection<WkbPolygonM> polygons = new LinkedList<>();
 
         for(long polygonIndex = 0; polygonIndex < polygonCount; ++polygonIndex)
         {
-            polygons.add(WkbPolygonZ.readWellKnownBinary(byteBuffer));
+            polygons.add(WkbPolygonM.readWellKnownBinary(byteBuffer));
         }
 
-        return new WkbMultiPolygonZ(polygons);
+        return new WkbMultiPolygonM(polygons);
     }
 }

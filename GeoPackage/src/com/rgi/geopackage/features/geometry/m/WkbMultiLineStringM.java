@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry.z;
+package com.rgi.geopackage.features.geometry.m;
 
 import com.rgi.geopackage.features.GeometryType;
 
@@ -32,36 +32,36 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * A restricted form of MultiSurface where each Surface in the collection must
- * be of type Polygon.
+ * A restricted form of MultiCurve where each Curve in the collection must be
+ * of type LineString.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class WkbMultiPolygonZ extends WkbMultiSurfaceZ<WkbPolygonZ>
+public class WkbMultiLineStringM extends WkbMultiCurveM<WkbLineStringM>
 {
-    public WkbMultiPolygonZ(final WkbPolygonZ... polygons)
+    public WkbMultiLineStringM(final WkbLineStringM... lineStrings)
     {
-        this(Arrays.asList(polygons));
+        this(Arrays.asList(lineStrings));
     }
 
-    public WkbMultiPolygonZ(final Collection<WkbPolygonZ> polygons)
+    public WkbMultiLineStringM(final Collection<WkbLineStringM> lineStrings)
     {
-        super(polygons);
+        super(lineStrings);
     }
 
     @Override
     public long getTypeCode()
     {
-        return WkbGeometryZ.GeometryTypeDimensionalityBase + GeometryType.MultiPolygon.getCode();
+        return GeometryTypeDimensionalityBase + GeometryType.MultiLineString.getCode();
     }
 
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.MultiPolygon + "Z";
+        return GeometryType.MultiLineString + "M";
     }
 
     @Override
@@ -70,24 +70,24 @@ public class WkbMultiPolygonZ extends WkbMultiSurfaceZ<WkbPolygonZ>
         throw new UnsupportedOperationException("pending implementaiton");
     }
 
-    public List<WkbPolygonZ> getPolygons()
+    public List<WkbLineStringM> getLineStrings()
     {
         return this.getGeometries();
     }
 
-    public static WkbMultiPolygonZ readWellKnownBinary(final ByteBuffer byteBuffer)
+    public static WkbMultiLineStringM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.MultiPolygon.getCode());
+        readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.MultiLineString.getCode());
 
-        final long polygonCount = Integer.toUnsignedLong(byteBuffer.getInt());
+        final long lineStringCount = Integer.toUnsignedLong(byteBuffer.getInt());
 
-        final Collection<WkbPolygonZ> polygons = new LinkedList<>();
+        final Collection<WkbLineStringM> lineStrings = new LinkedList<>();
 
-        for(long polygonIndex = 0; polygonIndex < polygonCount; ++polygonIndex)
+        for(long lineStringIndex = 0; lineStringIndex < lineStringCount; ++lineStringIndex)
         {
-            polygons.add(WkbPolygonZ.readWellKnownBinary(byteBuffer));
+            lineStrings.add(WkbLineStringM.readWellKnownBinary(byteBuffer));
         }
 
-        return new WkbMultiPolygonZ(polygons);
+        return new WkbMultiLineStringM(lineStrings);
     }
 }

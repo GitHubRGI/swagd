@@ -21,31 +21,28 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry.m;
 
+import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 
 /**
  * @author Luke Lambert
  */
-public final class EnvelopeZM extends Envelope
+public final class EnvelopeM extends Envelope
 {
-    public EnvelopeZM(final double minimumX,
-                      final double maximumX,
-                      final double minimumY,
-                      final double maximumY,
-                      final double minimumZ,
-                      final double maximumZ,
-                      final double minimumM,
-                      final double maximumM)
+    public EnvelopeM(final double minimumX,
+                     final double maximumX,
+                     final double minimumY,
+                     final double maximumY,
+                     final double minimumM,
+                     final double maximumM)
     {
         super(minimumX,
               maximumX,
               minimumY,
               maximumY);
 
-        this.minimumZ = minimumZ;
-        this.maximumZ = maximumZ;
         this.minimumM = minimumM;
         this.maximumM = maximumM;
     }
@@ -57,21 +54,9 @@ public final class EnvelopeZM extends Envelope
                              this.getMaximumX(),
                              this.getMinimumY(),
                              this.getMaximumY(),
-                             this.minimumZ,
-                             this.maximumZ,
                              this.minimumM,
                              this.maximumM
                            };
-    }
-
-    public double getMinimumZ()
-    {
-        return this.minimumZ;
-    }
-
-    public double getMaximumZ()
-    {
-        return this.maximumZ;
     }
 
     public double getMinimumM()
@@ -85,12 +70,6 @@ public final class EnvelopeZM extends Envelope
     }
 
     @Override
-    public boolean hasZ()
-    {
-        return true;
-    }
-
-    @Override
     public boolean hasM()
     {
         return true;
@@ -100,8 +79,6 @@ public final class EnvelopeZM extends Envelope
     public boolean isEmpty()
     {
         return super.isEmpty()             &&
-               Double.isNaN(this.minimumZ) &&
-               Double.isNaN(this.maximumZ) &&
                Double.isNaN(this.minimumM) &&
                Double.isNaN(this.maximumM);
     }
@@ -110,33 +87,27 @@ public final class EnvelopeZM extends Envelope
     public EnvelopeContentsIndicator getContentsIndicator()
     {
         return this.isEmpty() ? EnvelopeContentsIndicator.NoEnvelope
-                              : EnvelopeContentsIndicator.Xyzm;
+                              : EnvelopeContentsIndicator.Xym;
     }
 
-    public static EnvelopeZM combine(final EnvelopeZM first,
-                                     final EnvelopeZM second)
+    public static EnvelopeM combine(final EnvelopeM first,
+                                    final EnvelopeM second)
     {
-        return new EnvelopeZM(nanMinimum(first.getMinimumX(), second.getMinimumX()),
-                              nanMaximum(first.getMaximumX(), second.getMaximumX()),
-                              nanMinimum(first.getMinimumY(), second.getMinimumY()),
-                              nanMaximum(first.getMaximumY(), second.getMaximumY()),
-                              nanMinimum(first.minimumZ,      second.minimumZ),
-                              nanMaximum(first.maximumZ,      second.maximumZ),
-                              nanMinimum(first.minimumM,      second.minimumM),
-                              nanMaximum(first.maximumM,      second.maximumM));
+        return new EnvelopeM(nanMinimum(first.getMinimumX(), second.getMinimumX()),
+                             nanMaximum(first.getMaximumX(), second.getMaximumX()),
+                             nanMinimum(first.getMinimumY(), second.getMinimumY()),
+                             nanMaximum(first.getMaximumY(), second.getMaximumY()),
+                             nanMinimum(first.minimumM,      second.minimumM),
+                             nanMaximum(first.maximumM,      second.maximumM));
     }
 
-    public static final EnvelopeZM Empty = new EnvelopeZM(Double.NaN,
-                                                          Double.NaN,
-                                                          Double.NaN,
-                                                          Double.NaN,
-                                                          Double.NaN,
-                                                          Double.NaN,
-                                                          Double.NaN,
-                                                          Double.NaN);
+    public static final EnvelopeM Empty = new EnvelopeM(Double.NaN,
+                                                        Double.NaN,
+                                                        Double.NaN,
+                                                        Double.NaN,
+                                                        Double.NaN,
+                                                        Double.NaN);
 
-    private final double minimumZ;
-    private final double maximumZ;
     private final double minimumM;
     private final double maximumM;
 }

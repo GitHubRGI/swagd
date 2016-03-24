@@ -21,14 +21,13 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry.z;
+package com.rgi.geopackage.features.geometry.m;
 
 import com.rgi.geopackage.features.GeometryType;
 import com.rgi.geopackage.features.WellKnownBinaryFormatException;
 import com.rgi.geopackage.features.geometry.Geometry;
 import com.rgi.geopackage.features.geometry.GeometryFactory;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
-import com.rgi.geopackage.features.geometry.xy.WkbGeometry;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -59,15 +58,15 @@ import java.util.Objects;
  * @author Luke Lambert
  *
  */
-public class WkbGeometryCollectionZ<T extends WkbGeometryZ> extends WkbGeometryZ
+public class WkbGeometryCollectionM<T extends WkbGeometryM> extends WkbGeometryM
 {
     @SafeVarargs
-    public WkbGeometryCollectionZ(final T... geometries)
+    public WkbGeometryCollectionM(final T... geometries)
     {
         this(Arrays.asList(geometries));
     }
 
-    public WkbGeometryCollectionZ(final Collection<T> geometries)
+    public WkbGeometryCollectionM(final Collection<T> geometries)
     {
         if(geometries == null)
         {
@@ -85,13 +84,13 @@ public class WkbGeometryCollectionZ<T extends WkbGeometryZ> extends WkbGeometryZ
     @Override
     public long getTypeCode()
     {
-        return WkbGeometryZ.GeometryTypeDimensionalityBase + GeometryType.GeometryCollection.getCode();
+        return WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.GeometryCollection.getCode();
     }
 
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.GeometryCollection + "Z";
+        return GeometryType.GeometryCollection + "M";
     }
 
     @Override
@@ -109,17 +108,17 @@ public class WkbGeometryCollectionZ<T extends WkbGeometryZ> extends WkbGeometryZ
     @Override
     public Envelope createEnvelope()
     {
-        return this.createEnvelopeZ();
+        return this.createEnvelopeM();
     }
 
     @Override
-    public EnvelopeZ createEnvelopeZ()
+    public EnvelopeM createEnvelopeM()
     {
-        return this.geometries.isEmpty() ? EnvelopeZ.Empty
+        return this.geometries.isEmpty() ? EnvelopeM.Empty
                                          : this.geometries
                                                .stream()
-                                               .map(WkbGeometryZ::createEnvelopeZ)
-                                               .reduce(EnvelopeZ::combine)
+                                               .map(WkbGeometryM::createEnvelopeM)
+                                               .reduce(EnvelopeM::combine)
                                                .get();
 
     }
@@ -129,23 +128,23 @@ public class WkbGeometryCollectionZ<T extends WkbGeometryZ> extends WkbGeometryZ
         return Collections.unmodifiableList(this.geometries);
     }
 
-    public static WkbGeometryCollectionZ<WkbGeometryZ> readWellKnownBinary(final GeometryFactory geometryFactory,
+    public static WkbGeometryCollectionM<WkbGeometryM> readWellKnownBinary(final GeometryFactory geometryFactory,
                                                                            final ByteBuffer      byteBuffer) throws WellKnownBinaryFormatException
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.GeometryCollection.getCode());
 
         final long geometryCount = Integer.toUnsignedLong(byteBuffer.getInt());
 
-        final Collection<WkbGeometryZ> geometries = new LinkedList<>();
+        final Collection<WkbGeometryM> geometries = new LinkedList<>();
 
         for(long geometryIndex = 0; geometryIndex < geometryCount; ++geometryIndex)
         {
             final Geometry geometry = geometryFactory.create(byteBuffer);
 
-            if(geometry instanceof WkbGeometryZ)
+            if(geometry instanceof WkbGeometryM)
             {
                 //noinspection CastToConcreteClass
-                geometries.add((WkbGeometryZ)geometry);
+                geometries.add((WkbGeometryM)geometry);
             }
             else
             {
@@ -154,7 +153,7 @@ public class WkbGeometryCollectionZ<T extends WkbGeometryZ> extends WkbGeometryZ
             }
         }
 
-        return new WkbGeometryCollectionZ<>(geometries);
+        return new WkbGeometryCollectionM<>(geometries);
     }
 
     private final List<T> geometries;

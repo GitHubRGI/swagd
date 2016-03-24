@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry.z;
+package com.rgi.geopackage.features.geometry.m;
 
 import com.rgi.geopackage.features.GeometryType;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
@@ -29,25 +29,25 @@ import com.rgi.geopackage.features.geometry.xy.Envelope;
 import java.nio.ByteBuffer;
 
 /**
- * A single location in space. Each point has an X, Y and Z coordinate.
+ * A single location in space. Each point has an X, Y and M coordinate.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class WkbPointZ extends WkbGeometryZ
+public class WkbPointM extends WkbGeometryM
 {
-    public WkbPointZ(final double x,
+    public WkbPointM(final double x,
                      final double y,
-                     final double z)
+                     final double m)
     {
-        this(new CoordinateZ(x,
+        this(new CoordinateM(x,
                              y,
-                             z));
+                             m));
     }
 
-    public WkbPointZ(final CoordinateZ coordinate)
+    public WkbPointM(final CoordinateM coordinate)
     {
         if(coordinate == null)
         {
@@ -60,13 +60,13 @@ public class WkbPointZ extends WkbGeometryZ
     @Override
     public long getTypeCode()
     {
-        return WkbGeometryZ.GeometryTypeDimensionalityBase + GeometryType.Point.getCode();
+        return GeometryTypeDimensionalityBase + GeometryType.Point.getCode();
     }
 
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.Point + "Z";
+        return GeometryType.Point + "M";
     }
 
     @Override
@@ -82,7 +82,7 @@ public class WkbPointZ extends WkbGeometryZ
     }
 
     @Override
-    public EnvelopeZ createEnvelopeZ()
+    public EnvelopeM createEnvelopeM()
     {
         return this.coordinate.createEnvelope();
     }
@@ -96,11 +96,11 @@ public class WkbPointZ extends WkbGeometryZ
         this.coordinate.writeWellKnownBinary(byteBuffer);
     }
 
-    public static WkbPointZ readWellKnownBinary(final ByteBuffer byteBuffer)
+    public static WkbPointM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.Point.getCode());
 
-        return new WkbPointZ(byteBuffer.getDouble(),
+        return new WkbPointM(byteBuffer.getDouble(),
                              byteBuffer.getDouble(),
                              byteBuffer.getDouble());
     }
@@ -115,10 +115,10 @@ public class WkbPointZ extends WkbGeometryZ
         return this.coordinate.getY();
     }
 
-    public double getZ()
+    public double getM()
     {
-        return this.coordinate.getZ();
+        return this.coordinate.getM();
     }
 
-    private final CoordinateZ coordinate;
+    private final CoordinateM coordinate;
 }

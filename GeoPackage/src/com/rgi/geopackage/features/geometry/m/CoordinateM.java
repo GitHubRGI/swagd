@@ -21,33 +21,34 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry.m;
+
+import com.rgi.geopackage.features.Contents;
+
+import java.nio.ByteBuffer;
 
 /**
  * Proxy for member coordinates in GeoPackage geometries
  *
  * @author Luke Lambert
  */
-public class CoordinateZM
+public class CoordinateM
 {
-    public CoordinateZM(final double x,
-                        final double y,
-                        final double z,
-                        final double m)
+    public CoordinateM(final double x,
+                       final double y,
+                       final double m)
     {
         this.x = x;
         this.y = y;
-        this.z = z;
         this.m = m;
     }
 
     @Override
     public String toString()
     {
-        return String.format("(%f, %f, %f, %f)",
+        return String.format("(%f, %f, %fm)",
                              this.x,
                              this.y,
-                             this.z,
                              this.m);
     }
 
@@ -61,44 +62,45 @@ public class CoordinateZM
         return this.y;
     }
 
-    public Double getZ()
-    {
-        return this.z;
-    }
-
     public Double getM()
     {
         return this.m;
     }
 
-    public Contents getContents()
+
+    public boolean isEmpty()
     {
         return Double.isNaN(this.x) &&
                Double.isNaN(this.y) &&
-               Double.isNaN(this.z) &&
-               Double.isNaN(this.m) ? Contents.Empty
-                                    : Contents.NotEmpty;
+               Double.isNaN(this.m);
     }
 
-    public EnvelopeZM getEnvelope()
+    public Contents getContents()
     {
-        if(this.getContents() == Contents.Empty)
-        {
-            return EnvelopeZM.Empty;
-        }
+        return (Double.isNaN(this.x) &&
+                Double.isNaN(this.y) &&
+                Double.isNaN(this.m)) ? Contents.Empty
+                                      : Contents.NotEmpty;
+    }
 
-        return new EnvelopeZM(this.x,
-                              this.x,
-                              this.y,
-                              this.y,
-                              this.z,
-                              this.z,
-                              this.m,
-                              this.m);
+    public EnvelopeM createEnvelope()
+    {
+        return new EnvelopeM(this.x,
+                             this.x,
+                             this.y,
+                             this.y,
+                             this.m,
+                             this.m);
+    }
+
+    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    {
+        byteBuffer.putDouble(this.x);
+        byteBuffer.putDouble(this.y);
+        byteBuffer.putDouble(this.m);
     }
 
     private final double x;
     private final double y;
-    private final double z;
     private final double m;
 }

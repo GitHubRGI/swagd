@@ -77,7 +77,7 @@ public class WkbMultiLineStringZ extends WkbMultiCurveZ<WkbLineStringZ>
 
     public static WkbMultiLineStringZ readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, GeometryType.MultiLineString.getCode());
+        readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.MultiLineString.getCode());
 
         final long lineStringCount = Integer.toUnsignedLong(byteBuffer.getInt());
 

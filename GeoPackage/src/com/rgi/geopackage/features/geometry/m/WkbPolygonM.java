@@ -21,10 +21,10 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry.z;
+package com.rgi.geopackage.features.geometry.m;
 
-import com.rgi.geopackage.features.geometry.xy.Envelope;
 import com.rgi.geopackage.features.GeometryType;
+import com.rgi.geopackage.features.geometry.xy.Envelope;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -43,17 +43,17 @@ import java.util.List;
  * @author Luke Lambert
  *
  */
-public class WkbPolygonZ extends WkbCurvePolygonZ
+public class WkbPolygonM extends WkbCurvePolygonM
 {
-    public WkbPolygonZ(final LinearRingZ    exteriorRing,
-                       final LinearRingZ... interiorRings)
+    public WkbPolygonM(final LinearRingM exteriorRing,
+                       final LinearRingM... interiorRings)
     {
         this(exteriorRing,
              Arrays.asList(interiorRings));
     }
 
-    public WkbPolygonZ(final LinearRingZ             exteriorRing,
-                       final Collection<LinearRingZ> interiorRings)
+    public WkbPolygonM(final LinearRingM exteriorRing,
+                       final Collection<LinearRingM> interiorRings)
     {
         if(exteriorRing == null)
         {
@@ -69,13 +69,13 @@ public class WkbPolygonZ extends WkbCurvePolygonZ
     @Override
     public long getTypeCode()
     {
-        return WkbGeometryZ.GeometryTypeDimensionalityBase + GeometryType.Polygon.getCode();
+        return GeometryTypeDimensionalityBase + GeometryType.Polygon.getCode();
     }
 
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.Polygon + "Z";
+        return GeometryType.Polygon + "M";
     }
 
     @Override
@@ -91,7 +91,7 @@ public class WkbPolygonZ extends WkbCurvePolygonZ
     }
 
     @Override
-    public EnvelopeZ createEnvelopeZ()
+    public EnvelopeM createEnvelopeM()
     {
         return this.exteriorRing.createEnvelope();
     }
@@ -102,17 +102,17 @@ public class WkbPolygonZ extends WkbCurvePolygonZ
         throw new UnsupportedOperationException("pending implementaiton");
     }
 
-    public LinearRingZ getExteriorRing()
+    public LinearRingM getExteriorRing()
     {
         return this.exteriorRing;
     }
 
-    public List<LinearRingZ> getInteriorRings()
+    public List<LinearRingM> getInteriorRings()
     {
         return Collections.unmodifiableList(this.interiorRings);
     }
 
-    public static WkbPolygonZ readWellKnownBinary(final ByteBuffer byteBuffer)
+    public static WkbPolygonM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.Polygon.getCode());
 
@@ -120,21 +120,21 @@ public class WkbPolygonZ extends WkbCurvePolygonZ
 
         if(ringCount == 0)
         {
-            return new WkbPolygonZ(new LinearRingZ());    // Empty polygon
+            return new WkbPolygonM(new LinearRingM());    // Empty polygon
         }
 
-        final LinearRingZ exteriorRing = LinearRingZ.readWellKnownBinary(byteBuffer);
+        final LinearRingM exteriorRing = LinearRingM.readWellKnownBinary(byteBuffer);
 
-        final Collection<LinearRingZ> interiorRings = new LinkedList<>();
+        final Collection<LinearRingM> interiorRings = new LinkedList<>();
 
         for(long ringIndex = 1; ringIndex < ringCount; ++ringIndex)
         {
-            interiorRings.add(LinearRingZ.readWellKnownBinary(byteBuffer));
+            interiorRings.add(LinearRingM.readWellKnownBinary(byteBuffer));
         }
 
-        return new WkbPolygonZ(exteriorRing, interiorRings);
+        return new WkbPolygonM(exteriorRing, interiorRings);
     }
 
-    private final LinearRingZ       exteriorRing;
-    private final List<LinearRingZ> interiorRings;
+    private final LinearRingM       exteriorRing;
+    private final List<LinearRingM> interiorRings;
 }
