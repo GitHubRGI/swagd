@@ -21,10 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
-
-import com.rgi.geopackage.features.Coordinate;
-import com.rgi.geopackage.features.Envelope;
+package com.rgi.geopackage.features.geometry.xy;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

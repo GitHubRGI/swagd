@@ -21,7 +21,9 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry.xy;
+
+import com.rgi.geopackage.features.Contents;
 
 import java.nio.ByteBuffer;
 

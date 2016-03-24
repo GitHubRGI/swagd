@@ -21,7 +21,11 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry.z;
+
+import com.rgi.geopackage.features.Contents;
+
+import java.nio.ByteBuffer;
 
 /**
  * Proxy for member coordinates in GeoPackage geometries
@@ -63,6 +67,13 @@ public class CoordinateZ
         return this.z;
     }
 
+    public boolean isEmpty()
+    {
+        return Double.isNaN(this.x) &&
+               Double.isNaN(this.y) &&
+               Double.isNaN(this.z);
+    }
+
     public Contents getContents()
     {
         return Double.isNaN(this.x) &&
@@ -71,7 +82,7 @@ public class CoordinateZ
                                     : Contents.NotEmpty;
     }
 
-    public EnvelopeZ getEnvelope()
+    public EnvelopeZ createEnvelope()
     {
         if(this.getContents() == Contents.Empty)
         {
@@ -84,6 +95,13 @@ public class CoordinateZ
                              this.y,
                              this.z,
                              this.z);
+    }
+
+    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    {
+        byteBuffer.putDouble(this.x);
+        byteBuffer.putDouble(this.y);
+        byteBuffer.putDouble(this.z);
     }
 
     private final double x;

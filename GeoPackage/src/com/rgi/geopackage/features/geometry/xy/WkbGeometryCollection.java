@@ -21,11 +21,12 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
+package com.rgi.geopackage.features.geometry.xy;
 
-import com.rgi.geopackage.features.Envelope;
 import com.rgi.geopackage.features.GeometryType;
 import com.rgi.geopackage.features.WellKnownBinaryFormatException;
+import com.rgi.geopackage.features.geometry.Geometry;
+import com.rgi.geopackage.features.geometry.GeometryFactory;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -56,15 +57,15 @@ import java.util.Objects;
  * @author Luke Lambert
  *
  */
-public class WktGeometryCollection<T extends WktGeometry> extends WktGeometry
+public class WkbGeometryCollection<T extends WkbGeometry> extends WkbGeometry
 {
     @SafeVarargs
-    public WktGeometryCollection(final T... geometries)
+    public WkbGeometryCollection(final T... geometries)
     {
         this(Arrays.asList(geometries));
     }
 
-    public WktGeometryCollection(final Collection<T> geometries)
+    public WkbGeometryCollection(final Collection<T> geometries)
     {
         if(geometries == null)
         {
@@ -109,7 +110,7 @@ public class WktGeometryCollection<T extends WktGeometry> extends WktGeometry
         return this.geometries.isEmpty() ? Envelope.Empty
                                          : this.geometries
                                                .stream()
-                                               .map(WktGeometry::createEnvelope)
+                                               .map(WkbGeometry::createEnvelope)
                                                .reduce(Envelope::combine)
                                                .get();
 
@@ -120,23 +121,23 @@ public class WktGeometryCollection<T extends WktGeometry> extends WktGeometry
         return Collections.unmodifiableList(this.geometries);
     }
 
-    public static WktGeometryCollection<WktGeometry> readWellKnownBinary(final GeometryFactory geometryFactory,
+    public static WkbGeometryCollection<WkbGeometry> readWellKnownBinary(final GeometryFactory geometryFactory,
                                                                          final ByteBuffer      byteBuffer) throws WellKnownBinaryFormatException
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryType.GeometryCollection.getCode());
 
         final long geometryCount = Integer.toUnsignedLong(byteBuffer.getInt());
 
-        final Collection<WktGeometry> geometries = new LinkedList<>();
+        final Collection<WkbGeometry> geometries = new LinkedList<>();
 
         for(long geometryIndex = 0; geometryIndex < geometryCount; ++geometryIndex)
         {
             final Geometry geometry = geometryFactory.create(byteBuffer);
 
-            if(geometry instanceof WktGeometry)
+            if(geometry instanceof WkbGeometry)
             {
                 //noinspection CastToConcreteClass
-                geometries.add((WktGeometry)geometry);
+                geometries.add((WkbGeometry)geometry);
             }
             else
             {
@@ -145,7 +146,7 @@ public class WktGeometryCollection<T extends WktGeometry> extends WktGeometry
             }
         }
 
-        return new WktGeometryCollection<>(geometries);
+        return new WkbGeometryCollection<>(geometries);
     }
 
     private final List<T> geometries;

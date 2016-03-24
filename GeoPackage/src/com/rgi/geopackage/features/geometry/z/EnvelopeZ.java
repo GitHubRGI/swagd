@@ -21,7 +21,10 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features;
+package com.rgi.geopackage.features.geometry.z;
+
+import com.rgi.geopackage.features.geometry.xy.Envelope;
+import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 
 /**
  * @author Luke Lambert

@@ -21,91 +21,73 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
+package com.rgi.geopackage.features.geometry.xy;
 
-import com.rgi.geopackage.features.Coordinate;
-import com.rgi.geopackage.features.Envelope;
 import com.rgi.geopackage.features.GeometryType;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * A single location in space. Each point has an X and Y coordinate. A point
- * MAY optionally also have a Z and/or an M value.
+ * A restricted form of MultiCurve where each Curve in the collection must be
+ * of type LineString.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class WktPoint extends WktGeometry
+public class WkbMultiLineString extends WkbMultiCurve<WkbLineString>
 {
-    public WktPoint(final double x,
-                    final double y)
+    public WkbMultiLineString(final WkbLineString... lineStrings)
     {
-        this(new Coordinate(x, y));
+        this(Arrays.asList(lineStrings));
     }
 
-    public WktPoint(final Coordinate coordinate)
+    public WkbMultiLineString(final Collection<WkbLineString> lineStrings)
     {
-        if(coordinate == null)
-        {
-            throw new IllegalArgumentException("Coordinate may not be null");
-        }
-
-        this.coordinate = coordinate;
+        super(lineStrings);
     }
 
     @Override
     public long getTypeCode()
     {
-        return GeometryType.Point.getCode();
+        return GeometryType.MultiLineString.getCode();
     }
 
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.Point.toString();
-    }
-
-    @Override
-    public boolean isEmpty()
-    {
-        return this.coordinate.isEmpty();
+        return GeometryType.MultiLineString.toString();
     }
 
     @Override
     public void writeWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        writeByteOrder(byteBuffer);
-        this.writeTypeCode(byteBuffer);
-
-        this.coordinate.writeWellKnownBinary(byteBuffer);
+        throw new UnsupportedOperationException("pending implementaiton");
     }
 
-    @Override
-    public Envelope createEnvelope()
+    public List<WkbLineString> getLineStrings()
     {
-        return this.coordinate.createEnvelope();
+        return this.getGeometries();
     }
 
-    public static WktPoint readWellKnownBinary(final ByteBuffer byteBuffer)
+    public static WkbMultiLineString readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, GeometryType.Point.getCode());
+        readWellKnownBinaryHeader(byteBuffer, GeometryType.MultiLineString.getCode());
 
-        return new WktPoint(byteBuffer.getDouble(),
-                            byteBuffer.getDouble());
+        final long lineStringCount = Integer.toUnsignedLong(byteBuffer.getInt());
+
+        final Collection<WkbLineString> lineStrings = new LinkedList<>();
+
+        for(long lineStringIndex = 0; lineStringIndex < lineStringCount; ++lineStringIndex)
+        {
+            lineStrings.add(WkbLineString.readWellKnownBinary(byteBuffer));
+        }
+
+        return new WkbMultiLineString(lineStrings);
     }
-
-    public double getX()
-    {
-        return this.coordinate.getX();
-    }
-
-    public double getY()
-    {
-        return this.coordinate.getY();
-    }
-
-    private final Coordinate coordinate;
 }

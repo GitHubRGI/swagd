@@ -24,11 +24,10 @@
 package com.rgi.geopackage.features.geometry;
 
 import com.rgi.geopackage.features.Contents;
-import com.rgi.geopackage.features.Envelope;
+import com.rgi.geopackage.features.geometry.xy.Envelope;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Objects;
 
 /**
  * The root of the geometry type hierarchy.

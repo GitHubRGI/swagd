@@ -26,6 +26,7 @@ package com.rgi.geopackage.verification;
 import com.rgi.common.Pair;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.common.util.jdbc.ResultSetStream;
+import org.sqlite.JDBC;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -39,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -312,8 +314,8 @@ public class Verifier
         for(final UniqueDefinition groupUnique : requiredGroupUniques)
         {
             assertTrue(String.format("The table %s is missing the column group unique constraint: (%s)",
-                                            tableName,
-                                            String.join(", ", groupUnique.getColumnNames())),
+                                     tableName,
+                                     String.join(", ", groupUnique.getColumnNames())),
                               uniques.contains(groupUnique),
                               Severity.Error);
         }
@@ -321,41 +323,22 @@ public class Verifier
 
     protected Set<UniqueDefinition> getUniques(final String tableName) throws SQLException
     {
-        try(final Statement statement = this.sqliteConnection.createStatement();
-            final ResultSet indices   = statement.executeQuery(String.format("PRAGMA index_list(%s);", tableName)))
-        {
-            return ResultSetStream.getStream(indices)
-                                  .map(resultSet -> { try
-                                                      {
-                                                          final String indexName = resultSet.getString("name");
-                                                          try(Statement nameStatement = this.sqliteConnection.createStatement();
-                                                              ResultSet namesSet      = nameStatement.executeQuery(String.format("PRAGMA index_info(%s);", indexName));)
-                                                          {
-                                                              return new UniqueDefinition(ResultSetStream.getStream(namesSet)
-                                                                                                         .map(names -> { try
-                                                                                                                         {
-                                                                                                                             return names.getString("name");
-                                                                                                                         }
-                                                                                                                         catch(final Exception ex)
-                                                                                                                         {
-                                                                                                                             ex.printStackTrace();
-                                                                                                                             return null;
-                                                                                                                         }
-                                                                                                                        })
-                                                                                                         .filter(Objects::nonNull)
-                                                                                                         .collect(Collectors.toList()));
-                                                          }
-                                                      }
-                                                      catch(final Exception ex)
-                                                      {
-                                                          ex.printStackTrace();
-                                                          return null;
-                                                      }
-                                                     })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toSet());
+        final Set<UniqueDefinition> uniqueDefinitions = new HashSet<>();
 
+        final Collection<String> indexNames = JdbcUtility.select(this.sqliteConnection,
+                                                                 String.format("PRAGMA index_list(%s);", tableName),
+                                                                 null,
+                                                                 resultSet -> resultSet.getString("name")); // TODO this will collect primary keys (automatically unique) and group uniques - I don't think we want that
+
+        for(final String indexName : indexNames)
+        {
+            uniqueDefinitions.add(new UniqueDefinition(JdbcUtility.select(this.sqliteConnection,
+                                                                          String.format("PRAGMA index_info(%s);", indexName),
+                                                                          null,
+                                                                          resultSet -> resultSet.getString("name"))));
         }
+
+        return uniqueDefinitions;
     }
 
     /**

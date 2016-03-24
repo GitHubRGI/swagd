@@ -123,13 +123,13 @@ public class TableDefinition
         }
 
         final Set<String> groupUniqueColumns = groupUniques.stream()
-                                                            .collect(HashSet<String>::new,
-                                                                     (set, groupUnique) -> set.addAll(groupUnique.getColumnNames()),
-                                                                     AbstractCollection::addAll);
+                                                           .collect(HashSet<String>::new,
+                                                                    (set, groupUnique) -> set.addAll(groupUnique.getColumnNames()),
+                                                                    AbstractCollection::addAll);
 
         final Set<String> badGroupUniqueColumns = groupUniqueColumns.stream()
-                                                            .filter(columnName -> !columnNames.contains(columnName))
-                                                            .collect(Collectors.toSet());
+                                                                    .filter(columnName -> !columnNames.contains(columnName))
+                                                                    .collect(Collectors.toSet());
 
 
         if(!badGroupUniqueColumns.isEmpty())

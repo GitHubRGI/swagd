@@ -23,6 +23,8 @@
 
 package com.rgi.geopackage.features;
 
+import com.rgi.geopackage.features.geometry.xy.Envelope;
+
 /**
  * @author Luke Lambert
  */

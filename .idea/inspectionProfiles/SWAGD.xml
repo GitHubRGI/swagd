@@ -272,7 +272,7 @@
       <option name="SUGGEST_NULLABLE_ANNOTATIONS" value="false" />
       <option name="DONT_REPORT_TRUE_ASSERT_STATEMENTS" value="false" />
     </inspection_tool>
-    <inspection_tool class="ConstantDeclaredInAbstractClass" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="ConstantDeclaredInAbstractClass" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="ConstantDeclaredInInterface" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ConstantIfStatement" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ConstantJUnitAssertArgument" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -360,6 +360,7 @@
       </option>
       <option name="ignoreClassWithParameterization" value="false" />
       <option name="ignoreThrowables" value="true" />
+      <option name="commentsAreContent" value="true" />
     </inspection_tool>
     <inspection_tool class="EmptyDirectory" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="EmptyFinallyBlock" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -557,7 +558,7 @@
       <option name="m_minLength" value="8" />
       <option name="m_maxLength" value="999" />
     </inspection_tool>
-    <inspection_tool class="InterfaceNeverImplemented" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="InterfaceNeverImplemented" enabled="false" level="ERROR" enabled_by_default="false">
       <option name="ignoreInterfacesThatOnlyDeclareConstants" value="false" />
     </inspection_tool>
     <inspection_tool class="InterfaceWithOnlyOneDirectInheritor" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -841,7 +842,7 @@
     <inspection_tool class="NumberEquality" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="NumericOverflow" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="NumericToString" enabled="false" level="ERROR" enabled_by_default="false" />
-    <inspection_tool class="ObjectAllocationInLoop" enabled="true" level="ERROR" enabled_by_default="false">
+    <inspection_tool class="ObjectAllocationInLoop" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <scope name="Problems" level="INFO" enabled="true" />
     </inspection_tool>
     <inspection_tool class="ObjectEquality" enabled="true" level="ERROR" enabled_by_default="true">
@@ -1074,7 +1075,6 @@
       <scope name="Problems" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="SimplifiableJUnitAssertion" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="Since15" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="SingleCharacterStartsWith" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="SingleClassImport" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="Singleton" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -1416,7 +1416,7 @@
     <inspection_tool class="WaitOrAwaitWithoutTimeout" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="WaitWhileHoldingTwoLocks" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="WaitWithoutCorrespondingNotify" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="WeakerAccess" enabled="true" level="ERROR" enabled_by_default="true">
+    <inspection_tool class="WeakerAccess" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="SUGGEST_PACKAGE_LOCAL_FOR_MEMBERS" value="true" />
       <option name="SUGGEST_PACKAGE_LOCAL_FOR_TOP_CLASSES" value="true" />
       <option name="SUGGEST_PRIVATE_FOR_INNERS" value="false" />

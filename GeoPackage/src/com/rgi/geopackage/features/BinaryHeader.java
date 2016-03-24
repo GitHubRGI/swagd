@@ -24,6 +24,7 @@
 package com.rgi.geopackage.features;
 
 import com.rgi.geopackage.features.geometry.Geometry;
+import com.rgi.geopackage.features.geometry.xy.Envelope;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

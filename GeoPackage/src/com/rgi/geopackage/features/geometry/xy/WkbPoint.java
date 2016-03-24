@@ -21,85 +21,89 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
+package com.rgi.geopackage.features.geometry.xy;
 
-import com.rgi.geopackage.features.Coordinate;
-import com.rgi.geopackage.features.Envelope;
 import com.rgi.geopackage.features.GeometryType;
 
 import java.nio.ByteBuffer;
-import java.util.Collection;
 
 /**
- * A Curve that connects two or more points in space.
+ * A single location in space. Each point has an X and Y coordinate. A point
+ * MAY optionally also have a Z and/or an M value.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-public class WktLineString extends WktCurve
+public class WkbPoint extends WkbGeometry
 {
-    public WktLineString(final Coordinate... points)
+    public WkbPoint(final double x,
+                    final double y)
     {
-        this(new LinearRing(points));
+        this(new Coordinate(x, y));
     }
 
-    public WktLineString(final Collection<Coordinate> points)
+    public WkbPoint(final Coordinate coordinate)
     {
-        this(new LinearRing(points));
-    }
+        if(coordinate == null)
+        {
+            throw new IllegalArgumentException("Coordinate may not be null");
+        }
 
-    private WktLineString(final LinearRing linearString)
-    {
-        this.linearString = linearString;
+        this.coordinate = coordinate;
     }
 
     @Override
     public long getTypeCode()
     {
-        return GeometryType.LineString.getCode();
+        return GeometryType.Point.getCode();
     }
 
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.LineString.toString();
+        return GeometryType.Point.toString();
     }
 
     @Override
     public boolean isEmpty()
     {
-        return this.linearString.isEmpty();
+        return this.coordinate.isEmpty();
     }
 
     @Override
     public void writeWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        if(byteBuffer == null)
-        {
-            throw new IllegalArgumentException("Byte buffer may not be null");
-        }
-
         writeByteOrder(byteBuffer);
+        this.writeTypeCode(byteBuffer);
 
-        byteBuffer.putInt((int)GeometryType.LineString.getCode());
-
-        this.linearString.writeWellKnownBinary(byteBuffer);
+        this.coordinate.writeWellKnownBinary(byteBuffer);
     }
 
     @Override
     public Envelope createEnvelope()
     {
-        return this.linearString.createEnvelope();
+        return this.coordinate.createEnvelope();
     }
 
-    public static WktLineString readWellKnownBinary(final ByteBuffer byteBuffer)
+    public static WkbPoint readWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        readWellKnownBinaryHeader(byteBuffer, GeometryType.LineString.getCode());
+        readWellKnownBinaryHeader(byteBuffer, GeometryType.Point.getCode());
 
-        return new WktLineString(LinearRing.readWellKnownBinary(byteBuffer));
+        return new WkbPoint(byteBuffer.getDouble(),
+                            byteBuffer.getDouble());
     }
 
-    private final LinearRing linearString;
+    public double getX()
+    {
+        return this.coordinate.getX();
+    }
+
+    public double getY()
+    {
+        return this.coordinate.getY();
+    }
+
+    private final Coordinate coordinate;
 }

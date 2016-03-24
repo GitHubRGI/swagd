@@ -21,22 +21,24 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
+package com.rgi.geopackage.features.geometry.xy;
+
+import java.util.Collection;
 
 /**
- * The base type for all 1-dimensional geometry types. A 1-dimensional geometry
- * is a geometry that has a length, but no area. A curve is considered simple
- * if it does not intersect itself (except at the start and end point). A curve
- * is considered closed its start and end point are coincident. A simple,
- * closed curve is called a ring.
+ * A restricted form of GeometryCollection where each Geometry in the
+ * collection must be of type Surface.
  *
  * @see "http://www.geopackage.org/spec/#sfsql_intro"
  *
  * @author Luke Lambert
  *
  */
-@SuppressWarnings("EmptyClass")
-public abstract class WktCurve extends WktGeometry
+@SuppressWarnings("AbstractClassExtendsConcreteClass")
+public abstract class WkbMultiSurface<T extends WkbSurface> extends WkbGeometryCollection<T>
 {
-
+    protected WkbMultiSurface(final Collection<T> surfaces)
+    {
+        super(surfaces);
+    }
 }

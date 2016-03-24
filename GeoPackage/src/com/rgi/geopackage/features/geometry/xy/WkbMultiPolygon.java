@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
+package com.rgi.geopackage.features.geometry.xy;
 
 import com.rgi.geopackage.features.GeometryType;
 
@@ -40,14 +40,14 @@ import java.util.List;
  * @author Luke Lambert
  *
  */
-public class WktMultiPolygon extends WktMultiSurface<WktPolygon>
+public class WkbMultiPolygon extends WkbMultiSurface<WkbPolygon>
 {
-    public WktMultiPolygon(final WktPolygon... polygons)
+    public WkbMultiPolygon(final WkbPolygon... polygons)
     {
         this(Arrays.asList(polygons));
     }
 
-    public WktMultiPolygon(final Collection<WktPolygon> polygons)
+    public WkbMultiPolygon(final Collection<WkbPolygon> polygons)
     {
         super(polygons);
     }
@@ -70,24 +70,24 @@ public class WktMultiPolygon extends WktMultiSurface<WktPolygon>
         throw new UnsupportedOperationException("pending implementaiton");
     }
 
-    public List<WktPolygon> getPolygons()
+    public List<WkbPolygon> getPolygons()
     {
         return this.getGeometries();
     }
 
-    public static WktMultiPolygon readWellKnownBinary(final ByteBuffer byteBuffer)
+    public static WkbMultiPolygon readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryType.MultiPolygon.getCode());
 
         final long polygonCount = Integer.toUnsignedLong(byteBuffer.getInt());
 
-        final Collection<WktPolygon> polygons = new LinkedList<>();
+        final Collection<WkbPolygon> polygons = new LinkedList<>();
 
         for(long polygonIndex = 0; polygonIndex < polygonCount; ++polygonIndex)
         {
-            polygons.add(WktPolygon.readWellKnownBinary(byteBuffer));
+            polygons.add(WkbPolygon.readWellKnownBinary(byteBuffer));
         }
 
-        return new WktMultiPolygon(polygons);
+        return new WkbMultiPolygon(polygons);
     }
 }

@@ -29,6 +29,8 @@ import java.util.Set;
 
 /**
  * @author Luke Lambert
+ *
+ * TODO collapse this into the verifier's ColumnDefinition
  */
 public class Column
 {

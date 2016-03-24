@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry;
+package com.rgi.geopackage.features.geometry.xy;
 
 /**
  * A planar surface defined by an exterior ring and zero or more interior ring.
@@ -40,7 +40,7 @@ package com.rgi.geopackage.features.geometry;
 // any event, this type is a GeoPackage extension geometry type. It's only
 // included because the spec object diagram and Annex E suggests that Polygon
 // (a core type) is based on CurvePolygon which is additionally confusing.
-public abstract class WktCurvePolygon extends WktSurface
+public abstract class WkbCurvePolygon extends WkbSurface
 {
 //    @Override
 //    public int getTypeCode()
