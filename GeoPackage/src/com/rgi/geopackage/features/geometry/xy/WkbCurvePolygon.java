@@ -55,18 +55,6 @@ public abstract class WkbCurvePolygon extends WkbSurface
 //    }
 //
 //    @Override
-//    public boolean hasZ()
-//    {
-//        return false;
-//    }
-//
-//    @Override
-//    public boolean hasM()
-//    {
-//        return false;
-//    }
-//
-//    @Override
 //    public boolean isEmpty()
 //    {
 //        return false;
