@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry.z;
+package com.rgi.geopackage.features.geometry.zm;
 
 import com.rgi.geopackage.features.GeometryType;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
@@ -37,19 +37,19 @@ import java.util.Collection;
  * @author Luke Lambert
  *
  */
-public class WkbLineStringZ extends WkbCurveZ
+public class WkbLineStringZM extends WkbCurveZM
 {
-    public WkbLineStringZ(final CoordinateZ... points)
+    public WkbLineStringZM(final CoordinateZM... points)
     {
-        this(new LinearRingZ(points));
+        this(new LinearRingZM(points));
     }
 
-    public WkbLineStringZ(final Collection<CoordinateZ> points)
+    public WkbLineStringZM(final Collection<CoordinateZM> points)
     {
-        this(new LinearRingZ(points));
+        this(new LinearRingZM(points));
     }
 
-    private WkbLineStringZ(final LinearRingZ linearString)
+    private WkbLineStringZM(final LinearRingZM linearString)
     {
         this.linearString = linearString;
     }
@@ -57,13 +57,13 @@ public class WkbLineStringZ extends WkbCurveZ
     @Override
     public long getTypeCode()
     {
-        return WkbGeometryZ.GeometryTypeDimensionalityBase + GeometryType.LineString.getCode();
+        return GeometryTypeDimensionalityBase + GeometryType.LineString.getCode();
     }
 
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.LineString + "Z";
+        return GeometryType.LineString + "ZM";
     }
 
     @Override
@@ -79,7 +79,7 @@ public class WkbLineStringZ extends WkbCurveZ
     }
 
     @Override
-    public EnvelopeZ createEnvelopeZ()
+    public EnvelopeZM createEnvelopeZM()
     {
         return this.linearString.createEnvelope();
     }
@@ -99,12 +99,12 @@ public class WkbLineStringZ extends WkbCurveZ
         this.linearString.writeWellKnownBinary(byteBuffer);
     }
 
-    public static WkbLineStringZ readWellKnownBinary(final ByteBuffer byteBuffer)
+    public static WkbLineStringZM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.LineString.getCode());
 
-        return new WkbLineStringZ(LinearRingZ.readWellKnownBinary(byteBuffer));
+        return new WkbLineStringZM(LinearRingZM.readWellKnownBinary(byteBuffer));
     }
 
-    private final LinearRingZ linearString;
+    private final LinearRingZM linearString;
 }

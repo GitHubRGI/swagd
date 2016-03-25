@@ -25,6 +25,8 @@ package com.rgi.geopackage.features.geometry.zm;
 
 import com.rgi.geopackage.features.Contents;
 
+import java.nio.ByteBuffer;
+
 /**
  * Proxy for member coordinates in GeoPackage geometries
  *
@@ -73,6 +75,14 @@ public class CoordinateZM
         return this.m;
     }
 
+    public boolean isEmpty()
+    {
+        return Double.isNaN(this.x) &&
+               Double.isNaN(this.y) &&
+               Double.isNaN(this.z) &&
+               Double.isNaN(this.m);
+    }
+
     public Contents getContents()
     {
         return Double.isNaN(this.x) &&
@@ -82,7 +92,7 @@ public class CoordinateZM
                                     : Contents.NotEmpty;
     }
 
-    public EnvelopeZM getEnvelope()
+    public EnvelopeZM createEnvelope()
     {
         if(this.getContents() == Contents.Empty)
         {
@@ -97,6 +107,14 @@ public class CoordinateZM
                               this.z,
                               this.m,
                               this.m);
+    }
+
+    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    {
+        byteBuffer.putDouble(this.x);
+        byteBuffer.putDouble(this.y);
+        byteBuffer.putDouble(this.z);
+        byteBuffer.putDouble(this.m);
     }
 
     private final double x;

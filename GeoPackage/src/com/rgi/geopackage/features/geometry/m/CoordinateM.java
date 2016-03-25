@@ -67,7 +67,6 @@ public class CoordinateM
         return this.m;
     }
 
-
     public boolean isEmpty()
     {
         return Double.isNaN(this.x) &&

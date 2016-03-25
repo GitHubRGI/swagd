@@ -34,6 +34,12 @@ import com.rgi.geopackage.features.geometry.Geometry;
 import com.rgi.geopackage.features.geometry.GeometryFactory;
 import com.rgi.geopackage.features.geometry.m.WkbGeometryCollectionM;
 import com.rgi.geopackage.features.geometry.m.WkbGeometryM;
+import com.rgi.geopackage.features.geometry.m.WkbLineStringM;
+import com.rgi.geopackage.features.geometry.m.WkbMultiLineStringM;
+import com.rgi.geopackage.features.geometry.m.WkbMultiPointM;
+import com.rgi.geopackage.features.geometry.m.WkbMultiPolygonM;
+import com.rgi.geopackage.features.geometry.m.WkbPointM;
+import com.rgi.geopackage.features.geometry.m.WkbPolygonM;
 import com.rgi.geopackage.features.geometry.xy.WkbGeometryCollection;
 import com.rgi.geopackage.features.geometry.xy.WkbLineString;
 import com.rgi.geopackage.features.geometry.xy.WkbMultiLineString;
@@ -49,6 +55,14 @@ import com.rgi.geopackage.features.geometry.z.WkbMultiPointZ;
 import com.rgi.geopackage.features.geometry.z.WkbMultiPolygonZ;
 import com.rgi.geopackage.features.geometry.z.WkbPointZ;
 import com.rgi.geopackage.features.geometry.z.WkbPolygonZ;
+import com.rgi.geopackage.features.geometry.zm.WkbGeometryCollectionZM;
+import com.rgi.geopackage.features.geometry.zm.WkbGeometryZM;
+import com.rgi.geopackage.features.geometry.zm.WkbLineStringZM;
+import com.rgi.geopackage.features.geometry.zm.WkbMultiLineStringZM;
+import com.rgi.geopackage.features.geometry.zm.WkbMultiPointZM;
+import com.rgi.geopackage.features.geometry.zm.WkbMultiPolygonZM;
+import com.rgi.geopackage.features.geometry.zm.WkbPointZM;
+import com.rgi.geopackage.features.geometry.zm.WkbPolygonZM;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
@@ -114,22 +128,22 @@ public class GeoPackageFeatures
         this.geometryFactories.put(WkbGeometryZ.GeometryTypeDimensionalityBase + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> WkbGeometryCollectionZ.readWellKnownBinary(this::createGeometry, byteBuffer));  // type 7 xyz
 
         this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.Geometry       .getCode(), bytes -> { throw new WellKnownBinaryFormatException("Cannot instantiate abstract 'Geometry' type (geometry type code 2000)"); } );   // type 0 xym
-        this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.Point          .getCode(), WkbPoint          ::readWellKnownBinary);  // type 1 xym
-        this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.LineString     .getCode(), WkbLineString     ::readWellKnownBinary);  // type 2 xym
-        this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.Polygon        .getCode(), WkbPolygon        ::readWellKnownBinary);  // type 3 xym
-        this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.MultiPoint     .getCode(), WkbMultiPoint     ::readWellKnownBinary);  // type 4 xym
-        this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.MultiLineString.getCode(), WkbMultiLineString::readWellKnownBinary);  // type 5 xym
-        this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.MultiPolygon   .getCode(), WkbMultiPolygon   ::readWellKnownBinary);  // type 6 xym
+        this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.Point          .getCode(), WkbPointM          ::readWellKnownBinary);  // type 1 xym
+        this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.LineString     .getCode(), WkbLineStringM     ::readWellKnownBinary);  // type 2 xym
+        this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.Polygon        .getCode(), WkbPolygonM        ::readWellKnownBinary);  // type 3 xym
+        this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.MultiPoint     .getCode(), WkbMultiPointM     ::readWellKnownBinary);  // type 4 xym
+        this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.MultiLineString.getCode(), WkbMultiLineStringM::readWellKnownBinary);  // type 5 xym
+        this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.MultiPolygon   .getCode(), WkbMultiPolygonM   ::readWellKnownBinary);  // type 6 xym
         this.geometryFactories.put(WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> WkbGeometryCollectionM.readWellKnownBinary(this::createGeometry, byteBuffer));  // type 7 xym
 
-        this.geometryFactories.put(3000 + GeometryType.Geometry       .getCode(), bytes -> { throw new WellKnownBinaryFormatException("Cannot instantiate abstract 'Geometry' type (geometry type code 3000)"); } );   // type 0 xyzm
-        //this.geometryFactories.put(3000 + GeometryType.Point          .getCode(), WktPoint::readWellKnownBinary);  // type 1 xyzm
-        //this.geometryFactories.put(3000 + GeometryType.LineString     .getCode(), WktLineString::readWellKnownBinary);  // type 2 xyzm
-        //this.geometryFactories.put(3000 + GeometryType.Polygon        .getCode(), WktPolygon::readWellKnownBinary);  // type 3 xyzm
-        //this.geometryFactories.put(3000 + GeometryType.MultiPoint     .getCode(), WktMultiPoint::readWellKnownBinary);  // type 4 xyzm
-        //this.geometryFactories.put(3000 + GeometryType.MultiLineString.getCode(), WktMultiLineString::readWellKnownBinary);  // type 5 xyzm
-        //this.geometryFactories.put(3000 + GeometryType.MultiPolygon   .getCode(), WktMultiPolygon::readWellKnownBinary);  // type 6 xyzm
-        //this.geometryFactories.put(3000 + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> WktGeometryCollectionZM.readWellKnownBinary(this::createGeometry, byteBuffer));  // type 7 xyzm
+        this.geometryFactories.put(WkbGeometryZM.GeometryTypeDimensionalityBase + GeometryType.Geometry       .getCode(), bytes -> { throw new WellKnownBinaryFormatException("Cannot instantiate abstract 'Geometry' type (geometry type code 3000)"); } );   // type 0 xyzm
+        this.geometryFactories.put(WkbGeometryZM.GeometryTypeDimensionalityBase + GeometryType.Point          .getCode(), WkbPointZM          ::readWellKnownBinary);  // type 1 xyzm
+        this.geometryFactories.put(WkbGeometryZM.GeometryTypeDimensionalityBase + GeometryType.LineString     .getCode(), WkbLineStringZM     ::readWellKnownBinary);  // type 2 xyzm
+        this.geometryFactories.put(WkbGeometryZM.GeometryTypeDimensionalityBase + GeometryType.Polygon        .getCode(), WkbPolygonZM        ::readWellKnownBinary);  // type 3 xyzm
+        this.geometryFactories.put(WkbGeometryZM.GeometryTypeDimensionalityBase + GeometryType.MultiPoint     .getCode(), WkbMultiPointZM     ::readWellKnownBinary);  // type 4 xyzm
+        this.geometryFactories.put(WkbGeometryZM.GeometryTypeDimensionalityBase + GeometryType.MultiLineString.getCode(), WkbMultiLineStringZM::readWellKnownBinary);  // type 5 xyzm
+        this.geometryFactories.put(WkbGeometryZM.GeometryTypeDimensionalityBase + GeometryType.MultiPolygon   .getCode(), WkbMultiPolygonZM   ::readWellKnownBinary);  // type 6 xyzm
+        this.geometryFactories.put(WkbGeometryZM.GeometryTypeDimensionalityBase + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> WkbGeometryCollectionZM.readWellKnownBinary(this::createGeometry, byteBuffer));  // type 7 xyzm
     }
 
     /**

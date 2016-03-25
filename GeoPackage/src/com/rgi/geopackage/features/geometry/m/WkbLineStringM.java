@@ -99,8 +99,6 @@ public class WkbLineStringM extends WkbCurveM
         this.linearString.writeWellKnownBinary(byteBuffer);
     }
 
-
-
     public static WkbLineStringM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.LineString.getCode());
