@@ -64,12 +64,6 @@ public class WkbMultiPolygon extends WkbMultiSurface<WkbPolygon>
         return GeometryType.MultiPolygon.toString();
     }
 
-    @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
-    {
-        throw new UnsupportedOperationException("pending implementaiton");
-    }
-
     public List<WkbPolygon> getPolygons()
     {
         return this.getGeometries();

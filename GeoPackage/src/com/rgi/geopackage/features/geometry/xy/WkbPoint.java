@@ -73,15 +73,6 @@ public class WkbPoint extends WkbGeometry
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
-    {
-        writeByteOrder(byteBuffer);
-        this.writeTypeCode(byteBuffer);
-
-        this.coordinate.writeWellKnownBinary(byteBuffer);
-    }
-
-    @Override
     public Envelope createEnvelope()
     {
         return this.coordinate.createEnvelope();
@@ -93,6 +84,13 @@ public class WkbPoint extends WkbGeometry
 
         return new WkbPoint(byteBuffer.getDouble(),
                             byteBuffer.getDouble());
+    }
+
+    @Override
+    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    {
+        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
+        this.coordinate.writeWellKnownBinary(byteBuffer);
     }
 
     public double getX()

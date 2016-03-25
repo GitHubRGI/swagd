@@ -64,12 +64,6 @@ public class WkbMultiPoint extends WkbGeometryCollection<WkbPoint>
         return GeometryType.MultiPoint.toString();
     }
 
-    @Override
-    public void writeWellKnownBinary(final ByteBuffer buffer)
-    {
-        throw new UnsupportedOperationException("pending implementaiton");
-    }
-
     public List<WkbPoint> getPoints()
     {
         return this.getGeometries();

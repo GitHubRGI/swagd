@@ -94,9 +94,7 @@ public class WkbPointZM extends WkbGeometryZM
     @Override
     public void writeWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        writeByteOrder(byteBuffer);
-        this.writeTypeCode(byteBuffer);
-
+        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
         this.coordinate.writeWellKnownBinary(byteBuffer);
     }
 

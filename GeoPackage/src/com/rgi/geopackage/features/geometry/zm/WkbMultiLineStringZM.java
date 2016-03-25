@@ -64,12 +64,6 @@ public class WkbMultiLineStringZM extends WkbMultiCurveZM<WkbLineStringZM>
         return GeometryType.MultiLineString + "ZM";
     }
 
-    @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
-    {
-        throw new UnsupportedOperationException("pending implementaiton");
-    }
-
     public List<WkbLineStringZM> getLineStrings()
     {
         return this.getGeometries();

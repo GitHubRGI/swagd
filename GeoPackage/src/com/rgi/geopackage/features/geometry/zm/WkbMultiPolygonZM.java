@@ -64,12 +64,6 @@ public class WkbMultiPolygonZM extends WkbMultiSurfaceZM<WkbPolygonZM>
         return GeometryType.MultiPolygon + "ZM";
     }
 
-    @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
-    {
-        throw new UnsupportedOperationException("pending implementaiton");
-    }
-
     public List<WkbPolygonZM> getPolygons()
     {
         return this.getGeometries();

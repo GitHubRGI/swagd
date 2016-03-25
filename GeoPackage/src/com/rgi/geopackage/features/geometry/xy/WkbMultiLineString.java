@@ -64,12 +64,6 @@ public class WkbMultiLineString extends WkbMultiCurve<WkbLineString>
         return GeometryType.MultiLineString.toString();
     }
 
-    @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
-    {
-        throw new UnsupportedOperationException("pending implementaiton");
-    }
-
     public List<WkbLineString> getLineStrings()
     {
         return this.getGeometries();

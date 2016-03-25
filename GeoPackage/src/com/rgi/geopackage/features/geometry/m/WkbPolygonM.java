@@ -99,7 +99,18 @@ public class WkbPolygonM extends WkbCurvePolygonM
     @Override
     public void writeWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        throw new UnsupportedOperationException("pending implementaiton");
+        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
+
+        final int ringCount = this.interiorRings.size() + (this.exteriorRing.isEmpty() ? 0 : 1);
+
+        byteBuffer.putInt(ringCount);
+
+        if(ringCount > 0)
+        {
+            this.exteriorRing.writeWellKnownBinary(byteBuffer);
+
+            this.interiorRings.forEach(linearRing -> linearRing.writeWellKnownBinary(byteBuffer));
+        }
     }
 
     public LinearRingM getExteriorRing()

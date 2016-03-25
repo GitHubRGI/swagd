@@ -24,6 +24,7 @@
 package com.rgi.geopackage.features.geometry;
 
 import com.rgi.geopackage.features.Contents;
+import com.rgi.geopackage.features.WellKnownBinaryFormatException;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 
 import java.nio.ByteBuffer;
@@ -82,25 +83,16 @@ public abstract class Geometry
         }
     }
 
-    protected static void writeByteOrder(final ByteBuffer byteBuffer)
+    protected void writeWellKnownBinaryHeader(final ByteBuffer byteBuffer)
     {
         if(byteBuffer == null)
         {
             throw new IllegalArgumentException("Byte buffer may not be null");
         }
 
-        final byte byteOrder = byteBuffer.order().equals(ByteOrder.BIG_ENDIAN) ? (byte)0 : (byte)1;
+        final byte byteOrder = (byte)(byteBuffer.order().equals(ByteOrder.BIG_ENDIAN) ? 0 : 1);
 
         byteBuffer.put(byteOrder);
-    }
-
-    protected void writeTypeCode(final ByteBuffer byteBuffer)
-    {
-        if(byteBuffer == null)
-        {
-            throw new IllegalArgumentException("Byte buffer may not be null");
-        }
-
         byteBuffer.putInt((int)this.getTypeCode()); // This long -> int cast should be safe. The long value is used to represent an unsigned value
     }
 

@@ -101,9 +101,15 @@ public class WkbGeometryCollectionZ<T extends WkbGeometryZ> extends WkbGeometryZ
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteBuffer buffer)
+    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        throw new RuntimeException("waiting on implementation");
+        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
+
+        final List<T> geometries = this.getGeometries();
+
+        byteBuffer.putInt(geometries.size());
+
+        geometries.forEach(wkbGeometry -> wkbGeometry.writeWellKnownBinary(byteBuffer));
     }
 
     @Override

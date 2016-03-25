@@ -87,15 +87,7 @@ public class WkbLineStringM extends WkbCurveM
     @Override
     public void writeWellKnownBinary(final ByteBuffer byteBuffer)
     {
-        if(byteBuffer == null)
-        {
-            throw new IllegalArgumentException("Byte buffer may not be null");
-        }
-
-        writeByteOrder(byteBuffer);
-
-        byteBuffer.putInt((int)GeometryType.LineString.getCode());
-
+        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
         this.linearString.writeWellKnownBinary(byteBuffer);
     }
 
