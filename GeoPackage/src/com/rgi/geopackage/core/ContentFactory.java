@@ -46,7 +46,8 @@ public interface ContentFactory<T extends Content>
      *             Bounding box maximum easting or longitude for all content
      * @param maximumY
      *             Bounding box maximum northing or latitude for all content
-     * @param spatialReferenceSystemIdentifier the spatial reference system version number (otherwise known as identifier)
+     * @param spatialReferenceSystemIdentifier
+     *             The spatial reference system version number (otherwise known as identifier)
      * @return a Content object with the following parameters
      */
     public T create(final String  tableName,

@@ -464,7 +464,7 @@ public final class GdalUtility
      * @param dataset An input {@link Dataset}
      * @return A {@link BoundingBox} built from the bounds of the input {@link Dataset}
      * @throws DataFormatException When the input dataset contains rotation or skew.  Fix the
-     *                             input raster with the <code>gdalwarp</code> utility
+     *                             input raster with the {@code gdalwarp} utility
      *                             manually.
      */
     public static BoundingBox getBounds(final Dataset dataset) throws DataFormatException
@@ -960,8 +960,8 @@ public final class GdalUtility
      * not correct for NODATA values.
      *
      * @param dataset An input {@link Dataset}
-     * @param fromSrs Original spatial reference system of the <code>dataset</code>
-     * @param toSrs   Spatial reference system to warp the <code>dataset</code> to
+     * @param fromSrs Original spatial reference system of the {@code dataset}
+     * @param toSrs   Spatial reference system to warp the {@code dataset} to
      * @return A {@link Dataset} in the input {@link SpatialReference} requested
      */
     public static Dataset warpDatasetToSrs(final Dataset dataset,
@@ -1001,8 +1001,8 @@ public final class GdalUtility
      * not correct for NODATA values.
      *
      * @param dataset An input {@link Dataset}
-     * @param fromSrs Original spatial reference system of the <code>dataset</code>
-     * @param toSrs   Spatial reference system to warp the <code>dataset</code> to
+     * @param fromSrs Original spatial reference system of the {@code dataset}
+     * @param toSrs   Spatial reference system to warp the {@code dataset} to
      * @return A {@link Dataset} in the input {@link SpatialReference} requested
      * @throws IOException
      * @throws TilingException

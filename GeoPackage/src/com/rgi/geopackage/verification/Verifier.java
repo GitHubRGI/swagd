@@ -224,9 +224,9 @@ public class Verifier
                 // rather than exact string equality. This avoids issues with
                 // difference in white space as well as other trivial
                 // annoyances
-                if(columnDefinition.equals(column.getValue()) &&
-                   this.checkExpressionEquivalence(columnDefinition.getDefaultValue(),
-                                                   column.getValue().getDefaultValue()))
+                if(!columnDefinition.equals(column.getValue()) ||
+                   !this.checkExpressionEquivalence(columnDefinition.getDefaultValue(),
+                                                    column.getValue().getDefaultValue()))
                 {
                     errors.add(String.format("Required column %s is defined as:\n%s\nbut should be:\n%s",
                                              column.getKey(),

@@ -45,7 +45,7 @@ public interface CrsProfile
      *
      * @return The bounds of the world in the units of the coordinate reference system
      */
-    public BoundingBox getBounds();
+    BoundingBox getBounds();
 
     /**
      * Determines what tile the coordinate lies in
@@ -62,10 +62,10 @@ public interface CrsProfile
      *             Specifies where tile (0, 0) is in the tile matrix
      * @return Returns the tile that the coordinate corresponds to
      */
-    public Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate        coordinate,
-                                                   final BoundingBox          bounds,
-                                                   final TileMatrixDimensions dimensions,
-                                                   final TileOrigin           tileOrigin);
+    Coordinate<Integer> crsToTileCoordinate(final CrsCoordinate coordinate,
+                                            final BoundingBox bounds,
+                                            final TileMatrixDimensions dimensions,
+                                            final TileOrigin tileOrigin);
 
     /**
      * Determines the coordinate, in the units of the coordinate reference
@@ -87,11 +87,11 @@ public interface CrsProfile
      *
      * @return Returns the coordinate that the tile corresponds to
      */
-    public CrsCoordinate tileToCrsCoordinate(final int                  column,
-                                             final int                  row,
-                                             final BoundingBox          bounds,
-                                             final TileMatrixDimensions dimensions,
-                                             final TileOrigin           tileOrigin);
+    CrsCoordinate tileToCrsCoordinate(final int column,
+                                      final int row,
+                                      final BoundingBox bounds,
+                                      final TileMatrixDimensions dimensions,
+                                      final TileOrigin tileOrigin);
 
     /**
      * Determines the bounding box, in the units of the coordinate reference
@@ -112,23 +112,23 @@ public interface CrsProfile
      *
      * @return Returns the bounding box of the tile
      */
-    public BoundingBox getTileBounds(final int                  column,
-                                     final int                  row,
-                                     final BoundingBox          bounds,
-                                     final TileMatrixDimensions dimensions,
-                                     final TileOrigin           tileOrigin);
+    BoundingBox getTileBounds(final int column,
+                              final int row,
+                              final BoundingBox bounds,
+                              final TileMatrixDimensions dimensions,
+                              final TileOrigin tileOrigin);
 
     /**
      * @return Returns the {@link CoordinateReferenceSystem} object that
      * corresponds to this profile
      */
-    public CoordinateReferenceSystem getCoordinateReferenceSystem();
+    CoordinateReferenceSystem getCoordinateReferenceSystem();
 
     /**
      * @return Returns the name of the coordinate reference system that
      * corresponds to this profile (e.g. "Web Mercator")
      */
-    public String getName();
+    String getName();
 
     /**
      * @return Returns the well known text (<a
@@ -136,13 +136,13 @@ public interface CrsProfile
      * <a href="http://www.opengeospatial.org/">Open Geospatial Consortium</a>
      * for the coordinate reference system that corresponds to this profile
      */
-    public String getWellKnownText();
+    String getWellKnownText();
 
     /**
      * @return Returns a human readable description for the coordinate
      * reference system that corresponds to this profile
      */
-    public String getDescription();
+    String getDescription();
 
     /**
      * Transform a coordinate from the coordinate reference system of this
@@ -157,7 +157,7 @@ public interface CrsProfile
      * @return Returns the equivalent coordinate in the global geodetic
      * coordinate reference system
      */
-    public Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate);
+    Coordinate<Double> toGlobalGeodetic(final Coordinate<Double> coordinate);
 
     /**
      * The maximum acceptable number of decimal places to be used in coordinate
@@ -165,5 +165,5 @@ public interface CrsProfile
      *
      * @return Returns the number of decimal places
      */
-    public int getPrecision();
+    int getPrecision();
 }

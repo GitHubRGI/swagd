@@ -1479,7 +1479,7 @@ public class GeoPackageTilesAPITest
      *             if an error occurs from reading or writing a Tile or File
      */
     @Test(expected = SQLException.class)
-    public void addDuplicateTiles()throws SQLException, ClassNotFoundException, ConformanceException, IOException
+    public void addDuplicateTiles() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
         final File testFile = this.getRandomFile(13);
 
@@ -1497,18 +1497,19 @@ public class GeoPackageTilesAPITest
             final int tileWidth    = 256;
 
 
-            final TileMatrix matrixSet = gpkg.tiles().addTileMatrix(tileSet,
-                                                                    1,
-                                                                    matrixWidth,
-                                                                    matrixHeight,
-                                                                    tileWidth,
-                                                                    tileHeight,
-                                                                    ((tileSet.getMaximumX() - tileSet.getMinimumX())/matrixWidth)/tileWidth,
-                                                                    ((tileSet.getMaximumY() - tileSet.getMaximumY())/matrixHeight)/tileHeight);
+            final TileMatrix matrixSet = gpkg.tiles()
+                                             .addTileMatrix(tileSet,
+                                                            1,
+                                                            matrixWidth,
+                                                            matrixHeight,
+                                                            tileWidth,
+                                                            tileHeight,
+                                                            ((tileSet.getMaximumX() - tileSet.getMinimumX()) / matrixWidth)  / tileWidth,
+                                                            ((tileSet.getMaximumY() - tileSet.getMaximumY()) / matrixHeight) / tileHeight);
 
             final int column = 1;
             final int row    = 0;
-            final byte[] imageData = new byte[]{1, 2, 3, 4};
+            final byte[] imageData = {1, 2, 3, 4};
             //add tile twice
             gpkg.tiles().addTile(tileSet, matrixSet, column, row, imageData);
             gpkg.tiles().addTile(tileSet, matrixSet, column, row, imageData);//see if it will add the same tile twice
