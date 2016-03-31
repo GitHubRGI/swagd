@@ -6,10 +6,10 @@ addons:
 jdk:
     - oraclejdk8
 before_install:
-    - bash gdal_1.11.1_jni.sh
-    - export LD_LIBRARY_PATH=RGISuite/lib:$HOME/gdal/lib:$HOME/gdal/swig/java
-    - export GDAL_DATA=$HOME/gdal/share/gdal
-    - export PATH=$PATH:RGISuite/lib:$HOME/gdal/lib
+    - bash gdal_2.0.0_jni.sh
+    - export LD_LIBRARY_PATH=RGISuite/lib:$HOME/gdal_2.0.0/lib:$HOME/gdal_2.0.0/swig/java
+    - export GDAL_DATA=$HOME/gdal_2.0.0/share/gdal
+    - export PATH=$PATH:RGISuite/lib:$HOME/gdal_2.0.0/lib
 install:
     - ./install-deps-linux.sh
     - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
@@ -20,4 +20,4 @@ after_success:
 cache:
     directories:
         - $HOME/.m2
-        - $HOME/gdal
+        - $HOME/gdal_2.0.0
