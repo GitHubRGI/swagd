@@ -338,17 +338,13 @@ public class GeoPackageWriter implements TileStoreWriter
 
     private TileMatrix getTileMatrix(final int zoomLevel, final int imageWidth, final int imageHeight) throws SQLException
     {
-        TileMatrix tileMatrix = null;
-
         if(this.tileMatrices.containsKey(zoomLevel))
         {
-            tileMatrix = this.tileMatrices.get(zoomLevel);
+            return this.tileMatrices.get(zoomLevel);
         }
-        else
-        {
-            tileMatrix = this.addTileMatrix(zoomLevel, imageHeight, imageWidth);
-            this.tileMatrices.put(zoomLevel, tileMatrix);
-        }
+
+        final TileMatrix tileMatrix = this.addTileMatrix(zoomLevel, imageHeight, imageWidth);
+        this.tileMatrices.put(zoomLevel, tileMatrix);
 
         return tileMatrix;
     }
@@ -357,20 +353,16 @@ public class GeoPackageWriter implements TileStoreWriter
     {
         final TileMatrixDimensions tileMatrixDimensions = this.tileScheme.dimensions(zoomLevel);
 
-        final BoundingBox tileSetBounds = this.geoPackage
-                                              .tiles()
-                                              .getTileMatrixSet(this.tileSet)
-                                              .getBoundingBox();
-
         return this.geoPackage.tiles()
-                              .addTileMatrix(this.tileSet,
+                              .addTileMatrix(this.geoPackage
+                                                 .tiles()
+                                                 .getTileMatrixSet(this.tileSet),
                                              zoomLevel,
                                              tileMatrixDimensions.getWidth(),
                                              tileMatrixDimensions.getHeight(),
                                              tilePixelWidth,
-                                             tilePixelHeight,
-                                             tileSetBounds.getWidth()  / tileMatrixDimensions.getWidth()  / tilePixelWidth,
-                                             tileSetBounds.getHeight() / tileMatrixDimensions.getHeight() / tilePixelHeight);
+                                             tilePixelHeight
+                              );
     }
 
     private final GeoPackage      geoPackage;

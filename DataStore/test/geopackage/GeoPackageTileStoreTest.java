@@ -680,7 +680,7 @@ public class GeoPackageTileStoreTest
             final TileScheme tileScheme = new ZoomTimesTwo(2, 20, 1, 1);
             addTileMatricesToGpkg(zoomLevelsExpected, tileSet, gpkg, tileScheme, tileWidth, tileHeight);
 
-            gpkg.tiles().addTileMatrix(tileSet2, 7, 2, 2, tileWidth, tileHeight, bBox.getWidth() / 2 / tileWidth, bBox.getHeight() / 2 / tileHeight); //this one is not included in zooms because it is a different tileset
+            gpkg.tiles().addTileMatrix(tileSet2, 7, 2, 2, tileWidth, tileHeight); //this one is not included in zooms because it is a different tileset
 
             try(final GeoPackageReader gpkgReader = new GeoPackageReader(testFile, tableName))
             {
@@ -2411,7 +2411,7 @@ public class GeoPackageTileStoreTest
             final double pixelXSize = (tileSet.getMaximumX() - tileSet.getMinimumX()) / dimensions.getWidth()  / tileWidth;
             final double pixelYSize = (tileSet.getMaximumY() - tileSet.getMinimumY()) / dimensions.getHeight() / tileHeight;
 
-            gpkg.tiles().addTileMatrix(tileSet, zoomLevel, dimensions.getWidth(), dimensions.getHeight(), tileWidth, tileHeight, pixelXSize, pixelYSize);
+            gpkg.tiles().addTileMatrix(tileSet, zoomLevel, dimensions.getWidth(), dimensions.getHeight(), tileWidth, tileHeight);
         }
         return tileMatrixDimensionsExpected;
     }
@@ -2442,9 +2442,8 @@ public class GeoPackageTileStoreTest
                                            matrixWidth,
                                            matrixHeight,
                                            tileWidth,
-                                           tileHeight,
-                                           bBox.getWidth()  / matrixWidth / tileWidth,
-                                           bBox.getHeight() / matrixHeight / tileHeight);
+                                           tileHeight
+        );
     }
 
     @SuppressWarnings("unused")
