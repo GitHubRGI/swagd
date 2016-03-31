@@ -33,11 +33,20 @@ import com.rgi.common.BoundingBox;
 public interface ContentFactory<T extends Content>
 {
     /**
-     * @param tableName the table name
-     * @param dataType the data type
-     * @param identifier the identifier
-     * @param description the description
-     * @param lastChange  the time of the last change
+     * @param tableName
+     *            The name of the content table. The table name must begin with
+     *            a letter (A..Z, a..z) or an underscore (_) and may only be
+     *            followed by letters, underscores, or numbers, and may not
+     *            begin with the prefix "gpkg_"
+     * @param identifier
+     *            A human-readable identifier (e.g. short name) for the
+     *            tableName content
+     * @param description
+     *            A human-readable description for the tableName content
+     * @param lastChange
+     *            Timestamp value in ISO 8601 format as defined by the
+     *            strftime function %Y-%m-%dT%H:%M:%fZ format string applied
+     *            to the current time
      * @param minimumX
      *             Bounding box minimum easting or longitude for all content
      * @param maximumX

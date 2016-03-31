@@ -452,8 +452,8 @@ public class GeoPackageCore
                                                                      resultSet.getString(4),             // description
                                                                      resultSet.getString(5),             // last change
                                                                      (Double)resultSet.getObject(6),     // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                                                     (Double)resultSet.getObject(7),     // min y
                                                                      (Double)resultSet.getObject(8),     // max x
+                                                                     (Double)resultSet.getObject(7),     // min y
                                                                      (Double)resultSet.getObject(9),     // max y
                                                                      (Integer)resultSet.getObject(10))); // srs id
     }
@@ -547,8 +547,8 @@ public class GeoPackageCore
                                                                         resultSet.getString(3),            // description
                                                                         resultSet.getString(4),            // last change
                                                                         (Double)resultSet.getObject(5),    // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                                                        (Double)resultSet.getObject(6),    // min y
                                                                         (Double)resultSet.getObject(7),    // max x
+                                                                        (Double)resultSet.getObject(6),    // min y
                                                                         (Double)resultSet.getObject(8),    // max y
                                                                         (Integer)resultSet.getObject(9))); // srs id
     }
