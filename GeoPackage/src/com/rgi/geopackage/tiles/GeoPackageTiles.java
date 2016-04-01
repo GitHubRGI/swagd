@@ -924,7 +924,9 @@ public class GeoPackageTiles
 
         final double divisor = 1000000000.0; // Round to integer extent
 
+        @SuppressWarnings("NumericCastThatLosesPrecision")
         final int tileX = (int)Math.floor(Math.round((normalizedSrsTileCoordinateX / tileWidthInSrs)  * divisor) / divisor);
+        @SuppressWarnings("NumericCastThatLosesPrecision")
         final int tileY = (int)Math.floor(Math.round((normalizedSrsTileCoordinateY / tileHeightInSrs) * divisor) / divisor);
 
         return new Coordinate<>(tileX, tileY);
@@ -1008,6 +1010,7 @@ public class GeoPackageTiles
      * committed or roll back as a single transaction.
      *
      * @throws SQLException
+     *             if there is a database error
      */
     protected void createTilesTablesNoCommit() throws SQLException
     {

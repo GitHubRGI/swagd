@@ -683,7 +683,7 @@
     <inspection_tool class="MethodCoupling" enabled="true" level="ERROR" enabled_by_default="true">
       <option name="m_includeJavaClasses" value="false" />
       <option name="m_includeLibraryClasses" value="false" />
-      <option name="m_limit" value="10" />
+      <option name="m_limit" value="15" />
     </inspection_tool>
     <inspection_tool class="MethodMayBeStatic" enabled="true" level="ERROR" enabled_by_default="true">
       <option name="m_onlyPrivateOrFinal" value="false" />
