@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 # check to see if the gdal_1.11.1_jni folder is empty
-if [ ! -d "$HOME/gdal/lib" ]; then
+if [ ! -d "$HOME/gdal_2.0.0/lib" ]; then
     # get gdal from osgeo
     wget http://download.osgeo.org/gdal/2.0.0/gdal-2.0.0.tar.gz;
     # untar the source quietly
