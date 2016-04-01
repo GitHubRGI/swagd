@@ -130,10 +130,10 @@ public class GeoPackageTiles
                                       TileSet.TileContentType,
                                       identifier,
                                       description,
-                                      boundingBox.getMinX(),
-                                      boundingBox.getMaxX(),
-                                      boundingBox.getMinY(),
-                                      boundingBox.getMaxY(),
+                                      boundingBox.getMinimumX(),
+                                      boundingBox.getMaximumX(),
+                                      boundingBox.getMinimumY(),
+                                      boundingBox.getMaximumY(),
                                       spatialReferenceSystem.getIdentifier()))
             {
                 return existingContent;
@@ -775,10 +775,10 @@ public class GeoPackageTiles
                            insertTileMatrixSetSql,
                            preparedStatement -> { preparedStatement.setString(1, tableName);
                                                   preparedStatement.setInt   (2, spatialReferenceSystem.getIdentifier());
-                                                  preparedStatement.setDouble(3, boundingBox.getMinX());
-                                                  preparedStatement.setDouble(4, boundingBox.getMinY());
-                                                  preparedStatement.setDouble(5, boundingBox.getMaxX());
-                                                  preparedStatement.setDouble(6, boundingBox.getMaxY());
+                                                  preparedStatement.setDouble(3, boundingBox.getMinimumX());
+                                                  preparedStatement.setDouble(4, boundingBox.getMinimumY());
+                                                  preparedStatement.setDouble(5, boundingBox.getMaximumX());
+                                                  preparedStatement.setDouble(6, boundingBox.getMaximumY());
                                                 });
     }
 
@@ -1119,10 +1119,10 @@ public class GeoPackageTiles
     {
         final double divisor = StrictMath.pow(10, precision);
 
-        return new BoundingBox(Math.floor(bounds.getMinX()*divisor) / divisor,
-                               Math.floor(bounds.getMinY()*divisor) / divisor,
-                               Math.ceil (bounds.getMaxX()*divisor) / divisor,
-                               Math.ceil (bounds.getMaxY()*divisor) / divisor);
+        return new BoundingBox(Math.floor(bounds.getMinimumX()*divisor) / divisor,
+                               Math.floor(bounds.getMinimumY()*divisor) / divisor,
+                               Math.ceil (bounds.getMaximumX()*divisor) / divisor,
+                               Math.ceil (bounds.getMaximumY()*divisor) / divisor);
     }
 
     private final GeoPackageCore core;

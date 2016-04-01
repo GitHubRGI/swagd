@@ -35,69 +35,70 @@ public class BoundingBox
     /**
      * Constructor
      *
-     * @param minX
-     *            Minimum X
-     * @param minY
-     *            Minimum Y
-     * @param maxX
-     *            Maximum X
-     * @param maxY
-     *            Maximum Y
+     * @param minimumX
+     *             Minimum X
+     * @param minimumY
+     *             Minimum Y
+     * @param maximumX
+     *             Maximum X
+     * @param maximumY
+     *             Maximum Y
      */
-    public BoundingBox(final double minX,
-                       final double minY,
-                       final double maxX,
-                       final double maxY)
+    public BoundingBox(final double minimumX,
+                       final double minimumY,
+                       final double maximumX,
+                       final double maximumY)
     {
-        if(minX > maxX)
+        if(minimumX > maximumX)
         {
             throw new IllegalArgumentException("Min x cannot be greater than max x");
         }
 
-        if(minY > maxY)
+        if(minimumY > maximumY)
         {
             throw new IllegalArgumentException("Min y cannot be greater than max y");
         }
 
-        this.minX = minX;
-        this.minY = minY;
-        this.maxX = maxX;
-        this.maxY = maxY;
+        this.minimumX = minimumX;
+        this.minimumY = minimumY;
+        this.maximumX = maximumX;
+        this.maximumY = maximumY;
     }
 
     @Override
     public String toString()
     {
         return String.format("(%s, %s, %s, %s)",
-                             this.minX,
-                             this.minY,
-                             this.maxX,
-                             this.maxY);
+                             this.minimumX,
+                             this.minimumY,
+                             this.maximumX,
+                             this.maximumY);
     }
 
     @Override
-    public boolean equals(final Object object)
+    public boolean equals(final Object obj)
     {
-        if(!(object instanceof BoundingBox))
+        if(!(obj instanceof BoundingBox))
         {
             return false;
         }
 
-        final BoundingBox other = (BoundingBox)object;
+        final BoundingBox other = (BoundingBox)obj;
 
-        return this.minY == other.minY &&
-               this.minX == other.minX &&
-               this.maxY == other.maxY &&
-               this.maxX == other.maxX;
+        //noinspection FloatingPointEquality
+        return this.minimumY == other.minimumY &&
+               this.minimumX == other.minimumX &&
+               this.maximumY == other.maximumY &&
+               this.maximumX == other.maximumX;
     }
 
     @Override
     public int hashCode()
     {
-        return Double.valueOf(this.minY).hashCode() ^
-               Double.valueOf(this.minX).hashCode() ^
-               Double.valueOf(this.maxY).hashCode() ^
-               Double.valueOf(this.maxX).hashCode();
+        return Double.valueOf(this.minimumY).hashCode() ^
+               Double.valueOf(this.minimumX).hashCode() ^
+               Double.valueOf(this.maximumY).hashCode() ^
+               Double.valueOf(this.maximumX).hashCode();
     }
 
     /**
@@ -105,7 +106,7 @@ public class BoundingBox
      */
     public double getHeight()
     {
-        return this.maxY - this.minY;
+        return this.maximumY - this.minimumY;
     }
 
     /**
@@ -113,7 +114,7 @@ public class BoundingBox
      */
     public double getWidth()
     {
-        return this.maxX - this.minX;
+        return this.maximumX - this.minimumX;
     }
 
     /**
@@ -121,40 +122,41 @@ public class BoundingBox
      */
     public Coordinate<Double> getCenter()
     {
-        return new Coordinate<>((this.maxX + this.minX) / 2.0,
-                                (this.maxY + this.minY) / 2.0);
+        //noinspection MagicNumber
+        return new Coordinate<>((this.maximumX + this.minimumX) / 2.0,
+                                (this.maximumY + this.minimumY) / 2.0);
     }
 
     /**
-     * @return the minY
+     * @return the minimumY
      */
-    public double getMinY()
+    public double getMinimumY()
     {
-        return this.minY;
+        return this.minimumY;
     }
 
     /**
-     * @return the minX
+     * @return the minimumX
      */
-    public double getMinX()
+    public double getMinimumX()
     {
-        return this.minX;
+        return this.minimumX;
     }
 
     /**
-     * @return the maxY
+     * @return the maximumY
      */
-    public double getMaxY()
+    public double getMaximumY()
     {
-        return this.maxY;
+        return this.maximumY;
     }
 
     /**
-     * @return the maxX
+     * @return the maximumX
      */
-    public double getMaxX()
+    public double getMaximumX()
     {
-        return this.maxX;
+        return this.maximumX;
     }
 
     /**
@@ -162,7 +164,7 @@ public class BoundingBox
      */
     public Coordinate<Double> getMin()
     {
-        return new Coordinate<>(this.minX, this.minY);
+        return new Coordinate<>(this.minimumX, this.minimumY);
     }
 
     /**
@@ -170,7 +172,7 @@ public class BoundingBox
      */
     public Coordinate<Double> getMax()
     {
-        return new Coordinate<>(this.maxX, this.maxY);
+        return new Coordinate<>(this.maximumX, this.maximumY);
     }
 
     /**
@@ -178,7 +180,7 @@ public class BoundingBox
      */
     public Coordinate<Double> getTopLeft()
     {
-        return new Coordinate<>(this.minX, this.maxY);
+        return new Coordinate<>(this.minimumX, this.maximumY);
     }
 
     /**
@@ -202,7 +204,7 @@ public class BoundingBox
      */
     public Coordinate<Double> getBottomRight()
     {
-        return new Coordinate<>(this.maxX, this.minY);
+        return new Coordinate<>(this.maximumX, this.minimumY);
     }
 
     /**
@@ -222,14 +224,14 @@ public class BoundingBox
      */
     public boolean contains(final Coordinate<Double> point)
     {
-        return point.getY() >= this.minY &&
-               point.getY() <= this.maxY &&
-               point.getX() >= this.minX &&
-               point.getX() <= this.maxX;
+        return point.getY() >= this.minimumY &&
+               point.getY() <= this.maximumY &&
+               point.getX() >= this.minimumX &&
+               point.getX() <= this.maximumX;
     }
 
-    private final double minY;
-    private final double minX;
-    private final double maxY;
-    private final double maxX;
+    private final double minimumX;
+    private final double minimumY;
+    private final double maximumX;
+    private final double maximumY;
 }

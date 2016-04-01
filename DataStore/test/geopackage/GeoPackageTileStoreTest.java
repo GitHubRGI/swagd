@@ -1849,10 +1849,10 @@ public class GeoPackageTileStoreTest
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final SphericalMercatorCrsProfile spherical = new SphericalMercatorCrsProfile();
-            final BoundingBox tileSetBounds = new BoundingBox(SphericalMercatorCrsProfile.Bounds.getMinX()/4,
-                                                              SphericalMercatorCrsProfile.Bounds.getMinY()/2,
-                                                              SphericalMercatorCrsProfile.Bounds.getMaxX()/10,
-                                                              SphericalMercatorCrsProfile.Bounds.getMaxY()/8);
+            final BoundingBox tileSetBounds = new BoundingBox(SphericalMercatorCrsProfile.Bounds.getMinimumX()/4,
+                                                              SphericalMercatorCrsProfile.Bounds.getMinimumY()/2,
+                                                              SphericalMercatorCrsProfile.Bounds.getMaximumX()/10,
+                                                              SphericalMercatorCrsProfile.Bounds.getMaximumY()/8);
             final String tileSetName = "tableName";
             final int zoomLevel = 6;
             final int tileWidth = 256;
@@ -1947,10 +1947,10 @@ public class GeoPackageTileStoreTest
         final File testFile = this.getRandomFile(13);
         final SphericalMercatorCrsProfile sphericalMercator = new SphericalMercatorCrsProfile();
         final CoordinateReferenceSystem coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
-        final BoundingBox bBox =  new BoundingBox(sphericalMercator.getBounds().getMinX()/2,
-                                            sphericalMercator.getBounds().getMinY()/5,
-                                            sphericalMercator.getBounds().getMaxX()/3,
-                                            sphericalMercator.getBounds().getMaxY()/4);
+        final BoundingBox bBox =  new BoundingBox(sphericalMercator.getBounds().getMinimumX()/2,
+                                            sphericalMercator.getBounds().getMinimumY()/5,
+                                            sphericalMercator.getBounds().getMaximumX()/3,
+                                            sphericalMercator.getBounds().getMaximumY()/4);
         final TileScheme tileScheme = new ZoomTimesTwo(1, 10, 2, 3);
         try(GeoPackageWriter writer = new GeoPackageWriter(testFile,
                                                            coordinateReferenceSystem,
@@ -1995,10 +1995,10 @@ public class GeoPackageTileStoreTest
         final File                        testFile                  = this.getRandomFile(13);
         final SphericalMercatorCrsProfile sphericalMercator         = new SphericalMercatorCrsProfile();
         final CoordinateReferenceSystem   coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
-        final BoundingBox                 bBox                      =  new BoundingBox(sphericalMercator.getBounds().getMinX()/2,
-                                                                                 sphericalMercator.getBounds().getMinY()/5,
-                                                                                 sphericalMercator.getBounds().getMaxX()/3,
-                                                                                 sphericalMercator.getBounds().getMaxY()/4);
+        final BoundingBox                 bBox                      =  new BoundingBox(sphericalMercator.getBounds().getMinimumX()/2,
+                                                                                 sphericalMercator.getBounds().getMinimumY()/5,
+                                                                                 sphericalMercator.getBounds().getMaximumX()/3,
+                                                                                 sphericalMercator.getBounds().getMaximumY()/4);
 
         final TileScheme tileScheme = new ZoomTimesTwo(1, 10, 2, 3);
         final int        zoomLevel = 4;
@@ -2038,10 +2038,10 @@ public class GeoPackageTileStoreTest
         final File                        testFile                  = this.getRandomFile(13);
         final SphericalMercatorCrsProfile sphericalMercator         = new SphericalMercatorCrsProfile();
         final CoordinateReferenceSystem   coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 3857);
-        final BoundingBox                 bBox                      = new BoundingBox(sphericalMercator.getBounds().getMinX()/3,
-                                                                                sphericalMercator.getBounds().getMinY()/2,
-                                                                                sphericalMercator.getBounds().getMaxX()/4,
-                                                                                sphericalMercator.getBounds().getMaxY()/5);
+        final BoundingBox                 bBox                      = new BoundingBox(sphericalMercator.getBounds().getMinimumX()/3,
+                                                                                sphericalMercator.getBounds().getMinimumY()/2,
+                                                                                sphericalMercator.getBounds().getMaximumX()/4,
+                                                                                sphericalMercator.getBounds().getMaximumY()/5);
         final TileScheme tileScheme = new ZoomTimesTwo(1, 10, 3, 5);
         try
         {
@@ -2081,10 +2081,10 @@ public class GeoPackageTileStoreTest
         final File                        testFile                  = this.getRandomFile(13);
         final GlobalGeodeticCrsProfile    globalGeodetic            = new GlobalGeodeticCrsProfile();
         final CoordinateReferenceSystem   coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
-        final BoundingBox                 bBox                      = new BoundingBox(globalGeodetic.getBounds().getMinX()/2,
-                                                                                globalGeodetic.getBounds().getMinY()/3,
-                                                                                globalGeodetic.getBounds().getMaxX()/4,
-                                                                                globalGeodetic.getBounds().getMaxY()/5);
+        final BoundingBox                 bBox                      = new BoundingBox(globalGeodetic.getBounds().getMinimumX()/2,
+                                                                                globalGeodetic.getBounds().getMinimumY()/3,
+                                                                                globalGeodetic.getBounds().getMaximumX()/4,
+                                                                                globalGeodetic.getBounds().getMaximumY()/5);
         final TileScheme tileScheme = new ZoomTimesTwo(1, 10, 3, 5);
         try
         {
@@ -2124,10 +2124,10 @@ public class GeoPackageTileStoreTest
         final File                        testFile                  = this.getRandomFile(13);
         final GlobalGeodeticCrsProfile    globalGeodetic            = new GlobalGeodeticCrsProfile();
         final CoordinateReferenceSystem   coordinateReferenceSystem = new CoordinateReferenceSystem("EPSG", 4326);
-        final BoundingBox                 bBox                      = new BoundingBox(globalGeodetic.getBounds().getMinX()/5,
-                                                                                globalGeodetic.getBounds().getMinY()/4,
-                                                                                globalGeodetic.getBounds().getMaxX()/3,
-                                                                                globalGeodetic.getBounds().getMaxY()/2);
+        final BoundingBox                 bBox                      = new BoundingBox(globalGeodetic.getBounds().getMinimumX()/5,
+                                                                                globalGeodetic.getBounds().getMinimumY()/4,
+                                                                                globalGeodetic.getBounds().getMaximumX()/3,
+                                                                                globalGeodetic.getBounds().getMaximumY()/2);
         final TileScheme tileScheme = new ZoomTimesTwo(1, 10, 3, 5);
         try
         {
@@ -2182,10 +2182,10 @@ public class GeoPackageTileStoreTest
 
         final CoordinateReferenceSystem crs            = new CoordinateReferenceSystem("EPSG", 4326);
         final GlobalGeodeticCrsProfile  globalGeodetic = new GlobalGeodeticCrsProfile();
-        final BoundingBox               bBox           = new BoundingBox(globalGeodetic.getBounds().getMinX()/5,
-                                                                   globalGeodetic.getBounds().getMinY()/4,
-                                                                   globalGeodetic.getBounds().getMaxX()/3,
-                                                                   globalGeodetic.getBounds().getMaxY()/2);
+        final BoundingBox               bBox           = new BoundingBox(globalGeodetic.getBounds().getMinimumX()/5,
+                                                                   globalGeodetic.getBounds().getMinimumY()/4,
+                                                                   globalGeodetic.getBounds().getMaximumX()/3,
+                                                                   globalGeodetic.getBounds().getMaximumY()/2);
         final TileScheme tileScheme = new ZoomTimesTwo(0, 10, 2, 4);
 
         try(GeoPackageWriter gpkgWriter = new GeoPackageWriter(testFile,
@@ -2237,10 +2237,10 @@ public class GeoPackageTileStoreTest
         try
         {
             final SphericalMercatorCrsProfile spherical = new SphericalMercatorCrsProfile();
-            final BoundingBox tileSetBounds = new BoundingBox(spherical.getBounds().getMinX()/3,
-                                                        spherical.getBounds().getMinY()/2,
-                                                        spherical.getBounds().getMaxX()-100,
-                                                        spherical.getBounds().getMaxY()-100);
+            final BoundingBox tileSetBounds = new BoundingBox(spherical.getBounds().getMinimumX()/3,
+                                                        spherical.getBounds().getMinimumY()/2,
+                                                        spherical.getBounds().getMaximumX()-100,
+                                                        spherical.getBounds().getMaximumY()-100);
             final String tileSetName = "tableName";
             //create a geopackage writer
             try(GeoPackageWriter writer = new GeoPackageWriter(testFile,
@@ -2255,7 +2255,7 @@ public class GeoPackageTileStoreTest
             {
                 final int zoomLevel = 6;
                 final BufferedImage  imageExpected = createBufferedImage(BufferedImage.TYPE_BYTE_GRAY);
-                final CrsCoordinate crsCoordinate = new CrsCoordinate(tileSetBounds.getMinX(), tileSetBounds.getMaxY(), spherical.getCoordinateReferenceSystem());//upper left tile
+                final CrsCoordinate crsCoordinate = new CrsCoordinate(tileSetBounds.getMinimumX(), tileSetBounds.getMaximumY(), spherical.getCoordinateReferenceSystem());//upper left tile
                 //add an image to the writer
                 writer.addTile(crsCoordinate, zoomLevel, imageExpected);
                 //create a reader

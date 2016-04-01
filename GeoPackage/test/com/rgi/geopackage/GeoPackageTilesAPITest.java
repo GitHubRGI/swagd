@@ -70,7 +70,7 @@ import com.rgi.geopackage.verification.VerificationLevel;
 /**
  * @author Jenifer Cochran
  */
-@SuppressWarnings({"static-method", "ClassWithTooManyMethods", "JavaDoc", "ThrowFromFinallyBlock"})
+@SuppressWarnings({"static-method", "ClassWithTooManyMethods", "JavaDoc", "ThrowFromFinallyBlock", "ObjectAllocationInLoop"})
 public class GeoPackageTilesAPITest
 {
     private final Random randomGenerator = new Random();
@@ -2324,7 +2324,7 @@ public class GeoPackageTilesAPITest
     {
         final File testFile = this.getRandomFile(19);
         testFile.createNewFile();
-        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Open))
+        try(final GeoPackage ignored = new GeoPackage(testFile, GeoPackage.OpenMode.Open))
         {
             fail("GeoPackage did not throw a geoPackageConformanceException as expected.");
         }
@@ -3133,8 +3133,8 @@ public class GeoPackageTilesAPITest
     @Test
     public void crsToRelativeTileCoordinateEdgeCase7()throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
-        final CrsCoordinate        coordinate = new CrsCoordinate((GlobalGeodeticCrsProfile.Bounds.getMinX()+(2*(GlobalGeodeticCrsProfile.Bounds.getWidth()))  / 8),
-                (GlobalGeodeticCrsProfile.Bounds.getMaxY()-(6*(GlobalGeodeticCrsProfile.Bounds.getHeight())) / 9),
+        final CrsCoordinate        coordinate = new CrsCoordinate((GlobalGeodeticCrsProfile.Bounds.getMinimumX()+(2*(GlobalGeodeticCrsProfile.Bounds.getWidth()))  / 8),
+                (GlobalGeodeticCrsProfile.Bounds.getMaximumY()-(6*(GlobalGeodeticCrsProfile.Bounds.getHeight())) / 9),
                 "epsg",
                 4326);
         final File testFile = this.getRandomFile(8);
@@ -3422,8 +3422,8 @@ public class GeoPackageTilesAPITest
             final TileMatrix  tileMatrix   = createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
 
             final CrsCoordinate crsCoordReturned = gpkg.tiles().tileToCrsCoordinate(gpkg.tiles().getTileSet(tileMatrix.getTableName()), column, row, zoomLevel);
-            final CrsCoordinate crsCoordExpected = new CrsCoordinate(bBox.getMinX() + column * (bBox.getWidth()  / matrixWidth),
-                                                                     bBox.getMaxY() - row    * (bBox.getHeight() / matrixHeight),
+            final CrsCoordinate crsCoordExpected = new CrsCoordinate(bBox.getMinimumX() + column * (bBox.getWidth()  / matrixWidth),
+                                                                     bBox.getMaximumY() - row    * (bBox.getHeight() / matrixHeight),
                                                                      new GlobalGeodeticCrsProfile().getCoordinateReferenceSystem());
 
             GeoPackageTilesAPITest.assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
@@ -3447,10 +3447,10 @@ public class GeoPackageTilesAPITest
         {
             final CrsProfile spherMercator = new SphericalMercatorCrsProfile();
 
-            final BoundingBox bBox = new BoundingBox(spherMercator.getBounds().getMinX()/2,
-                                                     spherMercator.getBounds().getMinY()/3,
-                                                     spherMercator.getBounds().getMaxX(),
-                                                     spherMercator.getBounds().getMaxY()/2);
+            final BoundingBox bBox = new BoundingBox(spherMercator.getBounds().getMinimumX()/2,
+                                                     spherMercator.getBounds().getMinimumY()/3,
+                                                     spherMercator.getBounds().getMaximumX(),
+                                                     spherMercator.getBounds().getMaximumY()/2);
             final int row          = 5;
             final int column       = 1;
             final int zoomLevel    = 4;
@@ -3465,8 +3465,8 @@ public class GeoPackageTilesAPITest
 
             final TileMatrix tileMatrix = createTileSetAndTileMatrix(gpkg, srs, bBox, zoomLevel, matrixWidth, matrixHeight, 256, 256, "tableName");
 
-            final CrsCoordinate crsCoordExpected =  new CrsCoordinate(bBox.getMinX() + column * (bBox.getWidth()/matrixWidth),
-                                                                      bBox.getMaxY() - row    * (bBox.getHeight()/matrixHeight),
+            final CrsCoordinate crsCoordExpected =  new CrsCoordinate(bBox.getMinimumX() + column * (bBox.getWidth()/matrixWidth),
+                                                                      bBox.getMaximumY() - row    * (bBox.getHeight()/matrixHeight),
                                                                       spherMercator.getCoordinateReferenceSystem());
 
             final CrsCoordinate crsCoordReturned = gpkg.tiles().tileToCrsCoordinate(gpkg.tiles().getTileSet(tileMatrix.getTableName()), column, row, zoomLevel);
@@ -3500,8 +3500,8 @@ public class GeoPackageTilesAPITest
             final TileMatrix  tileMatrix   = createTileSetAndTileMatrix(gpkg, bBox, zoomLevel, matrixWidth, matrixHeight);
 
             final CrsCoordinate crsCoordReturned = gpkg.tiles().tileToCrsCoordinate(gpkg.tiles().getTileSet(tileMatrix.getTableName()), column, row, zoomLevel);
-            final CrsCoordinate crsCoordExpected = new CrsCoordinate(bBox.getMinX() + column*(bBox.getWidth()/matrixWidth),
-                                                                     bBox.getMaxY() - row*  (bBox.getHeight()/matrixHeight),
+            final CrsCoordinate crsCoordExpected = new CrsCoordinate(bBox.getMinimumX() + column*(bBox.getWidth()/matrixWidth),
+                                                                     bBox.getMaximumY() - row*  (bBox.getHeight()/matrixHeight),
                                                                      new GlobalGeodeticCrsProfile().getCoordinateReferenceSystem());
 
             GeoPackageTilesAPITest.assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
@@ -3683,7 +3683,7 @@ public class GeoPackageTilesAPITest
 
         do
         {
-            testFile = new File(FileSystems.getDefault().getPath(this.getRanString(length)).toString() + ".gpkg");
+            testFile = new File(FileSystems.getDefault().getPath(this.getRanString(length)) + ".gpkg");
         }
         while(testFile.exists());
 

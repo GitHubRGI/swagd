@@ -350,10 +350,10 @@ public class GeoPackageCore
                                        dataType,
                                        identifier,
                                        description,
-                                       boundingBox.getMinX(),
-                                       boundingBox.getMaxX(),
-                                       boundingBox.getMinY(),
-                                       boundingBox.getMaxY(),
+                                       boundingBox.getMinimumX(),
+                                       boundingBox.getMaximumX(),
+                                       boundingBox.getMinimumY(),
+                                       boundingBox.getMaximumY(),
                                        spatialReferenceSystem.getIdentifier()))
             {
                 throw new IllegalArgumentException("A content entry with this table name or identifier already exists but with different properties");
@@ -383,10 +383,10 @@ public class GeoPackageCore
                                                   preparedStatement.setString(2, dataType);
                                                   preparedStatement.setString(3, identifier);
                                                   preparedStatement.setString(4, description);
-                                                  preparedStatement.setObject(5, boundingBox.getMinX()); // Using setObject because spec allows the bounding box values to be null
-                                                  preparedStatement.setObject(6, boundingBox.getMinY());
-                                                  preparedStatement.setObject(7, boundingBox.getMaxX());
-                                                  preparedStatement.setObject(8, boundingBox.getMaxY());
+                                                  preparedStatement.setObject(5, boundingBox.getMinimumX()); // Using setObject because spec allows the bounding box values to be null
+                                                  preparedStatement.setObject(6, boundingBox.getMinimumY());
+                                                  preparedStatement.setObject(7, boundingBox.getMaximumX());
+                                                  preparedStatement.setObject(8, boundingBox.getMaximumY());
                                                   preparedStatement.setObject(9, srsId);                // Using setObject because the spec allows the srs id be null
                                                 });
 

@@ -73,10 +73,10 @@ public class BoundsUtility
         // TODO is there a more clever way to go about this?
         switch(origin)
         {
-            case LowerLeft:  onFarEdge = coordinate.getY() == bounds.getMaxY() || coordinate.getX() == bounds.getMaxX(); break;
-            case LowerRight: onFarEdge = coordinate.getY() == bounds.getMaxY() || coordinate.getX() == bounds.getMinX(); break;
-            case UpperLeft:  onFarEdge = coordinate.getY() == bounds.getMinY() || coordinate.getX() == bounds.getMaxX(); break;
-            case UpperRight: onFarEdge = coordinate.getY() == bounds.getMinY() || coordinate.getX() == bounds.getMinX(); break;
+            case LowerLeft:  onFarEdge = coordinate.getY() == bounds.getMaximumY() || coordinate.getX() == bounds.getMaximumX(); break;
+            case LowerRight: onFarEdge = coordinate.getY() == bounds.getMaximumY() || coordinate.getX() == bounds.getMinimumX(); break;
+            case UpperLeft:  onFarEdge = coordinate.getY() == bounds.getMinimumY() || coordinate.getX() == bounds.getMaximumX(); break;
+            case UpperRight: onFarEdge = coordinate.getY() == bounds.getMinimumY() || coordinate.getX() == bounds.getMinimumX(); break;
 
             default: break; // This can't be reached.  All enumeration cases are present in the switch.
         }

@@ -436,10 +436,10 @@ public class GeoPackageNetworkExtensionTest
                                                 Network.NetworkContentType,
                                                 identifier,
                                                 description,
-                                                box.getMinX(),
-                                                box.getMaxX(),
-                                                box.getMinY(),
-                                                box.getMaxY(),
+                                                box.getMinimumX(),
+                                                box.getMaximumX(),
+                                                box.getMinimumY(),
+                                                box.getMaximumY(),
                                                 srs.getIdentifier()));
         }
         finally
@@ -649,10 +649,10 @@ public class GeoPackageNetworkExtensionTest
                                                Network.NetworkContentType,
                                                "test, too",
                                                "empty",
-                                               box.getMinX(),
-                                               box.getMaxX(),
-                                               box.getMinY(),
-                                               box.getMaxY(),
+                                               box.getMinimumX(),
+                                               box.getMaximumX(),
+                                               box.getMinimumY(),
+                                               box.getMaximumY(),
                                                srs.getIdentifier()));
         }
         finally

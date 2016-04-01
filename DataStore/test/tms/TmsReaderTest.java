@@ -89,7 +89,7 @@ public class TmsReaderTest
         final Path tmsDir = TmsUtility.createTMSFolderMercator(this.tempFolder, 4);
         try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), tmsDir))
         {
-            assertTrue(tmsReader.getBounds().getMinX() == -20037508.342789244);
+            assertTrue(tmsReader.getBounds().getMinimumX() == -20037508.342789244);
         }
     }
 
@@ -106,7 +106,7 @@ public class TmsReaderTest
         final Path tmsDir = TmsUtility.createTMSFolderMercator(this.tempFolder, 4);
         try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), tmsDir))
         {
-            assertTrue(tmsReader.getBounds().getMaxX() == 20037508.342789244);
+            assertTrue(tmsReader.getBounds().getMaximumX() == 20037508.342789244);
         }
     }
 
@@ -123,7 +123,7 @@ public class TmsReaderTest
         final Path tmsDir = TmsUtility.createTMSFolderMercator(this.tempFolder, 4);
         try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), tmsDir))
         {
-            assertTrue(tmsReader.getBounds().getMaxY() == 20037508.342789244);
+            assertTrue(tmsReader.getBounds().getMaximumY() == 20037508.342789244);
         }
     }
 
@@ -140,7 +140,7 @@ public class TmsReaderTest
         final Path tmsDir = TmsUtility.createTMSFolderMercator(this.tempFolder, 4);
         try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 3857), tmsDir))
         {
-            assertTrue(tmsReader.getBounds().getMinY() == -20037508.342789244);
+            assertTrue(tmsReader.getBounds().getMinimumY() == -20037508.342789244);
         }
     }
 
@@ -157,7 +157,7 @@ public class TmsReaderTest
         final Path tmsDir = TmsUtility.createTMSFolderGeodetic(this.tempFolder, 4);
         try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 4326), tmsDir))
         {
-            assertTrue(tmsReader.getBounds().getMinX() == -180.0);
+            assertTrue(tmsReader.getBounds().getMinimumX() == -180.0);
         }
     }
 
@@ -174,7 +174,7 @@ public class TmsReaderTest
         final Path tmsDir = TmsUtility.createTMSFolderGeodetic(this.tempFolder, 4);
         try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 4326), tmsDir))
         {
-            assertTrue(tmsReader.getBounds().getMaxX() == 180.0);
+            assertTrue(tmsReader.getBounds().getMaximumX() == 180.0);
         }
     }
 
@@ -191,7 +191,7 @@ public class TmsReaderTest
         final Path tmsDir = TmsUtility.createTMSFolderGeodetic(this.tempFolder, 4);
         try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 4326), tmsDir))
         {
-            assertTrue(tmsReader.getBounds().getMaxY() == 90.0);
+            assertTrue(tmsReader.getBounds().getMaximumY() == 90.0);
         }
     }
 
@@ -208,7 +208,7 @@ public class TmsReaderTest
         final Path tmsDir = TmsUtility.createTMSFolderGeodetic(this.tempFolder, 4);
         try(final TmsReader tmsReader = new TmsReader(new CoordinateReferenceSystem("EPSG", 4326), tmsDir))
         {
-            assertTrue(tmsReader.getBounds().getMinY() == -90.0);
+            assertTrue(tmsReader.getBounds().getMinimumY() == -90.0);
         }
     }
 

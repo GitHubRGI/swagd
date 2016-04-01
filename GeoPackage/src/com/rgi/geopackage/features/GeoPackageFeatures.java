@@ -286,10 +286,10 @@ public class GeoPackageFeatures
                                       FeatureSet.FeatureContentType,
                                       identifier,
                                       description,
-                                      boundingBox.getMinX(),
-                                      boundingBox.getMaxX(),
-                                      boundingBox.getMinY(),
-                                      boundingBox.getMaxY(),
+                                      boundingBox.getMinimumX(),
+                                      boundingBox.getMaximumX(),
+                                      boundingBox.getMinimumY(),
+                                      boundingBox.getMaximumY(),
                                       spatialReferenceSystem.getIdentifier()))
             {
                 return existingContent;

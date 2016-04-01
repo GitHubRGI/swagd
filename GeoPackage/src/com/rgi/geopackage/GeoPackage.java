@@ -291,8 +291,8 @@ public class GeoPackage implements AutoCloseable
     @Override
     public void close() throws SQLException
     {
-        if(this.databaseConnection            != null &&
-           this.databaseConnection.isClosed() == false)
+        if(this.databaseConnection != null &&
+           !this.databaseConnection.isClosed())
         {
             this.databaseConnection.rollback(); // When Connection.close() is called, pending transactions are either automatically committed or rolled back depending on implementation defined behavior.  Make the call explicitly to avoid relying on implementation defined behavior.
             this.databaseConnection.close();
@@ -357,7 +357,7 @@ public class GeoPackage implements AutoCloseable
 
         //System.out.println(String.format("GeoPackage took %.2f seconds to verify.", (System.nanoTime() - startTime)/1.0e9));
 
-        if(verificationIssues.size() > 0)
+        if(!verificationIssues.isEmpty())
         {
             final ConformanceException conformanceException = new ConformanceException(verificationIssues);
 

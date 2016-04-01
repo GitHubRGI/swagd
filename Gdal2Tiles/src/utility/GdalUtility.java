@@ -1296,8 +1296,8 @@ public final class GdalUtility
         }
 
         // This is sorcery of the darkest kind.  It works but it not fully understood.
-        final int readX = (int)((boundingBox.getMinX() - geoTransform[0]) / geoTransform[1] + 0.001);
-        final int readY = (int)((boundingBox.getMaxY() - geoTransform[3]) / geoTransform[5] + 0.001);
+        final int readX = (int)((boundingBox.getMinimumX() - geoTransform[0]) / geoTransform[1] + 0.001);
+        final int readY = (int)((boundingBox.getMaximumY() - geoTransform[3]) / geoTransform[5] + 0.001);
 
         final int readXSize = (int)(boundingBox.getWidth() / geoTransform[1] + 0.5);
         final int readYSize = (int)(boundingBox.getHeight() / -geoTransform[5] + 0.5);
