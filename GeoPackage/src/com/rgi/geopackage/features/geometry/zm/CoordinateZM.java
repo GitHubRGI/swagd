@@ -100,12 +100,9 @@ public class CoordinateZM
         }
 
         return new EnvelopeZM(this.x,
-                              this.x,
-                              this.y,
+                              this.y, this.z, this.m, this.x,
                               this.y,
                               this.z,
-                              this.z,
-                              this.m,
                               this.m);
     }
 

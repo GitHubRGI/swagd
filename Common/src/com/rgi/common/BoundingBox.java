@@ -86,19 +86,19 @@ public class BoundingBox
         final BoundingBox other = (BoundingBox)obj;
 
         //noinspection FloatingPointEquality
-        return this.minimumY == other.minimumY &&
-               this.minimumX == other.minimumX &&
-               this.maximumY == other.maximumY &&
-               this.maximumX == other.maximumX;
+        return this.minimumX == other.minimumX &&
+               this.minimumY == other.minimumY &&
+               this.maximumX == other.maximumX &&
+               this.maximumY == other.maximumY;
     }
 
     @Override
     public int hashCode()
     {
-        return Double.valueOf(this.minimumY).hashCode() ^
-               Double.valueOf(this.minimumX).hashCode() ^
-               Double.valueOf(this.maximumY).hashCode() ^
-               Double.valueOf(this.maximumX).hashCode();
+        return Double.valueOf(this.minimumX).hashCode() ^
+               Double.valueOf(this.minimumY).hashCode() ^
+               Double.valueOf(this.maximumX).hashCode() ^
+               Double.valueOf(this.maximumY).hashCode();
     }
 
     /**

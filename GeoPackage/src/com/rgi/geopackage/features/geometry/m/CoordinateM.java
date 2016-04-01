@@ -85,10 +85,8 @@ public class CoordinateM
     public EnvelopeM createEnvelope()
     {
         return new EnvelopeM(this.x,
-                             this.x,
+                             this.y, this.m, this.x,
                              this.y,
-                             this.y,
-                             this.m,
                              this.m);
     }
 

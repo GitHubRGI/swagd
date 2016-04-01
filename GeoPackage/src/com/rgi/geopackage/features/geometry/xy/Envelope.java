@@ -31,16 +31,23 @@ import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 public class Envelope
 {
     public Envelope(final double minimumX,
-                    final double maximumX,
                     final double minimumY,
+                    final double maximumX,
                     final double maximumY)
     {
         this.minimumX = minimumX;
-        this.maximumX = maximumX;
         this.minimumY = minimumY;
+        this.maximumX = maximumX;
         this.maximumY = maximumY;
     }
 
+    /**
+     * This is in the order:
+     * minimum x, maximum x, minimum y, maximum y
+     * @see <a href="http://www.geopackage.org/spec/#flags_layout">GeoPackage spec, Table 6. bit layout of GeoPackageBinary flags byte</a>
+     *
+     * @return
+     */
     public double[] toArray()
     {
         return new double[]{ this.minimumX,
@@ -55,14 +62,14 @@ public class Envelope
         return this.minimumX;
     }
 
-    public double getMaximumX()
-    {
-        return this.maximumX;
-    }
-
     public double getMinimumY()
     {
         return this.minimumY;
+    }
+
+    public double getMaximumX()
+    {
+        return this.maximumX;
     }
 
     public double getMaximumY()
@@ -83,8 +90,8 @@ public class Envelope
     public boolean isEmpty()
     {
         return Double.isNaN(this.minimumX) &&
-               Double.isNaN(this.maximumX) &&
                Double.isNaN(this.minimumY) &&
+               Double.isNaN(this.maximumX) &&
                Double.isNaN(this.maximumY);
     }
 
@@ -98,14 +105,13 @@ public class Envelope
                                    final Envelope second)
     {
         return new Envelope(nanMinimum(first.minimumX, second.minimumX),
-                            nanMaximum(first.maximumX, second.maximumX),
                             nanMinimum(first.minimumY, second.minimumY),
+                            nanMaximum(first.maximumX, second.maximumX),
                             nanMaximum(first.maximumY, second.maximumY));
     }
 
     public static final Envelope Empty = new Envelope(Double.NaN,
-                                                      Double.NaN,
-                                                      Double.NaN,
+                                                      Double.NaN, Double.NaN,
                                                       Double.NaN);
 
     protected static double nanMinimum(final double first, final double second)
@@ -149,7 +155,7 @@ public class Envelope
     }
 
     private final double minimumX;
-    private final double maximumX;
     private final double minimumY;
+    private final double maximumX;
     private final double maximumY;
 }

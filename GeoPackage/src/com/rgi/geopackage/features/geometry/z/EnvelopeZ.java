@@ -32,21 +32,26 @@ import com.rgi.geopackage.features.EnvelopeContentsIndicator;
 public final class EnvelopeZ extends Envelope
 {
     public EnvelopeZ(final double minimumX,
-                     final double maximumX,
-                     final double minimumY,
+                     final double minimumY, final double minimumZ, final double maximumX,
                      final double maximumY,
-                     final double minimumZ,
                      final double maximumZ)
     {
         super(minimumX,
-              maximumX,
               minimumY,
+              maximumX,
               maximumY);
 
         this.minimumZ = minimumZ;
         this.maximumZ = maximumZ;
     }
 
+    /**
+     * This is in the order:
+     * minimum x, maximum x, minimum y, maximum y, minimum z, maximum z
+     * @see <a href="http://www.geopackage.org/spec/#flags_layout">GeoPackage spec, Table 6. bit layout of GeoPackageBinary flags byte</a>
+     *
+     * @return
+     */
     @Override
     public double[] toArray()
     {
@@ -94,10 +99,10 @@ public final class EnvelopeZ extends Envelope
                                     final EnvelopeZ second)
     {
         return new EnvelopeZ(nanMinimum(first.getMinimumX(), second.getMinimumX()),
-                             nanMaximum(first.getMaximumX(), second.getMaximumX()),
                              nanMinimum(first.getMinimumY(), second.getMinimumY()),
-                             nanMaximum(first.getMaximumY(), second.getMaximumY()),
                              nanMinimum(first.minimumZ,      second.minimumZ),
+                             nanMaximum(first.getMaximumX(), second.getMaximumX()),
+                             nanMaximum(first.getMaximumY(), second.getMaximumY()),
                              nanMaximum(first.maximumZ,      second.maximumZ));
     }
 

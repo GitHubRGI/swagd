@@ -32,25 +32,32 @@ import com.rgi.geopackage.features.geometry.xy.Envelope;
 public final class EnvelopeZM extends Envelope
 {
     public EnvelopeZM(final double minimumX,
-                      final double maximumX,
                       final double minimumY,
-                      final double maximumY,
                       final double minimumZ,
-                      final double maximumZ,
                       final double minimumM,
+                      final double maximumX,
+                      final double maximumY,
+                      final double maximumZ,
                       final double maximumM)
     {
         super(minimumX,
-              maximumX,
               minimumY,
+              maximumX,
               maximumY);
 
         this.minimumZ = minimumZ;
-        this.maximumZ = maximumZ;
         this.minimumM = minimumM;
+        this.maximumZ = maximumZ;
         this.maximumM = maximumM;
     }
 
+    /**
+     * This is in the order:
+     * minimum x, maximum x, minimum y, maximum y, minimum z, maximum z, minimum m, maximum m
+     * @see <a href="http://www.geopackage.org/spec/#flags_layout">GeoPackage spec, Table 6. bit layout of GeoPackageBinary flags byte</a>
+     *
+     * @return
+     */
     @Override
     public double[] toArray()
     {
@@ -70,14 +77,14 @@ public final class EnvelopeZM extends Envelope
         return this.minimumZ;
     }
 
-    public double getMaximumZ()
-    {
-        return this.maximumZ;
-    }
-
     public double getMinimumM()
     {
         return this.minimumM;
+    }
+
+    public double getMaximumZ()
+    {
+        return this.maximumZ;
     }
 
     public double getMaximumM()
@@ -102,8 +109,8 @@ public final class EnvelopeZM extends Envelope
     {
         return super.isEmpty()             &&
                Double.isNaN(this.minimumZ) &&
-               Double.isNaN(this.maximumZ) &&
                Double.isNaN(this.minimumM) &&
+               Double.isNaN(this.maximumZ) &&
                Double.isNaN(this.maximumM);
     }
 
@@ -118,12 +125,12 @@ public final class EnvelopeZM extends Envelope
                                      final EnvelopeZM second)
     {
         return new EnvelopeZM(nanMinimum(first.getMinimumX(), second.getMinimumX()),
-                              nanMaximum(first.getMaximumX(), second.getMaximumX()),
                               nanMinimum(first.getMinimumY(), second.getMinimumY()),
-                              nanMaximum(first.getMaximumY(), second.getMaximumY()),
                               nanMinimum(first.minimumZ,      second.minimumZ),
-                              nanMaximum(first.maximumZ,      second.maximumZ),
                               nanMinimum(first.minimumM,      second.minimumM),
+                              nanMaximum(first.getMaximumX(), second.getMaximumX()),
+                              nanMaximum(first.getMaximumY(), second.getMaximumY()),
+                              nanMaximum(first.maximumZ,      second.maximumZ),
                               nanMaximum(first.maximumM,      second.maximumM));
     }
 
@@ -137,7 +144,7 @@ public final class EnvelopeZM extends Envelope
                                                           Double.NaN);
 
     private final double minimumZ;
-    private final double maximumZ;
     private final double minimumM;
+    private final double maximumZ;
     private final double maximumM;
 }

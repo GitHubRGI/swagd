@@ -49,10 +49,10 @@ public class FeatureSet extends Content
      *             Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
      * @param minimumX
      *             Bounding box minimum easting or longitude for all content
-     * @param maximumX
-     *             Bounding box minimum northing or latitude for all content
      * @param minimumY
      *             Bounding box maximum easting or longitude for all content
+     * @param maximumX
+     *             Bounding box minimum northing or latitude for all content
      * @param maximumY
      *             Bounding box maximum northing or latitude for all content
      * @param spatialReferenceSystemIdentifier
@@ -63,8 +63,8 @@ public class FeatureSet extends Content
                          final String             description,
                          final String             lastChange,
                          final Double             minimumX,
-                         final Double             maximumX,
                          final Double             minimumY,
+                         final Double             maximumX,
                          final Double             maximumY,
                          final int                spatialReferenceSystemIdentifier,
                          final String             primaryKeyColumnName,
@@ -77,8 +77,8 @@ public class FeatureSet extends Content
               description,
               lastChange,
               minimumX,
-              maximumX,
               minimumY,
+              maximumX,
               maximumY,
               spatialReferenceSystemIdentifier);
 
@@ -108,7 +108,7 @@ public class FeatureSet extends Content
     public static final String FeatureContentType = "features";
 
     private final String             primaryKeyColumnName;
-    private final String geometryColumnName;
+    private final String             geometryColumnName;
     private final Collection<String> attributeColumnNames;
 
 }

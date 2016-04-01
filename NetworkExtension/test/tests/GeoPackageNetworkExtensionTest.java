@@ -437,8 +437,7 @@ public class GeoPackageNetworkExtensionTest
                                                 identifier,
                                                 description,
                                                 box.getMinimumX(),
-                                                box.getMaximumX(),
-                                                box.getMinimumY(),
+                                                box.getMinimumY(), box.getMaximumX(),
                                                 box.getMaximumY(),
                                                 srs.getIdentifier()));
         }
@@ -650,8 +649,7 @@ public class GeoPackageNetworkExtensionTest
                                                "test, too",
                                                "empty",
                                                box.getMinimumX(),
-                                               box.getMaximumX(),
-                                               box.getMinimumY(),
+                                               box.getMinimumY(), box.getMaximumX(),
                                                box.getMaximumY(),
                                                srs.getIdentifier()));
         }

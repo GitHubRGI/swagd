@@ -49,10 +49,10 @@ public interface ContentFactory<T extends Content>
      *            to the current time
      * @param minimumX
      *             Bounding box minimum easting or longitude for all content
-     * @param maximumX
-     *             Bounding box minimum northing or latitude for all content
      * @param minimumY
      *             Bounding box maximum easting or longitude for all content
+     * @param maximumX
+     *             Bounding box minimum northing or latitude for all content
      * @param maximumY
      *             Bounding box maximum northing or latitude for all content
      * @param spatialReferenceSystemIdentifier
@@ -65,8 +65,8 @@ public interface ContentFactory<T extends Content>
                     final String  description,
                     final String  lastChange,
                     final Double  minimumX,
-                    final Double  maximumX,
                     final Double  minimumY,
+                    final Double  maximumX,
                     final Double  maximumY,
                     final Integer spatialReferenceSystemIdentifier);
 }

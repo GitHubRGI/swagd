@@ -79,8 +79,7 @@ public class Coordinate
         }
 
         return new Envelope(this.x,
-                            this.x,
-                            this.y,
+                            this.y, this.x,
                             this.y);
     }
 

@@ -90,10 +90,8 @@ public class CoordinateZ
         }
 
         return new EnvelopeZ(this.x,
-                             this.x,
+                             this.y, this.z, this.x,
                              this.y,
-                             this.y,
-                             this.z,
                              this.z);
     }
 

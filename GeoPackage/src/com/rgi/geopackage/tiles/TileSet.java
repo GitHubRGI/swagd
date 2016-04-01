@@ -33,8 +33,7 @@ public class TileSet extends Content
 {
     /**
      * Constructor
-     *
-     * @param tableName
+     *  @param tableName
      *             The name of the tiles, feature, or extension specific content table
      * @param identifier
      *             A human-readable identifier (e.g. short name) for the tableName content
@@ -44,24 +43,23 @@ public class TileSet extends Content
      *             Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
      * @param minimumX
      *             Bounding box minimum easting or longitude for all content
-     * @param maximumX
-     *             Bounding box minimum northing or latitude for all content
      * @param minimumY
      *             Bounding box maximum easting or longitude for all content
+     * @param maximumX
+     *             Bounding box minimum northing or latitude for all content
      * @param maximumY
      *             Bounding box maximum northing or latitude for all content
      * @param spatialReferenceSystemIdentifier
-     *             Spatial Reference System (SRS) identifier
      */
     protected TileSet(final String tableName,
                       final String identifier,
                       final String description,
                       final String lastChange,
                       final Double minimumX,
-                      final Double maximumX,
                       final Double minimumY,
+                      final Double maximumX,
                       final Double maximumY,
-                      final int    spatialReferenceSystemIdentifier)
+                      final int spatialReferenceSystemIdentifier)
     {
         super(tableName,
               TileSet.TileContentType,
@@ -69,8 +67,8 @@ public class TileSet extends Content
               description,
               lastChange,
               minimumX,
-              maximumX,
               minimumY,
+              maximumX,
               maximumY,
               spatialReferenceSystemIdentifier);
     }

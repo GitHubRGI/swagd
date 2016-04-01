@@ -449,7 +449,6 @@ public class GeoPackageTilesAPITest
             final Collection<TileSet> tileSetContnentEntries = new ArrayList<>();
 
             tileSetContnentEntries.add(tileSet);
-            tileSetContnentEntries.add(tileSet);
 
             final int matrixHeight = 2;
             final int matrixWidth = 2;
@@ -473,22 +472,21 @@ public class GeoPackageTilesAPITest
                                        matrixWidth2,
                                        matrixHeight2,
                                        tileWidth2,
-                                       tileHeight2
-            );
+                                       tileHeight2);
 
             for(final TileSet gpkgEntry : gpkg.tiles().getTileSets())
             {
                 assertTrue("The tile entry's information in the GeoPackage does not match what was originally given to a GeoPackage",
-                                  tileSetContnentEntries.stream()
-                                                        .anyMatch(tileEntry -> tileEntry.getMinimumX()   .equals(gpkgEntry.getMinimumX())    &&
-                                                                               tileEntry.getMaximumX()   .equals(gpkgEntry.getMaximumX())    &&
-                                                                               tileEntry.getMinimumY()   .equals(gpkgEntry.getMinimumY())    &&
-                                                                               tileEntry.getMaximumY()   .equals(gpkgEntry.getMaximumY())    &&
-                                                                               tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
-                                                                               tileEntry.getDescription().equals(gpkgEntry.getDescription()) &&
-                                                                               tileEntry.getIdentifier() .equals(gpkgEntry.getIdentifier())  &&
-                                                                               tileEntry.getTableName()  .equals(gpkgEntry.getTableName())   &&
-                                                                               tileEntry.getSpatialReferenceSystemIdentifier().equals(gpkgEntry.getSpatialReferenceSystemIdentifier())));
+                           tileSetContnentEntries.stream()
+                                                 .anyMatch(tileEntry -> tileEntry.getMinimumX()   .equals(gpkgEntry.getMinimumX())    &&
+                                                                        tileEntry.getMinimumY()   .equals(gpkgEntry.getMinimumY())    &&
+                                                                        tileEntry.getMaximumX()   .equals(gpkgEntry.getMaximumX())    &&
+                                                                        tileEntry.getMaximumY()   .equals(gpkgEntry.getMaximumY())    &&
+                                                                        tileEntry.getDataType()   .equals(gpkgEntry.getDataType())    &&
+                                                                        tileEntry.getDescription().equals(gpkgEntry.getDescription()) &&
+                                                                        tileEntry.getIdentifier() .equals(gpkgEntry.getIdentifier())  &&
+                                                                        tileEntry.getTableName()  .equals(gpkgEntry.getTableName())   &&
+                                                                        tileEntry.getSpatialReferenceSystemIdentifier().equals(gpkgEntry.getSpatialReferenceSystemIdentifier())));
             }
         }
         finally
@@ -516,27 +514,27 @@ public class GeoPackageTilesAPITest
             final SpatialReferenceSystem srs = gpkg.core().getSpatialReferenceSystem(0);
 
             final TileSet tileSet = gpkg.tiles().addTileSet(tableName,
-                                                      identifier,
-                                                      description,
-                                                      boundingBox,
-                                                      srs);
+                                                            identifier,
+                                                            description,
+                                                            boundingBox,
+                                                            srs);
 
             final TileSet sameTileSet = gpkg.tiles().addTileSet(tableName,
-                                                          identifier,
-                                                          description,
-                                                          boundingBox,
-                                                          srs);
+                                                                identifier,
+                                                                description,
+                                                                boundingBox,
+                                                                srs);
 
             assertTrue("The GeoPackage did not return the same tile set when trying to add the same tile set twice.",
-                              sameTileSet.equals(tileSet.getTableName(),
-                                                 tileSet.getDataType(),
-                                                 tileSet.getIdentifier(),
-                                                 tileSet.getDescription(),
-                                                 tileSet.getMinimumX(),
-                                                 tileSet.getMaximumX(),
-                                                 tileSet.getMinimumY(),
-                                                 tileSet.getMaximumY(),
-                                                 tileSet.getSpatialReferenceSystemIdentifier()));
+                       sameTileSet.equals(tileSet.getTableName(),
+                                          tileSet.getDataType(),
+                                          tileSet.getIdentifier(),
+                                          tileSet.getDescription(),
+                                          tileSet.getMinimumX(),
+                                          tileSet.getMinimumY(),
+                                          tileSet.getMaximumX(),
+                                          tileSet.getMaximumY(),
+                                          tileSet.getSpatialReferenceSystemIdentifier()));
         }
         finally
         {

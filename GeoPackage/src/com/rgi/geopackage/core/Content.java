@@ -31,8 +31,7 @@ public class Content
 {
     /**
      * Constructor
-     *
-     * @param tableName
+     *  @param tableName
      *             The name of the tiles, feature, or extension specific content table
      * @param dataType
      *             Type of data stored in the table: "features" per clause Features, "tiles" per clause Tiles, or an implementer-defined value for other data tables per clause in an Extended GeoPackage.
@@ -44,24 +43,24 @@ public class Content
      *             Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
      * @param minimumX
      *             Bounding box minimum easting or longitude for all content
-     * @param maximumX
-     *             Bounding box minimum northing or latitude for all content
      * @param minimumY
      *             Bounding box maximum easting or longitude for all content
+     * @param maximumX
+     *             Bounding box minimum northing or latitude for all content
      * @param maximumY
      *             Bounding box maximum northing or latitude for all content
      * @param spatialReferenceSystemIdentifier
      *             Spatial Reference System (SRS)
      */
-    protected Content(final String  tableName,
-                      final String  dataType,
-                      final String  identifier,
-                      final String  description,
-                      final String  lastChange,
-                      final Double  minimumX,
-                      final Double  maximumX,
-                      final Double  minimumY,
-                      final Double  maximumY,
+    protected Content(final String tableName,
+                      final String dataType,
+                      final String identifier,
+                      final String description,
+                      final String lastChange,
+                      final Double minimumX,
+                      final Double minimumY,
+                      final Double maximumX,
+                      final Double maximumY,
                       final Integer spatialReferenceSystemIdentifier)
     {
         this.tableName                        = tableName;
@@ -70,8 +69,8 @@ public class Content
         this.description                      = description;
         this.lastChange                       = lastChange;
         this.minimumX                         = minimumX;
-        this.maximumX                         = maximumX;
         this.minimumY                         = minimumY;
+        this.maximumX                         = maximumX;
         this.maximumY                         = maximumY;
         this.spatialReferenceSystemIdentifier = spatialReferenceSystemIdentifier;
     }
@@ -121,14 +120,14 @@ public class Content
         return this.minimumX;
     }
 
-    public Double getMaximumX()
-    {
-        return this.maximumX;
-    }
-
     public Double getMinimumY()
     {
         return this.minimumY;
+    }
+
+    public Double getMaximumX()
+    {
+        return this.maximumX;
     }
 
     public Double getMaximumY()
@@ -145,36 +144,41 @@ public class Content
     }
 
     /**
-     * @param inTableName table name
-     * @param inDataType data type
-     * @param inIdentifier the identifier
-     * @param inDescription the description
+     * @param inTableName
+     *             The name of the tiles, feature, or extension specific content table
+     * @param inDataType
+     *             Type of data stored in the table: "features" per clause Features, "tiles" per clause Tiles, or an implementer-defined value for other data tables per clause in an Extended GeoPackage.
+     * @param inIdentifier
+     *             A human-readable identifier (e.g. short name) for the tableName content
+     * @param inDescription
+     *             A human-readable description for the tableName content
      * @param inMinimumX
      *             Bounding box minimum easting or longitude for all content
-     * @param inMaximumX
-     *             Bounding box minimum northing or latitude for all content
      * @param inMinimumY
      *             Bounding box maximum easting or longitude for all content
+     * @param inMaximumX
+     *             Bounding box minimum northing or latitude for all content
      * @param inMaximumY
      *             Bounding box maximum northing or latitude for all content
-     * @param inSpatialReferenceSystemIdentifier the spatial reference system identifier
+     * @param inSpatialReferenceSystemIdentifier
+     *             Spatial Reference System (SRS)
      * @return returns true if the Content fields match the table name, data type, identifier, description, bounding box, and the spatial reference system identifier; otherwise returns false;
      */
-    public boolean equals(final String  inTableName,
-                          final String  inDataType,
-                          final String  inIdentifier,
-                          final String  inDescription,
-                          final Double  inMinimumX,
-                          final Double  inMaximumX,
-                          final Double  inMinimumY,
-                          final Double  inMaximumY,
+    public boolean equals(final String inTableName,
+                          final String inDataType,
+                          final String inIdentifier,
+                          final String inDescription,
+                          final Double inMinimumX,
+                          final Double inMinimumY,
+                          final Double inMaximumX,
+                          final Double inMaximumY,
                           final Integer inSpatialReferenceSystemIdentifier)
     {
         return this.tableName  .equals(inTableName)    &&
                this.dataType   .equals(inDataType)     &&
                equals(this.minimumX,    inMinimumX)    &&
-               equals(this.maximumX,    inMaximumX)    &&
                equals(this.minimumY,    inMinimumY)    &&
+               equals(this.maximumX,    inMaximumX)    &&
                equals(this.maximumY,    inMaximumY)    &&
                equals(this.identifier,  inIdentifier)  &&
                equals(this.description, inDescription) &&
@@ -193,8 +197,8 @@ public class Content
     private final String  description;
     private final String  lastChange;
     private final Double  minimumX;
-    private final Double  maximumX;
     private final Double  minimumY;
+    private final Double  maximumX;
     private final Double  maximumY;
     private final Integer spatialReferenceSystemIdentifier;
 }

@@ -32,21 +32,28 @@ import com.rgi.geopackage.features.geometry.xy.Envelope;
 public final class EnvelopeM extends Envelope
 {
     public EnvelopeM(final double minimumX,
-                     final double maximumX,
                      final double minimumY,
-                     final double maximumY,
                      final double minimumM,
+                     final double maximumX,
+                     final double maximumY,
                      final double maximumM)
     {
         super(minimumX,
-              maximumX,
               minimumY,
+              maximumX,
               maximumY);
 
         this.minimumM = minimumM;
         this.maximumM = maximumM;
     }
 
+    /**
+     * This is in the order:
+     * minimum x, maximum x, minimum y, maximum y, minimum m, maximum m
+     * @see <a href="http://www.geopackage.org/spec/#flags_layout">GeoPackage spec, Table 6. bit layout of GeoPackageBinary flags byte</a>
+     *
+     * @return
+     */
     @Override
     public double[] toArray()
     {
@@ -94,10 +101,10 @@ public final class EnvelopeM extends Envelope
                                     final EnvelopeM second)
     {
         return new EnvelopeM(nanMinimum(first.getMinimumX(), second.getMinimumX()),
-                             nanMaximum(first.getMaximumX(), second.getMaximumX()),
                              nanMinimum(first.getMinimumY(), second.getMinimumY()),
-                             nanMaximum(first.getMaximumY(), second.getMaximumY()),
                              nanMinimum(first.minimumM,      second.minimumM),
+                             nanMaximum(first.getMaximumX(), second.getMaximumX()),
+                             nanMaximum(first.getMaximumY(), second.getMaximumY()),
                              nanMaximum(first.maximumM,      second.maximumM));
     }
 

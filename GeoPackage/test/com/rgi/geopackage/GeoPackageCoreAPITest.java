@@ -1397,8 +1397,7 @@ public class GeoPackageCoreAPITest
                                        identifier,
                                        description,
                                        boundingBox.getMinimumX(),
-                                       boundingBox.getMaximumX(),
-                                       boundingBox.getMinimumY(),
+                                       boundingBox.getMinimumY(), boundingBox.getMaximumX(),
                                        boundingBox.getMaximumY(),
                                        spatialReferenceSystem.getIdentifier()));
         }
@@ -1451,8 +1450,7 @@ public class GeoPackageCoreAPITest
                                         identifier,
                                         description,
                                         2.0,
-                                        1.0,
-                                        4.0,
+                                        4.0, 1.0,
                                         3.0,
                                         spatialReferenceSystem.getIdentifier()));
         }
@@ -1502,8 +1500,7 @@ public class GeoPackageCoreAPITest
                                        identifier,
                                        "different description",
                                        boundingBox.getMinimumX(),
-                                       boundingBox.getMaximumX(),
-                                       boundingBox.getMinimumY(),
+                                       boundingBox.getMinimumY(), boundingBox.getMaximumX(),
                                        boundingBox.getMaximumY(),
                                        spatialReferenceSystem.getIdentifier()));
         }
@@ -1552,8 +1549,7 @@ public class GeoPackageCoreAPITest
                                        identifier,
                                        description,
                                        boundingBox.getMinimumX(),
-                                       boundingBox.getMaximumX(),
-                                       boundingBox.getMinimumY(),
+                                       boundingBox.getMinimumY(), boundingBox.getMaximumX(),
                                        boundingBox.getMaximumY(),
                                        gpkg.core()
                                            .getSpatialReferenceSystem(0)
@@ -1604,8 +1600,7 @@ public class GeoPackageCoreAPITest
                                        null,
                                        "different description",
                                        boundingBox.getMinimumX(),
-                                       boundingBox.getMaximumX(),
-                                       boundingBox.getMinimumY(),
+                                       boundingBox.getMinimumY(), boundingBox.getMaximumX(),
                                        boundingBox.getMaximumY(),
                                        spatialReferenceSystem.getIdentifier()));
         }
