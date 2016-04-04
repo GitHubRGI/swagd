@@ -196,10 +196,12 @@ public class GeoPackageTiles
         final String zoomLevelQuerySql = String.format("SELECT zoom_level FROM %s WHERE table_name = ?;",
                                                        GeoPackageTiles.MatrixTableName);
 
-        return new HashSet<>(JdbcUtility.select(this.databaseConnection,
-                                                zoomLevelQuerySql,
-                                                preparedStatement -> preparedStatement.setString(1, tileSet.getTableName()),
-                                                resultSet -> resultSet.getInt(1)));
+        final List<Integer> zoomLevels = JdbcUtility.select(this.databaseConnection,
+                                                            zoomLevelQuerySql,
+                                                            preparedStatement -> preparedStatement.setString(1, tileSet.getTableName()),
+                                                            resultSet -> resultSet.getInt(1));
+
+        return new HashSet<>(zoomLevels);
     }
 
     /**
@@ -504,13 +506,13 @@ public class GeoPackageTiles
      *
      * @param tileSet
      *            Handle to the tile set that the requested tiles should belong
-     * @return Returns a {@link Stream} of {@link GeoPackageTiles.TileCoordinate}s
+     * @return Returns a {@link Stream} of {@link TileCoordinate}s
      *         representing every tile that the specific tile set contains.
      * @throws SQLException
      *             when SQLException thrown by automatic close() invocation on
      *             preparedStatement or if other SQLExceptions occur
      */
-    public Stream<GeoPackageTiles.TileCoordinate> getTiles(final TileSet tileSet) throws SQLException
+    public Stream<TileCoordinate> getTiles(final TileSet tileSet) throws SQLException
     {
         if(tileSet == null)
         {
@@ -526,7 +528,7 @@ public class GeoPackageTiles
         return JdbcUtility.select(this.databaseConnection,
                                   tileQuery,
                                   null,
-                                  resultSet -> new GeoPackageTiles.TileCoordinate(resultSet.getInt(2),
+                                  resultSet -> new TileCoordinate(resultSet.getInt(2),
                                                                   resultSet.getInt(3),
                                                                   resultSet.getInt(1)))
                           .stream();
@@ -1012,7 +1014,7 @@ public class GeoPackageTiles
      * @throws SQLException
      *             if there is a database error
      */
-    protected void createTilesTablesNoCommit() throws SQLException
+    private void createTilesTablesNoCommit() throws SQLException
     {
         // Create the tile matrix set table or view
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageTiles.MatrixSetTableName))
@@ -1027,8 +1029,7 @@ public class GeoPackageTiles
         }
     }
 
-    @SuppressWarnings("static-method")
-    protected static String getTileMatrixSetCreationSql()
+    private static String getTileMatrixSetCreationSql()
     {
         // http://www.geopackage.org/spec/#gpkg_tile_matrix_set_sql
         // http://www.geopackage.org/spec/#_tile_matrix_set
@@ -1043,8 +1044,7 @@ public class GeoPackageTiles
                " CONSTRAINT fk_gtms_srs FOREIGN KEY (srs_id) REFERENCES gpkg_spatial_ref_sys (srs_id));";
     }
 
-    @SuppressWarnings("static-method")
-    protected static String getTileMatrixCreationSql()
+    private static String getTileMatrixCreationSql()
     {
         // http://www.geopackage.org/spec/#tile_matrix
         // http://www.geopackage.org/spec/#gpkg_tile_matrix_sql
@@ -1061,8 +1061,7 @@ public class GeoPackageTiles
                 " CONSTRAINT fk_tmm_table_name FOREIGN KEY (table_name) REFERENCES gpkg_contents(table_name));";
     }
 
-    @SuppressWarnings("static-method")
-    protected static String getTileSetCreationSql(final String tileTableName)
+    private static String getTileSetCreationSql(final String tileTableName)
     {
         // http://www.geopackage.org/spec/#tiles_user_tables
         // http://www.geopackage.org/spec/#_sample_tile_pyramid_informative
@@ -1139,61 +1138,11 @@ public class GeoPackageTiles
      * containing the Bounding Box information
      * http://www.geopackage.org/spec/#_tile_matrix_set
      */
-    public static final String MatrixSetTableName = "gpkg_tile_matrix_set";
+    static final String MatrixSetTableName = "gpkg_tile_matrix_set";
     /**
      * The String name "gpkg_tile_matrix" of the database Tiles table containing
      * the pixel x and y values, TileMatrixDimensions at a particular zoom level
      * http://www.geopackage.org/spec/#tile_matrix
      */
-    public static final String MatrixTableName = "gpkg_tile_matrix";
-
-    /**
-     * Tile coordinate
-     *
-     */
-    public static final class TileCoordinate
-    {
-        /**
-         * @param column
-         *         X portion of the coordinate
-         * @param row
-         *         Y portion of the coordinate
-         * @param zoomLevel
-         *         zoom level of the tile
-         */
-        private TileCoordinate(final int column, final int row, final int zoomLevel)
-        {
-            this.column    = column;
-            this.row       = row;
-            this.zoomLevel = zoomLevel;
-        }
-
-        /**
-         * @return Returns the column (X) portion of the coordinate
-         */
-        public int getColumn()
-        {
-            return this.column;
-        }
-
-        /**
-         * @return Returns the row (Y) portion of the coordinate
-         */
-        public int getRow()
-        {
-            return this.row;
-        }
-
-        /**
-         * @return Returns the zoom level of the tile
-         */
-        public int getZoomLevel()
-        {
-            return this.zoomLevel;
-        }
-
-        private final int column;
-        private final int row;
-        private final int zoomLevel;
-    }
+    static final String MatrixTableName = "gpkg_tile_matrix";
 }
