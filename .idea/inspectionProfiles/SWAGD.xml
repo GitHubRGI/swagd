@@ -39,11 +39,11 @@
       <option name="m_maxLength" value="999" />
     </inspection_tool>
     <inspection_tool class="Anonymous2MethodRef" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="AnonymousClassComplexity" enabled="true" level="ERROR" enabled_by_default="true">
-      <option name="m_limit" value="3" />
+    <inspection_tool class="AnonymousClassComplexity" enabled="false" level="ERROR" enabled_by_default="false">
+      <option name="m_limit" value="5" />
     </inspection_tool>
-    <inspection_tool class="AnonymousClassMethodCount" enabled="true" level="ERROR" enabled_by_default="true">
-      <option name="m_limit" value="1" />
+    <inspection_tool class="AnonymousClassMethodCount" enabled="false" level="ERROR" enabled_by_default="false">
+      <option name="m_limit" value="5" />
     </inspection_tool>
     <inspection_tool class="AnonymousClassVariableHidesContainingMethodVariable" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="AnonymousInnerClass" enabled="false" level="ERROR" enabled_by_default="false" />
