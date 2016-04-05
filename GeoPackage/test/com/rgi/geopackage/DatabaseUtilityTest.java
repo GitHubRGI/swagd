@@ -23,299 +23,244 @@
 
 package com.rgi.geopackage;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.rgi.geopackage.utility.DatabaseUtility;
+import com.rgi.geopackage.utility.DatabaseVersion;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Random;
 
-import org.junit.Test;
-
-import com.rgi.geopackage.utility.DatabaseUtility;
-import com.rgi.geopackage.utility.DatabaseVersion;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Jenifer Cochran
  *
  */
-@SuppressWarnings({"javadoc", "static-method"})
+@SuppressWarnings("JavaDoc")
 public class DatabaseUtilityTest
 {
-    private final Random randomGenerator = new Random();
+    @BeforeClass
+    public static void setUp() throws ClassNotFoundException
+    {
+        Class.forName("org.sqlite.JDBC"); // Register the driver
+    }
 
     /**
      * Tests if the DatabaseUtility will return the expected application Id.
-     *
-     * @throws SQLException
-     *             throws if an SQLException occurs
-     * @throws Exception
-     *             can throw an SecurityException when accessing the file and
-     *             other various Exceptions
      */
     @Test
-    public void getApplicationID() throws SQLException, Exception
+    public void getApplicationID() throws SQLException, IOException, ClassNotFoundException
     {
-        final File testFile = this.getRandomFile(4);
+        final File testFile = TestUtility.getRandomFile();
         testFile.createNewFile();
-        try(Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
             final int appId = DatabaseUtility.getApplicationId(con);
-            assertTrue("DatabaseUtility did not return the expected application Id.",appId == 0);
+            assertEquals("DatabaseUtility did not return the expected application Id.", 0, appId);
         }
         finally
         {
-            if(testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
      * Tests if the application Id can be set correctly through the
      * DatabaseUtility
-     *
-     * @throws SQLException
-     *             throws if an SQLException occurs
-     * @throws Exception
-     *             throws if cannot access file
      */
     @Test
-    public void setApplicationID() throws SQLException, Exception
+    public void setApplicationID() throws SQLException, IOException
     {
-        final File testFile = this.getRandomFile(4);
+        final File testFile = TestUtility.getRandomFile();
         testFile.createNewFile();
-        try(Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
             DatabaseUtility.setApplicationId(con, 12345);
-            assertTrue("DatabaseUtility did not return the expected application Id.", DatabaseUtility.getApplicationId(con) == 12345);
+            assertEquals("DatabaseUtility did not return the expected application Id.", 12345, DatabaseUtility.getApplicationId(con));
         }
         finally
         {
-            if(testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
-     * Verifies if the Database BoundsUtility setPragmaForeinKeys can set it to off.
-     *
-     * @throws Exception throws when an Exception occurs
+     * Verifies if the Database BoundsUtility setPragmaForeignKeys can set it to off.
      */
     @Test
-    public void databaseUtilitySetPragmaForiegnKeys() throws Exception
+    public void databaseUtilitySetPragmaForiegnKeys() throws IOException, SQLException
     {
-        final File testFile = this.getRandomFile(5);
-             testFile.createNewFile();
+        final File testFile = TestUtility.getRandomFile();
+        testFile.createNewFile();
 
-        try(Connection con = this.getConnection(testFile.getAbsolutePath());)
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
             //set it false using database utility
             DatabaseUtility.setPragmaForeignKeys(con, false);
             //pragma the database
             final String query = "PRAGMA foreign_keys;";
 
-            try(Statement stmt     = con.createStatement();
-                 ResultSet fkPragma = stmt.executeQuery(query);)
+            try(final Statement stmt     = con.createStatement();
+                final ResultSet fkPragma = stmt.executeQuery(query))
             {
                 final int off = fkPragma.getInt("foreign_keys");
-                assertTrue("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to off when given the parameter false.", off == 0);
+                assertEquals("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to off when given the parameter false.", 0, off);
             }
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
-     * Verifies if the Database BoundsUtility setPragmaForeinKeys can set it to on.
-     *
-     * @throws Exception
-     *             throws when an Exception occurs
+     * Verifies if the Database BoundsUtility setPragmaForeignKeys can set it to on.
      */
     @Test
-    public void databaseUtilitySetPragmaForiegnKeys2() throws Exception
+    public void databaseUtilitySetPragmaForiegnKeys2() throws IOException, SQLException
     {
-        final File testFile = this.getRandomFile(5);
-             testFile.createNewFile();
+        final File testFile = TestUtility.getRandomFile();
+        testFile.createNewFile();
 
-        try(Connection con = this.getConnection(testFile.getAbsolutePath());)
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
             //set it false using database utility
             DatabaseUtility.setPragmaForeignKeys(con, true);
             //pragma the database
             final String query = "PRAGMA foreign_keys;";
 
-            try(Statement stmt     = con.createStatement();
-                ResultSet fkPragma = stmt.executeQuery(query);)
+            try(final Statement stmt     = con.createStatement();
+                ResultSet fkPragma = stmt.executeQuery(query))
             {
                 final int on = fkPragma.getInt("foreign_keys");
-                assertTrue("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to on when given the parameter true.", on == 1);
+                assertEquals("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to on when given the parameter true.", 1, on);
             }
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     @Test
-    public void databaseUtilitySetPragmaSynchronousOff() throws Exception
+    public void databaseUtilitySetPragmaSynchronousOff() throws IOException, SQLException
     {
-        final File testFile = this.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         testFile.createNewFile();
-        try (Connection con = this.getConnection(testFile.getAbsolutePath()))
+        try(Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
             DatabaseUtility.setPragmaSynchronousOff(con);
-            final String query = "PRAGMA synchronous;";
-            try(Statement stmt = con.createStatement())
+            try(final Statement stmt = con.createStatement())
             {
+                final String query = "PRAGMA synchronous;";
                 try(ResultSet sPragma = stmt.executeQuery(query))
                 {
                     final int sync = sPragma.getInt("synchronous");
-                    assertTrue("DatabaseUtility did not set PRAGMA synchronous to off.",sync == 0);
+                    assertEquals("DatabaseUtility did not set PRAGMA synchronous to off.", 0, sync);
                 }
             }
         }
         finally
         {
-            if(testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does not exists with the tableOrViewExists method.
-     *
-     * @throws Exception
-     *             throws when an Exception occurs
      */
     @Test
-    public void databaseUtilityTableorViewExists() throws Exception
+    public void databaseUtilityTableorViewExists() throws IOException, SQLException
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile();
         testFile.createNewFile();
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
-            final boolean tableFound = DatabaseUtility.tableOrViewExists(con, "non_existant_table");
-            assertTrue("The Database BoundsUtility method table or view exists method returned true when it should have returned false.", !tableFound);
+            final boolean tableNotFound = !DatabaseUtility.tableOrViewExists(con, "non_existant_table");
+            assertTrue("The Database BoundsUtility method table or view exists method returned true when it should have returned false.", tableNotFound);
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tableOrViewExists method.
-     *
-     * @throws Exception
-     *             throws when an Exception occurs
      */
     @Test
-    public void databaseUtilityTableorViewExists2() throws Exception
+    public void databaseUtilityTableorViewExists2() throws IOException, SQLException
     {
-        final File testFile = this.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile();
         testFile.createNewFile();
 
-        final String tableName = "gpkg_tile_matrix";
-
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
-            this.addTable(con, tableName);
+            final String tableName = "gpkg_tile_matrix";
+            DatabaseUtilityTest.addTable(con, tableName);
             assertTrue("The Database BoundsUtility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tableOrViewExists(con, tableName));
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tableOrViewExists method.
-     *
-     * @throws Exception
-     *             throws when an Exception occurs
      */
     @Test(expected= IllegalArgumentException.class)
-    public void databaseUtilityTableorViewExists3() throws Exception
+    public void databaseUtilityTableorViewExists3() throws IOException, SQLException
     {
-        final File testFile = this.getRandomFile(3);
-             testFile.createNewFile();
+        final File testFile = TestUtility.getRandomFile();
+        testFile.createNewFile();
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath());
-            )
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
             DatabaseUtility.tableOrViewExists(con, null);
             fail("DatabaseUtility should have thrown an IllegalArgumentException when tablename was null or empty");
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
      * Checks to see if the Database BoundsUtility would throw an
      * IllegalArgumentException when given a null connection.
-     *
-     * @throws Exception
-     *             throws when an Exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
-    public void databaseUtilityTableorViewExists4() throws Exception
+    public void databaseUtilityTableorViewExists4() throws SQLException
     {
-            DatabaseUtility.tableOrViewExists(null, null);
-            fail("DatabaseUtility should have thrown an IllegalArgumentException when connection is null.");
+        DatabaseUtility.tableOrViewExists(null, null);
+        fail("DatabaseUtility should have thrown an IllegalArgumentException when connection is null.");
     }
 
     /**
      * Checks to see if the Database BoundsUtility would throw an
      * IllegalArgumentException when given a closed connection.
-     *
-     * @throws Exception
-     *             throws when an Exception occurs
      */
     @Test(expected = IllegalArgumentException.class)
-    public void databaseUtilityTableorViewExists5() throws Exception
+    public void databaseUtilityTableorViewExists5() throws IOException, SQLException
     {
-        final File testFile = this.getRandomFile(3);
-             testFile.createNewFile();
+        final File testFile = TestUtility.getRandomFile();
+        testFile.createNewFile();
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath());
-            )
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
             con.close();
             DatabaseUtility.tableOrViewExists(con, null);
@@ -323,171 +268,134 @@ public class DatabaseUtilityTest
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tablesOrViewsExists method.
-     *
-     * @throws Exception
-     *             throws when an Exception occurs
      */
     @Test
-    public void databaseUtilityTablesorViewsExists() throws Exception
+    public void databaseUtilityTablesorViewsExists() throws IOException, SQLException
     {
-        final File testFile = this.getRandomFile(3);
-             testFile.createNewFile();
+        final File testFile = TestUtility.getRandomFile();
+        testFile.createNewFile();
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
             final String tableName = "gpkg_tile_matrix";
-            this.addTable(con, tableName);
+            DatabaseUtilityTest.addTable(con, tableName);
             final String[] tables = {tableName, "non_existant_table"};
 
             assertTrue("The Database BoundsUtility method table or view exists method returned true when it should have returned false.", !DatabaseUtility.tablesOrViewsExists(con, tables));
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tablesOrViewsExists method.
-     *
-     * @throws Exception
-     *             throws when an Exception occurs
      */
     @Test
-    public void databaseUtilityTablesorViewsExists2() throws Exception
+    public void databaseUtilityTablesorViewsExists2() throws IOException, SQLException
     {
-        final File testFile = this.getRandomFile(3);
-             testFile.createNewFile();
+        final File testFile = TestUtility.getRandomFile();
+        testFile.createNewFile();
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
             final String tableName = "gpkg_tile_matrix";
-            this.addTable(con, tableName);
+            DatabaseUtilityTest.addTable(con, tableName);
             final String[] tables = {tableName, tableName};
             assertTrue("The Database BoundsUtility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tablesOrViewsExists(con, tables));
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
      * Checks to see if the Database BoundsUtility would accurately detect if a table
      * does exists with the tablesOrViewsExists method.
-     *
-     * @throws Exception
-     *             throws when an Exception occurs
      */
     @Test
-    public void databaseUtilityTablesorViewsExists3() throws Exception
+    public void databaseUtilityTablesorViewsExists3() throws IOException, SQLException
     {
-        final File testFile = this.getRandomFile(3);
-             testFile.createNewFile();
+        final File testFile = TestUtility.getRandomFile();
+        testFile.createNewFile();
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
             final String tableName1 = "gpkg_tile_matrix";
-            final String tableName2 = "gpkg_contents";
 
-            this.addTable(con, tableName1);
-            this.addTable(con, tableName2);
+            DatabaseUtilityTest.addTable(con, tableName1);
+            final String tableName2 = "gpkg_contents";
+            DatabaseUtilityTest.addTable(con, tableName2);
             final String[] tables = {tableName1, tableName2};
 
             assertTrue("The Database BoundsUtility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tablesOrViewsExists(con, tables));
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
      * Checks to see if the Database BoundsUtility would throw an exception when
      * receiving a file that is less than 100 bytes.
-     *
-     * @throws Exception
-     *             throws when an Exception occurs
      */
     @Test(expected= IllegalArgumentException.class)
-    public void getSqliteVersion() throws Exception
+    public void getSqliteVersion() throws IOException, SQLException
     {
-        final File testFile = this.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile();
         testFile.createNewFile();
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath());
-            )
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
             DatabaseUtility.getSqliteVersion(testFile);
             fail("Expected an IllegalArgumentException from DatabaseUtility when gave an empty file to getSqliteVersion");
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
      * Checks to see if the Database BoundsUtility gets correct sqlite version of a
      * file.
-     *
-     * @throws Exception
-     *             throws when an Exception occurs
      */
     @Test
-    public void getSqliteVersion2() throws Exception
+    public void getSqliteVersion2() throws IOException, SQLException
     {
-        final File testFile = this.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile();
         testFile.createNewFile();
 
-        try(Connection con  = this.getConnection(testFile.getAbsolutePath()))
+        try(final Connection con = DatabaseUtilityTest.getConnection(testFile))
         {
-            this.addTable(con, "foo");
+            DatabaseUtilityTest.addTable(con, "foo");
             final DatabaseVersion foundSqliteVersion = DatabaseUtility.getSqliteVersion(testFile);
-            assertTrue(String.format("The SQLite Version was different from expected. Expected: %s.x, Actual: %s",
-                                     sqliteMajorVersion,
-                                     foundSqliteVersion),
-                       foundSqliteVersion.getMajor() == sqliteMajorVersion);
+            assertEquals(String.format("The SQLite Version was different from expected. Expected: %s.x, Actual: %s",
+                                       sqliteMajorVersion,
+                                       foundSqliteVersion),
+                         sqliteMajorVersion,
+                         foundSqliteVersion.getMajor());
         }
         finally
         {
-            if (testFile.exists())
-            {
-                testFile.delete();
-            }
+            TestUtility.deleteFile(testFile);
         }
     }
 
     /**
      * Checks to see if the Database BoundsUtility would throw an exception when
      * receiving a file that is null.
-     *
-     * @throws IOException
-     *             throws when DatabaseUtility cannot read sqliteVersion from a
-     *             file
      */
     @Test(expected= IllegalArgumentException.class)
     public void getSqliteVersion3() throws IOException
@@ -499,54 +407,27 @@ public class DatabaseUtilityTest
     /**
      * Checks to see if the Database BoundsUtility would throw an exception when
      * receiving a file that is null.
-     *
-     * @throws IOException
-     *             throws when DatabaseUtility cannot read sqliteVersion from a
-     *             file
      */
     @Test(expected= FileNotFoundException.class)
     public void getSqliteVersion4() throws IOException
     {
-        DatabaseUtility.getSqliteVersion(this.getRandomFile(4));
+        DatabaseUtility.getSqliteVersion(TestUtility.getRandomFile());
         fail("Expected an IllegalArgumentException from DatabaseUtility when gave file that does not exist to getSqliteVersion");
     }
 
-    private Connection getConnection(final String filePath) throws Exception
+    private static Connection getConnection(final File file) throws SQLException
     {
-        Class.forName("org.sqlite.JDBC"); // Register the driver
-
-        return DriverManager.getConnection("jdbc:sqlite:" + filePath);
-    }
-    private File getRandomFile(final int length)
-    {
-        File testFile;
-
-        do
-        {
-            testFile = new File(String.format(FileSystems.getDefault().getPath(this.getRandomString(length)).toString() + ".gpkg"));
-        }
-        while (testFile.exists());
-
-        return testFile;
-    }
-    private String getRandomString(final int length)
-    {
-        final String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        final char[] text = new char[length];
-        for (int i = 0; i < length; i++)
-        {
-            text[i] = characters.charAt(this.randomGenerator.nextInt(characters.length()));
-        }
-        return new String(text);
+        return DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
     }
 
-    private void addTable(final Connection con, final String tableName) throws Exception
+    @SuppressWarnings("JDBCExecuteWithNonConstantString")
+    private static void addTable(final Connection con, final String tableName) throws SQLException
     {
-        try(Statement statement = con.createStatement())
+        try(final Statement statement = con.createStatement())
         {
             statement.executeUpdate("CREATE TABLE " + tableName + " (foo INTEGER);");
         }
     }
 
-    private final static int sqliteMajorVersion = 3;
+    private static final int sqliteMajorVersion = 3;
 }
