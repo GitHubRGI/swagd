@@ -44,6 +44,7 @@ import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.VerificationLevel;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.awt.image.BufferedImage;
@@ -67,9 +68,15 @@ import static org.junit.Assert.fail;
 /**
  * @author Jenifer Cochran
  */
-@SuppressWarnings({"static-method", "ClassWithTooManyMethods", "JavaDoc", "ThrowFromFinallyBlock", "ObjectAllocationInLoop"})
+@SuppressWarnings("JavaDoc")
 public class GeoPackageTilesAPITest
 {
+    @BeforeClass
+    public static void setUp() throws ClassNotFoundException
+    {
+        Class.forName("org.sqlite.JDBC"); // Register the driver
+    }
+
     /**
      * Tests if a GeoPackage will maintain the conversions
      * from tile coordinate to crs coordinate back to tile coordinate
@@ -3649,10 +3656,8 @@ public class GeoPackageTilesAPITest
         return ImageUtility.bufferedImageToBytes(new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB), "PNG");
     }
 
-    private static Connection getConnection(final String filePath) throws ClassNotFoundException, SQLException
+    private static Connection getConnection(final String filePath) throws SQLException
     {
-        Class.forName("org.sqlite.JDBC"); // Register the driver
-
         return DriverManager.getConnection("jdbc:sqlite:" + filePath);
     }
 }

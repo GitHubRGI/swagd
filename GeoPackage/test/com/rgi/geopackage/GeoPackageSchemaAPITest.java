@@ -23,14 +23,20 @@
 
 package com.rgi.geopackage;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.rgi.common.BoundingBox;
+import com.rgi.geopackage.core.Content;
+import com.rgi.geopackage.schema.DataColumn;
+import com.rgi.geopackage.schema.DataColumnConstraint;
+import com.rgi.geopackage.schema.Type;
+import com.rgi.geopackage.verification.ConformanceException;
+import com.rgi.geopackage.verification.VerificationLevel;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileSystems;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -38,43 +44,32 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
+import java.util.Objects;
 
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
-
-import org.junit.Test;
-
-import com.rgi.common.BoundingBox;
-import com.rgi.geopackage.GeoPackage.OpenMode;
-import com.rgi.geopackage.core.Content;
-import com.rgi.geopackage.schema.DataColumn;
-import com.rgi.geopackage.schema.DataColumnConstraint;
-import com.rgi.geopackage.schema.Type;
-import com.rgi.geopackage.verification.ConformanceException;
-import com.rgi.geopackage.verification.VerificationLevel;
+import static com.rgi.geopackage.TestUtility.deleteFile;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @SuppressWarnings("javadoc")
 public class GeoPackageSchemaAPITest
 {
-    private final Random randomGenerator = new Random();
+    @BeforeClass
+    public static void setUp() throws ClassNotFoundException
+    {
+        Class.forName("org.sqlite.JDBC"); // Register the driver
+    }
 
     /**
      * Tests if GeoPackage Schema will return
      * the expected values for the DataColumn
      * entry added to the GeoPackage
-     *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws MimeTypeParseException
      */
     @Test
     public void addDataColumn() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         final String   columnName     = "columnName";
         final String   tableName      = "tableName";
 
@@ -117,19 +112,13 @@ public class GeoPackageSchemaAPITest
      * Tests if GeoPackage Schema throws
      * an IllegalArgumentException when adding
      * a data column with a null value for tableName
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addDataColumnIllegalArgumentException() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
 
             final String   columnName     = "columnName";
@@ -152,19 +141,13 @@ public class GeoPackageSchemaAPITest
      * Tests if GeoPackage Schema throws
      * an IllegalArgumentException when adding
      * a data column with a null value for columnName
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addDataColumnIllegalArgumentException2() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final Content table = gpkg.tiles().addTileSet("tableName",
                                                           "identifier",
@@ -191,19 +174,13 @@ public class GeoPackageSchemaAPITest
      * Tests if GeoPackage Schema throws
      * an IllegalArgumentException when adding
      * a data column with an empty string for columnName
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addDataColumnIllegalArgumentException3() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final Content table = gpkg.tiles().addTileSet("tableName",
                                                           "identifier",
@@ -227,19 +204,13 @@ public class GeoPackageSchemaAPITest
 
     /**
      * Tests if getDataColumn method in
-     * geopackage schema returns
+     * GeoPackage schema returns
      * the expected values.
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws MimeTypeParseException
      */
     @Test
     public void getDataColumn() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile();
 
         try(GeoPackage gpkg = createGeoPackage("tableName", "columnName", testFile))
         {
@@ -262,7 +233,7 @@ public class GeoPackageSchemaAPITest
             final DataColumn columnReturned = gpkg.schema().getDataColumn(table, columnName);
             final DataColumn shouldBeNull   = gpkg.schema().getDataColumn(table, "ColumnThatdoesn'tExist");
             assertTrue("The GeoPackage schema did not return the expected values when using the getDataColumn method",
-                       dataColumnsEqual(columnExpected, columnReturned) &&
+                       areDataColumnsEqual(columnExpected, columnReturned) &&
                        shouldBeNull == null);
 
         }
@@ -273,22 +244,17 @@ public class GeoPackageSchemaAPITest
     }
 
     /**
-     * Tests if geopackage schema
+     * Tests if GeoPackage schema
      * will throw an IllegalArgumentException when
-     * trying to get a data column entry with tablename
+     * trying to get a data column entry with table name
      * that has a value of null.
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
     public void getDataColumnIllegalArgumentException() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(14);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
            gpkg.schema().getDataColumn(null,"columnName");
            fail("Expected GeoPackage Schema to throw an IllegalArgumentException when trying to get a data column and table is null.");
@@ -303,18 +269,13 @@ public class GeoPackageSchemaAPITest
      * Tests if GeoPackage Schema will throw an Illegal
      * argumentException when trying to get a data Column
      * with a null value for column
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
     public void getDataColumnIllegalArgumentException2() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final Content table = gpkg.tiles().addTileSet("tableName",
                                                           "identifier",
@@ -334,18 +295,13 @@ public class GeoPackageSchemaAPITest
      * Tests if GeoPackage Schema will throw an Illegal
      * argumentException when trying to get a data Column
      * with an empty string for column
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
     public void getDataColumnIllegalArgumentException3() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final Content table =  gpkg.tiles().addTileSet("tableName",
                                                            "identifier",
@@ -362,19 +318,13 @@ public class GeoPackageSchemaAPITest
     }
 
     /**
-     * Tests if geopackage schema returns the
+     * Tests if GeoPackage schema returns the
      * data column entries expected
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws MimeTypeParseException
      */
     @Test
     public void getDataColumnCollection() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile();
 
         final String tableName = "tableName";
         final String columnName = "columnName";
@@ -416,7 +366,7 @@ public class GeoPackageSchemaAPITest
 
             assertTrue("GeoPackage Schema did not returned the expected DataColumn entries from the geopackage when using getDataColumn() method",
                        columnsReturned.size() == 2 &&
-                       columnsReturned.stream().allMatch(returned-> columnsExpected.stream().anyMatch(expected -> dataColumnsEqual(expected, returned))));
+                       columnsReturned.stream().allMatch(returned-> columnsExpected.stream().anyMatch(expected -> areDataColumnsEqual(expected, returned))));
         }
         finally
         {
@@ -425,20 +375,16 @@ public class GeoPackageSchemaAPITest
     }
 
     /**
-     * Tests if geopackage addDataColumnConstraint
+     * Tests if GeoPackage addDataColumnConstraint
      * returns the expected values
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraint() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(11);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
 
             final String  constraintName      = "constraint_name";
@@ -470,7 +416,7 @@ public class GeoPackageSchemaAPITest
             assertTrue("The Returned datacolumnconstraint using addDataColumnConstraint does not return the expected values",
                        constraint.getConstraintName().equals(constraintName)            &&
                        constraint.getConstraintType().equals(constraintType.toString()) &&
-                       constraint.getValue() == value                                    &&
+                       Objects.equals(constraint.getValue(), value)                     &&
                        constraint.getMinimum().equals(minimum)                          &&
                        constraint.getMinimumIsInclusive().equals(minimumIsInclusive)    &&
                        constraint.getMaximum().equals(maximum)                          &&
@@ -483,18 +429,13 @@ public class GeoPackageSchemaAPITest
     }
 
     /**
-     * Tests if geopackage addDataColumnConstraint
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
+     * Tests if GeoPackage addDataColumnConstraint
      */
     @Test
     public void addDataColumnConstraint2() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Glob;
@@ -510,10 +451,10 @@ public class GeoPackageSchemaAPITest
                         constraint.getConstraintName().equals(constraintName)            &&
                         constraint.getConstraintType().equals(constraintType.toString()) &&
                         constraint.getValue().equals(value)                              &&
-                        constraint.getMinimum() == (minimum)                             &&
-                        constraint.getMinimumIsInclusive() == (minimumIsInclusive)       &&
-                        constraint.getMaximum() == (maximum)                             &&
-                        constraint.getMaximumIsInclusive() == (maximumIsInclusive));
+                        Objects.equals(constraint.getMinimum(),            minimum) &&
+                        Objects.equals(constraint.getMinimumIsInclusive(), minimumIsInclusive) &&
+                        Objects.equals(constraint.getMaximum(),            maximum) &&
+                        Objects.equals(constraint.getMaximumIsInclusive(), maximumIsInclusive));
         }
         finally
         {
@@ -527,17 +468,13 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with a
      * null value for constraintName
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraintIllegalArgumentException() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = null;//illegal!
             final Type    constraintType      = Type.Range;
@@ -563,17 +500,13 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with a
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraintIllegalArgumentException2() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "";//illegal!
             final Type    constraintType      = Type.Range;
@@ -599,17 +532,13 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraintIllegalArgumentException3() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = null;//illegal!
@@ -635,17 +564,13 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraintIllegalArgumentException4() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Range;
@@ -671,17 +596,13 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraintIllegalArgumentException5() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Range;
@@ -707,17 +628,13 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraintIllegalArgumentException6() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Range;
@@ -743,17 +660,13 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraintIllegalArgumentException7() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Range;
@@ -779,17 +692,13 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraintIllegalArgumentException8() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Range;
@@ -815,17 +724,13 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraintIllegalArgumentException9() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Range;
@@ -851,17 +756,13 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraintIllegalArgumentException10() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Enum;
@@ -887,17 +788,12 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addDataColumnConstraintIllegalArgumentException11() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Glob;
@@ -923,17 +819,13 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraintIllegalArgumentException12() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Enum;
@@ -959,17 +851,12 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addDataColumnConstraintIllegalArgumentException13() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Enum;
@@ -995,17 +882,13 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings("ConstantConditions")
     public void addDataColumnConstraintIllegalArgumentException14() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Enum;
@@ -1031,17 +914,12 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addDataColumnConstraintIllegalArgumentException15() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Enum;
@@ -1067,17 +945,12 @@ public class GeoPackageSchemaAPITest
      * throw an IllegalArgumentException when
      * trying to add a dataColumnConstraint with
      * invalid parameters
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addDataColumnConstraintIllegalArgumentException16() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(13);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final String  constraintName      = "Constraint name";
             final Type    constraintType      = Type.Glob;
@@ -1100,17 +973,14 @@ public class GeoPackageSchemaAPITest
 
     /**
      * Tests if the data Column constraint contains the values expected
-     * @throws ClassNotFoundException
-     * @throws IOException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test
+    @SuppressWarnings("ConstantConditions")
     public void getDataColumnConstraint() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(11);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
 
             final String  constraintName      = "constraint_name";
@@ -1134,7 +1004,7 @@ public class GeoPackageSchemaAPITest
             final DataColumnConstraint constraintReturned = gpkg.schema().getDataColumnConstraint(constraintName, constraintType, value);
 
             assertTrue("The data Column Constraint returned isn't the same as expected.",
-                       dataColumnConstraintsEqual(constraintExpected, constraintReturned));
+                       areDataColumnConstraintsEqual(constraintExpected, constraintReturned));
 
         }
         finally
@@ -1145,17 +1015,14 @@ public class GeoPackageSchemaAPITest
 
     /**
      * Tests if the data Column constraint contains the values expected
-     * @throws ClassNotFoundException
-     * @throws IOException
-     * @throws SQLException
-     * @throws ConformanceException
      */
     @Test
+    @SuppressWarnings("ConstantConditions")
     public void getDataColumnConstraint2() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(11);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
 
             final String  constraintName      = "constraint_name";
@@ -1178,8 +1045,7 @@ public class GeoPackageSchemaAPITest
 
             final DataColumnConstraint constraintReturned = gpkg.schema().getDataColumnConstraint("ConstraintThatDoesn'tExist", Type.Range, "Doesn'tExist");
 
-            assertTrue("The data Column Constraint returned a non null value when the data column constraint searched for did not exist in the geopackage.",
-                       constraintReturned == null);
+            assertNull("The data Column Constraint returned a non null value when the data column constraint searched for did not exist in the geopackage.", constraintReturned);
 
         }
         finally
@@ -1192,17 +1058,13 @@ public class GeoPackageSchemaAPITest
      * Tests if GeoPackage Schema throws an IllegalArgumentException
      * when using the method getDataColumnConstraint with illegal values
      * for the parameters
-     * @throws SQLException
-     * @throws ClassNotFoundException
-     * @throws ConformanceException
-     * @throws IOException
      */
     @Test(expected = IllegalArgumentException.class)
     public void getDataColumnContraintIllegalArgumentException() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
-        final File testFile = this.getRandomFile(11);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
 
             final String  constraintName      = null;//illegal!!
@@ -1223,17 +1085,13 @@ public class GeoPackageSchemaAPITest
      * Tests if GeoPackage Schema throws an IllegalArgumentException
      * when using the method getDataColumnConstraint with illegal values
      * for the parameters
-     * @throws SQLException
-     * @throws ClassNotFoundException
-     * @throws ConformanceException
-     * @throws IOException
      */
     @Test(expected = IllegalArgumentException.class)
     public void getDataColumnContraintIllegalArgumentException2() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
-        final File testFile = this.getRandomFile(11);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
 
             final String  constraintName      = "";//illegal!!
@@ -1254,17 +1112,13 @@ public class GeoPackageSchemaAPITest
      * Tests if GeoPackage Schema throws an IllegalArgumentException
      * when using the method getDataColumnConstraint with illegal values
      * for the parameters
-     * @throws SQLException
-     * @throws ClassNotFoundException
-     * @throws ConformanceException
-     * @throws IOException
      */
     @Test(expected = IllegalArgumentException.class)
     public void getDataColumnContraintIllegalArgumentException3() throws SQLException, ClassNotFoundException, ConformanceException, IOException
     {
-        final File testFile = this.getRandomFile(11);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
 
             final String  constraintName      = "constraintName";
@@ -1284,20 +1138,16 @@ public class GeoPackageSchemaAPITest
     /**
      * Tests if getDataColumnConstraints() returns the
      * expected values
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws IOException
      */
     @Test
     public void getDataColumnConstraints() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile();
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
            final Collection<DataColumnConstraint> shouldBeEmptyList = gpkg.schema().getDataColumnConstraints();
-           assertTrue("Expected GeoPackageSchema to return an empty list when there are no data column constraints in the GeoPackage.",shouldBeEmptyList.size() == 0);
+            assertEquals("Expected GeoPackageSchema to return an empty list when there are no data column constraints in the GeoPackage.", 0, shouldBeEmptyList.size());
         }
         finally
         {
@@ -1308,15 +1158,11 @@ public class GeoPackageSchemaAPITest
     /**
      * Tests if getDataColumnConstraints() returns the
      * expected values
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws IOException
      */
     @Test
     public void getDataColumnConstraints2() throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile();
 
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
@@ -1358,7 +1204,7 @@ public class GeoPackageSchemaAPITest
            assertTrue("Expected GeoPackageSchema to return an empty list when there are no data column constraints in the GeoPackage.",
                       returnedCollection.stream()
                                         .allMatch(returned -> expectedCollection.stream()
-                                                                                .anyMatch(expected -> dataColumnConstraintsEqual(expected, returned))));
+                                                                                .anyMatch(expected -> areDataColumnConstraintsEqual(expected, returned))));
         }
         finally
         {
@@ -1370,16 +1216,16 @@ public class GeoPackageSchemaAPITest
 
     private static GeoPackage createGeoPackage(final String tableName, final String columnName, final File testFile) throws ClassNotFoundException, SQLException, ConformanceException, IOException
     {
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             gpkg.close();
             createTable(tableName, columnName, testFile);
 
-            return new GeoPackage(testFile, VerificationLevel.None, OpenMode.Open);
+            return new GeoPackage(testFile, VerificationLevel.None, GeoPackage.OpenMode.Open);
         }
     }
 
-    private static void createTable(final String tableName, final String columnName, final File testFile) throws ClassNotFoundException, SQLException
+    private static void createTable(final String tableName, final String columnName, final File testFile) throws SQLException
     {
         final String createTable = String.format("CREATE TABLE %s ( %s TEXT," +
                                                              "other_column INTEGER NOT NULL," +
@@ -1387,33 +1233,31 @@ public class GeoPackageSchemaAPITest
                                                              "last_Column TEXT NOT NULL)",
                                             tableName,
                                             columnName);
-        try(Connection con = getConnection(testFile);
-            Statement stmt = con.createStatement();)
+        try(final Connection con  = getConnection(testFile);
+            final Statement  stmt = con.createStatement())
         {
+            //noinspection JDBCExecuteWithNonConstantString
             stmt.execute(createTable);
         }
     }
 
-    private static Connection getConnection(final File testFile) throws ClassNotFoundException, SQLException
+    private static Connection getConnection(final File testFile) throws SQLException
     {
-        Class.forName("org.sqlite.JDBC");   // Register the driver
-
         return DriverManager.getConnection("jdbc:sqlite:" + testFile.getPath()); // Initialize the database connection
     }
 
-    private static boolean dataColumnConstraintsEqual(final DataColumnConstraint expected, final DataColumnConstraint returned)
+    private static boolean areDataColumnConstraintsEqual(final DataColumnConstraint expected, final DataColumnConstraint returned)
     {
         return isEqual(expected.getConstraintName(),     returned.getConstraintName())    &&
                isEqual(expected.getConstraintType(),     returned.getConstraintType())    &&
                isEqual(expected.getValue(),              returned.getValue())             &&
                isEqual(expected.getMinimum(),            returned.getMinimum())           &&
-               isEqual(expected.getMaximumIsInclusive(), returned.getMaximumIsInclusive())&&
                isEqual(expected.getMaximum(),            returned.getMaximum())           &&
                isEqual(expected.getMaximumIsInclusive(), returned.getMaximumIsInclusive())&&
                isEqual(expected.getDescription(),        returned.getDescription());
     }
 
-    private static boolean dataColumnsEqual(final DataColumn expected, final DataColumn returned)
+    private static boolean areDataColumnsEqual(final DataColumn expected, final DataColumn returned)
     {
         return isEqual(expected.getColumnName(),     returned.getColumnName())  &&
                isEqual(expected.getTableName(),      returned.getTableName())   &&
@@ -1424,45 +1268,9 @@ public class GeoPackageSchemaAPITest
                isEqual(expected.getConstraintName(), returned.getConstraintName());
     }
 
-
     private static <T> boolean isEqual(final T first, final T second)
     {
         return first == null ? second == null
                              : first.equals(second);
     }
-    private static void deleteFile(final File testFile)
-    {
-        if (testFile.exists())
-        {
-            if (!testFile.delete())
-            {
-                throw new RuntimeException(String.format(
-                        "Unable to delete testFile. testFile: %s", testFile));
-            }
-        }
-    }
-    private String getRanString(final int length)
-    {
-        final String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        final char[] text = new char[length];
-        for (int i = 0; i < length; i++)
-        {
-            text[i] = characters.charAt(this.randomGenerator.nextInt(characters.length()));
-        }
-        return new String(text);
-    }
-
-    private File getRandomFile(final int length)
-    {
-        File testFile;
-
-        do
-        {
-            testFile = new File(String.format(FileSystems.getDefault().getPath(this.getRanString(length)).toString() + ".gpkg"));
-        }
-        while (testFile.exists());
-
-        return testFile;
-    }
-
 }

@@ -22,61 +22,56 @@
  */
 package com.rgi.geopackage;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileSystems;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
-
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
-
-import org.junit.Test;
-
-import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.metadata.Metadata;
 import com.rgi.geopackage.metadata.MetadataReference;
 import com.rgi.geopackage.metadata.ReferenceScope;
 import com.rgi.geopackage.metadata.Scope;
 import com.rgi.geopackage.verification.ConformanceException;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+
+import static com.rgi.geopackage.TestUtility.deleteFile;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Jenifer Cochran
  *
  */
-@SuppressWarnings({"static-method", "javadoc"})
+@SuppressWarnings("javadoc")
 public class GeoPackageMetadataAPITest
 {
-
-    private final Random randomGenerator = new Random();
+    @BeforeClass
+    public static void setUp() throws ClassNotFoundException
+    {
+        Class.forName("org.sqlite.JDBC"); // Register the driver
+    }
 
     /**
      * Tests if GeoPackageMetadata can add metadata
      * and verify it returns the expected values
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test
     public void addMetadataVerify() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(8);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final Scope    scope       = Scope.Dataset;
             final URI      standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
@@ -87,11 +82,10 @@ public class GeoPackageMetadataAPITest
             gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);
 
             assertTrue("Metadata returned does not have the expected values.",
-                       metadataReturned.getScope()                 .equalsIgnoreCase(scope.toString())  &&
-                       metadataReturned.getStandardUri().toString().equalsIgnoreCase(standardUri.toString()) &&
-                       metadataReturned.getMimeType()   .toString().equalsIgnoreCase(mimeType.toString())       &&
-                       metadataReturned.getMetadata()   .toString().equalsIgnoreCase(metadata));
-
+                       metadataReturned.getScope()      .equalsIgnoreCase(scope.toString())       &&
+                       metadataReturned.getStandardUri().equalsIgnoreCase(standardUri.toString()) &&
+                       metadataReturned.getMimeType()   .equalsIgnoreCase(mimeType.toString())    &&
+                       metadataReturned.getMetadata()   .equalsIgnoreCase(metadata));
         }
         finally
         {
@@ -100,22 +94,15 @@ public class GeoPackageMetadataAPITest
     }
 
     /**
-     * Tests if an Illegal ARgument exception is thrown
+     * Tests if an illegal argument exception is thrown
      * when adding metadata with scope as a null parameter
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataIllegalArgumentException() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(8);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final URI      standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
             final MimeType mimeType    = new MimeType("text/xml");
@@ -131,21 +118,14 @@ public class GeoPackageMetadataAPITest
         }
     }
     /**
-     * Tests if an Illegal ARgument exception is thrown
+     * Tests if an illegal argument exception is thrown
      * when adding metadata with uri as a null parameter
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataIllegalArgumentException2() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(18);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final Scope    scope       = Scope.Dataset;
             final MimeType mimeType    = new MimeType("text/xml");
@@ -161,21 +141,14 @@ public class GeoPackageMetadataAPITest
         }
     }
     /**
-     * Tests if an Illegal ARgument exception is thrown
-     * when adding metadata with mimetype as a null parameter
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
+     * Tests if an illegal argument exception is thrown
+     * when adding metadata with MimeType as a null parameter
      */
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataIllegalArgumentException3() throws ClassNotFoundException, IOException, SQLException, ConformanceException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(18);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final Scope    scope       = Scope.Dataset;
             final URI      standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
@@ -192,21 +165,14 @@ public class GeoPackageMetadataAPITest
     }
 
     /**
-     * Tests if an Illegal ARgument exception is thrown
+     * Tests if an illegal argument exception is thrown
      * when adding metadata with metadata as a null parameter
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataIllegalArgumentException4() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(18);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final Scope    scope       = Scope.Dataset;
             final URI      standardUri = new URI("http://www.geopackage.org/spec/#metadata_scopes");
@@ -224,22 +190,15 @@ public class GeoPackageMetadataAPITest
 
     /**
      * Tests if GeoPackage Metadata can add
-     * a MetadataReference object to the geopackage
+     * a MetadataReference object to the GeoPackage
      * database properly and return the correct values
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test
     public void addMetadataReference() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final ReferenceScope referenceScope   = ReferenceScope.GeoPackage;
             final String         tableName        = null;
@@ -275,20 +234,13 @@ public class GeoPackageMetadataAPITest
      * Tests if GeoPackage Metadata will throw an IllegalArgumentException when
      * passing a null value for scope as a parameter in addMetadataReference()
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataReferenceIllegalArgumentException() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(8);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final ReferenceScope referenceScope   = null;
             final String         tableName        = null;
@@ -313,23 +265,16 @@ public class GeoPackageMetadataAPITest
 
     /**
      * Tests if GeoPackage Metadata will throw an IllegalArgumentException when
-     * passing non-null value for tableName (When referenceScope is geopackage)
+     * passing non-null value for tableName (When referenceScope is GeoPackage)
      * as a parameter in addMetadataReference()
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataReferenceIllegalArgumentException2() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(8);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final ReferenceScope referenceScope   = ReferenceScope.GeoPackage;
             final String         tableName        = "Should be null";
@@ -357,20 +302,13 @@ public class GeoPackageMetadataAPITest
      * passing a non-null value for columnName (when reference scope is Row) for
      * scope as a parameter in addMetadataReference()
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataReferenceIllegalArgumentException3() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(8);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final ReferenceScope referenceScope   = ReferenceScope.Row;
             final String         tableName        = "tablename";
@@ -398,20 +336,13 @@ public class GeoPackageMetadataAPITest
      * passing a null value for rowIdentifier (when reference scope is RowCol) for
      * scope as a parameter in addMetadataReference()
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataReferenceIllegalArgumentException4() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(8);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final ReferenceScope referenceScope   = ReferenceScope.RowCol;
             final String         tableName        = "tablename";
@@ -439,20 +370,13 @@ public class GeoPackageMetadataAPITest
      * passing a null value for rowIdentifier (when reference scope is RowCol) for
      * scope as a parameter in addMetadataReference()
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataReferenceIllegalArgumentException5() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(8);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final ReferenceScope referenceScope   = ReferenceScope.Row;
             final String         tableName        = "";
@@ -480,20 +404,13 @@ public class GeoPackageMetadataAPITest
      * passing an empty string for columnName(when reference scope is Column) for
      * scope as a parameter in addMetadataReference()
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataReferenceIllegalArgumentException6() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(8);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final ReferenceScope referenceScope   = ReferenceScope.Column;
             final String         tableName        = "tablename";
@@ -521,20 +438,13 @@ public class GeoPackageMetadataAPITest
      * passing a null value for rowIdentifier (when reference scope is RowCol) for
      * scope as a parameter in addMetadataReference()
      *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test(expected = IllegalArgumentException.class)
     public void addMetadataReferenceIllegalArgumentException7() throws ClassNotFoundException, IOException, SQLException, ConformanceException
     {
-        final File testFile = this.getRandomFile(8);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final ReferenceScope referenceScope   = ReferenceScope.RowCol;
             final String         tableName        = "tablename";
@@ -555,22 +465,15 @@ public class GeoPackageMetadataAPITest
 
     /**
      * Tests if GeoPackage metadata returned
-     * the all the metadata entries in a geopackage
+     * the all the metadata entries in a GeoPackage
      * with all the correct values
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
      */
     @Test
     public void getMetadata() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final Collection<Metadata> shouldBeEmpty = gpkg.metadata().getMetadata();
 
@@ -598,7 +501,7 @@ public class GeoPackageMetadataAPITest
             assertTrue("GeoPackage metadata did not return all the expected metadata objects or "
                         + "they were not equivalent to those inputted into the geopackage",
                        metadataReturned.size() == 2 &&
-                       metadataReturned.stream().allMatch(returned -> metadataExpected.stream().anyMatch(expected -> this.metadatasEqual(expected, returned))));
+                       metadataReturned.stream().allMatch(returned -> metadataExpected.stream().anyMatch(expected -> GeoPackageMetadataAPITest.areMetadatasEqual(expected, returned))));
 
         }
         finally
@@ -608,22 +511,15 @@ public class GeoPackageMetadataAPITest
     }
 
     /**
-     * Tests if goepackage get metdata method with a parameter
-     * of identifer gives back the expected metadata entry from
-     * the geopackage
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
+     * Tests if GeoPackage get metadata method with a parameter
+     * of identifier gives back the expected metadata entry from
+     * the GeoPackage
      */
     @Test
     public void getMetadataWithIdentifier() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(6);
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        final File testFile = TestUtility.getRandomFile();
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final Metadata shouldBeNull = gpkg.metadata().getMetadata(0);
 
@@ -646,7 +542,7 @@ public class GeoPackageMetadataAPITest
 
             assertTrue("The geopackage metadata getMetadata(identifier) did not return the expected metadata object",
                        shouldBeNull == null &&
-                       this.metadatasEqual(metadataExpected, metadataReturned));
+                       GeoPackageMetadataAPITest.areMetadatasEqual(metadataExpected, metadataReturned));
         }
         finally
         {
@@ -658,21 +554,14 @@ public class GeoPackageMetadataAPITest
      * Tests if getMetadata with identifier
      * will return null if the metadata entry
      * does not exist (case with a metadata
-     * table in geopackage)
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws MimeTypeParseException
-     * @throws URISyntaxException
+     * table in GeoPackage)
      */
     @Test
     public void getMetadataWithIdentifier2() throws ClassNotFoundException, IOException, SQLException, ConformanceException, MimeTypeParseException, URISyntaxException
     {
-        final File testFile = this.getRandomFile(7);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
 
             final Scope    scope       = Scope.Attribute;
@@ -682,8 +571,8 @@ public class GeoPackageMetadataAPITest
 
             gpkg.metadata().addMetadata(scope, standardUri, mimeType, metadata);//this will create metadata tables
 
-            assertTrue("The geoPackage returned a non null metadata object when trying to retrieve a metadata object that does not exist",
-                       gpkg.metadata().getMetadata(999999) == null);
+            assertNull("The geoPackage returned a non null metadata object when trying to retrieve a metadata object that does not exist",
+                       gpkg.metadata().getMetadata(999999));
         }
         finally
         {
@@ -694,27 +583,20 @@ public class GeoPackageMetadataAPITest
 
     /**
      * GeoPackage returns the correct values for the metadata
-     * references entries in the geopcakge
-     *
-     * @throws FileAlreadyExistsException
-     * @throws ClassNotFoundException
-     * @throws FileNotFoundException
-     * @throws SQLException
-     * @throws ConformanceException
-     * @throws URISyntaxException
-     * @throws MimeTypeParseException
+     * references entries in the GeoPackage
      */
     @Test
     public void getMetadatReferences() throws ClassNotFoundException, ConformanceException, IOException, SQLException, URISyntaxException, MimeTypeParseException
     {
-        final File testFile = this.getRandomFile(12);
+        final File testFile = TestUtility.getRandomFile();
 
-        try(GeoPackage gpkg = new GeoPackage(testFile, OpenMode.Create))
+        try(final GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Create))
         {
             final Collection<MetadataReference> shouldBeEmpty = gpkg.metadata().getMetadataReferences();
             assertTrue("GeoPackage returned an non empty collection when there are no entries in the metadata table.",
                        shouldBeEmpty.isEmpty());
-            //first reference values
+
+            // first reference values
             final ReferenceScope referenceScope   = ReferenceScope.GeoPackage;
             final String         tableName        = null;
             final String         columnName       = null;
@@ -747,7 +629,7 @@ public class GeoPackageMetadataAPITest
 
             assertTrue("GeoPackage did not return all or the expected entries in the metadataReference table",
                        returnedReferences.size() == 2 &&
-                       returnedReferences.stream().allMatch(returned -> expectedReferences.stream().anyMatch(expected -> this.metadataReferencesEqual(expected, returned))));
+                       returnedReferences.stream().allMatch(returned -> expectedReferences.stream().anyMatch(expected -> GeoPackageMetadataAPITest.areMetadataReferencesEqual(expected, returned))));
         }
         finally
         {
@@ -764,7 +646,7 @@ public class GeoPackageMetadataAPITest
     public void scopeFromString()
     {
         final Scope scope = Scope.fromString("uNdEfInEd");
-        assertTrue("The Scope method from string did not return the expected scope", scope == Scope.Undefined);
+        assertSame("The Scope method from string did not return the expected scope", Scope.Undefined, scope);
     }
 
     /**
@@ -775,36 +657,36 @@ public class GeoPackageMetadataAPITest
     public void scopeGetCodeAndDescription()
     {
         final Scope scope = Scope.CollectionHardware;
-        assertTrue("The scope did not return the expected code",scope.getCode().equals("003"));
+        assertEquals("The scope did not return the expected code", "003", scope.getCode());
         assertTrue("The scope did not return the expected description", scope.getDescription().equalsIgnoreCase("Information applies to the collection hardware class"));
     }
 
     /**
-     * Tests all cases of fromtext
+     * Tests all cases of from text
      * method for reference scope
      */
     @Test
     public void referenceScopeFromText()
     {
         final ReferenceScope reference = ReferenceScope.fromText("GeOpAcKaGe");
-        assertTrue("Reference scope method from text did not return geopackage as expected",reference == ReferenceScope.GeoPackage);
+        assertSame("Reference scope method from text did not return geopackage as expected", ReferenceScope.GeoPackage, reference);
 
         final ReferenceScope referencetable = ReferenceScope.fromText("tAbLe");
-        assertTrue("Reference scope method from text did not return geopackage as expected",referencetable == ReferenceScope.Table);
+        assertSame("Reference scope method from text did not return geopackage as expected", ReferenceScope.Table, referencetable);
 
         final ReferenceScope referenceColumn = ReferenceScope.fromText("CoLuMn");
-        assertTrue("Reference scope method from text did not return geopackage as expected",referenceColumn == ReferenceScope.Column);
+        assertSame("Reference scope method from text did not return geopackage as expected", ReferenceScope.Column, referenceColumn);
 
         final ReferenceScope referenceRow = ReferenceScope.fromText("RoW");
-        assertTrue("Reference scope method from text did not return geopackage as expected",referenceRow == ReferenceScope.Row);
+        assertSame("Reference scope method from text did not return geopackage as expected", ReferenceScope.Row, referenceRow);
 
         final ReferenceScope referenceRowCol = ReferenceScope.fromText("RoW/CoL");
-        assertTrue("Reference scope method from text did not return geopackage as expected",referenceRowCol == ReferenceScope.RowCol);
+        assertSame("Reference scope method from text did not return geopackage as expected", ReferenceScope.RowCol, referenceRowCol);
     }
 
     /**
      * Tests if ReferenceScope will throw
-     * an Illegal Argument Exception if the
+     * an illegal argument Exception if the
      * text in fromText doesn't match
      * any of the allowed cases
      */
@@ -821,65 +703,29 @@ public class GeoPackageMetadataAPITest
 //    public void referenceScopeFromTextNullValue()
 //    {
 //        ReferenceScope scope = ReferenceScope.fromText(null);
-//        //TODO check for null in fromtext
+//        //TODO check for null in from text
 //    }
 
-    private boolean metadataReferencesEqual(final MetadataReference expected, final MetadataReference returned)
+    private static boolean areMetadataReferencesEqual(final MetadataReference expected, final MetadataReference returned)
     {
-        return this.isEqual(expected.getReferenceScope(), returned.getReferenceScope()) &&
-               this.isEqual(expected.getTableName(),      returned.getTableName())      &&
-               this.isEqual(expected.getColumnName(),     returned.getColumnName())     &&
-               returned.getRowIdentifier()    == expected.getRowIdentifier()       &&
-               returned.getParentIdentifier() == expected.getParentIdentifier();
+        return isEqual(expected.getReferenceScope(), returned.getReferenceScope()) &&
+               isEqual(expected.getTableName(),      returned.getTableName())      &&
+               isEqual(expected.getColumnName(),     returned.getColumnName())     &&
+               Objects.equals(returned.getRowIdentifier(),    expected.getRowIdentifier()) &&
+               Objects.equals(returned.getParentIdentifier(), expected.getParentIdentifier());
     }
 
-    private <T> boolean isEqual(final T expected, final T returned)
+    private static <T> boolean isEqual(final T expected, final T returned)
     {
         return expected == null ? returned == null
                                 : expected.equals(returned);
     }
 
-    private boolean metadatasEqual(final Metadata expected, final Metadata returned)
+    private static boolean areMetadatasEqual(final Metadata expected, final Metadata returned)
     {
-        return expected.getScope()      .equalsIgnoreCase(returned.getScope()) &&
+        return expected.getScope()      .equalsIgnoreCase(returned.getScope())       &&
                expected.getStandardUri().equalsIgnoreCase(returned.getStandardUri()) &&
-               expected.getMetadata()   .equalsIgnoreCase(returned.getMetadata())      &&
+               expected.getMetadata()   .equalsIgnoreCase(returned.getMetadata())    &&
                expected.getMimeType()   .equalsIgnoreCase(returned.getMimeType());
     }
-
-    private static void deleteFile(final File testFile)
-    {
-        if (testFile.exists())
-        {
-            if (!testFile.delete())
-            {
-                throw new RuntimeException(String.format(
-                        "Unable to delete testFile. testFile: %s", testFile));
-            }
-        }
-    }
-    private String getRanString(final int length)
-    {
-        final String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        final char[] text = new char[length];
-        for (int i = 0; i < length; i++)
-        {
-            text[i] = characters.charAt(this.randomGenerator.nextInt(characters.length()));
-        }
-        return new String(text);
-    }
-
-    private File getRandomFile(final int length)
-    {
-        File testFile;
-
-        do
-        {
-            testFile = new File(String.format(FileSystems.getDefault().getPath(this.getRanString(length)).toString() + ".gpkg"));
-        }
-        while (testFile.exists());
-
-        return testFile;
-    }
-
 }

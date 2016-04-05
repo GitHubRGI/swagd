@@ -6,6 +6,7 @@ import java.io.IOException;
 /**
  * @author Luke Lambert
  */
+@SuppressWarnings("JavaDoc")
 public final class TestUtility
 {
     private TestUtility() {}
