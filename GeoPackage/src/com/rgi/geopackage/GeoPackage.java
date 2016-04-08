@@ -46,7 +46,6 @@ import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
-import com.sun.org.apache.xml.internal.resolver.helpers.Debug;
 
 /**
  * Implementation of the <a href="http://www.geopackage.org/spec/">OGC GeoPackage specification</a>
@@ -327,7 +326,7 @@ public class GeoPackage implements AutoCloseable
      */
     public Collection<VerificationIssue> getVerificationIssues(final boolean continueAfterCoreErrors) throws SQLException
     {
-        final List<VerificationIssue> verificationIssues = new ArrayList<>();
+        final Collection<VerificationIssue> verificationIssues = new ArrayList<>();
 
         verificationIssues.addAll(this.core.getVerificationIssues(this.file, this.verificationLevel));
 
@@ -415,7 +414,7 @@ public class GeoPackage implements AutoCloseable
     /**
      * Access to GeoPackage's "extensions" functionality
      *
-     * @return returns a handle to a GeoPackageExetensions object
+     * @return returns a handle to a GeoPackageExtensions object
      */
     public GeoPackageExtensions extensions()
     {
@@ -467,5 +466,5 @@ public class GeoPackage implements AutoCloseable
     private final GeoPackageMetadata   metadata;
     private final GeoPackageExtensions extensions;
 
-    private final static byte[] GeoPackageSqliteApplicationId = new byte[] {'G', 'P', '1', '0' };
+    private static final byte[] GeoPackageSqliteApplicationId = {(byte) 'G', (byte) 'P', (byte) '1', (byte) '0'};
 }
