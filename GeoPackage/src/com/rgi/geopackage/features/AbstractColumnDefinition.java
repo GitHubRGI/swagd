@@ -72,11 +72,11 @@ public abstract class AbstractColumnDefinition
      *             violation has occurred. If the CHECK expression evaluates
      *             to NULL, or any other non-zero value, it is not a constraint
      *             violation. The expression of a CHECK constraint may not
-     *             contain a subquery.
+     *             contain a sub-query.
      * @param flags
      *             Column constraint flags
      * @param defaultValue
-     *             Column default value. Ignored if null.
+     *             Column default value
      * @param comment
      *             Comment to be added to the table definition. Ignored if
      *             null.
@@ -100,13 +100,20 @@ public abstract class AbstractColumnDefinition
             throw new IllegalArgumentException("The column type may not be null or empty");
         }
 
-        if(!columnNamePattern.matcher(type).matches())  // I don't know that this is the exact constraint, but it should be close
-        {
-            throw new IllegalArgumentException(String.format("The type of column '%s' must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers", name));
-        }
-
         this.flags = flags == null ? EnumSet.noneOf(ColumnFlag.class)
                                    : flags;
+
+        if(defaultValue == null)
+        {
+            throw new IllegalArgumentException("The default type may not be null. Use ColumnDefault.Null to specify a null value, or ColumnDefault.None to leave the default unspecified.");
+        }
+
+        if(this.flags.contains(ColumnFlag.NotNull) &&
+           (defaultValue.equals(ColumnDefault.None) ||
+            defaultValue.equals(ColumnDefault.Null)))
+        {
+            throw new IllegalArgumentException("Column flags that specify that values may not be null must provide a default column value other than ColumnDefault.None or ColumnDefault.Null");
+        }
 
         this.name            = name;
         this.type            = type;

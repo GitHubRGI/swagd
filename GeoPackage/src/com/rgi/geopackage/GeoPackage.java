@@ -46,6 +46,7 @@ import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
+import com.sun.org.apache.xml.internal.resolver.helpers.Debug;
 
 /**
  * Implementation of the <a href="http://www.geopackage.org/spec/">OGC GeoPackage specification</a>
@@ -361,7 +362,8 @@ public class GeoPackage implements AutoCloseable
         {
             final ConformanceException conformanceException = new ConformanceException(verificationIssues);
 
-            System.out.println(conformanceException.toString());
+            //noinspection ThrowablePrintedToSystemOut
+            System.out.println(conformanceException);
 
             if(verificationIssues.stream().anyMatch(verificationIssue -> verificationIssue.getSeverity() == Severity.Error))
             {

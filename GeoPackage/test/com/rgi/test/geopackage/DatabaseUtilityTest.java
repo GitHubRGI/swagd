@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage;
+package com.rgi.test.geopackage;
 
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.utility.DatabaseVersion;

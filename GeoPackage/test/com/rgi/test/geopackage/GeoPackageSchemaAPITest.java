@@ -21,9 +21,10 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage;
+package com.rgi.test.geopackage;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.Content;
 import com.rgi.geopackage.schema.DataColumn;
 import com.rgi.geopackage.schema.DataColumnConstraint;
@@ -46,7 +47,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import static com.rgi.geopackage.TestUtility.deleteFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -104,7 +104,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -133,7 +133,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -165,7 +165,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -198,7 +198,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -239,7 +239,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -261,7 +261,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -287,7 +287,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -313,7 +313,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -370,7 +370,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -424,7 +424,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -458,7 +458,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -491,7 +491,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -523,7 +523,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -555,7 +555,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -587,7 +587,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -619,7 +619,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -651,7 +651,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -683,7 +683,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -715,7 +715,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -747,7 +747,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -779,7 +779,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -810,7 +810,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -842,7 +842,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -873,7 +873,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -905,7 +905,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -936,7 +936,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -967,7 +967,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1009,7 +1009,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1050,7 +1050,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1077,7 +1077,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1104,7 +1104,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1131,7 +1131,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1151,7 +1151,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1208,7 +1208,7 @@ public class GeoPackageSchemaAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 

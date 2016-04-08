@@ -20,24 +20,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.rgi.test.geopackage;
 
-package com.rgi.geopackage;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
- * @author Jenifer Cochran
- *
+ * @author Luke Lambert
  */
-@RunWith(Suite.class)
-@SuiteClasses({GeoPackageTilesAPITest.class,
-               GeoPackageCoreAPITest.class,
-               DatabaseUtilityTest.class,
-               GeoPackageExtensionsAPITest.class,
-               GeoPackageMetadataAPITest.class,
-               GeoPackageSchemaAPITest.class})
-public class AllTests
+@SuppressWarnings("JavaDoc")
+public final class TestUtility
 {
-    // This will run all the tests created
+    private TestUtility() {}
+
+    public static void deleteFile(final File testFile)
+    {
+        if(testFile.exists())
+        {
+            if(!testFile.delete())
+            {
+                throw new RuntimeException(String.format("Unable to delete test file: %s", testFile));
+            }
+        }
+    }
+
+    public static File getRandomFile() throws IOException
+    {
+        final File testFile = File.createTempFile("test", ".gpkg");
+        testFile.delete();
+        return testFile;
+    }
+
+    public static Connection getConnection(final String filePath) throws SQLException
+    {
+        return DriverManager.getConnection("jdbc:sqlite:" + filePath);
+    }
 }

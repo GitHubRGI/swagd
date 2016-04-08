@@ -20,34 +20,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.rgi.geopackage;
 
-import java.io.File;
-import java.io.IOException;
+package com.rgi.test.geopackage;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
- * @author Luke Lambert
+ * @author Jenifer Cochran
+ *
  */
-@SuppressWarnings("JavaDoc")
-public final class TestUtility
+@RunWith(Suite.class)
+@Suite.SuiteClasses({GeoPackageTilesAPITest.class,
+                     GeoPackageCoreAPITest.class,
+                     DatabaseUtilityTest.class,
+                     GeoPackageExtensionsAPITest.class,
+                     GeoPackageMetadataAPITest.class,
+                     GeoPackageSchemaAPITest.class})
+public class AllTests
 {
-    private TestUtility() {}
-
-    public static void deleteFile(final File testFile)
-    {
-        if(testFile.exists())
-        {
-            if(!testFile.delete())
-            {
-                throw new RuntimeException(String.format("Unable to delete test file: %s", testFile));
-            }
-        }
-    }
-
-    public static File getRandomFile() throws IOException
-    {
-        final File testFile = File.createTempFile("test", ".gpkg");
-        testFile.delete();
-        return testFile;
-    }
+    // This will run all the tests created
 }

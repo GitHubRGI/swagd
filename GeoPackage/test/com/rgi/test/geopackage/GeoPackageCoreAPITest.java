@@ -17,9 +17,10 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage;
+package com.rgi.test.geopackage;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.Content;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.TileSet;

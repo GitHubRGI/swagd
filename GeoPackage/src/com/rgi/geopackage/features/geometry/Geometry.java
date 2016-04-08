@@ -24,7 +24,6 @@
 package com.rgi.geopackage.features.geometry;
 
 import com.rgi.geopackage.features.Contents;
-import com.rgi.geopackage.features.WellKnownBinaryFormatException;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 
 import java.nio.ByteBuffer;

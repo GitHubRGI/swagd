@@ -40,7 +40,7 @@ public class Content
      * @param description
      *             A human-readable description for the tableName content
      * @param lastChange
-     *             Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
+     *             Date value in ISO 8601 format as defined by the {@code strftime} function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
      * @param minimumX
      *             Bounding box minimum easting or longitude for all content
      * @param minimumY

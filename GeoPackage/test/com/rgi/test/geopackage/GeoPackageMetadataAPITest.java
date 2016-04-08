@@ -20,8 +20,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.rgi.geopackage;
+package com.rgi.test.geopackage;
 
+import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.metadata.Metadata;
 import com.rgi.geopackage.metadata.MetadataReference;
 import com.rgi.geopackage.metadata.ReferenceScope;
@@ -42,7 +43,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import static com.rgi.geopackage.TestUtility.deleteFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -89,7 +89,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -114,7 +114,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
     /**
@@ -137,7 +137,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
     /**
@@ -160,7 +160,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -184,7 +184,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -226,7 +226,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -258,7 +258,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -293,7 +293,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -327,7 +327,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -361,7 +361,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -395,7 +395,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -429,7 +429,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -459,7 +459,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -506,7 +506,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -546,7 +546,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -576,7 +576,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
 
     }
@@ -633,7 +633,7 @@ public class GeoPackageMetadataAPITest
         }
         finally
         {
-            deleteFile(testFile);
+            TestUtility.deleteFile(testFile);
         }
     }
 

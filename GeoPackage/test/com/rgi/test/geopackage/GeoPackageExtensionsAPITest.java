@@ -21,8 +21,9 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage;
+package com.rgi.test.geopackage;
 
+import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.extensions.Extension;
 import com.rgi.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.geopackage.extensions.Scope;
@@ -41,7 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static com.rgi.geopackage.TestUtility.deleteFile;
+import static com.rgi.test.geopackage.TestUtility.deleteFile;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
